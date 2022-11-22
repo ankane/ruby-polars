@@ -113,3 +113,20 @@ pub fn parse_parquet_compression(
     };
     Ok(parsed)
 }
+
+pub fn wrap_quantile_interpol_options(ob: &str) -> RbResult<QuantileInterpolOptions> {
+    let parsed = match ob {
+        "lower" => QuantileInterpolOptions::Lower,
+        "higher" => QuantileInterpolOptions::Higher,
+        "nearest" => QuantileInterpolOptions::Nearest,
+        "linear" => QuantileInterpolOptions::Linear,
+        "midpoint" => QuantileInterpolOptions::Midpoint,
+        v => {
+            return Err(RbValueError::new_err(format!(
+                "interpolation must be one of {{'lower', 'higher', 'nearest', 'linear', 'midpoint'}}, got {}",
+                v
+            )))
+        }
+    };
+    Ok(parsed)
+}

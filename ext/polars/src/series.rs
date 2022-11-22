@@ -1,10 +1,11 @@
-use crate::conversion::wrap;
-use crate::{RbDataFrame, RbPolarsErr, RbResult};
 use magnus::exception::arg_error;
 use magnus::{Error, RArray, Value};
 use polars::prelude::*;
 use polars::series::IsSorted;
 use std::cell::RefCell;
+
+use crate::conversion::*;
+use crate::{RbDataFrame, RbPolarsErr, RbResult, RbValueError};
 
 #[magnus::wrap(class = "Polars::RbSeries")]
 pub struct RbSeries {
@@ -468,6 +469,17 @@ impl RbSeries {
             }
             _ => self.series.borrow().median(),
         }
+    }
+
+    pub fn quantile(&self, quantile: f64, interpolation: String) -> RbResult<Value> {
+        let interpolation = wrap_quantile_interpol_options(&interpolation)?;
+        Ok(wrap(
+            self.series
+                .borrow()
+                .quantile_as_series(quantile, interpolation)
+                .map_err(|_| RbValueError::new_err("invalid quantile".into()))?
+                .get(0),
+        ))
     }
 
     pub fn clone(&self) -> Self {

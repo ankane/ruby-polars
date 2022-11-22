@@ -165,6 +165,14 @@ module Polars
       end
     end
 
+    def median
+      _s.median
+    end
+
+    def quantile(quantile, interpolation: "nearest")
+      _s.quantile(quantile, interpolation)
+    end
+
     def alias(name)
       s = dup
       s._s.rename(name)

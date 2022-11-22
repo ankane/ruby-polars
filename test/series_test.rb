@@ -195,6 +195,22 @@ class SeriesTest < Minitest::Test
     assert_nil Polars::Series.new(["one", "two", "three"]).var
   end
 
+  def test_median
+    assert_in_delta 2, Polars::Series.new([1, 2, 9]).median
+  end
+
+  def test_quantile
+    s = Polars::Series.new([1, 2, 3])
+    assert_in_delta 1, s.quantile(0)
+    assert_in_delta 2, s.quantile(0.5)
+    assert_in_delta 3, s.quantile(1)
+
+    error = assert_raises(ArgumentError) do
+      Polars::Series.new([1, 2, 3]).quantile(2)
+    end
+    assert_equal "invalid quantile", error.message
+  end
+
   def test_alias
     s = Polars::Series.new("a", [1, 2, 3])
     assert_equal "b", s.alias("b").name
