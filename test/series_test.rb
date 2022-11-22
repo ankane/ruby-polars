@@ -313,6 +313,16 @@ class SeriesTest < Minitest::Test
     assert_series [2, 3, 1], s
   end
 
+  def test_arg_min
+    s = Polars::Series.new([1, 2, 3])
+    assert_equal 0, s.arg_min
+  end
+
+  def test_arg_max
+    s = Polars::Series.new([1, 2, 3])
+    assert_equal 2, s.arg_max
+  end
+
   def test_to_a
     assert_equal [1, 2, 3], Polars::Series.new(1..3).to_a
   end

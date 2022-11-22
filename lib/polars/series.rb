@@ -255,6 +255,14 @@ module Polars
       end
     end
 
+    def arg_min
+      _s.arg_min
+    end
+
+    def arg_max
+      _s.arg_max
+    end
+
     def to_a
       _s.to_a
     end
