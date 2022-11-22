@@ -313,6 +313,18 @@ module Polars
     end
     alias_method :utf8?, :is_utf8
 
+    def floor
+      Utils.wrap_s(_s.floor)
+    end
+
+    def ceil
+      Utils.wrap_s(_s.ceil)
+    end
+
+    def round(decimals)
+      Utils.wrap_s(_s.round(decimals))
+    end
+
     def peak_max
       Utils.wrap_s(_s.peak_max)
     end

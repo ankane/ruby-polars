@@ -220,6 +220,8 @@ fn init() -> RbResult<()> {
     class.define_method("cummin", method!(RbSeries::cummin, 1))?;
     class.define_method("cumprod", method!(RbSeries::cumprod, 1))?;
     class.define_method("slice", method!(RbSeries::slice, 2))?;
+    class.define_method("ceil", method!(RbSeries::ceil, 0))?;
+    class.define_method("round", method!(RbSeries::round, 1))?;
 
     let class = module.define_class("RbWhen", Default::default())?;
     class.define_method("_then", method!(RbWhen::then, 1))?;

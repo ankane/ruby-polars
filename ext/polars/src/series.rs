@@ -539,4 +539,14 @@ impl RbSeries {
         let series = self.series.borrow().slice(offset, length);
         series.into()
     }
+
+    pub fn ceil(&self) -> RbResult<Self> {
+        let s = self.series.borrow().ceil().map_err(RbPolarsErr::from)?;
+        Ok(s.into())
+    }
+
+    pub fn round(&self, decimals: u32) -> RbResult<Self> {
+        let s = self.series.borrow().round(decimals).map_err(RbPolarsErr::from)?;
+        Ok(s.into())
+    }
 }

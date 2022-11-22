@@ -384,6 +384,21 @@ class SeriesTest < Minitest::Test
     refute Polars::Series.new([1]).is_utf8
   end
 
+  def test_floor
+    s = Polars::Series.new([1.12345, 2.56789, 3.901234])
+    assert_series [1, 2, 3], s.floor
+  end
+
+  def test_ceil
+    s = Polars::Series.new([1.12345, 2.56789, 3.901234])
+    assert_series [2, 3, 4], s.ceil
+  end
+
+  def test_round
+    s = Polars::Series.new([1.12345, 2.56789, 3.901234])
+    assert_series [1.12, 2.57, 3.9], s.round(2)
+  end
+
   def test_peak_max
     s = Polars::Series.new([1, 2, 3, 4, 5])
     assert_series [false, false, false, false, true], s.peak_max
