@@ -72,6 +72,28 @@ class SeriesTest < Minitest::Test
     assert_equal "cannot get the last element of endless range", error.message
   end
 
+  def test_dtype
+    s = Polars::Series.new([1, 2, 3])
+    assert_equal :i64, s.dtype
+  end
+
+  def test_flags
+    s = Polars::Series.new([1, 2, 3])
+    refute s.flags["SORTED_ASC"]
+    refute s.flags["SORTED_DESC"]
+    s.sort(in_place: true)
+    assert s.flags["SORTED_ASC"]
+    refute s.flags["SORTED_DESC"]
+    s.sort(reverse: true, in_place: true)
+    refute s.flags["SORTED_ASC"]
+    assert s.flags["SORTED_DESC"]
+  end
+
+  def test_inner_dtype
+    s = Polars::Series.new([1, 2, 3])
+    assert_nil s.inner_dtype
+  end
+
   def test_to_s
     s = Polars::Series.new("a", [1, 2, 3])
     assert_match "Series: 'a' [i64]", s.to_s

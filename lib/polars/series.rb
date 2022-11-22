@@ -45,6 +45,17 @@ module Polars
       _s.dtype.to_sym
     end
 
+    def flags
+      {
+        "SORTED_ASC" => _s.is_sorted_flag,
+        "SORTED_DESC" => _s.is_sorted_reverse_flag
+      }
+    end
+
+    def inner_dtype
+      _s.inner_dtype&.to_sym
+    end
+
     def name
       _s.name
     end

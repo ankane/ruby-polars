@@ -24,6 +24,14 @@ impl RbSeries {
         }
     }
 
+    pub fn is_sorted_flag(&self) -> bool {
+        matches!(self.series.borrow().is_sorted(), IsSorted::Ascending)
+    }
+
+    pub fn is_sorted_reverse_flag(&self) -> bool {
+        matches!(self.series.borrow().is_sorted(), IsSorted::Descending)
+    }
+
     pub fn new_opt_bool(name: String, obj: RArray, strict: bool) -> RbResult<RbSeries> {
         let len = obj.len();
         let mut builder = BooleanChunkedBuilder::new(&name, len);
