@@ -296,13 +296,13 @@ class SeriesTest < Minitest::Test
 
   def test_head
     s = Polars::Series.new(1..20)
-    assert_series (1..10).to_a, s.head
+    assert_series 1..10, s.head
     assert_series [1, 2, 3], s.head(3)
   end
 
   def test_tail
     s = Polars::Series.new(1..20)
-    assert_series (11..20).to_a, s.tail
+    assert_series 11..20, s.tail
     assert_series [18, 19, 20], s.tail(3)
   end
 

@@ -79,20 +79,20 @@ class DataFrameTest < Minitest::Test
   end
 
   def test_slice
-    df = Polars::DataFrame.new({"a" => a})
-    assert_series (6..10).to_a, df.slice(5)["a"]
-    assert_series (6..8).to_a, df.slice(5, 3)["a"]
+    df = Polars::DataFrame.new({"a" => 1..10})
+    assert_series 6..10, df.slice(5)["a"]
+    assert_series 6..8, df.slice(5, 3)["a"]
   end
 
   def test_head
     df = Polars::DataFrame.new({"a" => 1..20})
-    assert_series (1..5).to_a, df.head["a"]
+    assert_series 1..5, df.head["a"]
     assert_series [1, 2, 3], df.head(3)["a"]
   end
 
   def test_tail
     df = Polars::DataFrame.new({"a" => 1..20})
-    assert_series (16..20).to_a, df.tail["a"]
+    assert_series 16..20, df.tail["a"]
     assert_series [18, 19, 20], df.tail(3)["a"]
   end
 end
