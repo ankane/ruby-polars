@@ -109,6 +109,7 @@ fn init() -> RbResult<()> {
     class.define_method("_and", method!(RbExpr::_and, 1))?;
     class.define_method("_xor", method!(RbExpr::_xor, 1))?;
     class.define_method("_or", method!(RbExpr::_or, 1))?;
+    class.define_method("pow", method!(RbExpr::pow, 1))?;
     class.define_method("product", method!(RbExpr::product, 0))?;
     class.define_method("str_lengths", method!(RbExpr::str_lengths, 0))?;
     class.define_method("str_contains", method!(RbExpr::str_contains, 2))?;

@@ -97,9 +97,20 @@ module Polars
       Utils.wrap_s(_s.div(other._s))
     end
 
+    def **(power)
+      # if is_datelike
+      #   raise ArgumentError, "first cast to integer before raising datelike dtypes to a power"
+      # end
+      to_frame.select(Polars.col(name).pow(power)).to_series
+    end
+
     def estimated_size(unit = "b")
       sz = _s.estimated_size
       Utils.scale_bytes(sz, to: unit)
+    end
+
+    def sqrt
+      self ** 0.5
     end
 
     def to_frame

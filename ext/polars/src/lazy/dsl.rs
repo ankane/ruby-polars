@@ -202,6 +202,10 @@ impl RbExpr {
         self.clone().inner.or(expr.inner.clone()).into()
     }
 
+    pub fn pow(&self, exponent: &RbExpr) -> Self {
+        self.clone().inner.pow(exponent.inner.clone()).into()
+    }
+
     pub fn product(&self) -> Self {
         self.clone().inner.product().into()
     }

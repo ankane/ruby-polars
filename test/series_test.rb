@@ -146,6 +146,11 @@ class SeriesTest < Minitest::Test
     assert_in_delta s.estimated_size("kb"), s.estimated_size / 1024.0
   end
 
+  def test_sqrt
+    s = Polars::Series.new([1, 4, 9])
+    assert_series [1, 2, 3], s.sqrt
+  end
+
   def test_sum
     assert_equal 6, Polars::Series.new([1, 2, 3]).sum
     assert_nil Polars::Series.new([]).sum

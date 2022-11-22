@@ -204,6 +204,11 @@ module Polars
       head(n)
     end
 
+    def pow(exponent)
+      exponent = Utils.expr_to_lit_or_expr(exponent)
+      wrap_expr(_rbexpr.pow(exponent._rbexpr))
+    end
+
     def interpolate
       wrap_expr(_rbexpr.interpolate)
     end
