@@ -12,12 +12,7 @@ class DataFrameTest < Minitest::Test
 
   def test_new_hash
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
-    assert_equal 3, df.height
-    assert_equal 2, df.width
-    assert_equal [3, 2], df.shape
     assert_equal ["a", "b"], df.columns
-    assert df.include?("a")
-    refute df.include?("c")
   end
 
   def test_new_hash_symbol_keys
@@ -31,6 +26,31 @@ class DataFrameTest < Minitest::Test
     assert_frame expected, df
   end
 
+  def test_shape
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_equal [3, 2], df.shape
+  end
+
+  def test_height
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_equal 3, df.height
+  end
+
+  def test_width
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_equal 2, df.width
+  end
+
+  def test_columns
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_equal ["a", "b"], df.columns
+  end
+
+  def test_dtypes
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_equal [:i64, :str], df.dtypes
+  end
+
   def test_to_s
     df = Polars::DataFrame.new({"a" => [1, 2, 3]})
     assert_match "│ a   │", df.to_s
@@ -39,6 +59,12 @@ class DataFrameTest < Minitest::Test
   def test_inspect
     df = Polars::DataFrame.new({"a" => [1, 2, 3]})
     assert_match "│ a   │", df.inspect
+  end
+
+  def test_include
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert df.include?("a")
+    refute df.include?("c")
   end
 
   def test_head
