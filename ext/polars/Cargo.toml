@@ -1,0 +1,35 @@
+[package]
+name = "polars"
+version = "0.1.0"
+authors = ["Andrew Kane <andrew@ankane.org>"]
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+magnus = "0.4"
+serde_json = "1"
+
+[dependencies.polars]
+version = "0.25.1"
+features = [
+    "arange",
+    "csv-file",
+    "cum_agg",
+    "diagonal_concat",
+    "dtype-full",
+    "fmt",
+    "horizontal_concat",
+    "interpolate",
+    "ipc",
+    "json",
+    "lazy",
+    "lazy_regex",
+    "parquet",
+    "semi_anti_join",
+    "serde-lazy",
+    "strings",
+    "trigonometry",
+]

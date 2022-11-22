@@ -1,0 +1,5 @@
+[workspace]
+members = ["ext/polars"]
+
+[profile.release]
+strip = true
