@@ -487,7 +487,11 @@ impl RbSeries {
     }
 
     pub fn to_dummies(&self) -> RbResult<RbDataFrame> {
-        let df = self.series.borrow().to_dummies().map_err(RbPolarsErr::from)?;
+        let df = self
+            .series
+            .borrow()
+            .to_dummies()
+            .map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }
 
@@ -546,7 +550,11 @@ impl RbSeries {
     }
 
     pub fn round(&self, decimals: u32) -> RbResult<Self> {
-        let s = self.series.borrow().round(decimals).map_err(RbPolarsErr::from)?;
+        let s = self
+            .series
+            .borrow()
+            .round(decimals)
+            .map_err(RbPolarsErr::from)?;
         Ok(s.into())
     }
 }
