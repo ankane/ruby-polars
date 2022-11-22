@@ -171,14 +171,28 @@ class SeriesTest < Minitest::Test
     assert_in_delta 0.75, Polars::Series.new([true, true, true, false]).mean
   end
 
-  def test_max
-    assert_equal 3, Polars::Series.new([1, 2, 3]).max
-    assert_equal "c", Polars::Series.new(["a", "b", "c"]).max
+  def test_product
+    assert_equal 6, Polars::Series.new([1, 2, 3]).product
   end
 
   def test_min
     assert_equal 1, Polars::Series.new([1, 2, 3]).min
     assert_equal "a", Polars::Series.new(["a", "b", "c"]).min
+  end
+
+  def test_max
+    assert_equal 3, Polars::Series.new([1, 2, 3]).max
+    assert_equal "c", Polars::Series.new(["a", "b", "c"]).max
+  end
+
+  def test_std
+    assert_equal 1, Polars::Series.new([1, 2, 3]).std
+    assert_nil Polars::Series.new(["one", "two", "three"]).std
+  end
+
+  def test_var
+    assert_equal 1, Polars::Series.new([1, 2, 3]).var
+    assert_nil Polars::Series.new(["one", "two", "three"]).var
   end
 
   def test_alias
@@ -277,5 +291,14 @@ class SeriesTest < Minitest::Test
     s = Polars::Series.new([1, 2, 3])
     s.rechunk
     s.rechunk(in_place: true)
+  end
+
+  def test_is_numeric
+    assert Polars::Series.new([1]).is_numeric
+    assert Polars::Series.new([1.0]).is_numeric
+    refute Polars::Series.new(["one"]).is_numeric
+    assert Polars::Series.new([1]).numeric?
+    assert Polars::Series.new([1.0]).numeric?
+    refute Polars::Series.new(["one"]).numeric?
   end
 end

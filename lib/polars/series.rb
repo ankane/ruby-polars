@@ -137,12 +137,32 @@ module Polars
       _s.mean
     end
 
+    def product
+      to_frame.select(Polars.col(name).product).to_series[0]
+    end
+
     def min
       _s.min
     end
 
     def max
       _s.max
+    end
+
+    def std(ddof: 1)
+      if !is_numeric
+        nil
+      else
+        to_frame.select(Polars.col(name).std(ddof: ddof)).to_series[0]
+      end
+    end
+
+    def var(ddof: 1)
+      if !is_numeric
+        nil
+      else
+        to_frame.select(Polars.col(name).var(ddof: ddof)).to_series[0]
+      end
     end
 
     def alias(name)
@@ -227,6 +247,11 @@ module Polars
       opt_s = _s.rechunk(in_place)
       in_place ? self : Utils.wrap_s(opt_s)
     end
+
+    def is_numeric
+      [:i8, :i16, :i32, :i64, :u8, :u16, :u32, :u64, :f32, :f64].include?(dtype)
+    end
+    alias_method :numeric?, :is_numeric
 
     private
 

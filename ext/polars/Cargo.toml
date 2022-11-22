@@ -28,6 +28,7 @@ features = [
     "lazy",
     "lazy_regex",
     "parquet",
+    "product",
     "semi_anti_join",
     "serde-lazy",
     "strings",
