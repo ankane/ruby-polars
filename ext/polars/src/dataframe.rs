@@ -289,6 +289,10 @@ impl RbDataFrame {
         }
     }
 
+    pub fn clone(&self) -> Self {
+        RbDataFrame::new(self.df.borrow().clone())
+    }
+
     pub fn lazy(&self) -> RbLazyFrame {
         self.df.borrow().clone().lazy().into()
     }

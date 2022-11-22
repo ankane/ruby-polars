@@ -292,6 +292,11 @@ module Polars
 
     private
 
+    def initialize_copy(other)
+      super
+      self._df = _df._clone
+    end
+
     def hash_to_rbdf(data)
       RbDataFrame.read_hash(data)
     end
