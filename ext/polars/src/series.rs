@@ -122,6 +122,10 @@ impl RbSeries {
         Ok(RbSeries::new(s))
     }
 
+    pub fn estimated_size(&self) -> usize {
+        self.series.borrow().estimated_size()
+    }
+
     pub fn rechunk(&self, in_place: bool) -> Option<Self> {
         let series = self.series.borrow_mut().rechunk();
         if in_place {

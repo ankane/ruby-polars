@@ -141,6 +141,11 @@ class SeriesTest < Minitest::Test
     assert_series [2, 2, 2], a / b
   end
 
+  def test_estimated_size
+    s = Polars::Series.new(1..1000)
+    assert_in_delta s.estimated_size("kb"), s.estimated_size / 1024.0
+  end
+
   def test_sum
     assert_equal 6, Polars::Series.new([1, 2, 3]).sum
     assert_nil Polars::Series.new([]).sum

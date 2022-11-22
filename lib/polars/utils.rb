@@ -43,5 +43,20 @@ module Polars
     def self.format_path(path)
       File.expand_path(path)
     end
+
+    def self.scale_bytes(sz, to:)
+      scaling_factor = {
+          "b" => 1,
+          "k" => 1024,
+          "m" => 1024 ** 2,
+          "g" => 1024 ** 3,
+          "t" => 1024 ** 4,
+      }[to[0]]
+      if scaling_factor > 1
+        sz / scaling_factor.to_f
+      else
+        sz
+      end
+    end
   end
 end

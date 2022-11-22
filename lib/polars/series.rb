@@ -97,6 +97,11 @@ module Polars
       Utils.wrap_s(_s.div(other._s))
     end
 
+    def estimated_size(unit = "b")
+      sz = _s.estimated_size
+      Utils.scale_bytes(sz, to: unit)
+    end
+
     def to_frame
       Utils.wrap_df(RbDataFrame.new([_s]))
     end
