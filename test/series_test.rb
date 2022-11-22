@@ -397,6 +397,7 @@ class SeriesTest < Minitest::Test
   def test_round
     s = Polars::Series.new([1.12345, 2.56789, 3.901234])
     assert_series [1.12, 2.57, 3.9], s.round(2)
+    assert_series [1, 3, 4], s.round
   end
 
   def test_peak_max

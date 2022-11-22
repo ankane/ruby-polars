@@ -321,7 +321,8 @@ module Polars
       Utils.wrap_s(_s.ceil)
     end
 
-    def round(decimals)
+    # default to 0 like Ruby
+    def round(decimals = 0)
       Utils.wrap_s(_s.round(decimals))
     end
 
