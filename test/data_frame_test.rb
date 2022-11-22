@@ -73,6 +73,11 @@ class DataFrameTest < Minitest::Test
     assert_frame expected, df.reverse
   end
 
+  def test_rename
+    df = Polars::DataFrame.new({"a" => [1], "b" => [2]})
+    assert_equal ["c", "b"], df.rename({"a" => "c"}).columns
+  end
+
   def test_head
     df = Polars::DataFrame.new({"a" => 1..20})
     assert_series (1..5).to_a, df.head["a"]

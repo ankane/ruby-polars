@@ -120,4 +120,14 @@ impl RbLazyFrame {
         let ldf = self.ldf.clone();
         Ok(ldf.with_columns(rb_exprs_to_exprs(exprs)?).into())
     }
+
+    pub fn rename(&self, existing: Vec<String>, new: Vec<String>) -> RbLazyFrame {
+        let ldf = self.ldf.clone();
+        ldf.rename(existing, new).into()
+    }
+
+    pub fn reverse(&self) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.reverse().into()
+    }
 }

@@ -43,7 +43,7 @@ module Polars
     end
 
     def filter(predicate)
-      self.class._from_rbldf(
+      _from_rbldf(
         _ldf.filter(
           Utils.expr_to_lit_or_expr(predicate, str_to_lit: false)._rbexpr
         )
@@ -52,7 +52,7 @@ module Polars
 
     def select(exprs)
       exprs = Utils.selection_to_rbexpr_list(exprs)
-      self.class._from_rbldf(_ldf.select(exprs))
+      _from_rbldf(_ldf.select(exprs))
     end
 
     def groupby(by, maintain_order: false)
@@ -76,7 +76,7 @@ module Polars
       end
 
       if how == "cross"
-        return self.class._from_rbldf(
+        return _from_rbldf(
           _ldf.join(
             other._ldf, [], [], allow_parallel, force_parallel, how, suffix
           )
@@ -94,7 +94,7 @@ module Polars
         raise ArgumentError, "must specify `on` OR `left_on` and `right_on`"
       end
 
-      self.class._from_rbldf(
+      _from_rbldf(
         self._ldf.join(
           other._ldf,
           rbexprs_left,
@@ -129,11 +129,23 @@ module Polars
         end
       end
 
-      self.class._from_rbldf(_ldf.with_columns(rbexprs))
+      _from_rbldf(_ldf.with_columns(rbexprs))
     end
 
     def with_column(column)
       with_columns([column])
+    end
+
+    def rename(mapping)
+      existing = mapping.keys
+      _new = mapping.values
+      _from_rbldf(_ldf.rename(existing, _new))
+    end
+
+    private
+
+    def _from_rbldf(rb_ldf)
+      self.class._from_rbldf(rb_ldf)
     end
   end
 end

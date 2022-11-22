@@ -206,6 +206,10 @@ module Polars
       select(Polars.col("*").reverse)
     end
 
+    def rename(mapping)
+      lazy.rename(mapping).collect(no_optimization: true)
+    end
+
     def filter(predicate)
       lazy.filter(predicate).collect
     end

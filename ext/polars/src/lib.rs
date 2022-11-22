@@ -136,6 +136,8 @@ fn init() -> RbResult<()> {
     class.define_method("groupby", method!(RbLazyFrame::groupby, 2))?;
     class.define_method("join", method!(RbLazyFrame::join, 7))?;
     class.define_method("with_columns", method!(RbLazyFrame::with_columns, 1))?;
+    class.define_method("rename", method!(RbLazyFrame::rename, 2))?;
+    class.define_method("reverse", method!(RbLazyFrame::reverse, 0))?;
 
     let class = module.define_class("RbLazyGroupBy", Default::default())?;
     class.define_method("agg", method!(RbLazyGroupBy::agg, 1))?;
