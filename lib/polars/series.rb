@@ -173,6 +173,14 @@ module Polars
       _s.quantile(quantile, interpolation)
     end
 
+    def to_dummies
+      Utils.wrap_df(_s.to_dummies)
+    end
+
+    def value_counts(sort: false)
+      Utils.wrap_df(_s.value_counts(sort))
+    end
+
     def alias(name)
       s = dup
       s._s.rename(name)

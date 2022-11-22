@@ -211,6 +211,18 @@ class SeriesTest < Minitest::Test
     assert_equal "invalid quantile", error.message
   end
 
+  # TODO improve
+  def test_to_dummies
+    s = Polars::Series.new(["a", "b", "b"])
+    assert_equal [3, 2], s.to_dummies.shape
+  end
+
+  # TODO improve
+  def test_value_counts
+    s = Polars::Series.new(["a", "b", "b"])
+    assert_equal [2, 2], s.value_counts.shape
+  end
+
   def test_alias
     s = Polars::Series.new("a", [1, 2, 3])
     assert_equal "b", s.alias("b").name

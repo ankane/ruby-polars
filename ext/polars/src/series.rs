@@ -486,6 +486,11 @@ impl RbSeries {
         RbSeries::new(self.series.borrow().clone())
     }
 
+    pub fn to_dummies(&self) -> RbResult<RbDataFrame> {
+        let df = self.series.borrow().to_dummies().map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
     // dispatch dynamically in future?
 
     pub fn cumsum(&self, reverse: bool) -> Self {

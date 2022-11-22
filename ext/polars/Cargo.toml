@@ -32,5 +32,6 @@ features = [
     "semi_anti_join",
     "serde-lazy",
     "strings",
+    "to_dummies",
     "trigonometry",
 ]
