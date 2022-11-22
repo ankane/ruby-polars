@@ -462,6 +462,10 @@ impl RbSeries {
         }
     }
 
+    pub fn clone(&self) -> Self {
+        RbSeries::new(self.series.borrow().clone())
+    }
+
     // dispatch dynamically in future?
 
     pub fn cumsum(&self, reverse: bool) -> Self {

@@ -196,6 +196,7 @@ fn init() -> RbResult<()> {
     class.define_method("len", method!(RbSeries::len, 0))?;
     class.define_method("to_a", method!(RbSeries::to_a, 0))?;
     class.define_method("median", method!(RbSeries::median, 0))?;
+    class.define_method("_clone", method!(RbSeries::clone, 0))?;
     // rest
     class.define_method("cumsum", method!(RbSeries::cumsum, 1))?;
     class.define_method("cummax", method!(RbSeries::cummax, 1))?;

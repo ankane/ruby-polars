@@ -94,6 +94,16 @@ class SeriesTest < Minitest::Test
     assert_nil s.inner_dtype
   end
 
+  def test_name
+    s = Polars::Series.new("a", [1, 2, 3])
+    assert_equal "a", s.name
+  end
+
+  def test_shape
+    s = Polars::Series.new([1, 2, 3])
+    assert_equal [3], s.shape
+  end
+
   def test_to_s
     s = Polars::Series.new("a", [1, 2, 3])
     assert_match "Series: 'a' [i64]", s.to_s
@@ -102,17 +112,6 @@ class SeriesTest < Minitest::Test
   def test_inspect
     s = Polars::Series.new("a", [1, 2, 3])
     assert_match "Series: 'a' [i64]", s.inspect
-  end
-
-  def test_shape
-    s = Polars::Series.new([1, 2, 3])
-    assert_equal [3], s.shape
-  end
-
-  def test_rechunk
-    s = Polars::Series.new([1, 2, 3])
-    s.rechunk
-    s.rechunk(in_place: true)
   end
 
   def test_bitand
@@ -133,38 +132,18 @@ class SeriesTest < Minitest::Test
     assert_series [false, true, true, false], a ^ b
   end
 
-  def test_cumsum
-    s = Polars::Series.new([1, 2, 3])
-    assert_series [1, 3, 6], s.cumsum
-    assert_series [6, 5, 3], s.cumsum(reverse: true)
+  def test_math
+    a = Polars::Series.new([10, 20, 30])
+    b = Polars::Series.new([5, 10, 15])
+    assert_series [15, 30, 45], a + b
+    assert_series [5, 10, 15], a - b
+    assert_series [50, 200, 450], a * b
+    assert_series [2, 2, 2], a / b
   end
 
-  def test_cummin
-    s = Polars::Series.new([1, 2, 3])
-    assert_series [1, 1, 1], s.cummin
-    assert_series [1, 2, 3], s.cummin(reverse: true)
-  end
-
-  def test_cummax
-    s = Polars::Series.new([1, 2, 3])
-    assert_series [1, 2, 3], s.cummax
-    assert_series [3, 3, 3], s.cummax(reverse: true)
-  end
-
-  def test_chunk_lengths
-    s = Polars::Series.new([1, 2, 3])
-    assert_equal [3], s.chunk_lengths
-  end
-
-  def test_name
-    s = Polars::Series.new("a", [1, 2, 3])
-    assert_equal "a", s.name
-  end
-
-  def test_rename
-    s = Polars::Series.new("a", [1, 2, 3])
-    s.rename("b")
-    assert_equal "b", s.name
+  def test_sum
+    assert_equal 6, Polars::Series.new([1, 2, 3]).sum
+    assert_nil Polars::Series.new([]).sum
   end
 
   def test_mean
@@ -182,14 +161,45 @@ class SeriesTest < Minitest::Test
     assert_equal "a", Polars::Series.new(["a", "b", "c"]).min
   end
 
-  def test_sum
-    assert_equal 6, Polars::Series.new([1, 2, 3]).sum
-    assert_nil Polars::Series.new([]).sum
+  def test_alias
+    s = Polars::Series.new("a", [1, 2, 3])
+    assert_equal "b", s.alias("b").name
+  end
+
+  def test_rename
+    s = Polars::Series.new("a", [1, 2, 3])
+    assert_equal "b", s.rename("b").name
+    assert_equal "a", s.name
+    s.rename("c", in_place: true)
+    assert_equal "c", s.name
+  end
+
+  def test_chunk_lengths
+    s = Polars::Series.new([1, 2, 3])
+    assert_equal [3], s.chunk_lengths
   end
 
   def test_n_chunks
     s = Polars::Series.new([1, 2, 3])
     assert_equal 1, s.n_chunks
+  end
+
+  def test_cumsum
+    s = Polars::Series.new([1, 2, 3])
+    assert_series [1, 3, 6], s.cumsum
+    assert_series [6, 5, 3], s.cumsum(reverse: true)
+  end
+
+  def test_cummin
+    s = Polars::Series.new([1, 2, 3])
+    assert_series [1, 1, 1], s.cummin
+    assert_series [1, 2, 3], s.cummin(reverse: true)
+  end
+
+  def test_cummax
+    s = Polars::Series.new([1, 2, 3])
+    assert_series [1, 2, 3], s.cummax
+    assert_series [3, 3, 3], s.cummax(reverse: true)
   end
 
   def test_limit
@@ -216,15 +226,6 @@ class SeriesTest < Minitest::Test
     assert_series [1, 3], a.filter(b)
   end
 
-  def test_math
-    a = Polars::Series.new([10, 20, 30])
-    b = Polars::Series.new([5, 10, 15])
-    assert_series [15, 30, 45], a + b
-    assert_series [5, 10, 15], a - b
-    assert_series [50, 200, 450], a * b
-    assert_series [2, 2, 2], a / b
-  end
-
   def test_head
     s = Polars::Series.new(1..20)
     assert_series (1..10).to_a, s.head
@@ -242,5 +243,19 @@ class SeriesTest < Minitest::Test
     assert_series [1, 2, 3], s.sort
     assert_series [3, 2, 1], s.sort(reverse: true)
     assert_series [2, 3, 1], s
+  end
+
+  def test_to_a
+    assert_equal [1, 2, 3], Polars::Series.new(1..3).to_a
+  end
+
+  def test_len
+    assert_equal 10, Polars::Series.new(1..10).len
+  end
+
+  def test_rechunk
+    s = Polars::Series.new([1, 2, 3])
+    s.rechunk
+    s.rechunk(in_place: true)
   end
 end

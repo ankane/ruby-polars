@@ -202,6 +202,11 @@ module Polars
 
     private
 
+    def initialize_copy(other)
+      super
+      self._s = _s._clone
+    end
+
     def sequence_to_rbseries(name, values, dtype: nil, strict: true, dtype_if_empty: nil)
       ruby_dtype = nil
 
