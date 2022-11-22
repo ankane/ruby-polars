@@ -368,4 +368,19 @@ class SeriesTest < Minitest::Test
     assert Polars::Series.new([1.0]).numeric?
     refute Polars::Series.new(["one"]).numeric?
   end
+
+  def test_is_float
+    assert Polars::Series.new([1.5]).is_float
+    refute Polars::Series.new([1]).is_float
+  end
+
+  def test_is_bool
+    assert Polars::Series.new([true]).is_bool
+    refute Polars::Series.new([1]).is_bool
+  end
+
+  def test_is_utf8
+    assert Polars::Series.new(["one"]).is_utf8
+    refute Polars::Series.new([1]).is_utf8
+  end
 end

@@ -298,6 +298,21 @@ module Polars
     end
     alias_method :numeric?, :is_numeric
 
+    def is_float
+      [:f32, :f64].include?(dtype)
+    end
+    alias_method :float?, :is_float
+
+    def is_bool
+      dtype == :bool
+    end
+    alias_method :bool?, :is_bool
+
+    def is_utf8
+      dtype == :str
+    end
+    alias_method :utf8?, :is_utf8
+
     private
 
     def initialize_copy(other)
