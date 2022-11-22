@@ -212,6 +212,7 @@ fn init() -> RbResult<()> {
     class.define_method("cumsum", method!(RbSeries::cumsum, 1))?;
     class.define_method("cummax", method!(RbSeries::cummax, 1))?;
     class.define_method("cummin", method!(RbSeries::cummin, 1))?;
+    class.define_method("cumprod", method!(RbSeries::cumprod, 1))?;
     class.define_method("slice", method!(RbSeries::slice, 2))?;
 
     let class = module.define_class("RbWhen", Default::default())?;

@@ -505,6 +505,10 @@ impl RbSeries {
         self.series.borrow().cummin(reverse).into()
     }
 
+    pub fn cumprod(&self, reverse: bool) -> Self {
+        self.series.borrow().cumprod(reverse).into()
+    }
+
     pub fn slice(&self, offset: i64, length: usize) -> Self {
         let series = self.series.borrow().slice(offset, length);
         series.into()

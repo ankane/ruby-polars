@@ -216,8 +216,12 @@ module Polars
       Utils.wrap_s(_s.cummax(reverse))
     end
 
+    def cumprod(reverse: false)
+      Utils.wrap_s(_s.cumprod(reverse))
+    end
+
     def limit(n = 10)
-      to_frame().select(Utils.col(name).limit(n)).to_series
+      to_frame.select(Utils.col(name).limit(n)).to_series
     end
 
     def slice(offset, length = nil)

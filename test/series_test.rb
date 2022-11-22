@@ -264,6 +264,12 @@ class SeriesTest < Minitest::Test
     assert_series [3, 3, 3], s.cummax(reverse: true)
   end
 
+  def test_cumprod
+    s = Polars::Series.new([1, 2, 3])
+    assert_series [1, 2, 6], s.cumprod
+    assert_series [6, 6, 3], s.cumprod(reverse: true)
+  end
+
   def test_limit
     s = Polars::Series.new([1, 2, 3])
     assert_series [1, 2], s.limit(2)
