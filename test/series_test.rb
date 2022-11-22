@@ -323,6 +323,23 @@ class SeriesTest < Minitest::Test
     assert_equal 2, s.arg_max
   end
 
+  def test_null_count
+    s = Polars::Series.new([1, nil, nil, 4, nil])
+    assert_equal 3, s.null_count
+  end
+
+  def test_has_validity
+    refute Polars::Series.new([1, 2]).has_validity
+    assert Polars::Series.new([1, nil]).has_validity
+  end
+
+  def test_is_empty
+    assert Polars::Series.new([]).is_empty
+    refute Polars::Series.new([1]).is_empty
+    assert Polars::Series.new([]).empty?
+    refute Polars::Series.new([1]).empty?
+  end
+
   def test_to_a
     assert_equal [1, 2, 3], Polars::Series.new(1..3).to_a
   end

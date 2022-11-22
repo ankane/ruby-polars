@@ -263,6 +263,19 @@ module Polars
       _s.arg_max
     end
 
+    def null_count
+      _s.null_count
+    end
+
+    def has_validity
+      _s.has_validity
+    end
+
+    def is_empty
+      len == 0
+    end
+    alias_method :empty?, :is_empty
+
     def to_a
       _s.to_a
     end
