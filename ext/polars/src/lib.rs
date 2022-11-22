@@ -116,6 +116,8 @@ fn init() -> RbResult<()> {
     class.define_method("prefix", method!(RbExpr::prefix, 1))?;
     class.define_method("suffix", method!(RbExpr::suffix, 1))?;
     class.define_method("interpolate", method!(RbExpr::interpolate, 0))?;
+    class.define_method("any", method!(RbExpr::any, 0))?;
+    class.define_method("all", method!(RbExpr::all, 0))?;
 
     // maybe add to different class
     class.define_singleton_method("col", function!(crate::lazy::dsl::col, 1))?;
@@ -155,6 +157,7 @@ fn init() -> RbResult<()> {
     class.define_method("is_sorted_reverse_flag", method!(RbSeries::is_sorted_reverse_flag, 0))?;
     class.define_method("estimated_size", method!(RbSeries::estimated_size, 0))?;
     class.define_method("rechunk", method!(RbSeries::rechunk, 1))?;
+    class.define_method("get_idx", method!(RbSeries::get_idx, 1))?;
     class.define_method("bitand", method!(RbSeries::bitand, 1))?;
     class.define_method("bitor", method!(RbSeries::bitor, 1))?;
     class.define_method("bitxor", method!(RbSeries::bitxor, 1))?;

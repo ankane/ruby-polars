@@ -53,6 +53,14 @@ module Polars
       wrap_expr(_rbexpr.gt(_to_expr(other)._rbexpr))
     end
 
+    def any
+      wrap_expr(_rbexpr.any)
+    end
+
+    def all
+      wrap_expr(_rbexpr.all)
+    end
+
     def alias(name)
       wrap_expr(_rbexpr._alias(name))
     end

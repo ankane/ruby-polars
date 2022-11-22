@@ -136,6 +136,10 @@ impl RbSeries {
         }
     }
 
+    pub fn get_idx(&self, idx: usize) -> Value {
+        wrap(self.series.borrow().get(idx))
+    }
+
     pub fn bitand(&self, other: &RbSeries) -> RbResult<Self> {
         let out = self
             .series

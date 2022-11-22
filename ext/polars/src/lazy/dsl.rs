@@ -240,6 +240,14 @@ impl RbExpr {
     pub fn interpolate(&self) -> RbExpr {
         self.inner.clone().interpolate().into()
     }
+
+    pub fn any(&self) -> Self {
+        self.inner.clone().any().into()
+    }
+
+    pub fn all(&self) -> Self {
+        self.inner.clone().all().into()
+    }
 }
 
 pub fn col(name: String) -> RbExpr {

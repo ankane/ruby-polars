@@ -151,6 +151,16 @@ class SeriesTest < Minitest::Test
     assert_series [1, 2, 3], s.sqrt
   end
 
+  def test_any
+    assert Polars::Series.new([false, false, true]).any
+    refute Polars::Series.new([false, false, false]).any
+  end
+
+  def test_all
+    assert Polars::Series.new([true, true, true]).all
+    refute Polars::Series.new([true, true, false]).all
+  end
+
   def test_sum
     assert_equal 6, Polars::Series.new([1, 2, 3]).sum
     assert_nil Polars::Series.new([]).sum

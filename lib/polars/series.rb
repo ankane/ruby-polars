@@ -104,6 +104,10 @@ module Polars
       to_frame.select(Polars.col(name).pow(power)).to_series
     end
 
+    def [](item)
+      _s.get_idx(item)
+    end
+
     def estimated_size(unit = "b")
       sz = _s.estimated_size
       Utils.scale_bytes(sz, to: unit)
@@ -111,6 +115,14 @@ module Polars
 
     def sqrt
       self ** 0.5
+    end
+
+    def any
+      to_frame.select(Polars.col(name).any).to_series[0]
+    end
+
+    def all
+      to_frame.select(Polars.col(name).all).to_series[0]
     end
 
     def to_frame
