@@ -67,6 +67,12 @@ class DataFrameTest < Minitest::Test
     refute df.include?("c")
   end
 
+  def test_reverse
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    expected = Polars::DataFrame.new({"a" => [3, 2, 1], "b" => ["three", "two", "one"]})
+    assert_frame expected, df.reverse
+  end
+
   def test_head
     df = Polars::DataFrame.new({"a" => 1..20})
     assert_series (1..5).to_a, df.head["a"]

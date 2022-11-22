@@ -202,6 +202,10 @@ module Polars
       )
     end
 
+    def reverse
+      select(Polars.col("*").reverse)
+    end
+
     def filter(predicate)
       lazy.filter(predicate).collect
     end
