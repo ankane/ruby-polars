@@ -313,6 +313,10 @@ module Polars
     end
     alias_method :utf8?, :is_utf8
 
+    def set_sorted(reverse: false)
+      Utils.wrap_s(_s.set_sorted(reverse))
+    end
+
     private
 
     def initialize_copy(other)

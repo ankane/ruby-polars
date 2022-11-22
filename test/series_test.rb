@@ -383,4 +383,10 @@ class SeriesTest < Minitest::Test
     assert Polars::Series.new(["one"]).is_utf8
     refute Polars::Series.new([1]).is_utf8
   end
+
+  def test_set_sorted
+    s = Polars::Series.new([1, 2, 3])
+    refute s.flags["SORTED_ASC"]
+    assert s.set_sorted.flags["SORTED_ASC"]
+  end
 end
