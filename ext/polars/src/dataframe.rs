@@ -273,6 +273,14 @@ impl RbDataFrame {
         Ok(RbDataFrame::new(df))
     }
 
+    pub fn slice(&self, offset: usize, length: Option<usize>) -> Self {
+        let df = self
+            .df
+            .borrow()
+            .slice(offset as i64, length.unwrap_or_else(|| self.df.borrow().height()));
+        df.into()
+    }
+
     pub fn head(&self, length: Option<usize>) -> Self {
         self.df.borrow().head(length).into()
     }

@@ -78,6 +78,12 @@ class DataFrameTest < Minitest::Test
     assert_equal ["c", "b"], df.rename({"a" => "c"}).columns
   end
 
+  def test_slice
+    df = Polars::DataFrame.new({"a" => a})
+    assert_series (6..10).to_a, df.slice(5)["a"]
+    assert_series (6..8).to_a, df.slice(5, 3)["a"]
+  end
+
   def test_head
     df = Polars::DataFrame.new({"a" => 1..20})
     assert_series (1..5).to_a, df.head["a"]

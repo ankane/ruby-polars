@@ -222,6 +222,13 @@ module Polars
       _df.frame_equal(other._df, null_equal)
     end
 
+    def slice(offset, length = nil)
+      if !length.nil? && length < 0
+        length = height - offset + length
+      end
+      _from_rbdf(_df.slice(offset, length))
+    end
+
     def limit(n = 5)
       head(n)
     end

@@ -56,6 +56,7 @@ fn init() -> RbResult<()> {
     class.define_method("select_at_idx", method!(RbDataFrame::select_at_idx, 1))?;
     class.define_method("column", method!(RbDataFrame::column, 1))?;
     class.define_method("sort", method!(RbDataFrame::sort, 3))?;
+    class.define_method("slice", method!(RbDataFrame::slice, 2))?;
     class.define_method("head", method!(RbDataFrame::head, 1))?;
     class.define_method("tail", method!(RbDataFrame::tail, 1))?;
     class.define_method("frame_equal", method!(RbDataFrame::frame_equal, 2))?;
