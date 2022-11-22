@@ -491,6 +491,32 @@ impl RbSeries {
         Ok(df.into())
     }
 
+    pub fn peak_max(&self) -> Self {
+        self.series.borrow().peak_max().into_series().into()
+    }
+
+    pub fn peak_min(&self) -> Self {
+        self.series.borrow().peak_min().into_series().into()
+    }
+
+    pub fn n_unique(&self) -> RbResult<usize> {
+        let n = self.series.borrow().n_unique().map_err(RbPolarsErr::from)?;
+        Ok(n)
+    }
+
+    pub fn floor(&self) -> RbResult<Self> {
+        let s = self.series.borrow().floor().map_err(RbPolarsErr::from)?;
+        Ok(s.into())
+    }
+
+    pub fn shrink_to_fit(&self) {
+        self.series.borrow_mut().shrink_to_fit();
+    }
+
+    pub fn dot(&self, other: &RbSeries) -> Option<f64> {
+        self.series.borrow().dot(&other.series.borrow())
+    }
+
     // dispatch dynamically in future?
 
     pub fn cumsum(&self, reverse: bool) -> Self {

@@ -208,6 +208,12 @@ fn init() -> RbResult<()> {
     class.define_method("quantile", method!(RbSeries::quantile, 2))?;
     class.define_method("_clone", method!(RbSeries::clone, 0))?;
     class.define_method("to_dummies", method!(RbSeries::to_dummies, 0))?;
+    class.define_method("peak_max", method!(RbSeries::peak_max, 0))?;
+    class.define_method("peak_min", method!(RbSeries::peak_min, 0))?;
+    class.define_method("n_unique", method!(RbSeries::n_unique, 0))?;
+    class.define_method("floor", method!(RbSeries::floor, 0))?;
+    class.define_method("shrink_to_fit", method!(RbSeries::shrink_to_fit, 0))?;
+    class.define_method("dot", method!(RbSeries::dot, 1))?;
     // rest
     class.define_method("cumsum", method!(RbSeries::cumsum, 1))?;
     class.define_method("cummax", method!(RbSeries::cummax, 1))?;

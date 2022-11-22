@@ -384,6 +384,20 @@ class SeriesTest < Minitest::Test
     refute Polars::Series.new([1]).is_utf8
   end
 
+  def test_peak_max
+    s = Polars::Series.new([1, 2, 3, 4, 5])
+    assert_series [false, false, false, false, true], s.peak_max
+  end
+
+  def test_peak_min
+    s = Polars::Series.new([4, 1, 3, 2, 5])
+    assert_series [false, true, false, true, false], s.peak_min
+  end
+
+  def test_n_unique
+    assert_equal 3, Polars::Series.new([1, 1, 2, 2, 5]).n_unique
+  end
+
   def test_set_sorted
     s = Polars::Series.new([1, 2, 3])
     refute s.flags["SORTED_ASC"]

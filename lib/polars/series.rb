@@ -313,6 +313,18 @@ module Polars
     end
     alias_method :utf8?, :is_utf8
 
+    def peak_max
+      Utils.wrap_s(_s.peak_max)
+    end
+
+    def peak_min
+      Utils.wrap_s(_s.peak_min)
+    end
+
+    def n_unique
+      _s.n_unique
+    end
+
     def set_sorted(reverse: false)
       Utils.wrap_s(_s.set_sorted(reverse))
     end
