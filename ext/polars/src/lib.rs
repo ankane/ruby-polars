@@ -154,7 +154,10 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("new_opt_f64", function!(RbSeries::new_opt_f64, 3))?;
     class.define_singleton_method("new_str", function!(RbSeries::new_str, 3))?;
     class.define_method("is_sorted_flag", method!(RbSeries::is_sorted_flag, 0))?;
-    class.define_method("is_sorted_reverse_flag", method!(RbSeries::is_sorted_reverse_flag, 0))?;
+    class.define_method(
+        "is_sorted_reverse_flag",
+        method!(RbSeries::is_sorted_reverse_flag, 0),
+    )?;
     class.define_method("estimated_size", method!(RbSeries::estimated_size, 0))?;
     class.define_method("rechunk", method!(RbSeries::rechunk, 1))?;
     class.define_method("get_idx", method!(RbSeries::get_idx, 1))?;
