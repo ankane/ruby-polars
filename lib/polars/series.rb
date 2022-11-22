@@ -276,12 +276,16 @@ module Polars
     end
     alias_method :empty?, :is_empty
 
-    def to_a
-      _s.to_a
+    def series_equal(other, null_equal: false, strict: false)
+      _s.series_equal(other._s, null_equal, strict)
     end
 
     def len
       _s.len
+    end
+
+    def to_a
+      _s.to_a
     end
 
     def rechunk(in_place: false)

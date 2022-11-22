@@ -340,12 +340,18 @@ class SeriesTest < Minitest::Test
     refute Polars::Series.new([1]).empty?
   end
 
-  def test_to_a
-    assert_equal [1, 2, 3], Polars::Series.new(1..3).to_a
+  def test_series_equal
+    a = Polars::Series.new([1, 2])
+    b = Polars::Series.new([1, 2])
+    assert a.series_equal(b)
   end
 
   def test_len
     assert_equal 10, Polars::Series.new(1..10).len
+  end
+
+  def test_to_a
+    assert_equal [1, 2, 3], Polars::Series.new(1..3).to_a
   end
 
   def test_rechunk
