@@ -558,3 +558,7 @@ impl RbSeries {
         Ok(s.into())
     }
 }
+
+pub fn to_rbseries_collection(s: Vec<Series>) -> Vec<RbSeries> {
+    s.into_iter().map(|v| RbSeries::new(v)).collect()
+}

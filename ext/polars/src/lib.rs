@@ -48,6 +48,7 @@ fn init() -> RbResult<()> {
     class.define_method("write_parquet", method!(RbDataFrame::write_parquet, 5))?;
     class.define_method("rechunk", method!(RbDataFrame::rechunk, 0))?;
     class.define_method("to_s", method!(RbDataFrame::to_s, 0))?;
+    class.define_method("get_columns", method!(RbDataFrame::get_columns, 0))?;
     class.define_method("columns", method!(RbDataFrame::columns, 0))?;
     class.define_method(
         "set_column_names",

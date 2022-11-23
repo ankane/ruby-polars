@@ -104,6 +104,14 @@ module Polars
       Utils.wrap_s(_df.column(name))
     end
 
+    def to_h(as_series: true)
+      if as_series
+        get_columns.to_h { |s| [s.name, s] }
+      else
+        get_columns.to_h { |s| [s.name, s.to_a] }
+      end
+    end
+
     def to_series(index = 0)
       if index < 0
         index = columns.length + index
@@ -270,6 +278,14 @@ module Polars
       lazy
         .with_column(column)
         .collect(no_optimization: true, string_cache: false)
+    end
+
+    def get_columns
+      _df.get_columns.map { |s| Utils.wrap_s(s) }
+    end
+
+    def get_column(name)
+      self[name]
     end
 
     def lazy

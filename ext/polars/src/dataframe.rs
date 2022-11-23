@@ -10,6 +10,7 @@ use std::path::PathBuf;
 use crate::conversion::parse_parquet_compression;
 use crate::file::{get_file_like, get_mmap_bytes_reader};
 use crate::{series, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
+use crate::series::to_rbseries_collection;
 
 #[magnus::wrap(class = "Polars::RbDataFrame")]
 pub struct RbDataFrame {
@@ -211,6 +212,11 @@ impl RbDataFrame {
 
     pub fn to_s(&self) -> String {
         format!("{}", self.df.borrow())
+    }
+
+    pub fn get_columns(&self) -> Vec<RbSeries> {
+        let cols = self.df.borrow().get_columns().clone();
+        to_rbseries_collection(cols)
     }
 
     pub fn columns(&self) -> Vec<String> {

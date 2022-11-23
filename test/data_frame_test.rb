@@ -79,6 +79,16 @@ class DataFrameTest < Minitest::Test
     refute df.include?("c")
   end
 
+  def test_to_h
+    data = {"a" => [1, 2, 3], "b" => ["one", "two", "three"]}
+    df = Polars::DataFrame.new(data)
+    assert_equal data, df.to_h(as_series: false)
+  end
+
+  def test_to_series
+    # TODO
+  end
+
   def test_reverse
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     expected = Polars::DataFrame.new({"a" => [3, 2, 1], "b" => ["three", "two", "one"]})
@@ -90,10 +100,22 @@ class DataFrameTest < Minitest::Test
     assert_equal ["c", "b"], df.rename({"a" => "c"}).columns
   end
 
+  def test_filter
+  end
+
+  def test_sort
+  end
+
+  def test_frame_equal
+  end
+
   def test_slice
     df = Polars::DataFrame.new({"a" => 1..10})
     assert_series 6..10, df.slice(5)["a"]
     assert_series 6..8, df.slice(5, 3)["a"]
+  end
+
+  def test_limit
   end
 
   def test_head
@@ -106,5 +128,24 @@ class DataFrameTest < Minitest::Test
     df = Polars::DataFrame.new({"a" => 1..20})
     assert_series 16..20, df.tail["a"]
     assert_series [18, 19, 20], df.tail(3)["a"]
+  end
+
+  def test_groupby
+  end
+
+  def test_join
+  end
+
+  def test_with_column
+  end
+
+  def test_get_columns
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_kind_of Array, df.get_columns
+  end
+
+  def test_get_column
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_series [1, 2, 3], df.get_column("a")
   end
 end
