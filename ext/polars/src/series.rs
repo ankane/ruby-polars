@@ -490,12 +490,15 @@ impl RbSeries {
         }
     }
 
-    pub fn quantile(&self, quantile: f64, interpolation: String) -> RbResult<Value> {
-        let interpolation = wrap_quantile_interpol_options(&interpolation)?;
+    pub fn quantile(
+        &self,
+        quantile: f64,
+        interpolation: Wrap<QuantileInterpolOptions>,
+    ) -> RbResult<Value> {
         Ok(Wrap(
             self.series
                 .borrow()
-                .quantile_as_series(quantile, interpolation)
+                .quantile_as_series(quantile, interpolation.0)
                 .map_err(|_| RbValueError::new_err("invalid quantile".into()))?
                 .get(0),
         )

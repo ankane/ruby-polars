@@ -1,4 +1,4 @@
-use magnus::{Value, QNIL};
+use magnus::{TryConvert, Value, QNIL};
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
 use polars::frame::DataFrame;
@@ -186,19 +186,21 @@ pub fn wrap_null_strategy(ob: &str) -> RbResult<NullStrategy> {
     Ok(parsed)
 }
 
-pub fn wrap_quantile_interpol_options(ob: &str) -> RbResult<QuantileInterpolOptions> {
-    let parsed = match ob {
-        "lower" => QuantileInterpolOptions::Lower,
-        "higher" => QuantileInterpolOptions::Higher,
-        "nearest" => QuantileInterpolOptions::Nearest,
-        "linear" => QuantileInterpolOptions::Linear,
-        "midpoint" => QuantileInterpolOptions::Midpoint,
-        v => {
-            return Err(RbValueError::new_err(format!(
-                "interpolation must be one of {{'lower', 'higher', 'nearest', 'linear', 'midpoint'}}, got {}",
-                v
-            )))
-        }
-    };
-    Ok(parsed)
+impl TryConvert for Wrap<QuantileInterpolOptions> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "lower" => QuantileInterpolOptions::Lower,
+            "higher" => QuantileInterpolOptions::Higher,
+            "nearest" => QuantileInterpolOptions::Nearest,
+            "linear" => QuantileInterpolOptions::Linear,
+            "midpoint" => QuantileInterpolOptions::Midpoint,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "interpolation must be one of {{'lower', 'higher', 'nearest', 'linear', 'midpoint'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
 }

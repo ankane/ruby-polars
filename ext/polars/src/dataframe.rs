@@ -503,12 +503,15 @@ impl RbDataFrame {
         Ok(s.map(|s| s.into()))
     }
 
-    pub fn quantile(&self, quantile: f64, interpolation: String) -> RbResult<Self> {
-        let interpolation = wrap_quantile_interpol_options(&interpolation)?;
+    pub fn quantile(
+        &self,
+        quantile: f64,
+        interpolation: Wrap<QuantileInterpolOptions>,
+    ) -> RbResult<Self> {
         let df = self
             .df
             .borrow()
-            .quantile(quantile, interpolation)
+            .quantile(quantile, interpolation.0)
             .map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }

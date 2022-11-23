@@ -313,10 +313,9 @@ impl RbLazyFrame {
         ldf.median().into()
     }
 
-    pub fn quantile(&self, quantile: f64, interpolation: String) -> RbResult<Self> {
-        let interpolation = wrap_quantile_interpol_options(&interpolation)?;
+    pub fn quantile(&self, quantile: f64, interpolation: Wrap<QuantileInterpolOptions>) -> Self {
         let ldf = self.ldf.clone();
-        Ok(ldf.quantile(quantile, interpolation).into())
+        ldf.quantile(quantile, interpolation.0).into()
     }
 
     pub fn explode(&self, column: RArray) -> RbResult<Self> {

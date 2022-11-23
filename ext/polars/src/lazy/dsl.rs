@@ -160,10 +160,13 @@ impl RbExpr {
         self.clone().inner.list().into()
     }
 
-    pub fn quantile(&self, quantile: f64, interpolation: String) -> RbResult<Self> {
-        let interpolation = wrap_quantile_interpol_options(&interpolation)?;
-        Ok(self.clone().inner.quantile(quantile, interpolation).into())
+    pub fn quantile(&self, quantile: f64, interpolation: Wrap<QuantileInterpolOptions>) -> Self {
+        self.clone()
+            .inner
+            .quantile(quantile, interpolation.0)
+            .into()
     }
+
     pub fn agg_groups(&self) -> Self {
         self.clone().inner.agg_groups().into()
     }
