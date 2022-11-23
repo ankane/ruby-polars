@@ -75,23 +75,25 @@ pub fn parse_fill_null_strategy(
     Ok(parsed)
 }
 
-pub fn wrap_join_type(ob: &str) -> RbResult<JoinType> {
-    let parsed = match ob {
-        "inner" => JoinType::Inner,
-        "left" => JoinType::Left,
-        "outer" => JoinType::Outer,
-        "semi" => JoinType::Semi,
-        "anti" => JoinType::Anti,
-        // #[cfg(feature = "cross_join")]
-        // "cross" => JoinType::Cross,
-        v => {
-            return Err(RbValueError::new_err(format!(
-                "how must be one of {{'inner', 'left', 'outer', 'semi', 'anti', 'cross'}}, got {}",
-                v
-            )))
-        }
-    };
-    Ok(parsed)
+impl TryConvert for Wrap<JoinType> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "inner" => JoinType::Inner,
+            "left" => JoinType::Left,
+            "outer" => JoinType::Outer,
+            "semi" => JoinType::Semi,
+            "anti" => JoinType::Anti,
+            // #[cfg(feature = "cross_join")]
+            // "cross" => JoinType::Cross,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "how must be one of {{'inner', 'left', 'outer', 'semi', 'anti', 'cross'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
 }
 
 pub fn get_df(obj: Value) -> RbResult<DataFrame> {

@@ -225,11 +225,9 @@ impl RbLazyFrame {
         right_on: RArray,
         allow_parallel: bool,
         force_parallel: bool,
-        how: String,
+        how: Wrap<JoinType>,
         suffix: String,
     ) -> RbResult<Self> {
-        let how = wrap_join_type(&how)?;
-
         let ldf = self.ldf.clone();
         let other = other.ldf.clone();
         let left_on = rb_exprs_to_exprs(left_on)?;
@@ -242,7 +240,7 @@ impl RbLazyFrame {
             .right_on(right_on)
             .allow_parallel(allow_parallel)
             .force_parallel(force_parallel)
-            .how(how)
+            .how(how.0)
             .suffix(suffix)
             .finish()
             .into())
