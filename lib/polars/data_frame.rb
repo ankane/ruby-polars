@@ -334,6 +334,16 @@ module Polars
         .collect(no_optimization: true, string_cache: false)
     end
 
+    def n_chunks(strategy: "first")
+      if strategy == "first"
+        _df.n_chunks
+      elsif strategy == "all"
+        get_columns.map(&:n_chunks)
+      else
+        raise ArgumentError, "Strategy: '{strategy}' not understood. Choose one of {{'first',  'all'}}"
+      end
+    end
+
     def rechunk
       _from_rbdf(_df.rechunk)
     end

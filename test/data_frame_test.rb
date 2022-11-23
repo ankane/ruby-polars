@@ -185,6 +185,12 @@ class DataFrameTest < Minitest::Test
   def test_with_columns
   end
 
+  def test_n_chunks
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_equal 1, df.n_chunks
+    assert_equal [1, 1], df.n_chunks(strategy: "all")
+  end
+
   def test_rechunk
   end
 

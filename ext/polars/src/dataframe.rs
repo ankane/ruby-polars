@@ -248,6 +248,11 @@ impl RbDataFrame {
             .collect()
     }
 
+    pub fn n_chunks(&self) -> RbResult<usize> {
+        let n = self.df.borrow().n_chunks().map_err(RbPolarsErr::from)?;
+        Ok(n)
+    }
+
     pub fn shape(&self) -> (usize, usize) {
         self.df.borrow().shape()
     }

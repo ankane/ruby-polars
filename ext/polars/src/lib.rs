@@ -56,6 +56,7 @@ fn init() -> RbResult<()> {
         method!(RbDataFrame::set_column_names, 1),
     )?;
     class.define_method("dtypes", method!(RbDataFrame::dtypes, 0))?;
+    class.define_method("n_chunks", method!(RbDataFrame::n_chunks, 0))?;
     class.define_method("shape", method!(RbDataFrame::shape, 0))?;
     class.define_method("height", method!(RbDataFrame::height, 0))?;
     class.define_method("width", method!(RbDataFrame::width, 0))?;
