@@ -131,6 +131,9 @@ class DataFrameTest < Minitest::Test
   end
 
   def test_limit
+    df = Polars::DataFrame.new({"a" => 1..20})
+    assert_series 1..5, df.limit["a"]
+    assert_series [1, 2, 3], df.limit(3)["a"]
   end
 
   def test_head
