@@ -336,6 +336,16 @@ impl RbDataFrame {
         self.df.borrow().tail(length).into()
     }
 
+    pub fn is_unique(&self) -> RbResult<RbSeries> {
+        let mask = self.df.borrow().is_unique().map_err(RbPolarsErr::from)?;
+        Ok(mask.into_series().into())
+    }
+
+    pub fn is_duplicated(&self) -> RbResult<RbSeries> {
+        let mask = self.df.borrow().is_duplicated().map_err(RbPolarsErr::from)?;
+        Ok(mask.into_series().into())
+    }
+
     pub fn frame_equal(&self, other: &RbDataFrame, null_equal: bool) -> bool {
         if null_equal {
             self.df.borrow().frame_equal_missing(&other.df.borrow())

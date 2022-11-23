@@ -437,11 +437,13 @@ module Polars
     # def shift_and_fill
     # end
 
-    # def is_duplicated
-    # end
+    def is_duplicated
+      Utils.wrap_s(_df.is_duplicated)
+    end
 
-    # def is_unique
-    # end
+    def is_unique
+      Utils.wrap_s(_df.is_unique)
+    end
 
     def lazy
       wrap_ldf(_df.lazy)

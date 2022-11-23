@@ -173,6 +173,16 @@ class DataFrameTest < Minitest::Test
     assert_series [1, 2, 3], df.get_column("a")
   end
 
+  def test_is_duplicated
+    df = Polars::DataFrame.new({"a" => [1, 2, 3, 1], "b" => ["x", "y", "z", "x"]})
+    assert_series [true, false, false, true], df.is_duplicated
+  end
+
+  def test_is_unique
+    df = Polars::DataFrame.new({"a" => [1, 2, 3, 1], "b" => ["x", "y", "z", "x"]})
+    assert_series [false, true, true, false], df.is_unique
+  end
+
   def test_lazy
   end
 

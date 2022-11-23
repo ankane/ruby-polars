@@ -69,6 +69,8 @@ fn init() -> RbResult<()> {
     class.define_method("slice", method!(RbDataFrame::slice, 2))?;
     class.define_method("head", method!(RbDataFrame::head, 1))?;
     class.define_method("tail", method!(RbDataFrame::tail, 1))?;
+    class.define_method("is_unique", method!(RbDataFrame::is_unique, 0))?;
+    class.define_method("is_duplicated", method!(RbDataFrame::is_duplicated, 0))?;
     class.define_method("frame_equal", method!(RbDataFrame::frame_equal, 2))?;
     class.define_method("_clone", method!(RbDataFrame::clone, 0))?;
     class.define_method("lazy", method!(RbDataFrame::lazy, 0))?;
