@@ -1,8 +1,9 @@
-use magnus::RArray;
+use magnus::{RArray, RHash};
 use polars::lazy::frame::{LazyFrame, LazyGroupBy};
+use polars::prelude::*;
 use std::cell::RefCell;
 
-use crate::conversion::wrap_join_type;
+use crate::conversion::*;
 use crate::lazy::utils::rb_exprs_to_exprs;
 use crate::{RbDataFrame, RbExpr, RbPolarsErr, RbResult};
 
@@ -23,6 +24,13 @@ impl RbLazyGroupBy {
 #[derive(Clone)]
 pub struct RbLazyFrame {
     pub ldf: LazyFrame,
+}
+
+impl RbLazyFrame {
+    fn get_schema(&self) -> RbResult<SchemaRef> {
+        let schema = self.ldf.schema().map_err(RbPolarsErr::from)?;
+        Ok(schema)
+    }
 }
 
 impl From<LazyFrame> for RbLazyFrame {
@@ -179,5 +187,111 @@ impl RbLazyFrame {
     pub fn median(&self) -> Self {
         let ldf = self.ldf.clone();
         ldf.median().into()
+    }
+
+    pub fn quantile(&self, quantile: f64, interpolation: String) -> RbResult<Self> {
+        let interpolation = wrap_quantile_interpol_options(&interpolation)?;
+        let ldf = self.ldf.clone();
+        Ok(ldf.quantile(quantile, interpolation).into())
+    }
+
+    pub fn explode(&self, column: RArray) -> RbResult<Self> {
+        let ldf = self.ldf.clone();
+        let column = rb_exprs_to_exprs(column)?;
+        Ok(ldf.explode(column).into())
+    }
+
+    pub fn unique(
+        &self,
+        maintain_order: bool,
+        subset: Option<Vec<String>>,
+        keep: String,
+    ) -> RbResult<Self> {
+        let keep = wrap_unique_keep_strategy(&keep)?;
+        let ldf = self.ldf.clone();
+        Ok(match maintain_order {
+            true => ldf.unique_stable(subset, keep),
+            false => ldf.unique(subset, keep),
+        }
+        .into())
+    }
+
+    pub fn drop_nulls(&self, subset: Option<Vec<String>>) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.drop_nulls(subset.map(|v| v.into_iter().map(|s| col(&s)).collect()))
+            .into()
+    }
+
+    pub fn slice(&self, offset: i64, len: Option<IdxSize>) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.slice(offset, len.unwrap_or(IdxSize::MAX)).into()
+    }
+
+    pub fn tail(&self, n: IdxSize) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.tail(n).into()
+    }
+
+    pub fn melt(
+        &self,
+        id_vars: Vec<String>,
+        value_vars: Vec<String>,
+        value_name: Option<String>,
+        variable_name: Option<String>,
+    ) -> Self {
+        let args = MeltArgs {
+            id_vars,
+            value_vars,
+            value_name,
+            variable_name,
+        };
+
+        let ldf = self.ldf.clone();
+        ldf.melt(args).into()
+    }
+
+    pub fn with_row_count(&self, name: String, offset: Option<IdxSize>) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.with_row_count(&name, offset).into()
+    }
+
+    pub fn drop_columns(&self, cols: Vec<String>) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.drop_columns(cols).into()
+    }
+
+    pub fn clone(&self) -> Self {
+        self.ldf.clone().into()
+    }
+
+    pub fn columns(&self) -> RbResult<Vec<String>> {
+        Ok(self.get_schema()?.iter_names().cloned().collect())
+    }
+
+    pub fn dtypes(&self) -> RbResult<Vec<String>> {
+        let schema = self.get_schema()?;
+        let iter = schema.iter_dtypes().map(|dt| dt.to_string());
+        Ok(iter.collect())
+    }
+
+    pub fn schema(&self) -> RbResult<RHash> {
+        let schema = self.get_schema()?;
+        let schema_dict = RHash::new();
+
+        schema.iter_fields().for_each(|fld| {
+            // TODO remove unwrap
+            schema_dict
+                .aset(fld.name().clone(), fld.data_type().to_string())
+                .unwrap();
+        });
+        Ok(schema_dict)
+    }
+
+    pub fn unnest(&self, cols: Vec<String>) -> Self {
+        self.ldf.clone().unnest(cols).into()
+    }
+
+    pub fn width(&self) -> RbResult<usize> {
+        Ok(self.get_schema()?.len())
     }
 }

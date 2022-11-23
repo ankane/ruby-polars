@@ -171,6 +171,21 @@ fn init() -> RbResult<()> {
     class.define_method("std", method!(RbLazyFrame::std, 1))?;
     class.define_method("var", method!(RbLazyFrame::var, 1))?;
     class.define_method("median", method!(RbLazyFrame::median, 0))?;
+    class.define_method("quantile", method!(RbLazyFrame::quantile, 2))?;
+    class.define_method("explode", method!(RbLazyFrame::explode, 1))?;
+    class.define_method("unique", method!(RbLazyFrame::unique, 3))?;
+    class.define_method("drop_nulls", method!(RbLazyFrame::drop_nulls, 1))?;
+    class.define_method("slice", method!(RbLazyFrame::slice, 2))?;
+    class.define_method("tail", method!(RbLazyFrame::tail, 1))?;
+    class.define_method("melt", method!(RbLazyFrame::melt, 4))?;
+    class.define_method("with_row_count", method!(RbLazyFrame::with_row_count, 2))?;
+    class.define_method("drop_columns", method!(RbLazyFrame::drop_columns, 1))?;
+    class.define_method("_clone", method!(RbLazyFrame::clone, 0))?;
+    class.define_method("columns", method!(RbLazyFrame::columns, 0))?;
+    class.define_method("dtypes", method!(RbLazyFrame::dtypes, 0))?;
+    class.define_method("schema", method!(RbLazyFrame::schema, 0))?;
+    class.define_method("unnest", method!(RbLazyFrame::unnest, 1))?;
+    class.define_method("width", method!(RbLazyFrame::width, 0))?;
 
     let class = module.define_class("RbLazyGroupBy", Default::default())?;
     class.define_method("agg", method!(RbLazyGroupBy::agg, 1))?;

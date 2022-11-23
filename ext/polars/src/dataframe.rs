@@ -9,8 +9,8 @@ use std::path::PathBuf;
 
 use crate::conversion::*;
 use crate::file::{get_file_like, get_mmap_bytes_reader};
-use crate::{series, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 use crate::series::to_rbseries_collection;
+use crate::{series, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 
 #[magnus::wrap(class = "Polars::RbDataFrame")]
 pub struct RbDataFrame {
@@ -342,7 +342,11 @@ impl RbDataFrame {
     }
 
     pub fn is_duplicated(&self) -> RbResult<RbSeries> {
-        let mask = self.df.borrow().is_duplicated().map_err(RbPolarsErr::from)?;
+        let mask = self
+            .df
+            .borrow()
+            .is_duplicated()
+            .map_err(RbPolarsErr::from)?;
         Ok(mask.into_series().into())
     }
 
@@ -392,7 +396,11 @@ impl RbDataFrame {
 
     pub fn hmean(&self, null_strategy: String) -> RbResult<Option<RbSeries>> {
         let null_strategy = wrap_null_strategy(&null_strategy)?;
-        let s = self.df.borrow().hmean(null_strategy).map_err(RbPolarsErr::from)?;
+        let s = self
+            .df
+            .borrow()
+            .hmean(null_strategy)
+            .map_err(RbPolarsErr::from)?;
         Ok(s.map(|s| s.into()))
     }
 
@@ -408,7 +416,11 @@ impl RbDataFrame {
 
     pub fn hsum(&self, null_strategy: String) -> RbResult<Option<RbSeries>> {
         let null_strategy = wrap_null_strategy(&null_strategy)?;
-        let s = self.df.borrow().hsum(null_strategy).map_err(RbPolarsErr::from)?;
+        let s = self
+            .df
+            .borrow()
+            .hsum(null_strategy)
+            .map_err(RbPolarsErr::from)?;
         Ok(s.map(|s| s.into()))
     }
 

@@ -71,6 +71,20 @@ pub fn get_df(obj: Value) -> RbResult<DataFrame> {
     Ok(rbdf.df.borrow().clone())
 }
 
+pub fn wrap_unique_keep_strategy(ob: &str) -> RbResult<UniqueKeepStrategy> {
+    let parsed = match ob {
+        "first" => UniqueKeepStrategy::First,
+        "last" => UniqueKeepStrategy::Last,
+        v => {
+            return Err(RbValueError::new_err(format!(
+                "keep must be one of {{'first', 'last'}}, got {}",
+                v
+            )))
+        }
+    };
+    Ok(parsed)
+}
+
 pub fn parse_parquet_compression(
     compression: &str,
     compression_level: Option<i32>,
