@@ -352,9 +352,53 @@ impl RbDataFrame {
         self.df.borrow().clone().lazy().into()
     }
 
+    pub fn max(&self) -> Self {
+        self.df.borrow().max().into()
+    }
+
+    pub fn min(&self) -> Self {
+        self.df.borrow().min().into()
+    }
+
+    pub fn sum(&self) -> Self {
+        self.df.borrow().sum().into()
+    }
+
     pub fn mean(&self) -> Self {
         self.df.borrow().mean().into()
     }
+
+    pub fn std(&self, ddof: u8) -> Self {
+        self.df.borrow().std(ddof).into()
+    }
+
+    pub fn var(&self, ddof: u8) -> Self {
+        self.df.borrow().var(ddof).into()
+    }
+
+    pub fn median(&self) -> Self {
+        self.df.borrow().median().into()
+    }
+
+    // pub fn hmean(&self, null_strategy: Wrap<NullStrategy>) -> RbResult<Option<RbSeries>> {
+    //     let s = self.df.borrow().hmean(null_strategy.0).map_err(RbPolarsErr::from)?;
+    //     Ok(s.map(|s| s.into()))
+    // }
+
+    pub fn hmax(&self) -> RbResult<Option<RbSeries>> {
+        let s = self.df.borrow().hmax().map_err(RbPolarsErr::from)?;
+        Ok(s.map(|s| s.into()))
+    }
+
+    pub fn hmin(&self) -> RbResult<Option<RbSeries>> {
+        let s = self.df.borrow().hmin().map_err(RbPolarsErr::from)?;
+        Ok(s.map(|s| s.into()))
+    }
+
+    // pub fn hsum(&self, null_strategy: Wrap<NullStrategy>) -> RbResult<Option<RbSeries>> {
+    //     let s = self.df.borrow().hsum(null_strategy.0).map_err(RbPolarsErr::from)?;
+    //     Ok(s.map(|s| s.into()))
+    // }
 
     pub fn null_count(&self) -> Self {
         let df = self.df.borrow().null_count();

@@ -31,8 +31,12 @@ class Minitest::Test
     assert_equal dtype, act.dtype if dtype
   end
 
-  def assert_frame(ext, act)
-    assert ext.frame_equal(act)
+  def assert_frame(exp, act)
+    if exp.is_a?(Hash)
+      assert_equal exp, act.to_h(as_series: false)
+    else
+      assert exp.frame_equal(act)
+    end
   end
 
   def temp_path

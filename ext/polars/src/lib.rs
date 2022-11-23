@@ -72,7 +72,17 @@ fn init() -> RbResult<()> {
     class.define_method("frame_equal", method!(RbDataFrame::frame_equal, 2))?;
     class.define_method("_clone", method!(RbDataFrame::clone, 0))?;
     class.define_method("lazy", method!(RbDataFrame::lazy, 0))?;
+    class.define_method("max", method!(RbDataFrame::max, 0))?;
+    class.define_method("min", method!(RbDataFrame::min, 0))?;
+    class.define_method("sum", method!(RbDataFrame::sum, 0))?;
     class.define_method("mean", method!(RbDataFrame::mean, 0))?;
+    class.define_method("std", method!(RbDataFrame::std, 1))?;
+    class.define_method("var", method!(RbDataFrame::var, 1))?;
+    class.define_method("median", method!(RbDataFrame::median, 0))?;
+    // class.define_method("hmean", method!(RbDataFrame::hmean, 1))?;
+    class.define_method("hmax", method!(RbDataFrame::hmax, 0))?;
+    class.define_method("hmin", method!(RbDataFrame::hmin, 0))?;
+    // class.define_method("hsum", method!(RbDataFrame::hsum, 1))?;
     class.define_method("null_count", method!(RbDataFrame::null_count, 0))?;
 
     let class = module.define_class("RbExpr", Default::default())?;
