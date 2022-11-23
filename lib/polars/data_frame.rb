@@ -314,17 +314,6 @@ module Polars
       )
     end
 
-    def mean(axis: 0, null_strategy: "ignore")
-      case axis
-      when 0
-        _from_rbdf(_df.mean)
-      when 1
-        Utils.wrap_s(_df.hmean(null_strategy))
-      else
-        raise ArgumentError, "Axis should be 0 or 1."
-      end
-    end
-
     def with_columns(exprs)
       if !exprs.nil? && !exprs.is_a?(Array)
         exprs = [exprs]
@@ -353,6 +342,32 @@ module Polars
         raise ArgumentError, "Axis should be 0 or 1."
       end
     end
+
+    # def min(axis: 0)
+    # end
+
+    # def sum(axis: 0, null_strategy: "ignore")
+    # end
+
+    def mean(axis: 0, null_strategy: "ignore")
+      case axis
+      when 0
+        _from_rbdf(_df.mean)
+      when 1
+        Utils.wrap_s(_df.hmean(null_strategy))
+      else
+        raise ArgumentError, "Axis should be 0 or 1."
+      end
+    end
+
+    # def std(ddof: 1)
+    # end
+
+    # def var(ddof: 1)
+    # end
+
+    # def median
+    # end
 
     def rechunk
       _from_rbdf(_df.rechunk)
