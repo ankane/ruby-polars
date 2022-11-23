@@ -91,6 +91,39 @@ module Polars
       columns.zip(dtypes).to_h
     end
 
+    # def ==(other)
+    # end
+
+    # def !=(other)
+    # end
+
+    # def >(other)
+    # end
+
+    # def <(other)
+    # end
+
+    # def >=(other)
+    # end
+
+    # def <=(other)
+    # end
+
+    # def *(other)
+    # end
+
+    # def /(other)
+    # end
+
+    # def +(other)
+    # end
+
+    # def -(other)
+    # end
+
+    # def %(other)
+    # end
+
     def to_s
       _df.to_s
     end
@@ -104,6 +137,9 @@ module Polars
       Utils.wrap_s(_df.column(name))
     end
 
+    # def []=(item)
+    # end
+
     def to_h(as_series: true)
       if as_series
         get_columns.to_h { |s| [s.name, s] }
@@ -111,6 +147,14 @@ module Polars
         get_columns.to_h { |s| [s.name, s.to_a] }
       end
     end
+
+    # def to_hs / to_a
+    # end
+
+    # def to_numo
+    # end
+
+    # no to_pandas
 
     def to_series(index = 0)
       if index < 0
@@ -199,6 +243,12 @@ module Polars
       nil
     end
 
+    # def write_avro
+    # end
+
+    # def write_ipc
+    # end
+
     def write_parquet(
       file,
       compression: "zstd",
@@ -223,6 +273,9 @@ module Polars
       Utils.scale_bytes(sz, to: unit)
     end
 
+    # def transpose
+    # end
+
     def reverse
       select(Polars.col("*").reverse)
     end
@@ -243,6 +296,15 @@ module Polars
       lazy.filter(predicate).collect
     end
 
+    # def describe
+    # end
+
+    # def find_idx_by_name
+    # end
+
+    # def replace_at_idx
+    # end
+
     def sort(by, reverse: false, nulls_last: false)
       _from_rbdf(_df.sort(by, reverse, nulls_last))
     end
@@ -250,6 +312,9 @@ module Polars
     def frame_equal(other, null_equal: true)
       _df.frame_equal(other._df, null_equal)
     end
+
+    # def replace
+    # end
 
     def slice(offset, length = nil)
       if !length.nil? && length < 0
@@ -270,9 +335,30 @@ module Polars
       _from_rbdf(_df.tail(n))
     end
 
+    # def drop_nulls
+    # end
+
+    # def pipe
+    # end
+
+    # def with_row_count
+    # end
+
     def groupby(by, maintain_order: false)
       lazy.groupby(by, maintain_order: maintain_order)
     end
+
+    # def groupby_rolling
+    # end
+
+    # def groupby_dynamic
+    # end
+
+    # def upsample
+    # end
+
+    # def join_asof
+    # end
 
     def join(other, left_on: nil, right_on: nil, on: nil, how: "inner", suffix: "_right")
       lazy
@@ -287,11 +373,34 @@ module Polars
         .collect(no_optimization: true)
     end
 
+    # def apply
+    # end
+
     def with_column(column)
       lazy
         .with_column(column)
         .collect(no_optimization: true, string_cache: false)
     end
+
+    # def hstack
+    # end
+
+    # def vstack
+    # end
+
+    # def extend
+    # end
+
+    # def drop
+    # end
+
+    # def drop_in_place
+    # end
+
+    # def cleared
+    # end
+
+    # clone handled by Ruby
 
     def get_columns
       _df.get_columns.map { |s| Utils.wrap_s(s) }
@@ -300,6 +409,39 @@ module Polars
     def get_column(name)
       self[name]
     end
+
+    # def fill_null
+    # end
+
+    # def fill_nan
+    # end
+
+    # def explode
+    # end
+
+    # def pivot
+    # end
+
+    # def melt
+    # end
+
+    # def unstack
+    # end
+
+    # def partition_by
+    # end
+
+    # def shift
+    # end
+
+    # def shift_and_fill
+    # end
+
+    # def is_duplicated
+    # end
+
+    # def is_unique
+    # end
 
     def lazy
       wrap_ldf(_df.lazy)
@@ -377,6 +519,21 @@ module Polars
       _from_rbdf(_df.median)
     end
 
+    # def product
+    # end
+
+    # def quantile(quantile, interpolation: "nearest")
+    # end
+
+    # def to_dummies
+    # end
+
+    # def unique
+    # end
+
+    # def n_unique
+    # end
+
     def rechunk
       _from_rbdf(_df.rechunk)
     end
@@ -384,6 +541,41 @@ module Polars
     def null_count
       _from_rbdf(_df.null_count)
     end
+
+    # def sample
+    # end
+
+    # def fold
+    # end
+
+    # def row
+    # end
+
+    # def rows
+    # end
+
+    # def shrink_to_fit
+    # end
+
+    # def take_every
+    # end
+
+    # def hash_rows
+    # end
+
+    # def interpolate
+    # end
+
+    def is_empty
+      height == 0
+    end
+    alias_method :empty?, :is_empty
+
+    # def to_struct(name)
+    # end
+
+    # def unnest
+    # end
 
     private
 
