@@ -203,13 +203,13 @@ class DataFrameTest < Minitest::Test
   def test_sum
     df = Polars::DataFrame.new({"a" => [1, 2, 3]})
     assert df.sum
-    # assert df.sum(axis: 1)
+    assert df.sum(axis: 1)
   end
 
   def test_mean
     df = Polars::DataFrame.new({"a" => [1, 2, 3]})
     assert df.mean
-    # assert df.mean(axis: 1)
+    assert df.mean(axis: 1)
   end
 
   def test_std

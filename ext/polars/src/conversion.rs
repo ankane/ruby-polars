@@ -114,6 +114,20 @@ pub fn parse_parquet_compression(
     Ok(parsed)
 }
 
+pub fn wrap_null_strategy(ob: &str) -> RbResult<NullStrategy> {
+    let parsed = match ob {
+        "ignore" => NullStrategy::Ignore,
+        "propagate" => NullStrategy::Propagate,
+        v => {
+            return Err(RbValueError::new_err(format!(
+                "null strategy must be one of {{'ignore', 'propagate'}}, got {}",
+                v
+            )))
+        }
+    };
+    Ok(parsed)
+}
+
 pub fn wrap_quantile_interpol_options(ob: &str) -> RbResult<QuantileInterpolOptions> {
     let parsed = match ob {
         "lower" => QuantileInterpolOptions::Lower,

@@ -79,10 +79,10 @@ fn init() -> RbResult<()> {
     class.define_method("std", method!(RbDataFrame::std, 1))?;
     class.define_method("var", method!(RbDataFrame::var, 1))?;
     class.define_method("median", method!(RbDataFrame::median, 0))?;
-    // class.define_method("hmean", method!(RbDataFrame::hmean, 1))?;
+    class.define_method("hmean", method!(RbDataFrame::hmean, 1))?;
     class.define_method("hmax", method!(RbDataFrame::hmax, 0))?;
     class.define_method("hmin", method!(RbDataFrame::hmin, 0))?;
-    // class.define_method("hsum", method!(RbDataFrame::hsum, 1))?;
+    class.define_method("hsum", method!(RbDataFrame::hsum, 1))?;
     class.define_method("null_count", method!(RbDataFrame::null_count, 0))?;
 
     let class = module.define_class("RbExpr", Default::default())?;

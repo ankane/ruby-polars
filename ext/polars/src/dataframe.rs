@@ -7,7 +7,7 @@ use std::io::{BufReader, BufWriter, Cursor};
 use std::ops::Deref;
 use std::path::PathBuf;
 
-use crate::conversion::parse_parquet_compression;
+use crate::conversion::*;
 use crate::file::{get_file_like, get_mmap_bytes_reader};
 use crate::{series, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 use crate::series::to_rbseries_collection;
@@ -380,10 +380,11 @@ impl RbDataFrame {
         self.df.borrow().median().into()
     }
 
-    // pub fn hmean(&self, null_strategy: Wrap<NullStrategy>) -> RbResult<Option<RbSeries>> {
-    //     let s = self.df.borrow().hmean(null_strategy.0).map_err(RbPolarsErr::from)?;
-    //     Ok(s.map(|s| s.into()))
-    // }
+    pub fn hmean(&self, null_strategy: String) -> RbResult<Option<RbSeries>> {
+        let null_strategy = wrap_null_strategy(&null_strategy)?;
+        let s = self.df.borrow().hmean(null_strategy).map_err(RbPolarsErr::from)?;
+        Ok(s.map(|s| s.into()))
+    }
 
     pub fn hmax(&self) -> RbResult<Option<RbSeries>> {
         let s = self.df.borrow().hmax().map_err(RbPolarsErr::from)?;
@@ -395,10 +396,11 @@ impl RbDataFrame {
         Ok(s.map(|s| s.into()))
     }
 
-    // pub fn hsum(&self, null_strategy: Wrap<NullStrategy>) -> RbResult<Option<RbSeries>> {
-    //     let s = self.df.borrow().hsum(null_strategy.0).map_err(RbPolarsErr::from)?;
-    //     Ok(s.map(|s| s.into()))
-    // }
+    pub fn hsum(&self, null_strategy: String) -> RbResult<Option<RbSeries>> {
+        let null_strategy = wrap_null_strategy(&null_strategy)?;
+        let s = self.df.borrow().hsum(null_strategy).map_err(RbPolarsErr::from)?;
+        Ok(s.map(|s| s.into()))
+    }
 
     pub fn null_count(&self) -> Self {
         let df = self.df.borrow().null_count();
