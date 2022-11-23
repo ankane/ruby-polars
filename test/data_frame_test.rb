@@ -207,9 +207,15 @@ class DataFrameTest < Minitest::Test
   end
 
   def test_std
+    df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    assert_in_delta 1, df.std["a"][0]
+    assert_in_delta 0.816497, df.std(ddof: 0)["a"][0]
   end
 
   def test_var
+    df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    assert_in_delta 1, df.var["a"][0]
+    assert_in_delta 0.666667, df.var(ddof: 0)["a"][0]
   end
 
   def test_median

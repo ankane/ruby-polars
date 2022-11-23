@@ -509,11 +509,13 @@ module Polars
       end
     end
 
-    # def std(ddof: 1)
-    # end
+    def std(ddof: 1)
+      _from_rbdf(_df.std(ddof))
+    end
 
-    # def var(ddof: 1)
-    # end
+    def var(ddof: 1)
+      _from_rbdf(_df.var(ddof))
+    end
 
     def median
       _from_rbdf(_df.median)
