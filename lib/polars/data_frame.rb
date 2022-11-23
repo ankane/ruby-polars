@@ -495,8 +495,16 @@ module Polars
       end
     end
 
-    # def sum(axis: 0, null_strategy: "ignore")
-    # end
+    def sum(axis: 0, null_strategy: "ignore")
+      case axis
+      when 0
+        _from_rbdf(_df.sum)
+      when 1
+        Utils.wrap_s(_df.hsum(null_strategy))
+      else
+        raise ArgumentError, "Axis should be 0 or 1."
+      end
+    end
 
     def mean(axis: 0, null_strategy: "ignore")
       case axis
