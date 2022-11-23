@@ -291,6 +291,30 @@ impl RbDataFrame {
         Ok(RbDataFrame::new(df))
     }
 
+    pub fn replace(&self, column: String, new_col: &RbSeries) -> RbResult<()> {
+        self.df
+            .borrow_mut()
+            .replace(&column, new_col.series.borrow().clone())
+            .map_err(RbPolarsErr::from)?;
+        Ok(())
+    }
+
+    pub fn replace_at_idx(&self, index: usize, new_col: &RbSeries) -> RbResult<()> {
+        self.df
+            .borrow_mut()
+            .replace_at_idx(index, new_col.series.borrow().clone())
+            .map_err(RbPolarsErr::from)?;
+        Ok(())
+    }
+
+    pub fn insert_at_idx(&self, index: usize, new_col: &RbSeries) -> RbResult<()> {
+        self.df
+            .borrow_mut()
+            .insert_at_idx(index, new_col.series.borrow().clone())
+            .map_err(RbPolarsErr::from)?;
+        Ok(())
+    }
+
     pub fn slice(&self, offset: usize, length: Option<usize>) -> Self {
         let df = self.df.borrow().slice(
             offset as i64,

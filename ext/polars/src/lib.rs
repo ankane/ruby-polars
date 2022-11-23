@@ -62,6 +62,9 @@ fn init() -> RbResult<()> {
     class.define_method("select_at_idx", method!(RbDataFrame::select_at_idx, 1))?;
     class.define_method("column", method!(RbDataFrame::column, 1))?;
     class.define_method("sort", method!(RbDataFrame::sort, 3))?;
+    class.define_method("replace", method!(RbDataFrame::replace, 2))?;
+    class.define_method("replace_at_idx", method!(RbDataFrame::replace_at_idx, 2))?;
+    class.define_method("insert_at_idx", method!(RbDataFrame::insert_at_idx, 2))?;
     class.define_method("slice", method!(RbDataFrame::slice, 2))?;
     class.define_method("head", method!(RbDataFrame::head, 1))?;
     class.define_method("tail", method!(RbDataFrame::tail, 1))?;

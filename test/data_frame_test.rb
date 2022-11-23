@@ -115,6 +115,12 @@ class DataFrameTest < Minitest::Test
     assert_equal ["c", "b"], df.rename({"a" => "c"}).columns
   end
 
+  def test_insert_at_idx
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    df.insert_at_idx(1, Polars::Series.new("c", [4, 5, 6]))
+    assert_equal ["a", "c", "b"], df.columns
+  end
+
   def test_filter
   end
 

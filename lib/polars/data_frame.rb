@@ -231,6 +231,14 @@ module Polars
       lazy.rename(mapping).collect(no_optimization: true)
     end
 
+    def insert_at_idx(index, series)
+      if index < 0
+        index = columns.length + index
+      end
+      _df.insert_at_idx(index, series._s)
+      self
+    end
+
     def filter(predicate)
       lazy.filter(predicate).collect
     end
