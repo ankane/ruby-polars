@@ -373,6 +373,22 @@ impl RbExpr {
         self.clone().inner.ceil().into()
     }
 
+    pub fn clip(&self, min: Value, max: Value) -> Self {
+        let min = min.try_convert::<Wrap<AnyValue>>().unwrap().0;
+        let max = max.try_convert::<Wrap<AnyValue>>().unwrap().0;
+        self.clone().inner.clip(min, max).into()
+    }
+
+    pub fn clip_min(&self, min: Value) -> Self {
+        let min = min.try_convert::<Wrap<AnyValue>>().unwrap().0;
+        self.clone().inner.clip_min(min).into()
+    }
+
+    pub fn clip_max(&self, max: Value) -> Self {
+        let max = max.try_convert::<Wrap<AnyValue>>().unwrap().0;
+        self.clone().inner.clip_max(max).into()
+    }
+
     pub fn abs(&self) -> Self {
         self.clone().inner.abs().into()
     }

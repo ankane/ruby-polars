@@ -183,6 +183,9 @@ fn init() -> RbResult<()> {
     class.define_method("round", method!(RbExpr::round, 1))?;
     class.define_method("floor", method!(RbExpr::floor, 0))?;
     class.define_method("ceil", method!(RbExpr::ceil, 0))?;
+    class.define_method("clip", method!(RbExpr::clip, 2))?;
+    class.define_method("clip_min", method!(RbExpr::clip_min, 1))?;
+    class.define_method("clip_max", method!(RbExpr::clip_max, 1))?;
     class.define_method("abs", method!(RbExpr::abs, 0))?;
     class.define_method("sin", method!(RbExpr::sin, 0))?;
     class.define_method("cos", method!(RbExpr::cos, 0))?;

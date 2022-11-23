@@ -4,9 +4,15 @@ use polars::datatypes::AnyValue;
 use polars::frame::DataFrame;
 use polars::prelude::*;
 
-use crate::{RbDataFrame, RbResult, RbValueError};
+use crate::{RbDataFrame, RbPolarsErr, RbResult, RbValueError};
 
 pub struct Wrap<T>(pub T);
+
+impl<T> From<T> for Wrap<T> {
+    fn from(t: T) -> Self {
+        Wrap(t)
+    }
+}
 
 impl Into<Value> for Wrap<AnyValue<'_>> {
     fn into(self) -> Value {
@@ -25,6 +31,22 @@ impl Into<Value> for Wrap<AnyValue<'_>> {
             AnyValue::Boolean(v) => Value::from(v),
             AnyValue::Utf8(v) => Value::from(v),
             _ => todo!(),
+        }
+    }
+}
+
+impl<'s> TryConvert for Wrap<AnyValue<'s>> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        // TODO improve
+        if let Ok(v) = ob.try_convert::<i64>() {
+            Ok(AnyValue::Int64(v).into())
+        } else if let Ok(v) = ob.try_convert::<f64>() {
+            Ok(AnyValue::Float64(v).into())
+        } else {
+            Err(RbPolarsErr::other(format!(
+                "object type not supported {:?}",
+                ob
+            )))
         }
     }
 }
