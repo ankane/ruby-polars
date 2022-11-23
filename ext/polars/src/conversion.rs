@@ -172,18 +172,20 @@ pub fn parse_parquet_compression(
     Ok(parsed)
 }
 
-pub fn wrap_null_strategy(ob: &str) -> RbResult<NullStrategy> {
-    let parsed = match ob {
-        "ignore" => NullStrategy::Ignore,
-        "propagate" => NullStrategy::Propagate,
-        v => {
-            return Err(RbValueError::new_err(format!(
-                "null strategy must be one of {{'ignore', 'propagate'}}, got {}",
-                v
-            )))
-        }
-    };
-    Ok(parsed)
+impl TryConvert for Wrap<NullStrategy> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "ignore" => NullStrategy::Ignore,
+            "propagate" => NullStrategy::Propagate,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "null strategy must be one of {{'ignore', 'propagate'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
 }
 
 impl TryConvert for Wrap<QuantileInterpolOptions> {

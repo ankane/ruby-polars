@@ -473,12 +473,11 @@ impl RbDataFrame {
         self.df.borrow().median().into()
     }
 
-    pub fn hmean(&self, null_strategy: String) -> RbResult<Option<RbSeries>> {
-        let null_strategy = wrap_null_strategy(&null_strategy)?;
+    pub fn hmean(&self, null_strategy: Wrap<NullStrategy>) -> RbResult<Option<RbSeries>> {
         let s = self
             .df
             .borrow()
-            .hmean(null_strategy)
+            .hmean(null_strategy.0)
             .map_err(RbPolarsErr::from)?;
         Ok(s.map(|s| s.into()))
     }
@@ -493,12 +492,11 @@ impl RbDataFrame {
         Ok(s.map(|s| s.into()))
     }
 
-    pub fn hsum(&self, null_strategy: String) -> RbResult<Option<RbSeries>> {
-        let null_strategy = wrap_null_strategy(&null_strategy)?;
+    pub fn hsum(&self, null_strategy: Wrap<NullStrategy>) -> RbResult<Option<RbSeries>> {
         let s = self
             .df
             .borrow()
-            .hsum(null_strategy)
+            .hsum(null_strategy.0)
             .map_err(RbPolarsErr::from)?;
         Ok(s.map(|s| s.into()))
     }
