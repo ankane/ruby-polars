@@ -184,6 +184,8 @@ class DataFrameTest < Minitest::Test
   end
 
   def test_lazy
+    df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    assert_kind_of Polars::LazyFrame, df.lazy
   end
 
   def test_select
