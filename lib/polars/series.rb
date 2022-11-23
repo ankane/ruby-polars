@@ -64,6 +64,9 @@ module Polars
       [_s.len]
     end
 
+    # def time_unit
+    # end
+
     def to_s
       _s.to_s
     end
@@ -80,6 +83,24 @@ module Polars
     def ^(other)
       Utils.wrap_s(_s.bitxor(other._s))
     end
+
+    # def ==(other)
+    # end
+
+    # def !=(other)
+    # end
+
+    # def >(other)
+    # end
+
+    # def <(other)
+    # end
+
+    # def >=(other)
+    # end
+
+    # def <=(other)
+    # end
 
     def +(other)
      Utils. wrap_s(_s.add(other._s))
@@ -104,9 +125,15 @@ module Polars
       to_frame.select(Polars.col(name).pow(power)).to_series
     end
 
+    # def -@(other)
+    # end
+
     def [](item)
       _s.get_idx(item)
     end
+
+    # def []=(key, value)
+    # end
 
     def estimated_size(unit = "b")
       sz = _s.estimated_size
@@ -125,9 +152,27 @@ module Polars
       to_frame.select(Polars.col(name).all).to_series[0]
     end
 
+    # def log
+    # end
+
+    # def log10
+    # end
+
+    # def exp
+    # end
+
+    # def drop_nulls
+    # end
+
+    # def drop_nans
+    # end
+
     def to_frame
       Utils.wrap_df(RbDataFrame.new([_s]))
     end
+
+    # def describe
+    # end
 
     def sum
       _s.sum
@@ -148,6 +193,12 @@ module Polars
     def max
       _s.max
     end
+
+    # def nan_max
+    # end
+
+    # def nan_min
+    # end
 
     def std(ddof: 1)
       if !is_numeric
@@ -180,6 +231,15 @@ module Polars
     def value_counts(sort: false)
       Utils.wrap_df(_s.value_counts(sort))
     end
+
+    # def unique_counts
+    # end
+
+    # def entropy
+    # end
+
+    # def cumulative_eval
+    # end
 
     def alias(name)
       s = dup
@@ -246,6 +306,9 @@ module Polars
       to_frame.select(Utils.col(name).tail(n)).to_series
     end
 
+    # def take_every
+    # end
+
     def sort(reverse: false, in_place: false)
       if in_place
         self._s = _s.sort(reverse)
@@ -255,6 +318,18 @@ module Polars
       end
     end
 
+    # def top_k
+    # end
+
+    # def arg_sort
+    # end
+
+    # def argsort
+    # end
+
+    # def arg_unique
+    # end
+
     def arg_min
       _s.arg_min
     end
@@ -262,6 +337,15 @@ module Polars
     def arg_max
       _s.arg_max
     end
+
+    # def search_sorted
+    # end
+
+    # def unique
+    # end
+
+    # def take
+    # end
 
     def null_count
       _s.null_count
@@ -276,6 +360,42 @@ module Polars
     end
     alias_method :empty?, :is_empty
 
+    # def is_null
+    # end
+
+    # def is_not_null
+    # end
+
+    # def is_finite
+    # end
+
+    # def is_infinite
+    # end
+
+    # def is_nan
+    # end
+
+    # def is_not_nan
+    # end
+
+    # def is_in
+    # end
+
+    # def arg_true
+    # end
+
+    # def is_unique
+    # end
+
+    # def is_first
+    # end
+
+    # def is_duplicated
+    # end
+
+    # def explode
+    # end
+
     def series_equal(other, null_equal: false, strict: false)
       _s.series_equal(other._s, null_equal, strict)
     end
@@ -283,6 +403,12 @@ module Polars
     def len
       _s.len
     end
+
+    # def cast
+    # end
+
+    # def to_physical
+    # end
 
     def to_a
       _s.to_a
@@ -293,10 +419,16 @@ module Polars
       in_place ? self : Utils.wrap_s(opt_s)
     end
 
+    # def reverse
+    # end
+
     def is_numeric
       [:i8, :i16, :i32, :i64, :u8, :u16, :u32, :u64, :f32, :f64].include?(dtype)
     end
     alias_method :numeric?, :is_numeric
+
+    # def is_datelike
+    # end
 
     def is_float
       [:f32, :f64].include?(dtype)
@@ -313,6 +445,29 @@ module Polars
     end
     alias_method :utf8?, :is_utf8
 
+    # def view
+    # end
+
+    # def to_numo
+    # end
+
+    # def set
+    # end
+
+    def set_at_idx
+    end
+
+    def cleared
+    end
+
+    # clone handled by initialize_copy
+
+    # def fill_nan
+    # end
+
+    # def fill_null
+    # end
+
     def floor
       Utils.wrap_s(_s.floor)
     end
@@ -326,6 +481,96 @@ module Polars
       Utils.wrap_s(_s.round(decimals))
     end
 
+    # def dot
+    # end
+
+    # def mode
+    # end
+
+    # def sign
+    # end
+
+    # def sin
+    # end
+
+    # def cos
+    # end
+
+    # def tan
+    # end
+
+    # def arcsin
+    # end
+
+    # def arccos
+    # end
+
+    # def arctan
+    # end
+
+    # def arcsinh
+    # end
+
+    # def arccosh
+    # end
+
+    # def arctanh
+    # end
+
+    # def sinh
+    # end
+
+    # def cosh
+    # end
+
+    # def tanh
+    # end
+
+    # def apply
+    # end
+
+    # def shift
+    # end
+
+    # def shift_and_fill
+    # end
+
+    # def zip_with
+    # end
+
+    # def rolling_min
+    # end
+
+    # def rolling_max
+    # end
+
+    # def rolling_mean
+    # end
+
+    # def rolling_sum
+    # end
+
+    # def rolling_std
+    # end
+
+    # def rolling_var
+    # end
+
+    # def rolling_apply
+    # end
+
+    # def rolling_median
+    # end
+
+    # def rolling_quantile
+    # end
+
+    # def rolling_skew
+    # end
+
+    # def sample
+    # end
+
     def peak_max
       Utils.wrap_s(_s.peak_max)
     end
@@ -338,9 +583,87 @@ module Polars
       _s.n_unique
     end
 
+    # def shrink_to_fit
+    # end
+
+    # def _hash
+    # end
+
+    # def reinterpret
+    # end
+
+    # def interpolate
+    # end
+
+    # def abs
+    # end
+
+    # def rank
+    # end
+
+    # def diff
+    # end
+
+    # def pct_change
+    # end
+
+    # def skew
+    # end
+
+    # def kurtosis
+    # end
+
+    # def clip
+    # end
+
+    # def clip_min
+    # end
+
+    # def clip_max
+    # end
+
+    # def reshape
+    # end
+
+    # def shuffle
+    # end
+
+    # def ewm_mean
+    # end
+
+    # def ewm_std
+    # end
+
+    # def ewm_var
+    # end
+
+    # def extend_constant
+    # end
+
     def set_sorted(reverse: false)
       Utils.wrap_s(_s.set_sorted(reverse))
     end
+
+    # def new_from_index
+    # end
+
+    # def shrink_dtype
+    # end
+
+    # def arr
+    # end
+
+    # def cat
+    # end
+
+    # def dt
+    # end
+
+    # def str
+    # end
+
+    # def struct
+    # end
 
     private
 

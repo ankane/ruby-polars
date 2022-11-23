@@ -137,7 +137,7 @@ module Polars
       Utils.wrap_s(_df.column(name))
     end
 
-    # def []=(item)
+    # def []=(key, value)
     # end
 
     def to_h(as_series: true)
@@ -400,7 +400,7 @@ module Polars
     # def cleared
     # end
 
-    # clone handled by Ruby
+    # clone handled by initialize_copy
 
     def get_columns
       _df.get_columns.map { |s| Utils.wrap_s(s) }
