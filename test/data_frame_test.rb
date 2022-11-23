@@ -173,6 +173,14 @@ class DataFrameTest < Minitest::Test
     assert_series [1, 2, 3], df.get_column("a")
   end
 
+  def test_fill_null
+  end
+
+  def test_fill_nan
+    df = Polars::DataFrame.new({"a" => [1.0, Float::NAN, 3]})
+    assert_series [1, 99, 3], df.fill_nan(99)["a"]
+  end
+
   def test_is_duplicated
     df = Polars::DataFrame.new({"a" => [1, 2, 3, 1], "b" => ["x", "y", "z", "x"]})
     assert_series [true, false, false, true], df.is_duplicated

@@ -161,6 +161,16 @@ fn init() -> RbResult<()> {
     class.define_method("with_columns", method!(RbLazyFrame::with_columns, 1))?;
     class.define_method("rename", method!(RbLazyFrame::rename, 2))?;
     class.define_method("reverse", method!(RbLazyFrame::reverse, 0))?;
+    class.define_method("shift", method!(RbLazyFrame::shift, 1))?;
+    class.define_method("shift_and_fill", method!(RbLazyFrame::shift_and_fill, 2))?;
+    class.define_method("fill_nan", method!(RbLazyFrame::fill_nan, 1))?;
+    class.define_method("min", method!(RbLazyFrame::min, 0))?;
+    class.define_method("max", method!(RbLazyFrame::max, 0))?;
+    class.define_method("sum", method!(RbLazyFrame::sum, 0))?;
+    class.define_method("mean", method!(RbLazyFrame::mean, 0))?;
+    class.define_method("std", method!(RbLazyFrame::std, 1))?;
+    class.define_method("var", method!(RbLazyFrame::var, 1))?;
+    class.define_method("median", method!(RbLazyFrame::median, 0))?;
 
     let class = module.define_class("RbLazyGroupBy", Default::default())?;
     class.define_method("agg", method!(RbLazyGroupBy::agg, 1))?;

@@ -130,4 +130,54 @@ impl RbLazyFrame {
         let ldf = self.ldf.clone();
         ldf.reverse().into()
     }
+
+    pub fn shift(&self, periods: i64) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.shift(periods).into()
+    }
+
+    pub fn shift_and_fill(&self, periods: i64, fill_value: &RbExpr) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.shift_and_fill(periods, fill_value.inner.clone()).into()
+    }
+
+    pub fn fill_nan(&self, fill_value: &RbExpr) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.fill_nan(fill_value.inner.clone()).into()
+    }
+
+    pub fn min(&self) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.min().into()
+    }
+
+    pub fn max(&self) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.max().into()
+    }
+
+    pub fn sum(&self) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.sum().into()
+    }
+
+    pub fn mean(&self) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.mean().into()
+    }
+
+    pub fn std(&self, ddof: u8) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.std(ddof).into()
+    }
+
+    pub fn var(&self, ddof: u8) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.var(ddof).into()
+    }
+
+    pub fn median(&self) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.median().into()
+    }
 }

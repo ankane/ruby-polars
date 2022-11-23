@@ -123,7 +123,7 @@ module Polars
         when Expr
           rbexprs << e._rbexpr
         when Series
-          rbexprs = Internal.lit(e)._rbexpr
+          rbexprs = Utils.lit(e)._rbexpr
         else
           raise ArgumentError, "Expected an expression, got #{e}"
         end
@@ -140,6 +140,13 @@ module Polars
       existing = mapping.keys
       _new = mapping.values
       _from_rbldf(_ldf.rename(existing, _new))
+    end
+
+    def fill_nan(fill_value)
+      if !fill_value.is_a?(Expr)
+        fill_value = Utils.lit(fill_value)
+      end
+      _from_rbldf(_ldf.fill_nan(fill_value._rbexpr))
     end
 
     private

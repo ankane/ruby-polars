@@ -413,8 +413,9 @@ module Polars
     # def fill_null
     # end
 
-    # def fill_nan
-    # end
+    def fill_nan(fill_value)
+      lazy.fill_nan(fill_value).collect(no_optimization: true)
+    end
 
     # def explode
     # end
