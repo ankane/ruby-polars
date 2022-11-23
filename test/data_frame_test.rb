@@ -57,6 +57,12 @@ class DataFrameTest < Minitest::Test
     assert_equal [:i64, :str], df.dtypes
   end
 
+  def test_schema
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    expected = {"a" => :i64, "b" => :str}
+    assert_equal expected, df.schema
+  end
+
   def test_to_s
     df = Polars::DataFrame.new({"a" => [1, 2, 3]})
     assert_match "│ a   │", df.to_s

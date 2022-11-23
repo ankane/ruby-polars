@@ -87,6 +87,10 @@ module Polars
       _df.dtypes.map(&:to_sym)
     end
 
+    def schema
+      columns.zip(dtypes).to_h
+    end
+
     def to_s
       _df.to_s
     end
