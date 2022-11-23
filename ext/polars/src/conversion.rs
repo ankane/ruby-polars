@@ -14,6 +14,11 @@ impl<T> From<T> for Wrap<T> {
     }
 }
 
+pub fn get_df(obj: Value) -> RbResult<DataFrame> {
+    let rbdf = obj.funcall::<_, _, &RbDataFrame>("_df", ())?;
+    Ok(rbdf.df.borrow().clone())
+}
+
 impl Into<Value> for Wrap<AnyValue<'_>> {
     fn into(self) -> Value {
         match self.0 {
@@ -31,22 +36,6 @@ impl Into<Value> for Wrap<AnyValue<'_>> {
             AnyValue::Boolean(v) => Value::from(v),
             AnyValue::Utf8(v) => Value::from(v),
             _ => todo!(),
-        }
-    }
-}
-
-impl<'s> TryConvert for Wrap<AnyValue<'s>> {
-    fn try_convert(ob: Value) -> RbResult<Self> {
-        // TODO improve
-        if let Ok(v) = ob.try_convert::<i64>() {
-            Ok(AnyValue::Int64(v).into())
-        } else if let Ok(v) = ob.try_convert::<f64>() {
-            Ok(AnyValue::Float64(v).into())
-        } else {
-            Err(RbPolarsErr::other(format!(
-                "object type not supported {:?}",
-                ob
-            )))
         }
     }
 }
@@ -77,26 +66,38 @@ impl TryConvert for Wrap<DataType> {
     }
 }
 
-pub fn parse_fill_null_strategy(
-    strategy: &str,
-    limit: FillNullLimit,
-) -> RbResult<FillNullStrategy> {
-    let parsed = match strategy {
-        "forward" => FillNullStrategy::Forward(limit),
-        "backward" => FillNullStrategy::Backward(limit),
-        "min" => FillNullStrategy::Min,
-        "max" => FillNullStrategy::Max,
-        "mean" => FillNullStrategy::Mean,
-        "zero" => FillNullStrategy::Zero,
-        "one" => FillNullStrategy::One,
-        e => {
-            return Err(magnus::Error::runtime_error(format!(
-                "strategy must be one of {{'forward', 'backward', 'min', 'max', 'mean', 'zero', 'one'}}, got {}",
-                e,
+impl<'s> TryConvert for Wrap<AnyValue<'s>> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        // TODO improve
+        if let Ok(v) = ob.try_convert::<i64>() {
+            Ok(AnyValue::Int64(v).into())
+        } else if let Ok(v) = ob.try_convert::<f64>() {
+            Ok(AnyValue::Float64(v).into())
+        } else {
+            Err(RbPolarsErr::other(format!(
+                "object type not supported {:?}",
+                ob
             )))
         }
-    };
-    Ok(parsed)
+    }
+}
+
+impl TryConvert for Wrap<ClosedWindow> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "left" => ClosedWindow::Left,
+            "right" => ClosedWindow::Right,
+            "both" => ClosedWindow::Both,
+            "none" => ClosedWindow::None,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "closed must be one of {{'left', 'right', 'both', 'none'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
 }
 
 impl TryConvert for Wrap<JoinType> {
@@ -118,21 +119,33 @@ impl TryConvert for Wrap<JoinType> {
     }
 }
 
-pub fn get_df(obj: Value) -> RbResult<DataFrame> {
-    let rbdf = obj.funcall::<_, _, &RbDataFrame>("_df", ())?;
-    Ok(rbdf.df.borrow().clone())
-}
-
-impl TryConvert for Wrap<ClosedWindow> {
+impl TryConvert for Wrap<NullStrategy> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match ob.try_convert::<String>()?.as_str() {
-            "left" => ClosedWindow::Left,
-            "right" => ClosedWindow::Right,
-            "both" => ClosedWindow::Both,
-            "none" => ClosedWindow::None,
+            "ignore" => NullStrategy::Ignore,
+            "propagate" => NullStrategy::Propagate,
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "closed must be one of {{'left', 'right', 'both', 'none'}}, got {}",
+                    "null strategy must be one of {{'ignore', 'propagate'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<QuantileInterpolOptions> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "lower" => QuantileInterpolOptions::Lower,
+            "higher" => QuantileInterpolOptions::Higher,
+            "nearest" => QuantileInterpolOptions::Nearest,
+            "linear" => QuantileInterpolOptions::Linear,
+            "midpoint" => QuantileInterpolOptions::Midpoint,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "interpolation must be one of {{'lower', 'higher', 'nearest', 'linear', 'midpoint'}}, got {}",
                     v
                 )))
             }
@@ -155,6 +168,28 @@ impl TryConvert for Wrap<UniqueKeepStrategy> {
         };
         Ok(Wrap(parsed))
     }
+}
+
+pub fn parse_fill_null_strategy(
+    strategy: &str,
+    limit: FillNullLimit,
+) -> RbResult<FillNullStrategy> {
+    let parsed = match strategy {
+        "forward" => FillNullStrategy::Forward(limit),
+        "backward" => FillNullStrategy::Backward(limit),
+        "min" => FillNullStrategy::Min,
+        "max" => FillNullStrategy::Max,
+        "mean" => FillNullStrategy::Mean,
+        "zero" => FillNullStrategy::Zero,
+        "one" => FillNullStrategy::One,
+        e => {
+            return Err(magnus::Error::runtime_error(format!(
+                "strategy must be one of {{'forward', 'backward', 'min', 'max', 'mean', 'zero', 'one'}}, got {}",
+                e,
+            )))
+        }
+    };
+    Ok(parsed)
 }
 
 pub fn parse_parquet_compression(
@@ -198,39 +233,4 @@ pub fn parse_parquet_compression(
         }
     };
     Ok(parsed)
-}
-
-impl TryConvert for Wrap<NullStrategy> {
-    fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
-            "ignore" => NullStrategy::Ignore,
-            "propagate" => NullStrategy::Propagate,
-            v => {
-                return Err(RbValueError::new_err(format!(
-                    "null strategy must be one of {{'ignore', 'propagate'}}, got {}",
-                    v
-                )))
-            }
-        };
-        Ok(Wrap(parsed))
-    }
-}
-
-impl TryConvert for Wrap<QuantileInterpolOptions> {
-    fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
-            "lower" => QuantileInterpolOptions::Lower,
-            "higher" => QuantileInterpolOptions::Higher,
-            "nearest" => QuantileInterpolOptions::Nearest,
-            "linear" => QuantileInterpolOptions::Linear,
-            "midpoint" => QuantileInterpolOptions::Midpoint,
-            v => {
-                return Err(RbValueError::new_err(format!(
-                    "interpolation must be one of {{'lower', 'higher', 'nearest', 'linear', 'midpoint'}}, got {}",
-                    v
-                )))
-            }
-        };
-        Ok(Wrap(parsed))
-    }
 }
