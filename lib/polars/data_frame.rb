@@ -218,6 +218,11 @@ module Polars
       )
     end
 
+    def estimated_size(unit = "b")
+      sz = _df.estimated_size
+      Utils.scale_bytes(sz, to: unit)
+    end
+
     def reverse
       select(Polars.col("*").reverse)
     end

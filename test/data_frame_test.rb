@@ -91,6 +91,19 @@ class DataFrameTest < Minitest::Test
     assert_series df["b"], df.to_series(-1)
   end
 
+  # write_json tested in json_test
+
+  # write_ndjson tested in json_test
+
+  # write_csv tested in csv_test
+
+  # write_parquet tested in parquet_test
+
+  def test_estimated_size
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_in_delta df.estimated_size("kb"), df.estimated_size / 1024.0
+  end
+
   def test_reverse
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     expected = Polars::DataFrame.new({"a" => [3, 2, 1], "b" => ["three", "two", "one"]})

@@ -39,6 +39,10 @@ impl RbDataFrame {
         Ok(RbDataFrame::new(df))
     }
 
+    pub fn estimated_size(&self) -> usize {
+        self.df.borrow().estimated_size()
+    }
+
     pub fn read_csv(rb_f: Value, has_header: bool) -> RbResult<Self> {
         let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
         let df = CsvReader::new(mmap_bytes_r)

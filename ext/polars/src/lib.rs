@@ -42,6 +42,7 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("read_hash", function!(RbDataFrame::read_hash, 1))?;
     class.define_singleton_method("read_json", function!(RbDataFrame::read_json, 1))?;
     class.define_singleton_method("read_ndjson", function!(RbDataFrame::read_ndjson, 1))?;
+    class.define_method("estimated_size", method!(RbDataFrame::estimated_size, 0))?;
     class.define_method("write_json", method!(RbDataFrame::write_json, 3))?;
     class.define_method("write_ndjson", method!(RbDataFrame::write_ndjson, 1))?;
     class.define_method("write_csv", method!(RbDataFrame::write_csv, 10))?;
