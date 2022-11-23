@@ -373,8 +373,9 @@ module Polars
     # def var(ddof: 1)
     # end
 
-    # def median
-    # end
+    def median
+      _from_rbdf(_df.median)
+    end
 
     def rechunk
       _from_rbdf(_df.rechunk)

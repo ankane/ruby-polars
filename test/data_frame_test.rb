@@ -213,6 +213,8 @@ class DataFrameTest < Minitest::Test
   end
 
   def test_median
+    df = Polars::DataFrame.new({"a" => [1, 2, 5], "b" => ["one", "two", "three"]})
+    assert_frame ({"a" => [2], "b" => [nil]}), df.median
   end
 
   def test_rechunk
