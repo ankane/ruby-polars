@@ -157,7 +157,7 @@ impl RbSeries {
     }
 
     pub fn get_idx(&self, idx: usize) -> Value {
-        wrap_any_value(self.series.borrow().get(idx))
+        Wrap(self.series.borrow().get(idx)).into()
     }
 
     pub fn bitand(&self, other: &RbSeries) -> RbResult<Self> {
@@ -232,15 +232,15 @@ impl RbSeries {
     }
 
     pub fn max(&self) -> Value {
-        wrap_any_value(self.series.borrow().max_as_series().get(0))
+        Wrap(self.series.borrow().max_as_series().get(0)).into()
     }
 
     pub fn min(&self) -> Value {
-        wrap_any_value(self.series.borrow().min_as_series().get(0))
+        Wrap(self.series.borrow().min_as_series().get(0)).into()
     }
 
     pub fn sum(&self) -> Value {
-        wrap_any_value(self.series.borrow().sum_as_series().get(0))
+        Wrap(self.series.borrow().sum_as_series().get(0)).into()
     }
 
     pub fn n_chunks(&self) -> usize {
@@ -492,13 +492,14 @@ impl RbSeries {
 
     pub fn quantile(&self, quantile: f64, interpolation: String) -> RbResult<Value> {
         let interpolation = wrap_quantile_interpol_options(&interpolation)?;
-        Ok(wrap_any_value(
+        Ok(Wrap(
             self.series
                 .borrow()
                 .quantile_as_series(quantile, interpolation)
                 .map_err(|_| RbValueError::new_err("invalid quantile".into()))?
                 .get(0),
-        ))
+        )
+        .into())
     }
 
     pub fn clone(&self) -> Self {

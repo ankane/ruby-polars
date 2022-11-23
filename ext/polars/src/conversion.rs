@@ -6,22 +6,26 @@ use polars::prelude::*;
 
 use crate::{RbDataFrame, RbResult, RbValueError};
 
-pub fn wrap_any_value(val: AnyValue) -> Value {
-    match val {
-        AnyValue::UInt8(v) => Value::from(v),
-        AnyValue::UInt16(v) => Value::from(v),
-        AnyValue::UInt32(v) => Value::from(v),
-        AnyValue::UInt64(v) => Value::from(v),
-        AnyValue::Int8(v) => Value::from(v),
-        AnyValue::Int16(v) => Value::from(v),
-        AnyValue::Int32(v) => Value::from(v),
-        AnyValue::Int64(v) => Value::from(v),
-        AnyValue::Float32(v) => Value::from(v),
-        AnyValue::Float64(v) => Value::from(v),
-        AnyValue::Null => *QNIL,
-        AnyValue::Boolean(v) => Value::from(v),
-        AnyValue::Utf8(v) => Value::from(v),
-        _ => todo!(),
+pub struct Wrap<T>(pub T);
+
+impl Into<Value> for Wrap<AnyValue<'_>> {
+    fn into(self) -> Value {
+        match self.0 {
+            AnyValue::UInt8(v) => Value::from(v),
+            AnyValue::UInt16(v) => Value::from(v),
+            AnyValue::UInt32(v) => Value::from(v),
+            AnyValue::UInt64(v) => Value::from(v),
+            AnyValue::Int8(v) => Value::from(v),
+            AnyValue::Int16(v) => Value::from(v),
+            AnyValue::Int32(v) => Value::from(v),
+            AnyValue::Int64(v) => Value::from(v),
+            AnyValue::Float32(v) => Value::from(v),
+            AnyValue::Float64(v) => Value::from(v),
+            AnyValue::Null => *QNIL,
+            AnyValue::Boolean(v) => Value::from(v),
+            AnyValue::Utf8(v) => Value::from(v),
+            _ => todo!(),
+        }
     }
 }
 
