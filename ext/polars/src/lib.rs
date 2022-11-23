@@ -62,6 +62,12 @@ fn init() -> RbResult<()> {
     class.define_method("width", method!(RbDataFrame::width, 0))?;
     class.define_method("select_at_idx", method!(RbDataFrame::select_at_idx, 1))?;
     class.define_method("column", method!(RbDataFrame::column, 1))?;
+    class.define_method("select", method!(RbDataFrame::select, 1))?;
+    class.define_method("take", method!(RbDataFrame::take, 1))?;
+    class.define_method(
+        "take_with_series",
+        method!(RbDataFrame::take_with_series, 1),
+    )?;
     class.define_method("sort", method!(RbDataFrame::sort, 3))?;
     class.define_method("replace", method!(RbDataFrame::replace, 2))?;
     class.define_method("replace_at_idx", method!(RbDataFrame::replace_at_idx, 2))?;
@@ -72,7 +78,12 @@ fn init() -> RbResult<()> {
     class.define_method("is_unique", method!(RbDataFrame::is_unique, 0))?;
     class.define_method("is_duplicated", method!(RbDataFrame::is_duplicated, 0))?;
     class.define_method("frame_equal", method!(RbDataFrame::frame_equal, 2))?;
+    class.define_method("with_row_count", method!(RbDataFrame::with_row_count, 2))?;
     class.define_method("_clone", method!(RbDataFrame::clone, 0))?;
+    class.define_method("melt", method!(RbDataFrame::melt, 4))?;
+    class.define_method("partition_by", method!(RbDataFrame::partition_by, 2))?;
+    class.define_method("shift", method!(RbDataFrame::shift, 1))?;
+    class.define_method("unique", method!(RbDataFrame::unique, 3))?;
     class.define_method("lazy", method!(RbDataFrame::lazy, 0))?;
     class.define_method("max", method!(RbDataFrame::max, 0))?;
     class.define_method("min", method!(RbDataFrame::min, 0))?;
@@ -85,10 +96,21 @@ fn init() -> RbResult<()> {
     class.define_method("hmax", method!(RbDataFrame::hmax, 0))?;
     class.define_method("hmin", method!(RbDataFrame::hmin, 0))?;
     class.define_method("hsum", method!(RbDataFrame::hsum, 1))?;
+    class.define_method("quantile", method!(RbDataFrame::quantile, 2))?;
+    class.define_method("to_dummies", method!(RbDataFrame::to_dummies, 1))?;
     class.define_method("null_count", method!(RbDataFrame::null_count, 0))?;
+    class.define_method("shrink_to_fit", method!(RbDataFrame::shrink_to_fit, 0))?;
+    class.define_method("transpose", method!(RbDataFrame::transpose, 2))?;
+    class.define_method("upsample", method!(RbDataFrame::upsample, 5))?;
+    class.define_method("unnest", method!(RbDataFrame::unnest, 1))?;
 
     let class = module.define_class("RbExpr", Default::default())?;
+    class.define_method("+", method!(RbExpr::add, 1))?;
+    class.define_method("-", method!(RbExpr::sub, 1))?;
     class.define_method("*", method!(RbExpr::mul, 1))?;
+    class.define_method("truediv", method!(RbExpr::truediv, 1))?;
+    class.define_method("%", method!(RbExpr::_mod, 1))?;
+    class.define_method("floordiv", method!(RbExpr::floordiv, 1))?;
     class.define_method("to_str", method!(RbExpr::to_str, 0))?;
     class.define_method("eq", method!(RbExpr::eq, 1))?;
     class.define_method("neq", method!(RbExpr::neq, 1))?;
@@ -100,20 +122,43 @@ fn init() -> RbResult<()> {
     class.define_method("is_not", method!(RbExpr::is_not, 0))?;
     class.define_method("is_null", method!(RbExpr::is_null, 0))?;
     class.define_method("is_not_null", method!(RbExpr::is_not_null, 0))?;
+    class.define_method("is_infinite", method!(RbExpr::is_infinite, 0))?;
+    class.define_method("is_finite", method!(RbExpr::is_finite, 0))?;
+    class.define_method("is_nan", method!(RbExpr::is_nan, 0))?;
+    class.define_method("is_not_nan", method!(RbExpr::is_not_nan, 0))?;
     class.define_method("min", method!(RbExpr::min, 0))?;
     class.define_method("max", method!(RbExpr::max, 0))?;
+    class.define_method("nan_max", method!(RbExpr::nan_max, 0))?;
+    class.define_method("nan_min", method!(RbExpr::nan_min, 0))?;
     class.define_method("mean", method!(RbExpr::mean, 0))?;
     class.define_method("median", method!(RbExpr::median, 0))?;
     class.define_method("sum", method!(RbExpr::sum, 0))?;
     class.define_method("n_unique", method!(RbExpr::n_unique, 0))?;
+    class.define_method("arg_unique", method!(RbExpr::arg_unique, 0))?;
     class.define_method("unique", method!(RbExpr::unique, 0))?;
     class.define_method("unique_stable", method!(RbExpr::unique_stable, 0))?;
     class.define_method("first", method!(RbExpr::first, 0))?;
     class.define_method("last", method!(RbExpr::last, 0))?;
     class.define_method("list", method!(RbExpr::list, 0))?;
+    class.define_method("quantile", method!(RbExpr::quantile, 2))?;
+    class.define_method("agg_groups", method!(RbExpr::agg_groups, 0))?;
     class.define_method("count", method!(RbExpr::count, 0))?;
+    class.define_method("value_counts", method!(RbExpr::value_counts, 2))?;
+    class.define_method("unique_counts", method!(RbExpr::unique_counts, 0))?;
+    class.define_method("null_count", method!(RbExpr::null_count, 0))?;
+    class.define_method("cast", method!(RbExpr::cast, 2))?;
     class.define_method("sort_with", method!(RbExpr::sort_with, 2))?;
+    class.define_method("arg_sort", method!(RbExpr::arg_sort, 2))?;
+    class.define_method("top_k", method!(RbExpr::top_k, 2))?;
+    class.define_method("arg_max", method!(RbExpr::arg_max, 0))?;
+    class.define_method("arg_min", method!(RbExpr::arg_min, 0))?;
+    class.define_method("search_sorted", method!(RbExpr::search_sorted, 1))?;
+    class.define_method("take", method!(RbExpr::take, 1))?;
     class.define_method("sort_by", method!(RbExpr::sort_by, 2))?;
+    class.define_method("backward_fill", method!(RbExpr::backward_fill, 1))?;
+    class.define_method("forward_fill", method!(RbExpr::forward_fill, 1))?;
+    class.define_method("shift", method!(RbExpr::shift, 1))?;
+    class.define_method("shift_and_fill", method!(RbExpr::shift_and_fill, 2))?;
     class.define_method("fill_null", method!(RbExpr::fill_null, 1))?;
     class.define_method(
         "fill_null_with_strategy",
@@ -126,16 +171,79 @@ fn init() -> RbResult<()> {
     class.define_method("reverse", method!(RbExpr::reverse, 0))?;
     class.define_method("std", method!(RbExpr::std, 1))?;
     class.define_method("var", method!(RbExpr::var, 1))?;
+    class.define_method("is_unique", method!(RbExpr::is_unique, 0))?;
+    class.define_method("is_first", method!(RbExpr::is_first, 0))?;
+    class.define_method("explode", method!(RbExpr::explode, 0))?;
+    class.define_method("take_every", method!(RbExpr::take_every, 1))?;
     class.define_method("tail", method!(RbExpr::tail, 1))?;
     class.define_method("head", method!(RbExpr::head, 1))?;
+    class.define_method("slice", method!(RbExpr::slice, 2))?;
+    class.define_method("append", method!(RbExpr::append, 2))?;
+    class.define_method("rechunk", method!(RbExpr::rechunk, 0))?;
+    class.define_method("round", method!(RbExpr::round, 1))?;
+    class.define_method("floor", method!(RbExpr::floor, 0))?;
+    class.define_method("ceil", method!(RbExpr::ceil, 0))?;
+    class.define_method("abs", method!(RbExpr::abs, 0))?;
+    class.define_method("sin", method!(RbExpr::sin, 0))?;
+    class.define_method("cos", method!(RbExpr::cos, 0))?;
+    class.define_method("tan", method!(RbExpr::tan, 0))?;
+    class.define_method("arcsin", method!(RbExpr::arcsin, 0))?;
+    class.define_method("arccos", method!(RbExpr::arccos, 0))?;
+    class.define_method("arctan", method!(RbExpr::arctan, 0))?;
+    class.define_method("sinh", method!(RbExpr::sinh, 0))?;
+    class.define_method("cosh", method!(RbExpr::cosh, 0))?;
+    class.define_method("tanh", method!(RbExpr::tanh, 0))?;
+    class.define_method("arcsinh", method!(RbExpr::arcsinh, 0))?;
+    class.define_method("arccosh", method!(RbExpr::arccosh, 0))?;
+    class.define_method("arctanh", method!(RbExpr::arctanh, 0))?;
+    class.define_method("sign", method!(RbExpr::sign, 0))?;
+    class.define_method("is_duplicated", method!(RbExpr::is_duplicated, 0))?;
     class.define_method("over", method!(RbExpr::over, 1))?;
     class.define_method("_and", method!(RbExpr::_and, 1))?;
     class.define_method("_xor", method!(RbExpr::_xor, 1))?;
     class.define_method("_or", method!(RbExpr::_or, 1))?;
+    class.define_method("is_in", method!(RbExpr::is_in, 1))?;
+    class.define_method("repeat_by", method!(RbExpr::repeat_by, 1))?;
     class.define_method("pow", method!(RbExpr::pow, 1))?;
+    class.define_method("cumsum", method!(RbExpr::cumsum, 1))?;
+    class.define_method("cummax", method!(RbExpr::cummax, 1))?;
+    class.define_method("cummin", method!(RbExpr::cummin, 1))?;
+    class.define_method("cumprod", method!(RbExpr::cumprod, 1))?;
     class.define_method("product", method!(RbExpr::product, 0))?;
+    class.define_method("shrink_dtype", method!(RbExpr::shrink_dtype, 0))?;
+    class.define_method("str_parse_date", method!(RbExpr::str_parse_date, 3))?;
+    class.define_method("str_parse_datetime", method!(RbExpr::str_parse_datetime, 3))?;
+    class.define_method("str_parse_time", method!(RbExpr::str_parse_time, 3))?;
+    class.define_method("str_strip", method!(RbExpr::str_strip, 1))?;
+    class.define_method("str_rstrip", method!(RbExpr::str_rstrip, 1))?;
+    class.define_method("str_lstrip", method!(RbExpr::str_lstrip, 1))?;
+    class.define_method("str_slice", method!(RbExpr::str_slice, 2))?;
+    class.define_method("str_to_uppercase", method!(RbExpr::str_to_uppercase, 0))?;
+    class.define_method("str_to_lowercase", method!(RbExpr::str_to_lowercase, 0))?;
     class.define_method("str_lengths", method!(RbExpr::str_lengths, 0))?;
+    class.define_method("str_n_chars", method!(RbExpr::str_n_chars, 0))?;
+    class.define_method("str_replace", method!(RbExpr::str_replace, 3))?;
+    class.define_method("str_replace_all", method!(RbExpr::str_replace_all, 3))?;
     class.define_method("str_contains", method!(RbExpr::str_contains, 2))?;
+    class.define_method("str_ends_with", method!(RbExpr::str_ends_with, 1))?;
+    class.define_method("str_starts_with", method!(RbExpr::str_starts_with, 1))?;
+    class.define_method("str_extract", method!(RbExpr::str_extract, 2))?;
+    class.define_method("str_extract_all", method!(RbExpr::str_extract_all, 1))?;
+    class.define_method("count_match", method!(RbExpr::count_match, 1))?;
+    class.define_method("strftime", method!(RbExpr::strftime, 1))?;
+    class.define_method("str_split", method!(RbExpr::str_split, 1))?;
+    class.define_method(
+        "str_split_inclusive",
+        method!(RbExpr::str_split_inclusive, 1),
+    )?;
+    class.define_method("str_split_exact", method!(RbExpr::str_split_exact, 2))?;
+    class.define_method(
+        "str_split_exact_inclusive",
+        method!(RbExpr::str_split_exact_inclusive, 2),
+    )?;
+    class.define_method("str_splitn", method!(RbExpr::str_splitn, 2))?;
+    class.define_method("arr_lengths", method!(RbExpr::arr_lengths, 0))?;
+    class.define_method("arr_contains", method!(RbExpr::arr_contains, 1))?;
     class.define_method("prefix", method!(RbExpr::prefix, 1))?;
     class.define_method("suffix", method!(RbExpr::suffix, 1))?;
     class.define_method("interpolate", method!(RbExpr::interpolate, 0))?;
@@ -149,14 +257,26 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("when", function!(crate::lazy::dsl::when, 1))?;
 
     let class = module.define_class("RbLazyFrame", Default::default())?;
+    class.define_method("write_json", method!(RbLazyFrame::write_json, 1))?;
+    class.define_method("describe_plan", method!(RbLazyFrame::describe_plan, 0))?;
+    class.define_method(
+        "describe_optimized_plan",
+        method!(RbLazyFrame::describe_optimized_plan, 0),
+    )?;
     class.define_method(
         "optimization_toggle",
         method!(RbLazyFrame::optimization_toggle, 7),
     )?;
+    class.define_method("sort", method!(RbLazyFrame::sort, 3))?;
+    class.define_method("sort_by_exprs", method!(RbLazyFrame::sort_by_exprs, 3))?;
+    class.define_method("cache", method!(RbLazyFrame::cache, 0))?;
     class.define_method("collect", method!(RbLazyFrame::collect, 0))?;
+    class.define_method("fetch", method!(RbLazyFrame::fetch, 1))?;
     class.define_method("filter", method!(RbLazyFrame::filter, 1))?;
     class.define_method("select", method!(RbLazyFrame::select, 1))?;
     class.define_method("groupby", method!(RbLazyFrame::groupby, 2))?;
+    class.define_method("groupby_rolling", method!(RbLazyFrame::groupby_rolling, 5))?;
+    class.define_method("groupby_dynamic", method!(RbLazyFrame::groupby_dynamic, 8))?;
     class.define_method("join", method!(RbLazyFrame::join, 7))?;
     class.define_method("with_columns", method!(RbLazyFrame::with_columns, 1))?;
     class.define_method("rename", method!(RbLazyFrame::rename, 2))?;
@@ -189,6 +309,8 @@ fn init() -> RbResult<()> {
 
     let class = module.define_class("RbLazyGroupBy", Default::default())?;
     class.define_method("agg", method!(RbLazyGroupBy::agg, 1))?;
+    class.define_method("head", method!(RbLazyGroupBy::head, 1))?;
+    class.define_method("tail", method!(RbLazyGroupBy::tail, 1))?;
 
     let class = module.define_class("RbSeries", Default::default())?;
     class.define_singleton_method("new_opt_bool", function!(RbSeries::new_opt_bool, 3))?;
@@ -209,6 +331,7 @@ fn init() -> RbResult<()> {
         method!(RbSeries::is_sorted_reverse_flag, 0),
     )?;
     class.define_method("estimated_size", method!(RbSeries::estimated_size, 0))?;
+    class.define_method("get_fmt", method!(RbSeries::get_fmt, 2))?;
     class.define_method("rechunk", method!(RbSeries::rechunk, 1))?;
     class.define_method("get_idx", method!(RbSeries::get_idx, 1))?;
     class.define_method("bitand", method!(RbSeries::bitand, 1))?;
@@ -257,6 +380,7 @@ fn init() -> RbResult<()> {
     class.define_method("median", method!(RbSeries::median, 0))?;
     class.define_method("quantile", method!(RbSeries::quantile, 2))?;
     class.define_method("_clone", method!(RbSeries::clone, 0))?;
+    class.define_method("zip_with", method!(RbSeries::zip_with, 2))?;
     class.define_method("to_dummies", method!(RbSeries::to_dummies, 0))?;
     class.define_method("peak_max", method!(RbSeries::peak_max, 0))?;
     class.define_method("peak_min", method!(RbSeries::peak_min, 0))?;
@@ -264,6 +388,10 @@ fn init() -> RbResult<()> {
     class.define_method("floor", method!(RbSeries::floor, 0))?;
     class.define_method("shrink_to_fit", method!(RbSeries::shrink_to_fit, 0))?;
     class.define_method("dot", method!(RbSeries::dot, 1))?;
+    class.define_method("skew", method!(RbSeries::skew, 1))?;
+    class.define_method("kurtosis", method!(RbSeries::kurtosis, 2))?;
+    class.define_method("cast", method!(RbSeries::cast, 2))?;
+    class.define_method("time_unit", method!(RbSeries::time_unit, 0))?;
     // rest
     class.define_method("cumsum", method!(RbSeries::cumsum, 1))?;
     class.define_method("cummax", method!(RbSeries::cummax, 1))?;

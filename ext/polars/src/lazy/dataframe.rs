@@ -1,11 +1,13 @@
-use magnus::{RArray, RHash};
+use magnus::{RArray, RHash, Value};
 use polars::lazy::frame::{LazyFrame, LazyGroupBy};
 use polars::prelude::*;
 use std::cell::RefCell;
+use std::io::BufWriter;
 
 use crate::conversion::*;
+use crate::file::get_file_like;
 use crate::lazy::utils::rb_exprs_to_exprs;
-use crate::{RbDataFrame, RbExpr, RbPolarsErr, RbResult};
+use crate::{RbDataFrame, RbExpr, RbPolarsErr, RbResult, RbValueError};
 
 #[magnus::wrap(class = "Polars::RbLazyGroupBy")]
 pub struct RbLazyGroupBy {
@@ -17,6 +19,16 @@ impl RbLazyGroupBy {
         let lgb = self.lgb.borrow_mut().take().unwrap();
         let aggs = rb_exprs_to_exprs(aggs)?;
         Ok(lgb.agg(aggs).into())
+    }
+
+    pub fn head(&self, n: usize) -> RbLazyFrame {
+        let lgb = self.lgb.take().unwrap();
+        lgb.head(Some(n)).into()
+    }
+
+    pub fn tail(&self, n: usize) -> RbLazyFrame {
+        let lgb = self.lgb.take().unwrap();
+        lgb.tail(Some(n)).into()
     }
 }
 
@@ -40,6 +52,25 @@ impl From<LazyFrame> for RbLazyFrame {
 }
 
 impl RbLazyFrame {
+    pub fn write_json(&self, rb_f: Value) -> RbResult<()> {
+        let file = BufWriter::new(get_file_like(rb_f, true)?);
+        serde_json::to_writer(file, &self.ldf.logical_plan)
+            .map_err(|err| RbValueError::new_err(format!("{:?}", err)))?;
+        Ok(())
+    }
+
+    pub fn describe_plan(&self) -> String {
+        self.ldf.describe_plan()
+    }
+
+    pub fn describe_optimized_plan(&self) -> RbResult<String> {
+        let result = self
+            .ldf
+            .describe_optimized_plan()
+            .map_err(RbPolarsErr::from)?;
+        Ok(result)
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn optimization_toggle(
         &self,
@@ -63,18 +94,52 @@ impl RbLazyFrame {
         ldf.into()
     }
 
+    pub fn sort(&self, by_column: String, reverse: bool, nulls_last: bool) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.sort(
+            &by_column,
+            SortOptions {
+                descending: reverse,
+                nulls_last,
+            },
+        )
+        .into()
+    }
+
+    pub fn sort_by_exprs(
+        &self,
+        by_column: RArray,
+        reverse: Vec<bool>,
+        nulls_last: bool,
+    ) -> RbResult<Self> {
+        let ldf = self.ldf.clone();
+        let exprs = rb_exprs_to_exprs(by_column)?;
+        Ok(ldf.sort_by_exprs(exprs, reverse, nulls_last).into())
+    }
+
+    pub fn cache(&self) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.cache().into()
+    }
+
     pub fn collect(&self) -> RbResult<RbDataFrame> {
         let ldf = self.ldf.clone();
         let df = ldf.collect().map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }
 
-    pub fn filter(&self, predicate: &RbExpr) -> RbLazyFrame {
+    pub fn fetch(&self, n_rows: usize) -> RbResult<RbDataFrame> {
+        let ldf = self.ldf.clone();
+        let df = ldf.fetch(n_rows).map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
+    pub fn filter(&self, predicate: &RbExpr) -> Self {
         let ldf = self.ldf.clone();
         ldf.filter(predicate.inner.clone()).into()
     }
 
-    pub fn select(&self, exprs: RArray) -> RbResult<RbLazyFrame> {
+    pub fn select(&self, exprs: RArray) -> RbResult<Self> {
         let ldf = self.ldf.clone();
         let exprs = rb_exprs_to_exprs(exprs)?;
         Ok(ldf.select(exprs).into())
@@ -88,6 +153,65 @@ impl RbLazyFrame {
         } else {
             ldf.groupby(by)
         };
+        Ok(RbLazyGroupBy {
+            lgb: RefCell::new(Some(lazy_gb)),
+        })
+    }
+
+    pub fn groupby_rolling(
+        &self,
+        index_column: String,
+        period: String,
+        offset: String,
+        closed: String,
+        by: RArray,
+    ) -> RbResult<RbLazyGroupBy> {
+        let closed_window = wrap_closed_window(&closed)?;
+        let ldf = self.ldf.clone();
+        let by = rb_exprs_to_exprs(by)?;
+        let lazy_gb = ldf.groupby_rolling(
+            by,
+            RollingGroupOptions {
+                index_column,
+                period: Duration::parse(&period),
+                offset: Duration::parse(&offset),
+                closed_window,
+            },
+        );
+
+        Ok(RbLazyGroupBy {
+            lgb: RefCell::new(Some(lazy_gb)),
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn groupby_dynamic(
+        &self,
+        index_column: String,
+        every: String,
+        period: String,
+        offset: String,
+        truncate: bool,
+        include_boundaries: bool,
+        closed: String,
+        by: RArray,
+    ) -> RbResult<RbLazyGroupBy> {
+        let closed_window = wrap_closed_window(&closed)?;
+        let by = rb_exprs_to_exprs(by)?;
+        let ldf = self.ldf.clone();
+        let lazy_gb = ldf.groupby_dynamic(
+            by,
+            DynamicGroupOptions {
+                index_column,
+                every: Duration::parse(&every),
+                period: Duration::parse(&period),
+                offset: Duration::parse(&offset),
+                truncate,
+                include_boundaries,
+                closed_window,
+            },
+        );
+
         Ok(RbLazyGroupBy {
             lgb: RefCell::new(Some(lazy_gb)),
         })
@@ -124,12 +248,12 @@ impl RbLazyFrame {
             .into())
     }
 
-    pub fn with_columns(&self, exprs: RArray) -> RbResult<RbLazyFrame> {
+    pub fn with_columns(&self, exprs: RArray) -> RbResult<Self> {
         let ldf = self.ldf.clone();
         Ok(ldf.with_columns(rb_exprs_to_exprs(exprs)?).into())
     }
 
-    pub fn rename(&self, existing: Vec<String>, new: Vec<String>) -> RbLazyFrame {
+    pub fn rename(&self, existing: Vec<String>, new: Vec<String>) -> Self {
         let ldf = self.ldf.clone();
         ldf.rename(existing, new).into()
     }

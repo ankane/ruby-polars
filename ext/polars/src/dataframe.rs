@@ -281,6 +281,28 @@ impl RbDataFrame {
             .map_err(RbPolarsErr::from)
     }
 
+    pub fn select(&self, selection: Vec<String>) -> RbResult<Self> {
+        let df = self
+            .df
+            .borrow()
+            .select(selection)
+            .map_err(RbPolarsErr::from)?;
+        Ok(RbDataFrame::new(df))
+    }
+
+    pub fn take(&self, indices: Vec<IdxSize>) -> RbResult<Self> {
+        let indices = IdxCa::from_vec("", indices);
+        let df = self.df.borrow().take(&indices).map_err(RbPolarsErr::from)?;
+        Ok(RbDataFrame::new(df))
+    }
+
+    pub fn take_with_series(&self, indices: &RbSeries) -> RbResult<Self> {
+        let binding = indices.series.borrow();
+        let idx = binding.idx().map_err(RbPolarsErr::from)?;
+        let df = self.df.borrow().take(idx).map_err(RbPolarsErr::from)?;
+        Ok(RbDataFrame::new(df))
+    }
+
     pub fn sort(&self, by_column: String, reverse: bool, nulls_last: bool) -> RbResult<Self> {
         let df = self
             .df
@@ -358,8 +380,65 @@ impl RbDataFrame {
         }
     }
 
+    pub fn with_row_count(&self, name: String, offset: Option<IdxSize>) -> RbResult<Self> {
+        let df = self
+            .df
+            .borrow()
+            .with_row_count(&name, offset)
+            .map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
     pub fn clone(&self) -> Self {
         RbDataFrame::new(self.df.borrow().clone())
+    }
+
+    pub fn melt(
+        &self,
+        id_vars: Vec<String>,
+        value_vars: Vec<String>,
+        value_name: Option<String>,
+        variable_name: Option<String>,
+    ) -> RbResult<Self> {
+        let args = MeltArgs {
+            id_vars,
+            value_vars,
+            value_name,
+            variable_name,
+        };
+
+        let df = self.df.borrow().melt2(args).map_err(RbPolarsErr::from)?;
+        Ok(RbDataFrame::new(df))
+    }
+
+    pub fn partition_by(&self, groups: Vec<String>, stable: bool) -> RbResult<Vec<Self>> {
+        let out = if stable {
+            self.df.borrow().partition_by_stable(groups)
+        } else {
+            self.df.borrow().partition_by(groups)
+        }
+        .map_err(RbPolarsErr::from)?;
+        Ok(out.into_iter().map(|v| RbDataFrame::new(v)).collect())
+    }
+
+    pub fn shift(&self, periods: i64) -> Self {
+        self.df.borrow().shift(periods).into()
+    }
+
+    pub fn unique(
+        &self,
+        maintain_order: bool,
+        subset: Option<Vec<String>>,
+        keep: String,
+    ) -> RbResult<Self> {
+        let keep = wrap_unique_keep_strategy(&keep)?;
+        let subset = subset.as_ref().map(|v| v.as_ref());
+        let df = match maintain_order {
+            true => self.df.borrow().unique_stable(subset, keep),
+            false => self.df.borrow().unique(subset, keep),
+        }
+        .map_err(RbPolarsErr::from)?;
+        Ok(df.into())
     }
 
     pub fn lazy(&self) -> RbLazyFrame {
@@ -424,8 +503,79 @@ impl RbDataFrame {
         Ok(s.map(|s| s.into()))
     }
 
+    pub fn quantile(&self, quantile: f64, interpolation: String) -> RbResult<Self> {
+        let interpolation = wrap_quantile_interpol_options(&interpolation)?;
+        let df = self
+            .df
+            .borrow()
+            .quantile(quantile, interpolation)
+            .map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
+    pub fn to_dummies(&self, columns: Option<Vec<String>>) -> RbResult<Self> {
+        let df = match columns {
+            Some(cols) => self
+                .df
+                .borrow()
+                .columns_to_dummies(cols.iter().map(|x| x as &str).collect()),
+            None => self.df.borrow().to_dummies(),
+        }
+        .map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
     pub fn null_count(&self) -> Self {
         let df = self.df.borrow().null_count();
         df.into()
+    }
+
+    pub fn shrink_to_fit(&self) {
+        self.df.borrow_mut().shrink_to_fit();
+    }
+
+    pub fn transpose(&self, include_header: bool, names: String) -> RbResult<Self> {
+        let mut df = self.df.borrow().transpose().map_err(RbPolarsErr::from)?;
+        if include_header {
+            let s = Utf8Chunked::from_iter_values(
+                &names,
+                self.df.borrow().get_columns().iter().map(|s| s.name()),
+            )
+            .into_series();
+            df.insert_at_idx(0, s).unwrap();
+        }
+        Ok(df.into())
+    }
+
+    pub fn upsample(
+        &self,
+        by: Vec<String>,
+        index_column: String,
+        every: String,
+        offset: String,
+        stable: bool,
+    ) -> RbResult<Self> {
+        let out = if stable {
+            self.df.borrow().upsample_stable(
+                by,
+                &index_column,
+                Duration::parse(&every),
+                Duration::parse(&offset),
+            )
+        } else {
+            self.df.borrow().upsample(
+                by,
+                &index_column,
+                Duration::parse(&every),
+                Duration::parse(&offset),
+            )
+        };
+        let out = out.map_err(RbPolarsErr::from)?;
+        Ok(out.into())
+    }
+
+    pub fn unnest(&self, names: Vec<String>) -> RbResult<Self> {
+        let df = self.df.borrow().unnest(names).map_err(RbPolarsErr::from)?;
+        Ok(df.into())
     }
 }

@@ -127,6 +127,25 @@ impl RbSeries {
         self.series.borrow().estimated_size()
     }
 
+    pub fn get_fmt(&self, index: usize, str_lengths: usize) -> String {
+        let val = format!("{}", self.series.borrow().get(index));
+        if let DataType::Utf8 | DataType::Categorical(_) = self.series.borrow().dtype() {
+            let v_trunc = &val[..val
+                .char_indices()
+                .take(str_lengths)
+                .last()
+                .map(|(i, c)| i + c.len_utf8())
+                .unwrap_or(0)];
+            if val == v_trunc {
+                val
+            } else {
+                format!("{}...", v_trunc)
+            }
+        } else {
+            val
+        }
+    }
+
     pub fn rechunk(&self, in_place: bool) -> Option<Self> {
         let series = self.series.borrow_mut().rechunk();
         if in_place {
@@ -138,7 +157,7 @@ impl RbSeries {
     }
 
     pub fn get_idx(&self, idx: usize) -> Value {
-        wrap(self.series.borrow().get(idx))
+        wrap_any_value(self.series.borrow().get(idx))
     }
 
     pub fn bitand(&self, other: &RbSeries) -> RbResult<Self> {
@@ -213,15 +232,15 @@ impl RbSeries {
     }
 
     pub fn max(&self) -> Value {
-        wrap(self.series.borrow().max_as_series().get(0))
+        wrap_any_value(self.series.borrow().max_as_series().get(0))
     }
 
     pub fn min(&self) -> Value {
-        wrap(self.series.borrow().min_as_series().get(0))
+        wrap_any_value(self.series.borrow().min_as_series().get(0))
     }
 
     pub fn sum(&self) -> Value {
-        wrap(self.series.borrow().sum_as_series().get(0))
+        wrap_any_value(self.series.borrow().sum_as_series().get(0))
     }
 
     pub fn n_chunks(&self) -> usize {
@@ -473,7 +492,7 @@ impl RbSeries {
 
     pub fn quantile(&self, quantile: f64, interpolation: String) -> RbResult<Value> {
         let interpolation = wrap_quantile_interpol_options(&interpolation)?;
-        Ok(wrap(
+        Ok(wrap_any_value(
             self.series
                 .borrow()
                 .quantile_as_series(quantile, interpolation)
@@ -484,6 +503,17 @@ impl RbSeries {
 
     pub fn clone(&self) -> Self {
         RbSeries::new(self.series.borrow().clone())
+    }
+
+    pub fn zip_with(&self, mask: &RbSeries, other: &RbSeries) -> RbResult<Self> {
+        let binding = mask.series.borrow();
+        let mask = binding.bool().map_err(RbPolarsErr::from)?;
+        let s = self
+            .series
+            .borrow()
+            .zip_with(mask, &other.series.borrow())
+            .map_err(RbPolarsErr::from)?;
+        Ok(RbSeries::new(s))
     }
 
     pub fn to_dummies(&self) -> RbResult<RbDataFrame> {
@@ -519,6 +549,46 @@ impl RbSeries {
 
     pub fn dot(&self, other: &RbSeries) -> Option<f64> {
         self.series.borrow().dot(&other.series.borrow())
+    }
+
+    pub fn skew(&self, bias: bool) -> RbResult<Option<f64>> {
+        let out = self.series.borrow().skew(bias).map_err(RbPolarsErr::from)?;
+        Ok(out)
+    }
+
+    pub fn kurtosis(&self, fisher: bool, bias: bool) -> RbResult<Option<f64>> {
+        let out = self
+            .series
+            .borrow()
+            .kurtosis(fisher, bias)
+            .map_err(RbPolarsErr::from)?;
+        Ok(out)
+    }
+
+    pub fn cast(&self, dtype: String, strict: bool) -> RbResult<Self> {
+        let dtype = wrap_data_type(&dtype)?;
+        let out = if strict {
+            self.series.borrow().strict_cast(&dtype)
+        } else {
+            self.series.borrow().cast(&dtype)
+        };
+        let out = out.map_err(RbPolarsErr::from)?;
+        Ok(out.into())
+    }
+
+    pub fn time_unit(&self) -> Option<String> {
+        if let DataType::Datetime(tu, _) | DataType::Duration(tu) = self.series.borrow().dtype() {
+            Some(
+                match tu {
+                    TimeUnit::Nanoseconds => "ns",
+                    TimeUnit::Microseconds => "us",
+                    TimeUnit::Milliseconds => "ms",
+                }
+                .to_string(),
+            )
+        } else {
+            None
+        }
     }
 
     // dispatch dynamically in future?

@@ -6,7 +6,7 @@ use polars::prelude::*;
 
 use crate::{RbDataFrame, RbResult, RbValueError};
 
-pub fn wrap(val: AnyValue) -> Value {
+pub fn wrap_any_value(val: AnyValue) -> Value {
     match val {
         AnyValue::UInt8(v) => Value::from(v),
         AnyValue::UInt16(v) => Value::from(v),
@@ -23,6 +23,30 @@ pub fn wrap(val: AnyValue) -> Value {
         AnyValue::Utf8(v) => Value::from(v),
         _ => todo!(),
     }
+}
+
+pub fn wrap_data_type(ob: &str) -> RbResult<DataType> {
+    let dtype = match ob {
+        "u8" => DataType::UInt8,
+        "u16" => DataType::UInt16,
+        "u32" => DataType::UInt32,
+        "u64" => DataType::UInt64,
+        "i8" => DataType::Int8,
+        "i16" => DataType::Int16,
+        "i32" => DataType::Int32,
+        "i64" => DataType::Int64,
+        "str" => DataType::Utf8,
+        "bool" => DataType::Boolean,
+        "f32" => DataType::Float32,
+        "f64" => DataType::Float64,
+        _ => {
+            return Err(RbValueError::new_err(format!(
+                "{} is not a supported polars DataType.",
+                ob
+            )))
+        }
+    };
+    Ok(dtype)
 }
 
 pub fn parse_fill_null_strategy(
@@ -69,6 +93,22 @@ pub fn wrap_join_type(ob: &str) -> RbResult<JoinType> {
 pub fn get_df(obj: Value) -> RbResult<DataFrame> {
     let rbdf = obj.funcall::<_, _, &RbDataFrame>("_df", ())?;
     Ok(rbdf.df.borrow().clone())
+}
+
+pub fn wrap_closed_window(ob: &str) -> RbResult<ClosedWindow> {
+    let parsed = match ob {
+        "left" => ClosedWindow::Left,
+        "right" => ClosedWindow::Right,
+        "both" => ClosedWindow::Both,
+        "none" => ClosedWindow::None,
+        v => {
+            return Err(RbValueError::new_err(format!(
+                "closed must be one of {{'left', 'right', 'both', 'none'}}, got {}",
+                v
+            )))
+        }
+    };
+    Ok(parsed)
 }
 
 pub fn wrap_unique_keep_strategy(ob: &str) -> RbResult<UniqueKeepStrategy> {
