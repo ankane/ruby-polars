@@ -23,7 +23,11 @@ end
 class Minitest::Test
   def assert_series(exp, act, dtype: nil)
     assert_kind_of Polars::Series, act
-    assert_equal exp.to_a, act.to_a
+    if exp.is_a?(Polars::Series)
+      assert exp.series_equal(act)
+    else
+      assert_equal exp.to_a, act.to_a
+    end
     assert_equal dtype, act.dtype if dtype
   end
 

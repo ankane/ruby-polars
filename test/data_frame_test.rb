@@ -86,7 +86,9 @@ class DataFrameTest < Minitest::Test
   end
 
   def test_to_series
-    # TODO
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_series df["a"], df.to_series
+    assert_series df["b"], df.to_series(-1)
   end
 
   def test_reverse
@@ -147,5 +149,23 @@ class DataFrameTest < Minitest::Test
   def test_get_column
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_series [1, 2, 3], df.get_column("a")
+  end
+
+  def test_lazy
+  end
+
+  def test_select
+  end
+
+  def test_mean
+  end
+
+  def test_with_columns
+  end
+
+  def test_rechunk
+  end
+
+  def test_null_count
   end
 end
