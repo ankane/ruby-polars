@@ -343,8 +343,15 @@ module Polars
       end
     end
 
-    # def min(axis: 0)
-    # end
+    def min(axis: 0)
+      if axis == 0
+        _from_rbdf(_df.min)
+      elsif axis == 1
+        Utils.wrap_s(_df.hmin)
+      else
+        raise ArgumentError, "Axis should be 0 or 1."
+      end
+    end
 
     # def sum(axis: 0, null_strategy: "ignore")
     # end

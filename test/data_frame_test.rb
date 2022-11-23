@@ -189,12 +189,15 @@ class DataFrameTest < Minitest::Test
   end
 
   def test_max
-    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
-    assert_frame ({"a" => [3], "b" => [6]}), df.max
+    df = Polars::DataFrame.new({"a" => [1, 5, 3], "b" => [4, 2, 6]})
+    assert_frame ({"a" => [5], "b" => [6]}), df.max
     assert_series [4, 5, 6], df.max(axis: 1)
   end
 
   def test_min
+    df = Polars::DataFrame.new({"a" => [1, 5, 3], "b" => [4, 2, 6]})
+    assert_frame ({"a" => [1], "b" => [2]}), df.min
+    assert_series [1, 2, 3], df.min(axis: 1)
   end
 
   def test_sum
