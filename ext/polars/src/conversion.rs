@@ -115,18 +115,20 @@ pub fn wrap_closed_window(ob: &str) -> RbResult<ClosedWindow> {
     Ok(parsed)
 }
 
-pub fn wrap_unique_keep_strategy(ob: &str) -> RbResult<UniqueKeepStrategy> {
-    let parsed = match ob {
-        "first" => UniqueKeepStrategy::First,
-        "last" => UniqueKeepStrategy::Last,
-        v => {
-            return Err(RbValueError::new_err(format!(
-                "keep must be one of {{'first', 'last'}}, got {}",
-                v
-            )))
-        }
-    };
-    Ok(parsed)
+impl TryConvert for Wrap<UniqueKeepStrategy> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "first" => UniqueKeepStrategy::First,
+            "last" => UniqueKeepStrategy::Last,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "keep must be one of {{'first', 'last'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
 }
 
 pub fn parse_parquet_compression(

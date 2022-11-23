@@ -328,13 +328,12 @@ impl RbLazyFrame {
         &self,
         maintain_order: bool,
         subset: Option<Vec<String>>,
-        keep: String,
+        keep: Wrap<UniqueKeepStrategy>,
     ) -> RbResult<Self> {
-        let keep = wrap_unique_keep_strategy(&keep)?;
         let ldf = self.ldf.clone();
         Ok(match maintain_order {
-            true => ldf.unique_stable(subset, keep),
-            false => ldf.unique(subset, keep),
+            true => ldf.unique_stable(subset, keep.0),
+            false => ldf.unique(subset, keep.0),
         }
         .into())
     }

@@ -429,13 +429,12 @@ impl RbDataFrame {
         &self,
         maintain_order: bool,
         subset: Option<Vec<String>>,
-        keep: String,
+        keep: Wrap<UniqueKeepStrategy>,
     ) -> RbResult<Self> {
-        let keep = wrap_unique_keep_strategy(&keep)?;
         let subset = subset.as_ref().map(|v| v.as_ref());
         let df = match maintain_order {
-            true => self.df.borrow().unique_stable(subset, keep),
-            false => self.df.borrow().unique(subset, keep),
+            true => self.df.borrow().unique_stable(subset, keep.0),
+            false => self.df.borrow().unique(subset, keep.0),
         }
         .map_err(RbPolarsErr::from)?;
         Ok(df.into())
