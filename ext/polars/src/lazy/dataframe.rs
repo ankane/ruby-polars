@@ -163,10 +163,10 @@ impl RbLazyFrame {
         index_column: String,
         period: String,
         offset: String,
-        closed: String,
+        closed: Wrap<ClosedWindow>,
         by: RArray,
     ) -> RbResult<RbLazyGroupBy> {
-        let closed_window = wrap_closed_window(&closed)?;
+        let closed_window = closed.0;
         let ldf = self.ldf.clone();
         let by = rb_exprs_to_exprs(by)?;
         let lazy_gb = ldf.groupby_rolling(
@@ -193,10 +193,10 @@ impl RbLazyFrame {
         offset: String,
         truncate: bool,
         include_boundaries: bool,
-        closed: String,
+        closed: Wrap<ClosedWindow>,
         by: RArray,
     ) -> RbResult<RbLazyGroupBy> {
-        let closed_window = wrap_closed_window(&closed)?;
+        let closed_window = closed.0;
         let by = rb_exprs_to_exprs(by)?;
         let ldf = self.ldf.clone();
         let lazy_gb = ldf.groupby_dynamic(

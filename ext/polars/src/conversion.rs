@@ -99,20 +99,22 @@ pub fn get_df(obj: Value) -> RbResult<DataFrame> {
     Ok(rbdf.df.borrow().clone())
 }
 
-pub fn wrap_closed_window(ob: &str) -> RbResult<ClosedWindow> {
-    let parsed = match ob {
-        "left" => ClosedWindow::Left,
-        "right" => ClosedWindow::Right,
-        "both" => ClosedWindow::Both,
-        "none" => ClosedWindow::None,
-        v => {
-            return Err(RbValueError::new_err(format!(
-                "closed must be one of {{'left', 'right', 'both', 'none'}}, got {}",
-                v
-            )))
-        }
-    };
-    Ok(parsed)
+impl TryConvert for Wrap<ClosedWindow> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "left" => ClosedWindow::Left,
+            "right" => ClosedWindow::Right,
+            "both" => ClosedWindow::Both,
+            "none" => ClosedWindow::None,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "closed must be one of {{'left', 'right', 'both', 'none'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
 }
 
 impl TryConvert for Wrap<UniqueKeepStrategy> {
