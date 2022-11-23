@@ -46,6 +46,12 @@ class DataFrameTest < Minitest::Test
     assert_equal ["a", "b"], df.columns
   end
 
+  def test_set_columns
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    df.columns = ["c", "d"]
+    assert_equal ["c", "d"], df.columns
+  end
+
   def test_dtypes
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_equal [:i64, :str], df.dtypes

@@ -79,6 +79,10 @@ module Polars
       _df.columns
     end
 
+    def columns=(columns)
+      _df.set_column_names(columns)
+    end
+
     def dtypes
       _df.dtypes.map(&:to_sym)
     end

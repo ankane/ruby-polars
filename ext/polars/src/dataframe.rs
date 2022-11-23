@@ -222,6 +222,14 @@ impl RbDataFrame {
             .collect()
     }
 
+    pub fn set_column_names(&self, names: Vec<String>) -> RbResult<()> {
+        self.df
+            .borrow_mut()
+            .set_column_names(&names)
+            .map_err(RbPolarsErr::from)?;
+        Ok(())
+    }
+
     pub fn dtypes(&self) -> Vec<String> {
         self.df
             .borrow()
@@ -274,10 +282,10 @@ impl RbDataFrame {
     }
 
     pub fn slice(&self, offset: usize, length: Option<usize>) -> Self {
-        let df = self
-            .df
-            .borrow()
-            .slice(offset as i64, length.unwrap_or_else(|| self.df.borrow().height()));
+        let df = self.df.borrow().slice(
+            offset as i64,
+            length.unwrap_or_else(|| self.df.borrow().height()),
+        );
         df.into()
     }
 

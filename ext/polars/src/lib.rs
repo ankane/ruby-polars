@@ -49,6 +49,10 @@ fn init() -> RbResult<()> {
     class.define_method("rechunk", method!(RbDataFrame::rechunk, 0))?;
     class.define_method("to_s", method!(RbDataFrame::to_s, 0))?;
     class.define_method("columns", method!(RbDataFrame::columns, 0))?;
+    class.define_method(
+        "set_column_names",
+        method!(RbDataFrame::set_column_names, 1),
+    )?;
     class.define_method("dtypes", method!(RbDataFrame::dtypes, 0))?;
     class.define_method("shape", method!(RbDataFrame::shape, 0))?;
     class.define_method("height", method!(RbDataFrame::height, 0))?;
