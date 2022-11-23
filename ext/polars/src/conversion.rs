@@ -154,6 +154,23 @@ impl TryConvert for Wrap<QuantileInterpolOptions> {
     }
 }
 
+impl TryConvert for Wrap<TimeUnit> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "ns" => TimeUnit::Nanoseconds,
+            "us" => TimeUnit::Microseconds,
+            "ms" => TimeUnit::Milliseconds,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "time unit must be one of {{'ns', 'us', 'ms'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<UniqueKeepStrategy> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match ob.try_convert::<String>()?.as_str() {
