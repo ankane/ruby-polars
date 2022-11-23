@@ -29,28 +29,30 @@ impl Into<Value> for Wrap<AnyValue<'_>> {
     }
 }
 
-pub fn wrap_data_type(ob: &str) -> RbResult<DataType> {
-    let dtype = match ob {
-        "u8" => DataType::UInt8,
-        "u16" => DataType::UInt16,
-        "u32" => DataType::UInt32,
-        "u64" => DataType::UInt64,
-        "i8" => DataType::Int8,
-        "i16" => DataType::Int16,
-        "i32" => DataType::Int32,
-        "i64" => DataType::Int64,
-        "str" => DataType::Utf8,
-        "bool" => DataType::Boolean,
-        "f32" => DataType::Float32,
-        "f64" => DataType::Float64,
-        _ => {
-            return Err(RbValueError::new_err(format!(
-                "{} is not a supported polars DataType.",
-                ob
-            )))
-        }
-    };
-    Ok(dtype)
+impl TryConvert for Wrap<DataType> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let dtype = match ob.try_convert::<String>()?.as_str() {
+            "u8" => DataType::UInt8,
+            "u16" => DataType::UInt16,
+            "u32" => DataType::UInt32,
+            "u64" => DataType::UInt64,
+            "i8" => DataType::Int8,
+            "i16" => DataType::Int16,
+            "i32" => DataType::Int32,
+            "i64" => DataType::Int64,
+            "str" => DataType::Utf8,
+            "bool" => DataType::Boolean,
+            "f32" => DataType::Float32,
+            "f64" => DataType::Float64,
+            _ => {
+                return Err(RbValueError::new_err(format!(
+                    "{} is not a supported polars DataType.",
+                    ob
+                )))
+            }
+        };
+        Ok(Wrap(dtype))
+    }
 }
 
 pub fn parse_fill_null_strategy(
@@ -85,12 +87,10 @@ impl TryConvert for Wrap<JoinType> {
             "anti" => JoinType::Anti,
             // #[cfg(feature = "cross_join")]
             // "cross" => JoinType::Cross,
-            v => {
-                return Err(RbValueError::new_err(format!(
-                    "how must be one of {{'inner', 'left', 'outer', 'semi', 'anti', 'cross'}}, got {}",
-                    v
-                )))
-            }
+            v => return Err(RbValueError::new_err(format!(
+                "how must be one of {{'inner', 'left', 'outer', 'semi', 'anti', 'cross'}}, got {}",
+                v
+            ))),
         };
         Ok(Wrap(parsed))
     }

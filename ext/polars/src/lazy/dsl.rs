@@ -190,8 +190,8 @@ impl RbExpr {
         self.inner.clone().null_count().into()
     }
 
-    pub fn cast(&self, data_type: String, strict: bool) -> RbResult<Self> {
-        let dt = wrap_data_type(&data_type)?;
+    pub fn cast(&self, data_type: Wrap<DataType>, strict: bool) -> RbResult<Self> {
+        let dt = data_type.0;
         let expr = if strict {
             self.inner.clone().strict_cast(dt)
         } else {

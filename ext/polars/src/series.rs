@@ -569,8 +569,8 @@ impl RbSeries {
         Ok(out)
     }
 
-    pub fn cast(&self, dtype: String, strict: bool) -> RbResult<Self> {
-        let dtype = wrap_data_type(&dtype)?;
+    pub fn cast(&self, dtype: Wrap<DataType>, strict: bool) -> RbResult<Self> {
+        let dtype = dtype.0;
         let out = if strict {
             self.series.borrow().strict_cast(&dtype)
         } else {
