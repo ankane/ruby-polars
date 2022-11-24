@@ -25,9 +25,24 @@ module Polars
       wrap_expr(_rbexpr._or(_to_rbexpr(other)))
     end
 
+    # def +(other)
+    # end
+
+    # def -(other)
+    # end
+
     def *(other)
       wrap_expr(_rbexpr * _to_rbexpr(other))
     end
+
+    # def /(other)
+    # end
+
+    # def %(other)
+    # end
+
+    # def **(power)
+    # end
 
     def >=(other)
       wrap_expr(_rbexpr.gt_eq(_to_expr(other)._rbexpr))
@@ -53,6 +68,9 @@ module Polars
       wrap_expr(_rbexpr.gt(_to_expr(other)._rbexpr))
     end
 
+    # def to_physical
+    # end
+
     def any
       wrap_expr(_rbexpr.any)
     end
@@ -61,13 +79,34 @@ module Polars
       wrap_expr(_rbexpr.all)
     end
 
+    # def sqrt
+    # end
+
+    # def log10
+    # end
+
+    # def exp
+    # end
+
     def alias(name)
       wrap_expr(_rbexpr._alias(name))
     end
 
+    # def exclude
+    # end
+
+    # def keep_name
+    # end
+
+    # def prefix
+    # end
+
     def suffix(suffix)
       wrap_expr(_rbexpr.suffix(suffix))
     end
+
+    # def map_alias
+    # end
 
     def is_not
       wrap_expr(_rbexpr.is_not)
@@ -81,6 +120,21 @@ module Polars
       wrap_expr(_rbexpr.is_not_null)
     end
 
+    # def is_finite
+    # end
+
+    # def is_infinite
+    # end
+
+    # def is_nan
+    # end
+
+    # def is_not_nan
+    # end
+
+    # def agg_groups
+    # end
+
     def count
       wrap_expr(_rbexpr.count)
     end
@@ -88,6 +142,54 @@ module Polars
     def len
       count
     end
+
+    # def slice
+    # end
+
+    # def append
+    # end
+
+    # def rechunk
+    # end
+
+    # def drop_nulls
+    # end
+
+    # def drop_nans
+    # end
+
+    # def cumsum
+    # end
+
+    # def cumprod
+    # end
+
+    # def cummin
+    # end
+
+    # def cummax
+    # end
+
+    # def cumcount
+    # end
+
+    # def floor
+    # end
+
+    # def ceil
+    # end
+
+    # def round
+    # end
+
+    # def dot
+    # end
+
+    # def mode
+    # end
+
+    # def cast
+    # end
 
     def sort(reverse: false, nulls_last: false)
       wrap_expr(_rbexpr.sort_with(reverse, nulls_last))
