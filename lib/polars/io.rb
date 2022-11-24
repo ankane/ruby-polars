@@ -143,8 +143,33 @@ module Polars
     # def scan_ipc
     # end
 
-    # def scan_parquet
-    # end
+    def scan_parquet(
+      file,
+      n_rows: nil,
+      cache: true,
+      parallel: "auto",
+      rechunk: true,
+      row_count_name: nil,
+      row_count_offset: 0,
+      storage_options: nil,
+      low_memory: false
+    )
+      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+        file = Utils.format_path(file)
+      end
+
+      LazyFrame._scan_parquet(
+        file,
+        n_rows:n_rows,
+        cache: cache,
+        parallel: parallel,
+        rechunk: rechunk,
+        row_count_name: row_count_name,
+        row_count_offset: row_count_offset,
+        storage_options: storage_options,
+        low_memory: low_memory
+      )
+    end
 
     def scan_ndjson(
       file,

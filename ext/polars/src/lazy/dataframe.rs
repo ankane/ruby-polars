@@ -53,7 +53,6 @@ impl From<LazyFrame> for RbLazyFrame {
 }
 
 impl RbLazyFrame {
-    #[allow(clippy::too_many_arguments)]
     pub fn new_from_ndjson(
         path: String,
         infer_schema_length: Option<usize>,
@@ -141,6 +140,48 @@ impl RbLazyFrame {
         }
 
         Ok(r.finish().map_err(RbPolarsErr::from)?.into())
+    }
+
+    pub fn new_from_parquet(
+        path: String,
+        n_rows: Option<usize>,
+        cache: bool,
+        parallel: Wrap<ParallelStrategy>,
+        rechunk: bool,
+        row_count: Option<(String, IdxSize)>,
+        low_memory: bool,
+    ) -> RbResult<Self> {
+        let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
+        let args = ScanArgsParquet {
+            n_rows,
+            cache,
+            parallel: parallel.0,
+            rechunk,
+            row_count,
+            low_memory,
+        };
+        let lf = LazyFrame::scan_parquet(path, args).map_err(RbPolarsErr::from)?;
+        Ok(lf.into())
+    }
+
+    pub fn new_from_ipc(
+        path: String,
+        n_rows: Option<usize>,
+        cache: bool,
+        rechunk: bool,
+        row_count: Option<(String, IdxSize)>,
+        memory_map: bool,
+    ) -> RbResult<Self> {
+        let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
+        let args = ScanArgsIpc {
+            n_rows,
+            cache,
+            rechunk,
+            row_count,
+            memmap: memory_map,
+        };
+        let lf = LazyFrame::scan_ipc(path, args).map_err(RbPolarsErr::from)?;
+        Ok(lf.into())
     }
 
     pub fn write_json(&self, rb_f: Value) -> RbResult<()> {

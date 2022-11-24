@@ -66,8 +66,29 @@ module Polars
       )
     end
 
-    # def self._scan_parquet
-    # end
+    def self._scan_parquet(
+      file,
+      n_rows: nil,
+      cache: true,
+      parallel: "auto",
+      rechunk: true,
+      row_count_name: nil,
+      row_count_offset: 0,
+      storage_options: nil,
+      low_memory: false
+    )
+      _from_rbldf(
+        RbLazyFrame.new_from_parquet(
+          file,
+          n_rows,
+          cache,
+          parallel,
+          rechunk,
+          Utils._prepare_row_count_args(row_count_name, row_count_offset),
+          low_memory
+        )
+      )
+    end
 
     # def self._scan_ipc
     # end

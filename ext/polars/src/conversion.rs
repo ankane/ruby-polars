@@ -29,10 +29,9 @@ impl TryConvert for Wrap<NullValues> {
         } else if let Ok(s) = ob.try_convert::<Vec<(String, String)>>() {
             Ok(Wrap(NullValues::Named(s)))
         } else {
-            Err(
-                RbPolarsErr::other("could not extract value from null_values argument".into())
-                    .into(),
-            )
+            Err(RbPolarsErr::other(
+                "could not extract value from null_values argument".into(),
+            ))
         }
     }
 }
@@ -196,6 +195,24 @@ impl TryConvert for Wrap<NullStrategy> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "null strategy must be one of {{'ignore', 'propagate'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<ParallelStrategy> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "auto" => ParallelStrategy::Auto,
+            "columns" => ParallelStrategy::Columns,
+            "row_groups" => ParallelStrategy::RowGroups,
+            "none" => ParallelStrategy::None,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "parallel must be one of {{'auto', 'columns', 'row_groups', 'none'}}, got {}",
                     v
                 )))
             }
