@@ -675,24 +675,29 @@ module Polars
       wrap_expr(_rbexpr.shrink_dtype)
     end
 
-    # def arr
-    # end
+    def arr
+      ArrayExpr.new(self)
+    end
 
-    # def cat
-    # end
+    def cat
+      CatExpr.new(self)
+    end
 
-    # def dt
-    # end
+    def dt
+      DateTimeExpr.new(self)
+    end
 
-    # def meta
-    # end
+    def meta
+      MetaExpr.new(self)
+    end
 
     def str
       StringExpr.new(self)
     end
 
-    # def struct
-    # end
+    def struct
+      StructExpr.new(self)
+    end
 
     private
 
