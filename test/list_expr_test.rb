@@ -56,8 +56,9 @@ class ListExprTest < Minitest::Test
     assert_expr arr_expr.contains(0)
   end
 
-  # def test_join
-  # end
+  def test_join
+    assert_expr arr_expr.join(",")
+  end
 
   def test_arg_min
     assert_expr arr_expr.arg_min
@@ -88,10 +89,13 @@ class ListExprTest < Minitest::Test
   end
 
   # def test_to_struct
+  #   assert_expr arr_expr.to_struct
   # end
 
-  # def test_eval
-  # end
+  def test_eval
+    rank_pct = Polars.element.rank(reverse: true) / Polars.col("").count
+    assert_expr arr_expr.eval(rank_pct)
+  end
 
   def arr_expr
     Polars.col("a").arr

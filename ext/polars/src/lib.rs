@@ -108,7 +108,7 @@ fn init() -> RbResult<()> {
     class.define_method("+", method!(RbExpr::add, 1))?;
     class.define_method("-", method!(RbExpr::sub, 1))?;
     class.define_method("*", method!(RbExpr::mul, 1))?;
-    class.define_method("truediv", method!(RbExpr::truediv, 1))?;
+    class.define_method("/", method!(RbExpr::truediv, 1))?;
     class.define_method("%", method!(RbExpr::_mod, 1))?;
     class.define_method("floordiv", method!(RbExpr::floordiv, 1))?;
     class.define_method("to_str", method!(RbExpr::to_str, 0))?;

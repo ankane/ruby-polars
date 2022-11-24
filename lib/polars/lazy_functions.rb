@@ -5,6 +5,10 @@ module Polars
       Utils.wrap_expr(RbExpr.col(name))
     end
 
+    def element
+      col("")
+    end
+
     def std(column, ddof: 1)
       if column.is_a?(Series)
         column.std(ddof: ddof)

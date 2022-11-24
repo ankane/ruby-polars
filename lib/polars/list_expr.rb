@@ -97,10 +97,12 @@ module Polars
       slice(offset, n)
     end
 
-    # def to_struct
+    # def to_struct(n_field_strategy: "first_non_null", name_generator: nil)
+    #   Utils.wrap_expr(_rbexpr.lst_to_struct(n_field_strategy, name_generator))
     # end
 
-    # def eval
-    # end
+    def eval(expr, parallel: false)
+       Utils.wrap_expr(_rbexpr.lst_eval(expr._rbexpr, parallel))
+    end
   end
 end
