@@ -44,6 +44,15 @@ module Polars
       File.expand_path(path)
     end
 
+    # TODO fix
+    def self.is_polars_dtype(data_type)
+      true
+    end
+
+    def self.rb_type_to_dtype(dtype)
+      raise "todo"
+    end
+
     def self.scale_bytes(sz, to:)
       scaling_factor = {
           "b" => 1,

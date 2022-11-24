@@ -694,7 +694,7 @@ module Polars
       # _get_first_non_none
       value = values.find { |v| !v.nil? }
 
-      if !dtype.nil? && is_polars_dtype(dtype) && ruby_dtype.nil?
+      if !dtype.nil? && Utils.is_polars_dtype(dtype) && ruby_dtype.nil?
         constructor = polars_type_to_constructor(dtype)
         rbseries = constructor.call(name, values, strict)
         return rbseries
@@ -758,10 +758,6 @@ module Polars
     rescue KeyError
       # RbSeries.method(:new_object)
       raise ArgumentError, "Cannot determine type"
-    end
-
-    def is_polars_dtype(data_type)
-      true
     end
   end
 end

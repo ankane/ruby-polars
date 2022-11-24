@@ -83,27 +83,50 @@ module Polars
       wrap_expr(_rbexpr.all)
     end
 
-    # def sqrt
-    # end
+    def sqrt
+      self ** 0.5
+    end
 
-    # def log10
-    # end
+    def log10
+      log(10)
+    end
 
-    # def exp
-    # end
+    def exp
+      wrap_expr(_rbexpr.exp)
+    end
 
     def alias(name)
       wrap_expr(_rbexpr._alias(name))
     end
 
-    # def exclude
-    # end
+    # TODO support symbols
+    def exclude(columns)
+      if columns.is_a?(String)
+        columns = [columns]
+        return wrap_expr(_rbexpr.exclude(columns))
+      elsif !columns.is_a?(Array)
+        columns = [columns]
+        return wrap_expr(_rbexpr.exclude_dtype(columns))
+      end
 
-    # def keep_name
-    # end
+      if !columns.all? { |a| a.is_a?(String) } || !columns.all? { |a| Utils.is_polars_dtype(a) }
+        raise ArgumentError, "input should be all string or all DataType"
+      end
 
-    # def prefix
-    # end
+      if columns[0].is_a?(String)
+        wrap_expr(_rbexpr.exclude(columns))
+      else
+        wrap_expr(_rbexpr.exclude_dtype(columns))
+      end
+    end
+
+    def keep_name
+      wrap_expr(_rbexpr.keep_name)
+    end
+
+    def prefix(prefix)
+      wrap_expr(_rbexpr.prefix(prefix))
+    end
 
     def suffix(suffix)
       wrap_expr(_rbexpr.suffix(suffix))
@@ -124,20 +147,25 @@ module Polars
       wrap_expr(_rbexpr.is_not_null)
     end
 
-    # def is_finite
-    # end
+    def is_finite
+      wrap_expr(_rbexpr.is_finite)
+    end
 
-    # def is_infinite
-    # end
+    def is_infinite
+      wrap_expr(_rbexpr.is_infinite)
+    end
 
-    # def is_nan
-    # end
+    def is_nan
+      wrap_expr(_rbexpr.is_nan)
+    end
 
-    # def is_not_nan
-    # end
+    def is_not_nan
+      wrap_expr(_rbexpr.is_not_nan)
+    end
 
-    # def agg_groups
-    # end
+    def agg_groups
+      wrap_expr(_rbexpr.agg_groups)
+    end
 
     def count
       wrap_expr(_rbexpr.count)
@@ -147,72 +175,103 @@ module Polars
       count
     end
 
-    # def slice
-    # end
+    def slice(offset, length = nil)
+      if !offset.is_a?(Expr)
+        offset = Polars.lit(offset)
+      end
+      if !length.is_a?(Expr)
+        length = Polars.lit(length)
+      end
+      wrap_expr(_rbexpr.slice(offset._rbexpr, length._rbexpr))
+    end
 
-    # def append
-    # end
+    def append(other, upcast: true)
+      other = Utils.expr_to_lit_or_expr(other)
+      wrap_expr(_rbexpr.append(other._rbexpr, upcast))
+    end
 
-    # def rechunk
-    # end
+    def rechunk
+      wrap_expr(_rbexpr.rechunk)
+    end
 
-    # def drop_nulls
-    # end
+    def drop_nulls
+      wrap_expr(_rbexpr.drop_nulls)
+    end
 
-    # def drop_nans
-    # end
+    def drop_nans
+      wrap_expr(_rbexpr.drop_nans)
+    end
 
-    # def cumsum
-    # end
+    def cumsum(reverse: false)
+      wrap_expr(_rbexpr.cumsum(reverse))
+    end
 
-    # def cumprod
-    # end
+    def cumprod(reverse: false)
+      wrap_expr(_rbexpr.cumprod(reverse))
+    end
 
-    # def cummin
-    # end
+    def cummin(reverse: false)
+      wrap_expr(_rbexpr.cummin(reverse))
+    end
 
-    # def cummax
-    # end
+    def cummax(reverse: false)
+      wrap_expr(_rbexpr.cummax(reverse))
+    end
 
-    # def cumcount
-    # end
+    def cumcount(reverse: false)
+      wrap_expr(_rbexpr.cumcount(reverse))
+    end
 
-    # def floor
-    # end
+    def floor
+      wrap_expr(_rbexpr.floor)
+    end
 
-    # def ceil
-    # end
+    def ceil
+      wrap_expr(_rbexpr.ceil)
+    end
 
-    # def round
-    # end
+    def round(decimals = 0)
+      wrap_expr(_rbexpr.round(decimals))
+    end
 
-    # def dot
-    # end
+    def dot(other)
+      other = Utils.expr_to_lit_or_expr(other, str_to_lit: false)
+      wrap_expr(_rbexpr.dot(other._rbexpr))
+    end
 
-    # def mode
-    # end
+    def mode
+      wrap_expr(_rbexpr.mode)
+    end
 
-    # def cast
-    # end
+    def cast(dtype, strict: true)
+      dtype = Utils.rb_type_to_dtype(dtype)
+      wrap_expr(_rbexpr.cast(dtype, strict))
+    end
 
     def sort(reverse: false, nulls_last: false)
       wrap_expr(_rbexpr.sort_with(reverse, nulls_last))
     end
 
-    # def top_k
-    # end
+    def top_k(k: 5, reverse: false)
+      wrap_expr(_rbexpr.top_k(k, reverse))
+    end
 
-    # def arg_sort
-    # end
+    def arg_sort(reverse: false, nulls_last: false)
+      wrap_expr(_rbexpr.arg_sort(reverse, nulls_last))
+    end
 
-    # def arg_max
-    # end
+    def arg_max
+      wrap_expr(_rbexpr.arg_max)
+    end
 
-    # def arg_min
-    # end
+    def arg_min
+      wrap_expr(_rbexpr.arg_min)
+    end
 
-    # def search_sorted
-    # end
+    def search_sorted(element)
+      element = Utils.expr_to_lit_or_expr(element, str_to_lit: false)
+      wrap_expr(_rbexpr.search_sorted(element._rbexpr))
+    end
 
     def sort_by(by, reverse: false)
       if !by.is_a?(Array)
@@ -229,11 +288,14 @@ module Polars
     # def take
     # end
 
-    # def shift
-    # end
+    def shift(periods)
+      wrap_expr(_rbexpr.shift(periods))
+    end
 
-    # def shift_and_fill
-    # end
+    def shift_and_fill(periods, fill_value)
+      fill_value = Utils.expr_to_lit_or_expr(fill_value, str_to_lit: true)
+      wrap_expr(_rbexpr.shift_and_fill(periods, fill_value._rbexpr))
+    end
 
     def fill_null(value = nil, strategy: nil, limit: nil)
       if !value.nil? && !strategy.nil?
@@ -257,11 +319,13 @@ module Polars
       wrap_expr(_rbexpr.fill_nan(fill_value._rbexpr))
     end
 
-    # def forward_fill
-    # end
+    def forward_fill(limit: nil)
+      wrap_expr(_rbexpr.forward_fill(limit))
+    end
 
-    # def backward_fill
-    # end
+    def backward_fill(limit: nil)
+      wrap_expr(_rbexpr.backward_fill(limit))
+    end
 
     def reverse
       wrap_expr(_rbexpr.reverse)
@@ -311,11 +375,13 @@ module Polars
       wrap_expr(_rbexpr.n_unique)
     end
 
-    # def null_count
-    # end
+    def null_count
+      wrap_expr(_rbexpr.null_count)
+    end
 
-    # def arg_unique
-    # end
+    def arg_unique
+      wrap_expr(_rbexpr.arg_unique)
+    end
 
     def unique(maintain_order: false)
       if maintain_order
@@ -338,14 +404,17 @@ module Polars
       wrap_expr(_rbexpr.over(rbexprs))
     end
 
-    # def is_unique
-    # end
+    def is_unique
+      wrap_expr(_rbexpr.is_unique)
+    end
 
-    # def is_first
-    # end
+    def is_first
+      wrap_expr(_rbexpr.is_first)
+    end
 
-    # def is_duplicated
-    # end
+    def is_duplicated
+      wrap_expr(_rbexpr.is_duplicated)
+    end
 
     # def quantile
     # end
