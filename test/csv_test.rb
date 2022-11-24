@@ -51,6 +51,12 @@ class CsvTest < Minitest::Test
     assert_equal "use URI(...) for remote files", error.message
   end
 
+  def test_scan_csv
+    df = Polars.scan_csv("test/support/data.csv")
+    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_frame expected, df.collect
+  end
+
   def test_write_csv
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     path = temp_path

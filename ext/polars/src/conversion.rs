@@ -20,6 +20,23 @@ pub fn get_df(obj: Value) -> RbResult<DataFrame> {
     Ok(rbdf.df.borrow().clone())
 }
 
+impl TryConvert for Wrap<NullValues> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        if let Ok(s) = ob.try_convert::<String>() {
+            Ok(Wrap(NullValues::AllColumnsSingle(s)))
+        } else if let Ok(s) = ob.try_convert::<Vec<String>>() {
+            Ok(Wrap(NullValues::AllColumns(s)))
+        } else if let Ok(s) = ob.try_convert::<Vec<(String, String)>>() {
+            Ok(Wrap(NullValues::Named(s)))
+        } else {
+            Err(
+                RbPolarsErr::other("could not extract value from null_values argument".into())
+                    .into(),
+            )
+        }
+    }
+}
+
 impl From<Wrap<AnyValue<'_>>> for Value {
     fn from(w: Wrap<AnyValue<'_>>) -> Self {
         match w.0 {
@@ -110,6 +127,22 @@ impl TryConvert for Wrap<ClosedWindow> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "closed must be one of {{'left', 'right', 'both', 'none'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<CsvEncoding> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "utf8" => CsvEncoding::Utf8,
+            "utf8-lossy" => CsvEncoding::LossyUtf8,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "encoding must be one of {{'utf8', 'utf8-lossy'}}, got {}",
                     v
                 )))
             }

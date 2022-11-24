@@ -1,4 +1,5 @@
 use magnus::{RArray, RHash, Value};
+use polars::io::RowCount;
 use polars::lazy::frame::{LazyFrame, LazyGroupBy};
 use polars::prelude::*;
 use std::cell::RefCell;
@@ -52,6 +53,72 @@ impl From<LazyFrame> for RbLazyFrame {
 }
 
 impl RbLazyFrame {
+    pub fn new_from_csv(arguments: &[Value]) -> RbResult<Self> {
+        // start arguments
+        // this pattern is needed for more than 16
+        let path: String = arguments[0].try_convert()?;
+        let sep: String = arguments[1].try_convert()?;
+        let has_header: bool = arguments[2].try_convert()?;
+        let ignore_errors: bool = arguments[3].try_convert()?;
+        let skip_rows: usize = arguments[4].try_convert()?;
+        let n_rows: Option<usize> = arguments[5].try_convert()?;
+        let cache: bool = arguments[6].try_convert()?;
+        let overwrite_dtype: Option<Vec<(String, Wrap<DataType>)>> = arguments[7].try_convert()?;
+        let low_memory: bool = arguments[8].try_convert()?;
+        let comment_char: Option<String> = arguments[9].try_convert()?;
+        let quote_char: Option<String> = arguments[10].try_convert()?;
+        let null_values: Option<Wrap<NullValues>> = arguments[11].try_convert()?;
+        let infer_schema_length: Option<usize> = arguments[12].try_convert()?;
+        let with_schema_modify: Option<Value> = arguments[13].try_convert()?;
+        let rechunk: bool = arguments[14].try_convert()?;
+        let skip_rows_after_header: usize = arguments[15].try_convert()?;
+        let encoding: Wrap<CsvEncoding> = arguments[16].try_convert()?;
+        let row_count: Option<(String, IdxSize)> = arguments[17].try_convert()?;
+        let parse_dates: bool = arguments[18].try_convert()?;
+        let eol_char: String = arguments[19].try_convert()?;
+        // end arguments
+
+        let null_values = null_values.map(|w| w.0);
+        let comment_char = comment_char.map(|s| s.as_bytes()[0]);
+        let quote_char = quote_char.map(|s| s.as_bytes()[0]);
+        let delimiter = sep.as_bytes()[0];
+        let eol_char = eol_char.as_bytes()[0];
+
+        let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
+
+        let overwrite_dtype = overwrite_dtype.map(|overwrite_dtype| {
+            let fields = overwrite_dtype
+                .into_iter()
+                .map(|(name, dtype)| Field::new(&name, dtype.0));
+            Schema::from(fields)
+        });
+        let r = LazyCsvReader::new(path)
+            .with_infer_schema_length(infer_schema_length)
+            .with_delimiter(delimiter)
+            .has_header(has_header)
+            .with_ignore_parser_errors(ignore_errors)
+            .with_skip_rows(skip_rows)
+            .with_n_rows(n_rows)
+            .with_cache(cache)
+            .with_dtype_overwrite(overwrite_dtype.as_ref())
+            .low_memory(low_memory)
+            .with_comment_char(comment_char)
+            .with_quote_char(quote_char)
+            .with_end_of_line_char(eol_char)
+            .with_rechunk(rechunk)
+            .with_skip_rows_after_header(skip_rows_after_header)
+            .with_encoding(encoding.0)
+            .with_row_count(row_count)
+            .with_parse_dates(parse_dates)
+            .with_null_values(null_values);
+
+        if let Some(_lambda) = with_schema_modify {
+            todo!();
+        }
+
+        Ok(r.finish().map_err(RbPolarsErr::from)?.into())
+    }
+
     pub fn write_json(&self, rb_f: Value) -> RbResult<()> {
         let file = BufWriter::new(get_file_like(rb_f, true)?);
         serde_json::to_writer(file, &self.ldf.logical_plan)

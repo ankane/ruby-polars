@@ -56,6 +56,22 @@ module Polars
       dtype.to_s
     end
 
+    def self._process_null_values(null_values)
+      if null_values.is_a?(Hash)
+        null_values.to_a
+      else
+        null_values
+      end
+    end
+
+    def self._prepare_row_count_args(row_count_name = nil, row_count_offset = 0)
+      if !row_count_name.nil?
+        [row_count_name, row_count_offset]
+      else
+        nil
+      end
+    end
+
     def self.scale_bytes(sz, to:)
       scaling_factor = {
           "b" => 1,
