@@ -20,9 +20,9 @@ pub fn get_df(obj: Value) -> RbResult<DataFrame> {
     Ok(rbdf.df.borrow().clone())
 }
 
-impl Into<Value> for Wrap<AnyValue<'_>> {
-    fn into(self) -> Value {
-        match self.0 {
+impl From<Wrap<AnyValue<'_>>> for Value {
+    fn from(w: Wrap<AnyValue<'_>>) -> Self {
+        match w.0 {
             AnyValue::UInt8(v) => Value::from(v),
             AnyValue::UInt16(v) => Value::from(v),
             AnyValue::UInt32(v) => Value::from(v),
