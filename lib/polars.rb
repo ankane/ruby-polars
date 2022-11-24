@@ -2,7 +2,6 @@
 require "polars/polars"
 
 # modules
-require "polars/array_expr"
 require "polars/cat_expr"
 require "polars/data_frame"
 require "polars/date_time_expr"
@@ -12,6 +11,7 @@ require "polars/io"
 require "polars/lazy_frame"
 require "polars/lazy_functions"
 require "polars/lazy_group_by"
+require "polars/list_expr"
 require "polars/meta_expr"
 require "polars/series"
 require "polars/string_expr"

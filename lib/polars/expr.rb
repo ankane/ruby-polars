@@ -676,7 +676,7 @@ module Polars
     end
 
     def arr
-      ArrayExpr.new(self)
+      ListExpr.new(self)
     end
 
     def cat
