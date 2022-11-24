@@ -25,11 +25,13 @@ module Polars
       wrap_expr(_rbexpr._or(_to_rbexpr(other)))
     end
 
-    # def +(other)
-    # end
+    def +(other)
+      wrap_expr(_rbexpr + _to_rbexpr(other))
+    end
 
-    # def -(other)
-    # end
+    def -(other)
+      wrap_expr(_rbexpr - _to_rbexpr(other))
+    end
 
     def *(other)
       wrap_expr(_rbexpr * _to_rbexpr(other))
