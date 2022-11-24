@@ -12,50 +12,65 @@ module Polars
     # def round
     # end
 
-    # def strftime
-    # end
+    def strftime(fmt)
+      Utils.wrap_expr(_rbexpr.strftime(fmt))
+    end
 
-    # def year
-    # end
+    def year
+      Utils.wrap_expr(_rbexpr.year)
+    end
 
-    # def iso_year
-    # end
+    def iso_year
+      Utils.wrap_expr(_rbexpr.iso_year)
+    end
 
-    # def quarter
-    # end
+    def quarter
+      Utils.wrap_expr(_rbexpr.quarter)
+    end
 
-    # def month
-    # end
+    def month
+      Utils.wrap_expr(_rbexpr.month)
+    end
 
-    # def week
-    # end
+    def week
+      Utils.wrap_expr(_rbexpr.week)
+    end
 
-    # def weekday
-    # end
+    def weekday
+      Utils.wrap_expr(_rbexpr.weekday)
+    end
 
-    # def day
-    # end
+    def day
+      Utils.wrap_expr(_rbexpr.day)
+    end
 
-    # def ordinal_day
-    # end
+    def ordinal_day
+      Utils.wrap_expr(_rbexpr.ordinal_day)
+    end
 
-    # def hour
-    # end
+    def hour
+      Utils.wrap_expr(_rbexpr.hour)
+    end
 
-    # def minute
-    # end
+    def minute
+      Utils.wrap_expr(_rbexpr.minute)
+    end
 
-    # def second
-    # end
+    def second
+      Utils.wrap_expr(_rbexpr.second)
+    end
 
-    # def millisecond
-    # end
+    def millisecond
+      Utils.wrap_expr(_rbexpr.millisecond)
+    end
 
-    # def microsecond
-    # end
+    def microsecond
+      Utils.wrap_expr(_rbexpr.microsecond)
+    end
 
-    # def nanosecond
-    # end
+    def nanosecond
+      Utils.wrap_expr(_rbexpr.nanosecond)
+    end
 
     # def epoch
     # end

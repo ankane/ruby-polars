@@ -7,50 +7,65 @@ class DateTimeExprTest < Minitest::Test
   # def test_round
   # end
 
-  # def test_strftime
-  # end
+  def test_strftime
+    assert_expr dt_expr.strftime("fmt")
+  end
 
-  # def test_year
-  # end
+  def test_year
+    assert_expr dt_expr.year
+  end
 
-  # def test_iso_year
-  # end
+  def test_iso_year
+    assert_expr dt_expr.iso_year
+  end
 
-  # def test_quarter
-  # end
+  def test_quarter
+    assert_expr dt_expr.quarter
+  end
 
-  # def test_month
-  # end
+  def test_month
+    assert_expr dt_expr.month
+  end
 
-  # def test_week
-  # end
+  def test_week
+    assert_expr dt_expr.week
+  end
 
-  # def test_weekday
-  # end
+  def test_weekday
+    assert_expr dt_expr.weekday
+  end
 
-  # def test_day
-  # end
+  def test_day
+    assert_expr dt_expr.day
+  end
 
-  # def test_ordinal_day
-  # end
+  def test_ordinal_day
+    assert_expr dt_expr.ordinal_day
+  end
 
-  # def test_hour
-  # end
+  def test_hour
+    assert_expr dt_expr.hour
+  end
 
-  # def test_minute
-  # end
+  def test_minute
+    assert_expr dt_expr.minute
+  end
 
-  # def test_second
-  # end
+  def test_second
+    assert_expr dt_expr.second
+  end
 
-  # def test_millisecond
-  # end
+  def test_millisecond
+    assert_expr dt_expr.millisecond
+  end
 
-  # def test_microsecond
-  # end
+  def test_microsecond
+    assert_expr dt_expr.microsecond
+  end
 
-  # def test_nanosecond
-  # end
+  def test_nanosecond
+    assert_expr dt_expr.nanosecond
+  end
 
   # def test_epoch
   # end
@@ -96,4 +111,8 @@ class DateTimeExprTest < Minitest::Test
 
   # def test_offset_by
   # end
+
+  def dt_expr
+    Polars.col("a").dt
+  end
 end
