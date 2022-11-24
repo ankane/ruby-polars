@@ -51,11 +51,13 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_contains(pattern, literal))
     end
 
-    # def ends_with
-    # end
+    def ends_with(sub)
+      Utils.wrap_expr(_rbexpr.str_ends_with(sub))
+    end
 
-    # def starts_with
-    # end
+    def starts_with(sub)
+      Utils.wrap_expr(_rbexpr.str_starts_with(sub))
+    end
 
     # def json_path_match
     # end
@@ -66,17 +68,25 @@ module Polars
     # def encode
     # end
 
-    # def extract
-    # end
+    def extract(pattern, group_index: 1)
+      Utils.wrap_expr(_rbexpr.str_extract(pattern, group_index))
+    end
 
-    # def extract_all
-    # end
+    def extract_all(pattern)
+      Utils.wrap_expr(_rbexpr.str_extract_all(pattern))
+    end
 
-    # def count_match
-    # end
+    def count_match(pattern)
+      Utils.wrap_expr(_rbexpr.count_match(pattern))
+    end
 
-    # def split
-    # end
+    def split(by, inclusive: false)
+      if inclusive
+        Utils.wrap_expr(_rbexpr.str_split_inclusive(by))
+      else
+        Utils.wrap_expr(_rbexpr.str_split(by))
+      end
+    end
 
     # def split_exact
     # end

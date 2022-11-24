@@ -42,14 +42,17 @@ class StringExprTest < Minitest::Test
   # def test_rjust
   # end
 
-  # def test_contains
-  # end
+  def test_contains
+    assert_expr str_expr.contains("pattern")
+  end
 
-  # def test_ends_with
-  # end
+  def test_ends_with
+    assert_expr str_expr.ends_with("sub")
+  end
 
-  # def test_starts_with
-  # end
+  def test_starts_with
+    assert_expr str_expr.starts_with("sub")
+  end
 
   # def test_json_path_match
   # end
@@ -60,17 +63,22 @@ class StringExprTest < Minitest::Test
   # def test_encode
   # end
 
-  # def test_extract
-  # end
+  def test_extract
+    assert_expr str_expr.extract("pattern")
+  end
 
-  # def test_extract_all
-  # end
+  def test_extract_all
+    assert_expr str_expr.extract_all("pattern")
+  end
 
-  # def test_count_match
-  # end
+  def test_count_match
+    assert_expr str_expr.count_match("pattern")
+  end
 
-  # def test_split
-  # end
+  def test_split
+    assert_expr str_expr.split("by")
+    assert_expr str_expr.split("by", inclusive: true)
+  end
 
   # def test_split_exact
   # end
