@@ -227,6 +227,9 @@ fn init() -> RbResult<()> {
     class.define_method("str_n_chars", method!(RbExpr::str_n_chars, 0))?;
     class.define_method("str_replace", method!(RbExpr::str_replace, 3))?;
     class.define_method("str_replace_all", method!(RbExpr::str_replace_all, 3))?;
+    class.define_method("str_zfill", method!(RbExpr::str_zfill, 1))?;
+    class.define_method("str_ljust", method!(RbExpr::str_ljust, 2))?;
+    class.define_method("str_rjust", method!(RbExpr::str_rjust, 2))?;
     class.define_method("str_contains", method!(RbExpr::str_contains, 2))?;
     class.define_method("str_ends_with", method!(RbExpr::str_ends_with, 1))?;
     class.define_method("str_starts_with", method!(RbExpr::str_starts_with, 1))?;

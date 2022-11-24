@@ -36,11 +36,13 @@ class StringExprTest < Minitest::Test
   # def test_zfill
   # end
 
-  # def test_ljust
-  # end
+  def test_ljust
+    assert_expr str_expr.ljust(1)
+  end
 
-  # def test_rjust
-  # end
+  def test_rjust
+    assert_expr str_expr.rjust(1)
+  end
 
   def test_contains
     assert_expr str_expr.contains("pattern")
@@ -80,20 +82,26 @@ class StringExprTest < Minitest::Test
     assert_expr str_expr.split("by", inclusive: true)
   end
 
-  # def test_split_exact
-  # end
+  def test_split_exact
+    assert_expr str_expr.split_exact("by", 1)
+    assert_expr str_expr.split_exact("by", 1, inclusive: true)
+  end
 
-  # def test_splitn
-  # end
+  def test_splitn
+    assert_expr str_expr.splitn("by", 1)
+  end
 
-  # def test_replace
-  # end
+  def test_replace
+    assert_expr str_expr.replace("pattern")
+  end
 
-  # def test_replace_all
-  # end
+  def test_replace_all
+    assert_expr str_expr.replace_all("pattern")
+  end
 
-  # def test_slice
-  # end
+  def test_slice
+    assert_expr str_expr.slice(1)
+  end
 
   def str_expr
     Polars.col("a").str

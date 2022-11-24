@@ -41,11 +41,13 @@ module Polars
     # def zfill
     # end
 
-    # def ljust
-    # end
+    def ljust(width, fillchar = " ")
+      Utils.wrap_expr(_rbexpr.str_ljust(width, fillchar))
+    end
 
-    # def rjust
-    # end
+    def rjust(width, fillchar = " ")
+      Utils.wrap_expr(_rbexpr.str_rjust(width, fillchar))
+    end
 
     def contains(pattern, literal: false)
       Utils.wrap_expr(_rbexpr.str_contains(pattern, literal))
@@ -88,19 +90,32 @@ module Polars
       end
     end
 
-    # def split_exact
-    # end
+    def split_exact(by, n, inclusive: false)
+      if inclusive
+        Utils.wrap_expr(_rbexpr.str_split_exact_inclusive(by, n))
+      else
+        Utils.wrap_expr(_rbexpr.str_split_exact(by, n))
+      end
+    end
 
-    # def splitn
-    # end
+    def splitn(by, n)
+      Utils.wrap_expr(_rbexpr.str_splitn(by, n))
+    end
 
-    # def replace
-    # end
+    def replace(pattern, literal: false)
+      pattern = Utils.expr_to_lit_or_expr(pattern, str_to_lit: true)
+      value = Utils.expr_to_lit_or_expr(value, str_to_lit: true)
+      Utils.wrap_expr(_rbexpr.str_replace(pattern._rbexpr, value._rbexpr, literal))
+    end
 
-    # def replace_all
-    # end
+    def replace_all(pattern, literal: false)
+      pattern = Utils.expr_to_lit_or_expr(pattern, str_to_lit: true)
+      value = Utils.expr_to_lit_or_expr(value, str_to_lit: true)
+      Utils.wrap_expr(_rbexpr.str_replace_all(pattern._rbexpr, value._rbexpr, literal))
+    end
 
-    # def slice
-    # end
+    def slice(offset, length = nil)
+      Utils.wrap_expr(_rbexpr.str_slice(offset, length))
+    end
   end
 end

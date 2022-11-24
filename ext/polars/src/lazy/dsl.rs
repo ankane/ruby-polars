@@ -630,6 +630,18 @@ impl RbExpr {
             .into()
     }
 
+    pub fn str_zfill(&self, alignment: usize) -> Self {
+        self.clone().inner.str().zfill(alignment).into()
+    }
+
+    pub fn str_ljust(&self, width: usize, fillchar: char) -> Self {
+        self.clone().inner.str().ljust(width, fillchar).into()
+    }
+
+    pub fn str_rjust(&self, width: usize, fillchar: char) -> Self {
+        self.clone().inner.str().rjust(width, fillchar).into()
+    }
+
     pub fn str_contains(&self, pat: String, literal: Option<bool>) -> Self {
         match literal {
             Some(true) => self.inner.clone().str().contains_literal(pat).into(),
