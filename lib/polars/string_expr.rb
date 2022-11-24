@@ -29,17 +29,30 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_to_lowercase)
     end
 
-    # def strip
-    # end
+    def strip(matches = nil)
+      if !matches.nil? && matches.length > 1
+        raise ArgumentError, "matches should contain a single character"
+      end
+      Utils.wrap_expr(_rbexpr.str_strip(matches))
+    end
 
-    # def lstrip
-    # end
+    def lstrip(matches = nil)
+      if !matches.nil? && matches.length > 1
+        raise ArgumentError, "matches should contain a single character"
+      end
+      Utils.wrap_expr(_rbexpr.str_lstrip(matches))
+    end
 
-    # def rstrip
-    # end
+    def rstrip(matches = nil)
+      if !matches.nil? && matches.length > 1
+        raise ArgumentError, "matches should contain a single character"
+      end
+      Utils.wrap_expr(_rbexpr.str_rstrip(matches))
+    end
 
-    # def zfill
-    # end
+    def zfill(alignment)
+      Utils.wrap_expr(_rbexpr.str_zfill(alignment))
+    end
 
     def ljust(width, fillchar = " ")
       Utils.wrap_expr(_rbexpr.str_ljust(width, fillchar))

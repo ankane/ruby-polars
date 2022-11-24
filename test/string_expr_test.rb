@@ -24,17 +24,21 @@ class StringExprTest < Minitest::Test
     assert_expr str_expr.to_lowercase
   end
 
-  # def test_strip
-  # end
+  def test_strip
+    assert_expr str_expr.strip
+  end
 
-  # def test_lstrip
-  # end
+  def test_lstrip
+    assert_expr str_expr.lstrip
+  end
 
-  # def test_rstrip
-  # end
+  def test_rstrip
+    assert_expr str_expr.rstrip
+  end
 
-  # def test_zfill
-  # end
+  def test_zfill
+    assert_expr str_expr.zfill(1)
+  end
 
   def test_ljust
     assert_expr str_expr.ljust(1)
