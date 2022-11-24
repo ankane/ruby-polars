@@ -307,7 +307,7 @@ module Polars
 
     def initialize_copy(other)
       super
-      self._ldf = _df._clone
+      self._ldf = _ldf._clone
     end
 
     def _from_rbldf(rb_ldf)
