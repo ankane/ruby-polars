@@ -416,15 +416,17 @@ module Polars
       wrap_expr(_rbexpr.is_duplicated)
     end
 
-    # def quantile
-    # end
+    def quantile(quantile, interpolation: "nearest")
+      wrap_expr(_rbexpr.quantile(quantile, interpolation))
+    end
 
     def filter(predicate)
       wrap_expr(_rbexpr.filter(predicate._rbexpr))
     end
 
-    # def where
-    # end
+    def where(predicate)
+      filter(predicate)
+    end
 
     # def map
     # end
@@ -432,14 +434,17 @@ module Polars
     # def apply
     # end
 
-    # def flatten
-    # end
+    def flatten
+      wrap_expr(_rbexpr.explode)
+    end
 
-    # def explode
-    # end
+    def explode
+      wrap_expr(_rbexpr.explode)
+    end
 
-    # def take_every
-    # end
+    def take_every(n)
+      wrap_expr(_rbexpr.take_every(n))
+    end
 
     def head(n = 10)
       wrap_expr(_rbexpr.head(n))
@@ -461,8 +466,10 @@ module Polars
     # def is_in
     # end
 
-    # def repeat_by
-    # end
+    def repeat_by(by)
+      by = Utils.expr_to_lit_or_expr(by, false)
+      wrap_expr(_rbexpr.repeat_by(by._rbexpr))
+    end
 
     # def is_between
     # end
@@ -470,8 +477,9 @@ module Polars
     # def _hash
     # end
 
-    # def reinterpret
-    # end
+    def reinterpret(signed: false)
+      wrap_expr(_rbexpr.reinterpret(signed))
+    end
 
     # def _inspect
     # end
@@ -507,89 +515,120 @@ module Polars
     # def rolling_apply
     # end
 
-    # def rolling_skew
-    # end
+    def rolling_skew(window_size, bias: true)
+      wrap_expr(_rbexpr.rolling_skew(window_size, bias))
+    end
 
-    # def abs
-    # end
+    def abs
+      wrap_expr(_rbexpr.abs)
+    end
 
-    # def argsort
-    # end
+    def argsort(reverse: false, nulls_last: false)
+      arg_sort(reverse: reverse, nulls_last: nulls_last)
+    end
 
-    # def rank
-    # end
+    def rank(method: "average", reverse: false)
+      wrap_expr(_rbexpr.rank(method, reverse))
+    end
 
-    # def diff
-    # end
+    def diff(n: 1, null_behavior: "ignore")
+      wrap_expr(_rbexpr.diff(n, null_behavior))
+    end
 
-    # def pct_change
-    # end
+    def pct_change(n: 1)
+      wrap_expr(_rbexpr.pct_change(n))
+    end
 
-    # def skew
-    # end
+    def skew(bias: true)
+      wrap_expr(_rbexpr.skew(bias))
+    end
 
-    # def kurtosis
-    # end
+    def kurtosis(fisher: true, bias: true)
+      wrap_expr(_rbexpr.kurtosis(fisher, bias))
+    end
 
-    # def clip
-    # end
+    def clip(min_val, max_val)
+      wrap_expr(_rbexpr.clip(min_val, max_val))
+    end
 
-    # def clip_min
-    # end
+    def clip_min(min_val)
+      wrap_expr(_rbexpr.clip_min(min_val))
+    end
 
-    # def clip_max
-    # end
+    def clip_max(max_val)
+      wrap_expr(_rbexpr.clip_max(max_val))
+    end
 
-    # def lower_bound
-    # end
+    def lower_bound
+      wrap_expr(_rbexpr.lower_bound)
+    end
 
-    # def upper_bound
-    # end
+    def upper_bound
+      wrap_expr(_rbexpr.upper_bound)
+    end
 
-    # def sign
-    # end
+    def sign
+      wrap_expr(_rbexpr.sign)
+    end
 
-    # def sin
-    # end
+    def sin
+      wrap_expr(_rbexpr.sin)
+    end
 
-    # def cos
-    # end
+    def cos
+      wrap_expr(_rbexpr.cos)
+    end
 
-    # def tan
-    # end
+    def tan
+      wrap_expr(_rbexpr.tan)
+    end
 
-    # def arcsin
-    # end
+    def arcsin
+      wrap_expr(_rbexpr.arcsin)
+    end
 
-    # def arccos
-    # end
+    def arccos
+      wrap_expr(_rbexpr.arccos)
+    end
 
-    # def arctan
-    # end
+    def arctan
+      wrap_expr(_rbexpr.arctan)
+    end
 
-    # def sinh
-    # end
+    def sinh
+      wrap_expr(_rbexpr.sinh)
+    end
 
-    # def cosh
-    # end
+    def cosh
+      wrap_expr(_rbexpr.cosh)
+    end
 
-    # def tanh
-    # end
+    def tanh
+      wrap_expr(_rbexpr.tanh)
+    end
 
-    # def arcsinh
-    # end
+    def arcsinh
+      wrap_expr(_rbexpr.arcsinh)
+    end
 
-    # def arccosh
-    # end
+    def arccosh
+      wrap_expr(_rbexpr.arccosh)
+    end
 
-    # def arctanh
-    # end
+    def arctanh
+      wrap_expr(_rbexpr.arctanh)
+    end
 
-    # def reshape
-    # end
+    def reshape(dims)
+      wrap_expr(_rbexpr.reshape(dims))
+    end
 
-    # def shuffle
-    # end
+    def shuffle(seed: nil)
+      if seed.nil?
+        seed = rand(10000)
+      end
+      wrap_expr(_rbexpr.shuffle(seed))
+    end
 
     # def sample
     # end
@@ -606,17 +645,21 @@ module Polars
     # def extend_constant
     # end
 
-    # def value_counts
-    # end
+    def value_counts(multithreaded: false, sort: false)
+      wrap_expr(_rbexpr.value_counts(multithreaded, sort))
+    end
 
-    # def unique_counts
-    # end
+    def unique_counts
+      wrap_expr(_rbexpr.unique_counts)
+    end
 
-    # def log
-    # end
+    def log(base = Math::E)
+      wrap_expr(self._rbexpr.log(base))
+    end
 
-    # def entropy
-    # end
+    def entropy(base: 2, normalize: false)
+      wrap_expr(_rbexpr.entropy(base, normalize))
+    end
 
     # def cumulative_eval
     # end
@@ -628,8 +671,9 @@ module Polars
       wrap_expr(_rbexpr.list)
     end
 
-    # def shrink_dtype
-    # end
+    def shrink_dtype
+      wrap_expr(_rbexpr.shrink_dtype)
+    end
 
     # def arr
     # end
