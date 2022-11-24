@@ -164,8 +164,15 @@ module Polars
     # def apply
     # end
 
-    # def fold
-    # end
+    def fold(acc, f, exprs)
+      acc = Utils.expr_to_lit_or_expr(acc, str_to_lit: true)
+      if exprs.is_a?(Expr)
+        exprs = [exprs]
+      end
+
+      exprs = Utils.selection_to_rbexpr_list(exprs)
+      Utils.wrap_expr(RbExpr.fold(acc._rbexpr, f, exprs))
+    end
 
     # def reduce
     # end

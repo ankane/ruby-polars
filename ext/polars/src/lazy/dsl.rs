@@ -6,6 +6,7 @@ use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 
 use crate::conversion::*;
+use crate::lazy::apply::*;
 use crate::lazy::utils::rb_exprs_to_exprs;
 use crate::RbResult;
 
@@ -1347,6 +1348,13 @@ pub fn last() -> RbExpr {
 
 pub fn cols(names: Vec<String>) -> RbExpr {
     dsl::cols(names).into()
+}
+
+pub fn fold(acc: &RbExpr, lambda: Value, exprs: RArray) -> RbResult<RbExpr> {
+    let exprs = rb_exprs_to_exprs(exprs)?;
+
+    let func = move |a: Series, b: Series| binary_lambda(lambda, a, b);
+    Ok(polars::lazy::dsl::fold_exprs(acc.inner.clone(), func, exprs).into())
 }
 
 // TODO improve
