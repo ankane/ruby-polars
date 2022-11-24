@@ -72,20 +72,28 @@ module Polars
       Utils.wrap_expr(_rbexpr.lst_arg_max)
     end
 
-    # def diff
-    # end
+    def diff(n: 1, null_behavior: "ignore")
+      Utils.wrap_expr(_rbexpr.lst_diff(n, null_behavior))
+    end
 
-    # def shift
-    # end
+    def shift(periods = 1)
+      Utils.wrap_expr(_rbexpr.lst_shift(periods))
+    end
 
-    # def slice
-    # end
+    def slice(offset, length = nil)
+      offset = Utils.expr_to_lit_or_expr(offset, str_to_lit: false)._rbexpr
+      length = Utils.expr_to_lit_or_expr(length, str_to_lit: false)._rbexpr
+      Utils.wrap_expr(_rbexpr.lst_slice(offset, length))
+    end
 
-    # def head
-    # end
+    def head(n = 5)
+      slice(0, n)
+    end
 
-    # def tail
-    # end
+    def tail(n = 5)
+      offset = -Utils.expr_to_lit_or_expr(n, str_to_lit: false)
+      slice(offset, n)
+    end
 
     # def to_struct
     # end

@@ -72,6 +72,10 @@ module Polars
       wrap_expr(_rbexpr.gt(_to_expr(other)._rbexpr))
     end
 
+    def -@
+      Utils.lit(0) - self
+    end
+
     # def to_physical
     # end
 

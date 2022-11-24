@@ -66,20 +66,25 @@ class ListExprTest < Minitest::Test
     assert_expr arr_expr.arg_max
   end
 
-  # def test_diff
-  # end
+  def test_diff
+    assert_expr arr_expr.diff
+  end
 
-  # def test_shift
-  # end
+  def test_shift
+    assert_expr arr_expr.shift
+  end
 
-  # def test_slice
-  # end
+  def test_slice
+    assert_expr arr_expr.slice(0)
+  end
 
-  # def test_head
-  # end
+  def test_head
+    assert_expr arr_expr.head
+  end
 
-  # def test_tail
-  # end
+  def test_tail
+    assert_expr arr_expr.tail
+  end
 
   # def test_to_struct
   # end
