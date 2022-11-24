@@ -39,6 +39,10 @@ class Minitest::Test
     end
   end
 
+  def assert_expr(act)
+    assert_kind_of Polars::Expr, act
+  end
+
   def temp_path
     require "securerandom"
 

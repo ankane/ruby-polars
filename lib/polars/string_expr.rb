@@ -13,17 +13,21 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_lengths)
     end
 
-    # def n_chars
-    # end
+    def n_chars
+      Utils.wrap_expr(_rbexpr.str_n_chars)
+    end
 
-    # def concat
-    # end
+    def concat(delimiter = "-")
+      Utils.wrap_expr(_rbexpr.str_concat(delimiter))
+    end
 
-    # def to_uppercase
-    # end
+    def to_uppercase
+      Utils.wrap_expr(_rbexpr.str_to_uppercase)
+    end
 
-    # def to_lowercase
-    # end
+    def to_lowercase
+      Utils.wrap_expr(_rbexpr.str_to_lowercase)
+    end
 
     # def strip
     # end
