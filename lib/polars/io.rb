@@ -140,6 +140,21 @@ module Polars
       )
     end
 
+    # def scan_ipc
+    # end
+
+    # def scan_parquet
+    # end
+
+    # def scan_ndjson
+    # end
+
+    # def read_avro
+    # end
+
+    # def read_ipc
+    # end
+
     def read_parquet(file)
       _prepare_file_arg(file) do |data|
         DataFrame._read_parquet(data)
@@ -153,6 +168,15 @@ module Polars
     def read_ndjson(file)
       DataFrame._read_ndjson(file)
     end
+
+    # def read_sql
+    # end
+
+    # def read_excel
+    # end
+
+    # def read_csv_batched
+    # end
 
     private
 
