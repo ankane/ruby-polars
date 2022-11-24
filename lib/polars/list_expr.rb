@@ -36,9 +36,9 @@ module Polars
     # def get
     # end
 
-    # # def [](item)
-    # #   get(item)
-    # # end
+    # def [](item)
+    #   get(item)
+    # end
 
     # def first
     # end
