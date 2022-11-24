@@ -67,26 +67,35 @@ class DateTimeExprTest < Minitest::Test
     assert_expr dt_expr.nanosecond
   end
 
-  # def test_epoch
-  # end
+  def test_epoch
+    assert_expr dt_expr.epoch
+    assert_expr dt_expr.epoch("s")
+    assert_expr dt_expr.epoch("d")
+  end
 
-  # def test_timestamp
-  # end
+  def test_timestamp
+    assert_expr dt_expr.timestamp
+  end
 
-  # def test_with_time_unit
-  # end
+  def test_with_time_unit
+    assert_expr dt_expr.with_time_unit("us")
+  end
 
-  # def test_cast_time_unit
-  # end
+  def test_cast_time_unit
+    assert_expr dt_expr.cast_time_unit("us")
+  end
 
-  # def test_with_time_zone
-  # end
+  def test_with_time_zone
+    assert_expr dt_expr.with_time_zone("tz")
+  end
 
-  # def test_cast_time_zone
-  # end
+  def test_cast_time_zone
+    assert_expr dt_expr.cast_time_zone("tz")
+  end
 
-  # def test_tz_localize
-  # end
+  def test_tz_localize
+    assert_expr dt_expr.tz_localize("tz")
+  end
 
   def test_days
     assert_expr dt_expr.days
@@ -116,8 +125,9 @@ class DateTimeExprTest < Minitest::Test
     assert_expr dt_expr.nanoseconds
   end
 
-  # def test_offset_by
-  # end
+  def test_offset_by
+    assert_expr dt_expr.offset_by("1y")
+  end
 
   def dt_expr
     Polars.col("a").dt

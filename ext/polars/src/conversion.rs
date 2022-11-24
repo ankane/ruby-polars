@@ -56,9 +56,10 @@ impl TryConvert for Wrap<DataType> {
             "bool" => DataType::Boolean,
             "f32" => DataType::Float32,
             "f64" => DataType::Float64,
+            "date" => DataType::Date,
             _ => {
                 return Err(RbValueError::new_err(format!(
-                    "{} is not a supported polars DataType.",
+                    "{} is not a supported DataType.",
                     ob
                 )))
             }

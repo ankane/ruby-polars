@@ -281,10 +281,13 @@ fn init() -> RbResult<()> {
         method!(RbExpr::duration_milliseconds, 0),
     )?;
     class.define_method("timestamp", method!(RbExpr::timestamp, 1))?;
+    class.define_method("dt_offset_by", method!(RbExpr::dt_offset_by, 1))?;
     class.define_method("dt_epoch_seconds", method!(RbExpr::dt_epoch_seconds, 0))?;
     class.define_method("dt_with_time_unit", method!(RbExpr::dt_with_time_unit, 1))?;
     class.define_method("dt_with_time_zone", method!(RbExpr::dt_with_time_zone, 1))?;
     class.define_method("dt_cast_time_unit", method!(RbExpr::dt_cast_time_unit, 1))?;
+    class.define_method("dt_cast_time_zone", method!(RbExpr::dt_cast_time_zone, 1))?;
+    class.define_method("dt_tz_localize", method!(RbExpr::dt_tz_localize, 1))?;
     class.define_method("dt_truncate", method!(RbExpr::dt_truncate, 2))?;
     class.define_method("dt_round", method!(RbExpr::dt_round, 2))?;
     class.define_method("mode", method!(RbExpr::mode, 0))?;

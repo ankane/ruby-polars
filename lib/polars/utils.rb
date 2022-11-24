@@ -1,5 +1,7 @@
 module Polars
   module Utils
+    DTYPE_TEMPORAL_UNITS = ["ns", "us", "ms"]
+
     def self.wrap_s(s)
       Series._from_rbseries(s)
     end
@@ -49,8 +51,9 @@ module Polars
       true
     end
 
+    # TODO fix
     def self.rb_type_to_dtype(dtype)
-      raise "todo"
+      dtype.to_s
     end
 
     def self.scale_bytes(sz, to:)

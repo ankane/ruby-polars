@@ -839,10 +839,10 @@ impl RbExpr {
         self.inner.clone().dt().timestamp(tu.0).into()
     }
 
-    // pub fn dt_offset_by(&self, by: &str) -> Self {
-    //     let by = Duration::parse(by);
-    //     self.inner.clone().dt().offset_by(by).into()
-    // }
+    pub fn dt_offset_by(&self, by: String) -> Self {
+        let by = Duration::parse(&by);
+        self.inner.clone().dt().offset_by(by).into()
+    }
 
     pub fn dt_epoch_seconds(&self) -> Self {
         self.clone()
@@ -869,13 +869,13 @@ impl RbExpr {
         self.inner.clone().dt().cast_time_unit(tu.0).into()
     }
 
-    // pub fn dt_cast_time_zone(&self, tz: String) -> Self {
-    //     self.inner.clone().dt().cast_time_zone(tz).into()
-    // }
+    pub fn dt_cast_time_zone(&self, tz: String) -> Self {
+        self.inner.clone().dt().cast_time_zone(tz).into()
+    }
 
-    // pub fn dt_tz_localize(&self, tz: String) -> Self {
-    //     self.inner.clone().dt().tz_localize(tz).into()
-    // }
+    pub fn dt_tz_localize(&self, tz: String) -> Self {
+        self.inner.clone().dt().tz_localize(tz).into()
+    }
 
     pub fn dt_truncate(&self, every: String, offset: String) -> Self {
         self.inner.clone().dt().truncate(&every, &offset).into()

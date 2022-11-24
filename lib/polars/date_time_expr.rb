@@ -72,26 +72,41 @@ module Polars
       Utils.wrap_expr(_rbexpr.nanosecond)
     end
 
-    # def epoch
-    # end
+    def epoch(tu = "us")
+      if Utils::DTYPE_TEMPORAL_UNITS.include?(tu)
+        timestamp(tu)
+      elsif tu == "s"
+        Utils.wrap_expr(_rbexpr.dt_epoch_seconds)
+      elsif tu == "d"
+        Utils.wrap_expr(_rbexpr).cast(:date).cast(:i32)
+      else
+        raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms', 's', 'd'}}, got {tu}"
+      end
+    end
 
-    # def timestamp
-    # end
+    def timestamp(tu = "us")
+      Utils.wrap_expr(_rbexpr.timestamp(tu))
+    end
 
-    # def with_time_unit
-    # end
+    def with_time_unit(tu)
+      Utils.wrap_expr(_rbexpr.dt_with_time_unit(tu))
+    end
 
-    # def cast_time_unit
-    # end
+    def cast_time_unit(tu)
+      Utils.wrap_expr(_rbexpr.dt_cast_time_unit(tu))
+    end
 
-    # def with_time_zone
-    # end
+    def with_time_zone(tz)
+      Utils.wrap_expr(_rbexpr.dt_with_time_zone(tz))
+    end
 
-    # def cast_time_zone
-    # end
+    def cast_time_zone(tz)
+      Utils.wrap_expr(_rbexpr.dt_cast_time_zone(tz))
+    end
 
-    # def tz_localize
-    # end
+    def tz_localize(tz)
+      Utils.wrap_expr(_rbexpr.dt_tz_localize(tz))
+    end
 
     def days
       Utils.wrap_expr(_rbexpr.duration_days)
@@ -121,7 +136,8 @@ module Polars
       Utils.wrap_expr(_rbexpr.duration_nanoseconds)
     end
 
-    # def offset_by
-    # end
+    def offset_by(by)
+      Utils.wrap_expr(_rbexpr.dt_offset_by(by))
+    end
   end
 end
