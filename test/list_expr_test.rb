@@ -52,8 +52,9 @@ class ListExprTest < Minitest::Test
     assert_expr arr_expr.last
   end
 
-  # def test_contains
-  # end
+  def test_contains
+    assert_expr arr_expr.contains(0)
+  end
 
   # def test_join
   # end

@@ -58,11 +58,13 @@ module Polars
       get(-1)
     end
 
-    # def contains
-    # end
+    def contains(item)
+      Utils.wrap_expr(_rbexpr.arr_contains(Utils.expr_to_lit_or_expr(item)._rbexpr))
+    end
 
-    # def join
-    # end
+    def join(separator)
+      Utils.wrap_expr(_rbexpr.lst_join(separator))
+    end
 
     def arg_min
       Utils.wrap_expr(_rbexpr.lst_arg_min)
