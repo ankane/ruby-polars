@@ -1,13 +1,44 @@
 module Polars
   module LazyFunctions
     def col(name)
-      name = name.to_s if name.is_a?(Symbol)
-      Utils.wrap_expr(RbExpr.col(name))
+      if name.is_a?(Series)
+        name = name.to_a
+      end
+
+      if name.is_a?(Array)
+        if name.length == 0 || name[0].is_a?(String) || name[0].is_a?(Symbol)
+          name = name.map { |v| v.is_a?(Symbol) ? v.to_s : v }
+          Utils.wrap_expr(RbExpr.cols(name))
+        elsif Utils.is_polars_dtype(name[0])
+          raise "todo"
+          # Utils.wrap_expr(_dtype_cols(name))
+        else
+          raise ArgumentError, "Expected list values to be all `str` or all `DataType`"
+        end
+      else
+        name = name.to_s if name.is_a?(Symbol)
+        Utils.wrap_expr(RbExpr.col(name))
+      end
     end
 
     def element
       col("")
     end
+
+    def count(column = nil)
+      if column.nil?
+        return Utils.wrap_expr(RbExpr.count)
+      end
+
+      if column.is_a?(Series)
+        column.len
+      else
+        col(column).count
+      end
+    end
+
+    # def to_list
+    # end
 
     def std(column, ddof: 1)
       if column.is_a?(Series)
@@ -83,9 +114,89 @@ module Polars
       end
     end
 
+    # def n_unique
+    # end
+
+    def first(column = nil)
+      if column.nil?
+        return Utils.wrap_expr(RbExpr.first)
+      end
+
+      if column.is_a?(Series)
+        if column.len > 0
+          column[0]
+        else
+          raise IndexError, "The series is empty, so no first value can be returned."
+        end
+      else
+        col(column).first
+      end
+    end
+
+    # def last
+    # end
+
+    # def head
+    # end
+
+    # def tail
+    # end
+
     def lit(value)
       Utils.wrap_expr(RbExpr.lit(value))
     end
+
+    # def cumsum
+    # end
+
+    # def spearman_rank_corr
+    # end
+
+    # def pearson_corr
+    # end
+
+    # def cov
+    # end
+
+    # def map
+    # end
+
+    # def apply
+    # end
+
+    # def fold
+    # end
+
+    # def reduce
+    # end
+
+    # def cumfold
+    # end
+
+    # def cumreduce
+    # end
+
+    # def any
+    # end
+
+    # def exclude
+    # end
+
+    def all(name = nil)
+      if name.nil?
+        col("*")
+      elsif name.is_a?(String) || name.is_a?(Symbol)
+        col(name).all
+      else
+        raise "todo"
+      end
+    end
+
+    # def groups
+    # end
+
+    # def quantile
+    # end
 
     def arange(low, high, step: 1, eager: false, dtype: nil)
       low = Utils.expr_to_lit_or_expr(low, str_to_lit: false)
@@ -106,15 +217,38 @@ module Polars
       end
     end
 
-    def all(name = nil)
-      if name.nil?
-        col("*")
-      elsif name.is_a?(String) || name.is_a?(Symbol)
-        col(name).all
-      else
-        raise "todo"
-      end
-    end
+    # def argsort_by
+    # end
+
+    # def duration
+    # end
+
+    # def format
+    # end
+
+    # def concat_list
+    # end
+
+    # def collect_all
+    # end
+
+    # def select
+    # end
+
+    # def struct
+    # end
+
+    # def repeat
+    # end
+
+    # def arg_where
+    # end
+
+    # def coalesce
+    # end
+
+    # def from_epoch
+    # end
 
     def when(expr)
       expr = Utils.expr_to_lit_or_expr(expr)

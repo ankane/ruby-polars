@@ -282,8 +282,10 @@ module Polars
     # def quantile
     # end
 
-    # def explode
-    # end
+    def explode(columns)
+      columns = Utils.selection_to_rbexpr_list(columns)
+      _from_rbldf(_ldf.explode(columns))
+    end
 
     # def unique
     # end

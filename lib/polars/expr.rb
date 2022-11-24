@@ -293,7 +293,7 @@ module Polars
     # def take
     # end
 
-    def shift(periods)
+    def shift(periods = 1)
       wrap_expr(_rbexpr.shift(periods))
     end
 

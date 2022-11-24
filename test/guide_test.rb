@@ -108,6 +108,151 @@ class GuideTest < Minitest::Test
     ])
   end
 
+  # https://pola-rs.github.io/polars-book/user-guide/notebooks/introduction_polars-py.html
+  def test_examples
+    df = Polars::DataFrame.new({
+      "A" => [1, 2, 3, 4, 5],
+      "fruits" => ["banana", "banana", "apple", "apple", "banana"],
+      "B" => [5, 4, 3, 2, 1],
+      "cars" => ["beetle", "audi", "beetle", "beetle", "beetle"],
+      "optional" => [28, 300, nil, 2, -30],
+    })
+
+    df.select([
+      Polars.col("A"),
+      "B",
+      Polars.lit("B"),
+      Polars.col("fruits")
+    ])
+
+    df.select([
+      Polars.col(["A", "B"]).sum
+    ])
+
+    df.select([
+      Polars.all,
+      Polars.all.reverse.suffix("_reverse")
+    ])
+
+    df.select([
+      Polars.all,
+      Polars.all.sum.suffix("_sum")
+    ])
+
+    predicate = Polars.col("fruits").str.contains("^b.*")
+    df.select([predicate])
+
+    df.filter(predicate)
+
+    df.select([
+      Polars.col("A").filter(Polars.col("fruits").str.contains("^b.*")).sum,
+      (Polars.col("B").filter(Polars.col("cars").str.contains("^b.*")).sum * Polars.col("B").sum).alias("some_compute()"),
+    ])
+
+    some_var = 1
+    df.select([
+      ((Polars.col("A") / 124.0 * Polars.col("B")) / Polars.sum("B") * some_var).alias("computed")
+    ])
+
+    df.select([
+      "fruits",
+      "B",
+      Polars.when(Polars.col("fruits") == "banana").then(Polars.col("B")).otherwise(-1).alias("b")
+    ])
+
+    # df.select([
+    #   "A",
+    #   "B",
+    #   Polars.fold(0, ->(a, b) { a + b }, [Polars.col("A"), "B", Polars.col("B")**2, Polars.col("A") / 2.0]).alias("fold")
+    # ])
+
+    # df.select([
+    #   Polars.arange(0, df.height).alias("idx"),
+    #   "A",
+    #   Polars.col("A").shift.alias("A_shifted"),
+    #   Polars.concat_str(Polars.all, "-").alias("str_concat_1"),
+    #   Polars.fold(Polars.col("A"), ->(a, b) { a + "-" + b }, Polars.all.exclude("A")).alias("str_concat_2")
+    # ])
+
+    df.sort("cars").groupby("fruits")
+      .agg([
+        Polars.col("B").sum.alias("B_sum"),
+        Polars.sum("B").alias("B_sum2"),
+        Polars.first("fruits").alias("fruits_first"),
+        Polars.count("A").alias("count"),
+        Polars.col("cars").reverse
+      ])
+
+    df.sort("cars").groupby("fruits")
+      .agg([
+        Polars.col("B").sum.alias("B_sum"),
+        Polars.sum("B").alias("B_sum2"),
+        Polars.first("fruits").alias("fruits_first"),
+        Polars.count("A").alias("count"),
+        Polars.col("cars").reverse
+      ]).explode("cars")
+
+    df.groupby("fruits")
+      .agg([
+        Polars.col("B").sum.alias("B_sum"),
+        Polars.sum("B").alias("B_sum2"),
+        Polars.first("fruits").alias("fruits_first"),
+        Polars.count,
+        Polars.col("B").shift.alias("B_shifted")
+      ]).explode("B_shifted")
+
+    df.sort("cars").groupby("fruits")
+      .agg([
+        Polars.col("B").sum,
+        Polars.sum("B").alias("B_sum2"),
+        Polars.first("fruits").alias("fruits_first"),
+        Polars.count("A").alias("count"),
+        Polars.col("cars").reverse
+      ]).explode("cars")
+
+    df.groupby("fruits")
+      .agg([
+        Polars.col("B").shift.alias("shift_B"),
+        Polars.col("B").reverse.alias("rev_B")
+      ])
+
+    df.groupby("fruits")
+      .agg([
+        Polars.col("B").filter(Polars.col("B") > 1).list.keep_name,
+      ])
+
+    df.groupby("fruits")
+      .agg([
+        Polars.col("B").filter(Polars.col("B") > 1).mean,
+      ])
+
+    df.groupby("fruits")
+      .agg([
+        Polars.col("B").shift_and_fill(1, 0).alias("shifted"),
+        Polars.col("B").shift_and_fill(1, 0).sum.alias("shifted_sum")
+      ])
+
+    df.select([
+      "fruits",
+      "cars",
+      "B",
+      Polars.col("B").sum.over("fruits").alias("B_sum_by_fruits"),
+      Polars.col("B").sum.over("cars").alias("B_sum_by_cars")
+    ])
+
+    df.select([
+      "fruits",
+      "B",
+      Polars.col("B").reverse.over("fruits").alias("B_reversed_by_fruits")
+    ])
+
+    df.select([
+      "fruits",
+      "B",
+      Polars.col("B").shift.over("fruits").alias("lag_B_by_fruits")
+    ])
+  end
+
   # https://pola-rs.github.io/polars-book/user-guide/howcani/selecting_data/selecting_data_expressions.html
   def test_selecting_data_expressions
     df = Polars::DataFrame.new({

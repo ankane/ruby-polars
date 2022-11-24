@@ -364,6 +364,10 @@ fn init() -> RbResult<()> {
 
     // maybe add to different class
     class.define_singleton_method("col", function!(crate::lazy::dsl::col, 1))?;
+    class.define_singleton_method("count", function!(crate::lazy::dsl::count, 0))?;
+    class.define_singleton_method("first", function!(crate::lazy::dsl::first, 0))?;
+    class.define_singleton_method("last", function!(crate::lazy::dsl::last, 0))?;
+    class.define_singleton_method("cols", function!(crate::lazy::dsl::cols, 1))?;
     class.define_singleton_method("lit", function!(crate::lazy::dsl::lit, 1))?;
     class.define_singleton_method("arange", function!(crate::lazy::dsl::arange, 3))?;
     class.define_singleton_method("when", function!(crate::lazy::dsl::when, 1))?;

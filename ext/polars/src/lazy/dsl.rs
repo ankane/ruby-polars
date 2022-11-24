@@ -1333,6 +1333,22 @@ pub fn col(name: String) -> RbExpr {
     dsl::col(&name).into()
 }
 
+pub fn count() -> RbExpr {
+    dsl::count().into()
+}
+
+pub fn first() -> RbExpr {
+    dsl::first().into()
+}
+
+pub fn last() -> RbExpr {
+    dsl::last().into()
+}
+
+pub fn cols(names: Vec<String>) -> RbExpr {
+    dsl::cols(names).into()
+}
+
 // TODO improve
 pub fn lit(value: Value) -> RbResult<RbExpr> {
     if value.is_nil() {
