@@ -109,6 +109,27 @@ class GuideTest < Minitest::Test
     ])
   end
 
+  # https://pola-rs.github.io/polars-book/user-guide/dsl/list_context.html
+  def test_list_context
+    grades = Polars::DataFrame.new({
+      "student" => ["bas", "laura", "tim", "jenny"],
+      "arithmetic" => [10, 5, 6, 8],
+      "biology" => [4, 6, 2, 7],
+      "geography" => [8, 4, 9, 7]
+    })
+    output grades
+
+    output grades.select([Polars.concat_list(Polars.all.exclude("student")).alias("all_grades")])
+
+    rank_pct = Polars.element.rank(reverse: true) / Polars.col("").count
+    output grades.with_column(
+        Polars.concat_list(Polars.all.exclude("student")).alias("all_grades")
+      ).select([
+        Polars.all.exclude("all_grades"),
+        Polars.col("all_grades").arr.eval(rank_pct, parallel: true).alias("grades_rank")
+      ])
+  end
+
   # https://pola-rs.github.io/polars-book/user-guide/notebooks/introduction_polars-py.html
   def test_examples
     df = Polars::DataFrame.new({

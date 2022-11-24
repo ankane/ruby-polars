@@ -233,8 +233,10 @@ module Polars
     # def format
     # end
 
-    # def concat_list
-    # end
+    def concat_list(exprs)
+      exprs = Utils.selection_to_rbexpr_list(exprs)
+      Utils.wrap_expr(RbExpr.concat_lst(exprs))
+    end
 
     # def collect_all
     # end

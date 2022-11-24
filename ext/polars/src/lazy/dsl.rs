@@ -902,6 +902,10 @@ impl RbExpr {
         self.inner.clone().suffix(&suffix).into()
     }
 
+    pub fn exclude(&self, columns: Vec<String>) -> Self {
+        self.inner.clone().exclude(columns).into()
+    }
+
     pub fn interpolate(&self) -> Self {
         self.inner.clone().interpolate().into()
     }
@@ -1410,4 +1414,14 @@ impl RbWhenThen {
 
 pub fn when(predicate: &RbExpr) -> RbWhen {
     dsl::when(predicate.inner.clone()).into()
+}
+
+pub fn concat_str(s: RArray, sep: String) -> RbResult<RbExpr> {
+    let s = rb_exprs_to_exprs(s)?;
+    Ok(dsl::concat_str(s, &sep).into())
+}
+
+pub fn concat_lst(s: RArray) -> RbResult<RbExpr> {
+    let s = rb_exprs_to_exprs(s)?;
+    Ok(dsl::concat_lst(s).into())
 }

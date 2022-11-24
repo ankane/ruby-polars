@@ -294,6 +294,7 @@ fn init() -> RbResult<()> {
     class.define_method("keep_name", method!(RbExpr::keep_name, 0))?;
     class.define_method("prefix", method!(RbExpr::prefix, 1))?;
     class.define_method("suffix", method!(RbExpr::suffix, 1))?;
+    class.define_method("exclude", method!(RbExpr::exclude, 1))?;
     class.define_method("interpolate", method!(RbExpr::interpolate, 0))?;
     class.define_method("rolling_sum", method!(RbExpr::rolling_sum, 6))?;
     class.define_method("rolling_min", method!(RbExpr::rolling_min, 6))?;
@@ -372,6 +373,8 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("lit", function!(crate::lazy::dsl::lit, 1))?;
     class.define_singleton_method("arange", function!(crate::lazy::dsl::arange, 3))?;
     class.define_singleton_method("when", function!(crate::lazy::dsl::when, 1))?;
+    class.define_singleton_method("concat_str", function!(crate::lazy::dsl::concat_str, 2))?;
+    class.define_singleton_method("concat_lst", function!(crate::lazy::dsl::concat_lst, 1))?;
 
     let class = module.define_class("RbLazyFrame", Default::default())?;
     class.define_method("write_json", method!(RbLazyFrame::write_json, 1))?;
