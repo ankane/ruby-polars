@@ -39,6 +39,7 @@ features = [
     "lazy_regex",
     "list_eval",
     "log",
+    "meta",
     "mode",
     "moment",
     "parquet",
