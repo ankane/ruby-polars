@@ -686,6 +686,11 @@ module Polars
         end
       end
 
+      rb_temporal_types = []
+      rb_temporal_types << Date if defined?(Date)
+      rb_temporal_types << DateTime if defined?(DateTime)
+      rb_temporal_types << Time if defined?(Time)
+
       # _get_first_non_none
       value = values.find { |v| !v.nil? }
 
@@ -693,10 +698,30 @@ module Polars
         constructor = polars_type_to_constructor(dtype)
         rbseries = constructor.call(name, values, strict)
         return rbseries
-      end
+      else
+        if ruby_dtype.nil?
+          if value.nil?
+            # generic default dtype
+            ruby_dtype = Float
+          else
+            ruby_dtype = value.class
+          end
+        end
 
-      constructor = rb_type_to_constructor(value.class)
-      constructor.call(name, values, strict)
+        # temporal branch
+        if rb_temporal_types.include?(ruby_dtype)
+          # if dtype.nil?
+          #   dtype = rb_type_to_dtype(ruby_dtype)
+          # elsif rb_temporal_types.include?(dtype)
+          #   dtype = rb_type_to_dtype(dtype)
+          # end
+
+          raise "todo"
+        else
+          constructor = rb_type_to_constructor(value.class)
+          constructor.call(name, values, strict)
+        end
+      end
     end
 
     POLARS_TYPE_TO_CONSTRUCTOR = {
