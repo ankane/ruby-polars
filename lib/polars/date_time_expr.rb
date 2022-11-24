@@ -93,26 +93,33 @@ module Polars
     # def tz_localize
     # end
 
-    # def days
-    # end
+    def days
+      Utils.wrap_expr(_rbexpr.duration_days)
+    end
 
-    # def hours
-    # end
+    def hours
+      Utils.wrap_expr(_rbexpr.duration_hours)
+    end
 
-    # def minutes
-    # end
+    def minutes
+      Utils.wrap_expr(_rbexpr.duration_minutes)
+    end
 
-    # def seconds
-    # end
+    def seconds
+      Utils.wrap_expr(_rbexpr.duration_seconds)
+    end
 
-    # def milliseconds
-    # end
+    def milliseconds
+      Utils.wrap_expr(_rbexpr.duration_milliseconds)
+    end
 
-    # def microseconds
-    # end
+    def microseconds
+      Utils.wrap_expr(_rbexpr.duration_microseconds)
+    end
 
-    # def nanoseconds
-    # end
+    def nanoseconds
+      Utils.wrap_expr(_rbexpr.duration_nanoseconds)
+    end
 
     # def offset_by
     # end

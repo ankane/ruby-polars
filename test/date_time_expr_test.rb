@@ -88,26 +88,33 @@ class DateTimeExprTest < Minitest::Test
   # def test_tz_localize
   # end
 
-  # def test_days
-  # end
+  def test_days
+    assert_expr dt_expr.days
+  end
 
-  # def test_hours
-  # end
+  def test_hours
+    assert_expr dt_expr.hours
+  end
 
-  # def test_minutes
-  # end
+  def test_minutes
+    assert_expr dt_expr.minutes
+  end
 
-  # def test_seconds
-  # end
+  def test_seconds
+    assert_expr dt_expr.seconds
+  end
 
-  # def test_milliseconds
-  # end
+  def test_milliseconds
+    assert_expr dt_expr.milliseconds
+  end
 
-  # def test_microseconds
-  # end
+  def test_microseconds
+    assert_expr dt_expr.microseconds
+  end
 
-  # def test_nanoseconds
-  # end
+  def test_nanoseconds
+    assert_expr dt_expr.nanoseconds
+  end
 
   # def test_offset_by
   # end
