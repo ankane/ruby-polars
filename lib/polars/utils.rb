@@ -72,6 +72,22 @@ module Polars
       end
     end
 
+    def self.handle_projection_columns(columns)
+      projection = nil
+      if columns
+        raise "todo"
+        # if columns.is_a?(String) || columns.is_a?(Symbol)
+        #   columns = [columns]
+        # elsif is_int_sequence(columns)
+        #   projection = columns.to_a
+        #   columns = nil
+        # elsif !is_str_sequence(columns)
+        #   raise ArgumentError, "columns arg should contain a list of all integers or all strings values."
+        # end
+      end
+      [projection, columns]
+    end
+
     def self.scale_bytes(sz, to:)
       scaling_factor = {
           "b" => 1,

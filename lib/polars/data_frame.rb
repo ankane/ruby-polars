@@ -31,12 +31,128 @@ module Polars
       df
     end
 
-    def self._read_csv(file, has_header: true)
+    def self._read_csv(
+      file,
+      has_header: true,
+      columns: nil,
+      sep: str = ",",
+      comment_char: nil,
+      quote_char: '"',
+      skip_rows: 0,
+      dtypes: nil,
+      null_values: nil,
+      ignore_errors: false,
+      parse_dates: false,
+      n_threads: nil,
+      infer_schema_length: 100,
+      batch_size: 8192,
+      n_rows: nil,
+      encoding: "utf8",
+      low_memory: false,
+      rechunk: true,
+      skip_rows_after_header: 0,
+      row_count_name: nil,
+      row_count_offset: 0,
+      sample_size: 1024,
+      eol_char: "\n"
+    )
       if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
-        file = Utils.format_path(file)
+        path = Utils.format_path(file)
+      else
+        path = nil
+        # if isinstance(file, BytesIO):
+        #     file = file.getvalue()
+        # if isinstance(file, StringIO):
+        #     file = file.getvalue().encode()
       end
 
-      _from_rbdf(RbDataFrame.read_csv(file, has_header))
+      dtype_list = nil
+      dtype_slice = nil
+      # if dtypes is not None:
+      #     if isinstance(dtypes, dict):
+      #         dtype_list = []
+      #         for k, v in dtypes.items():
+      #             dtype_list.append((k, py_type_to_dtype(v)))
+      #     elif isinstance(dtypes, Sequence):
+      #         dtype_slice = dtypes
+      #     else:
+      #         raise ValueError("dtype arg should be list or dict")
+
+      processed_null_values = Utils._process_null_values(null_values)
+
+      # if isinstance(columns, str):
+      #     columns = [columns]
+      # if isinstance(file, str) and "*" in file:
+      #     dtypes_dict = None
+      #     if dtype_list is not None:
+      #         dtypes_dict = {name: dt for (name, dt) in dtype_list}
+      #     if dtype_slice is not None:
+      #         raise ValueError(
+      #             "cannot use glob patterns and unnamed dtypes as `dtypes` argument;"
+      #             " Use dtypes: Mapping[str, Type[DataType]"
+      #         )
+      #     from polars import scan_csv
+
+      #     scan = scan_csv(
+      #         file,
+      #         has_header=has_header,
+      #         sep=sep,
+      #         comment_char=comment_char,
+      #         quote_char=quote_char,
+      #         skip_rows=skip_rows,
+      #         dtypes=dtypes_dict,
+      #         null_values=null_values,
+      #         ignore_errors=ignore_errors,
+      #         infer_schema_length=infer_schema_length,
+      #         n_rows=n_rows,
+      #         low_memory=low_memory,
+      #         rechunk=rechunk,
+      #         skip_rows_after_header=skip_rows_after_header,
+      #         row_count_name=row_count_name,
+      #         row_count_offset=row_count_offset,
+      #         eol_char=eol_char,
+      #     )
+      #     if columns is None:
+      #         return self._from_pydf(scan.collect()._df)
+      #     elif is_str_sequence(columns, allow_str=False):
+      #         return self._from_pydf(scan.select(columns).collect()._df)
+      #     else:
+      #         raise ValueError(
+      #             "cannot use glob patterns and integer based projection as `columns`"
+      #             " argument; Use columns: List[str]"
+      #         )
+
+      projection, columns = Utils.handle_projection_columns(columns)
+
+      _from_rbdf(
+        RbDataFrame.read_csv(
+          file,
+          infer_schema_length,
+          batch_size,
+          has_header,
+          ignore_errors,
+          n_rows,
+          skip_rows,
+          projection,
+          sep,
+          rechunk,
+          columns,
+          encoding,
+          n_threads,
+          path,
+          dtype_list,
+          dtype_slice,
+          low_memory,
+          comment_char,
+          quote_char,
+          processed_null_values,
+          parse_dates,
+          skip_rows_after_header,
+          Utils._prepare_row_count_args(row_count_name, row_count_offset),
+          sample_size,
+          eol_char
+        )
+      )
     end
 
     def self._read_parquet(file)
