@@ -60,67 +60,34 @@ module Polars
         path = Utils.format_path(file)
       else
         path = nil
-        # if isinstance(file, BytesIO):
-        #     file = file.getvalue()
-        # if isinstance(file, StringIO):
-        #     file = file.getvalue().encode()
+        # if defined?(StringIO) && file.is_a?(StringIO)
+        #   file = file.string
+        # end
       end
 
       dtype_list = nil
       dtype_slice = nil
-      # if dtypes is not None:
-      #     if isinstance(dtypes, dict):
-      #         dtype_list = []
-      #         for k, v in dtypes.items():
-      #             dtype_list.append((k, py_type_to_dtype(v)))
-      #     elif isinstance(dtypes, Sequence):
-      #         dtype_slice = dtypes
-      #     else:
-      #         raise ValueError("dtype arg should be list or dict")
+      if !dtypes.nil?
+        if dtypes.is_a?(Hash)
+          dtype_list = []
+          dtypes.each do|k, v|
+            dtype_list << [k, Utils.rb_type_to_dtype(v)]
+          end
+        elsif dtypes.is_a?(Array)
+          dtype_slice = dtypes
+        else
+          raise ArgumentError, "dtype arg should be list or dict"
+        end
+      end
 
       processed_null_values = Utils._process_null_values(null_values)
 
-      # if isinstance(columns, str):
-      #     columns = [columns]
-      # if isinstance(file, str) and "*" in file:
-      #     dtypes_dict = None
-      #     if dtype_list is not None:
-      #         dtypes_dict = {name: dt for (name, dt) in dtype_list}
-      #     if dtype_slice is not None:
-      #         raise ValueError(
-      #             "cannot use glob patterns and unnamed dtypes as `dtypes` argument;"
-      #             " Use dtypes: Mapping[str, Type[DataType]"
-      #         )
-      #     from polars import scan_csv
-
-      #     scan = scan_csv(
-      #         file,
-      #         has_header=has_header,
-      #         sep=sep,
-      #         comment_char=comment_char,
-      #         quote_char=quote_char,
-      #         skip_rows=skip_rows,
-      #         dtypes=dtypes_dict,
-      #         null_values=null_values,
-      #         ignore_errors=ignore_errors,
-      #         infer_schema_length=infer_schema_length,
-      #         n_rows=n_rows,
-      #         low_memory=low_memory,
-      #         rechunk=rechunk,
-      #         skip_rows_after_header=skip_rows_after_header,
-      #         row_count_name=row_count_name,
-      #         row_count_offset=row_count_offset,
-      #         eol_char=eol_char,
-      #     )
-      #     if columns is None:
-      #         return self._from_pydf(scan.collect()._df)
-      #     elif is_str_sequence(columns, allow_str=False):
-      #         return self._from_pydf(scan.select(columns).collect()._df)
-      #     else:
-      #         raise ValueError(
-      #             "cannot use glob patterns and integer based projection as `columns`"
-      #             " argument; Use columns: List[str]"
-      #         )
+      if columns.is_a?(String)
+        columns = [columns]
+      end
+      if file.is_a?(String) && file.include?("*")
+        raise "not yet implemented"
+      end
 
       projection, columns = Utils.handle_projection_columns(columns)
 
@@ -336,8 +303,7 @@ module Polars
           float_precision,
           null_value
         )
-        buffer.rewind
-        return buffer.read.force_encoding(Encoding::UTF_8)
+        return buffer.string.force_encoding(Encoding::UTF_8)
       end
 
       if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
