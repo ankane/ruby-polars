@@ -146,8 +146,31 @@ module Polars
     # def scan_parquet
     # end
 
-    # def scan_ndjson
-    # end
+    def scan_ndjson(
+      file,
+      infer_schema_length: 100,
+      batch_size: 1024,
+      n_rows: nil,
+      low_memory: false,
+      rechunk: true,
+      row_count_name: nil,
+      row_count_offset: 0
+    )
+      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+        file = Utils.format_path(file)
+      end
+
+      LazyFrame._scan_ndjson(
+        file,
+        infer_schema_length: infer_schema_length,
+        batch_size: batch_size,
+        n_rows: n_rows,
+        low_memory: low_memory,
+        rechunk: rechunk,
+        row_count_name: row_count_name,
+        row_count_offset: row_count_offset,
+      )
+    end
 
     # def read_avro
     # end

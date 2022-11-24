@@ -14,4 +14,10 @@ class JsonTest < Minitest::Test
     assert_nil df.write_ndjson(path)
     assert_frame df, Polars.read_ndjson(path)
   end
+
+  def test_scan_ndjson
+    df = Polars.scan_ndjson("test/support/data.ndjson")
+    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_frame expected, df.collect
+  end
 end

@@ -53,6 +53,30 @@ impl From<LazyFrame> for RbLazyFrame {
 }
 
 impl RbLazyFrame {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new_from_ndjson(
+        path: String,
+        infer_schema_length: Option<usize>,
+        batch_size: Option<usize>,
+        n_rows: Option<usize>,
+        low_memory: bool,
+        rechunk: bool,
+        row_count: Option<(String, IdxSize)>,
+    ) -> RbResult<Self> {
+        let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
+
+        let lf = LazyJsonLineReader::new(path)
+            .with_infer_schema_length(infer_schema_length)
+            .with_batch_size(batch_size)
+            .with_n_rows(n_rows)
+            .low_memory(low_memory)
+            .with_rechunk(rechunk)
+            .with_row_count(row_count)
+            .finish()
+            .map_err(RbPolarsErr::from)?;
+        Ok(lf.into())
+    }
+
     pub fn new_from_csv(arguments: &[Value]) -> RbResult<Self> {
         // start arguments
         // this pattern is needed for more than 16
