@@ -41,8 +41,9 @@ module Polars
     # def %(other)
     # end
 
-    # def **(power)
-    # end
+    def **(power)
+      pow(power)
+    end
 
     def >=(other)
       wrap_expr(_rbexpr.gt_eq(_to_expr(other)._rbexpr))
@@ -195,6 +196,21 @@ module Polars
       wrap_expr(_rbexpr.sort_with(reverse, nulls_last))
     end
 
+    # def top_k
+    # end
+
+    # def arg_sort
+    # end
+
+    # def arg_max
+    # end
+
+    # def arg_min
+    # end
+
+    # def search_sorted
+    # end
+
     def sort_by(by, reverse: false)
       if !by.is_a?(Array)
         by = [by]
@@ -206,6 +222,15 @@ module Polars
 
       wrap_expr(_rbexpr.sort_by(by, reverse))
     end
+
+    # def take
+    # end
+
+    # def shift
+    # end
+
+    # def shift_and_fill
+    # end
 
     def fill_null(value = nil, strategy: nil, limit: nil)
       if !value.nil? && !strategy.nil?
@@ -228,6 +253,12 @@ module Polars
       fill_value = Utils.expr_to_lit_or_expr(fill_value, str_to_lit: true)
       wrap_expr(_rbexpr.fill_nan(fill_value._rbexpr))
     end
+
+    # def forward_fill
+    # end
+
+    # def backward_fill
+    # end
 
     def reverse
       wrap_expr(_rbexpr.reverse)
@@ -277,6 +308,12 @@ module Polars
       wrap_expr(_rbexpr.n_unique)
     end
 
+    # def null_count
+    # end
+
+    # def arg_unique
+    # end
+
     def unique(maintain_order: false)
       if maintain_order
         wrap_expr(_rbexpr.unique_stable)
@@ -298,9 +335,39 @@ module Polars
       wrap_expr(_rbexpr.over(rbexprs))
     end
 
+    # def is_unique
+    # end
+
+    # def is_first
+    # end
+
+    # def is_duplicated
+    # end
+
+    # def quantile
+    # end
+
     def filter(predicate)
       wrap_expr(_rbexpr.filter(predicate._rbexpr))
     end
+
+    # def where
+    # end
+
+    # def map
+    # end
+
+    # def apply
+    # end
+
+    # def flatten
+    # end
+
+    # def explode
+    # end
+
+    # def take_every
+    # end
 
     def head(n = 10)
       wrap_expr(_rbexpr.head(n))
@@ -319,17 +386,197 @@ module Polars
       wrap_expr(_rbexpr.pow(exponent._rbexpr))
     end
 
+    # def is_in
+    # end
+
+    # def repeat_by
+    # end
+
+    # def is_between
+    # end
+
+    # def _hash
+    # end
+
+    # def reinterpret
+    # end
+
+    # def _inspect
+    # end
+
     def interpolate
       wrap_expr(_rbexpr.interpolate)
     end
+
+    # def rolling_min
+    # end
+
+    # def rolling_max
+    # end
+
+    # def rolling_mean
+    # end
+
+    # def rolling_sum
+    # end
+
+    # def rolling_std
+    # end
+
+    # def rolling_var
+    # end
+
+    # def rolling_median
+    # end
+
+    # def rolling_quantile
+    # end
+
+    # def rolling_apply
+    # end
+
+    # def rolling_skew
+    # end
+
+    # def abs
+    # end
+
+    # def argsort
+    # end
+
+    # def rank
+    # end
+
+    # def diff
+    # end
+
+    # def pct_change
+    # end
+
+    # def skew
+    # end
+
+    # def kurtosis
+    # end
+
+    # def clip
+    # end
+
+    # def clip_min
+    # end
+
+    # def clip_max
+    # end
+
+    # def lower_bound
+    # end
+
+    # def upper_bound
+    # end
+
+    # def sign
+    # end
+
+    # def sin
+    # end
+
+    # def cos
+    # end
+
+    # def tan
+    # end
+
+    # def arcsin
+    # end
+
+    # def arccos
+    # end
+
+    # def arctan
+    # end
+
+    # def sinh
+    # end
+
+    # def cosh
+    # end
+
+    # def tanh
+    # end
+
+    # def arcsinh
+    # end
+
+    # def arccosh
+    # end
+
+    # def arctanh
+    # end
+
+    # def reshape
+    # end
+
+    # def shuffle
+    # end
+
+    # def sample
+    # end
+
+    # def ewm_mean
+    # end
+
+    # def ewm_std
+    # end
+
+    # def ewm_var
+    # end
+
+    # def extend_constant
+    # end
+
+    # def value_counts
+    # end
+
+    # def unique_counts
+    # end
+
+    # def log
+    # end
+
+    # def entropy
+    # end
+
+    # def cumulative_eval
+    # end
+
+    # def set_sorted
+    # end
 
     def list
       wrap_expr(_rbexpr.list)
     end
 
+    # def shrink_dtype
+    # end
+
+    # def arr
+    # end
+
+    # def cat
+    # end
+
+    # def dt
+    # end
+
+    # def meta
+    # end
+
     def str
       StringExpr.new(self)
     end
+
+    # def struct
+    # end
 
     private
 
