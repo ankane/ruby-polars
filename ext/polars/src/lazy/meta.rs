@@ -7,7 +7,7 @@ impl RbExpr {
             .meta()
             .pop()
             .into_iter()
-            .map(|v| RbExpr::from(v))
+            .map(RbExpr::from)
             .collect()
     }
 

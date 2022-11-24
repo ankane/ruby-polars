@@ -418,7 +418,7 @@ impl RbDataFrame {
             self.df.borrow().partition_by(groups)
         }
         .map_err(RbPolarsErr::from)?;
-        Ok(out.into_iter().map(|v| RbDataFrame::new(v)).collect())
+        Ok(out.into_iter().map(RbDataFrame::new).collect())
     }
 
     pub fn shift(&self, periods: i64) -> Self {

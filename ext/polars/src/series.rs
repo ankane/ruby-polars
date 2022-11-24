@@ -634,5 +634,5 @@ impl RbSeries {
 }
 
 pub fn to_rbseries_collection(s: Vec<Series>) -> Vec<RbSeries> {
-    s.into_iter().map(|v| RbSeries::new(v)).collect()
+    s.into_iter().map(RbSeries::new).collect()
 }
