@@ -265,9 +265,18 @@ fn init() -> RbResult<()> {
     class.define_method("duration_hours", method!(RbExpr::duration_hours, 0))?;
     class.define_method("duration_minutes", method!(RbExpr::duration_minutes, 0))?;
     class.define_method("duration_seconds", method!(RbExpr::duration_seconds, 0))?;
-    class.define_method("duration_nanoseconds", method!(RbExpr::duration_nanoseconds, 0))?;
-    class.define_method("duration_microseconds", method!(RbExpr::duration_microseconds, 0))?;
-    class.define_method("duration_milliseconds", method!(RbExpr::duration_milliseconds, 0))?;
+    class.define_method(
+        "duration_nanoseconds",
+        method!(RbExpr::duration_nanoseconds, 0),
+    )?;
+    class.define_method(
+        "duration_microseconds",
+        method!(RbExpr::duration_microseconds, 0),
+    )?;
+    class.define_method(
+        "duration_milliseconds",
+        method!(RbExpr::duration_milliseconds, 0),
+    )?;
     class.define_method("timestamp", method!(RbExpr::timestamp, 1))?;
     class.define_method("dt_epoch_seconds", method!(RbExpr::dt_epoch_seconds, 0))?;
     class.define_method("dt_with_time_unit", method!(RbExpr::dt_with_time_unit, 1))?;
@@ -275,12 +284,70 @@ fn init() -> RbResult<()> {
     class.define_method("dt_cast_time_unit", method!(RbExpr::dt_cast_time_unit, 1))?;
     class.define_method("dt_truncate", method!(RbExpr::dt_truncate, 2))?;
     class.define_method("dt_round", method!(RbExpr::dt_round, 2))?;
-
+    class.define_method("mode", method!(RbExpr::mode, 0))?;
+    class.define_method("keep_name", method!(RbExpr::keep_name, 0))?;
     class.define_method("prefix", method!(RbExpr::prefix, 1))?;
     class.define_method("suffix", method!(RbExpr::suffix, 1))?;
     class.define_method("interpolate", method!(RbExpr::interpolate, 0))?;
+    class.define_method("rolling_sum", method!(RbExpr::rolling_sum, 6))?;
+    class.define_method("rolling_min", method!(RbExpr::rolling_min, 6))?;
+    class.define_method("rolling_max", method!(RbExpr::rolling_max, 6))?;
+    class.define_method("rolling_mean", method!(RbExpr::rolling_mean, 6))?;
+    class.define_method("rolling_std", method!(RbExpr::rolling_std, 6))?;
+    class.define_method("rolling_var", method!(RbExpr::rolling_var, 6))?;
+    class.define_method("rolling_median", method!(RbExpr::rolling_median, 6))?;
+    class.define_method("rolling_quantile", method!(RbExpr::rolling_quantile, 8))?;
+    class.define_method("rolling_skew", method!(RbExpr::rolling_skew, 2))?;
+    class.define_method("lower_bound", method!(RbExpr::lower_bound, 0))?;
+    class.define_method("upper_bound", method!(RbExpr::upper_bound, 0))?;
+    class.define_method("lst_max", method!(RbExpr::lst_max, 0))?;
+    class.define_method("lst_min", method!(RbExpr::lst_min, 0))?;
+    class.define_method("lst_sum", method!(RbExpr::lst_sum, 0))?;
+    class.define_method("lst_mean", method!(RbExpr::lst_mean, 0))?;
+    class.define_method("lst_sort", method!(RbExpr::lst_sort, 1))?;
+    class.define_method("lst_reverse", method!(RbExpr::lst_reverse, 0))?;
+    class.define_method("lst_unique", method!(RbExpr::lst_unique, 0))?;
+    class.define_method("lst_get", method!(RbExpr::lst_get, 1))?;
+    class.define_method("lst_join", method!(RbExpr::lst_join, 1))?;
+    class.define_method("lst_arg_min", method!(RbExpr::lst_arg_min, 0))?;
+    class.define_method("lst_arg_max", method!(RbExpr::lst_arg_max, 0))?;
+    class.define_method("lst_diff", method!(RbExpr::lst_diff, 2))?;
+    class.define_method("lst_shift", method!(RbExpr::lst_shift, 1))?;
+    class.define_method("lst_slice", method!(RbExpr::lst_slice, 2))?;
+    class.define_method("lst_eval", method!(RbExpr::lst_eval, 2))?;
+    class.define_method("cumulative_eval", method!(RbExpr::cumulative_eval, 3))?;
+    class.define_method("rank", method!(RbExpr::rank, 2))?;
+    class.define_method("diff", method!(RbExpr::diff, 2))?;
+    class.define_method("pct_change", method!(RbExpr::pct_change, 1))?;
+    class.define_method("skew", method!(RbExpr::skew, 1))?;
+    class.define_method("kurtosis", method!(RbExpr::kurtosis, 2))?;
+    class.define_method("str_concat", method!(RbExpr::str_concat, 1))?;
+    class.define_method("cat_set_ordering", method!(RbExpr::cat_set_ordering, 1))?;
+    class.define_method("reshape", method!(RbExpr::reshape, 1))?;
+    class.define_method("cumcount", method!(RbExpr::cumcount, 1))?;
+    class.define_method("to_physical", method!(RbExpr::to_physical, 0))?;
+    class.define_method("shuffle", method!(RbExpr::shuffle, 1))?;
+    class.define_method("sample_n", method!(RbExpr::sample_n, 4))?;
+    class.define_method("sample_frac", method!(RbExpr::sample_frac, 4))?;
+    class.define_method("ewm_mean", method!(RbExpr::ewm_mean, 3))?;
+    class.define_method("ewm_std", method!(RbExpr::ewm_std, 4))?;
+    class.define_method("ewm_var", method!(RbExpr::ewm_var, 4))?;
     class.define_method("any", method!(RbExpr::any, 0))?;
     class.define_method("all", method!(RbExpr::all, 0))?;
+    class.define_method(
+        "struct_field_by_name",
+        method!(RbExpr::struct_field_by_name, 1),
+    )?;
+    class.define_method(
+        "struct_field_by_index",
+        method!(RbExpr::struct_field_by_index, 1),
+    )?;
+    class.define_method(
+        "struct_rename_fields",
+        method!(RbExpr::struct_rename_fields, 1),
+    )?;
+    class.define_method("log", method!(RbExpr::log, 1))?;
+    class.define_method("exp", method!(RbExpr::exp, 0))?;
 
     // maybe add to different class
     class.define_singleton_method("col", function!(crate::lazy::dsl::col, 1))?;

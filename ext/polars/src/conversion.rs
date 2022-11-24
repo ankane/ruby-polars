@@ -3,6 +3,7 @@ use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
 use polars::frame::DataFrame;
 use polars::prelude::*;
+use polars::series::ops::NullBehavior;
 
 use crate::{RbDataFrame, RbPolarsErr, RbResult, RbValueError};
 
@@ -82,6 +83,22 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
     }
 }
 
+impl TryConvert for Wrap<CategoricalOrdering> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "physical" => CategoricalOrdering::Physical,
+            "lexical" => CategoricalOrdering::Lexical,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "ordering must be one of {{'physical', 'lexical'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<ClosedWindow> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match ob.try_convert::<String>()?.as_str() {
@@ -110,10 +127,28 @@ impl TryConvert for Wrap<JoinType> {
             "anti" => JoinType::Anti,
             // #[cfg(feature = "cross_join")]
             // "cross" => JoinType::Cross,
-            v => return Err(RbValueError::new_err(format!(
+            v => {
+                return Err(RbValueError::new_err(format!(
                 "how must be one of {{'inner', 'left', 'outer', 'semi', 'anti', 'cross'}}, got {}",
                 v
-            ))),
+            )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<NullBehavior> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "drop" => NullBehavior::Drop,
+            "ignore" => NullBehavior::Ignore,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "null behavior must be one of {{'drop', 'ignore'}}, got {}",
+                    v
+                )))
+            }
         };
         Ok(Wrap(parsed))
     }
@@ -146,6 +181,26 @@ impl TryConvert for Wrap<QuantileInterpolOptions> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "interpolation must be one of {{'lower', 'higher', 'nearest', 'linear', 'midpoint'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<RankMethod> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "min" => RankMethod::Min,
+            "max" => RankMethod::Max,
+            "average" => RankMethod::Average,
+            "dense" => RankMethod::Dense,
+            "ordinal" => RankMethod::Ordinal,
+            "random" => RankMethod::Random,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "method must be one of {{'min', 'max', 'average', 'dense', 'ordinal', 'random'}}, got {}",
                     v
                 )))
             }

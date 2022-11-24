@@ -3,6 +3,7 @@ use polars::chunked_array::ops::SortOptions;
 use polars::lazy::dsl;
 use polars::lazy::dsl::Operator;
 use polars::prelude::*;
+use polars::series::ops::NullBehavior;
 
 use crate::conversion::*;
 use crate::lazy::utils::rb_exprs_to_exprs;
@@ -872,6 +873,14 @@ impl RbExpr {
         self.inner.clone().dt().round(&every, &offset).into()
     }
 
+    pub fn mode(&self) -> Self {
+        self.inner.clone().mode().into()
+    }
+
+    pub fn keep_name(&self) -> Self {
+        self.inner.clone().keep_name().into()
+    }
+
     pub fn prefix(&self, prefix: String) -> Self {
         self.inner.clone().prefix(&prefix).into()
     }
@@ -884,12 +893,427 @@ impl RbExpr {
         self.inner.clone().interpolate().into()
     }
 
+    pub fn rolling_sum(
+        &self,
+        window_size: String,
+        weights: Option<Vec<f64>>,
+        min_periods: usize,
+        center: bool,
+        by: Option<String>,
+        closed: Option<Wrap<ClosedWindow>>,
+    ) -> Self {
+        let options = RollingOptions {
+            window_size: Duration::parse(&window_size),
+            weights,
+            min_periods,
+            center,
+            by,
+            closed_window: closed.map(|c| c.0),
+        };
+        self.inner.clone().rolling_sum(options).into()
+    }
+
+    pub fn rolling_min(
+        &self,
+        window_size: String,
+        weights: Option<Vec<f64>>,
+        min_periods: usize,
+        center: bool,
+        by: Option<String>,
+        closed: Option<Wrap<ClosedWindow>>,
+    ) -> Self {
+        let options = RollingOptions {
+            window_size: Duration::parse(&window_size),
+            weights,
+            min_periods,
+            center,
+            by,
+            closed_window: closed.map(|c| c.0),
+        };
+        self.inner.clone().rolling_min(options).into()
+    }
+
+    pub fn rolling_max(
+        &self,
+        window_size: String,
+        weights: Option<Vec<f64>>,
+        min_periods: usize,
+        center: bool,
+        by: Option<String>,
+        closed: Option<Wrap<ClosedWindow>>,
+    ) -> Self {
+        let options = RollingOptions {
+            window_size: Duration::parse(&window_size),
+            weights,
+            min_periods,
+            center,
+            by,
+            closed_window: closed.map(|c| c.0),
+        };
+        self.inner.clone().rolling_max(options).into()
+    }
+
+    pub fn rolling_mean(
+        &self,
+        window_size: String,
+        weights: Option<Vec<f64>>,
+        min_periods: usize,
+        center: bool,
+        by: Option<String>,
+        closed: Option<Wrap<ClosedWindow>>,
+    ) -> Self {
+        let options = RollingOptions {
+            window_size: Duration::parse(&window_size),
+            weights,
+            min_periods,
+            center,
+            by,
+            closed_window: closed.map(|c| c.0),
+        };
+
+        self.inner.clone().rolling_mean(options).into()
+    }
+
+    pub fn rolling_std(
+        &self,
+        window_size: String,
+        weights: Option<Vec<f64>>,
+        min_periods: usize,
+        center: bool,
+        by: Option<String>,
+        closed: Option<Wrap<ClosedWindow>>,
+    ) -> Self {
+        let options = RollingOptions {
+            window_size: Duration::parse(&window_size),
+            weights,
+            min_periods,
+            center,
+            by,
+            closed_window: closed.map(|c| c.0),
+        };
+
+        self.inner.clone().rolling_std(options).into()
+    }
+
+    pub fn rolling_var(
+        &self,
+        window_size: String,
+        weights: Option<Vec<f64>>,
+        min_periods: usize,
+        center: bool,
+        by: Option<String>,
+        closed: Option<Wrap<ClosedWindow>>,
+    ) -> Self {
+        let options = RollingOptions {
+            window_size: Duration::parse(&window_size),
+            weights,
+            min_periods,
+            center,
+            by,
+            closed_window: closed.map(|c| c.0),
+        };
+
+        self.inner.clone().rolling_var(options).into()
+    }
+
+    pub fn rolling_median(
+        &self,
+        window_size: String,
+        weights: Option<Vec<f64>>,
+        min_periods: usize,
+        center: bool,
+        by: Option<String>,
+        closed: Option<Wrap<ClosedWindow>>,
+    ) -> Self {
+        let options = RollingOptions {
+            window_size: Duration::parse(&window_size),
+            weights,
+            min_periods,
+            center,
+            by,
+            closed_window: closed.map(|c| c.0),
+        };
+        self.inner.clone().rolling_median(options).into()
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn rolling_quantile(
+        &self,
+        quantile: f64,
+        interpolation: Wrap<QuantileInterpolOptions>,
+        window_size: String,
+        weights: Option<Vec<f64>>,
+        min_periods: usize,
+        center: bool,
+        by: Option<String>,
+        closed: Option<Wrap<ClosedWindow>>,
+    ) -> Self {
+        let options = RollingOptions {
+            window_size: Duration::parse(&window_size),
+            weights,
+            min_periods,
+            center,
+            by,
+            closed_window: closed.map(|c| c.0),
+        };
+
+        self.inner
+            .clone()
+            .rolling_quantile(quantile, interpolation.0, options)
+            .into()
+    }
+
+    pub fn rolling_skew(&self, window_size: usize, bias: bool) -> Self {
+        self.inner
+            .clone()
+            .rolling_apply_float(window_size, move |ca| {
+                ca.clone().into_series().skew(bias).unwrap()
+            })
+            .into()
+    }
+
+    pub fn lower_bound(&self) -> Self {
+        self.inner.clone().lower_bound().into()
+    }
+
+    pub fn upper_bound(&self) -> Self {
+        self.inner.clone().upper_bound().into()
+    }
+
+    pub fn lst_max(&self) -> Self {
+        self.inner.clone().arr().max().into()
+    }
+
+    pub fn lst_min(&self) -> Self {
+        self.inner.clone().arr().min().into()
+    }
+
+    pub fn lst_sum(&self) -> Self {
+        self.inner.clone().arr().sum().with_fmt("arr.sum").into()
+    }
+
+    pub fn lst_mean(&self) -> Self {
+        self.inner.clone().arr().mean().with_fmt("arr.mean").into()
+    }
+
+    pub fn lst_sort(&self, reverse: bool) -> Self {
+        self.inner
+            .clone()
+            .arr()
+            .sort(SortOptions {
+                descending: reverse,
+                ..Default::default()
+            })
+            .with_fmt("arr.sort")
+            .into()
+    }
+
+    pub fn lst_reverse(&self) -> Self {
+        self.inner
+            .clone()
+            .arr()
+            .reverse()
+            .with_fmt("arr.reverse")
+            .into()
+    }
+
+    pub fn lst_unique(&self) -> Self {
+        self.inner
+            .clone()
+            .arr()
+            .unique()
+            .with_fmt("arr.unique")
+            .into()
+    }
+
+    pub fn lst_get(&self, index: &RbExpr) -> Self {
+        self.inner.clone().arr().get(index.inner.clone()).into()
+    }
+
+    pub fn lst_join(&self, separator: String) -> Self {
+        self.inner.clone().arr().join(&separator).into()
+    }
+
+    pub fn lst_arg_min(&self) -> Self {
+        self.inner.clone().arr().arg_min().into()
+    }
+
+    pub fn lst_arg_max(&self) -> Self {
+        self.inner.clone().arr().arg_max().into()
+    }
+
+    pub fn lst_diff(&self, n: usize, null_behavior: Wrap<NullBehavior>) -> RbResult<Self> {
+        Ok(self.inner.clone().arr().diff(n, null_behavior.0).into())
+    }
+
+    pub fn lst_shift(&self, periods: i64) -> Self {
+        self.inner.clone().arr().shift(periods).into()
+    }
+
+    pub fn lst_slice(&self, offset: &RbExpr, length: Option<&RbExpr>) -> Self {
+        let length = match length {
+            Some(i) => i.inner.clone(),
+            None => dsl::lit(i64::MAX),
+        };
+        self.inner
+            .clone()
+            .arr()
+            .slice(offset.inner.clone(), length)
+            .into()
+    }
+
+    pub fn lst_eval(&self, expr: &RbExpr, parallel: bool) -> Self {
+        self.inner
+            .clone()
+            .arr()
+            .eval(expr.inner.clone(), parallel)
+            .into()
+    }
+
+    pub fn cumulative_eval(&self, expr: &RbExpr, min_periods: usize, parallel: bool) -> Self {
+        self.inner
+            .clone()
+            .cumulative_eval(expr.inner.clone(), min_periods, parallel)
+            .into()
+    }
+
+    pub fn rank(&self, method: Wrap<RankMethod>, reverse: bool) -> Self {
+        let options = RankOptions {
+            method: method.0,
+            descending: reverse,
+        };
+        self.inner.clone().rank(options).into()
+    }
+
+    pub fn diff(&self, n: usize, null_behavior: Wrap<NullBehavior>) -> Self {
+        self.inner.clone().diff(n, null_behavior.0).into()
+    }
+
+    pub fn pct_change(&self, n: usize) -> Self {
+        self.inner.clone().pct_change(n).into()
+    }
+
+    pub fn skew(&self, bias: bool) -> Self {
+        self.inner.clone().skew(bias).into()
+    }
+
+    pub fn kurtosis(&self, fisher: bool, bias: bool) -> Self {
+        self.inner.clone().kurtosis(fisher, bias).into()
+    }
+
+    pub fn str_concat(&self, delimiter: String) -> Self {
+        self.inner.clone().str().concat(&delimiter).into()
+    }
+
+    pub fn cat_set_ordering(&self, ordering: Wrap<CategoricalOrdering>) -> Self {
+        self.inner.clone().cat().set_ordering(ordering.0).into()
+    }
+
+    pub fn reshape(&self, dims: Vec<i64>) -> Self {
+        self.inner.clone().reshape(&dims).into()
+    }
+
+    pub fn cumcount(&self, reverse: bool) -> Self {
+        self.inner.clone().cumcount(reverse).into()
+    }
+
+    pub fn to_physical(&self) -> Self {
+        self.inner
+            .clone()
+            .map(
+                |s| Ok(s.to_physical_repr().into_owned()),
+                GetOutput::map_dtype(|dt| dt.to_physical()),
+            )
+            .with_fmt("to_physical")
+            .into()
+    }
+
+    pub fn shuffle(&self, seed: Option<u64>) -> Self {
+        self.inner.clone().shuffle(seed).into()
+    }
+
+    pub fn sample_n(
+        &self,
+        n: usize,
+        with_replacement: bool,
+        shuffle: bool,
+        seed: Option<u64>,
+    ) -> Self {
+        self.inner
+            .clone()
+            .sample_n(n, with_replacement, shuffle, seed)
+            .into()
+    }
+
+    pub fn sample_frac(
+        &self,
+        frac: f64,
+        with_replacement: bool,
+        shuffle: bool,
+        seed: Option<u64>,
+    ) -> Self {
+        self.inner
+            .clone()
+            .sample_frac(frac, with_replacement, shuffle, seed)
+            .into()
+    }
+
+    pub fn ewm_mean(&self, alpha: f64, adjust: bool, min_periods: usize) -> Self {
+        let options = EWMOptions {
+            alpha,
+            adjust,
+            bias: false,
+            min_periods,
+        };
+        self.inner.clone().ewm_mean(options).into()
+    }
+
+    pub fn ewm_std(&self, alpha: f64, adjust: bool, bias: bool, min_periods: usize) -> Self {
+        let options = EWMOptions {
+            alpha,
+            adjust,
+            bias,
+            min_periods,
+        };
+        self.inner.clone().ewm_std(options).into()
+    }
+
+    pub fn ewm_var(&self, alpha: f64, adjust: bool, bias: bool, min_periods: usize) -> Self {
+        let options = EWMOptions {
+            alpha,
+            adjust,
+            bias,
+            min_periods,
+        };
+        self.inner.clone().ewm_var(options).into()
+    }
+
     pub fn any(&self) -> Self {
         self.inner.clone().any().into()
     }
 
     pub fn all(&self) -> Self {
         self.inner.clone().all().into()
+    }
+
+    pub fn struct_field_by_name(&self, name: String) -> Self {
+        self.inner.clone().struct_().field_by_name(&name).into()
+    }
+
+    pub fn struct_field_by_index(&self, index: i64) -> Self {
+        self.inner.clone().struct_().field_by_index(index).into()
+    }
+
+    pub fn struct_rename_fields(&self, names: Vec<String>) -> Self {
+        self.inner.clone().struct_().rename_fields(names).into()
+    }
+
+    pub fn log(&self, base: f64) -> Self {
+        self.inner.clone().log(base).into()
+    }
+
+    pub fn exp(&self) -> Self {
+        self.inner.clone().exp().into()
     }
 }
 
