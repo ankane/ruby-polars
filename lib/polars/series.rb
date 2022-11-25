@@ -231,7 +231,8 @@ module Polars
     #
     # FFI buffers are included in this estimation.
     #
-    # @param unit ["b", "kb", "mb", "gb", "tb"] Scale the returned size to the given unit.
+    # @param unit ["b", "kb", "mb", "gb", "tb"]
+    #   Scale the returned size to the given unit.
     #
     # @return [Numeric]
     #

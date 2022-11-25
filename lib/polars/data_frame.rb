@@ -5,7 +5,7 @@ module Polars
     attr_accessor :_df
 
     # Create a new DataFrame.
-    def initialize(data = nil)
+    def initialize(data = nil, columns: nil, orient: nil)
       if defined?(ActiveRecord) && (data.is_a?(ActiveRecord::Relation) || data.is_a?(ActiveRecord::Result))
         result = data.is_a?(ActiveRecord::Result) ? data : data.connection.select_all(data.to_sql)
         data = {}
@@ -15,14 +15,14 @@ module Polars
       end
 
       if data.nil?
-        self._df = hash_to_rbdf({})
+        self._df = hash_to_rbdf({}, columns: columns)
       elsif data.is_a?(Hash)
         data = data.transform_keys { |v| v.is_a?(Symbol) ? v.to_s : v }
-        self._df = hash_to_rbdf(data)
+        self._df = hash_to_rbdf(data, columns: columns)
       elsif data.is_a?(Array)
-        self._df = sequence_to_rbdf(data)
+        self._df = sequence_to_rbdf(data, columns: columns, orient: orient)
       elsif data.is_a?(Series)
-        self._df = series_to_rbdf(data)
+        self._df = series_to_rbdf(data, columns: columns)
       else
         raise ArgumentError, "DataFrame constructor called with unsupported type; got #{data.class.name}"
       end
@@ -574,7 +574,14 @@ module Polars
     # def write_avro
     # end
 
+    # Write to Arrow IPC binary stream or Feather file.
     #
+    # @param file [String]
+    #   File path to which the file should be written.
+    # @param compression ["uncompressed", "lz4", "zstd"]
+    #   Compression method. Defaults to "uncompressed".
+    #
+    # @return [nil]
     def write_ipc(file, compression: "uncompressed")
       if compression.nil?
         compression = "uncompressed"
@@ -586,6 +593,31 @@ module Polars
       _df.write_ipc(file, compression)
     end
 
+    # Write to Apache Parquet file.
+    #
+    # @param file [String]
+    #   File path to which the file should be written.
+    # @param compression ["lz4", "uncompressed", "snappy", "gzip", "lzo", "brotli", "zstd"]
+    #   Choose "zstd" for good compression performance.
+    #   Choose "lz4" for fast compression/decompression.
+    #   Choose "snappy" for more backwards compatibility guarantees
+    #   when you deal with older parquet readers.
+    # @param compression_level [Integer, nil]
+    #   The level of compression to use. Higher compression means smaller files on
+    #   disk.
+    #
+    #   - "gzip" : min-level: 0, max-level: 10.
+    #   - "brotli" : min-level: 0, max-level: 11.
+    #   - "zstd" : min-level: 1, max-level: 22.
+    # @param statistics [Boolean]
+    #   Write statistics to the parquet headers. This requires extra compute.
+    # @param row_group_size [Integer, nil]
+    #   Size of the row groups in number of rows.
+    #   If `nil` (default), the chunks of the DataFrame are
+    #   used. Writing in smaller chunks may reduce memory pressure and improve
+    #   writing speeds.
+    #
+    # @return [nil]
     def write_parquet(
       file,
       compression: "zstd",
@@ -605,6 +637,39 @@ module Polars
       )
     end
 
+    # Return an estimation of the total (heap) allocated size of the DataFrame.
+    #
+    # Estimated size is given in the specified unit (bytes by default).
+    #
+    # This estimation is the sum of the size of its buffers, validity, including
+    # nested arrays. Multiple arrays may share buffers and bitmaps. Therefore, the
+    # size of 2 arrays is not the sum of the sizes computed from this function. In
+    # particular, StructArray's size is an upper bound.
+    #
+    # When an array is sliced, its allocated size remains constant because the buffer
+    # unchanged. However, this function will yield a smaller number. This is because
+    # this function returns the visible size of the buffer, not its total capacity.
+    #
+    # FFI buffers are included in this estimation.
+    #
+    # @param unit ["b", "kb", "mb", "gb", "tb"]
+    #   Scale the returned size to the given unit.
+    #
+    # @return [Numeric]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "x" => 1_000_000.times.to_a.reverse,
+    #       "y" => 1_000_000.times.map { |v| v / 1000.0 },
+    #       "z" => 1_000_000.times.map(&:to_s)
+    #     },
+    #     columns: {"x" => :u32, "y" => :f64, "z" => :str}
+    #   )
+    #   df.estimated_size
+    #   # => 26013898
+    #   df.estimated_size("mb")
+    #   # => 24.808786392211914
     def estimated_size(unit = "b")
       sz = _df.estimated_size
       Utils.scale_bytes(sz, to: unit)
@@ -948,15 +1013,55 @@ module Polars
       self._df = _df._clone
     end
 
-    def hash_to_rbdf(data)
+    def hash_to_rbdf(data, columns: nil)
+      if !columns.nil?
+        columns, dtypes = _unpack_columns(columns, lookup_names: data.keys)
+
+        if !data && dtypes
+          data_series = columns.map { |name| Series.new(name, [], dtype: dtypes[name])._s }
+        else
+          data_series = data.map { |name, values| Series.new(name, values, dtype: dtypes[name])._s }
+        end
+        data_series = _handle_columns_arg(data_series, columns: columns)
+        return RbDataFrame.new(data_series)
+      end
+
       RbDataFrame.read_hash(data)
     end
 
-    def sequence_to_rbdf(data)
+    def _unpack_columns(columns, lookup_names: nil)
+      [columns.keys, columns]
+    end
+
+    def _handle_columns_arg(data, columns: nil)
+      if columns.nil?
+        data
+      else
+        if !data
+          columns.map { |c| Series.new(c, nil)._s }
+        elsif data.length == columns.length
+          columns.each_with_index do |c, i|
+            # not in-place?
+            data[i].rename(c)
+          end
+          data
+        else
+          raise ArgumentError, "Dimensions of columns arg must match data dimensions."
+        end
+      end
+    end
+
+    def sequence_to_rbdf(data, columns: nil, orient: nil)
+      if columns || orient
+        raise Todo
+      end
       RbDataFrame.new(data.map(&:_s))
     end
 
-    def series_to_rbdf(data)
+    def series_to_rbdf(data, columns: nil)
+      if columns
+        raise Todo
+      end
       RbDataFrame.new([data._s])
     end
 
