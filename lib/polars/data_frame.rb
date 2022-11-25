@@ -5,6 +5,17 @@ module Polars
     attr_accessor :_df
 
     # Create a new DataFrame.
+    #
+    # @param data [Hash, Array, Series, nil]
+    #   Two-dimensional data in various forms. Hash must contain Arrays.
+    #   Array may contain Series.
+    # @param columns [Array, Hash, nil]
+    #   Column labels to use for resulting DataFrame. If specified, overrides any
+    #   labels already present in the data. Must match data dimensions.
+    # @param orient ["col", "row", nil]
+    #   Whether to interpret two-dimensional data as columns or as rows. If `nil`,
+    #   the orientation is inferred by matching the columns and data dimensions. If
+    #   this does not yield conclusive results, column orientation is used.
     def initialize(data = nil, columns: nil, orient: nil)
       if defined?(ActiveRecord) && (data.is_a?(ActiveRecord::Relation) || data.is_a?(ActiveRecord::Result))
         result = data.is_a?(ActiveRecord::Result) ? data : data.connection.select_all(data.to_sql)
