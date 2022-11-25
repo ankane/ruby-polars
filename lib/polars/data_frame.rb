@@ -220,7 +220,7 @@ module Polars
 
     # Get the shape of the DataFrame.
     #
-    # @return [Array<(Integer, Integer)>]
+    # @return [Array]
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4, 5]})
@@ -256,7 +256,7 @@ module Polars
 
     # Get column names.
     #
-    # @return [Array<String>]
+    # @return [Array]
     #
     # @example
     #   df = Polars::DataFrame.new({
@@ -272,7 +272,7 @@ module Polars
 
     # Change the column names of the DataFrame.
     #
-    # @param columns [Array<String>]
+    # @param columns [Array]
     #   A list with new names for the DataFrame.
     #   The length of the list should be equal to the width of the DataFrame.
     #
@@ -305,7 +305,7 @@ module Polars
 
     # Get dtypes of columns in DataFrame. Dtypes can also be found in column headers when printing the DataFrame.
     #
-    # @return [Array<Symbol>]
+    # @return [Array]
     #
     # @example
     #   df = Polars::DataFrame.new({
@@ -321,7 +321,7 @@ module Polars
 
     # Get the schema.
     #
-    # @return [Hash<String, Symbol>]
+    # @return [Hash]
     #
     # @example
     #   df = Polars::DataFrame.new({

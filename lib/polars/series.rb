@@ -82,7 +82,7 @@ module Polars
 
     # Get flags that are set on the Series.
     #
-    # @return [Hash<String, Boolean>]
+    # @return [Hash]
     def flags
       {
         "SORTED_ASC" => _s.is_sorted_flag,
@@ -106,7 +106,7 @@ module Polars
 
     # Shape of this Series.
     #
-    # @return [Array<Integer>]
+    # @return [Array]
     def shape
       [_s.len]
     end
@@ -526,7 +526,7 @@ module Polars
 
     # Get the length of each individual chunk.
     #
-    # @return [Array<Integer>]
+    # @return [Array]
     #
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3])
@@ -770,7 +770,7 @@ module Polars
 
     # Filter elements by a boolean mask.
     #
-    # @param predicate [Series, Array<Boolean>]
+    # @param predicate [Series, Array]
     #   Boolean mask.
     #
     # @return [Series]
