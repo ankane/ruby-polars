@@ -736,6 +736,56 @@ module Polars
       lazy.rename(mapping).collect(no_optimization: true)
     end
 
+    # Insert a Series at a certain column index. This operation is in place.
+    #
+    # @param index [Integer]
+    #   Column to insert the new `Series` column.
+    # @param series [Series]
+    #   `Series` to insert.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3], "bar" => [4, 5, 6]})
+    #   s = Polars::Series.new("baz", [97, 98, 99])
+    #   df.insert_at_idx(1, s)
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ baz ┆ bar │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 97  ┆ 4   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 98  ┆ 5   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 99  ┆ 6   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new({
+    #     "a" => [1, 2, 3, 4],
+    #     "b" => [0.5, 4, 10, 13],
+    #     "c" => [true, true, false, true]
+    #   })
+    #   s = Polars::Series.new("d", [-2.5, 15, 20.5, 0])
+    #   df.insert_at_idx(3, s)
+    #   # =>
+    #   # shape: (4, 4)
+    #   # ┌─────┬──────┬───────┬──────┐
+    #   # │ a   ┆ b    ┆ c     ┆ d    │
+    #   # │ --- ┆ ---  ┆ ---   ┆ ---  │
+    #   # │ i64 ┆ f64  ┆ bool  ┆ f64  │
+    #   # ╞═════╪══════╪═══════╪══════╡
+    #   # │ 1   ┆ 0.5  ┆ true  ┆ -2.5 │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 4.0  ┆ true  ┆ 15.0 │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 10.0 ┆ false ┆ 20.5 │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 4   ┆ 13.0 ┆ true  ┆ 0.0  │
+    #   # └─────┴──────┴───────┴──────┘
     def insert_at_idx(index, series)
       if index < 0
         index = columns.length + index
