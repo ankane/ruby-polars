@@ -20,11 +20,13 @@ class DocTest < Minitest::Test
   def assert_docs(cls)
     @@once ||= YARD.parse || true
 
-    P(cls.to_s).meths.each do |method|
-      next if method.docstring.empty?
+    in_temp_dir do
+      P(cls.to_s).meths.each do |method|
+        next if method.docstring.empty?
 
-      assert_return(method)
-      assert_examples(method)
+        assert_return(method)
+        assert_examples(method)
+      end
     end
   end
 

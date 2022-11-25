@@ -49,4 +49,12 @@ class Minitest::Test
     # TODO clean up
     File.join(Dir.tmpdir, SecureRandom.alphanumeric(20))
   end
+
+  def in_temp_dir
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        yield
+      end
+    end
+  end
 end

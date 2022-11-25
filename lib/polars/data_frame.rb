@@ -432,6 +432,18 @@ module Polars
       Utils.wrap_s(_df.select_at_idx(index))
     end
 
+    # Serialize to JSON representation.
+    #
+    # @return [nil]
+    #
+    # @param file [String]
+    #   File path to which the result should be written.
+    # @param pretty [Boolean]
+    #   Pretty serialize json.
+    # @param row_oriented [Boolean]
+    #   Write to row oriented json. This is slower, but more common.
+    #
+    # @see #write_ndjson
     def write_json(
       file,
       pretty: false,
@@ -445,6 +457,12 @@ module Polars
       nil
     end
 
+    # Serialize to newline delimited JSON representation.
+    #
+    # @param file [String]
+    #   File path to which the result should be written.
+    #
+    # @return [nil]
     def write_ndjson(file)
       if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
         file = Utils.format_path(file)
@@ -454,6 +472,48 @@ module Polars
       nil
     end
 
+    # Write to comma-separated values (CSV) file.
+    #
+    # @param file [String, nil]
+    #   File path to which the result should be written. If set to `nil`
+    #   (default), the output is returned as a string instead.
+    # @param has_header [Boolean]
+    #   Whether to include header in the CSV output.
+    # @param sep [String]
+    #   Separate CSV fields with this symbol.
+    # @param quote [String]
+    #   Byte to use as quoting character.
+    # @param batch_size [Integer]
+    #   Number of rows that will be processed per thread.
+    # @param datetime_format [String, nil]
+    #   A format string, with the specifiers defined by the
+    #   [chrono](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    #   Rust crate. If no format specified, the default fractional-second
+    #   precision is inferred from the maximum timeunit found in the frame's
+    #   Datetime cols (if any).
+    # @param date_format [String, nil]
+    #   A format string, with the specifiers defined by the
+    #   [chrono](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    #   Rust crate.
+    # @param time_format [String, nil]
+    #   A format string, with the specifiers defined by the
+    #   [chrono](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    #   Rust crate.
+    # @param float_precision [Integer, nil]
+    #   Number of decimal places to write, applied to both `:f32` and
+    #   `:f64` datatypes.
+    # @param null_value [String, nil]
+    #   A string representing null values (defaulting to the empty string).
+    #
+    # @return [String, nil]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({
+    #     "foo" => [1, 2, 3, 4, 5],
+    #     "bar" => [6, 7, 8, 9, 10],
+    #     "ham" => ["a", "b", "c", "d", "e"]
+    #   })
+    #   df.write_csv("file.csv")
     def write_csv(
       file = nil,
       has_header: true,
