@@ -1,4 +1,4 @@
-use magnus::{TryConvert, Value, QNIL};
+use magnus::{Symbol, TryConvert, Value, QNIL};
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
 use polars::frame::DataFrame;
@@ -54,6 +54,12 @@ impl From<Wrap<AnyValue<'_>>> for Value {
             AnyValue::Utf8(v) => Value::from(v),
             _ => todo!(),
         }
+    }
+}
+
+impl From<Wrap<DataType>> for Value {
+    fn from(w: Wrap<DataType>) -> Self {
+        Symbol::from(w.0.to_string()).into()
     }
 }
 
@@ -142,6 +148,23 @@ impl TryConvert for Wrap<CsvEncoding> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "encoding must be one of {{'utf8', 'utf8-lossy'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<Option<IpcCompression>> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "uncompressed" => None,
+            "lz4" => Some(IpcCompression::LZ4),
+            "zstd" => Some(IpcCompression::ZSTD),
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "compression must be one of {{'uncompressed', 'lz4', 'zstd'}}, got {}",
                     v
                 )))
             }

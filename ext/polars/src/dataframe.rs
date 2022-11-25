@@ -146,6 +146,27 @@ impl RbDataFrame {
             .map(|v| v.into())
     }
 
+    pub fn read_ipc(
+        rb_f: Value,
+        columns: Option<Vec<String>>,
+        projection: Option<Vec<usize>>,
+        n_rows: Option<usize>,
+        row_count: Option<(String, IdxSize)>,
+        memory_map: bool,
+    ) -> RbResult<Self> {
+        let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
+        let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
+        let df = IpcReader::new(mmap_bytes_r)
+            .with_projection(projection)
+            .with_columns(columns)
+            .with_n_rows(n_rows)
+            .with_row_count(row_count)
+            .memory_mapped(memory_map)
+            .finish()
+            .map_err(RbPolarsErr::from)?;
+        Ok(RbDataFrame::new(df))
+    }
+
     pub fn read_json(rb_f: Value) -> RbResult<Self> {
         // memmap the file first
         let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
@@ -270,6 +291,28 @@ impl RbDataFrame {
         Ok(())
     }
 
+    pub fn write_ipc(
+        &self,
+        rb_f: Value,
+        compression: Wrap<Option<IpcCompression>>,
+    ) -> RbResult<()> {
+        if let Ok(s) = rb_f.try_convert::<String>() {
+            let f = std::fs::File::create(&s).unwrap();
+            IpcWriter::new(f)
+                .with_compression(compression.0)
+                .finish(&mut self.df.borrow_mut())
+                .map_err(RbPolarsErr::from)?;
+        } else {
+            let mut buf = get_file_like(rb_f, true)?;
+
+            IpcWriter::new(&mut buf)
+                .with_compression(compression.0)
+                .finish(&mut self.df.borrow_mut())
+                .map_err(RbPolarsErr::from)?;
+        }
+        Ok(())
+    }
+
     pub fn write_parquet(
         &self,
         rb_f: Value,
@@ -325,11 +368,11 @@ impl RbDataFrame {
         Ok(())
     }
 
-    pub fn dtypes(&self) -> Vec<String> {
+    pub fn dtypes(&self) -> Vec<Value> {
         self.df
             .borrow()
             .iter()
-            .map(|s| s.dtype().to_string())
+            .map(|s| Wrap(s.dtype().clone()).into())
             .collect()
     }
 

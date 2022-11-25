@@ -42,7 +42,7 @@ module Polars
     end
 
     def dtype
-      _s.dtype.to_sym
+      _s.dtype
     end
 
     def flags
@@ -53,7 +53,7 @@ module Polars
     end
 
     def inner_dtype
-      _s.inner_dtype&.to_sym
+      _s.inner_dtype
     end
 
     def name
@@ -716,7 +716,7 @@ module Polars
           #   dtype = rb_type_to_dtype(dtype)
           # end
 
-          raise "todo"
+          raise Todo
         else
           constructor = rb_type_to_constructor(value.class)
           constructor.call(name, values, strict)

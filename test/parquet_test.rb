@@ -19,6 +19,11 @@ class ParquetTest < Minitest::Test
     assert_frame expected, df.collect
   end
 
+  def test_read_parquet_schema
+    schema = Polars.read_parquet_schema("test/support/data.parquet")
+    assert_equal ({"a" => :i64, "b" => :str}), schema
+  end
+
   def test_write_parquet
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_nil df.write_parquet(temp_path)

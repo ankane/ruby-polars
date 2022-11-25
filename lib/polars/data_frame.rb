@@ -31,6 +31,22 @@ module Polars
       df
     end
 
+    # def self._from_hashes
+    # end
+
+    # def self._from_hash
+    # end
+
+    # def self._from_records
+    # end
+
+    # def self._from_numo
+    # end
+
+    # no self._from_arrow
+
+    # no self._from_pandas
+
     def self._read_csv(
       file,
       has_header: true,
@@ -86,7 +102,7 @@ module Polars
         columns = [columns]
       end
       if file.is_a?(String) && file.include?("*")
-        raise "not yet implemented"
+        raise Todo
       end
 
       projection, columns = Utils.handle_projection_columns(columns)
@@ -130,6 +146,42 @@ module Polars
       _from_rbdf(RbDataFrame.read_parquet(file))
     end
 
+    # def self._read_avro
+    # end
+
+    def self._read_ipc(
+      file,
+      columns: nil,
+      n_rows: nil,
+      row_count_name: nil,
+      row_count_offset: 0,
+      rechunk: true,
+      memory_map: true
+    )
+      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+        file = Utils.format_path(file)
+      end
+      if columns.is_a?(String)
+        columns = [columns]
+      end
+
+      if file.is_a?(String) && file.include?("*")
+        raise Todo
+      end
+
+      projection, columns = Utils.handle_projection_columns(columns)
+      _from_rbdf(
+        RbDataFrame.read_ipc(
+          file,
+          columns,
+          projection,
+          n_rows,
+          Utils._prepare_row_count_args(row_count_name, row_count_offset),
+          memory_map
+        )
+      )
+    end
+
     def self._read_json(file)
       if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
         file = Utils.format_path(file)
@@ -167,7 +219,7 @@ module Polars
     end
 
     def dtypes
-      _df.dtypes.map(&:to_sym)
+      _df.dtypes
     end
 
     def schema
@@ -216,12 +268,23 @@ module Polars
       columns.include?(name)
     end
 
+    # def each
+    # end
+
+    # def _pos_idx
+    # end
+
+    # def _pos_idxs
+    # end
+
     def [](name)
       Utils.wrap_s(_df.column(name))
     end
 
     # def []=(key, value)
     # end
+
+    # no to_arrow
 
     def to_h(as_series: true)
       if as_series
@@ -231,7 +294,7 @@ module Polars
       end
     end
 
-    # def to_hs / to_a
+    # def to_hashes / to_a
     # end
 
     # def to_numo
@@ -328,8 +391,16 @@ module Polars
     # def write_avro
     # end
 
-    # def write_ipc
-    # end
+    def write_ipc(file, compression: "uncompressed")
+      if compression.nil?
+        compression = "uncompressed"
+      end
+      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+        file = Utils.format_path(file)
+      end
+
+      _df.write_ipc(file, compression)
+    end
 
     def write_parquet(
       file,

@@ -90,8 +90,31 @@ module Polars
       )
     end
 
-    # def self._scan_ipc
-    # end
+    def self._scan_ipc(
+      file,
+      n_rows: nil,
+      cache: true,
+      rechunk: true,
+      row_count_name: nil,
+      row_count_offset: 0,
+      storage_options: nil,
+      memory_map: true
+    )
+      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+        file = Utils.format_path(file)
+      end
+
+      _from_rbldf(
+        RbLazyFrame.new_from_ipc(
+          file,
+          n_rows,
+          cache,
+          rechunk,
+          Utils._prepare_row_count_args(row_count_name, row_count_offset),
+          memory_map
+        )
+      )
+    end
 
     def self._scan_ndjson(
       file,

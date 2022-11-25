@@ -75,7 +75,7 @@ module Polars
     def self.handle_projection_columns(columns)
       projection = nil
       if columns
-        raise "todo"
+        raise Todo
         # if columns.is_a?(String) || columns.is_a?(Symbol)
         #   columns = [columns]
         # elsif is_int_sequence(columns)

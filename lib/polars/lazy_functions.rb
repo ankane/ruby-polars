@@ -10,7 +10,7 @@ module Polars
           name = name.map { |v| v.is_a?(Symbol) ? v.to_s : v }
           Utils.wrap_expr(RbExpr.cols(name))
         elsif Utils.is_polars_dtype(name[0])
-          raise "todo"
+          raise Todo
           # Utils.wrap_expr(_dtype_cols(name))
         else
           raise ArgumentError, "Expected list values to be all `str` or all `DataType`"
@@ -90,7 +90,7 @@ module Polars
         # TODO
         Utils.wrap_expr(_sum_exprs(exprs))
       else
-        raise "todo"
+        raise Todo
       end
     end
 
@@ -195,7 +195,7 @@ module Polars
       elsif name.is_a?(String) || name.is_a?(Symbol)
         col(name).all
       else
-        raise "todo"
+        raise Todo
       end
     end
 

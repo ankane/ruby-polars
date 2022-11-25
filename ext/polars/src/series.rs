@@ -199,16 +199,16 @@ impl RbSeries {
         self.series.borrow_mut().rename(&name);
     }
 
-    pub fn dtype(&self) -> String {
-        self.series.borrow().dtype().to_string()
+    pub fn dtype(&self) -> Value {
+        Wrap(self.series.borrow().dtype().clone()).into()
     }
 
-    pub fn inner_dtype(&self) -> Option<String> {
+    pub fn inner_dtype(&self) -> Option<Value> {
         self.series
             .borrow()
             .dtype()
             .inner_dtype()
-            .map(|dt| dt.to_string())
+            .map(|dt| Wrap(dt.clone()).into())
     }
 
     pub fn set_sorted(&self, reverse: bool) -> Self {

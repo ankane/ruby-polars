@@ -1,3 +1,4 @@
+mod batched_csv;
 mod conversion;
 mod dataframe;
 mod error;
@@ -5,14 +6,18 @@ mod file;
 mod lazy;
 mod series;
 
-use conversion::get_df;
+use batched_csv::RbBatchedCsv;
+use conversion::*;
 use dataframe::RbDataFrame;
 use error::{RbPolarsErr, RbValueError};
+use file::get_file_like;
 use lazy::dataframe::{RbLazyFrame, RbLazyGroupBy};
 use lazy::dsl::{RbExpr, RbWhen, RbWhenThen};
 use magnus::{
-    define_module, function, memoize, method, prelude::*, Error, RArray, RClass, RModule,
+    define_module, function, memoize, method, prelude::*, Error, RArray, RClass, RHash, RModule,
+    Value,
 };
+use polars::datatypes::DataType;
 use polars::error::PolarsResult;
 use polars::frame::DataFrame;
 use polars::functions::{diag_concat_df, hor_concat_df};
@@ -34,11 +39,18 @@ fn init() -> RbResult<()> {
     module.define_singleton_method("_concat_df", function!(concat_df, 1))?;
     module.define_singleton_method("_diag_concat_df", function!(rb_diag_concat_df, 1))?;
     module.define_singleton_method("_hor_concat_df", function!(rb_hor_concat_df, 1))?;
+    module.define_singleton_method("_ipc_schema", function!(ipc_schema, 1))?;
+    module.define_singleton_method("_parquet_schema", function!(parquet_schema, 1))?;
+
+    let class = module.define_class("RbBatchedCsv", Default::default())?;
+    class.define_singleton_method("new", function!(RbBatchedCsv::new, -1))?;
+    class.define_method("next_batches", method!(RbBatchedCsv::next_batches, 1))?;
 
     let class = module.define_class("RbDataFrame", Default::default())?;
     class.define_singleton_method("new", function!(RbDataFrame::init, 1))?;
     class.define_singleton_method("read_csv", function!(RbDataFrame::read_csv, -1))?;
     class.define_singleton_method("read_parquet", function!(RbDataFrame::read_parquet, 1))?;
+    class.define_singleton_method("read_ipc", function!(RbDataFrame::read_ipc, 6))?;
     class.define_singleton_method("read_hash", function!(RbDataFrame::read_hash, 1))?;
     class.define_singleton_method("read_json", function!(RbDataFrame::read_json, 1))?;
     class.define_singleton_method("read_ndjson", function!(RbDataFrame::read_ndjson, 1))?;
@@ -46,6 +58,7 @@ fn init() -> RbResult<()> {
     class.define_method("write_json", method!(RbDataFrame::write_json, 3))?;
     class.define_method("write_ndjson", method!(RbDataFrame::write_ndjson, 1))?;
     class.define_method("write_csv", method!(RbDataFrame::write_csv, 10))?;
+    class.define_method("write_ipc", method!(RbDataFrame::write_ipc, 2))?;
     class.define_method("write_parquet", method!(RbDataFrame::write_parquet, 5))?;
     class.define_method("rechunk", method!(RbDataFrame::rechunk, 0))?;
     class.define_method("to_s", method!(RbDataFrame::to_s, 0))?;
@@ -584,4 +597,32 @@ fn rb_hor_concat_df(seq: RArray) -> RbResult<RbDataFrame> {
     }
     let df = hor_concat_df(&dfs).map_err(RbPolarsErr::from)?;
     Ok(df.into())
+}
+
+fn ipc_schema(rb_f: Value) -> RbResult<Value> {
+    use polars::export::arrow::io::ipc::read::read_file_metadata;
+    let mut r = get_file_like(rb_f, false)?;
+    let metadata = read_file_metadata(&mut r).map_err(RbPolarsErr::arrow)?;
+
+    let dict = RHash::new();
+    for field in metadata.schema.fields {
+        let dt: Wrap<DataType> = Wrap((&field.data_type).into());
+        dict.aset(field.name, dt)?;
+    }
+    Ok(dict.into())
+}
+
+fn parquet_schema(rb_f: Value) -> RbResult<Value> {
+    use polars::export::arrow::io::parquet::read::{infer_schema, read_metadata};
+
+    let mut r = get_file_like(rb_f, false)?;
+    let metadata = read_metadata(&mut r).map_err(RbPolarsErr::arrow)?;
+    let arrow_schema = infer_schema(&metadata).map_err(RbPolarsErr::arrow)?;
+
+    let dict = RHash::new();
+    for field in arrow_schema.fields {
+        let dt: Wrap<DataType> = Wrap((&field.data_type).into());
+        dict.aset(field.name, dt)?;
+    }
+    Ok(dict.into())
 }

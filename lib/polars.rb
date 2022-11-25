@@ -2,6 +2,7 @@
 require "polars/polars"
 
 # modules
+require "polars/batched_csv_reader"
 require "polars/cat_expr"
 require "polars/data_frame"
 require "polars/date_time_expr"
@@ -23,6 +24,11 @@ require "polars/when_then"
 
 module Polars
   class Error < StandardError; end
+  class Todo < Error
+    def message
+      "not implemented yet"
+    end
+  end
 
   extend Functions
   extend IO
