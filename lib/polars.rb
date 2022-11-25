@@ -23,7 +23,10 @@ require "polars/when"
 require "polars/when_then"
 
 module Polars
+  # @private
   class Error < StandardError; end
+
+  # @private
   class Todo < Error
     def message
       "not implemented yet"

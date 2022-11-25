@@ -309,7 +309,9 @@ class SeriesTest < Minitest::Test
   def test_filter
     a = Polars::Series.new([1, 2, 3])
     b = Polars::Series.new([true, false, true])
+    c = [false, true, true]
     assert_series [1, 3], a.filter(b)
+    assert_series [2, 3], a.filter(c)
   end
 
   def test_head

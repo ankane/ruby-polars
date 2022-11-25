@@ -5,7 +5,7 @@ use polars::frame::DataFrame;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 
-use crate::{RbDataFrame, RbPolarsErr, RbResult, RbValueError};
+use crate::{RbDataFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
 
 pub struct Wrap<T>(pub T);
 
@@ -18,6 +18,11 @@ impl<T> From<T> for Wrap<T> {
 pub fn get_df(obj: Value) -> RbResult<DataFrame> {
     let rbdf = obj.funcall::<_, _, &RbDataFrame>("_df", ())?;
     Ok(rbdf.df.borrow().clone())
+}
+
+pub fn get_series(obj: Value) -> RbResult<Series> {
+    let rbs = obj.funcall::<_, _, &RbSeries>("_s", ())?;
+    Ok(rbs.series.borrow().clone())
 }
 
 impl TryConvert for Wrap<NullValues> {

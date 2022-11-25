@@ -39,6 +39,7 @@ fn init() -> RbResult<()> {
     module.define_singleton_method("_concat_df", function!(concat_df, 1))?;
     module.define_singleton_method("_diag_concat_df", function!(rb_diag_concat_df, 1))?;
     module.define_singleton_method("_hor_concat_df", function!(rb_hor_concat_df, 1))?;
+    module.define_singleton_method("_concat_series", function!(concat_series, 1))?;
     module.define_singleton_method("_ipc_schema", function!(ipc_schema, 1))?;
     module.define_singleton_method("_parquet_schema", function!(parquet_schema, 1))?;
 
@@ -597,6 +598,20 @@ fn rb_hor_concat_df(seq: RArray) -> RbResult<RbDataFrame> {
     }
     let df = hor_concat_df(&dfs).map_err(RbPolarsErr::from)?;
     Ok(df.into())
+}
+
+fn concat_series(seq: RArray) -> RbResult<RbSeries> {
+    let mut iter = seq.each();
+    let first = iter.next().unwrap()?;
+
+    let mut s = get_series(first)?;
+
+    for res in iter {
+        let item = res?;
+        let item = get_series(item)?;
+        s.append(&item).map_err(RbPolarsErr::from)?;
+    }
+    Ok(s.into())
 }
 
 fn ipc_schema(rb_f: Value) -> RbResult<Value> {

@@ -1,7 +1,10 @@
 module Polars
+  # Two-dimensional data structure representing data as a table with rows and columns.
   class DataFrame
+    # @private
     attr_accessor :_df
 
+    # Create a new DataFrame.
     def initialize(data = nil)
       if defined?(ActiveRecord) && (data.is_a?(ActiveRecord::Relation) || data.is_a?(ActiveRecord::Result))
         result = data.is_a?(ActiveRecord::Result) ? data : data.connection.select_all(data.to_sql)
@@ -25,6 +28,7 @@ module Polars
       end
     end
 
+    # @private
     def self._from_rbdf(rb_df)
       df = DataFrame.allocate
       df._df = rb_df
@@ -47,6 +51,7 @@ module Polars
 
     # no self._from_pandas
 
+    # @private
     def self._read_csv(
       file,
       has_header: true,
@@ -138,6 +143,7 @@ module Polars
       )
     end
 
+    # @private
     def self._read_parquet(file)
       if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
         file = Utils.format_path(file)
@@ -149,6 +155,7 @@ module Polars
     # def self._read_avro
     # end
 
+    # @private
     def self._read_ipc(
       file,
       columns: nil,
@@ -182,6 +189,7 @@ module Polars
       )
     end
 
+    # @private
     def self._read_json(file)
       if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
         file = Utils.format_path(file)
@@ -190,6 +198,7 @@ module Polars
       _from_rbdf(RbDataFrame.read_json(file))
     end
 
+    # @private
     def self._read_ndjson(file)
       if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
         file = Utils.format_path(file)
@@ -259,6 +268,7 @@ module Polars
     # def %(other)
     # end
 
+    #
     def to_s
       _df.to_s
     end
@@ -277,6 +287,7 @@ module Polars
     # def _pos_idxs
     # end
 
+    #
     def [](name)
       Utils.wrap_s(_df.column(name))
     end
@@ -286,6 +297,7 @@ module Polars
 
     # no to_arrow
 
+    #
     def to_h(as_series: true)
       if as_series
         get_columns.to_h { |s| [s.name, s] }
@@ -302,6 +314,7 @@ module Polars
 
     # no to_pandas
 
+    #
     def to_series(index = 0)
       if index < 0
         index = columns.length + index
@@ -391,6 +404,7 @@ module Polars
     # def write_avro
     # end
 
+    #
     def write_ipc(file, compression: "uncompressed")
       if compression.nil?
         compression = "uncompressed"
@@ -429,6 +443,7 @@ module Polars
     # def transpose
     # end
 
+    #
     def reverse
       select(Polars.col("*").reverse)
     end
@@ -458,6 +473,7 @@ module Polars
     # def replace_at_idx
     # end
 
+    #
     def sort(by, reverse: false, nulls_last: false)
       _from_rbdf(_df.sort(by, reverse, nulls_last))
     end
@@ -469,6 +485,7 @@ module Polars
     # def replace
     # end
 
+    #
     def slice(offset, length = nil)
       if !length.nil? && length < 0
         length = height - offset + length
@@ -497,6 +514,7 @@ module Polars
     # def with_row_count
     # end
 
+    #
     def groupby(by, maintain_order: false)
       lazy.groupby(by, maintain_order: maintain_order)
     end
@@ -513,6 +531,7 @@ module Polars
     # def join_asof
     # end
 
+    #
     def join(other, left_on: nil, right_on: nil, on: nil, how: "inner", suffix: "_right")
       lazy
         .join(
@@ -529,6 +548,7 @@ module Polars
     # def apply
     # end
 
+    #
     def with_column(column)
       lazy
         .with_column(column)
@@ -541,8 +561,11 @@ module Polars
     # def vstack
     # end
 
-    # def extend
-    # end
+    #
+    def extend(other)
+      _df.extend(other._df)
+      self
+    end
 
     # def drop
     # end
@@ -555,6 +578,7 @@ module Polars
 
     # clone handled by initialize_copy
 
+    #
     def get_columns
       _df.get_columns.map { |s| Utils.wrap_s(s) }
     end
@@ -566,6 +590,7 @@ module Polars
     # def fill_null
     # end
 
+    #
     def fill_nan(fill_value)
       lazy.fill_nan(fill_value).collect(no_optimization: true)
     end
@@ -591,6 +616,7 @@ module Polars
     # def shift_and_fill
     # end
 
+    #
     def is_duplicated
       Utils.wrap_s(_df.is_duplicated)
     end
@@ -700,6 +726,7 @@ module Polars
     # def n_unique
     # end
 
+    #
     def rechunk
       _from_rbdf(_df.rechunk)
     end
@@ -732,6 +759,7 @@ module Polars
     # def interpolate
     # end
 
+    #
     def is_empty
       height == 0
     end

@@ -1,4 +1,5 @@
 module Polars
+  # @private
   module Utils
     DTYPE_TEMPORAL_UNITS = ["ns", "us", "ms"]
 

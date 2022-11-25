@@ -1,7 +1,10 @@
 module Polars
+  # Expressions that can be used in various contexts.
   class Expr
+    # @private
     attr_accessor :_rbexpr
 
+    # @private
     def self._from_rbexpr(rbexpr)
       expr = Expr.allocate
       expr._rbexpr = rbexpr
@@ -80,6 +83,7 @@ module Polars
     # def to_physical
     # end
 
+    #
     def any
       wrap_expr(_rbexpr.any)
     end
@@ -104,7 +108,9 @@ module Polars
       wrap_expr(_rbexpr._alias(name))
     end
 
-    # TODO support symbols
+    # TODO support symbols for exclude
+
+    #
     def exclude(columns)
       if columns.is_a?(String)
         columns = [columns]
@@ -140,6 +146,7 @@ module Polars
     # def map_alias
     # end
 
+    #
     def is_not
       wrap_expr(_rbexpr.is_not)
     end
@@ -293,6 +300,7 @@ module Polars
     # def take
     # end
 
+    #
     def shift(periods = 1)
       wrap_expr(_rbexpr.shift(periods))
     end
@@ -439,6 +447,7 @@ module Polars
     # def apply
     # end
 
+    #
     def flatten
       wrap_expr(_rbexpr.explode)
     end
@@ -471,6 +480,7 @@ module Polars
     # def is_in
     # end
 
+    #
     def repeat_by(by)
       by = Utils.expr_to_lit_or_expr(by, false)
       wrap_expr(_rbexpr.repeat_by(by._rbexpr))
@@ -482,6 +492,7 @@ module Polars
     # def _hash
     # end
 
+    #
     def reinterpret(signed: false)
       wrap_expr(_rbexpr.reinterpret(signed))
     end
@@ -489,6 +500,7 @@ module Polars
     # def _inspect
     # end
 
+    #
     def interpolate
       wrap_expr(_rbexpr.interpolate)
     end
@@ -520,6 +532,7 @@ module Polars
     # def rolling_apply
     # end
 
+    #
     def rolling_skew(window_size, bias: true)
       wrap_expr(_rbexpr.rolling_skew(window_size, bias))
     end
@@ -650,6 +663,7 @@ module Polars
     # def extend_constant
     # end
 
+    #
     def value_counts(multithreaded: false, sort: false)
       wrap_expr(_rbexpr.value_counts(multithreaded, sort))
     end
@@ -672,6 +686,7 @@ module Polars
     # def set_sorted
     # end
 
+    #
     def list
       wrap_expr(_rbexpr.list)
     end

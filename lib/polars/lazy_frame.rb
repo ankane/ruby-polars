@@ -1,13 +1,17 @@
 module Polars
+  # Representation of a Lazy computation graph/query againat a DataFrame.
   class LazyFrame
+    # @private
     attr_accessor :_ldf
 
+    # @private
     def self._from_rbldf(rb_ldf)
       ldf = LazyFrame.allocate
       ldf._ldf = rb_ldf
       ldf
     end
 
+    # @private
     def self._scan_csv(
       file,
       has_header: true,
@@ -66,6 +70,7 @@ module Polars
       )
     end
 
+    # @private
     def self._scan_parquet(
       file,
       n_rows: nil,
@@ -90,6 +95,7 @@ module Polars
       )
     end
 
+    # @private
     def self._scan_ipc(
       file,
       n_rows: nil,
@@ -116,6 +122,7 @@ module Polars
       )
     end
 
+    # @private
     def self._scan_ndjson(
       file,
       infer_schema_length: nil,
@@ -190,6 +197,7 @@ module Polars
     # def profile
     # end
 
+    #
     def collect(
       type_coercion: true,
       predicate_pushdown: true,
@@ -227,6 +235,7 @@ module Polars
     # def fetch
     # end
 
+    #
     def lazy
       self
     end
@@ -237,6 +246,7 @@ module Polars
     # def cleared
     # end
 
+    #
     def filter(predicate)
       _from_rbldf(
         _ldf.filter(
@@ -265,6 +275,7 @@ module Polars
     # def join_asof
     # end
 
+    #
     def join(
       other,
       left_on: nil,
@@ -339,6 +350,7 @@ module Polars
     # def with_context
     # end
 
+    #
     def with_column(column)
       with_columns([column])
     end
@@ -346,6 +358,7 @@ module Polars
     # def drop
     # end
 
+    #
     def rename(mapping)
       existing = mapping.keys
       _new = mapping.values
@@ -388,6 +401,7 @@ module Polars
     # def fill_null
     # end
 
+    #
     def fill_nan(fill_value)
       if !fill_value.is_a?(Expr)
         fill_value = Utils.lit(fill_value)
@@ -419,6 +433,7 @@ module Polars
     # def quantile
     # end
 
+    #
     def explode(columns)
       columns = Utils.selection_to_rbexpr_list(columns)
       _from_rbldf(_ldf.explode(columns))
