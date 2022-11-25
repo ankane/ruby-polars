@@ -116,11 +116,10 @@ init_method_opt!(new_opt_f32, Float32Type, f32);
 init_method_opt!(new_opt_f64, Float64Type, f64);
 
 impl RbSeries {
-    pub fn new_str(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
-        let v = val.try_convert::<Vec<Option<String>>>()?;
-        let mut s = Utf8Chunked::new(&name, v).into_series();
+    pub fn new_str(name: String, val: Wrap<Utf8Chunked>, _strict: bool) -> Self {
+        let mut s = val.0.into_series();
         s.rename(&name);
-        Ok(RbSeries::new(s))
+        RbSeries::new(s)
     }
 
     pub fn estimated_size(&self) -> usize {

@@ -1,4 +1,4 @@
-use magnus::{Symbol, TryConvert, Value, QNIL};
+use magnus::{RArray, Symbol, TryConvert, Value, QNIL};
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
 use polars::frame::DataFrame;
@@ -15,6 +15,12 @@ impl<T> From<T> for Wrap<T> {
     }
 }
 
+pub fn get_rbseq(obj: Value) -> RbResult<(RArray, usize)> {
+    let seq: RArray = obj.try_convert()?;
+    let len = seq.len();
+    Ok((seq, len))
+}
+
 pub fn get_df(obj: Value) -> RbResult<DataFrame> {
     let rbdf = obj.funcall::<_, _, &RbDataFrame>("_df", ())?;
     Ok(rbdf.df.borrow().clone())
@@ -23,6 +29,22 @@ pub fn get_df(obj: Value) -> RbResult<DataFrame> {
 pub fn get_series(obj: Value) -> RbResult<Series> {
     let rbs = obj.funcall::<_, _, &RbSeries>("_s", ())?;
     Ok(rbs.series.borrow().clone())
+}
+
+impl TryConvert for Wrap<Utf8Chunked> {
+    fn try_convert(obj: Value) -> RbResult<Self> {
+        let (seq, len) = get_rbseq(obj)?;
+        let mut builder = Utf8ChunkedBuilder::new("", len, len * 25);
+
+        for res in seq.each() {
+            let item = res?;
+            match item.try_convert::<String>() {
+                Ok(val) => builder.append_value(&val),
+                Err(_) => builder.append_null(),
+            }
+        }
+        Ok(Wrap(builder.finish()))
+    }
 }
 
 impl TryConvert for Wrap<NullValues> {
