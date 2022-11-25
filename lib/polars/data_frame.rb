@@ -207,30 +207,119 @@ module Polars
       _from_rbdf(RbDataFrame.read_ndjson(file))
     end
 
+    # Get the shape of the DataFrame.
+    #
+    # @return [Array<(Integer, Integer)>]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4, 5]})
+    #   df.shape
+    #   # => [5, 1]
     def shape
       _df.shape
     end
 
+    # Get the height of the DataFrame.
+    #
+    # @return [Integer]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4, 5]})
+    #   df.height
+    #   # => 5
     def height
       _df.height
     end
 
+    # Get the width of the DataFrame.
+    #
+    # @return [Integer]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4, 5]})
+    #   df.width
+    #   # => 1
     def width
       _df.width
     end
 
+    # Get column names.
+    #
+    # @return [Array<String>]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({
+    #     "foo" => [1, 2, 3],
+    #     "bar" => [6, 7, 8],
+    #     "ham" => ["a", "b", "c"]
+    #   })
+    #   df.columns
+    #   # => ["foo", "bar", "ham"]
     def columns
       _df.columns
     end
 
+    # Change the column names of the DataFrame.
+    #
+    # @param columns [Array<String>]
+    #   A list with new names for the DataFrame.
+    #   The length of the list should be equal to the width of the DataFrame.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({
+    #     "foo" => [1, 2, 3],
+    #     "bar" => [6, 7, 8],
+    #     "ham" => ["a", "b", "c"]
+    #   })
+    #   df.columns = ["apple", "banana", "orange"]
+    #   df
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌───────┬────────┬────────┐
+    #   # │ apple ┆ banana ┆ orange │
+    #   # │ ---   ┆ ---    ┆ ---    │
+    #   # │ i64   ┆ i64    ┆ str    │
+    #   # ╞═══════╪════════╪════════╡
+    #   # │ 1     ┆ 6      ┆ a      │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ 2     ┆ 7      ┆ b      │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ 3     ┆ 8      ┆ c      │
+    #   # └───────┴────────┴────────┘
     def columns=(columns)
       _df.set_column_names(columns)
     end
 
+    # Get dtypes of columns in DataFrame. Dtypes can also be found in column headers when printing the DataFrame.
+    #
+    # @return [Array<Symbol>]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({
+    #     "foo" => [1, 2, 3],
+    #     "bar" => [6.0, 7.0, 8.0],
+    #     "ham" => ["a", "b", "c"]
+    #   })
+    #   df.dtypes
+    #   # => [:i64, :f64, :str]
     def dtypes
       _df.dtypes
     end
 
+    # Get the schema.
+    #
+    # @return [Hash<String, Symbol>]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({
+    #     "foo" => [1, 2, 3],
+    #     "bar" => [6.0, 7.0, 8.0],
+    #     "ham" => ["a", "b", "c"]
+    #   })
+    #   df.schema
+    #   # => {"foo"=>:i64, "bar"=>:f64, "ham"=>:str}
     def schema
       columns.zip(dtypes).to_h
     end
@@ -314,7 +403,28 @@ module Polars
 
     # no to_pandas
 
+    # Select column as Series at index location.
     #
+    # @param index [Integer]
+    #   Location of selection.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({
+    #     "foo" => [1, 2, 3],
+    #     "bar" => [6, 7, 8],
+    #     "ham" => ["a", "b", "c"]
+    #   })
+    #   df.to_series(1)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'bar' [i64]
+    #   # [
+    #   #         6
+    #   #         7
+    #   #         8
+    #   # ]
     def to_series(index = 0)
       if index < 0
         index = columns.length + index
