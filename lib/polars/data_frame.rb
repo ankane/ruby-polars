@@ -678,11 +678,60 @@ module Polars
     # def transpose
     # end
 
+    # Reverse the DataFrame.
     #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({
+    #     "key" => ["a", "b", "c"],
+    #     "val" => [1, 2, 3]
+    #   })
+    #   df.reverse()
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ key ┆ val │
+    #   # │ --- ┆ --- │
+    #   # │ str ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ c   ┆ 3   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ b   ┆ 2   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ a   ┆ 1   │
+    #   # └─────┴─────┘
     def reverse
       select(Polars.col("*").reverse)
     end
 
+    # Rename column names.
+    #
+    # @param mapping [Hash]
+    #   Key value pairs that map from old name to new name.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({
+    #     "foo" => [1, 2, 3],
+    #     "bar" => [6, 7, 8],
+    #     "ham" => ["a", "b", "c"]
+    #   })
+    #   df.rename({"foo" => "apple"})
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌───────┬─────┬─────┐
+    #   # │ apple ┆ bar ┆ ham │
+    #   # │ ---   ┆ --- ┆ --- │
+    #   # │ i64   ┆ i64 ┆ str │
+    #   # ╞═══════╪═════╪═════╡
+    #   # │ 1     ┆ 6   ┆ a   │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2     ┆ 7   ┆ b   │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3     ┆ 8   ┆ c   │
+    #   # └───────┴─────┴─────┘
     def rename(mapping)
       lazy.rename(mapping).collect(no_optimization: true)
     end
