@@ -49,7 +49,7 @@ class DocsTest < Minitest::Test
   end
 
   def assert_examples(method)
-    return if method.name == :is_datelike
+    return if [:explode, :is_datelike].include?(method.name)
 
     code = ""
     method.tags(:example).each do |example|

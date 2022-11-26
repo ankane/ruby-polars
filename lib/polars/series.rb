@@ -1048,17 +1048,76 @@ module Polars
     # def arg_true
     # end
 
-    # def is_unique
-    # end
+    # Get mask of all unique values.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 2, 3])
+    #   s.is_unique
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         true
+    #   #         false
+    #   #         false
+    #   #         true
+    #   # ]
+    def is_unique
+      super
+    end
 
-    # def is_first
-    # end
+    # Get a mask of the first unique value.
+    #
+    # @return [Series]
+    def is_first
+      super
+    end
 
-    # def is_duplicated
-    # end
+    # Get mask of all duplicated values.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 2, 3])
+    #   s.is_duplicated
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         false
+    #   #         true
+    #   #         true
+    #   #         false
+    #   # ]
+    def is_duplicated
+      super
+    end
 
-    # def explode
-    # end
+    # Explode a list or utf8 Series.
+    #
+    # This means that every item is expanded to a new row.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1, 2], [3, 4], [9, 10]])
+    #   s.explode
+    #   # =>
+    #   # shape: (6,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   #         4
+    #   #         9
+    #   #         10
+    #   # ]
+    def explode
+      super
+    end
 
     # Check if series is equal with another Series.
     #
@@ -1157,9 +1216,9 @@ module Polars
     #   # shape: (3,)
     #   # Series: 'a' [i8]
     #   # [
-    #   #     3
-    #   #     2
-    #   #     1
+    #   #         3
+    #   #         2
+    #   #         1
     #   # ]
     def reverse
       super
