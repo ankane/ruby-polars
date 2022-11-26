@@ -660,10 +660,11 @@ module Polars
     # def ewm_var
     # end
 
-    # def extend_constant
-    # end
-
     #
+    def extend_constant(value, n)
+      wrap_expr(_rbexpr.extend_constant(value, n))
+    end
+
     def value_counts(multithreaded: false, sort: false)
       wrap_expr(_rbexpr.value_counts(multithreaded, sort))
     end

@@ -1,6 +1,8 @@
 module Polars
   # A Series represents a single column in a polars DataFrame.
   class Series
+    include ExprDispatch
+
     # @private
     attr_accessor :_s
 
@@ -628,7 +630,7 @@ module Polars
     #   #         6
     #   # ]
     def cumsum(reverse: false)
-      Utils.wrap_s(_s.cumsum(reverse))
+      super
     end
 
     # Get an array with the cumulative min computed at every element.
@@ -650,7 +652,7 @@ module Polars
     #   #         1
     #   # ]
     def cummin(reverse: false)
-      Utils.wrap_s(_s.cummin(reverse))
+      super
     end
 
     # Get an array with the cumulative max computed at every element.
@@ -672,7 +674,7 @@ module Polars
     #   #         5
     #   # ]
     def cummax(reverse: false)
-      Utils.wrap_s(_s.cummax(reverse))
+      super
     end
 
     # Get an array with the cumulative product computed at every element.
@@ -698,7 +700,7 @@ module Polars
     #   #         6
     #   # ]
     def cumprod(reverse: false)
-      Utils.wrap_s(_s.cumprod(reverse))
+      super
     end
 
     # Get the first `n` rows.
@@ -745,8 +747,7 @@ module Polars
     #   #         3
     #   # ]
     def slice(offset, length = nil)
-      length = len if length.nil?
-      Utils.wrap_s(_s.slice(offset, length))
+      super
     end
 
     # Append a Series to this one.
@@ -1304,7 +1305,7 @@ module Polars
     #   #         4.0
     #   # ]
     def ceil
-      Utils.wrap_s(_s.ceil)
+      super
     end
 
     # Round underlying floating point data by `decimals` digits.
@@ -1326,7 +1327,7 @@ module Polars
     #   #         3.9
     #   # ]
     def round(decimals = 0)
-      Utils.wrap_s(_s.round(decimals))
+      super
     end
 
     # def dot
@@ -1551,7 +1552,7 @@ module Polars
     #   #         99
     #   # ]
     def extend_constant(value, n)
-      Utils.wrap_s(_s.extend_constant(value, n))
+      super
     end
 
     # Flags the Series as sorted.

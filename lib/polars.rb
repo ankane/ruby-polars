@@ -2,6 +2,7 @@
 require "polars/polars"
 
 # modules
+require "polars/expr_dispatch"
 require "polars/batched_csv_reader"
 require "polars/cat_expr"
 require "polars/data_frame"

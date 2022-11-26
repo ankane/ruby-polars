@@ -605,52 +605,6 @@ impl RbSeries {
             Err(e) => Err(RbPolarsErr::from(e)),
         }
     }
-
-    // dispatch dynamically in future?
-
-    pub fn extend_constant(&self, value: Wrap<AnyValue>, n: usize) -> RbResult<Self> {
-        Ok(self
-            .series
-            .borrow()
-            .extend_constant(value.0, n)
-            .map_err(RbPolarsErr::from)?
-            .into())
-    }
-
-    pub fn cumsum(&self, reverse: bool) -> Self {
-        self.series.borrow().cumsum(reverse).into()
-    }
-
-    pub fn cummax(&self, reverse: bool) -> Self {
-        self.series.borrow().cummax(reverse).into()
-    }
-
-    pub fn cummin(&self, reverse: bool) -> Self {
-        self.series.borrow().cummin(reverse).into()
-    }
-
-    pub fn cumprod(&self, reverse: bool) -> Self {
-        self.series.borrow().cumprod(reverse).into()
-    }
-
-    pub fn slice(&self, offset: i64, length: usize) -> Self {
-        let series = self.series.borrow().slice(offset, length);
-        series.into()
-    }
-
-    pub fn ceil(&self) -> RbResult<Self> {
-        let s = self.series.borrow().ceil().map_err(RbPolarsErr::from)?;
-        Ok(s.into())
-    }
-
-    pub fn round(&self, decimals: u32) -> RbResult<Self> {
-        let s = self
-            .series
-            .borrow()
-            .round(decimals)
-            .map_err(RbPolarsErr::from)?;
-        Ok(s.into())
-    }
 }
 
 pub fn to_series_collection(rs: RArray) -> RbResult<Vec<Series>> {

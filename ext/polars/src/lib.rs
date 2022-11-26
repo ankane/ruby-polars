@@ -366,6 +366,7 @@ fn init() -> RbResult<()> {
     class.define_method("ewm_mean", method!(RbExpr::ewm_mean, 3))?;
     class.define_method("ewm_std", method!(RbExpr::ewm_std, 4))?;
     class.define_method("ewm_var", method!(RbExpr::ewm_var, 4))?;
+    class.define_method("extend_constant", method!(RbExpr::extend_constant, 2))?;
     class.define_method("any", method!(RbExpr::any, 0))?;
     class.define_method("all", method!(RbExpr::all, 0))?;
     class.define_method(
@@ -550,15 +551,6 @@ fn init() -> RbResult<()> {
     class.define_method("cast", method!(RbSeries::cast, 2))?;
     class.define_method("time_unit", method!(RbSeries::time_unit, 0))?;
     class.define_method("set_at_idx", method!(RbSeries::set_at_idx, 2))?;
-    // rest
-    class.define_method("extend_constant", method!(RbSeries::extend_constant, 2))?;
-    class.define_method("cumsum", method!(RbSeries::cumsum, 1))?;
-    class.define_method("cummax", method!(RbSeries::cummax, 1))?;
-    class.define_method("cummin", method!(RbSeries::cummin, 1))?;
-    class.define_method("cumprod", method!(RbSeries::cumprod, 1))?;
-    class.define_method("slice", method!(RbSeries::slice, 2))?;
-    class.define_method("ceil", method!(RbSeries::ceil, 0))?;
-    class.define_method("round", method!(RbSeries::round, 1))?;
 
     let class = module.define_class("RbWhen", Default::default())?;
     class.define_method("_then", method!(RbWhen::then, 1))?;

@@ -1305,6 +1305,21 @@ impl RbExpr {
         self.inner.clone().ewm_var(options).into()
     }
 
+    pub fn extend_constant(&self, value: Wrap<AnyValue>, n: usize) -> Self {
+        let value = Value::from(value);
+        self.inner
+            .clone()
+            .apply(
+                move |s| {
+                    let value = value.try_convert::<Wrap<AnyValue>>().unwrap().0;
+                    s.extend_constant(value, n)
+                },
+                GetOutput::same_type(),
+            )
+            .with_fmt("extend")
+            .into()
+    }
+
     pub fn any(&self) -> Self {
         self.inner.clone().any().into()
     }
