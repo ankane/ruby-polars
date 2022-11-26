@@ -677,11 +677,48 @@ module Polars
       Utils.wrap_df(_s.value_counts(sort))
     end
 
-    # def unique_counts
-    # end
+    # Return a count of the unique values in the order of appearance.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("id", ["a", "b", "b", "c", "c", "c"])
+    #   s.unique_counts
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'id' [u32]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ]
+    def unique_counts
+      super
+    end
 
-    # def entropy
-    # end
+    # Computes the entropy.
+    #
+    # Uses the formula `-sum(pk * log(pk)` where `pk` are discrete probabilities.
+    #
+    # @param base [Float]
+    #   Given base, defaults to `e`
+    # @param normalize [Boolean]
+    #   Normalize pk if it doesn't sum to 1.
+    #
+    # @return [Float, nil]
+    #
+    # @example
+    #   a = Polars::Series.new([0.99, 0.005, 0.005])
+    #   a.entropy(normalize: true)
+    #   # => 0.06293300616044681
+    #
+    # @example
+    #   b = Polars::Series.new([0.65, 0.10, 0.25])
+    #   b.entropy(normalize: true)
+    #   # => 0.8568409950394724
+    def entropy(base: Math::E, normalize: false)
+      Polars.select(Polars.lit(self).entropy(base: base, normalize: normalize)).to_series[0]
+    end
 
     # def cumulative_eval
     # end

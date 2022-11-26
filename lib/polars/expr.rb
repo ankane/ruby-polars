@@ -679,7 +679,7 @@ module Polars
     end
 
     def log(base = Math::E)
-      wrap_expr(self._rbexpr.log(base))
+      wrap_expr(_rbexpr.log(base))
     end
 
     def entropy(base: 2, normalize: false)

@@ -309,6 +309,14 @@ class SeriesTest < Minitest::Test
     assert_equal [2, 2], s.value_counts.shape
   end
 
+  def test_entropy
+    a = Polars::Series.new([0.99, 0.005, 0.005])
+    assert_in_delta 0.06293300616044681, a.entropy(normalize: true)
+
+    b = Polars::Series.new([0.65, 0.10, 0.25])
+    assert_in_delta 0.8568409950394724, b.entropy(normalize: true)
+  end
+
   def test_alias
     s = Polars::Series.new("a", [1, 2, 3])
     assert_equal "b", s.alias("b").name

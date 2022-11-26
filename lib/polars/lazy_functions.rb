@@ -251,8 +251,9 @@ module Polars
     # def collect_all
     # end
 
-    # def select
-    # end
+    def select(exprs)
+      DataFrame.new([]).select(exprs)
+    end
 
     # def struct
     # end

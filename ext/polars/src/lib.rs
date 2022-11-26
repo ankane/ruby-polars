@@ -385,6 +385,7 @@ fn init() -> RbResult<()> {
     )?;
     class.define_method("log", method!(RbExpr::log, 1))?;
     class.define_method("exp", method!(RbExpr::exp, 0))?;
+    class.define_method("entropy", method!(RbExpr::entropy, 2))?;
 
     // meta
     class.define_method("meta_pop", method!(RbExpr::meta_pop, 0))?;
