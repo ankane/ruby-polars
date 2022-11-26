@@ -528,6 +528,17 @@ class SeriesTest < Minitest::Test
     s.shrink_to_fit(in_place: true)
   end
 
+  def test_skew
+    s = Polars::Series.new([1, 2, 3])
+    assert_in_delta 0, s.skew
+  end
+
+  def test_kurtosis
+    s = Polars::Series.new([1, 2, 3])
+    assert_in_delta (-1.5), s.kurtosis
+    assert_in_delta 1.5, s.kurtosis(fisher: false)
+  end
+
   def test_clip
     s = Polars::Series.new("foo", [-50, 5, nil, 50])
     assert_series [1, 5, nil, 10], s.clip(1, 10)

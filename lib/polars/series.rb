@@ -2266,11 +2266,40 @@ module Polars
     # def pct_change
     # end
 
-    # def skew
-    # end
+    # Compute the sample skewness of a data set.
+    #
+    # For normally distributed data, the skewness should be about zero. For
+    # unimodal continuous distributions, a skewness value greater than zero means
+    # that there is more weight in the right tail of the distribution. The
+    # function `skewtest` can be used to determine if the skewness value
+    # is close enough to zero, statistically speaking.
+    #
+    # @param bias [Boolean]
+    #   If `false`, the calculations are corrected for statistical bias.
+    #
+    # @return [Float, nil]
+    def skew(bias: true)
+      _s.skew(bias)
+    end
 
-    # def kurtosis
-    # end
+    # Compute the kurtosis (Fisher or Pearson) of a dataset.
+    #
+    # Kurtosis is the fourth central moment divided by the square of the
+    # variance. If Fisher's definition is used, then 3.0 is subtracted from
+    # the result to give 0.0 for a normal distribution.
+    # If bias is false, then the kurtosis is calculated using k statistics to
+    # eliminate bias coming from biased moment estimators
+    #
+    # @param fisher [Boolean]
+    #   If `true`, Fisher's definition is used (normal ==> 0.0). If `false`,
+    #   Pearson's definition is used (normal ==> 3.0).
+    # @param bias [Boolean]
+    #   If `false`, the calculations are corrected for statistical bias.
+    #
+    # @return [Float, nil]
+    def kurtosis(fisher: true, bias: true)
+      _s.kurtosis(fisher, bias)
+    end
 
     # Clip (limit) the values in an array to a `min` and `max` boundary.
     #
