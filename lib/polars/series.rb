@@ -197,28 +197,28 @@ module Polars
     #
     # @return [Series]
     def +(other)
-     Utils.wrap_s(_s.add(other._s))
+      _arithmetic(other, :add)
     end
 
     # Performs subtraction.
     #
     # @return [Series]
     def -(other)
-      Utils.wrap_s(_s.sub(other._s))
+      _arithmetic(other, :sub)
     end
 
     # Performs multiplication.
     #
     # @return [Series]
     def *(other)
-      Utils.wrap_s(_s.mul(other._s))
+      _arithmetic(other, :mul)
     end
 
     # Performs division.
     #
     # @return [Series]
     def /(other)
-      Utils.wrap_s(_s.div(other._s))
+      _arithmetic(other, :div)
     end
 
     # Raises to the power of exponent.
@@ -2399,6 +2399,10 @@ module Polars
       else
         raise Todo
       end
+    end
+
+    def _arithmetic(other, op)
+      Utils.wrap_s(_s.send(op, other._s))
     end
 
     def series_to_rbseries(name, values)
