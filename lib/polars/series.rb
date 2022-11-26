@@ -151,27 +151,47 @@ module Polars
       Utils.wrap_s(_s.bitxor(other._s))
     end
 
-    # def ==(other)
-    # end
+    # Equal.
+    #
+    # @return [Series]
+    def ==(other)
+      _comp(other, :eq)
+    end
 
-    # def !=(other)
-    # end
+    # Not equal.
+    #
+    # @return [Series]
+    def !=(other)
+      _comp(other, :neq)
+    end
 
-    # def >(other)
-    # end
+    # Greater than.
+    #
+    # @return [Series]
+    def >(other)
+      _comp(other, :gt)
+    end
 
     # Less than.
     #
     # @return [Series]
     def <(other)
-      _comp(other, "lt")
+      _comp(other, :lt)
     end
 
-    # def >=(other)
-    # end
+    # Greater than or equal.
+    #
+    # @return [Series]
+    def >=(other)
+      _comp(other, :gt_eq)
+    end
 
-    # def <=(other)
-    # end
+    # Less than or equal.
+    #
+    # @return [Series]
+    def <=(other)
+      _comp(other, :lt_eq)
+    end
 
     # Performs addition.
     #
