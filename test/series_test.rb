@@ -419,6 +419,11 @@ class SeriesTest < Minitest::Test
     assert_equal 2, s.arg_max
   end
 
+  def test_search_sorted
+    s = Polars::Series.new([1, 2, 4])
+    assert_equal 2, s.search_sorted(3)
+  end
+
   def test_take
     s = Polars::Series.new("a", [1, 2, 3, 4])
     assert_series [2, 4], s.take([1, 3])

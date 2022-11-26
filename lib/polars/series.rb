@@ -1070,8 +1070,23 @@ module Polars
       to_frame.select(Utils.col(name).tail(n)).to_series
     end
 
-    # def take_every
-    # end
+    # Take every nth value in the Series and return as new Series.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3, 4])
+    #   s.take_every(2)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         3
+    #   # ]
+    def take_every(n)
+      super
+    end
 
     # Sort this Series.
     #
@@ -1210,8 +1225,15 @@ module Polars
       _s.arg_max
     end
 
-    # def search_sorted
-    # end
+    # Find indices where elements should be inserted to maintain order.
+    #
+    # @param element [Object]
+    #   Expression or scalar value.
+    #
+    # @return [Integer]
+    def search_sorted(element)
+      Polars.select(Polars.lit(self).search_sorted(element))[0, 0]
+    end
 
     # Get unique elements in series.
     #
