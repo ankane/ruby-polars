@@ -8,6 +8,7 @@ use polars::series::ops::NullBehavior;
 use crate::conversion::*;
 use crate::lazy::apply::*;
 use crate::lazy::utils::rb_exprs_to_exprs;
+use crate::utils::reinterpret;
 use crate::RbResult;
 
 #[magnus::wrap(class = "Polars::RbExpr")]
@@ -884,6 +885,19 @@ impl RbExpr {
 
     pub fn dt_round(&self, every: String, offset: String) -> Self {
         self.inner.clone().dt().round(&every, &offset).into()
+    }
+
+    pub fn reinterpret(&self, signed: bool) -> Self {
+        let function = move |s: Series| reinterpret(&s, signed);
+        let dt = if signed {
+            DataType::Int64
+        } else {
+            DataType::UInt64
+        };
+        self.clone()
+            .inner
+            .map(function, GetOutput::from_type(dt))
+            .into()
     }
 
     pub fn mode(&self) -> Self {

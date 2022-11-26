@@ -204,6 +204,25 @@ class SeriesTest < Minitest::Test
     refute Polars::Series.new([true, true, false]).all
   end
 
+  def test_log
+    s = Polars::Series.new([1, 2, 4])
+    assert_series [0, 1, 2], s.log(2)
+  end
+
+  def test_log10
+    s = Polars::Series.new([1, 10, 100])
+    assert_series [0, 1, 2], s.log10
+  end
+
+  def test_exp
+  end
+
+  def test_drop_nulls
+  end
+
+  def test_drop_nans
+  end
+
   def test_sum
     assert_equal 6, Polars::Series.new([1, 2, 3]).sum
     assert_nil Polars::Series.new([]).sum
@@ -459,6 +478,16 @@ class SeriesTest < Minitest::Test
     assert_equal 3, Polars::Series.new([1, 1, 2, 2, 5]).n_unique
   end
 
+  def test_reinterpret
+    s = Polars::Series.new("a", [2**64 - 1, 0, 1], dtype: :u64)
+    assert_series [-1, 0, 1], s.reinterpret
+  end
+
+  def test_interpolate
+    s = Polars::Series.new("a", [1, 2, nil, nil, 5])
+    assert_series [1, 2, 3, 4, 5], s.interpolate
+  end
+
   def test_shrink_to_fit
     s = Polars::Series.new([1, 2, 3])
     s.shrink_to_fit
@@ -478,6 +507,11 @@ class SeriesTest < Minitest::Test
   def test_clip_max
     s = Polars::Series.new("foo", [-50, 5, nil, 50])
     assert_series [-50, 5, nil, 10], s.clip_max(10)
+  end
+
+  def test_reshape
+    s = Polars::Series.new([1, 2, 3, 4])
+    s.reshape([2, -1])
   end
 
   def test_shuffle

@@ -48,6 +48,7 @@ features = [
     "product",
     "random",
     "rank",
+    "reinterpret",
     "repeat_by",
     "rolling_window",
     "round_series",

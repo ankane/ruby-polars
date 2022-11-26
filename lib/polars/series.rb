@@ -313,20 +313,43 @@ module Polars
       to_frame.select(Polars.col(name).all).to_series[0]
     end
 
-    # def log
-    # end
+    # Compute the logarithm to a given base.
+    #
+    # @param base [Float]
+    #   Given base, defaults to `Math::E`.
+    #
+    # @return [Series]
+    def log(base = Math::E)
+      super
+    end
 
-    # def log10
-    # end
+    # Compute the base 10 logarithm of the input array, element-wise.
+    #
+    # @return [Series]
+    def log10
+      super
+    end
 
-    # def exp
-    # end
+    # Compute the exponential, element-wise.
+    #
+    # @return [Series]
+    def exp
+      super
+    end
 
-    # def drop_nulls
-    # end
+    # Create a new Series that copies data from this Series without null values.
+    #
+    # @return [Series]
+    def drop_nulls
+      super
+    end
 
-    # def drop_nans
-    # end
+    # Drop NaN values.
+    #
+    # @return [Series]
+    def drop_nans
+      super
+    end
 
     # Cast this Series to a DataFrame.
     #
@@ -1494,8 +1517,18 @@ module Polars
     # def _hash
     # end
 
-    # def reinterpret
-    # end
+    # Reinterpret the underlying bits as a signed/unsigned integer.
+    #
+    # This operation is only allowed for 64bit integers. For lower bits integers,
+    # you can safely use that cast operation.
+    #
+    # @param signed [Boolean]
+    #   If true, reinterpret as `:i64`. Otherwise, reinterpret as `:u64`.
+    #
+    # @return [Series]
+    def reinterpret(signed: true)
+      super
+    end
 
     # Interpolate intermediate values. The interpolation method is linear.
     #
@@ -1609,8 +1642,16 @@ module Polars
       super
     end
 
-    # def reshape
-    # end
+    # Reshape this Series to a flat Series or a Series of Lists.
+    #
+    # @param dims [Array]
+    #   Tuple of the dimension sizes. If a -1 is used in any of the dimensions, that
+    #   dimension is inferred.
+    #
+    # @return [Series]
+    def reshape(dims)
+      super
+    end
 
     # Shuffle the contents of this Series.
     #
