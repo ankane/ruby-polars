@@ -215,12 +215,18 @@ class SeriesTest < Minitest::Test
   end
 
   def test_exp
+    s = Polars::Series.new([0, 1])
+    assert_series [1, Math::E], s.exp
   end
 
   def test_drop_nulls
+    s = Polars::Series.new([nil, 1.0, Float::NAN])
+    assert_series [1.0, Float::NAN], s.drop_nulls
   end
 
   def test_drop_nans
+    s = Polars::Series.new([nil, 1.0, Float::NAN])
+    assert_series [nil, 1.0], s.drop_nans
   end
 
   def test_sum

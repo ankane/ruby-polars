@@ -24,7 +24,9 @@ class Minitest::Test
   def assert_series(exp, act, dtype: nil)
     assert_kind_of Polars::Series, act
     if exp.is_a?(Polars::Series)
-      assert exp.series_equal(act)
+      assert exp.series_equal(act, null_equal: true)
+    elsif exp.include?(Float::NAN)
+      assert exp.zip(act.to_a).all? { |e, a| e.nan? ? a.nan? : e == a }
     else
       assert_equal exp.to_a, act.to_a
     end
