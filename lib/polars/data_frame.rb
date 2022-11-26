@@ -878,6 +878,30 @@ module Polars
       end
     end
 
+    # Check if DataFrame is equal to other.
+    #
+    # @param other [DataFrame]
+    #   DataFrame to compare with.
+    # @param null_equal [Boolean]
+    #   Consider null values as equal.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   df1 = Polars::DataFrame.new({
+    #     "foo" => [1, 2, 3],
+    #     "bar" => [6.0, 7.0, 8.0],
+    #     "ham" => ["a", "b", "c"]
+    #   })
+    #   df2 = Polars::DataFrame.new({
+    #     "foo" => [3, 2, 1],
+    #     "bar" => [8.0, 7.0, 6.0],
+    #     "ham" => ["c", "b", "a"]
+    #   })
+    #   df1.frame_equal(df1)
+    #   # => true
+    #   df1.frame_equal(df2)
+    #   # => false
     def frame_equal(other, null_equal: true)
       _df.frame_equal(other._df, null_equal)
     end
@@ -885,7 +909,34 @@ module Polars
     # def replace
     # end
 
+    # Get a slice of this DataFrame.
     #
+    # @param offset [Integer]
+    #   Start index. Negative indexing is supported.
+    # @param length [Integer, nil]
+    #   Length of the slice. If set to `nil`, all rows starting at the offset
+    #   will be selected.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({
+    #     "foo" => [1, 2, 3],
+    #     "bar" => [6.0, 7.0, 8.0],
+    #     "ham" => ["a", "b", "c"]
+    #   })
+    #   df.slice(1, 2)
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ f64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 2   ┆ 7.0 ┆ b   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 8.0 ┆ c   │
+    #   # └─────┴─────┴─────┘
     def slice(offset, length = nil)
       if !length.nil? && length < 0
         length = height - offset + length
@@ -893,14 +944,97 @@ module Polars
       _from_rbdf(_df.slice(offset, length))
     end
 
+    # Get the first `n` rows.
+    #
+    # Alias for {#head}.
+    #
+    # @param n [Integer]
+    #   Number of rows to return.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"foo" => [1, 2, 3, 4, 5, 6], "bar" => ["a", "b", "c", "d", "e", "f"]}
+    #   )
+    #   df.limit(4)
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ bar │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ str │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ a   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ b   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ c   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 4   ┆ d   │
+    #   # └─────┴─────┘
     def limit(n = 5)
       head(n)
     end
 
+    # Get the first `n` rows.
+    #
+    # @param n [Integer]
+    #   Number of rows to return.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({
+    #     "foo" => [1, 2, 3, 4, 5],
+    #     "bar" => [6, 7, 8, 9, 10],
+    #     "ham" => ["a", "b", "c", "d", "e"]
+    #   })
+    #   df.head(3)
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6   ┆ a   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 7   ┆ b   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 8   ┆ c   │
+    #   # └─────┴─────┴─────┘
     def head(n = 5)
       _from_rbdf(_df.head(n))
     end
 
+    # Get the last `n` rows.
+    #
+    # @param n [Integer]
+    #   Number of rows to return.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({
+    #     "foo" => [1, 2, 3, 4, 5],
+    #     "bar" => [6, 7, 8, 9, 10],
+    #     "ham" => ["a", "b", "c", "d", "e"]
+    #   })
+    #   df.tail(3)
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 3   ┆ 8   ┆ c   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 4   ┆ 9   ┆ d   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 5   ┆ 10  ┆ e   │
+    #   # └─────┴─────┴─────┘
     def tail(n = 5)
       _from_rbdf(_df.tail(n))
     end
