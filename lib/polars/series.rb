@@ -1730,32 +1730,181 @@ module Polars
       super
     end
 
-    # def arcsin
-    # end
+    # Compute the element-wise value for the inverse sine.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 0.0, -1.0])
+    #   s.arcsin
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         1.570796
+    #   #         0.0
+    #   #         -1.570796
+    #   # ]
+    def arcsin
+      super
+    end
 
-    # def arccos
-    # end
+    # Compute the element-wise value for the inverse cosine.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 0.0, -1.0])
+    #   s.arccos
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         0.0
+    #   #         1.570796
+    #   #         3.141593
+    #   # ]
+    def arccos
+      super
+    end
 
-    # def arctan
-    # end
+    # Compute the element-wise value for the inverse tangent.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 0.0, -1.0])
+    #   s.arctan
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         0.785398
+    #   #         0.0
+    #   #         -0.785398
+    #   # ]
+    def arctan
+      super
+    end
 
-    # def arcsinh
-    # end
+    # Compute the element-wise value for the inverse hyperbolic sine.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 0.0, -1.0])
+    #   s.arcsinh
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         0.881374
+    #   #         0.0
+    #   #         -0.881374
+    #   # ]
+    def arcsinh
+      super
+    end
 
-    # def arccosh
-    # end
+    # Compute the element-wise value for the inverse hyperbolic cosine.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [5.0, 1.0, 0.0, -1.0])
+    #   s.arccosh
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         2.292432
+    #   #         0.0
+    #   #         NaN
+    #   #         NaN
+    #   # ]
+    def arccosh
+      super
+    end
 
-    # def arctanh
-    # end
+    # Compute the element-wise value for the inverse hyperbolic tangent.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [2.0, 1.0, 0.5, 0.0, -0.5, -1.0, -1.1])
+    #   s.arctanh
+    #   # =>
+    #   # shape: (7,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         NaN
+    #   #         inf
+    #   #         0.549306
+    #   #         0.0
+    #   #         -0.549306
+    #   #         -inf
+    #   #         NaN
+    #   # ]
+    def arctanh
+      super
+    end
 
-    # def sinh
-    # end
+    # Compute the element-wise value for the hyperbolic sine.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 0.0, -1.0])
+    #   s.sinh
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         1.175201
+    #   #         0.0
+    #   #         -1.175201
+    #   # ]
+    def sinh
+      super
+    end
 
-    # def cosh
-    # end
+    # Compute the element-wise value for the hyperbolic cosine.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 0.0, -1.0])
+    #   s.cosh
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         1.543081
+    #   #         1.0
+    #   #         1.543081
+    #   # ]
+    def cosh
+      super
+    end
 
-    # def tanh
-    # end
+    # Compute the element-wise value for the hyperbolic tangent.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 0.0, -1.0])
+    #   s.tanh
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         0.761594
+    #   #         0.0
+    #   #         -0.761594
+    #   # ]
+    def tanh
+      super
+    end
 
     # def apply
     # end
