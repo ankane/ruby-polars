@@ -134,6 +134,9 @@ module Polars
     #
     # @return [Series]
     def &(other)
+      if !other.is_a?(Series)
+        other = Series.new([other])
+      end
       Utils.wrap_s(_s.bitand(other._s))
     end
 
@@ -141,6 +144,9 @@ module Polars
     #
     # @return [Series]
     def |(other)
+      if !other.is_a?(Series)
+        other = Series.new([other])
+      end
       Utils.wrap_s(_s.bitor(other._s))
     end
 
@@ -148,6 +154,9 @@ module Polars
     #
     # @return [Series]
     def ^(other)
+      if !other.is_a?(Series)
+        other = Series.new([other])
+      end
       Utils.wrap_s(_s.bitxor(other._s))
     end
 
@@ -2402,7 +2411,14 @@ module Polars
     end
 
     def _arithmetic(other, op)
-      Utils.wrap_s(_s.send(op, other._s))
+      if other.is_a?(Expr)
+        other = to_frame.select(other).to_series
+      end
+      if other.is_a?(Series)
+        return Utils.wrap_s(_s.send(op, other._s))
+      end
+
+      raise Todo
     end
 
     def series_to_rbseries(name, values)
