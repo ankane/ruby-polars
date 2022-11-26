@@ -25,6 +25,16 @@ module Polars
       col("")
     end
 
+    # Count the number of values in this column/context.
+    #
+    # @param column [String, Series, nil]
+    #     If dtype is:
+    #
+    #     * `Series` : count the values in the series.
+    #     * `String` : count the values in this column.
+    #     * `None` : count the number of values in this context.
+    #
+    # @return [Expr, Integer]
     def count(column = nil)
       if column.nil?
         return Utils.wrap_expr(RbExpr.count)
@@ -37,10 +47,16 @@ module Polars
       end
     end
 
-    # def to_list
-    # end
-
+    # Aggregate to list.
     #
+    # @return [Expr]
+    def to_list(name)
+      col(name).list
+    end
+
+    # Get the standard deviation.
+    #
+    # @return [Object]
     def std(column, ddof: 1)
       if column.is_a?(Series)
         column.std(ddof: ddof)
@@ -49,6 +65,9 @@ module Polars
       end
     end
 
+    # Get the variance.
+    #
+    # @return [Object]
     def var(column, ddof: 1)
       if column.is_a?(Series)
         column.var(ddof: ddof)
@@ -144,7 +163,9 @@ module Polars
     # def n_unique
     # end
 
+    # Get the first value.
     #
+    # @return [Object]
     def first(column = nil)
       if column.nil?
         return Utils.wrap_expr(RbExpr.first)
