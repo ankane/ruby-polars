@@ -223,6 +223,9 @@ module Polars
       raise ArgumentError, "Cannot get item of type: #{item.class.name}"
     end
 
+    # Sets an element of the Series.
+    #
+    # @return [Object]
     def []=(key, value)
       if value.is_a?(Array)
         if is_numeric || is_datelike
@@ -1065,6 +1068,26 @@ module Polars
     end
     alias_method :length, :len
 
+    # Cast between data types.
+    #
+    # @param dtype [Symbol]
+    #   DataType to cast to
+    # @param strict [Boolean]
+    #   Throw an error if a cast could not be done for instance due to an overflow
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [true, false, true])
+    #   s.cast(:u32)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [u32]
+    #   # [
+    #   #         1
+    #   #         0
+    #   #         1
+    #   # ]
     def cast(dtype, strict: true)
       Utils.wrap_s(_s.cast(dtype.to_s, strict))
     end
@@ -1216,7 +1239,20 @@ module Polars
       self
     end
 
+    # Create an empty copy of the current Series.
     #
+    # The copy has identical name/dtype but no data.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [nil, true, false])
+    #   s.cleared
+    #   # =>
+    #   # shape: (0,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   # ]
     def cleared
       len > 0 ? limit(0) : clone
     end
@@ -1491,7 +1527,29 @@ module Polars
     # def ewm_var
     # end
 
+    # Extend the Series with given number of values.
     #
+    # @param value [Object]
+    #   The value to extend the Series with. This value may be `nil` to fill with
+    #   nulls.
+    # @param n [Integer]
+    #   The number of values to extend.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.extend_constant(99, 2)
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   #         99
+    #   #         99
+    #   # ]
     def extend_constant(value, n)
       Utils.wrap_s(_s.extend_constant(value, n))
     end

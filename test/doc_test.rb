@@ -2,7 +2,7 @@ require_relative "test_helper"
 
 class DocTest < Minitest::Test
   def test_series
-    assert_docs Polars::Series
+    assert_docs Polars::Series, required: true
   end
 
   def test_data_frame
@@ -17,12 +17,20 @@ class DocTest < Minitest::Test
     assert_docs Polars::Expr
   end
 
-  def assert_docs(cls)
+  def assert_docs(cls, required: false)
     @@once ||= YARD.parse || true
 
     in_temp_dir do
       P(cls.to_s).meths.each do |method|
-        next if method.docstring.empty?
+        next if method.visibility != :public || method.tags(:private).any?
+
+        if method.docstring.empty?
+          if required
+            raise "Missing docs (#{method.name})"
+          else
+            next
+          end
+        end
 
         assert_return(method)
         assert_examples(method)
