@@ -1,6 +1,6 @@
 require_relative "test_helper"
 
-class DocTest < Minitest::Test
+class DocsTest < Minitest::Test
   def test_series
     assert_docs Polars::Series, required: true
   end
@@ -18,7 +18,11 @@ class DocTest < Minitest::Test
   end
 
   def assert_docs(cls, required: false)
-    @@once ||= YARD.parse || true
+    @@once ||= begin
+      require "yard"
+
+      YARD.parse || true
+    end
 
     in_temp_dir do
       P(cls.to_s).meths.each do |method|

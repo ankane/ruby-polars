@@ -5,7 +5,12 @@ require "rake/extensiontask"
 task default: :test
 Rake::TestTask.new do |t|
   t.libs << "test"
-  t.pattern = "test/**/*_test.rb"
+  t.test_files = FileList["test/**/*_test.rb"].exclude(/docs_test/)
+end
+
+Rake::TestTask.new("test:docs") do |t|
+  t.libs << "test"
+  t.pattern = "test/docs_test.rb"
 end
 
 Rake::ExtensionTask.new("polars") do |ext|
