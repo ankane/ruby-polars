@@ -151,10 +151,10 @@ module Polars
       wrap_expr(_rbexpr.any)
     end
 
-    # Check if all boolean values in a Boolean column are `True`.
+    # Check if all boolean values in a Boolean column are `true`.
     #
     # This method is an expression - not to be confused with
-    # {Polars.all} which is a function to select all columns.
+    # `Polars.all` which is a function to select all columns.
     #
     # @return [Boolean]
     #
@@ -200,10 +200,50 @@ module Polars
       self**0.5
     end
 
+    # Compute the base 10 logarithm of the input array, element-wise.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"values" => [1.0, 2.0, 4.0]})
+    #   df.select(Polars.col("values").log10)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────┐
+    #   # │ values  │
+    #   # │ ---     │
+    #   # │ f64     │
+    #   # ╞═════════╡
+    #   # │ 0.0     │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ 0.30103 │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ 0.60206 │
+    #   # └─────────┘
     def log10
       log(10)
     end
 
+    # Compute the exponential, element-wise.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"values" => [1.0, 2.0, 4.0]})
+    #   df.select(Polars.col("values").exp)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────────┐
+    #   # │ values   │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 2.718282 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 7.389056 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 54.59815 │
+    #   # └──────────┘
     def exp
       wrap_expr(_rbexpr.exp)
     end
