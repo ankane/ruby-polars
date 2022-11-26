@@ -459,6 +459,12 @@ class SeriesTest < Minitest::Test
     assert_equal 3, Polars::Series.new([1, 1, 2, 2, 5]).n_unique
   end
 
+  def test_shrink_to_fit
+    s = Polars::Series.new([1, 2, 3])
+    s.shrink_to_fit
+    s.shrink_to_fit(in_place: true)
+  end
+
   def test_set_sorted
     s = Polars::Series.new([1, 2, 3])
     refute s.flags["SORTED_ASC"]

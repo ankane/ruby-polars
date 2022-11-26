@@ -1474,8 +1474,22 @@ module Polars
       _s.n_unique
     end
 
-    # def shrink_to_fit
-    # end
+    # Shrink Series memory usage.
+    #
+    # Shrinks the underlying array capacity to exactly fit the actual data.
+    # (Note that this function does not change the Series data type).
+    #
+    # @return [Series]
+    def shrink_to_fit(in_place: false)
+      if in_place
+        _s.shrink_to_fit
+        self
+      else
+        series = clone
+        series._s.shrink_to_fit
+        series
+      end
+    end
 
     # def _hash
     # end
@@ -1483,17 +1497,48 @@ module Polars
     # def reinterpret
     # end
 
-    # def interpolate
-    # end
+    # Interpolate intermediate values. The interpolation method is linear.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, nil, nil, 5])
+    #   s.interpolate
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   #         4
+    #   #         5
+    #   # ]
+    def interpolate
+      super
+    end
 
-    # def abs
-    # end
+    # Compute absolute values.
+    #
+    # @return [Series]
+    def abs
+      super
+    end
 
     # def rank
     # end
 
-    # def diff
-    # end
+    # Calculate the n-th discrete difference.
+    #
+    # @param n [Integer]
+    #   Number of slots to shift.
+    # @param null_behavior ["ignore", "drop"]
+    #   How to handle null values.
+    #
+    # @return [Series]
+    def diff(n: 1, null_behavior: "ignore")
+      super
+    end
 
     # def pct_change
     # end
