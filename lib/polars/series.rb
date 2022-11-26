@@ -230,6 +230,16 @@ module Polars
       _arithmetic(other, :div)
     end
 
+    # Returns the modulo.
+    #
+    # @return [Series]
+    def %(other)
+      if is_datelike
+        raise ArgumentError, "first cast to integer before applying modulo on datelike dtypes"
+      end
+      _arithmetic(other, :rem)
+    end
+
     # Raises to the power of exponent.
     #
     # @return [Series]

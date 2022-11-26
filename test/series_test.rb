@@ -178,12 +178,15 @@ class SeriesTest < Minitest::Test
     assert_series [5, 10, 15], a - b
     assert_series [50, 200, 450], a * b
     assert_series [2, 2, 2], a / b
+    assert_series [0, 0, 0], a % b
     # assert_series [15, 25, 35], a + 5
     assert_series [15, 25, 35], 5 + a
     # assert_series [5, 15, 25], a - 5
     assert_series [25, 15, 5], 35 - a
     assert_series [50, 100, 150], 5 * a
     # assert_series [50, 100, 150], a * 5
+    assert_series [5, 5, 5], 5 % a
+    # assert_series [0, 0, 0], a % 5
   end
 
   def test_pow

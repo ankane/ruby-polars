@@ -16,66 +16,114 @@ module Polars
     end
     alias_method :inspect, :to_s
 
+    # Bitwise XOR.
+    #
+    # @return [Expr]
     def ^(other)
       wrap_expr(_rbexpr._xor(_to_rbexpr(other)))
     end
 
+    # Bitwise AND.
+    #
+    # @return [Expr]
     def &(other)
       wrap_expr(_rbexpr._and(_to_rbexpr(other)))
     end
 
+    # Bitwise OR.
+    #
+    # @return [Expr]
     def |(other)
       wrap_expr(_rbexpr._or(_to_rbexpr(other)))
     end
 
+    # Performs addition.
+    #
+    # @return [Expr]
     def +(other)
       wrap_expr(_rbexpr + _to_rbexpr(other))
     end
 
+    # Performs subtraction.
+    #
+    # @return [Expr]
     def -(other)
       wrap_expr(_rbexpr - _to_rbexpr(other))
     end
 
+    # Performs multiplication.
+    #
+    # @return [Expr]
     def *(other)
       wrap_expr(_rbexpr * _to_rbexpr(other))
     end
 
+    # Performs division.
+    #
+    # @return [Expr]
     def /(other)
       wrap_expr(_rbexpr / _to_rbexpr(other))
     end
 
+    # Returns the modulo.
+    #
+    # @return [Expr]
     def %(other)
       wrap_expr(_rbexpr % _to_rbexpr(other))
     end
 
+    # Raises to the power of exponent.
+    #
+    # @return [Expr]
     def **(power)
       pow(power)
     end
 
+    # Greater than or equal.
+    #
+    # @return [Expr]
     def >=(other)
       wrap_expr(_rbexpr.gt_eq(_to_expr(other)._rbexpr))
     end
 
+    # Less than or equal.
+    #
+    # @return [Expr]
     def <=(other)
       wrap_expr(_rbexpr.lt_eq(_to_expr(other)._rbexpr))
     end
 
+    # Equal.
+    #
+    # @return [Expr]
     def ==(other)
       wrap_expr(_rbexpr.eq(_to_expr(other)._rbexpr))
     end
 
+    # Not equal.
+    #
+    # @return [Expr]
     def !=(other)
       wrap_expr(_rbexpr.neq(_to_expr(other)._rbexpr))
     end
 
+    # Less than.
+    #
+    # @return [Expr]
     def <(other)
       wrap_expr(_rbexpr.lt(_to_expr(other)._rbexpr))
     end
 
+    # Greater than.
+    #
+    # @return [Expr]
     def >(other)
       wrap_expr(_rbexpr.gt(_to_expr(other)._rbexpr))
     end
 
+    # Performs negation.
+    #
+    # @return [Expr]
     def -@
       Utils.lit(0) - self
     end
