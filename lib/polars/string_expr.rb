@@ -1,5 +1,7 @@
 module Polars
+  # Namespace for string related expressions.
   class StringExpr
+    # @private
     attr_accessor :_rbexpr
 
     def initialize(expr)
@@ -9,6 +11,7 @@ module Polars
     # def strptime
     # end
 
+    #
     def lengths
       Utils.wrap_expr(_rbexpr.str_lengths)
     end
@@ -83,6 +86,7 @@ module Polars
     # def encode
     # end
 
+    #
     def extract(pattern, group_index: 1)
       Utils.wrap_expr(_rbexpr.str_extract(pattern, group_index))
     end

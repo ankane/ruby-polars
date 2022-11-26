@@ -1,5 +1,6 @@
 module Polars
   class GroupBy
+    # @private
     attr_accessor :_df, :_dataframe_class, :by, :maintain_order
 
     def initialize(df, by, dataframe_class, maintain_order: false)

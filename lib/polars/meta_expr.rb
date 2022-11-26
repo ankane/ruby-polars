@@ -1,5 +1,7 @@
 module Polars
+  # Namespace for expressions on a meta level.
   class MetaExpr
+    # @private
     attr_accessor :_rbexpr
 
     def initialize(expr)

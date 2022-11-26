@@ -1,5 +1,7 @@
 module Polars
+  # Namespace for datetime related expressions.
   class DateTimeExpr
+    # @private
     attr_accessor :_rbexpr
 
     def initialize(expr)
@@ -12,6 +14,7 @@ module Polars
     # def round
     # end
 
+    #
     def strftime(fmt)
       Utils.wrap_expr(_rbexpr.strftime(fmt))
     end

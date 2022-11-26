@@ -1,5 +1,7 @@
 module Polars
+  # Namespace for list related expressions.
   class ListExpr
+    # @private
     attr_accessor :_rbexpr
 
     def initialize(expr)
@@ -41,6 +43,7 @@ module Polars
     # def concat
     # end
 
+    #
     def get(index)
       index = Utils.expr_to_lit_or_expr(index, str_to_lit: false)._rbexpr
       Utils.wrap_expr(_rbexpr.lst_get(index))
@@ -101,6 +104,7 @@ module Polars
     #   Utils.wrap_expr(_rbexpr.lst_to_struct(n_field_strategy, name_generator))
     # end
 
+    #
     def eval(expr, parallel: false)
        Utils.wrap_expr(_rbexpr.lst_eval(expr._rbexpr, parallel))
     end

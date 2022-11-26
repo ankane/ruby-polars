@@ -1,5 +1,7 @@
 module Polars
+  # Namespace for struct related expressions.
   class StructExpr
+    # @private
     attr_accessor :_rbexpr
 
     def initialize(expr)

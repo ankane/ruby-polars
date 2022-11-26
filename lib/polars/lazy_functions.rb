@@ -40,6 +40,7 @@ module Polars
     # def to_list
     # end
 
+    #
     def std(column, ddof: 1)
       if column.is_a?(Series)
         column.std(ddof: ddof)
@@ -117,6 +118,7 @@ module Polars
     # def n_unique
     # end
 
+    #
     def first(column = nil)
       if column.nil?
         return Utils.wrap_expr(RbExpr.first)
@@ -142,6 +144,7 @@ module Polars
     # def tail
     # end
 
+    #
     def lit(value)
       if value.is_a?(Polars::Series)
         name = value.name
@@ -174,6 +177,7 @@ module Polars
     # def apply
     # end
 
+    #
     def fold(acc, f, exprs)
       acc = Utils.expr_to_lit_or_expr(acc, str_to_lit: true)
       if exprs.is_a?(Expr)
@@ -199,6 +203,7 @@ module Polars
     # def exclude
     # end
 
+    #
     def all(name = nil)
       if name.nil?
         col("*")
@@ -215,6 +220,7 @@ module Polars
     # def quantile
     # end
 
+    #
     def arange(low, high, step: 1, eager: false, dtype: nil)
       low = Utils.expr_to_lit_or_expr(low, str_to_lit: false)
       high = Utils.expr_to_lit_or_expr(high, str_to_lit: false)
@@ -243,6 +249,7 @@ module Polars
     # def format
     # end
 
+    #
     def concat_list(exprs)
       exprs = Utils.selection_to_rbexpr_list(exprs)
       Utils.wrap_expr(RbExpr.concat_lst(exprs))
@@ -251,6 +258,7 @@ module Polars
     # def collect_all
     # end
 
+    #
     def select(exprs)
       DataFrame.new([]).select(exprs)
     end
@@ -261,6 +269,7 @@ module Polars
     # def repeat
     # end
 
+    #
     def arg_where(condition, eager: false)
       if eager
         if !condition.is_a?(Series)
@@ -279,6 +288,7 @@ module Polars
     # def from_epoch
     # end
 
+    #
     def when(expr)
       expr = Utils.expr_to_lit_or_expr(expr)
       pw = RbExpr.when(expr._rbexpr)

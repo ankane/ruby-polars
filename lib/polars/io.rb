@@ -219,6 +219,7 @@ module Polars
     # def read_avro
     # end
 
+    #
     def read_ipc(
       file,
       columns: nil,
@@ -263,6 +264,7 @@ module Polars
     # def read_excel
     # end
 
+    #
     def read_csv_batched(
       file,
       has_header: true,

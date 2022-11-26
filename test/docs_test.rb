@@ -1,20 +1,64 @@
 require_relative "test_helper"
 
 class DocsTest < Minitest::Test
-  def test_series
-    assert_docs Polars::Series, required: true
+  def test_cat_expr
+    assert_docs Polars::CatExpr
   end
 
   def test_data_frame
     assert_docs Polars::DataFrame
   end
 
-  def test_lazy_frame
-    assert_docs Polars::LazyFrame
+  def test_date_time_expr
+    assert_docs Polars::DateTimeExpr
   end
 
   def test_expr
     assert_docs Polars::Expr
+  end
+
+  def test_functions
+    assert_docs Polars::Functions
+  end
+
+  def test_group_by
+    assert_docs Polars::GroupBy
+  end
+
+  def test_io
+    assert_docs Polars::IO
+  end
+
+  def test_lazy_frame
+    assert_docs Polars::LazyFrame
+  end
+
+  def test_lazy_functions
+    assert_docs Polars::LazyFunctions
+  end
+
+  def test_lazy_group_by
+    assert_docs Polars::LazyGroupBy
+  end
+
+  def test_list_expr
+    assert_docs Polars::ListExpr
+  end
+
+  def test_meta_expr
+    assert_docs Polars::MetaExpr
+  end
+
+  def test_series
+    assert_docs Polars::Series, required: true
+  end
+
+  def test_string_expr
+    assert_docs Polars::StringExpr
+  end
+
+  def test_struct_expr
+    assert_docs Polars::StructExpr
   end
 
   def assert_docs(cls, required: false)

@@ -1,5 +1,7 @@
 module Polars
+  # Namespace for categorical related expressions.
   class CatExpr
+    # @private
     attr_accessor :_rbexpr
 
     def initialize(expr)
