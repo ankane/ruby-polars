@@ -470,4 +470,14 @@ class SeriesTest < Minitest::Test
     refute s.flags["SORTED_ASC"]
     assert s.set_sorted.flags["SORTED_ASC"]
   end
+
+  def test_new_from_index
+    s = Polars::Series.new([1, 2, 3])
+    assert_series [2, 2, 2, 2, 2], s.new_from_index(1, 5)
+  end
+
+  def test_shrink_dtype
+    s = Polars::Series.new([1, 2, 3])
+    assert_series [1, 2, 3], s.shrink_dtype, dtype: :i8
+  end
 end

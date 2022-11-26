@@ -1621,11 +1621,22 @@ module Polars
       Utils.wrap_s(_s.set_sorted(reverse))
     end
 
-    # def new_from_index
-    # end
+    # Create a new Series filled with values from the given index.
+    #
+    # @return [Series]
+    def new_from_index(index, length)
+      Utils.wrap_s(_s.new_from_index(index, length))
+    end
 
-    # def shrink_dtype
-    # end
+    # Shrink numeric columns to the minimal required datatype.
+    #
+    # Shrink to the dtype needed to fit the extrema of this Series.
+    # This can be used to reduce memory pressure.
+    #
+    # @return [Series]
+    def shrink_dtype
+      super
+    end
 
     # def arr
     # end
