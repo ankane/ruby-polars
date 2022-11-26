@@ -191,8 +191,18 @@ module Polars
     # def show_graph
     # end
 
-    # def sort
-    # end
+    #
+    def sort(by, reverse: false, nulls_last: false)
+      if by.is_a?(String)
+        _from_rbldf(_ldf.sort(by, reverse, nulls_last))
+      end
+      if reverse == true || reverse == false
+        reverse = [reverse]
+      end
+
+      by = Utils.selection_to_rbexpr_list(by)
+      _from_rbldf(_ldf.sort_by_exprs(by, reverse, nulls_last))
+    end
 
     # def profile
     # end

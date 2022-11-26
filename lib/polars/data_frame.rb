@@ -818,9 +818,64 @@ module Polars
     # def replace_at_idx
     # end
 
+    # Sort the DataFrame by column.
     #
+    # @param by [String]
+    #   By which column to sort.
+    # @param reverse [Boolean]
+    #   Reverse/descending sort.
+    # @param nulls_last [Boolean]
+    #   Place null values last. Can only be used if sorted by a single column.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({
+    #     "foo" => [1, 2, 3],
+    #     "bar" => [6.0, 7.0, 8.0],
+    #     "ham" => ["a", "b", "c"]
+    #   })
+    #   df.sort("foo", reverse: true)
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ f64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 3   ┆ 8.0 ┆ c   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 7.0 ┆ b   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 1   ┆ 6.0 ┆ a   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example Sort by multiple columns.
+    #   df.sort(
+    #     [Polars.col("foo"), Polars.col("bar")**2],
+    #     reverse: [true, false]
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ f64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 3   ┆ 8.0 ┆ c   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 7.0 ┆ b   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 1   ┆ 6.0 ┆ a   │
+    #   # └─────┴─────┴─────┘
     def sort(by, reverse: false, nulls_last: false)
-      _from_rbdf(_df.sort(by, reverse, nulls_last))
+      if by.is_a?(Array) || by.is_a?(Expr)
+        lazy
+          .sort(by, reverse: reverse, nulls_last: nulls_last)
+          .collect(no_optimization: true, string_cache: false)
+      else
+        _from_rbdf(_df.sort(by, reverse, nulls_last))
+      end
     end
 
     def frame_equal(other, null_equal: true)
