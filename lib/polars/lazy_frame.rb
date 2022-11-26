@@ -196,7 +196,7 @@ module Polars
       if by.is_a?(String)
         _from_rbldf(_ldf.sort(by, reverse, nulls_last))
       end
-      if reverse == true || reverse == false
+      if Utils.bool?(reverse)
         reverse = [reverse]
       end
 
