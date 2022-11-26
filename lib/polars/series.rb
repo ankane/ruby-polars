@@ -1549,20 +1549,90 @@ module Polars
     # def kurtosis
     # end
 
-    # def clip
-    # end
+    # Clip (limit) the values in an array to a `min` and `max` boundary.
+    #
+    # Only works for numerical types.
+    #
+    # If you want to clip other dtypes, consider writing a "when, then, otherwise"
+    # expression. See {#when} for more information.
+    #
+    # @param min_val [Numeric]
+    #   Minimum value.
+    # @param max_val [Numeric]
+    #   Maximum value.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("foo", [-50, 5, nil, 50])
+    #   s.clip(1, 10)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'foo' [i64]
+    #   # [
+    #   #         1
+    #   #         5
+    #   #         null
+    #   #         10
+    #   # ]
+    def clip(min_val, max_val)
+      super
+    end
 
-    # def clip_min
-    # end
+    # Clip (limit) the values in an array to a `min` boundary.
+    #
+    # Only works for numerical types.
+    #
+    # If you want to clip other dtypes, consider writing a "when, then, otherwise"
+    # expression. See {#when} for more information.
+    #
+    # @param min_val [Numeric]
+    #   Minimum value.
+    #
+    # @return [Series]
+    def clip_min(min_val)
+      super
+    end
 
-    # def clip_max
-    # end
+    # Clip (limit) the values in an array to a `max` boundary.
+    #
+    # Only works for numerical types.
+    #
+    # If you want to clip other dtypes, consider writing a "when, then, otherwise"
+    # expression. See {#when} for more information.
+    #
+    # @param max_val [Numeric]
+    #   Maximum value.
+    #
+    # @return [Series]
+    def clip_max(max_val)
+      super
+    end
 
     # def reshape
     # end
 
-    # def shuffle
-    # end
+    # Shuffle the contents of this Series.
+    #
+    # @param seed [Integer, nil]
+    #   Seed for the random number generator.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.shuffle(seed: 1)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         2
+    #   #         1
+    #   #         3
+    #   # ]
+    def shuffle(seed: nil)
+      super
+    end
 
     # def ewm_mean
     # end

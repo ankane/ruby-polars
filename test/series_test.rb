@@ -465,6 +465,31 @@ class SeriesTest < Minitest::Test
     s.shrink_to_fit(in_place: true)
   end
 
+  def test_clip
+    s = Polars::Series.new("foo", [-50, 5, nil, 50])
+    assert_series [1, 5, nil, 10], s.clip(1, 10)
+  end
+
+  def test_clip_min
+    s = Polars::Series.new("foo", [-50, 5, nil, 50])
+    assert_series [1, 5, nil, 50], s.clip_min(1)
+  end
+
+  def test_clip_max
+    s = Polars::Series.new("foo", [-50, 5, nil, 50])
+    assert_series [-50, 5, nil, 10], s.clip_max(10)
+  end
+
+  def test_shuffle
+    s = Polars::Series.new("a", [1, 2, 3])
+    assert_series [2, 1, 3], s.shuffle(seed: 1)
+  end
+
+  def test_extend_constant
+    s = Polars::Series.new("a", [1, 2, 3])
+    assert_series [1, 2, 3, 99, 99], s.extend_constant(99, 2)
+  end
+
   def test_set_sorted
     s = Polars::Series.new([1, 2, 3])
     refute s.flags["SORTED_ASC"]
