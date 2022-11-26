@@ -160,8 +160,12 @@ module Polars
     # def >(other)
     # end
 
-    # def <(other)
-    # end
+    # Less than.
+    #
+    # @return [Series]
+    def <(other)
+      _comp(other, "lt")
+    end
 
     # def >=(other)
     # end
@@ -1909,14 +1913,94 @@ module Polars
     # def apply
     # end
 
-    # def shift
-    # end
+    # Shift the values by a given period.
+    #
+    # @param periods [Integer]
+    #   Number of places to shift (may be negative).
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.shift(1)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         null
+    #   #         1
+    #   #         2
+    #   # ]
+    #
+    # @example
+    #   s.shift(-1)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         2
+    #   #         3
+    #   #         null
+    #   # ]
+    def shift(periods = 1)
+      super
+    end
 
-    # def shift_and_fill
-    # end
+    # Shift the values by a given period and fill the resulting null values.
+    #
+    # @param periods [Integer]
+    #   Number of places to shift (may be negative).
+    # @param fill_value [Object]
+    #   Fill None values with the result of this expression.
+    #
+    # @return [Series]
+    def shift_and_fill(periods, fill_value)
+      super
+    end
 
-    # def zip_with
-    # end
+    # Take values from self or other based on the given mask.
+    #
+    # Where mask evaluates true, take values from self. Where mask evaluates false,
+    # take values from other.
+    #
+    # @param mask [Series]
+    #   Boolean Series.
+    # @param other [Series]
+    #   Series of same type.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s1 = Polars::Series.new([1, 2, 3, 4, 5])
+    #   s2 = Polars::Series.new([5, 4, 3, 2, 1])
+    #   s1.zip_with(s1 < s2, s2)
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: '' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   #         2
+    #   #         1
+    #   # ]
+    #
+    # @example
+    #   mask = Polars::Series.new([true, false, true, false, true])
+    #   s1.zip_with(mask, s2)
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: '' [i64]
+    #   # [
+    #   #         1
+    #   #         4
+    #   #         3
+    #   #         2
+    #   #         5
+    #   # ]
+    def zip_with(mask, other)
+      Utils.wrap_s(_s.zip_with(mask._s, other._s))
+    end
 
     # def rolling_min
     # end
@@ -2286,6 +2370,14 @@ module Polars
         [series, self]
       else
         raise TypeError, "#{self.class} can't be coerced into #{other.class}"
+      end
+    end
+
+    def _comp(other, op)
+      if other.is_a?(Series)
+        Utils.wrap_s(_s.send(op, other._s))
+      else
+        raise Todo
       end
     end
 
