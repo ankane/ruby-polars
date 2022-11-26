@@ -1285,7 +1285,7 @@ module Polars
       _s.null_count
     end
 
-    # Return True if the Series has a validity bitmask.
+    # Return `true` if the Series has a validity bitmask.
     #
     # If there is none, it means that there are no null values.
     # Use this to swiftly assert a Series does not have null values.
@@ -1429,7 +1429,7 @@ module Polars
     # def is_in
     # end
 
-    # Get index values where Boolean Series evaluate True.
+    # Get index values where Boolean Series evaluate `true`.
     #
     # @return [Series]
     #
