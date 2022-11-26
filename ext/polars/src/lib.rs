@@ -44,6 +44,7 @@ fn init() -> RbResult<()> {
     module.define_singleton_method("_concat_series", function!(concat_series, 1))?;
     module.define_singleton_method("_ipc_schema", function!(ipc_schema, 1))?;
     module.define_singleton_method("_parquet_schema", function!(parquet_schema, 1))?;
+    module.define_singleton_method("_arg_where", function!(arg_where, 1))?;
 
     let class = module.define_class("RbBatchedCsv", Default::default())?;
     class.define_singleton_method("new", function!(RbBatchedCsv::new, -1))?;
@@ -555,6 +556,84 @@ fn init() -> RbResult<()> {
     class.define_method("time_unit", method!(RbSeries::time_unit, 0))?;
     class.define_method("set_at_idx", method!(RbSeries::set_at_idx, 2))?;
 
+    // eq
+    class.define_method("eq_u8", method!(RbSeries::eq_u8, 1))?;
+    class.define_method("eq_u16", method!(RbSeries::eq_u16, 1))?;
+    class.define_method("eq_u32", method!(RbSeries::eq_u32, 1))?;
+    class.define_method("eq_u64", method!(RbSeries::eq_u64, 1))?;
+    class.define_method("eq_i8", method!(RbSeries::eq_i8, 1))?;
+    class.define_method("eq_i16", method!(RbSeries::eq_i16, 1))?;
+    class.define_method("eq_i32", method!(RbSeries::eq_i32, 1))?;
+    class.define_method("eq_i64", method!(RbSeries::eq_i64, 1))?;
+    class.define_method("eq_f32", method!(RbSeries::eq_f32, 1))?;
+    class.define_method("eq_f64", method!(RbSeries::eq_f64, 1))?;
+    // class.define_method("eq_str", method!(RbSeries::eq_str, 1))?;
+
+    // neq
+    class.define_method("neq_u8", method!(RbSeries::neq_u8, 1))?;
+    class.define_method("neq_u16", method!(RbSeries::neq_u16, 1))?;
+    class.define_method("neq_u32", method!(RbSeries::neq_u32, 1))?;
+    class.define_method("neq_u64", method!(RbSeries::neq_u64, 1))?;
+    class.define_method("neq_i8", method!(RbSeries::neq_i8, 1))?;
+    class.define_method("neq_i16", method!(RbSeries::neq_i16, 1))?;
+    class.define_method("neq_i32", method!(RbSeries::neq_i32, 1))?;
+    class.define_method("neq_i64", method!(RbSeries::neq_i64, 1))?;
+    class.define_method("neq_f32", method!(RbSeries::neq_f32, 1))?;
+    class.define_method("neq_f64", method!(RbSeries::neq_f64, 1))?;
+    // class.define_method("neq_str", method!(RbSeries::neq_str, 1))?;
+
+    // gt
+    class.define_method("gt_u8", method!(RbSeries::gt_u8, 1))?;
+    class.define_method("gt_u16", method!(RbSeries::gt_u16, 1))?;
+    class.define_method("gt_u32", method!(RbSeries::gt_u32, 1))?;
+    class.define_method("gt_u64", method!(RbSeries::gt_u64, 1))?;
+    class.define_method("gt_i8", method!(RbSeries::gt_i8, 1))?;
+    class.define_method("gt_i16", method!(RbSeries::gt_i16, 1))?;
+    class.define_method("gt_i32", method!(RbSeries::gt_i32, 1))?;
+    class.define_method("gt_i64", method!(RbSeries::gt_i64, 1))?;
+    class.define_method("gt_f32", method!(RbSeries::gt_f32, 1))?;
+    class.define_method("gt_f64", method!(RbSeries::gt_f64, 1))?;
+    // class.define_method("gt_str", method!(RbSeries::gt_str, 1))?;
+
+    // gt_eq
+    class.define_method("gt_eq_u8", method!(RbSeries::gt_eq_u8, 1))?;
+    class.define_method("gt_eq_u16", method!(RbSeries::gt_eq_u16, 1))?;
+    class.define_method("gt_eq_u32", method!(RbSeries::gt_eq_u32, 1))?;
+    class.define_method("gt_eq_u64", method!(RbSeries::gt_eq_u64, 1))?;
+    class.define_method("gt_eq_i8", method!(RbSeries::gt_eq_i8, 1))?;
+    class.define_method("gt_eq_i16", method!(RbSeries::gt_eq_i16, 1))?;
+    class.define_method("gt_eq_i32", method!(RbSeries::gt_eq_i32, 1))?;
+    class.define_method("gt_eq_i64", method!(RbSeries::gt_eq_i64, 1))?;
+    class.define_method("gt_eq_f32", method!(RbSeries::gt_eq_f32, 1))?;
+    class.define_method("gt_eq_f64", method!(RbSeries::gt_eq_f64, 1))?;
+    // class.define_method("gt_eq_str", method!(RbSeries::gt_eq_str, 1))?;
+
+    // lt
+    class.define_method("lt_u8", method!(RbSeries::lt_u8, 1))?;
+    class.define_method("lt_u16", method!(RbSeries::lt_u16, 1))?;
+    class.define_method("lt_u32", method!(RbSeries::lt_u32, 1))?;
+    class.define_method("lt_u64", method!(RbSeries::lt_u64, 1))?;
+    class.define_method("lt_i8", method!(RbSeries::lt_i8, 1))?;
+    class.define_method("lt_i16", method!(RbSeries::lt_i16, 1))?;
+    class.define_method("lt_i32", method!(RbSeries::lt_i32, 1))?;
+    class.define_method("lt_i64", method!(RbSeries::lt_i64, 1))?;
+    class.define_method("lt_f32", method!(RbSeries::lt_f32, 1))?;
+    class.define_method("lt_f64", method!(RbSeries::lt_f64, 1))?;
+    // class.define_method("lt_str", method!(RbSeries::lt_str, 1))?;
+
+    // lt_eq
+    class.define_method("lt_eq_u8", method!(RbSeries::lt_eq_u8, 1))?;
+    class.define_method("lt_eq_u16", method!(RbSeries::lt_eq_u16, 1))?;
+    class.define_method("lt_eq_u32", method!(RbSeries::lt_eq_u32, 1))?;
+    class.define_method("lt_eq_u64", method!(RbSeries::lt_eq_u64, 1))?;
+    class.define_method("lt_eq_i8", method!(RbSeries::lt_eq_i8, 1))?;
+    class.define_method("lt_eq_i16", method!(RbSeries::lt_eq_i16, 1))?;
+    class.define_method("lt_eq_i32", method!(RbSeries::lt_eq_i32, 1))?;
+    class.define_method("lt_eq_i64", method!(RbSeries::lt_eq_i64, 1))?;
+    class.define_method("lt_eq_f32", method!(RbSeries::lt_eq_f32, 1))?;
+    class.define_method("lt_eq_f64", method!(RbSeries::lt_eq_f64, 1))?;
+    // class.define_method("lt_eq_str", method!(RbSeries::lt_eq_str, 1))?;
+
     let class = module.define_class("RbWhen", Default::default())?;
     class.define_method("_then", method!(RbWhen::then, 1))?;
 
@@ -650,4 +729,8 @@ fn parquet_schema(rb_f: Value) -> RbResult<Value> {
         dict.aset(field.name, dt)?;
     }
     Ok(dict.into())
+}
+
+fn arg_where(condition: &RbExpr) -> RbExpr {
+    polars::lazy::dsl::arg_where(condition.inner.clone()).into()
 }

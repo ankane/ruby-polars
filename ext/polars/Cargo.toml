@@ -17,6 +17,7 @@ version = "0.25.1"
 features = [
     "abs",
     "arange",
+    "arg_where",
     "concat_str",
     "csv-file",
     "cum_agg",

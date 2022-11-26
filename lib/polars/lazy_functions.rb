@@ -261,8 +261,17 @@ module Polars
     # def repeat
     # end
 
-    # def arg_where
-    # end
+    def arg_where(condition, eager: false)
+      if eager
+        if !condition.is_a?(Series)
+          raise ArgumentError, "expected 'Series' in 'arg_where' if 'eager=True', got #{condition.class.name}"
+        end
+        condition.to_frame.select(arg_where(Polars.col(condition.name))).to_series
+      else
+        condition = Utils.expr_to_lit_or_expr(condition, str_to_lit: true)
+        Utils.wrap_expr(_arg_where(condition._rbexpr))
+      end
+    end
 
     # def coalesce
     # end

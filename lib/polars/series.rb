@@ -1429,8 +1429,22 @@ module Polars
     # def is_in
     # end
 
-    # def arg_true
-    # end
+    # Get index values where Boolean Series evaluate True.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   (s == 2).arg_true
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: 'a' [u32]
+    #   # [
+    #   #         1
+    #   # ]
+    def arg_true
+      Polars.arg_where(self, eager: true)
+    end
 
     # Get mask of all unique values.
     #
@@ -2655,10 +2669,13 @@ module Polars
 
     def _comp(other, op)
       if other.is_a?(Series)
-        Utils.wrap_s(_s.send(op, other._s))
-      else
+        return Utils.wrap_s(_s.send(op, other._s))
+      end
+
+      if dtype == :str
         raise Todo
       end
+      Utils.wrap_s(_s.send("#{op}_#{dtype}", other))
     end
 
     def _arithmetic(other, op)

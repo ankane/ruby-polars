@@ -150,21 +150,50 @@ class SeriesTest < Minitest::Test
     assert_series [false, true, true, false], a ^ b
   end
 
-  def test_math
+  def test_comp_series
+    a = Polars::Series.new([1, 2, 3, 4])
+    b = Polars::Series.new([0, 2, 3, 5])
+    assert_series [false, true, true, false], a == b
+    assert_series [true, false, false, true], a != b
+    assert_series [true, false, false, false], a > b
+    assert_series [false, false, false, true], a < b
+    assert_series [true, true, true, false], a >= b
+    assert_series [false, true, true, true], a <= b
+  end
+
+  def test_comp_scalar
+    a = Polars::Series.new([1, 2, 3])
+    assert_series [false, true, false], a == 2
+    assert_series [true, false, true], a != 2
+    assert_series [false, false, true], a > 2
+    assert_series [true, false, false], a < 2
+    assert_series [false, true, true], a >= 2
+    assert_series [true, true, false], a <= 2
+  end
+
+  def test_arithmetic
     a = Polars::Series.new([10, 20, 30])
     b = Polars::Series.new([5, 10, 15])
     assert_series [15, 30, 45], a + b
     assert_series [5, 10, 15], a - b
     assert_series [50, 200, 450], a * b
     assert_series [2, 2, 2], a / b
-    assert_series [100, 400, 900], a**2
-    assert_series [-10, -20, -30], -a
     # assert_series [15, 25, 35], a + 5
     assert_series [15, 25, 35], 5 + a
     # assert_series [5, 15, 25], a - 5
     assert_series [25, 15, 5], 35 - a
     assert_series [50, 100, 150], 5 * a
     # assert_series [50, 100, 150], a * 5
+  end
+
+  def test_pow
+    a = Polars::Series.new([10, 20, 30])
+    assert_series [100, 400, 900], a**2
+  end
+
+  def test_negation
+    a = Polars::Series.new([10, 20, 30])
+    assert_series [-10, -20, -30], -a
   end
 
   def test_get
