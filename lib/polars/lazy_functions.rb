@@ -203,7 +203,30 @@ module Polars
     # def exclude
     # end
 
+    # Do one of two things.
     #
+    # * function can do a columnwise or elementwise AND operation
+    # * a wildcard column selection
+    #
+    # @param name [Object]
+    #   If given this function will apply a bitwise & on the columns.
+    #
+    # @return [Expr]
+    #
+    # @example Sum all columns
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [1, 2, 3], "b" => ["hello", "foo", "bar"], "c" => [1, 1, 1]}
+    #   )
+    #   df.select(Polars.all.sum)
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬──────┬─────┐
+    #   # │ a   ┆ b    ┆ c   │
+    #   # │ --- ┆ ---  ┆ --- │
+    #   # │ i64 ┆ str  ┆ i64 │
+    #   # ╞═════╪══════╪═════╡
+    #   # │ 6   ┆ null ┆ 3   │
+    #   # └─────┴──────┴─────┘
     def all(name = nil)
       if name.nil?
         col("*")
@@ -220,7 +243,26 @@ module Polars
     # def quantile
     # end
 
+    # Create a range expression (or Series).
     #
+    # This can be used in a `select`, `with_column`, etc. Be sure that the resulting
+    # range size is equal to the length of the DataFrame you are collecting.
+    #
+    # @param low [Integer, Expr, Series]
+    #   Lower bound of range.
+    # @param high [Integer, Expr, Series]
+    #   Upper bound of range.
+    # @param step [Integer]
+    #   Step size of the range.
+    # @param eager [Boolean]
+    #   If eager evaluation is `True`, a Series is returned instead of an Expr.
+    # @param dtype [Symbol]
+    #   Apply an explicit integer dtype to the resulting expression (default is Int64).
+    #
+    # @return [Expr, Series]
+    #
+    # @example
+    #   df.lazy.filter(Polars.col("foo") < Polars.arange(0, 100)).collect
     def arange(low, high, step: 1, eager: false, dtype: nil)
       low = Utils.expr_to_lit_or_expr(low, str_to_lit: false)
       high = Utils.expr_to_lit_or_expr(high, str_to_lit: false)
