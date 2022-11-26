@@ -812,11 +812,60 @@ module Polars
     # def describe
     # end
 
-    # def find_idx_by_name
-    # end
+    # Find the index of a column by name.
+    #
+    # @param name [String]
+    #   Name of the column to find.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"foo" => [1, 2, 3], "bar" => [6, 7, 8], "ham" => ["a", "b", "c"]}
+    #   )
+    #   df.find_idx_by_name("ham")
+    #   # => 2
+    def find_idx_by_name(name)
+      _df.find_idx_by_name(name)
+    end
 
-    # def replace_at_idx
-    # end
+    # Replace a column at an index location.
+    #
+    # @param index [Integer]
+    #   Column index.
+    # @param series [Series]
+    #   Series that will replace the column.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({
+    #     "foo" => [1, 2, 3],
+    #     "bar" => [6, 7, 8],
+    #     "ham" => ["a", "b", "c"]
+    #   })
+    #   s = Polars::Series.new("apple", [10, 20, 30])
+    #   df.replace_at_idx(0, s)
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌───────┬─────┬─────┐
+    #   # │ apple ┆ bar ┆ ham │
+    #   # │ ---   ┆ --- ┆ --- │
+    #   # │ i64   ┆ i64 ┆ str │
+    #   # ╞═══════╪═════╪═════╡
+    #   # │ 10    ┆ 6   ┆ a   │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 20    ┆ 7   ┆ b   │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 30    ┆ 8   ┆ c   │
+    #   # └───────┴─────┴─────┘
+    def replace_at_idx(index, series)
+      if index < 0
+        index = columns.length + index
+      end
+      _df.replace_at_idx(index, series._s)
+      self
+    end
 
     # Sort the DataFrame by column.
     #

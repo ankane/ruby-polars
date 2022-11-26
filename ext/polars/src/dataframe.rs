@@ -10,7 +10,7 @@ use std::path::PathBuf;
 
 use crate::conversion::*;
 use crate::file::{get_file_like, get_mmap_bytes_reader};
-use crate::series::to_rbseries_collection;
+use crate::series::{to_rbseries_collection, to_series_collection};
 use crate::{series, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 
 #[magnus::wrap(class = "Polars::RbDataFrame")]
@@ -393,11 +393,82 @@ impl RbDataFrame {
         self.df.borrow().width()
     }
 
+    pub fn hstack_mut(&self, columns: RArray) -> RbResult<()> {
+        let columns = to_series_collection(columns)?;
+        self.df
+            .borrow_mut()
+            .hstack_mut(&columns)
+            .map_err(RbPolarsErr::from)?;
+        Ok(())
+    }
+
+    pub fn hstack(&self, columns: RArray) -> RbResult<Self> {
+        let columns = to_series_collection(columns)?;
+        let df = self
+            .df
+            .borrow()
+            .hstack(&columns)
+            .map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
+    pub fn extend(&self, df: &RbDataFrame) -> RbResult<()> {
+        self.df
+            .borrow_mut()
+            .extend(&df.df.borrow())
+            .map_err(RbPolarsErr::from)?;
+        Ok(())
+    }
+
+    pub fn vstack_mut(&self, df: &RbDataFrame) -> RbResult<()> {
+        self.df
+            .borrow_mut()
+            .vstack_mut(&df.df.borrow())
+            .map_err(RbPolarsErr::from)?;
+        Ok(())
+    }
+
+    pub fn vstack(&self, df: &RbDataFrame) -> RbResult<Self> {
+        let df = self
+            .df
+            .borrow()
+            .vstack(&df.df.borrow())
+            .map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
+    pub fn drop_in_place(&self, name: String) -> RbResult<RbSeries> {
+        let s = self
+            .df
+            .borrow_mut()
+            .drop_in_place(&name)
+            .map_err(RbPolarsErr::from)?;
+        Ok(RbSeries::new(s))
+    }
+
+    pub fn drop_nulls(&self, subset: Option<Vec<String>>) -> RbResult<Self> {
+        let df = self
+            .df
+            .borrow()
+            .drop_nulls(subset.as_ref().map(|s| s.as_ref()))
+            .map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
+    pub fn drop(&self, name: String) -> RbResult<Self> {
+        let df = self.df.borrow().drop(&name).map_err(RbPolarsErr::from)?;
+        Ok(RbDataFrame::new(df))
+    }
+
     pub fn select_at_idx(&self, idx: usize) -> Option<RbSeries> {
         self.df
             .borrow()
             .select_at_idx(idx)
             .map(|s| RbSeries::new(s.clone()))
+    }
+
+    pub fn find_idx_by_name(&self, name: String) -> Option<usize> {
+        self.df.borrow().find_idx_by_name(&name)
     }
 
     // TODO remove clone

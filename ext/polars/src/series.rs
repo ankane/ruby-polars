@@ -632,6 +632,14 @@ impl RbSeries {
     }
 }
 
+pub fn to_series_collection(rs: RArray) -> RbResult<Vec<Series>> {
+    let mut series = Vec::new();
+    for item in rs.each() {
+        series.push(get_series(item?)?);
+    }
+    Ok(series)
+}
+
 pub fn to_rbseries_collection(s: Vec<Series>) -> Vec<RbSeries> {
     s.into_iter().map(RbSeries::new).collect()
 }

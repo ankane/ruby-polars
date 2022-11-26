@@ -74,7 +74,19 @@ fn init() -> RbResult<()> {
     class.define_method("shape", method!(RbDataFrame::shape, 0))?;
     class.define_method("height", method!(RbDataFrame::height, 0))?;
     class.define_method("width", method!(RbDataFrame::width, 0))?;
+    class.define_method("hstack_mut", method!(RbDataFrame::hstack_mut, 1))?;
+    class.define_method("hstack", method!(RbDataFrame::hstack, 1))?;
+    class.define_method("extend", method!(RbDataFrame::extend, 1))?;
+    class.define_method("vstack_mut", method!(RbDataFrame::vstack_mut, 1))?;
+    class.define_method("vstack", method!(RbDataFrame::vstack, 1))?;
+    class.define_method("drop_in_place", method!(RbDataFrame::drop_in_place, 1))?;
+    class.define_method("drop_nulls", method!(RbDataFrame::drop_nulls, 1))?;
+    class.define_method("drop", method!(RbDataFrame::drop, 1))?;
     class.define_method("select_at_idx", method!(RbDataFrame::select_at_idx, 1))?;
+    class.define_method(
+        "find_idx_by_name",
+        method!(RbDataFrame::find_idx_by_name, 1),
+    )?;
     class.define_method("column", method!(RbDataFrame::column, 1))?;
     class.define_method("select", method!(RbDataFrame::select, 1))?;
     class.define_method("take", method!(RbDataFrame::take, 1))?;
