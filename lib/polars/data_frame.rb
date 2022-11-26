@@ -404,7 +404,14 @@ module Polars
 
         # df[2, ..] (select row as df)
         if row_selection.is_a?(Integer)
-          raise Todo
+          if col_selection.is_a?(Array)
+            df = self[0.., col_selection]
+            return df.slice(row_selection, 1)
+          end
+          # df[2, "a"]
+          if col_selection.is_a?(String)
+            return self[col_selection][row_selection]
+          end
         end
 
         # column selection can be "a" and ["a", "b"]

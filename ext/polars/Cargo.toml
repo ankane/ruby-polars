@@ -46,6 +46,7 @@ features = [
     "partition_by",
     "pct_change",
     "product",
+    "propagate_nans",
     "random",
     "rank",
     "reinterpret",

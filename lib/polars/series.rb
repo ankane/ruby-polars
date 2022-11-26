@@ -543,11 +543,19 @@ module Polars
       _s.max
     end
 
-    # def nan_max
-    # end
+    # Get maximum value, but propagate/poison encountered NaN values.
+    #
+    # @return [Object]
+    def nan_max
+      to_frame.select(Polars.col(name).nan_max)[0, 0]
+    end
 
-    # def nan_min
-    # end
+    # Get minimum value, but propagate/poison encountered NaN values.
+    #
+    # @return [Object]
+    def nan_min
+      to_frame.select(Polars.col(name).nan_min)[0, 0]
+    end
 
     # Get the standard deviation of this Series.
     #

@@ -261,6 +261,16 @@ class SeriesTest < Minitest::Test
     assert_equal "c", Polars::Series.new(["a", "b", "c"]).max
   end
 
+  def test_nan_max
+    assert_predicate Polars::Series.new([1.0, Float::NAN, 3.0]).nan_max, :nan?
+    assert_in_delta 3.0, Polars::Series.new([1.0, 2.0, 3.0]).nan_max
+  end
+
+  def test_nan_min
+    assert_predicate Polars::Series.new([1.0, Float::NAN, 3.0]).nan_min, :nan?
+    assert_in_delta 1.0, Polars::Series.new([1.0, 2.0, 3.0]).nan_min
+  end
+
   def test_std
     assert_equal 1, Polars::Series.new([1, 2, 3]).std
     assert_nil Polars::Series.new(["one", "two", "three"]).std
