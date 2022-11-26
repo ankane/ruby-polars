@@ -311,7 +311,29 @@ module Polars
     # def repeat
     # end
 
+    # Return indices where `condition` evaluates `true`.
     #
+    # @param condition [Expr]
+    #   Boolean expression to evaluate
+    # @param eager [Boolean]
+    #   Whether to apply this function eagerly (as opposed to lazily).
+    #
+    # @return [Expr, Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4, 5]})
+    #   df.select(
+    #     [
+    #       Polars.arg_where(Polars.col("a") % 2 == 0)
+    #     ]
+    #   ).to_series
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [u32]
+    #   # [
+    #   #         1
+    #   #         3
+    #   # ]
     def arg_where(condition, eager: false)
       if eager
         if !condition.is_a?(Series)
