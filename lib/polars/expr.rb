@@ -131,17 +131,73 @@ module Polars
     # def to_physical
     # end
 
+    # Check if any boolean value in a Boolean column is `true`.
     #
+    # @return [Boolean]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"TF" => [true, false], "FF" => [false, false]})
+    #   df.select(Polars.all.any)
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌──────┬───────┐
+    #   # │ TF   ┆ FF    │
+    #   # │ ---  ┆ ---   │
+    #   # │ bool ┆ bool  │
+    #   # ╞══════╪═══════╡
+    #   # │ true ┆ false │
+    #   # └──────┴───────┘
     def any
       wrap_expr(_rbexpr.any)
     end
 
+    # Check if all boolean values in a Boolean column are `True`.
+    #
+    # This method is an expression - not to be confused with
+    # {Polars.all} which is a function to select all columns.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"TT" => [true, true], "TF" => [true, false], "FF" => [false, false]}
+    #   )
+    #   df.select(Polars.col("*").all)
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌──────┬───────┬───────┐
+    #   # │ TT   ┆ TF    ┆ FF    │
+    #   # │ ---  ┆ ---   ┆ ---   │
+    #   # │ bool ┆ bool  ┆ bool  │
+    #   # ╞══════╪═══════╪═══════╡
+    #   # │ true ┆ false ┆ false │
+    #   # └──────┴───────┴───────┘
     def all
       wrap_expr(_rbexpr.all)
     end
 
+    # Compute the square root of the elements.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"values" => [1.0, 2.0, 4.0]})
+    #   df.select(Polars.col("values").sqrt)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────────┐
+    #   # │ values   │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 1.0      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1.414214 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2.0      │
+    #   # └──────────┘
     def sqrt
-      self ** 0.5
+      self**0.5
     end
 
     def log10
