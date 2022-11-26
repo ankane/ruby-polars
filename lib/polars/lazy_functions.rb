@@ -57,6 +57,16 @@ module Polars
       end
     end
 
+    # Get the maximum value.
+    #
+    # @param column [Object]
+    #   Column(s) to be used in aggregation. Will lead to different behavior based on
+    #   the input:
+    #
+    #   - [String, Series] -> aggregate the maximum value of that column.
+    #   - [Array<Expr>] -> aggregate the maximum value horizontally.
+    #
+    # @return [Expr, Object]
     def max(column)
       if column.is_a?(Series)
         column.max
@@ -69,6 +79,16 @@ module Polars
       end
     end
 
+    # Get the minimum value.
+    #
+    # @param column [Object]
+    #   Column(s) to be used in aggregation. Will lead to different behavior based on
+    #   the input:
+    #
+    #   - [String, Series] -> aggregate the minimum value of that column.
+    #   - [Array<Expr>] -> aggregate the minimum value horizontally.
+    #
+    # @return [Expr, Object]
     def min(column)
       if column.is_a?(Series)
         column.min
@@ -95,6 +115,9 @@ module Polars
       end
     end
 
+    # Get the mean value.
+    #
+    # @return [Expr, Float]
     def mean(column)
       if column.is_a?(Series)
         column.mean
@@ -103,6 +126,9 @@ module Polars
       end
     end
 
+    # Get the mean value.
+    #
+    # @return [Expr, Float]
     def avg(column)
       mean(column)
     end
