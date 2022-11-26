@@ -103,5 +103,9 @@ module Polars
         sz
       end
     end
+
+    def self.bool?(value)
+      value == true || value == false
+    end
   end
 end

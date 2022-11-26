@@ -87,8 +87,6 @@ class GuideTest < Minitest::Test
       "groups" => ["A", "A", "B", "C", "B"]
     })
 
-    df.groupby("foo").agg([Polars.col("bar").sum])
-
     output df.select([
       Polars.sum("nrs"),
       Polars.col("names").sort,
@@ -385,7 +383,6 @@ class GuideTest < Minitest::Test
   end
 
   def output(value)
-    value = value.collect if value.is_a?(Polars::LazyFrame)
     p value if ENV["VERBOSE"]
   end
 end

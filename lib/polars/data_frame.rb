@@ -1050,7 +1050,18 @@ module Polars
 
     #
     def groupby(by, maintain_order: false)
-      lazy.groupby(by, maintain_order: maintain_order)
+      if !Utils.bool?(maintain_order)
+        raise TypeError, "invalid input for groupby arg `maintain_order`: #{maintain_order}."
+      end
+      if by.is_a?(String)
+        by = [by]
+      end
+      GroupBy.new(
+        _df,
+        by,
+        self.class,
+        maintain_order: maintain_order
+      )
     end
 
     # def groupby_rolling
@@ -1129,8 +1140,9 @@ module Polars
       lazy.fill_nan(fill_value).collect(no_optimization: true)
     end
 
-    # def explode
-    # end
+    def explode(columns)
+      lazy.explode(columns).collect(no_optimization: true)
+    end
 
     # def pivot
     # end
