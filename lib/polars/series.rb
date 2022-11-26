@@ -1692,11 +1692,43 @@ module Polars
       super
     end
 
-    # def cos
-    # end
+    # Compute the element-wise value for the cosine.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [0.0, Math::PI / 2.0, Math::PI])
+    #   s.cos
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         1.0
+    #   #         6.1232e-17
+    #   #         -1.0
+    #   # ]
+    def cos
+      super
+    end
 
-    # def tan
-    # end
+    # Compute the element-wise value for the tangent.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [0.0, Math::PI / 2.0, Math::PI])
+    #   s.tan
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         0.0
+    #   #         1.6331e16
+    #   #         -1.2246e-16
+    #   # ]
+    def tan
+      super
+    end
 
     # def arcsin
     # end
