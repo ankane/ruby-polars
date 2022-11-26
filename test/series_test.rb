@@ -472,6 +472,16 @@ class SeriesTest < Minitest::Test
     refute Polars::Series.new([1]).is_utf8
   end
 
+  def test_fill_nan
+    s = Polars::Series.new("a", [1.0, 2.0, 3.0, Float::NAN])
+    assert_series [1.0, 2.0, 3.0, 0.0], s.fill_nan(0)
+  end
+
+  def test_fill_null
+    s = Polars::Series.new("a", [1, 2, 3, nil])
+    assert_series [1, 2, 3, 3], s.fill_null(strategy: "forward")
+  end
+
   def test_floor
     s = Polars::Series.new([1.12345, 2.56789, 3.901234])
     assert_series [1, 2, 3], s.floor

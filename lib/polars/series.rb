@@ -1593,11 +1593,80 @@ module Polars
 
     # clone handled by initialize_copy
 
-    # def fill_nan
-    # end
+    # Fill floating point NaN value with a fill value.
+    #
+    # @param fill_value [Object]
+    #   Value used to fill nan values.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 2.0, 3.0, Float::NAN])
+    #   s.fill_nan(0)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         1.0
+    #   #         2.0
+    #   #         3.0
+    #   #         0.0
+    #   # ]
+    def fill_nan(fill_value)
+      super
+    end
 
-    # def fill_null
-    # end
+    # Fill null values using the specified value or strategy.
+    #
+    # @param value [Object]
+    #   Value used to fill null values.
+    # @param strategy [nil, "forward", "backward", "min", "max", "mean", "zero", "one"]
+    #   Strategy used to fill null values.
+    # @param limit
+    #   Number of consecutive null values to fill when using the "forward" or
+    #   "backward" strategy.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3, nil])
+    #   s.fill_null(strategy: "forward")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   #         3
+    #   # ]
+    #
+    # @example
+    #   s.fill_null(strategy: "min")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   #         1
+    #   # ]
+    #
+    # @example
+    #   s = Polars::Series.new("b", ["x", nil, "z"])
+    #   s.fill_null(Polars.lit(""))
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'b' [str]
+    #   # [
+    #   #         "x"
+    #   #         ""
+    #   #         "z"
+    #   # ]
+    def fill_null(value = nil, strategy: nil, limit: nil)
+      super
+    end
 
     # Rounds down to the nearest integer value.
     #
