@@ -159,6 +159,25 @@ class SeriesTest < Minitest::Test
     assert_series [2, 2, 2], a / b
   end
 
+  def test_get
+    s = Polars::Series.new(1..3)
+    assert_equal 2, s[1]
+    assert_series [1], s[0..0]
+    assert_series [2], s[1..1]
+    assert_series [3], s[2..2]
+    assert_series [], s[3..3]
+    # assert_series [], s[-4..-4]
+    assert_series [1], s[-3..-3]
+    assert_series [2], s[-2..-2]
+    assert_series [3], s[-1..-1]
+    assert_series [1, 2], s[0..1]
+    assert_series [1, 2], s[0...2]
+    assert_series [1, 2], s[0..-2]
+    assert_series [2, 3], s[1..-1]
+    assert_series [1, 2], s[0...-1]
+    assert_series [1, 2, 3], s[0..-1]
+  end
+
   def test_estimated_size
     s = Polars::Series.new(1..1000)
     assert_in_delta s.estimated_size("kb"), s.estimated_size / 1024.0

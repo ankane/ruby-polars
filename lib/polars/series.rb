@@ -1144,8 +1144,10 @@ module Polars
     # def set_at_idx
     # end
 
-    # def cleared
-    # end
+    #
+    def cleared
+      len > 0 ? limit(0) : clone
+    end
 
     # clone handled by initialize_copy
 

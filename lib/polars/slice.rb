@@ -57,9 +57,24 @@ module Polars
     def _slice_setup(s)
       # can normalize slice indices as we know object size
       obj_len = @obj.len
-      # TODO fix
-      start = s.begin || 0
-      stop = s.end ? s.end + (s.exclude_end? ? -1 : 0) : obj_len
+      start = if s.begin
+        if s.begin < 0
+          s.begin + obj_len
+        else
+          s.begin
+        end
+      else
+        0
+      end
+      stop = if s.end
+        if s.end < 0
+          s.end + (s.exclude_end? ? 0 : 1) + obj_len
+        else
+          s.end + (s.exclude_end? ? 0 : 1)
+        end
+      else
+        obj_len
+      end
       stride = 1
 
       # check if slice is actually unbounded
