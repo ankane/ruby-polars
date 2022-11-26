@@ -395,8 +395,94 @@ module Polars
       Utils.wrap_df(RbDataFrame.new([_s]))
     end
 
-    # def describe
-    # end
+    # Quick summary statistics of a series.
+    #
+    # Series with mixed datatypes will return summary statistics for the datatype of
+    # the first value.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   series_num = Polars::Series.new([1, 2, 3, 4, 5])
+    #   series_num.describe
+    #   # =>
+    #   # shape: (6, 2)
+    #   # ┌────────────┬──────────┐
+    #   # │ statistic  ┆ value    │
+    #   # │ ---        ┆ ---      │
+    #   # │ str        ┆ f64      │
+    #   # ╞════════════╪══════════╡
+    #   # │ min        ┆ 1.0      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ max        ┆ 5.0      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null_count ┆ 0.0      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ mean       ┆ 3.0      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ std        ┆ 1.581139 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ count      ┆ 5.0      │
+    #   # └────────────┴──────────┘
+    #
+    # @example
+    #   series_str = Polars::Series.new(["a", "a", nil, "b", "c"])
+    #   series_str.describe
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌────────────┬───────┐
+    #   # │ statistic  ┆ value │
+    #   # │ ---        ┆ ---   │
+    #   # │ str        ┆ i64   │
+    #   # ╞════════════╪═══════╡
+    #   # │ unique     ┆ 4     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ null_count ┆ 1     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ count      ┆ 5     │
+    #   # └────────────┴───────┘
+    def describe
+      if len == 0
+        raise ArgumentError, "Series must contain at least one value"
+      elsif is_numeric
+        s = cast(:f64)
+        stats = {
+          "min" => s.min,
+          "max" => s.max,
+          "null_count" => s.null_count,
+          "mean" => s.mean,
+          "std" => s.std,
+          "count" => s.len
+        }
+      elsif is_boolean
+        stats = {
+          "sum" => sum,
+          "null_count" => null_count,
+          "count" => len
+        }
+      elsif is_utf8
+        stats = {
+          "unique" => unique.length,
+          "null_count" => null_count,
+          "count" => len
+        }
+      elsif is_datelike
+        # we coerce all to string, because a polars column
+        # only has a single dtype and dates: datetime and count: int don't match
+        stats = {
+          "min" => dt.min.to_s,
+          "max" => dt.max.to_s,
+          "null_count" => null_count.to_s,
+          "count" => len.to_s
+        }
+      else
+        raise TypeError, "This type is not supported"
+      end
+
+      Polars::DataFrame.new(
+        {"statistic" => stats.keys, "value" => stats.values}
+      )
+    end
 
     # Reduce this Series to the sum value.
     #
