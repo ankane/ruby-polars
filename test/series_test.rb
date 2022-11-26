@@ -438,6 +438,11 @@ class SeriesTest < Minitest::Test
     s.rechunk(in_place: true)
   end
 
+  def test_reverse
+    s = Polars::Series.new([1, 2, 3])
+    assert_series [3, 2, 1], s.reverse
+  end
+
   def test_is_numeric
     assert Polars::Series.new([1]).is_numeric
     assert Polars::Series.new([1.0]).is_numeric

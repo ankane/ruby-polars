@@ -1146,8 +1146,24 @@ module Polars
       in_place ? self : Utils.wrap_s(opt_s)
     end
 
-    # def reverse
-    # end
+    # Return Series in reverse order.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3], dtype: :i8)
+    #   s.reverse
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i8]
+    #   # [
+    #   #     3
+    #   #     2
+    #   #     1
+    #   # ]
+    def reverse
+      super
+    end
 
     # Check if this Series datatype is numeric.
     #
