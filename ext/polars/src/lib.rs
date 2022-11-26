@@ -5,6 +5,7 @@ mod error;
 mod file;
 mod lazy;
 mod series;
+mod set;
 
 use batched_csv::RbBatchedCsv;
 use conversion::*;
@@ -548,7 +549,9 @@ fn init() -> RbResult<()> {
     class.define_method("kurtosis", method!(RbSeries::kurtosis, 2))?;
     class.define_method("cast", method!(RbSeries::cast, 2))?;
     class.define_method("time_unit", method!(RbSeries::time_unit, 0))?;
+    class.define_method("set_at_idx", method!(RbSeries::set_at_idx, 2))?;
     // rest
+    class.define_method("extend_constant", method!(RbSeries::extend_constant, 2))?;
     class.define_method("cumsum", method!(RbSeries::cumsum, 1))?;
     class.define_method("cummax", method!(RbSeries::cummax, 1))?;
     class.define_method("cummin", method!(RbSeries::cummin, 1))?;

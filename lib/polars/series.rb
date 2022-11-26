@@ -48,6 +48,8 @@ module Polars
 
       if values.nil?
         self._s = sequence_to_rbseries(name, [], dtype: dtype, dtype_if_empty: dtype_if_empty)
+      elsif values.is_a?(Series)
+        self._s = series_to_rbseries(name, values)
       elsif values.is_a?(Range)
         self._s =
           Polars.arange(
@@ -221,8 +223,38 @@ module Polars
       raise ArgumentError, "Cannot get item of type: #{item.class.name}"
     end
 
-    # def []=(key, value)
-    # end
+    def []=(key, value)
+      if value.is_a?(Array)
+        if is_numeric || is_datelike
+          set_at_idx(key, value)
+          return
+        end
+        raise ArgumentError, "cannot set Series of dtype: #{dtype} with list/tuple as value; use a scalar value"
+      end
+
+      if key.is_a?(Series)
+        if key.dtype == :bool
+          self._s = set(key, value)._s
+        elsif key.dtype == :u64
+          self._s = set_at_idx(key.cast(:u32), value)._s
+        elsif key.dtype == :u32
+          self._s = set_at_idx(key, value)._s
+        else
+          raise Todo
+        end
+      end
+
+      if key.is_a?(Array)
+        s = Utils.wrap_s(sequence_to_rbseries("", key, dtype: :u32))
+        self[s] = value
+      elsif key.is_a?(Integer)
+        # TODO fix
+        # self[[key]] = value
+        set_at_idx(key, value)
+      else
+        raise ArgumentError, "cannot use #{key} for indexing"
+      end
+    end
 
     # Return an estimation of the total (heap) allocated size of the Series.
     #
@@ -1141,8 +1173,48 @@ module Polars
     # def set
     # end
 
-    # def set_at_idx
-    # end
+    # Set values at the index locations.
+    #
+    # @param idx [Object]
+    #   Integers representing the index locations.
+    # @param value [Object]
+    #   Replacement values.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.set_at_idx(1, 10)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         10
+    #   #         3
+    #   # ]
+    def set_at_idx(idx, value)
+      if idx.is_a?(Integer)
+        idx = [idx]
+      end
+      if idx.length == 0
+        return self
+      end
+
+      idx = Series.new("", idx)
+      if value.is_a?(Integer) || value.is_a?(Float) || Utils.bool?(value) || value.is_a?(String) || value.nil?
+        value = Series.new("", [value])
+
+        # if we need to set more than a single value, we extend it
+        if idx.length > 0
+          value = value.extend_constant(value[0], idx.length - 1)
+        end
+      elsif !value.is_a?(Series)
+        value = Series.new("", value)
+      end
+      _s.set_at_idx(idx._s, value._s)
+      self
+    end
 
     #
     def cleared
@@ -1419,8 +1491,10 @@ module Polars
     # def ewm_var
     # end
 
-    # def extend_constant
-    # end
+    #
+    def extend_constant(value, n)
+      Utils.wrap_s(_s.extend_constant(value, n))
+    end
 
     # Flags the Series as sorted.
     #
@@ -1469,6 +1543,12 @@ module Polars
     def initialize_copy(other)
       super
       self._s = _s._clone
+    end
+
+    def series_to_rbseries(name, values)
+      # should not be in-place?
+      values.rename(name, in_place: true)
+      values._s
     end
 
     def sequence_to_rbseries(name, values, dtype: nil, strict: true, dtype_if_empty: nil)

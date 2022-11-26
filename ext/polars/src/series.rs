@@ -5,6 +5,7 @@ use polars::series::IsSorted;
 use std::cell::RefCell;
 
 use crate::conversion::*;
+use crate::set::set_at_idx;
 use crate::{RbDataFrame, RbPolarsErr, RbResult, RbValueError};
 
 #[magnus::wrap(class = "Polars::RbSeries")]
@@ -594,7 +595,27 @@ impl RbSeries {
         }
     }
 
+    pub fn set_at_idx(&self, idx: &RbSeries, values: &RbSeries) -> RbResult<()> {
+        let mut s = self.series.borrow_mut();
+        match set_at_idx(s.clone(), &idx.series.borrow(), &values.series.borrow()) {
+            Ok(out) => {
+                *s = out;
+                Ok(())
+            }
+            Err(e) => Err(RbPolarsErr::from(e)),
+        }
+    }
+
     // dispatch dynamically in future?
+
+    pub fn extend_constant(&self, value: Wrap<AnyValue>, n: usize) -> RbResult<Self> {
+        Ok(self
+            .series
+            .borrow()
+            .extend_constant(value.0, n)
+            .map_err(RbPolarsErr::from)?
+            .into())
+    }
 
     pub fn cumsum(&self, reverse: bool) -> Self {
         self.series.borrow().cumsum(reverse).into()
