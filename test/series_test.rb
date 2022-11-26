@@ -166,7 +166,7 @@ class SeriesTest < Minitest::Test
     assert_series [2], s[1..1]
     assert_series [3], s[2..2]
     assert_series [], s[3..3]
-    # assert_series [], s[-4..-4]
+    assert_series [], s[-4..-4]
     assert_series [1], s[-3..-3]
     assert_series [2], s[-2..-2]
     assert_series [3], s[-1..-1]

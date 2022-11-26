@@ -59,7 +59,7 @@ module Polars
       obj_len = @obj.len
       start = if s.begin
         if s.begin < 0
-          s.begin + obj_len
+          [s.begin + obj_len, 0].max
         else
           s.begin
         end

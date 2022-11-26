@@ -384,8 +384,13 @@ module Polars
     # def shift_and_fill
     # end
 
-    # def slice
-    # end
+    #
+    def slice(length, offset = nil)
+      if length && length < 0
+        raise ArgumentError, "Negative slice lengths (#{length}) are invalid for LazyFrame"
+      end
+      _from_rbldf(_ldf.slice(offset, length))
+    end
 
     # def limit
     # end
