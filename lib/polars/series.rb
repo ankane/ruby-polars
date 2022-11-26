@@ -1024,23 +1024,123 @@ module Polars
     end
     alias_method :empty?, :is_empty
 
-    # def is_null
-    # end
+    # Returns a boolean Series indicating which values are null.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 2.0, 3.0, nil])
+    #   s.is_null
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         false
+    #   #         false
+    #   #         false
+    #   #         true
+    #   # ]
+    def is_null
+      super
+    end
 
-    # def is_not_null
-    # end
+    # Returns a boolean Series indicating which values are not null.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 2.0, 3.0, nil])
+    #   s.is_not_null
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         true
+    #   #         true
+    #   #         true
+    #   #         false
+    #   # ]
+    def is_not_null
+      super
+    end
 
-    # def is_finite
-    # end
+    # Returns a boolean Series indicating which values are finite.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 2.0, Float::INFINITY])
+    #   s.is_finite
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         true
+    #   #         true
+    #   #         false
+    #   # ]
+    def is_finite
+      super
+    end
 
-    # def is_infinite
-    # end
+    # Returns a boolean Series indicating which values are infinite.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 2.0, Float::INFINITY])
+    #   s.is_infinite
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         false
+    #   #         false
+    #   #         true
+    #   # ]
+    def is_infinite
+      super
+    end
 
-    # def is_nan
-    # end
+    # Returns a boolean Series indicating which values are NaN.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 2.0, 3.0, Float::NAN])
+    #   s.is_nan
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         false
+    #   #         false
+    #   #         false
+    #   #         true
+    #   # ]
+    def is_nan
+      super
+    end
 
-    # def is_not_nan
-    # end
+    # Returns a boolean Series indicating which values are not NaN.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 2.0, 3.0, Float::NAN])
+    #   s.is_not_nan
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         true
+    #   #         true
+    #   #         true
+    #   #         false
+    #   # ]
+    def is_not_nan
+      super
+    end
 
     # def is_in
     # end
