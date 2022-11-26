@@ -1633,14 +1633,64 @@ module Polars
     # def dot
     # end
 
-    # def mode
-    # end
+    # Compute the most occurring value(s).
+    #
+    # Can return multiple Values.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 2, 3])
+    #   s.mode
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         2
+    #   # ]
+    def mode
+      super
+    end
 
-    # def sign
-    # end
+    # Compute the element-wise indication of the sign.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [-9.0, -0.0, 0.0, 4.0, nil])
+    #   s.sign
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         -1
+    #   #         0
+    #   #         0
+    #   #         1
+    #   #         null
+    #   # ]
+    def sign
+      super
+    end
 
-    # def sin
-    # end
+    # Compute the element-wise value for the sine.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [0.0, Math::PI / 2.0, Math::PI])
+    #   s.sin
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         0.0
+    #   #         1.0
+    #   #         1.2246e-16
+    #   # ]
+    def sin
+      super
+    end
 
     # def cos
     # end
