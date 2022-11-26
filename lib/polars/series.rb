@@ -173,7 +173,7 @@ module Polars
     #
     # @return [Series]
     def +(other)
-     Utils. wrap_s(_s.add(other._s))
+     Utils.wrap_s(_s.add(other._s))
     end
 
     # Performs subtraction.
@@ -207,8 +207,12 @@ module Polars
       to_frame.select(Polars.col(name).pow(power)).to_series
     end
 
-    # def -@(other)
-    # end
+    # Performs negation.
+    #
+    # @return [Series]
+    def -@
+      0 - self
+    end
 
     # Returns elements of the Series.
     #
@@ -1769,6 +1773,16 @@ module Polars
     def initialize_copy(other)
       super
       self._s = _s._clone
+    end
+
+    def coerce(other)
+      if other.is_a?(Numeric)
+        # TODO improve
+        series = to_frame.select(Polars.lit(other)).to_series
+        [series, self]
+      else
+        raise TypeError, "#{self.class} can't be coerced into #{other.class}"
+      end
     end
 
     def series_to_rbseries(name, values)
