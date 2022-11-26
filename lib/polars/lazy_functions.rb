@@ -143,6 +143,16 @@ module Polars
     # end
 
     def lit(value)
+      if value.is_a?(Polars::Series)
+        name = value.name
+        value = value._s
+        e = Utils.wrap_expr(RbExpr.lit(value))
+        if name == ""
+          return e
+        end
+        return e.alias(name)
+      end
+
       Utils.wrap_expr(RbExpr.lit(value))
     end
 

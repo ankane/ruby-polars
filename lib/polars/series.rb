@@ -988,11 +988,48 @@ module Polars
     # def search_sorted
     # end
 
-    # def unique
-    # end
+    # Get unique elements in series.
+    #
+    # @param maintain_order [Boolean]
+    #   Maintain order of data. This requires more work.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 2, 3])
+    #   s.unique.sort
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ]
+    def unique(maintain_order: false)
+      super
+    end
 
-    # def take
-    # end
+    # Take values by index.
+    #
+    # @param indices [Array]
+    #   Index location used for selection.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3, 4])
+    #   s.take([1, 3])
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         2
+    #   #         4
+    #   # ]
+    def take(indices)
+      to_frame.select(Polars.col(name).take(indices)).to_series
+    end
 
     # Count the null values in this Series.
     #

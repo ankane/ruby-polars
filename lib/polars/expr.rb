@@ -297,10 +297,15 @@ module Polars
       wrap_expr(_rbexpr.sort_by(by, reverse))
     end
 
-    # def take
-    # end
+    def take(indices)
+      if indices.is_a?(Array)
+        indices_lit = Polars.lit(Series.new("", indices, dtype: :u32))
+      else
+        indices_lit = Utils.expr_to_lit_or_expr(indices, str_to_lit: false)
+      end
+      wrap_expr(_rbexpr.take(indices_lit._rbexpr))
+    end
 
-    #
     def shift(periods = 1)
       wrap_expr(_rbexpr.shift(periods))
     end

@@ -9,7 +9,7 @@ use crate::conversion::*;
 use crate::lazy::apply::*;
 use crate::lazy::utils::rb_exprs_to_exprs;
 use crate::utils::reinterpret;
-use crate::RbResult;
+use crate::{RbResult, RbSeries};
 
 #[magnus::wrap(class = "Polars::RbExpr")]
 #[derive(Clone)]
@@ -1394,6 +1394,8 @@ pub fn fold(acc: &RbExpr, lambda: Value, exprs: RArray) -> RbResult<RbExpr> {
 pub fn lit(value: Value) -> RbResult<RbExpr> {
     if value.is_nil() {
         Ok(dsl::lit(Null {}).into())
+    } else if let Ok(series) = value.try_convert::<&RbSeries>() {
+        Ok(dsl::lit(series.series.borrow().clone()).into())
     } else if let Some(v) = RString::from_value(value) {
         Ok(dsl::lit(v.try_convert::<String>()?).into())
     } else {

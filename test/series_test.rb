@@ -401,6 +401,11 @@ class SeriesTest < Minitest::Test
     assert_equal 2, s.arg_max
   end
 
+  def test_take
+    s = Polars::Series.new("a", [1, 2, 3, 4])
+    assert_series [2, 4], s.take([1, 3])
+  end
+
   def test_null_count
     s = Polars::Series.new([1, nil, nil, 4, nil])
     assert_equal 3, s.null_count
