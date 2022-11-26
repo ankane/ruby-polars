@@ -949,17 +949,78 @@ module Polars
       end
     end
 
-    # def top_k
-    # end
+    # Return the `k` largest elements.
+    #
+    # If `reverse: true`, the smallest elements will be given.
+    #
+    # @param k [Integer]
+    #   Number of elements to return.
+    # @param reverse [Boolean]
+    #   Return the smallest elements.
+    #
+    # @return [Boolean]
+    def top_k(k: 5, reverse: false)
+      super
+    end
 
-    # def arg_sort
-    # end
+    # Get the index values that would sort this Series.
+    #
+    # @param reverse [Boolean]
+    #   Sort in reverse (descending) order.
+    # @param nulls_last [Boolean]
+    #   Place null values last instead of first.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [5, 3, 4, 1, 2])
+    #   s.arg_sort
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'a' [u32]
+    #   # [
+    #   #         3
+    #   #         4
+    #   #         1
+    #   #         2
+    #   #         0
+    #   # ]
+    def arg_sort(reverse: false, nulls_last: false)
+      super
+    end
 
-    # def argsort
-    # end
+    # Get the index values that would sort this Series.
+    #
+    # Alias for {#arg_sort}.
+    #
+    # @param reverse [Boolean]
+    #   Sort in reverse (descending) order.
+    # @param nulls_last [Boolean]
+    #   Place null values last instead of first.
+    #
+    # @return [Series]
+    def argsort(reverse: false, nulls_last: false)
+      super
+    end
 
-    # def arg_unique
-    # end
+    # Get unique index as Series.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 2, 3])
+    #   s.arg_unique
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [u32]
+    #   # [
+    #   #         0
+    #   #         1
+    #   #         3
+    #   # ]
+    def arg_unique
+      super
+    end
 
     # Get the index of the minimal value.
     #
