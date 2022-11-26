@@ -210,7 +210,15 @@ module Polars
     #
     # @return [Object]
     def [](item)
-      _s.get_idx(item)
+      if item.is_a?(Integer)
+        return _s.get_idx(item)
+      end
+
+      if item.is_a?(Range)
+        return Slice.new(self).apply(item)
+      end
+
+      raise ArgumentError, "Cannot get item of type: #{item.class.name}"
     end
 
     # def []=(key, value)
@@ -1025,8 +1033,9 @@ module Polars
     end
     alias_method :length, :len
 
-    # def cast
-    # end
+    def cast(dtype, strict: true)
+      Utils.wrap_s(_s.cast(dtype.to_s, strict))
+    end
 
     # def to_physical
     # end

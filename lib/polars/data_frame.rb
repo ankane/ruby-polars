@@ -388,8 +388,68 @@ module Polars
     # end
 
     #
-    def [](name)
-      Utils.wrap_s(_df.column(name))
+    def [](*args)
+      if args.size == 2
+        row_selection, col_selection = args
+
+        # df[.., unknown]
+        if row_selection.is_a?(Range)
+
+          # multiple slices
+          # df[.., ..]
+          if col_selection.is_a?(Range)
+            raise Todo
+          end
+        end
+
+        # df[2, ..] (select row as df)
+        if row_selection.is_a?(Integer)
+          raise Todo
+        end
+
+        # column selection can be "a" and ["a", "b"]
+        if col_selection.is_a?(String)
+          col_selection = [col_selection]
+        end
+
+        # df[.., 1]
+        if col_selection.is_a?(Integer)
+          series = to_series(col_selection)
+          return series[row_selection]
+        end
+
+        if col_selection.is_a?(Array)
+          # df[.., [1, 2]]
+          if is_int_sequence(col_selection)
+            series_list = col_selection.map { |i| to_series(i) }
+            df = self.class.new(series_list)
+            return df[row_selection]
+          end
+        end
+
+        df = self[col_selection]
+        return df[row_selection]
+      elsif args.size == 1
+        item = args[0]
+
+        # select single column
+        # df["foo"]
+        if item.is_a?(String)
+          return Utils.wrap_s(_df.column(item))
+        end
+
+        # df[idx]
+        if item.is_a?(Integer)
+          return slice(_pos_idx(item, dim: 0), 1)
+        end
+
+        # df[..]
+        if item.is_a?(Range)
+          return Slice.new(self).apply(item)
+        end
+      end
+
+      raise ArgumentError, "Cannot get item of type: #{item.class.name}"
     end
 
     # def []=(key, value)
@@ -805,12 +865,120 @@ module Polars
       self
     end
 
+    # Filter the rows in the DataFrame based on a predicate expression.
+    #
+    # @param predicate [Expr]
+    #   Expression that evaluates to a boolean Series.
+    #
+    # @return [DataFrame]
+    #
+    # @example Filter on one condition:
+    #   df = Polars::DataFrame.new({
+    #     "foo" => [1, 2, 3],
+    #     "bar" => [6, 7, 8],
+    #     "ham" => ["a", "b", "c"]
+    #   })
+    #   df.filter(Polars.col("foo") < 3)
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6   ┆ a   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 7   ┆ b   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example Filter on multiple conditions:
+    #   df.filter((Polars.col("foo") < 3) & (Polars.col("ham") == "a"))
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6   ┆ a   │
+    #   # └─────┴─────┴─────┘
     def filter(predicate)
       lazy.filter(predicate).collect
     end
 
-    # def describe
-    # end
+    # Summary statistics for a DataFrame.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({
+    #     "a" => [1.0, 2.8, 3.0],
+    #     "b" => [4, 5, nil],
+    #     "c" => [true, false, true],
+    #     "d" => [nil, "b", "c"],
+    #     "e" => ["usd", "eur", nil]
+    #   })
+    #   df.describe
+    #   # =>
+    #   # shape: (7, 6)
+    #   # ┌────────────┬──────────┬──────────┬──────┬──────┬──────┐
+    #   # │ describe   ┆ a        ┆ b        ┆ c    ┆ d    ┆ e    │
+    #   # │ ---        ┆ ---      ┆ ---      ┆ ---  ┆ ---  ┆ ---  │
+    #   # │ str        ┆ f64      ┆ f64      ┆ f64  ┆ str  ┆ str  │
+    #   # ╞════════════╪══════════╪══════════╪══════╪══════╪══════╡
+    #   # │ count      ┆ 3.0      ┆ 3.0      ┆ 3.0  ┆ 3    ┆ 3    │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ null_count ┆ 0.0      ┆ 1.0      ┆ 0.0  ┆ 1    ┆ 1    │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ mean       ┆ 2.266667 ┆ 4.5      ┆ null ┆ null ┆ null │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ std        ┆ 1.101514 ┆ 0.707107 ┆ null ┆ null ┆ null │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ min        ┆ 1.0      ┆ 4.0      ┆ 0.0  ┆ b    ┆ eur  │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ max        ┆ 3.0      ┆ 5.0      ┆ 1.0  ┆ c    ┆ usd  │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ median     ┆ 2.8      ┆ 4.5      ┆ null ┆ null ┆ null │
+    #   # └────────────┴──────────┴──────────┴──────┴──────┴──────┘
+    def describe
+      describe_cast = lambda do |stat|
+        columns = []
+        self.columns.each_with_index do |s, i|
+          if self[s].is_numeric || self[s].is_boolean
+            columns << stat[0.., i].cast(:f64)
+          else
+            # for dates, strings, etc, we cast to string so that all
+            # statistics can be shown
+            columns << stat[0.., i].cast(:str)
+          end
+        end
+        self.class.new(columns)
+      end
+
+      summary = _from_rbdf(
+        Polars.concat(
+          [
+            describe_cast.(
+              self.class.new(columns.to_h { |c| [c, [height]] })
+            ),
+            describe_cast.(null_count),
+            describe_cast.(mean),
+            describe_cast.(std),
+            describe_cast.(min),
+            describe_cast.(max),
+            describe_cast.(median)
+          ]
+        )._df
+      )
+      summary.insert_at_idx(
+        0,
+        Polars::Series.new(
+          "describe",
+          ["count", "null_count", "mean", "std", "min", "max", "median"],
+        )
+      )
+      summary
+    end
 
     # Find the index of a column by name.
     #

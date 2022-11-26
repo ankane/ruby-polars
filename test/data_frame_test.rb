@@ -124,6 +124,17 @@ class DataFrameTest < Minitest::Test
   def test_filter
   end
 
+  def test_describe
+    df = Polars::DataFrame.new({
+      "a" => [1.0, 2.8, 3.0],
+      "b" => [4, 5, nil],
+      "c" => [true, false, true],
+      "d" => [nil, "b", "c"],
+      "e" => ["usd", "eur", nil]
+    })
+    assert df.describe
+  end
+
   def test_sort
   end
 
