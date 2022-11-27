@@ -210,11 +210,24 @@ module Polars
       _ldf.schema
     end
 
-    # def width
-    # end
+    # Get the width of the LazyFrame.
+    #
+    # @return [Integer]
+    #
+    # @example
+    #   lf = Polars::DataFrame.new({"foo" => [1, 2, 3], "bar" => [4, 5, 6]}).lazy
+    #   lf.width
+    #   # => 2
+    def width
+      _ldf.width
+    end
 
-    # def include?(key)
-    # end
+    # Check if LazyFrame includes key.
+    #
+    # @return [Boolean]
+    def include?(key)
+      columns.include?(key)
+    end
 
     # clone handled by initialize_copy
 
@@ -231,16 +244,61 @@ module Polars
     # def pipe
     # end
 
-    # def describe_plan
-    # end
+    # Create a string representation of the unoptimized query plan.
+    #
+    # @return [String]
+    def describe_plan
+      _ldf.describe_plan
+    end
 
+    # Create a string representation of the optimized query plan.
+    #
+    # @return [String]
     # def describe_optimized_plan
     # end
 
     # def show_graph
     # end
 
+    # Sort the DataFrame.
     #
+    # Sorting can be done by:
+    #
+    # - A single column name
+    # - An expression
+    # - Multiple expressions
+    #
+    # @param by [Object]
+    #   Column (expressions) to sort by.
+    # @param reverse [Boolean]
+    #   Sort in descending order.
+    # @param nulls_last [Boolean]
+    #   Place null values last. Can only be used if sorted by a single column.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   ).lazy
+    #   df.sort("foo", reverse: true).collect
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ f64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 3   ┆ 8.0 ┆ c   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 7.0 ┆ b   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 1   ┆ 6.0 ┆ a   │
+    #   # └─────┴─────┴─────┘
     def sort(by, reverse: false, nulls_last: false)
       if by.is_a?(String)
         _from_rbldf(_ldf.sort(by, reverse, nulls_last))
@@ -291,19 +349,90 @@ module Polars
       Utils.wrap_df(ldf.collect)
     end
 
-    # def fetch
-    # end
+    def fetch(
+      n_rows: 500,
+      type_coercion: true,
+      predicate_pushdown: true,
+      projection_pushdown: true,
+      simplify_expression: true,
+      string_cache: false,
+      no_optimization: false,
+      slice_pushdown: true,
+      common_subplan_elimination: true,
+      allow_streaming: false
+    )
+      if no_optimization
+        predicate_pushdown = false
+        projection_pushdown = false
+        slice_pushdown = false
+        common_subplan_elimination = false
+      end
 
+      ldf = _ldf.optimization_toggle(
+        type_coercion,
+        predicate_pushdown,
+        projection_pushdown,
+        simplify_expression,
+        slice_pushdown,
+        common_subplan_elimination,
+        allow_streaming
+      )
+      Utils.wrap_df(ldf.fetch(n_rows))
+    end
+
+    # Return lazy representation, i.e. itself.
     #
+    # Useful for writing code that expects either a `DataFrame` or
+    # `LazyFrame`.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [nil, 2, 3, 4],
+    #       "b" => [0.5, nil, 2.5, 13],
+    #       "c" => [true, true, false, nil]
+    #     }
+    #   )
+    #   df.lazy
     def lazy
       self
     end
 
-    # def cache
-    # end
+    # Cache the result once the execution of the physical plan hits this node.
+    #
+    # @return [LazyFrame]
+    def cache
+      _from_rbldf(_ldf.cache)
+    end
 
-    # def cleared
-    # end
+    # Create an empty copy of the current LazyFrame.
+    #
+    # The copy has an identical schema but no data.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [nil, 2, 3, 4],
+    #       "b" => [0.5, nil, 2.5, 13],
+    #       "c" => [true, true, false, nil],
+    #     }
+    #   ).lazy
+    #   df.cleared.fetch
+    #   # =>
+    #   # shape: (0, 3)
+    #   # ┌─────┬─────┬──────┐
+    #   # │ a   ┆ b   ┆ c    │
+    #   # │ --- ┆ --- ┆ ---  │
+    #   # │ i64 ┆ f64 ┆ bool │
+    #   # ╞═════╪═════╪══════╡
+    #   # └─────┴─────┴──────┘
+    def cleared
+      DataFrame.new(columns: schema).lazy
+    end
 
     #
     def filter(predicate)

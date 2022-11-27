@@ -1552,7 +1552,7 @@ module Polars
       if !columns.nil?
         columns, dtypes = _unpack_columns(columns, lookup_names: data.keys)
 
-        if !data && dtypes
+        if data.empty? && dtypes
           data_series = columns.map { |name| Series.new(name, [], dtype: dtypes[name])._s }
         else
           data_series = data.map { |name, values| Series.new(name, values, dtype: dtypes[name])._s }
@@ -1572,7 +1572,7 @@ module Polars
       if columns.nil?
         data
       else
-        if !data
+        if data.empty?
           columns.map { |c| Series.new(c, nil)._s }
         elsif data.length == columns.length
           columns.each_with_index do |c, i|

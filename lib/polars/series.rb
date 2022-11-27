@@ -2715,7 +2715,7 @@ module Polars
           dtype = dtype_if_empty
         else
           # default to Float32 type
-          dtype = "f32"
+          dtype = :f32
         end
       end
 
