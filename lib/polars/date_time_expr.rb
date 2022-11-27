@@ -15,7 +15,11 @@ module Polars
     # def round
     # end
 
+    # Format Date/datetime with a formatting rule.
     #
+    # See [chrono strftime/strptime](https://docs.rs/chrono/latest/chrono/format/strftime/index.html).
+    #
+    # @return [Expr]
     def strftime(fmt)
       Utils.wrap_expr(_rbexpr.strftime(fmt))
     end
@@ -823,34 +827,351 @@ module Polars
       Utils.wrap_expr(_rbexpr.dt_tz_localize(tz))
     end
 
+    # Extract the days from a Duration type.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => Polars.date_range(
+    #         DateTime.new(2020, 3, 1), DateTime.new(2020, 5, 1), "1mo"
+    #       )
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("date"),
+    #       Polars.col("date").diff.dt.days.alias("days_diff")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────────────────────┬───────────┐
+    #   # │ date                ┆ days_diff │
+    #   # │ ---                 ┆ ---       │
+    #   # │ datetime[μs]        ┆ i64       │
+    #   # ╞═════════════════════╪═══════════╡
+    #   # │ 2020-03-01 00:00:00 ┆ null      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-04-01 00:00:00 ┆ 31        │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-05-01 00:00:00 ┆ 30        │
+    #   # └─────────────────────┴───────────┘
     def days
       Utils.wrap_expr(_rbexpr.duration_days)
     end
 
+    # Extract the hours from a Duration type.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => Polars.date_range(
+    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 4), "1d"
+    #       )
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("date"),
+    #       Polars.col("date").diff.dt.hours.alias("hours_diff")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────────────────────┬────────────┐
+    #   # │ date                ┆ hours_diff │
+    #   # │ ---                 ┆ ---        │
+    #   # │ datetime[μs]        ┆ i64        │
+    #   # ╞═════════════════════╪════════════╡
+    #   # │ 2020-01-01 00:00:00 ┆ null       │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-02 00:00:00 ┆ 24         │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-03 00:00:00 ┆ 24         │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-04 00:00:00 ┆ 24         │
+    #   # └─────────────────────┴────────────┘
     def hours
       Utils.wrap_expr(_rbexpr.duration_hours)
     end
 
+    # Extract the minutes from a Duration type.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => Polars.date_range(
+    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 4), "1d"
+    #       )
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("date"),
+    #       Polars.col("date").diff.dt.minutes.alias("minutes_diff")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────────────────────┬──────────────┐
+    #   # │ date                ┆ minutes_diff │
+    #   # │ ---                 ┆ ---          │
+    #   # │ datetime[μs]        ┆ i64          │
+    #   # ╞═════════════════════╪══════════════╡
+    #   # │ 2020-01-01 00:00:00 ┆ null         │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-02 00:00:00 ┆ 1440         │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-03 00:00:00 ┆ 1440         │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-04 00:00:00 ┆ 1440         │
+    #   # └─────────────────────┴──────────────┘
     def minutes
       Utils.wrap_expr(_rbexpr.duration_minutes)
     end
 
+    # Extract the seconds from a Duration type.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => Polars.date_range(
+    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 4, 0), "1m"
+    #       )
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("date"),
+    #       Polars.col("date").diff.dt.seconds.alias("seconds_diff")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────────────────────┬──────────────┐
+    #   # │ date                ┆ seconds_diff │
+    #   # │ ---                 ┆ ---          │
+    #   # │ datetime[μs]        ┆ i64          │
+    #   # ╞═════════════════════╪══════════════╡
+    #   # │ 2020-01-01 00:00:00 ┆ null         │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:01:00 ┆ 60           │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:02:00 ┆ 60           │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:03:00 ┆ 60           │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:04:00 ┆ 60           │
+    #   # └─────────────────────┴──────────────┘
     def seconds
       Utils.wrap_expr(_rbexpr.duration_seconds)
     end
 
+    # Extract the milliseconds from a Duration type.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => Polars.date_range(
+    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1), "1ms"
+    #       )
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("date"),
+    #       Polars.col("date").diff.dt.milliseconds.alias("milliseconds_diff")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (1001, 2)
+    #   # ┌─────────────────────────┬───────────────────┐
+    #   # │ date                    ┆ milliseconds_diff │
+    #   # │ ---                     ┆ ---               │
+    #   # │ datetime[μs]            ┆ i64               │
+    #   # ╞═════════════════════════╪═══════════════════╡
+    #   # │ 2020-01-01 00:00:00     ┆ null              │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.001 ┆ 1                 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.002 ┆ 1                 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.003 ┆ 1                 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ ...                     ┆ ...               │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.997 ┆ 1                 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.998 ┆ 1                 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.999 ┆ 1                 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:01     ┆ 1                 │
+    #   # └─────────────────────────┴───────────────────┘
     def milliseconds
       Utils.wrap_expr(_rbexpr.duration_milliseconds)
     end
 
+    # Extract the microseconds from a Duration type.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => Polars.date_range(
+    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1), "1ms"
+    #       )
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("date"),
+    #       Polars.col("date").diff.dt.microseconds.alias("microseconds_diff")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (1001, 2)
+    #   # ┌─────────────────────────┬───────────────────┐
+    #   # │ date                    ┆ microseconds_diff │
+    #   # │ ---                     ┆ ---               │
+    #   # │ datetime[μs]            ┆ i64               │
+    #   # ╞═════════════════════════╪═══════════════════╡
+    #   # │ 2020-01-01 00:00:00     ┆ null              │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.001 ┆ 1000              │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.002 ┆ 1000              │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.003 ┆ 1000              │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ ...                     ┆ ...               │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.997 ┆ 1000              │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.998 ┆ 1000              │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.999 ┆ 1000              │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:01     ┆ 1000              │
+    #   # └─────────────────────────┴───────────────────┘
     def microseconds
       Utils.wrap_expr(_rbexpr.duration_microseconds)
     end
 
+    # Extract the nanoseconds from a Duration type.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => Polars.date_range(
+    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1), "1ms"
+    #       )
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("date"),
+    #       Polars.col("date").diff.dt.nanoseconds.alias("nanoseconds_diff")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (1001, 2)
+    #   # ┌─────────────────────────┬──────────────────┐
+    #   # │ date                    ┆ nanoseconds_diff │
+    #   # │ ---                     ┆ ---              │
+    #   # │ datetime[μs]            ┆ i64              │
+    #   # ╞═════════════════════════╪══════════════════╡
+    #   # │ 2020-01-01 00:00:00     ┆ null             │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.001 ┆ 1000000          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.002 ┆ 1000000          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.003 ┆ 1000000          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ ...                     ┆ ...              │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.997 ┆ 1000000          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.998 ┆ 1000000          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:00.999 ┆ 1000000          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 00:00:01     ┆ 1000000          │
+    #   # └─────────────────────────┴──────────────────┘
     def nanoseconds
       Utils.wrap_expr(_rbexpr.duration_nanoseconds)
     end
 
+    # Offset this date by a relative time offset.
+    #
+    # This differs from ``pl.col("foo") + timedelta`` in that it can
+    # take months and leap years into account. Note that only a single minus
+    # sign is allowed in the ``by`` string, as the first character.
+    #
+    # @param by [String]
+    #   The offset is dictated by the following string language:
+    #
+    #     - 1ns   (1 nanosecond)
+    #     - 1us   (1 microsecond)
+    #     - 1ms   (1 millisecond)
+    #     - 1s    (1 second)
+    #     - 1m    (1 minute)
+    #     - 1h    (1 hour)
+    #     - 1d    (1 day)
+    #     - 1w    (1 week)
+    #     - 1mo   (1 calendar month)
+    #     - 1y    (1 calendar year)
+    #     - 1i    (1 index count)
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "dates" => Polars.date_range(
+    #         DateTime.new(2000, 1, 1), DateTime.new(2005, 1, 1), "1y"
+    #       )
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("dates").dt.offset_by("1y").alias("date_plus_1y"),
+    #       Polars.col("dates").dt.offset_by("-1y2mo").alias("date_min")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (6, 2)
+    #   # ┌─────────────────────┬─────────────────────┐
+    #   # │ date_plus_1y        ┆ date_min            │
+    #   # │ ---                 ┆ ---                 │
+    #   # │ datetime[μs]        ┆ datetime[μs]        │
+    #   # ╞═════════════════════╪═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 ┆ 1998-11-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2002-01-01 00:00:00 ┆ 1999-11-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2003-01-01 00:00:00 ┆ 2000-11-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2004-01-01 00:00:00 ┆ 2001-11-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2005-01-01 00:00:00 ┆ 2002-11-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2006-01-01 00:00:00 ┆ 2003-11-01 00:00:00 │
+    #   # └─────────────────────┴─────────────────────┘
     def offset_by(by)
       Utils.wrap_expr(_rbexpr.dt_offset_by(by))
     end
