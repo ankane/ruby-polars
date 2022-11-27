@@ -2835,8 +2835,65 @@ module Polars
       _from_rbdf(_df.null_count)
     end
 
-    # def sample
-    # end
+    # Sample from this DataFrame.
+    #
+    # @param n [Integer]
+    #   Number of items to return. Cannot be used with `frac`. Defaults to 1 if
+    #   `frac` is nil.
+    # @param frac [Float]
+    #   Fraction of items to return. Cannot be used with `n`.
+    # @param with_replacement [Boolean]
+    #   Allow values to be sampled more than once.
+    # @param shuffle [Boolean]
+    #   Shuffle the order of sampled data points.
+    # @param seed [Integer]
+    #   Seed for the random number generator. If set to nil (default), a random
+    #   seed is used.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.sample(n: 2, seed: 0)
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 3   ┆ 8   ┆ c   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 7   ┆ b   │
+    #   # └─────┴─────┴─────┘
+    def sample(
+      n: nil,
+      frac: nil,
+      with_replacement: false,
+      shuffle: false,
+      seed: nil
+    )
+      if !n.nil? && !frac.nil?
+        raise ArgumentError, "cannot specify both `n` and `frac`"
+      end
+
+      if n.nil? && !frac.nil?
+        _from_rbdf(
+          _df.sample_frac(frac, with_replacement, shuffle, seed)
+        )
+      end
+
+      if n.nil?
+        n = 1
+      end
+      _from_rbdf(_df.sample_n(n, with_replacement, shuffle, seed))
+    end
 
     # def fold
     # end

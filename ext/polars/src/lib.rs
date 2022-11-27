@@ -70,6 +70,8 @@ fn init() -> RbResult<()> {
     class.define_method("row_tuple", method!(RbDataFrame::row_tuple, 1))?;
     class.define_method("row_tuples", method!(RbDataFrame::row_tuples, 0))?;
     class.define_method("write_parquet", method!(RbDataFrame::write_parquet, 5))?;
+    class.define_method("sample_n", method!(RbDataFrame::sample_n, 4))?;
+    class.define_method("sample_frac", method!(RbDataFrame::sample_frac, 4))?;
     class.define_method("rechunk", method!(RbDataFrame::rechunk, 0))?;
     class.define_method("to_s", method!(RbDataFrame::to_s, 0))?;
     class.define_method("get_columns", method!(RbDataFrame::get_columns, 0))?;

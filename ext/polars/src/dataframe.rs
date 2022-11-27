@@ -399,6 +399,36 @@ impl RbDataFrame {
         Ok(())
     }
 
+    pub fn sample_n(
+        &self,
+        n: usize,
+        with_replacement: bool,
+        shuffle: bool,
+        seed: Option<u64>,
+    ) -> RbResult<Self> {
+        let df = self
+            .df
+            .borrow()
+            .sample_n(n, with_replacement, shuffle, seed)
+            .map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
+    pub fn sample_frac(
+        &self,
+        frac: f64,
+        with_replacement: bool,
+        shuffle: bool,
+        seed: Option<u64>,
+    ) -> RbResult<Self> {
+        let df = self
+            .df
+            .borrow()
+            .sample_frac(frac, with_replacement, shuffle, seed)
+            .map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
     pub fn rechunk(&self) -> Self {
         self.df.borrow().agg_chunks().into()
     }
