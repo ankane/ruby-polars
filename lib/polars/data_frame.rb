@@ -1183,8 +1183,36 @@ module Polars
       _df.frame_equal(other._df, null_equal)
     end
 
-    # def replace
-    # end
+    # Replace a column by a new Series.
+    #
+    # @param column [String]
+    #   Column to replace.
+    # @param new_col [Series]
+    #   New column to insert.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3], "bar" => [4, 5, 6]})
+    #   s = Polars::Series.new([10, 20, 30])
+    #   df.replace("foo", s)
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ bar │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 10  ┆ 4   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 20  ┆ 5   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 30  ┆ 6   │
+    #   # └─────┴─────┘
+    def replace(column, new_col)
+      _df.replace(column, new_col._s)
+      self
+    end
 
     # Get a slice of this DataFrame.
     #
@@ -1322,8 +1350,39 @@ module Polars
       _from_rbdf(_df.tail(n))
     end
 
-    # def drop_nulls
-    # end
+    # Return a new DataFrame where the null values are dropped.
+    #
+    # @param subset [Object]
+    #   Subset of column(s) on which `drop_nulls` will be applied.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, nil, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.drop_nulls
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6   ┆ a   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 8   ┆ c   │
+    #   # └─────┴─────┴─────┘
+    def drop_nulls(subset: nil)
+      if subset.is_a?(String)
+        subset = [subset]
+      end
+      _from_rbdf(_df.drop_nulls(subset))
+    end
 
     # def pipe
     # end
