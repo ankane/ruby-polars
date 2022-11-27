@@ -3,6 +3,7 @@ module Polars
     # @private
     attr_accessor :_df, :_dataframe_class, :by, :maintain_order
 
+    # @private
     def initialize(df, by, dataframe_class, maintain_order: false)
       self._df = df
       self._dataframe_class = dataframe_class
@@ -10,6 +11,39 @@ module Polars
       self.maintain_order = maintain_order
     end
 
+    # def apply
+    # end
+
+    # Use multiple aggregations on columns.
+    #
+    # This can be combined with complete lazy API and is considered idiomatic polars.
+    #
+    # @param aggs [Object]
+    #   Single / multiple aggregation expression(s).
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"foo" => ["one", "two", "two", "one", "two"], "bar" => [5, 3, 2, 4, 1]}
+    #   )
+    #   df.groupby("foo", maintain_order: true).agg(
+    #     [
+    #       Polars.sum("bar").suffix("_sum"),
+    #       Polars.col("bar").sort.tail(2).sum.suffix("_tail_sum")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────────┬──────────────┐
+    #   # │ foo ┆ bar_sum ┆ bar_tail_sum │
+    #   # │ --- ┆ ---     ┆ ---          │
+    #   # │ str ┆ i64     ┆ i64          │
+    #   # ╞═════╪═════════╪══════════════╡
+    #   # │ one ┆ 9       ┆ 9            │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ two ┆ 6       ┆ 5            │
+    #   # └─────┴─────────┴──────────────┘
     def agg(aggs)
       df = Utils.wrap_df(_df)
         .lazy
@@ -17,6 +51,467 @@ module Polars
         .agg(aggs)
         .collect(no_optimization: true, string_cache: false)
       _dataframe_class._from_rbdf(df._df)
+    end
+
+    # Get the first `n` rows of each group.
+    #
+    # @param n [Integer]
+    #   Number of rows to return.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "letters" => ["c", "c", "a", "c", "a", "b"],
+    #       "nrs" => [1, 2, 3, 4, 5, 6]
+    #     }
+    #   )
+    #   # =>
+    #   # shape: (6, 2)
+    #   # ┌─────────┬─────┐
+    #   # │ letters ┆ nrs │
+    #   # │ ---     ┆ --- │
+    #   # │ str     ┆ i64 │
+    #   # ╞═════════╪═════╡
+    #   # │ c       ┆ 1   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ c       ┆ 2   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ a       ┆ 3   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ c       ┆ 4   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ a       ┆ 5   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ b       ┆ 6   │
+    #   # └─────────┴─────┘
+    #
+    # @example
+    #   df.groupby("letters").head(2).sort("letters")
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────────┬─────┐
+    #   # │ letters ┆ nrs │
+    #   # │ ---     ┆ --- │
+    #   # │ str     ┆ i64 │
+    #   # ╞═════════╪═════╡
+    #   # │ a       ┆ 3   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ a       ┆ 5   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ b       ┆ 6   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ c       ┆ 1   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ c       ┆ 2   │
+    #   # └─────────┴─────┘
+    def head(n = 5)
+      df = (
+        Utils.wrap_df(_df)
+          .lazy
+          .groupby(by, maintain_order: maintain_order)
+          .head(n)
+          .collect(no_optimization: true, string_cache: false)
+      )
+      _dataframe_class._from_rbdf(df._df)
+    end
+
+    # Get the last `n` rows of each group.
+    #
+    # @param n [Integer]
+    #   Number of rows to return.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "letters" => ["c", "c", "a", "c", "a", "b"],
+    #       "nrs" => [1, 2, 3, 4, 5, 6]
+    #     }
+    #   )
+    #   # =>
+    #   # shape: (6, 2)
+    #   # ┌─────────┬─────┐
+    #   # │ letters ┆ nrs │
+    #   # │ ---     ┆ --- │
+    #   # │ str     ┆ i64 │
+    #   # ╞═════════╪═════╡
+    #   # │ c       ┆ 1   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ c       ┆ 2   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ a       ┆ 3   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ c       ┆ 4   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ a       ┆ 5   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ b       ┆ 6   │
+    #   # └─────────┴─────┘
+    #
+    # @example
+    #   df.groupby("letters").tail(2).sort("letters")
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────────┬─────┐
+    #   # │ letters ┆ nrs │
+    #   # │ ---     ┆ --- │
+    #   # │ str     ┆ i64 │
+    #   # ╞═════════╪═════╡
+    #   # │ a       ┆ 3   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ a       ┆ 5   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ b       ┆ 6   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ c       ┆ 2   │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ c       ┆ 4   │
+    #   # └─────────┴─────┘
+    def tail(n = 5)
+      df = (
+        Utils.wrap_df(_df)
+          .lazy
+          .groupby(by, maintain_order: maintain_order)
+          .tail(n)
+          .collect(no_optimization: true, string_cache: false)
+      )
+      _dataframe_class._from_rbdf(df._df)
+    end
+
+    # def pivot
+    # end
+
+    # Aggregate the first values in the group.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "c" => [true, true, true, false, false, true],
+    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   )
+    #   df.groupby("d", maintain_order: true).first
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌────────┬─────┬──────┬───────┐
+    #   # │ d      ┆ a   ┆ b    ┆ c     │
+    #   # │ ---    ┆ --- ┆ ---  ┆ ---   │
+    #   # │ str    ┆ i64 ┆ f64  ┆ bool  │
+    #   # ╞════════╪═════╪══════╪═══════╡
+    #   # │ Apple  ┆ 1   ┆ 0.5  ┆ true  │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ Orange ┆ 2   ┆ 0.5  ┆ true  │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ Banana ┆ 4   ┆ 13.0 ┆ false │
+    #   # └────────┴─────┴──────┴───────┘
+    def first
+      agg(Polars.all.first)
+    end
+
+    # Aggregate the last values in the group.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "c" => [true, true, true, false, false, true],
+    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   )
+    #   df.groupby("d", maintain_order: true).last
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌────────┬─────┬──────┬───────┐
+    #   # │ d      ┆ a   ┆ b    ┆ c     │
+    #   # │ ---    ┆ --- ┆ ---  ┆ ---   │
+    #   # │ str    ┆ i64 ┆ f64  ┆ bool  │
+    #   # ╞════════╪═════╪══════╪═══════╡
+    #   # │ Apple  ┆ 3   ┆ 10.0 ┆ false │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ Orange ┆ 2   ┆ 0.5  ┆ true  │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ Banana ┆ 5   ┆ 14.0 ┆ true  │
+    #   # └────────┴─────┴──────┴───────┘
+    def last
+      agg(Polars.all.last)
+    end
+
+    # Reduce the groups to the sum.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "c" => [true, true, true, false, false, true],
+    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   )
+    #   df.groupby("d", maintain_order: true).sum
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌────────┬─────┬──────┬─────┐
+    #   # │ d      ┆ a   ┆ b    ┆ c   │
+    #   # │ ---    ┆ --- ┆ ---  ┆ --- │
+    #   # │ str    ┆ i64 ┆ f64  ┆ u32 │
+    #   # ╞════════╪═════╪══════╪═════╡
+    #   # │ Apple  ┆ 6   ┆ 14.5 ┆ 2   │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ Orange ┆ 2   ┆ 0.5  ┆ 1   │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ Banana ┆ 9   ┆ 27.0 ┆ 1   │
+    #   # └────────┴─────┴──────┴─────┘
+    def sum
+      agg(Polars.all.sum)
+    end
+
+    # Reduce the groups to the minimal value.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "c" => [true, true, true, false, false, true],
+    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"],
+    #     }
+    #   )
+    #   df.groupby("d", maintain_order: true).min
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌────────┬─────┬──────┬─────┐
+    #   # │ d      ┆ a   ┆ b    ┆ c   │
+    #   # │ ---    ┆ --- ┆ ---  ┆ --- │
+    #   # │ str    ┆ i64 ┆ f64  ┆ u32 │
+    #   # ╞════════╪═════╪══════╪═════╡
+    #   # │ Apple  ┆ 1   ┆ 0.5  ┆ 0   │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ Orange ┆ 2   ┆ 0.5  ┆ 1   │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ Banana ┆ 4   ┆ 13.0 ┆ 0   │
+    #   # └────────┴─────┴──────┴─────┘
+    def min
+      agg(Polars.all.min)
+    end
+
+    # Reduce the groups to the maximal value.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "c" => [true, true, true, false, false, true],
+    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   )
+    #   df.groupby("d", maintain_order: true).max
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌────────┬─────┬──────┬─────┐
+    #   # │ d      ┆ a   ┆ b    ┆ c   │
+    #   # │ ---    ┆ --- ┆ ---  ┆ --- │
+    #   # │ str    ┆ i64 ┆ f64  ┆ u32 │
+    #   # ╞════════╪═════╪══════╪═════╡
+    #   # │ Apple  ┆ 3   ┆ 10.0 ┆ 1   │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ Orange ┆ 2   ┆ 0.5  ┆ 1   │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ Banana ┆ 5   ┆ 14.0 ┆ 1   │
+    #   # └────────┴─────┴──────┴─────┘
+    def max
+      agg(Polars.all.max)
+    end
+
+    # Count the number of values in each group.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "c" => [true, true, true, false, false, true],
+    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   )
+    #   df.groupby("d", maintain_order: true).count
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌────────┬───────┐
+    #   # │ d      ┆ count │
+    #   # │ ---    ┆ ---   │
+    #   # │ str    ┆ u32   │
+    #   # ╞════════╪═══════╡
+    #   # │ Apple  ┆ 3     │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ Orange ┆ 1     │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ Banana ┆ 2     │
+    #   # └────────┴───────┘
+    def count
+      agg(Polars.count)
+    end
+
+    # Reduce the groups to the mean values.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "c" => [true, true, true, false, false, true],
+    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   )
+    #   df.groupby("d", maintain_order: true).mean
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌────────┬─────┬──────────┬──────┐
+    #   # │ d      ┆ a   ┆ b        ┆ c    │
+    #   # │ ---    ┆ --- ┆ ---      ┆ ---  │
+    #   # │ str    ┆ f64 ┆ f64      ┆ bool │
+    #   # ╞════════╪═════╪══════════╪══════╡
+    #   # │ Apple  ┆ 2.0 ┆ 4.833333 ┆ null │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ Orange ┆ 2.0 ┆ 0.5      ┆ null │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ Banana ┆ 4.5 ┆ 13.5     ┆ null │
+    #   # └────────┴─────┴──────────┴──────┘
+    def mean
+      agg(Polars.all.mean)
+    end
+
+    # Count the unique values per group.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 1, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 0.5, 10, 13, 14],
+    #       "d" => ["Apple", "Banana", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   )
+    #   df.groupby("d", maintain_order: true).n_unique
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌────────┬─────┬─────┐
+    #   # │ d      ┆ a   ┆ b   │
+    #   # │ ---    ┆ --- ┆ --- │
+    #   # │ str    ┆ u32 ┆ u32 │
+    #   # ╞════════╪═════╪═════╡
+    #   # │ Apple  ┆ 2   ┆ 2   │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ Banana ┆ 3   ┆ 3   │
+    #   # └────────┴─────┴─────┘
+    def n_unique
+      agg(Polars.all.n_unique)
+    end
+
+    # Compute the quantile per group.
+    #
+    # @param quantile [Float]
+    #   Quantile between 0.0 and 1.0.
+    # @param interpolation ["nearest", "higher", "lower", "midpoint", "linear"]
+    #   Interpolation method.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   )
+    #   df.groupby("d", maintain_order: true).quantile(1)
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────┬─────┬──────┐
+    #   # │ d      ┆ a   ┆ b    │
+    #   # │ ---    ┆ --- ┆ ---  │
+    #   # │ str    ┆ f64 ┆ f64  │
+    #   # ╞════════╪═════╪══════╡
+    #   # │ Apple  ┆ 3.0 ┆ 10.0 │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ Orange ┆ 2.0 ┆ 0.5  │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ Banana ┆ 5.0 ┆ 14.0 │
+    #   # └────────┴─────┴──────┘
+    def quantile(quantile, interpolation: "nearest")
+      agg(Polars.all.quantile(quantile, interpolation: interpolation))
+    end
+
+    # Return the median per group.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "d" => ["Apple", "Banana", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   )
+    #   df.groupby("d", maintain_order: true).median
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌────────┬─────┬──────┐
+    #   # │ d      ┆ a   ┆ b    │
+    #   # │ ---    ┆ --- ┆ ---  │
+    #   # │ str    ┆ f64 ┆ f64  │
+    #   # ╞════════╪═════╪══════╡
+    #   # │ Apple  ┆ 2.0 ┆ 4.0  │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ Banana ┆ 4.0 ┆ 13.0 │
+    #   # └────────┴─────┴──────┘
+    def median
+      agg(Polars.all.median)
+    end
+
+    # Aggregate the groups into Series.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => ["one", "two", "one", "two"], "b" => [1, 2, 3, 4]})
+    #   df.groupby("a", maintain_order: true).agg_list
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬───────────┐
+    #   # │ a   ┆ b         │
+    #   # │ --- ┆ ---       │
+    #   # │ str ┆ list[i64] │
+    #   # ╞═════╪═══════════╡
+    #   # │ one ┆ [1, 3]    │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ two ┆ [2, 4]    │
+    #   # └─────┴───────────┘
+    def agg_list
+      agg(Polars.all.list)
     end
   end
 end

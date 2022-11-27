@@ -22,7 +22,7 @@ class DocsTest < Minitest::Test
   end
 
   def test_group_by
-    assert_docs Polars::GroupBy
+    assert_docs Polars::GroupBy, required: true
   end
 
   def test_io
