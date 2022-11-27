@@ -30,7 +30,7 @@ class SeriesTest < Minitest::Test
   # def test_new_datetime
   #   datetimes = [DateTime.new(2022, 1, 1), DateTime.new(2022, 1, 2), DateTime.new(2022, 1, 3)]
   #   s = Polars::Series.new(datetimes)
-  #   assert_series datetimes, s, dtype: :date
+  #   assert_series datetimes, s, dtype: :datetime
   # end
 
   # def test_new_time

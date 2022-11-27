@@ -475,8 +475,6 @@ impl RbSeries {
             s.into_iter().collect()
         } else if let Ok(s) = series.utf8() {
             s.into_iter().collect()
-        } else if let Ok(s) = series.utf8() {
-            s.into_iter().collect()
         } else if let Ok(_s) = series.date() {
             let a = RArray::with_capacity(series.len());
             for v in series.iter() {
