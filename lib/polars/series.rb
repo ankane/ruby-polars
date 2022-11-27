@@ -2749,7 +2749,11 @@ module Polars
           #   dtype = rb_type_to_dtype(dtype)
           # end
 
-          raise Todo
+          if ruby_dtype == Date
+            RbSeries.new_opt_date(name, values, strict)
+          else
+            raise Todo
+          end
         elsif ruby_dtype == Array
           if nested_dtype.nil?
             nested_value = _get_first_non_none(value)

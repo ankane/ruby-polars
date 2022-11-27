@@ -475,6 +475,14 @@ impl RbSeries {
             s.into_iter().collect()
         } else if let Ok(s) = series.utf8() {
             s.into_iter().collect()
+        } else if let Ok(s) = series.utf8() {
+            s.into_iter().collect()
+        } else if let Ok(_s) = series.date() {
+            let a = RArray::with_capacity(series.len());
+            for v in series.iter() {
+                a.push::<Value>(Wrap(v).into()).unwrap();
+            }
+            a
         } else {
             unimplemented!();
         }
@@ -759,4 +767,26 @@ pub fn to_series_collection(rs: RArray) -> RbResult<Vec<Series>> {
 
 pub fn to_rbseries_collection(s: Vec<Series>) -> Vec<RbSeries> {
     s.into_iter().map(RbSeries::new).collect()
+}
+
+impl RbSeries {
+    pub fn new_opt_date(name: String, values: RArray, _strict: Option<bool>) -> RbResult<Self> {
+        let len = values.len();
+        let mut builder = PrimitiveChunkedBuilder::<Int32Type>::new(&name, len);
+        for item in values.each() {
+            let v = item?;
+            if v.is_nil() {
+                builder.append_null();
+            } else {
+                // convert to DateTime for UTC
+                let v: Value = v.funcall("to_datetime", ())?;
+                let v: Value = v.funcall("to_time", ())?;
+                let v: Value = v.funcall("to_i", ())?;
+                // TODO use strict
+                builder.append_value(v.try_convert::<i32>()? / 86400);
+            }
+        }
+        let ca: ChunkedArray<Int32Type> = builder.finish();
+        Ok(ca.into_date().into_series().into())
+    }
 }

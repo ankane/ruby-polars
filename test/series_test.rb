@@ -21,11 +21,11 @@ class SeriesTest < Minitest::Test
     assert_series [true, false, true], s, dtype: :bool
   end
 
-  # def test_new_date
-  #   dates = [Date.new(2022, 1, 1), Date.new(2022, 1, 2), Date.new(2022, 1, 3)]
-  #   s = Polars::Series.new(dates)
-  #   assert_series dates, s, dtype: :date
-  # end
+  def test_new_date
+    dates = [Date.new(2022, 1, 1), Date.new(2022, 1, 2), Date.new(2022, 1, 3)]
+    s = Polars::Series.new(dates)
+    assert_series dates, s, dtype: :date
+  end
 
   # def test_new_datetime
   #   datetimes = [DateTime.new(2022, 1, 1), DateTime.new(2022, 1, 2), DateTime.new(2022, 1, 3)]

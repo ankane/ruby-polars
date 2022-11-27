@@ -1,4 +1,4 @@
-use magnus::{RArray, Symbol, TryConvert, Value, QNIL};
+use magnus::{class, RArray, Symbol, TryConvert, Value, QNIL};
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
@@ -80,6 +80,13 @@ impl From<Wrap<AnyValue<'_>>> for Value {
             AnyValue::Null => *QNIL,
             AnyValue::Boolean(v) => Value::from(v),
             AnyValue::Utf8(v) => Value::from(v),
+            AnyValue::Date(v) => class::time()
+                .funcall::<_, _, Value>("at", (v * 86400,))
+                .unwrap()
+                .funcall::<_, _, Value>("utc", ())
+                .unwrap()
+                .funcall::<_, _, Value>("to_date", ())
+                .unwrap(),
             _ => todo!(),
         }
     }
