@@ -1395,14 +1395,101 @@ module Polars
       self
     end
 
-    # def drop
-    # end
+    # Remove column from DataFrame and return as new.
+    #
+    # @param columns [Object]
+    #   Column(s) to drop.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.drop("ham")
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ bar │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 6.0 │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 7.0 │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 8.0 │
+    #   # └─────┴─────┘
+    def drop(columns)
+      if columns.is_a?(Array)
+        df = clone
+        columns.each do |n|
+          df._df.drop_in_place(n)
+        end
+        df
+      else
+        _from_rbdf(_df.drop(columns))
+      end
+    end
 
-    # def drop_in_place
-    # end
+    # Drop in place.
+    #
+    # @param name [Object]
+    #   Column to drop.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.drop_in_place("ham")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'ham' [str]
+    #   # [
+    #   #         "a"
+    #   #         "b"
+    #   #         "c"
+    #   # ]
+    def drop_in_place(name)
+      Utils.wrap_s(_df.drop_in_place(name))
+    end
 
-    # def cleared
-    # end
+    # Create an empty copy of the current DataFrame.
+    #
+    # Returns a DataFrame with identical schema but no data.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [nil, 2, 3, 4],
+    #       "b" => [0.5, nil, 2.5, 13],
+    #       "c" => [true, true, false, nil]
+    #     }
+    #   )
+    #   df.cleared
+    #   # =>
+    #   # shape: (0, 3)
+    #   # ┌─────┬─────┬──────┐
+    #   # │ a   ┆ b   ┆ c    │
+    #   # │ --- ┆ --- ┆ ---  │
+    #   # │ i64 ┆ f64 ┆ bool │
+    #   # ╞═════╪═════╪══════╡
+    #   # └─────┴─────┴──────┘
+    def cleared
+      height > 0 ? head(0) : clone
+    end
 
     # clone handled by initialize_copy
 
