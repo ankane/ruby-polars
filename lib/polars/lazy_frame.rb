@@ -1111,11 +1111,69 @@ module Polars
       _from_rbldf(_ldf.fill_nan(fill_value._rbexpr))
     end
 
-    # def std
-    # end
+    # Aggregate the columns in the DataFrame to their standard deviation value.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => [1, 2, 1, 1]}).lazy
+    #   df.std.collect
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌──────────┬─────┐
+    #   # │ a        ┆ b   │
+    #   # │ ---      ┆ --- │
+    #   # │ f64      ┆ f64 │
+    #   # ╞══════════╪═════╡
+    #   # │ 1.290994 ┆ 0.5 │
+    #   # └──────────┴─────┘
+    #
+    # @example
+    #   df.std(ddof: 0).collect
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌──────────┬──────────┐
+    #   # │ a        ┆ b        │
+    #   # │ ---      ┆ ---      │
+    #   # │ f64      ┆ f64      │
+    #   # ╞══════════╪══════════╡
+    #   # │ 1.118034 ┆ 0.433013 │
+    #   # └──────────┴──────────┘
+    def std(ddof: 1)
+      _from_rbldf(_ldf.std(ddof))
+    end
 
-    # def var
-    # end
+    # Aggregate the columns in the DataFrame to their variance value.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => [1, 2, 1, 1]}).lazy
+    #   df.var.collect
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌──────────┬──────┐
+    #   # │ a        ┆ b    │
+    #   # │ ---      ┆ ---  │
+    #   # │ f64      ┆ f64  │
+    #   # ╞══════════╪══════╡
+    #   # │ 1.666667 ┆ 0.25 │
+    #   # └──────────┴──────┘
+    #
+    # @example
+    #   df.var(ddof: 0).collect
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌──────┬────────┐
+    #   # │ a    ┆ b      │
+    #   # │ ---  ┆ ---    │
+    #   # │ f64  ┆ f64    │
+    #   # ╞══════╪════════╡
+    #   # │ 1.25 ┆ 0.1875 │
+    #   # └──────┴────────┘
+    def var(ddof: 1)
+      _from_rbldf(_ldf.var(ddof))
+    end
 
     # def max
     # end
