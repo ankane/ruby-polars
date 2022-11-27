@@ -1643,6 +1643,26 @@ module Polars
         .collect(no_optimization: true, string_cache: false)
     end
 
+    # Get number of chunks used by the ChunkedArrays of this DataFrame.
+    #
+    # @param strategy ["first", "all"]
+    #   Return the number of chunks of the 'first' column,
+    #   or 'all' columns in this DataFrame.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3, 4],
+    #       "b" => [0.5, 4, 10, 13],
+    #       "c" => [true, true, false, true]
+    #     }
+    #   )
+    #   df.n_chunks
+    #   # => 1
+    #   df.n_chunks(strategy: "all")
+    #   # => [1, 1, 1]
     def n_chunks(strategy: "first")
       if strategy == "first"
         _df.n_chunks
@@ -1653,6 +1673,28 @@ module Polars
       end
     end
 
+    # Aggregate the columns of this DataFrame to their maximum value.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.max
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 3   ┆ 8   ┆ c   │
+    #   # └─────┴─────┴─────┘
     def max(axis: 0)
       if axis == 0
         _from_rbdf(_df.max)
@@ -1663,6 +1705,28 @@ module Polars
       end
     end
 
+    # Aggregate the columns of this DataFrame to their minimum value.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.min
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6   ┆ a   │
+    #   # └─────┴─────┴─────┘
     def min(axis: 0)
       if axis == 0
         _from_rbdf(_df.min)
