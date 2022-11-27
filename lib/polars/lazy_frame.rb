@@ -579,6 +579,38 @@ module Polars
       _from_rbldf(_ldf.select(exprs))
     end
 
+    # Start a groupby operation.
+    #
+    # @param by [Object]
+    #   Column(s) to group by.
+    # @param maintain_order [Boolean]
+    #   Make sure that the order of the groups remain consistent. This is more
+    #   expensive than a default groupby.
+    #
+    # @return [LazyGroupBy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => ["a", "b", "a", "b", "b", "c"],
+    #       "b" => [1, 2, 3, 4, 5, 6],
+    #       "c" => [6, 5, 4, 3, 2, 1]
+    #     }
+    #   ).lazy
+    #   df.groupby("a", maintain_order: true).agg(Polars.col("b").sum).collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ str ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ a   ┆ 4   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ b   ┆ 11  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ c   ┆ 6   │
+    #   # └─────┴─────┘
     def groupby(by, maintain_order: false)
       rbexprs_by = Utils.selection_to_rbexpr_list(by)
       lgb = _ldf.groupby(rbexprs_by, maintain_order)
