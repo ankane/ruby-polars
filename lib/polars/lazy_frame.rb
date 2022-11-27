@@ -1175,11 +1175,45 @@ module Polars
       _from_rbldf(_ldf.var(ddof))
     end
 
-    # def max
-    # end
+    # Aggregate the columns in the DataFrame to their maximum value.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => [1, 2, 1, 1]}).lazy
+    #   df.max.collect
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 4   ┆ 2   │
+    #   # └─────┴─────┘
+    def max
+      _from_rbldf(_ldf.max)
+    end
 
-    # def min
-    # end
+    # Aggregate the columns in the DataFrame to their minimum value.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => [1, 2, 1, 1]}).lazy
+    #   df.min.collect
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 1   │
+    #   # └─────┴─────┘
+    def min
+      _from_rbldf(_ldf.min)
+    end
 
     # def sum
     # end
