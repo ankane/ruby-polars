@@ -13,6 +13,39 @@ module Polars
       df.to_dummies(columns: columns)
     end
 
+    # Aggregate multiple Dataframes/Series to a single DataFrame/Series.
+    #
+    # @param items [Object]
+    #   DataFrames/Series/LazyFrames to concatenate.
+    # @param rechunk [Boolean]
+    #   Make sure that all data is in contiguous memory.
+    # @param how ["vertical", "diagonal", "horizontal"]
+    #   Lazy only supports the 'vertical' strategy.
+    #
+    #   - Vertical: applies multiple `vstack` operations.
+    #   - Diagonal: finds a union between the column schemas and fills missing column values with null.
+    #   - Horizontal: stacks Series horizontally and fills with nulls if the lengths don't match.
+    # @param parallel [Boolean]
+    #   Only relevant for LazyFrames. This determines if the concatenated
+    #   lazy computations may be executed in parallel.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df1 = Polars::DataFrame.new({"a" => [1], "b" => [3]})
+    #   df2 = Polars::DataFrame.new({"a" => [2], "b" => [4]})
+    #   Polars.concat([df1, df2])
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 3   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 4   │
+    #   # └─────┴─────┘
     def concat(items, rechunk: true, how: "vertical", parallel: true)
       if items.empty?
         raise ArgumentError, "cannot concat empty list"

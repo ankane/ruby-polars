@@ -18,7 +18,7 @@ class DocsTest < Minitest::Test
   end
 
   def test_functions
-    assert_docs Polars::Functions
+    assert_docs Polars::Functions, required: true
   end
 
   def test_group_by
