@@ -815,18 +815,38 @@ module Polars
       with_columns([column])
     end
 
-    # def drop
-    # end
-
+    # Remove one or multiple columns from a DataFrame.
     #
+    # @param columns [Object]
+    #   - Name of the column that should be removed.
+    #   - List of column names.
+    #
+    # @return [LazyFrame]
+    def drop(columns)
+      if columns.is_a?(String)
+        columns = [columns]
+      end
+      _from_rbldf(_ldf.drop_columns(columns))
+    end
+
+    # Rename column names.
+    #
+    # @param mapping [Hash]
+    #   Key value pairs that map from old name to new name.
+    #
+    # @return [LazyFrame]
     def rename(mapping)
       existing = mapping.keys
       _new = mapping.values
       _from_rbldf(_ldf.rename(existing, _new))
     end
 
-    # def reverse
-    # end
+    # Reverse the DataFrame.
+    #
+    # @return [LazyFrame]
+    def reverse
+      _from_rbldf(_ldf.reverse)
+    end
 
     # def shift
     # end
