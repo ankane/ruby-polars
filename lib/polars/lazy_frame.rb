@@ -1340,8 +1340,26 @@ module Polars
       _from_rbldf(_ldf.explode(columns))
     end
 
-    # def unique
-    # end
+    # Drop duplicate rows from this DataFrame.
+    #
+    # Note that this fails if there is a column of type `List` in the DataFrame or
+    # subset.
+    #
+    # @param maintain_order [Boolean]
+    #   Keep the same order as the original DataFrame. This requires more work to
+    #   compute.
+    # @param subset [Object]
+    #   Subset to use to compare rows.
+    # @param keep ["first", "last"]
+    #   Which of the duplicate rows to keep.
+    #
+    # @return [LazyFrame]
+    def unique(maintain_order: true, subset: nil, keep: "first")
+      if !subset.nil? && !subset.is_a?(Array)
+        subset = [subset]
+      end
+      _from_rbldf(_ldf.unique(maintain_order, subset, keep))
+    end
 
     # def drop_nulls
     # end
@@ -1352,8 +1370,37 @@ module Polars
     # def map
     # end
 
-    # def interpolate
-    # end
+    # Interpolate intermediate values. The interpolation method is linear.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, nil, 9, 10],
+    #       "bar" => [6, 7, 9, nil],
+    #       "baz" => [1, nil, nil, 9]
+    #     }
+    #   ).lazy
+    #   df.interpolate.collect
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬──────┬─────┐
+    #   # │ foo ┆ bar  ┆ baz │
+    #   # │ --- ┆ ---  ┆ --- │
+    #   # │ i64 ┆ i64  ┆ i64 │
+    #   # ╞═════╪══════╪═════╡
+    #   # │ 1   ┆ 6    ┆ 1   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 5   ┆ 7    ┆ 3   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 9   ┆ 9    ┆ 6   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 10  ┆ null ┆ 9   │
+    #   # └─────┴──────┴─────┘
+    def interpolate
+      select(Utils.col("*").interpolate)
+    end
 
     # def unnest
     # end
