@@ -71,7 +71,9 @@ module Polars
       Integer => :i64,
       String => :str,
       TrueClass => :bool,
-      FalseClass => :bool
+      FalseClass => :bool,
+      Date => :date,
+      DateTime => :datetime
     }
 
     # TODO fix

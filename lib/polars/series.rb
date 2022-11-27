@@ -1584,7 +1584,7 @@ module Polars
     #   #         1
     #   # ]
     def cast(dtype, strict: true)
-      Utils.wrap_s(_s.cast(dtype.to_s, strict))
+      super
     end
 
     # def to_physical

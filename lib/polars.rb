@@ -1,6 +1,9 @@
 # ext
 require "polars/polars"
 
+# stdlib
+require "date"
+
 # modules
 require "polars/expr_dispatch"
 require "polars/batched_csv_reader"

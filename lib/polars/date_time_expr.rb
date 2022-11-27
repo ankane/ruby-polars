@@ -32,7 +32,6 @@ module Polars
     #   start = DateTime.new(2001, 1, 1)
     #   stop = DateTime.new(2002, 7, 1)
     #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "180d")})
-    #   df
     #   # =>
     #   # shape: (4, 1)
     #   # ┌─────────────────────┐
