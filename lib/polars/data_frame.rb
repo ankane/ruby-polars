@@ -1481,7 +1481,109 @@ module Polars
     # def join_asof
     # end
 
+    # Join in SQL-like fashion.
     #
+    # @param other [DataFrame]
+    #   DataFrame to join with.
+    # @param left_on [Object]
+    #   Name(s) of the left join column(s).
+    # @param right_on [Object]
+    #   Name(s) of the right join column(s).
+    # @param on [Object]
+    #   Name(s) of the join columns in both DataFrames.
+    # @param how ["inner", "left", "outer", "semi", "anti", "cross"]
+    #   Join strategy.
+    # @param suffix [String]
+    #   Suffix to append to columns with a duplicate name.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   other_df = Polars::DataFrame.new(
+    #     {
+    #       "apple" => ["x", "y", "z"],
+    #       "ham" => ["a", "b", "d"]
+    #     }
+    #   )
+    #   df.join(other_df, on: "ham")
+    #   # =>
+    #   # shape: (2, 4)
+    #   # ┌─────┬─────┬─────┬───────┐
+    #   # │ foo ┆ bar ┆ ham ┆ apple │
+    #   # │ --- ┆ --- ┆ --- ┆ ---   │
+    #   # │ i64 ┆ f64 ┆ str ┆ str   │
+    #   # ╞═════╪═════╪═════╪═══════╡
+    #   # │ 1   ┆ 6.0 ┆ a   ┆ x     │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 7.0 ┆ b   ┆ y     │
+    #   # └─────┴─────┴─────┴───────┘
+    #
+    # @example
+    #   df.join(other_df, on: "ham", how: "outer")
+    #   # =>
+    #   # shape: (4, 4)
+    #   # ┌──────┬──────┬─────┬───────┐
+    #   # │ foo  ┆ bar  ┆ ham ┆ apple │
+    #   # │ ---  ┆ ---  ┆ --- ┆ ---   │
+    #   # │ i64  ┆ f64  ┆ str ┆ str   │
+    #   # ╞══════╪══════╪═════╪═══════╡
+    #   # │ 1    ┆ 6.0  ┆ a   ┆ x     │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2    ┆ 7.0  ┆ b   ┆ y     │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ null ┆ null ┆ d   ┆ z     │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 3    ┆ 8.0  ┆ c   ┆ null  │
+    #   # └──────┴──────┴─────┴───────┘
+    #
+    # @example
+    #   df.join(other_df, on: "ham", how: "left")
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌─────┬─────┬─────┬───────┐
+    #   # │ foo ┆ bar ┆ ham ┆ apple │
+    #   # │ --- ┆ --- ┆ --- ┆ ---   │
+    #   # │ i64 ┆ f64 ┆ str ┆ str   │
+    #   # ╞═════╪═════╪═════╪═══════╡
+    #   # │ 1   ┆ 6.0 ┆ a   ┆ x     │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 7.0 ┆ b   ┆ y     │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 8.0 ┆ c   ┆ null  │
+    #   # └─────┴─────┴─────┴───────┘
+    #
+    # @example
+    #   df.join(other_df, on: "ham", how: "semi")
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ f64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6.0 ┆ a   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 7.0 ┆ b   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example
+    #   df.join(other_df, on: "ham", how: "anti")
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ f64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 3   ┆ 8.0 ┆ c   │
+    #   # └─────┴─────┴─────┘
     def join(other, left_on: nil, right_on: nil, on: nil, how: "inner", suffix: "_right")
       lazy
         .join(
