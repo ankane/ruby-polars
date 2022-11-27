@@ -1,6 +1,6 @@
 module Polars
+  # @private
   class BatchedCsvReader
-    # @private
     attr_accessor :_reader, :new_columns
 
     def initialize(
