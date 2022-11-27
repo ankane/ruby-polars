@@ -1387,10 +1387,73 @@ module Polars
     # def pipe
     # end
 
-    # def with_row_count
-    # end
-
+    # Add a column at index 0 that counts the rows.
     #
+    # @param name [String]
+    #   Name of the column to add.
+    # @param offset [Integer]
+    #   Start the row count at this offset.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 3, 5],
+    #       "b" => [2, 4, 6]
+    #     }
+    #   )
+    #   df.with_row_count
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────┬─────┬─────┐
+    #   # │ row_nr ┆ a   ┆ b   │
+    #   # │ ---    ┆ --- ┆ --- │
+    #   # │ u32    ┆ i64 ┆ i64 │
+    #   # ╞════════╪═════╪═════╡
+    #   # │ 0      ┆ 1   ┆ 2   │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 1      ┆ 3   ┆ 4   │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2      ┆ 5   ┆ 6   │
+    #   # └────────┴─────┴─────┘
+    def with_row_count(name: "row_nr", offset: 0)
+      _from_rbdf(_df.with_row_count(name, offset))
+    end
+
+    # Start a groupby operation.
+    #
+    # @param by [Object]
+    #   Column(s) to group by.
+    # @param maintain_order [Boolean]
+    #   Make sure that the order of the groups remain consistent. This is more
+    #   expensive than a default groupby. Note that this only works in expression
+    #   aggregations.
+    #
+    # @return [GroupBy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => ["a", "b", "a", "b", "b", "c"],
+    #       "b" => [1, 2, 3, 4, 5, 6],
+    #       "c" => [6, 5, 4, 3, 2, 1]
+    #     }
+    #   )
+    #   df.groupby("a").agg(Polars.col("b").sum).sort("a")
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ str ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ a   ┆ 4   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ b   ┆ 11  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ c   ┆ 6   │
+    #   # └─────┴─────┘
     def groupby(by, maintain_order: false)
       if !Utils.bool?(maintain_order)
         raise TypeError, "invalid input for groupby arg `maintain_order`: #{maintain_order}."
