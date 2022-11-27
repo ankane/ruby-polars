@@ -1383,13 +1383,144 @@ module Polars
         .collect(no_optimization: true, string_cache: false)
     end
 
-    # def hstack
-    # end
-
-    # def vstack
-    # end
-
+    # Return a new DataFrame grown horizontally by stacking multiple Series to it.
     #
+    # @param columns [Object]
+    #   Series to stack.
+    # @param in_place [Boolean]
+    #   Modify in place.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   x = Polars::Series.new("apple", [10, 20, 30])
+    #   df.hstack([x])
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌─────┬─────┬─────┬───────┐
+    #   # │ foo ┆ bar ┆ ham ┆ apple │
+    #   # │ --- ┆ --- ┆ --- ┆ ---   │
+    #   # │ i64 ┆ i64 ┆ str ┆ i64   │
+    #   # ╞═════╪═════╪═════╪═══════╡
+    #   # │ 1   ┆ 6   ┆ a   ┆ 10    │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 7   ┆ b   ┆ 20    │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 8   ┆ c   ┆ 30    │
+    #   # └─────┴─────┴─────┴───────┘
+    def hstack(columns, in_place: false)
+      if !columns.is_a?(Array)
+        columns = columns.get_columns
+      end
+      if in_place
+        _df.hstack_mut(columns.map(&:_s))
+        self
+      else
+        _from_rbdf(_df.hstack(columns.map(&:_s)))
+      end
+    end
+
+    # Grow this DataFrame vertically by stacking a DataFrame to it.
+    #
+    # @param df [DataFrame]
+    #   DataFrame to stack.
+    # @param in_place [Boolean]
+    #   Modify in place
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df1 = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2],
+    #       "bar" => [6, 7],
+    #       "ham" => ["a", "b"]
+    #     }
+    #   )
+    #   df2 = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [3, 4],
+    #       "bar" => [8, 9],
+    #       "ham" => ["c", "d"]
+    #     }
+    #   )
+    #   df1.vstack(df2)
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6   ┆ a   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 7   ┆ b   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 8   ┆ c   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 4   ┆ 9   ┆ d   │
+    #   # └─────┴─────┴─────┘
+    def vstack(df, in_place: false)
+      if in_place
+        _df.vstack_mut(df._df)
+        self
+      else
+        _from_rbdf(_df.vstack(df._df))
+      end
+    end
+
+    # Extend the memory backed by this `DataFrame` with the values from `other`.
+    #
+    # Different from `vstack` which adds the chunks from `other` to the chunks of this
+    # `DataFrame` `extend` appends the data from `other` to the underlying memory
+    # locations and thus may cause a reallocation.
+    #
+    # If this does not cause a reallocation, the resulting data structure will not
+    # have any extra chunks and thus will yield faster queries.
+    #
+    # Prefer `extend` over `vstack` when you want to do a query after a single append.
+    # For instance during online operations where you add `n` rows and rerun a query.
+    #
+    # Prefer `vstack` over `extend` when you want to append many times before doing a
+    # query. For instance when you read in multiple files and when to store them in a
+    # single `DataFrame`. In the latter case, finish the sequence of `vstack`
+    # operations with a `rechunk`.
+    #
+    # @param other [DataFrame]
+    #   DataFrame to vertically add.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df1 = Polars::DataFrame.new({"foo" => [1, 2, 3], "bar" => [4, 5, 6]})
+    #   df2 = Polars::DataFrame.new({"foo" => [10, 20, 30], "bar" => [40, 50, 60]})
+    #   df1.extend(df2)
+    #   # =>
+    #   # shape: (6, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ bar │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 4   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 5   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 6   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 10  ┆ 40  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 20  ┆ 50  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 30  ┆ 60  │
+    #   # └─────┴─────┘
     def extend(other)
       _df.extend(other._df)
       self

@@ -758,7 +758,7 @@ impl_lt_eq_num!(lt_eq_f64, f64);
 pub fn to_series_collection(rs: RArray) -> RbResult<Vec<Series>> {
     let mut series = Vec::new();
     for item in rs.each() {
-        series.push(get_series(item?)?);
+        series.push(item?.try_convert::<&RbSeries>()?.series.borrow().clone());
     }
     Ok(series)
 }
