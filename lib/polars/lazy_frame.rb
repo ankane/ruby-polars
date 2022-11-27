@@ -848,14 +848,138 @@ module Polars
       _from_rbldf(_ldf.reverse)
     end
 
-    # def shift
-    # end
-
-    # def shift_and_fill
-    # end
-
+    # Shift the values by a given period.
     #
-    def slice(length, offset = nil)
+    # @param periods [Integer]
+    #   Number of places to shift (may be negative).
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 3, 5],
+    #       "b" => [2, 4, 6]
+    #     }
+    #   ).lazy
+    #   df.shift(1).collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌──────┬──────┐
+    #   # │ a    ┆ b    │
+    #   # │ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  │
+    #   # ╞══════╪══════╡
+    #   # │ null ┆ null │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 1    ┆ 2    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 3    ┆ 4    │
+    #   # └──────┴──────┘
+    #
+    # @example
+    #   df.shift(-1).collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌──────┬──────┐
+    #   # │ a    ┆ b    │
+    #   # │ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  │
+    #   # ╞══════╪══════╡
+    #   # │ 3    ┆ 4    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 5    ┆ 6    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ null ┆ null │
+    #   # └──────┴──────┘
+    def shift(periods)
+      _from_rbldf(_ldf.shift(periods))
+    end
+
+    # Shift the values by a given period and fill the resulting null values.
+    #
+    # @param periods [Integer]
+    #   Number of places to shift (may be negative).
+    # @param fill_value [Object]
+    #   Fill `nil` values with the result of this expression.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 3, 5],
+    #       "b" => [2, 4, 6]
+    #     }
+    #   ).lazy
+    #   df.shift_and_fill(1, 0).collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 0   ┆ 0   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 1   ┆ 2   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 4   │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df.shift_and_fill(-1, 0).collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 3   ┆ 4   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 5   ┆ 6   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 0   ┆ 0   │
+    #   # └─────┴─────┘
+    def shift_and_fill(periods, fill_value)
+      if !fill_value.is_a?(Expr)
+        fill_value = Polars.lit(fill_value)
+      end
+      _from_rbldf(_ldf.shift_and_fill(periods, fill_value._rbexpr))
+    end
+
+    # Get a slice of this DataFrame.
+    #
+    # @param offset [Integer]
+    #   Start index. Negative indexing is supported.
+    # @param length [Integer]
+    #   Length of the slice. If set to `nil`, all rows starting at the offset
+    #   will be selected.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => ["x", "y", "z"],
+    #       "b" => [1, 3, 5],
+    #       "c" => [2, 4, 6]
+    #     }
+    #   ).lazy
+    #   df.slice(1, 2).collect
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ a   ┆ b   ┆ c   │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ y   ┆ 3   ┆ 4   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ z   ┆ 5   ┆ 6   │
+    #   # └─────┴─────┴─────┘
+    def slice(offset, length = nil)
       if length && length < 0
         raise ArgumentError, "Negative slice lengths (#{length}) are invalid for LazyFrame"
       end
