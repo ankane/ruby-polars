@@ -31,9 +31,9 @@ module Polars
     # @param null_values [Object]
     #   Values to interpret as null values. You can provide a:
     #
-    #   - `str`: All values equal to this string will be null.
-    #   - `Array<String>`: All values equal to any string in this list will be null.
-    #   - `Hash<String, String>`: A dictionary that maps column name to a null value string.
+    #   - `String`: All values equal to this string will be null.
+    #   - `Array`: All values equal to any string in this array will be null.
+    #   - `Hash`: A hash that maps column name to a null value string.
     # @param ignore_errors [Boolean]
     #   Try to keep reading lines if some lines yield errors.
     #   First try `infer_schema_length: 0` to read all columns as
@@ -201,9 +201,9 @@ module Polars
     # @param null_values [Object]
     #   Values to interpret as null values. You can provide a:
     #
-    #   - `str`: All values equal to this string will be null.
-    #   - `List[str]`: All values equal to any string in this list will be null.
-    #   - `Dict[str, str]`: A dictionary that maps column name to a null value string.
+    #   - `String`: All values equal to this string will be null.
+    #   - `Array`: All values equal to any string in this array will be null.
+    #   - `Hash`: A hash that maps column name to a null value string.
     # @param ignore_errors [Boolean]
     #   Try to keep reading lines if some lines yield errors.
     #   First try `infer_schema_length: 0` to read all columns as
@@ -616,9 +616,9 @@ module Polars
     # @param null_values [Object]
     #   Values to interpret as null values. You can provide a:
     #
-    #   - `str`: All values equal to this string will be null.
-    #   - `List[str]`: All values equal to any string in this list will be null.
-    #   - `Dict[str, str]`: A dictionary that maps column name to a null value string.
+    #   - `String`: All values equal to this string will be null.
+    #   - `Array`: All values equal to any string in this array will be null.
+    #   - `Hash`: A hash that maps column name to a null value string.
     # @param ignore_errors [Boolean]
     #   Try to keep reading lines if some lines yield errors.
     #   First try `infer_schema_length: 0` to read all columns as
