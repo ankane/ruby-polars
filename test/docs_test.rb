@@ -26,7 +26,7 @@ class DocsTest < Minitest::Test
   end
 
   def test_io
-    assert_docs Polars::IO
+    assert_docs Polars::IO, required: true
   end
 
   def test_lazy_frame
@@ -93,7 +93,7 @@ class DocsTest < Minitest::Test
   end
 
   def assert_examples(method)
-    return if [:field, :rename_fields, :unnest, :arange, :explode, :is_datelike].include?(method.name)
+    return if [:read_csv_batched, :field, :rename_fields, :unnest, :arange, :explode, :is_datelike].include?(method.name)
 
     code = ""
     method.tags(:example).each do |example|
