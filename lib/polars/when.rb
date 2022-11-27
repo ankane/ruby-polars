@@ -1,4 +1,5 @@
 module Polars
+  # @private
   class When
     attr_accessor :_rbwhen
 

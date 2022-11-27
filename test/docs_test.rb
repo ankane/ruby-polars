@@ -2,7 +2,7 @@ require_relative "test_helper"
 
 class DocsTest < Minitest::Test
   def test_cat_expr
-    assert_docs Polars::CatExpr
+    assert_docs Polars::CatExpr, required: true
   end
 
   def test_data_frame
