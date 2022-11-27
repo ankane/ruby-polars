@@ -144,6 +144,8 @@ module Polars
 
       if !time_unit.nil?
         tu = time_unit
+      elsif interval.include?("ns")
+        tu = "ns"
       else
         tu = "us"
       end

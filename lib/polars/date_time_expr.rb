@@ -373,16 +373,203 @@ module Polars
       Utils.wrap_expr(_rbexpr.ordinal_day)
     end
 
+    # Extract hour from underlying DateTime representation.
+    #
+    # Applies to Datetime columns.
+    #
+    # Returns the hour number from 0 to 23.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 2)
+    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "12h")})
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────────────────┐
+    #   # │ date                │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 12:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-02 00:00:00 │
+    #   # └─────────────────────┘
+    #
+    # @example
+    #   df.select(Polars.col("date").dt.hour)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ date │
+    #   # │ ---  │
+    #   # │ u32  │
+    #   # ╞══════╡
+    #   # │ 0    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 12   │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 0    │
+    #   # └──────┘
     def hour
       Utils.wrap_expr(_rbexpr.hour)
     end
 
+    # Extract minutes from underlying DateTime representation.
+    #
+    # Applies to Datetime columns.
+    #
+    # Returns the minute number from 0 to 59.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 1, 0, 4, 0)
+    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "2m")})
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────────────────┐
+    #   # │ date                │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:02:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:04:00 │
+    #   # └─────────────────────┘
+    #
+    # @example
+    #   df.select(Polars.col("date").dt.minute)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ date │
+    #   # │ ---  │
+    #   # │ u32  │
+    #   # ╞══════╡
+    #   # │ 0    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 2    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 4    │
+    #   # └──────┘
     def minute
       Utils.wrap_expr(_rbexpr.minute)
     end
 
-    def second
-      Utils.wrap_expr(_rbexpr.second)
+    # Extract seconds from underlying DateTime representation.
+    #
+    # Applies to Datetime columns.
+    #
+    # Returns the integer second number from 0 to 59, or a floating
+    # point number from 0 < 60 if `fractional: true` that includes
+    # any milli/micro/nanosecond component.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => Polars.date_range(
+    #         DateTime.new(2001, 1, 1, 0, 0, 0.456789),
+    #         DateTime.new(2001, 1, 1, 0, 0, 6),
+    #         "2s654321us"
+    #       )
+    #     }
+    #   )
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌────────────────────────────┐
+    #   # │ date                       │
+    #   # │ ---                        │
+    #   # │ datetime[μs]               │
+    #   # ╞════════════════════════════╡
+    #   # │ 2001-01-01 00:00:00.456789 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:00:03.111110 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:00:05.765431 │
+    #   # └────────────────────────────┘
+    #
+    # @example
+    #   df.select(Polars.col("date").dt.second.alias("secs"))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ secs │
+    #   # │ ---  │
+    #   # │ u32  │
+    #   # ╞══════╡
+    #   # │ 0    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 3    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 5    │
+    #   # └──────┘
+    #
+    #   df.select(Polars.col("date").dt.second(fractional: true).alias("secs"))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────────┐
+    #   # │ secs     │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 0.456789 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3.11111  │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 5.765431 │
+    #   # └──────────┘
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 1, 0, 0, 4)
+    #   df = Polars::DataFrame.new(
+    #     {"date" => Polars.date_range(start, stop, "2s")}
+    #   )
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────────────────┐
+    #   # │ date                │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:00:02 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:00:04 │
+    #   # └─────────────────────┘
+    #
+    # @example
+    #   df.select(Polars.col("date").dt.second)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ date │
+    #   # │ ---  │
+    #   # │ u32  │
+    #   # ╞══════╡
+    #   # │ 0    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 2    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 4    │
+    #   # └──────┘
+    def second(fractional: false)
+      sec = Utils.wrap_expr(_rbexpr.second)
+      if fractional
+        sec + (Utils.wrap_expr(_rbexpr.nanosecond) / Utils.lit(1_000_000_000.0))
+      else
+        sec
+      end
     end
 
     def millisecond
