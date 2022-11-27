@@ -63,6 +63,27 @@ class DataFrameTest < Minitest::Test
     assert_equal expected, df.schema
   end
 
+  def test_comp_data_frame
+    a = Polars::DataFrame.new({"a" => [1, 2, 3, 4]})
+    b = Polars::DataFrame.new({"a" => [0, 2, 3, 5]})
+    assert_frame ({"a" => [false, true, true, false]}), a == b
+    assert_frame ({"a" => [true, false, false, true]}), a != b
+    assert_frame ({"a" => [true, false, false, false]}), a > b
+    assert_frame ({"a" => [false, false, false, true]}), a < b
+    assert_frame ({"a" => [true, true, true, false]}), a >= b
+    assert_frame ({"a" => [false, true, true, true]}), a <= b
+  end
+
+  def test_comp_scalar
+    a = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    assert_frame ({"a" => [false, true, false]}), a == 2
+    assert_frame ({"a" => [true, false, true]}), a != 2
+    assert_frame ({"a" => [false, false, true]}), a > 2
+    assert_frame ({"a" => [true, false, false]}), a < 2
+    assert_frame ({"a" => [false, true, true]}), a >= 2
+    assert_frame ({"a" => [true, true, false]}), a <= 2
+  end
+
   def test_to_s
     df = Polars::DataFrame.new({"a" => [1, 2, 3]})
     assert_match "│ a   │", df.to_s

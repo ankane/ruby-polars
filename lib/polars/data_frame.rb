@@ -366,23 +366,47 @@ module Polars
       columns.zip(dtypes).to_h
     end
 
-    # def ==(other)
-    # end
+    # Equal.
+    #
+    # @return [DataFrame]
+    def ==(other)
+      _comp(other, "eq")
+    end
 
-    # def !=(other)
-    # end
+    # Not equal.
+    #
+    # @return [DataFrame]
+    def !=(other)
+      _comp(other, "neq")
+    end
 
-    # def >(other)
-    # end
+    # Greater than.
+    #
+    # @return [DataFrame]
+    def >(other)
+      _comp(other, "gt")
+    end
 
-    # def <(other)
-    # end
+    # Less than.
+    #
+    # @return [DataFrame]
+    def <(other)
+      _comp(other, "lt")
+    end
 
-    # def >=(other)
-    # end
+    # Greater than or equal.
+    #
+    # @return [DataFrame]
+    def >=(other)
+      _comp(other, "gt_eq")
+    end
 
-    # def <=(other)
-    # end
+    # Less than or equal.
+    #
+    # @return [DataFrame]
+    def <=(other)
+      _comp(other, "lt_eq")
+    end
 
     # def *(other)
     # end
@@ -3189,6 +3213,65 @@ module Polars
 
     def _from_rbdf(rb_df)
       self.class._from_rbdf(rb_df)
+    end
+
+    def _comp(other, op)
+      if other.is_a?(DataFrame)
+        _compare_to_other_df(other, op)
+      else
+        _compare_to_non_df(other, op)
+      end
+    end
+
+    def _compare_to_other_df(other, op)
+      if columns != other.columns
+        raise ArgmentError, "DataFrame columns do not match"
+      end
+      if shape != other.shape
+        raise ArgmentError, "DataFrame dimensions do not match"
+      end
+
+      suffix = "__POLARS_CMP_OTHER"
+      other_renamed = other.select(Polars.all.suffix(suffix))
+      combined = Polars.concat([self, other_renamed], how: "horizontal")
+
+      expr = case op
+      when "eq"
+        columns.map { |n| Polars.col(n) == Polars.col("#{n}#{suffix}") }
+      when "neq"
+        columns.map { |n| Polars.col(n) != Polars.col("#{n}#{suffix}") }
+      when "gt"
+        columns.map { |n| Polars.col(n) > Polars.col("#{n}#{suffix}") }
+      when "lt"
+        columns.map { |n| Polars.col(n) < Polars.col("#{n}#{suffix}") }
+      when "gt_eq"
+        columns.map { |n| Polars.col(n) >= Polars.col("#{n}#{suffix}") }
+      when "lt_eq"
+        columns.map { |n| Polars.col(n) <= Polars.col("#{n}#{suffix}") }
+      else
+        raise ArgumentError, "got unexpected comparison operator: #{op}"
+      end
+
+      combined.select(expr)
+    end
+
+    def _compare_to_non_df(other, op)
+      case op
+      when "eq"
+        select(Polars.all == other)
+      when "neq"
+        select(Polars.all != other)
+      when "gt"
+        select(Polars.all > other)
+      when "lt"
+        select(Polars.all < other)
+      when "gt_eq"
+        select(Polars.all >= other)
+      when "lt_eq"
+        select(Polars.all <= other)
+      else
+        raise ArgumentError, "got unexpected comparison operator: #{op}"
+      end
     end
   end
 end
