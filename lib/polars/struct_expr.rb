@@ -9,6 +9,9 @@ module Polars
       self._rbexpr = expr._rbexpr
     end
 
+    # Retrieve one of the fields of this `Struct` as a new Series.
+    #
+    # @return [Expr]
     def [](item)
       if item.is_a?(String)
         field(item)

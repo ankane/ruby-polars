@@ -46,7 +46,7 @@ class DocsTest < Minitest::Test
   end
 
   def test_meta_expr
-    assert_docs Polars::MetaExpr
+    assert_docs Polars::MetaExpr, required: true
   end
 
   def test_series
@@ -58,7 +58,7 @@ class DocsTest < Minitest::Test
   end
 
   def test_struct_expr
-    assert_docs Polars::StructExpr
+    assert_docs Polars::StructExpr, required: true
   end
 
   def assert_docs(cls, required: false)
