@@ -6,7 +6,7 @@ class DocsTest < Minitest::Test
   end
 
   def test_data_frame
-    assert_docs Polars::DataFrame
+    assert_docs Polars::DataFrame, required: true
   end
 
   def test_date_time_expr

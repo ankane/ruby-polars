@@ -399,12 +399,17 @@ module Polars
     # def %(other)
     # end
 
+    # Returns a string representing the DataFrame.
     #
+    # @return [String]
     def to_s
       _df.to_s
     end
     alias_method :inspect, :to_s
 
+    # Check if DataFrame includes column.
+    #
+    # @return [Boolean]
     def include?(name)
       columns.include?(name)
     end
@@ -418,7 +423,9 @@ module Polars
     # def _pos_idxs
     # end
 
+    # Returns subset of the DataFrame.
     #
+    # @return [Object]
     def [](*args)
       if args.size == 2
         row_selection, col_selection = args
@@ -495,7 +502,9 @@ module Polars
 
     # no to_arrow
 
+    # Convert DataFrame to a hash mapping column name to values.
     #
+    # @return [Hash]
     def to_h(as_series: true)
       if as_series
         get_columns.to_h { |s| [s.name, s] }
@@ -1600,7 +1609,50 @@ module Polars
     # def apply
     # end
 
+    # Return a new DataFrame with the column added or replaced.
     #
+    # @param column [Object]
+    #   Series, where the name of the Series refers to the column in the DataFrame.
+    #
+    # @return [DataFrame]
+    #
+    # @example Added
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 3, 5],
+    #       "b" => [2, 4, 6]
+    #     }
+    #   )
+    #   df.with_column((Polars.col("b") ** 2).alias("b_squared"))
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬───────────┐
+    #   # │ a   ┆ b   ┆ b_squared │
+    #   # │ --- ┆ --- ┆ ---       │
+    #   # │ i64 ┆ i64 ┆ f64       │
+    #   # ╞═════╪═════╪═══════════╡
+    #   # │ 1   ┆ 2   ┆ 4.0       │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 4   ┆ 16.0      │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 5   ┆ 6   ┆ 36.0      │
+    #   # └─────┴─────┴───────────┘
+    #
+    # @example Replaced
+    #   df.with_column(Polars.col("a") ** 2)
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌──────┬─────┐
+    #   # │ a    ┆ b   │
+    #   # │ ---  ┆ --- │
+    #   # │ f64  ┆ i64 │
+    #   # ╞══════╪═════╡
+    #   # │ 1.0  ┆ 2   │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 9.0  ┆ 4   │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 25.0 ┆ 6   │
+    #   # └──────┴─────┘
     def with_column(column)
       lazy
         .with_column(column)
@@ -1848,7 +1900,9 @@ module Polars
 
     # clone handled by initialize_copy
 
+    # Get the DataFrame as a Array of Series.
     #
+    # @return [Array]
     def get_columns
       _df.get_columns.map { |s| Utils.wrap_s(s) }
     end
@@ -2215,6 +2269,43 @@ module Polars
       )
     end
 
+    # Add or overwrite multiple columns in a DataFrame.
+    #
+    # @param exprs [Array]
+    #   Array of Expressions that evaluate to columns.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3, 4],
+    #       "b" => [0.5, 4, 10, 13],
+    #       "c" => [true, true, false, true]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     [
+    #       (Polars.col("a") ** 2).alias("a^2"),
+    #       (Polars.col("b") / 2).alias("b/2"),
+    #       (Polars.col("c").is_not()).alias("not c")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (4, 6)
+    #   # ┌─────┬──────┬───────┬──────┬──────┬───────┐
+    #   # │ a   ┆ b    ┆ c     ┆ a^2  ┆ b/2  ┆ not c │
+    #   # │ --- ┆ ---  ┆ ---   ┆ ---  ┆ ---  ┆ ---   │
+    #   # │ i64 ┆ f64  ┆ bool  ┆ f64  ┆ f64  ┆ bool  │
+    #   # ╞═════╪══════╪═══════╪══════╪══════╪═══════╡
+    #   # │ 1   ┆ 0.5  ┆ true  ┆ 1.0  ┆ 0.25 ┆ false │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 4.0  ┆ true  ┆ 4.0  ┆ 2.0  ┆ false │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 10.0 ┆ false ┆ 9.0  ┆ 5.0  ┆ true  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 4   ┆ 13.0 ┆ true  ┆ 16.0 ┆ 6.5  ┆ false │
+    #   # └─────┴──────┴───────┴──────┴──────┴───────┘
     def with_columns(exprs)
       if !exprs.nil? && !exprs.is_a?(Array)
         exprs = [exprs]
@@ -2318,6 +2409,44 @@ module Polars
       end
     end
 
+    # Aggregate the columns of this DataFrame to their sum value.
+    #
+    # @param axis [Integer]
+    #   Either 0 or 1.
+    # @param null_strategy ["ignore", "propagate"]
+    #   This argument is only used if axis == 1.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"],
+    #     }
+    #   )
+    #   df.sum
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬──────┐
+    #   # │ foo ┆ bar ┆ ham  │
+    #   # │ --- ┆ --- ┆ ---  │
+    #   # │ i64 ┆ i64 ┆ str  │
+    #   # ╞═════╪═════╪══════╡
+    #   # │ 6   ┆ 21  ┆ null │
+    #   # └─────┴─────┴──────┘
+    #
+    # @example
+    #   df.sum(axis: 1)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'foo' [str]
+    #   # [
+    #   #         "16a"
+    #   #         "27b"
+    #   #         "38c"
+    #   # ]
     def sum(axis: 0, null_strategy: "ignore")
       case axis
       when 0
@@ -2329,6 +2458,33 @@ module Polars
       end
     end
 
+    # Aggregate the columns of this DataFrame to their mean value.
+    #
+    # @param axis [Integer]
+    #   Either 0 or 1.
+    # @param null_strategy ["ignore", "propagate"]
+    #   This argument is only used if axis == 1.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.mean
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬──────┐
+    #   # │ foo ┆ bar ┆ ham  │
+    #   # │ --- ┆ --- ┆ ---  │
+    #   # │ f64 ┆ f64 ┆ str  │
+    #   # ╞═════╪═════╪══════╡
+    #   # │ 2.0 ┆ 7.0 ┆ null │
+    #   # └─────┴─────┴──────┘
     def mean(axis: 0, null_strategy: "ignore")
       case axis
       when 0
