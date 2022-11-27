@@ -259,11 +259,13 @@ module Polars
     # @return [Array]
     #
     # @example
-    #   df = Polars::DataFrame.new({
-    #     "foo" => [1, 2, 3],
-    #     "bar" => [6, 7, 8],
-    #     "ham" => ["a", "b", "c"]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
     #   df.columns
     #   # => ["foo", "bar", "ham"]
     def columns
@@ -279,11 +281,13 @@ module Polars
     # @return [Object]
     #
     # @example
-    #   df = Polars::DataFrame.new({
-    #     "foo" => [1, 2, 3],
-    #     "bar" => [6, 7, 8],
-    #     "ham" => ["a", "b", "c"]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
     #   df.columns = ["apple", "banana", "orange"]
     #   df
     #   # =>
@@ -308,11 +312,13 @@ module Polars
     # @return [Array]
     #
     # @example
-    #   df = Polars::DataFrame.new({
-    #     "foo" => [1, 2, 3],
-    #     "bar" => [6.0, 7.0, 8.0],
-    #     "ham" => ["a", "b", "c"]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
     #   df.dtypes
     #   # => [:i64, :f64, :str]
     def dtypes
@@ -324,11 +330,13 @@ module Polars
     # @return [Hash]
     #
     # @example
-    #   df = Polars::DataFrame.new({
-    #     "foo" => [1, 2, 3],
-    #     "bar" => [6.0, 7.0, 8.0],
-    #     "ham" => ["a", "b", "c"]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
     #   df.schema
     #   # => {"foo"=>:i64, "bar"=>:f64, "ham"=>:str}
     def schema
@@ -489,11 +497,13 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   df = Polars::DataFrame.new({
-    #     "foo" => [1, 2, 3],
-    #     "bar" => [6, 7, 8],
-    #     "ham" => ["a", "b", "c"]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
     #   df.to_series(1)
     #   # =>
     #   # shape: (3,)
@@ -586,11 +596,13 @@ module Polars
     # @return [String, nil]
     #
     # @example
-    #   df = Polars::DataFrame.new({
-    #     "foo" => [1, 2, 3, 4, 5],
-    #     "bar" => [6, 7, 8, 9, 10],
-    #     "ham" => ["a", "b", "c", "d", "e"]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3, 4, 5],
+    #       "bar" => [6, 7, 8, 9, 10],
+    #       "ham" => ["a", "b", "c", "d", "e"]
+    #     }
+    #   )
     #   df.write_csv("file.csv")
     def write_csv(
       file = nil,
@@ -761,10 +773,12 @@ module Polars
     # @return [DataFrame]
     #
     # @example
-    #   df = Polars::DataFrame.new({
-    #     "key" => ["a", "b", "c"],
-    #     "val" => [1, 2, 3]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "key" => ["a", "b", "c"],
+    #       "val" => [1, 2, 3]
+    #     }
+    #   )
     #   df.reverse()
     #   # =>
     #   # shape: (3, 2)
@@ -791,11 +805,13 @@ module Polars
     # @return [DataFrame]
     #
     # @example
-    #   df = Polars::DataFrame.new({
-    #     "foo" => [1, 2, 3],
-    #     "bar" => [6, 7, 8],
-    #     "ham" => ["a", "b", "c"]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
     #   df.rename({"foo" => "apple"})
     #   # =>
     #   # shape: (3, 3)
@@ -842,11 +858,13 @@ module Polars
     #   # └─────┴─────┴─────┘
     #
     # @example
-    #   df = Polars::DataFrame.new({
-    #     "a" => [1, 2, 3, 4],
-    #     "b" => [0.5, 4, 10, 13],
-    #     "c" => [true, true, false, true]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3, 4],
+    #       "b" => [0.5, 4, 10, 13],
+    #       "c" => [true, true, false, true]
+    #     }
+    #   )
     #   s = Polars::Series.new("d", [-2.5, 15, 20.5, 0])
     #   df.insert_at_idx(3, s)
     #   # =>
@@ -880,11 +898,13 @@ module Polars
     # @return [DataFrame]
     #
     # @example Filter on one condition:
-    #   df = Polars::DataFrame.new({
-    #     "foo" => [1, 2, 3],
-    #     "bar" => [6, 7, 8],
-    #     "ham" => ["a", "b", "c"]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
     #   df.filter(Polars.col("foo") < 3)
     #   # =>
     #   # shape: (2, 3)
@@ -918,13 +938,15 @@ module Polars
     # @return [DataFrame]
     #
     # @example
-    #   df = Polars::DataFrame.new({
-    #     "a" => [1.0, 2.8, 3.0],
-    #     "b" => [4, 5, nil],
-    #     "c" => [true, false, true],
-    #     "d" => [nil, "b", "c"],
-    #     "e" => ["usd", "eur", nil]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1.0, 2.8, 3.0],
+    #       "b" => [4, 5, nil],
+    #       "c" => [true, false, true],
+    #       "d" => [nil, "b", "c"],
+    #       "e" => ["usd", "eur", nil]
+    #     }
+    #   )
     #   df.describe
     #   # =>
     #   # shape: (7, 6)
@@ -1014,11 +1036,13 @@ module Polars
     # @return [DataFrame]
     #
     # @example
-    #   df = Polars::DataFrame.new({
-    #     "foo" => [1, 2, 3],
-    #     "bar" => [6, 7, 8],
-    #     "ham" => ["a", "b", "c"]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
     #   s = Polars::Series.new("apple", [10, 20, 30])
     #   df.replace_at_idx(0, s)
     #   # =>
@@ -1054,11 +1078,13 @@ module Polars
     # @return [DataFrame]
     #
     # @example
-    #   df = Polars::DataFrame.new({
-    #     "foo" => [1, 2, 3],
-    #     "bar" => [6.0, 7.0, 8.0],
-    #     "ham" => ["a", "b", "c"]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
     #   df.sort("foo", reverse: true)
     #   # =>
     #   # shape: (3, 3)
@@ -1112,16 +1138,20 @@ module Polars
     # @return [Boolean]
     #
     # @example
-    #   df1 = Polars::DataFrame.new({
-    #     "foo" => [1, 2, 3],
-    #     "bar" => [6.0, 7.0, 8.0],
-    #     "ham" => ["a", "b", "c"]
-    #   })
-    #   df2 = Polars::DataFrame.new({
-    #     "foo" => [3, 2, 1],
-    #     "bar" => [8.0, 7.0, 6.0],
-    #     "ham" => ["c", "b", "a"]
-    #   })
+    #   df1 = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df2 = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [3, 2, 1],
+    #       "bar" => [8.0, 7.0, 6.0],
+    #       "ham" => ["c", "b", "a"]
+    #     }
+    #   )
     #   df1.frame_equal(df1)
     #   # => true
     #   df1.frame_equal(df2)
@@ -1144,11 +1174,13 @@ module Polars
     # @return [DataFrame]
     #
     # @example
-    #   df = Polars::DataFrame.new({
-    #     "foo" => [1, 2, 3],
-    #     "bar" => [6.0, 7.0, 8.0],
-    #     "ham" => ["a", "b", "c"]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
     #   df.slice(1, 2)
     #   # =>
     #   # shape: (2, 3)
@@ -1209,11 +1241,13 @@ module Polars
     # @return [DataFrame]
     #
     # @example
-    #   df = Polars::DataFrame.new({
-    #     "foo" => [1, 2, 3, 4, 5],
-    #     "bar" => [6, 7, 8, 9, 10],
-    #     "ham" => ["a", "b", "c", "d", "e"]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3, 4, 5],
+    #       "bar" => [6, 7, 8, 9, 10],
+    #       "ham" => ["a", "b", "c", "d", "e"]
+    #     }
+    #   )
     #   df.head(3)
     #   # =>
     #   # shape: (3, 3)
@@ -1240,11 +1274,13 @@ module Polars
     # @return [DataFrame]
     #
     # @example
-    #   df = Polars::DataFrame.new({
-    #     "foo" => [1, 2, 3, 4, 5],
-    #     "bar" => [6, 7, 8, 9, 10],
-    #     "ham" => ["a", "b", "c", "d", "e"]
-    #   })
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3, 4, 5],
+    #       "bar" => [6, 7, 8, 9, 10],
+    #       "ham" => ["a", "b", "c", "d", "e"]
+    #     }
+    #   )
     #   df.tail(3)
     #   # =>
     #   # shape: (3, 3)
