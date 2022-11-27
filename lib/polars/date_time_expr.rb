@@ -81,19 +81,190 @@ module Polars
       Utils.wrap_expr(_rbexpr.iso_year)
     end
 
-
+    # Extract quarter from underlying Date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the quarter ranging from 1 to 4.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2002, 6, 1)
+    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "180d")})
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────────────────┐
+    #   # │ date                │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-06-30 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-12-27 00:00:00 │
+    #   # └─────────────────────┘
+    #
+    # @example
+    #   df.select(Polars.col("date").dt.quarter)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ date │
+    #   # │ ---  │
+    #   # │ u32  │
+    #   # ╞══════╡
+    #   # │ 1    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 2    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 4    │
+    #   # └──────┘
     def quarter
       Utils.wrap_expr(_rbexpr.quarter)
     end
 
+    # Extract month from underlying Date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the month number starting from 1.
+    # The return value ranges from 1 to 12.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 4, 1)
+    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "31d")})
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────────────────┐
+    #   # │ date                │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-02-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-03-04 00:00:00 │
+    #   # └─────────────────────┘
+    #
+    # @example
+    #   df.select(Polars.col("date").dt.month)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ date │
+    #   # │ ---  │
+    #   # │ u32  │
+    #   # ╞══════╡
+    #   # │ 1    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 2    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 3    │
+    #   # └──────┘
     def month
       Utils.wrap_expr(_rbexpr.month)
     end
 
+    # Extract the week from the underlying Date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the ISO week number starting from 1.
+    # The return value ranges from 1 to 53. (The last week of year differs by years.)
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 4, 1)
+    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "31d")})
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────────────────┐
+    #   # │ date                │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-02-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-03-04 00:00:00 │
+    #   # └─────────────────────┘
+    #
+    # @example
+    #   df.select(Polars.col("date").dt.week)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ date │
+    #   # │ ---  │
+    #   # │ u32  │
+    #   # ╞══════╡
+    #   # │ 1    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 5    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 9    │
+    #   # └──────┘
     def week
       Utils.wrap_expr(_rbexpr.week)
     end
 
+    # Extract the week day from the underlying Date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the weekday number where monday = 0 and sunday = 6
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 9)
+    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "3d")})
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────────────────┐
+    #   # │ date                │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-04 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-07 00:00:00 │
+    #   # └─────────────────────┘
+    #
+    # @example
+    #   df.select(
+    #     [
+    #       Polars.col("date").dt.weekday.alias("weekday"),
+    #       Polars.col("date").dt.day.alias("day_of_month"),
+    #       Polars.col("date").dt.ordinal_day.alias("day_of_year")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────────┬──────────────┬─────────────┐
+    #   # │ weekday ┆ day_of_month ┆ day_of_year │
+    #   # │ ---     ┆ ---          ┆ ---         │
+    #   # │ u32     ┆ u32          ┆ u32         │
+    #   # ╞═════════╪══════════════╪═════════════╡
+    #   # │ 0       ┆ 1            ┆ 1           │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3       ┆ 4            ┆ 4           │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 6       ┆ 7            ┆ 7           │
+    #   # └─────────┴──────────────┴─────────────┘
     def weekday
       Utils.wrap_expr(_rbexpr.weekday)
     end
