@@ -434,7 +434,45 @@ module Polars
       DataFrame.new(columns: schema).lazy
     end
 
+    # Filter the rows in the DataFrame based on a predicate expression.
     #
+    # @param predicate [Object]
+    #   Expression that evaluates to a boolean Series.
+    #
+    # @return [LazyFrame]
+    #
+    # @example Filter on one condition:
+    #   lf = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   ).lazy
+    #   lf.filter(Polars.col("foo") < 3).collect()
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6   ┆ a   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 7   ┆ b   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example Filter on multiple conditions:
+    #   lf.filter((Polars.col("foo") < 3) & (Polars.col("ham") == "a")).collect
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6   ┆ a   │
+    #   # └─────┴─────┴─────┘
     def filter(predicate)
       _from_rbldf(
         _ldf.filter(
@@ -443,6 +481,99 @@ module Polars
       )
     end
 
+    # Select columns from this DataFrame.
+    #
+    # @param exprs [Object]
+    #   Column or columns to select.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"],
+    #     }
+    #   ).lazy
+    #   df.select("foo").collect
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 2   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 3   │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(["foo", "bar"]).collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ bar │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 6   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 7   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 8   │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df.select(Polars.col("foo") + 1).collect
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 2   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 3   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 4   │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select([Polars.col("foo") + 1, Polars.col("bar") + 1]).collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ bar │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 2   ┆ 7   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 8   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 4   ┆ 9   │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df.select(Polars.when(Polars.col("foo") > 2).then(10).otherwise(0)).collect
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────┐
+    #   # │ literal │
+    #   # │ ---     │
+    #   # │ i64     │
+    #   # ╞═════════╡
+    #   # │ 0       │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ 0       │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ 10      │
+    #   # └─────────┘
     def select(exprs)
       exprs = Utils.selection_to_rbexpr_list(exprs)
       _from_rbldf(_ldf.select(exprs))

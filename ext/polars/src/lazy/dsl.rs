@@ -1,4 +1,4 @@
-use magnus::{RArray, RString, Value};
+use magnus::{class, RArray, RString, Value};
 use polars::chunked_array::ops::SortOptions;
 use polars::lazy::dsl;
 use polars::lazy::dsl::Operator;
@@ -1402,6 +1402,8 @@ pub fn lit(value: Value) -> RbResult<RbExpr> {
         Ok(dsl::lit(series.series.borrow().clone()).into())
     } else if let Some(v) = RString::from_value(value) {
         Ok(dsl::lit(v.try_convert::<String>()?).into())
+    } else if value.is_kind_of(class::integer()) {
+        Ok(dsl::lit(value.try_convert::<i64>()?).into())
     } else {
         Ok(dsl::lit(value.try_convert::<f64>()?).into())
     }
