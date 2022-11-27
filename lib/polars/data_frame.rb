@@ -1882,11 +1882,38 @@ module Polars
     # def n_unique
     # end
 
+    # Rechunk the data in this DataFrame to a contiguous allocation.
+
+    # This will make sure all subsequent operations have optimal and predictable
+    # performance.
     #
+    # @return [DataFrame]
     def rechunk
       _from_rbdf(_df.rechunk)
     end
 
+    # Create a new DataFrame that shows the null counts per column.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, nil, 3],
+    #       "bar" => [6, 7, nil],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.null_count
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ u32 ┆ u32 ┆ u32 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 1   ┆ 0   │
+    #   # └─────┴─────┴─────┘
     def null_count
       _from_rbdf(_df.null_count)
     end
