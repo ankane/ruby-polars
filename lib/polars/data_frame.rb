@@ -1475,19 +1475,156 @@ module Polars
     # def shift_and_fill
     # end
 
+    # Get a mask of all duplicated rows in this DataFrame.
     #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3, 1],
+    #       "b" => ["x", "y", "z", "x"],
+    #     }
+    #   )
+    #   df.is_duplicated
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [bool]
+    #   # [
+    #   #         true
+    #   #         false
+    #   #         false
+    #   #         true
+    #   # ]
     def is_duplicated
       Utils.wrap_s(_df.is_duplicated)
     end
 
+    # Get a mask of all unique rows in this DataFrame.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3, 1],
+    #       "b" => ["x", "y", "z", "x"]
+    #     }
+    #   )
+    #   df.is_unique
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [bool]
+    #   # [
+    #   #         false
+    #   #         true
+    #   #         true
+    #   #         false
+    #   # ]
     def is_unique
       Utils.wrap_s(_df.is_unique)
     end
 
+    # Start a lazy query from this point.
+    #
+    # @return [LazyFrame]
     def lazy
       wrap_ldf(_df.lazy)
     end
 
+    # Select columns from this DataFrame.
+    #
+    # @param exprs [Object]
+    #   Column or columns to select.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.select("foo")
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 2   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 3   │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(["foo", "bar"])
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ bar │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 6   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 7   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 8   │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df.select(Polars.col("foo") + 1)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 2   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 3   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 4   │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select([Polars.col("foo") + 1, Polars.col("bar") + 1])
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ bar │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 2   ┆ 7   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 8   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 4   ┆ 9   │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df.select(Polars.when(Polars.col("foo") > 2).then(10).otherwise(0))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────┐
+    #   # │ literal │
+    #   # │ ---     │
+    #   # │ i64     │
+    #   # ╞═════════╡
+    #   # │ 0       │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ 0       │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ 10      │
+    #   # └─────────┘
     def select(exprs)
       _from_rbdf(
         lazy
