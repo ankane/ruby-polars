@@ -20,13 +20,68 @@ module Polars
       Utils.wrap_expr(_rbexpr.strftime(fmt))
     end
 
+    # Extract year from underlying Date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the year number in the calendar date.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2002, 7, 1)
+    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "180d")})
+    #   df
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌─────────────────────┐
+    #   # │ date                │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-06-30 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-12-27 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2002-06-25 00:00:00 │
+    #   # └─────────────────────┘
+    #
+    # @example
+    #   df.select(Polars.col("date").dt.year)
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌──────┐
+    #   # │ date │
+    #   # │ ---  │
+    #   # │ i32  │
+    #   # ╞══════╡
+    #   # │ 2001 │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 2001 │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 2001 │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 2002 │
+    #   # └──────┘
     def year
       Utils.wrap_expr(_rbexpr.year)
     end
 
+    # Extract ISO year from underlying Date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the year number in the ISO standard.
+    # This may not correspond with the calendar year.
+    #
+    # @return [Expr]
     def iso_year
       Utils.wrap_expr(_rbexpr.iso_year)
     end
+
 
     def quarter
       Utils.wrap_expr(_rbexpr.quarter)

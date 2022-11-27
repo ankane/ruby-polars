@@ -19,10 +19,11 @@ use magnus::{
     define_module, function, memoize, method, prelude::*, Error, RArray, RClass, RHash, RModule,
     Value,
 };
-use polars::datatypes::DataType;
+use polars::datatypes::{DataType, TimeUnit};
 use polars::error::PolarsResult;
 use polars::frame::DataFrame;
 use polars::functions::{diag_concat_df, hor_concat_df};
+use polars::prelude::{ClosedWindow, Duration, IntoSeries, TimeZone};
 use series::RbSeries;
 
 type RbResult<T> = Result<T, Error>;
@@ -44,6 +45,7 @@ fn init() -> RbResult<()> {
     module.define_singleton_method("_concat_series", function!(concat_series, 1))?;
     module.define_singleton_method("_ipc_schema", function!(ipc_schema, 1))?;
     module.define_singleton_method("_parquet_schema", function!(parquet_schema, 1))?;
+    module.define_singleton_method("_rb_date_range", function!(rb_date_range, 7))?;
     module.define_singleton_method("_arg_where", function!(arg_where, 1))?;
 
     let class = module.define_class("RbBatchedCsv", Default::default())?;
@@ -732,6 +734,28 @@ fn parquet_schema(rb_f: Value) -> RbResult<Value> {
         dict.aset(field.name, dt)?;
     }
     Ok(dict.into())
+}
+
+fn rb_date_range(
+    start: i64,
+    stop: i64,
+    every: String,
+    closed: Wrap<ClosedWindow>,
+    name: String,
+    tu: Wrap<TimeUnit>,
+    tz: Option<TimeZone>,
+) -> RbSeries {
+    polars::time::date_range_impl(
+        &name,
+        start,
+        stop,
+        Duration::parse(&every),
+        closed.0,
+        tu.0,
+        tz,
+    )
+    .into_series()
+    .into()
 }
 
 fn arg_where(condition: &RbExpr) -> RbExpr {
