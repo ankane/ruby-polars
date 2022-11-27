@@ -1402,8 +1402,65 @@ module Polars
       select(Utils.col("*").interpolate)
     end
 
-    # def unnest
-    # end
+    # Decompose a struct into its fields.
+    #
+    # The fields will be inserted into the `DataFrame` on the location of the
+    # `struct` type.
+    #
+    # @param names [Object]
+    #   Names of the struct columns that will be decomposed by its fields
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = (
+    #     Polars::DataFrame.new(
+    #       {
+    #         "before" => ["foo", "bar"],
+    #         "t_a" => [1, 2],
+    #         "t_b" => ["a", "b"],
+    #         "t_c" => [true, nil],
+    #         "t_d" => [[1, 2], [3]],
+    #         "after" => ["baz", "womp"]
+    #       }
+    #     )
+    #     .lazy
+    #     .select(
+    #       ["before", Polars.struct(Polars.col("^t_.$")).alias("t_struct"), "after"]
+    #     )
+    #   )
+    #   df.fetch
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌────────┬─────────────────────┬───────┐
+    #   # │ before ┆ t_struct            ┆ after │
+    #   # │ ---    ┆ ---                 ┆ ---   │
+    #   # │ str    ┆ struct[4]           ┆ str   │
+    #   # ╞════════╪═════════════════════╪═══════╡
+    #   # │ foo    ┆ {1,"a",true,[1, 2]} ┆ baz   │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ bar    ┆ {2,"b",null,[3]}    ┆ womp  │
+    #   # └────────┴─────────────────────┴───────┘
+    #
+    # @example
+    #   df.unnest("t_struct").fetch
+    #   # =>
+    #   # shape: (2, 6)
+    #   # ┌────────┬─────┬─────┬──────┬───────────┬───────┐
+    #   # │ before ┆ t_a ┆ t_b ┆ t_c  ┆ t_d       ┆ after │
+    #   # │ ---    ┆ --- ┆ --- ┆ ---  ┆ ---       ┆ ---   │
+    #   # │ str    ┆ i64 ┆ str ┆ bool ┆ list[i64] ┆ str   │
+    #   # ╞════════╪═════╪═════╪══════╪═══════════╪═══════╡
+    #   # │ foo    ┆ 1   ┆ a   ┆ true ┆ [1, 2]    ┆ baz   │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ bar    ┆ 2   ┆ b   ┆ null ┆ [3]       ┆ womp  │
+    #   # └────────┴─────┴─────┴──────┴───────────┴───────┘
+    def unnest(names)
+      if names.is_a?(String)
+        names = [names]
+      end
+      _from_rbldf(_ldf.unnest(names))
+    end
 
     private
 

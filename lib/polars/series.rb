@@ -2707,6 +2707,7 @@ module Polars
 
     def sequence_to_rbseries(name, values, dtype: nil, strict: true, dtype_if_empty: nil)
       ruby_dtype = nil
+      nested_dtype = nil
 
       if (values.nil? || values.empty?) && dtype.nil?
         if dtype_if_empty
@@ -2724,8 +2725,7 @@ module Polars
       rb_temporal_types << DateTime if defined?(DateTime)
       rb_temporal_types << Time if defined?(Time)
 
-      # _get_first_non_none
-      value = values.find { |v| !v.nil? }
+      value = _get_first_non_none(values)
 
       if !dtype.nil? && Utils.is_polars_dtype(dtype) && ruby_dtype.nil?
         constructor = polars_type_to_constructor(dtype)
@@ -2748,6 +2748,17 @@ module Polars
           # elsif rb_temporal_types.include?(dtype)
           #   dtype = rb_type_to_dtype(dtype)
           # end
+
+          raise Todo
+        elsif ruby_dtype == Array
+          if nested_dtype.nil?
+            nested_value = _get_first_non_none(value)
+            nested_dtype = nested_value.nil? ? Float : nested_value.class
+          end
+
+          if nested_dtype == Array
+            raise Todo
+          end
 
           raise Todo
         else
@@ -2791,6 +2802,10 @@ module Polars
     rescue KeyError
       # RbSeries.method(:new_object)
       raise ArgumentError, "Cannot determine type"
+    end
+
+    def _get_first_non_none(values)
+      values.find { |v| !v.nil? }
     end
   end
 end
