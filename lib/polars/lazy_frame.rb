@@ -626,7 +626,116 @@ module Polars
     # def join_asof
     # end
 
+    # Add a join operation to the Logical Plan.
     #
+    # @param other [LazyFrame]
+    #   Lazy DataFrame to join with.
+    # @param left_on [Object]
+    #   Join column of the left DataFrame.
+    # @param right_on [Object]
+    #   Join column of the right DataFrame.
+    # @param on Object
+    #   Join column of both DataFrames. If set, `left_on` and `right_on` should be
+    #   None.
+    # @param how ["inner", "left", "outer", "semi", "anti", "cross"]
+    #   Join strategy.
+    # @param suffix [String]
+    #   Suffix to append to columns with a duplicate name.
+    # @param allow_parallel [Boolean]
+    #   Allow the physical plan to optionally evaluate the computation of both
+    #   DataFrames up to the join in parallel.
+    # @param force_parallel [Boolean]
+    #   Force the physical plan to evaluate the computation of both DataFrames up to
+    #   the join in parallel.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   ).lazy
+    #   other_df = Polars::DataFrame.new(
+    #     {
+    #       "apple" => ["x", "y", "z"],
+    #       "ham" => ["a", "b", "d"]
+    #     }
+    #   ).lazy
+    #   df.join(other_df, on: "ham").collect
+    #   # =>
+    #   # shape: (2, 4)
+    #   # ┌─────┬─────┬─────┬───────┐
+    #   # │ foo ┆ bar ┆ ham ┆ apple │
+    #   # │ --- ┆ --- ┆ --- ┆ ---   │
+    #   # │ i64 ┆ f64 ┆ str ┆ str   │
+    #   # ╞═════╪═════╪═════╪═══════╡
+    #   # │ 1   ┆ 6.0 ┆ a   ┆ x     │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 7.0 ┆ b   ┆ y     │
+    #   # └─────┴─────┴─────┴───────┘
+    #
+    # @example
+    #   df.join(other_df, on: "ham", how: "outer").collect
+    #   # =>
+    #   # shape: (4, 4)
+    #   # ┌──────┬──────┬─────┬───────┐
+    #   # │ foo  ┆ bar  ┆ ham ┆ apple │
+    #   # │ ---  ┆ ---  ┆ --- ┆ ---   │
+    #   # │ i64  ┆ f64  ┆ str ┆ str   │
+    #   # ╞══════╪══════╪═════╪═══════╡
+    #   # │ 1    ┆ 6.0  ┆ a   ┆ x     │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2    ┆ 7.0  ┆ b   ┆ y     │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ null ┆ null ┆ d   ┆ z     │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 3    ┆ 8.0  ┆ c   ┆ null  │
+    #   # └──────┴──────┴─────┴───────┘
+    #
+    # @example
+    #   df.join(other_df, on: "ham", how: "left").collect
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌─────┬─────┬─────┬───────┐
+    #   # │ foo ┆ bar ┆ ham ┆ apple │
+    #   # │ --- ┆ --- ┆ --- ┆ ---   │
+    #   # │ i64 ┆ f64 ┆ str ┆ str   │
+    #   # ╞═════╪═════╪═════╪═══════╡
+    #   # │ 1   ┆ 6.0 ┆ a   ┆ x     │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 7.0 ┆ b   ┆ y     │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 8.0 ┆ c   ┆ null  │
+    #   # └─────┴─────┴─────┴───────┘
+    #
+    # @example
+    #   df.join(other_df, on: "ham", how: "semi").collect
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ f64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6.0 ┆ a   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 7.0 ┆ b   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example
+    #   df.join(other_df, on: "ham", how: "anti").collect
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ f64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 3   ┆ 8.0 ┆ c   │
+    #   # └─────┴─────┴─────┘
     def join(
       other,
       left_on: nil,
