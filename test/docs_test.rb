@@ -10,7 +10,7 @@ class DocsTest < Minitest::Test
   end
 
   def test_date_time_expr
-    assert_docs Polars::DateTimeExpr
+    assert_docs Polars::DateTimeExpr, required: true
   end
 
   def test_expr

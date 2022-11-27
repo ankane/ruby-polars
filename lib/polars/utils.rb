@@ -19,6 +19,10 @@ module Polars
       Polars.col(name)
     end
 
+    def self._timedelta_to_pl_duration(td)
+      td
+    end
+
     def self._datetime_to_pl_timestamp(dt, tu)
       if tu == "ns"
         (dt.to_datetime.utc.to_f * 1e9).to_i

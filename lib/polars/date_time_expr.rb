@@ -9,11 +9,250 @@ module Polars
       self._rbexpr = expr._rbexpr
     end
 
-    # def truncate
-    # end
+    # Divide the date/datetime range into buckets.
+    #
+    # Each date/datetime is mapped to the start of its bucket.
+    #
+    # @param every [String]
+    #   Every interval start and period length
+    # @param offset [String]
+    #   Offset the window
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   The `every` and `offset` argument are created with the
+    #   the following small string formatting language:
+    #
+    #   1ns  # 1 nanosecond
+    #   1us  # 1 microsecond
+    #   1ms  # 1 millisecond
+    #   1s   # 1 second
+    #   1m   # 1 minute
+    #   1h   # 1 hour
+    #   1d   # 1 day
+    #   1w   # 1 week
+    #   1mo  # 1 calendar month
+    #   1y   # 1 calendar year
+    #
+    #   eg: 3d12h4m25s  # 3 days, 12 hours, 4 minutes, and 25 seconds
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 2)
+    #   df = Polars.date_range(
+    #     start, stop, "225m", name: "dates"
+    #   ).to_frame
+    #   # =>
+    #   # shape: (7, 1)
+    #   # ┌─────────────────────┐
+    #   # │ dates               │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 03:45:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 07:30:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 11:15:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 15:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 18:45:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 22:30:00 │
+    #   # └─────────────────────┘
+    #
+    # @example
+    #   df.select(Polars.col("dates").dt.truncate("1h"))
+    #   # =>
+    #   # shape: (7, 1)
+    #   # ┌─────────────────────┐
+    #   # │ dates               │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 03:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 07:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 11:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 15:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 18:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 22:00:00 │
+    #   # └─────────────────────┘
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 1, 1)
+    #   df = Polars.date_range(start, stop, "10m", name: "dates").to_frame
+    #   df.select(["dates", Polars.col("dates").dt.truncate("30m").alias("truncate")])
+    #   # =>
+    #   # shape: (7, 2)
+    #   # ┌─────────────────────┬─────────────────────┐
+    #   # │ dates               ┆ truncate            │
+    #   # │ ---                 ┆ ---                 │
+    #   # │ datetime[μs]        ┆ datetime[μs]        │
+    #   # ╞═════════════════════╪═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 ┆ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:10:00 ┆ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:20:00 ┆ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:30:00 ┆ 2001-01-01 00:30:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:40:00 ┆ 2001-01-01 00:30:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:50:00 ┆ 2001-01-01 00:30:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 01:00:00 ┆ 2001-01-01 01:00:00 │
+    #   # └─────────────────────┴─────────────────────┘
+    def truncate(every, offset: nil)
+      if offset.nil?
+        offset = "0ns"
+      end
 
-    # def round
-    # end
+      Utils.wrap_expr(
+        _rbexpr.dt_truncate(
+          Utils._timedelta_to_pl_duration(every),
+          Utils._timedelta_to_pl_duration(offset)
+        )
+      )
+    end
+
+    # Divide the date/datetime range into buckets.
+    #
+    # Each date/datetime in the first half of the interval
+    # is mapped to the start of its bucket.
+    # Each date/datetime in the seconod half of the interval
+    # is mapped to the end of its bucket.
+    #
+    # @param every [String]
+    #   Every interval start and period length
+    # @param offset [String]
+    #   Offset the window
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   The `every` and `offset` argument are created with the
+    #   the following small string formatting language:
+    #
+    #   1ns  # 1 nanosecond
+    #   1us  # 1 microsecond
+    #   1ms  # 1 millisecond
+    #   1s   # 1 second
+    #   1m   # 1 minute
+    #   1h   # 1 hour
+    #   1d   # 1 day
+    #   1w   # 1 week
+    #   1mo  # 1 calendar month
+    #   1y   # 1 calendar year
+    #
+    #   eg: 3d12h4m25s  # 3 days, 12 hours, 4 minutes, and 25 seconds
+    #
+    # @note
+    #   This functionality is currently experimental and may
+    #   change without it being considered a breaking change.
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 2)
+    #   df = Polars.date_range(
+    #     start, stop, "225m", name: "dates"
+    #   ).to_frame
+    #   # =>
+    #   # shape: (7, 1)
+    #   # ┌─────────────────────┐
+    #   # │ dates               │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 03:45:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 07:30:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 11:15:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 15:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 18:45:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 22:30:00 │
+    #   # └─────────────────────┘
+    #
+    # @example
+    #   df.select(Polars.col("dates").dt.round("1h"))
+    #   # =>
+    #   # shape: (7, 1)
+    #   # ┌─────────────────────┐
+    #   # │ dates               │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 04:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 08:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 11:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 15:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 19:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 23:00:00 │
+    #   # └─────────────────────┘
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 1, 1)
+    #   df = Polars.date_range(start, stop, "10m", name: "dates").to_frame
+    #   df.select(["dates", Polars.col("dates").dt.round("30m").alias("round")])
+    #   # =>
+    #   # shape: (7, 2)
+    #   # ┌─────────────────────┬─────────────────────┐
+    #   # │ dates               ┆ round               │
+    #   # │ ---                 ┆ ---                 │
+    #   # │ datetime[μs]        ┆ datetime[μs]        │
+    #   # ╞═════════════════════╪═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 ┆ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:10:00 ┆ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:20:00 ┆ 2001-01-01 00:30:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:30:00 ┆ 2001-01-01 00:30:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:40:00 ┆ 2001-01-01 00:30:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 00:50:00 ┆ 2001-01-01 01:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-01 01:00:00 ┆ 2001-01-01 01:00:00 │
+    #   # └─────────────────────┴─────────────────────┘
+    def round(every, offset: nil)
+      if offset.nil?
+        offset = "0ns"
+      end
+
+      Utils.wrap_expr(
+        _rbexpr.dt_round(
+          Utils._timedelta_to_pl_duration(every),
+          Utils._timedelta_to_pl_duration(offset)
+        )
+      )
+    end
 
     # Format Date/datetime with a formatting rule.
     #
