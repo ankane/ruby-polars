@@ -572,18 +572,64 @@ module Polars
       end
     end
 
+    # Extract milliseconds from underlying DateTime representation.
+    #
+    # Applies to Datetime columns.
+    #
+    # @return [Expr]
     def millisecond
       Utils.wrap_expr(_rbexpr.millisecond)
     end
 
+    # Extract microseconds from underlying DateTime representation.
+    #
+    # Applies to Datetime columns.
+    #
+    # @return [Expr]
     def microsecond
       Utils.wrap_expr(_rbexpr.microsecond)
     end
 
+    # Extract nanoseconds from underlying DateTime representation.
+    #
+    # Applies to Datetime columns.
+    #
+    # @return [Expr]
     def nanosecond
       Utils.wrap_expr(_rbexpr.nanosecond)
     end
 
+    # Get the time passed since the Unix EPOCH in the give time unit.
+    #
+    # @param tu ["us", "ns", "ms", "s", "d"]
+    #   Time unit.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 3)
+    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "1d")})
+    #   df.select(
+    #     [
+    #       Polars.col("date"),
+    #       Polars.col("date").dt.epoch.alias("epoch_ns"),
+    #       Polars.col("date").dt.epoch("s").alias("epoch_s")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────────────────────┬─────────────────┬───────────┐
+    #   # │ date                ┆ epoch_ns        ┆ epoch_s   │
+    #   # │ ---                 ┆ ---             ┆ ---       │
+    #   # │ datetime[μs]        ┆ i64             ┆ i64       │
+    #   # ╞═════════════════════╪═════════════════╪═══════════╡
+    #   # │ 2001-01-01 00:00:00 ┆ 978307200000000 ┆ 978307200 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-02 00:00:00 ┆ 978393600000000 ┆ 978393600 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-03 00:00:00 ┆ 978480000000000 ┆ 978480000 │
+    #   # └─────────────────────┴─────────────────┴───────────┘
     def epoch(tu = "us")
       if Utils::DTYPE_TEMPORAL_UNITS.include?(tu)
         timestamp(tu)
@@ -596,26 +642,183 @@ module Polars
       end
     end
 
+    # Return a timestamp in the given time unit.
+    #
+    # @param tu ["us", "ns", "ms"]
+    #   Time unit.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 3)
+    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "1d")})
+    #   df.select(
+    #     [
+    #       Polars.col("date"),
+    #       Polars.col("date").dt.timestamp.alias("timestamp_ns"),
+    #       Polars.col("date").dt.timestamp("ms").alias("timestamp_ms")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────────────────────┬─────────────────┬──────────────┐
+    #   # │ date                ┆ timestamp_ns    ┆ timestamp_ms │
+    #   # │ ---                 ┆ ---             ┆ ---          │
+    #   # │ datetime[μs]        ┆ i64             ┆ i64          │
+    #   # ╞═════════════════════╪═════════════════╪══════════════╡
+    #   # │ 2001-01-01 00:00:00 ┆ 978307200000000 ┆ 978307200000 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-02 00:00:00 ┆ 978393600000000 ┆ 978393600000 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-03 00:00:00 ┆ 978480000000000 ┆ 978480000000 │
+    #   # └─────────────────────┴─────────────────┴──────────────┘
     def timestamp(tu = "us")
       Utils.wrap_expr(_rbexpr.timestamp(tu))
     end
 
+    # Set time unit of a Series of dtype Datetime or Duration.
+    #
+    # This does not modify underlying data, and should be used to fix an incorrect
+    # time unit.
+    #
+    # @param tu ["ns", "us", "ms"]
+    #   Time unit for the `Datetime` Series.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => Polars.date_range(
+    #         DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 3), "1d", time_unit: "ns"
+    #       )
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("date"),
+    #       Polars.col("date").dt.with_time_unit("us").alias("tu_us")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────────────────────┬───────────────────────┐
+    #   # │ date                ┆ tu_us                 │
+    #   # │ ---                 ┆ ---                   │
+    #   # │ datetime[ns]        ┆ datetime[μs]          │
+    #   # ╞═════════════════════╪═══════════════════════╡
+    #   # │ 2001-01-01 00:00:00 ┆ +32971-04-28 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-02 00:00:00 ┆ +32974-01-22 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-03 00:00:00 ┆ +32976-10-18 00:00:00 │
+    #   # └─────────────────────┴───────────────────────┘
     def with_time_unit(tu)
       Utils.wrap_expr(_rbexpr.dt_with_time_unit(tu))
     end
 
+    # Cast the underlying data to another time unit. This may lose precision.
+    #
+    # @param tu ["ns", "us", "ms"]
+    #   Time unit for the `Datetime` Series.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => Polars.date_range(
+    #         DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 3), "1d"
+    #       )
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("date"),
+    #       Polars.col("date").dt.cast_time_unit("ms").alias("tu_ms"),
+    #       Polars.col("date").dt.cast_time_unit("ns").alias("tu_ns")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────────────────────┬─────────────────────┬─────────────────────┐
+    #   # │ date                ┆ tu_ms               ┆ tu_ns               │
+    #   # │ ---                 ┆ ---                 ┆ ---                 │
+    #   # │ datetime[μs]        ┆ datetime[ms]        ┆ datetime[ns]        │
+    #   # ╞═════════════════════╪═════════════════════╪═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 ┆ 2001-01-01 00:00:00 ┆ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-02 00:00:00 ┆ 2001-01-02 00:00:00 ┆ 2001-01-02 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-03 00:00:00 ┆ 2001-01-03 00:00:00 ┆ 2001-01-03 00:00:00 │
+    #   # └─────────────────────┴─────────────────────┴─────────────────────┘
     def cast_time_unit(tu)
       Utils.wrap_expr(_rbexpr.dt_cast_time_unit(tu))
     end
 
+    # Set time zone for a Series of type Datetime.
+    #
+    # @param tz [String]
+    #   Time zone for the `Datetime` Series.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => Polars.date_range(
+    #         DateTime.new(2020, 3, 1), DateTime.new(2020, 5, 1), "1mo"
+    #       )
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("date"),
+    #       Polars.col("date")
+    #         .dt.with_time_zone("Europe/London")
+    #         .alias("London")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────────────────────┬─────────────────────────────┐
+    #   # │ date                ┆ London                      │
+    #   # │ ---                 ┆ ---                         │
+    #   # │ datetime[μs]        ┆ datetime[μs, Europe/London] │
+    #   # ╞═════════════════════╪═════════════════════════════╡
+    #   # │ 2020-03-01 00:00:00 ┆ 2020-03-01 00:00:00 GMT     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-04-01 00:00:00 ┆ 2020-04-01 01:00:00 BST     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2020-05-01 00:00:00 ┆ 2020-05-01 01:00:00 BST     │
+    #   # └─────────────────────┴─────────────────────────────┘
     def with_time_zone(tz)
       Utils.wrap_expr(_rbexpr.dt_with_time_zone(tz))
     end
 
+    # Cast time zone for a Series of type Datetime.
+    #
+    # Different from `with_time_zone`, this will also modify
+    # the underlying timestamp,
+    #
+    # @param tz [String]
+    #   Time zone for the `Datetime` Series.
+    #
+    # @return [Expr]
     def cast_time_zone(tz)
       Utils.wrap_expr(_rbexpr.dt_cast_time_zone(tz))
     end
 
+    # Localize tz-naive Datetime Series to tz-aware Datetime Series.
+    #
+    # This method takes a naive Datetime Series and makes this time zone aware.
+    # It does not move the time to another time zone.
+    #
+    # @param tz [String]
+    #   Time zone for the `Datetime` Series.
+    #
+    # @return [Expr]
     def tz_localize(tz)
       Utils.wrap_expr(_rbexpr.dt_tz_localize(tz))
     end
