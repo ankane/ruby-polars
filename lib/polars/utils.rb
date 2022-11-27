@@ -49,12 +49,28 @@ module Polars
 
     # TODO fix
     def self.is_polars_dtype(data_type)
-      true
+      data_type.is_a?(Symbol) || data_type.is_a?(String)
     end
 
+    RB_TYPE_TO_DTYPE = {
+      Float => :f64,
+      Integer => :i64,
+      String => :str,
+      TrueClass => :bool,
+      FalseClass => :bool
+    }
+
     # TODO fix
-    def self.rb_type_to_dtype(dtype)
-      dtype.to_s
+    def self.rb_type_to_dtype(data_type)
+      if is_polars_dtype(data_type)
+        return data_type.to_s
+      end
+
+      begin
+        RB_TYPE_TO_DTYPE.fetch(data_type).to_s
+      rescue KeyError
+        raise ArgumentError, "Conversion of Ruby data type #{data_type} to Polars data type not implemented."
+      end
     end
 
     def self._process_null_values(null_values)

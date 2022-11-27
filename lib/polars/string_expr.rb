@@ -51,8 +51,8 @@ module Polars
     # @return [Expr]
     #
     # @note
-    #  If you know that you are working with ASCII text, `lengths` will be
-    #  equivalent, and faster (returns length in terms of the number of bytes).
+    #   If you know that you are working with ASCII text, `lengths` will be
+    #   equivalent, and faster (returns length in terms of the number of bytes).
     #
     # @example
     #   df = Polars::DataFrame.new({"s" => ["Café", nil, "345", "東京"]}).with_columns(
@@ -148,6 +148,29 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_to_lowercase)
     end
 
+    # Remove leading and trailing whitespace.
+    #
+    # @param matches [String, nil]
+    #   An optional single character that should be trimmed.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [" lead", "trail ", " both "]})
+    #   df.select(Polars.col("foo").str.strip)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌───────┐
+    #   # │ foo   │
+    #   # │ ---   │
+    #   # │ str   │
+    #   # ╞═══════╡
+    #   # │ lead  │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ trail │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ both  │
+    #   # └───────┘
     def strip(matches = nil)
       if !matches.nil? && matches.length > 1
         raise ArgumentError, "matches should contain a single character"
@@ -155,6 +178,29 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_strip(matches))
     end
 
+    # Remove leading whitespace.
+    #
+    # @param matches [String, nil]
+    #   An optional single character that should be trimmed.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [" lead", "trail ", " both "]})
+    #   df.select(Polars.col("foo").str.lstrip)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌────────┐
+    #   # │ foo    │
+    #   # │ ---    │
+    #   # │ str    │
+    #   # ╞════════╡
+    #   # │ lead   │
+    #   # ├╌╌╌╌╌╌╌╌┤
+    #   # │ trail  │
+    #   # ├╌╌╌╌╌╌╌╌┤
+    #   # │ both   │
+    #   # └────────┘
     def lstrip(matches = nil)
       if !matches.nil? && matches.length > 1
         raise ArgumentError, "matches should contain a single character"
@@ -162,6 +208,29 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_lstrip(matches))
     end
 
+    # Remove trailing whitespace.
+    #
+    # @param matches [String, nil]
+    #   An optional single character that should be trimmed.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [" lead", "trail ", " both "]})
+    #   df.select(Polars.col("foo").str.rstrip)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌───────┐
+    #   # │ foo   │
+    #   # │ ---   │
+    #   # │ str   │
+    #   # ╞═══════╡
+    #   # │  lead │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ trail │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │  both │
+    #   # └───────┘
     def rstrip(matches = nil)
       if !matches.nil? && matches.length > 1
         raise ArgumentError, "matches should contain a single character"
@@ -169,6 +238,52 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_rstrip(matches))
     end
 
+    # Fills the string with zeroes.
+    #
+    # Return a copy of the string left filled with ASCII '0' digits to make a string
+    # of length width.
+    #
+    # A leading sign prefix ('+'/'-') is handled by inserting the padding after the
+    # sign character rather than before. The original string is returned if width is
+    # less than or equal to `s.length`.
+    #
+    # @param alignment [Integer]
+    #   Fill the value up to this length
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "num" => [-10, -1, 0, 1, 10, 100, 1000, 10000, 100000, 1000000, nil]
+    #     }
+    #   )
+    #   df.with_column(Polars.col("num").cast(String).str.zfill(5))
+    #   # =>
+    #   # shape: (11, 1)
+    #   # ┌─────────┐
+    #   # │ num     │
+    #   # │ ---     │
+    #   # │ str     │
+    #   # ╞═════════╡
+    #   # │ -0010   │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ -0001   │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ 00000   │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ 00001   │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ ...     │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ 10000   │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ 100000  │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1000000 │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ null    │
+    #   # └─────────┘
     def zfill(alignment)
       Utils.wrap_expr(_rbexpr.str_zfill(alignment))
     end
