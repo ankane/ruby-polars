@@ -1,12 +1,10 @@
-use magnus::{r_hash::ForEach, Error, RArray, RHash, RString, Value};
+use magnus::{r_hash::ForEach, RArray, RHash, RString, Value};
 use polars::io::mmap::ReaderBytes;
 use polars::io::RowCount;
 use polars::prelude::*;
 use std::cell::RefCell;
-use std::fs::File;
-use std::io::{BufReader, BufWriter, Cursor};
+use std::io::{BufWriter, Cursor};
 use std::ops::Deref;
-use std::path::PathBuf;
 
 use crate::conversion::*;
 use crate::file::{get_file_like, get_mmap_bytes_reader};
@@ -137,13 +135,27 @@ impl RbDataFrame {
         Ok(df.into())
     }
 
-    pub fn read_parquet(path: PathBuf) -> RbResult<Self> {
-        let f = File::open(&path).map_err(|e| Error::runtime_error(e.to_string()))?;
-        let reader = BufReader::new(f);
-        ParquetReader::new(reader)
+    pub fn read_parquet(
+        rb_f: Value,
+        columns: Option<Vec<String>>,
+        projection: Option<Vec<usize>>,
+        n_rows: Option<usize>,
+        parallel: Wrap<ParallelStrategy>,
+        row_count: Option<(String, IdxSize)>,
+        low_memory: bool,
+    ) -> RbResult<Self> {
+        let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
+        let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
+        let df = ParquetReader::new(mmap_bytes_r)
+            .with_projection(projection)
+            .with_columns(columns)
+            .read_parallel(parallel.0)
+            .with_n_rows(n_rows)
+            .with_row_count(row_count)
+            .set_low_memory(low_memory)
             .finish()
-            .map_err(RbPolarsErr::from)
-            .map(|v| v.into())
+            .map_err(RbPolarsErr::from)?;
+        Ok(RbDataFrame::new(df))
     }
 
     pub fn read_ipc(

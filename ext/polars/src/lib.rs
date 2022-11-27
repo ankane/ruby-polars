@@ -55,7 +55,7 @@ fn init() -> RbResult<()> {
     let class = module.define_class("RbDataFrame", Default::default())?;
     class.define_singleton_method("new", function!(RbDataFrame::init, 1))?;
     class.define_singleton_method("read_csv", function!(RbDataFrame::read_csv, -1))?;
-    class.define_singleton_method("read_parquet", function!(RbDataFrame::read_parquet, 1))?;
+    class.define_singleton_method("read_parquet", function!(RbDataFrame::read_parquet, 7))?;
     class.define_singleton_method("read_ipc", function!(RbDataFrame::read_ipc, 6))?;
     class.define_singleton_method("read_hash", function!(RbDataFrame::read_hash, 1))?;
     class.define_singleton_method("read_json", function!(RbDataFrame::read_json, 1))?;

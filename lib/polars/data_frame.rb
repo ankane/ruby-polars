@@ -155,12 +155,35 @@ module Polars
     end
 
     # @private
-    def self._read_parquet(file)
+    def self._read_parquet(
+      file,
+      columns: nil,
+      n_rows: nil,
+      parallel: "auto",
+      row_count_name: nil,
+      row_count_offset: 0,
+      low_memory: false
+    )
       if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
         file = Utils.format_path(file)
       end
 
-      _from_rbdf(RbDataFrame.read_parquet(file))
+      if file.is_a?(String) && file.include?("*")
+        raise Todo
+      end
+
+      projection, columns = Utils.handle_projection_columns(columns)
+      _from_rbdf(
+        RbDataFrame.read_parquet(
+          file,
+          columns,
+          projection,
+          n_rows,
+          parallel,
+          Utils._prepare_row_count_args(row_count_name, row_count_offset),
+          low_memory
+        )
+      )
     end
 
     # def self._read_avro
