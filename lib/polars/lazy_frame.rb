@@ -1215,19 +1215,126 @@ module Polars
       _from_rbldf(_ldf.min)
     end
 
-    # def sum
-    # end
-
-    # def mean
-    # end
-
-    # def median
-    # end
-
-    # def quantile
-    # end
-
+    # Aggregate the columns in the DataFrame to their sum value.
     #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => [1, 2, 1, 1]}).lazy
+    #   df.sum.collect
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 10  ┆ 5   │
+    #   # └─────┴─────┘
+    def sum
+      _from_rbldf(_ldf.sum)
+    end
+
+    # Aggregate the columns in the DataFrame to their mean value.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => [1, 2, 1, 1]}).lazy
+    #   df.mean.collect
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬──────┐
+    #   # │ a   ┆ b    │
+    #   # │ --- ┆ ---  │
+    #   # │ f64 ┆ f64  │
+    #   # ╞═════╪══════╡
+    #   # │ 2.5 ┆ 1.25 │
+    #   # └─────┴──────┘
+    def mean
+      _from_rbldf(_ldf.mean)
+    end
+
+    # Aggregate the columns in the DataFrame to their median value.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => [1, 2, 1, 1]}).lazy
+    #   df.median.collect
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ f64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 2.5 ┆ 1.0 │
+    #   # └─────┴─────┘
+    def median
+      _from_rbldf(_ldf.median)
+    end
+
+    # Aggregate the columns in the DataFrame to their quantile value.
+    #
+    # @param quantile [Float]
+    #   Quantile between 0.0 and 1.0.
+    # @param interpolation ["nearest", "higher", "lower", "midpoint", "linear"]
+    #   Interpolation method.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => [1, 2, 1, 1]}).lazy
+    #   df.quantile(0.7).collect
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ f64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 3.0 ┆ 1.0 │
+    #   # └─────┴─────┘
+    def quantile(quantile, interpolation: "nearest")
+      _from_rbldf(_ldf.quantile(quantile, interpolation))
+    end
+
+    # Explode lists to long format.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "letters" => ["a", "a", "b", "c"],
+    #       "numbers" => [[1], [2, 3], [4, 5], [6, 7, 8]],
+    #     }
+    #   ).lazy
+    #   df.explode("numbers").collect
+    #   # =>
+    #   # shape: (8, 2)
+    #   # ┌─────────┬─────────┐
+    #   # │ letters ┆ numbers │
+    #   # │ ---     ┆ ---     │
+    #   # │ str     ┆ i64     │
+    #   # ╞═════════╪═════════╡
+    #   # │ a       ┆ 1       │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ a       ┆ 2       │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ a       ┆ 3       │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ b       ┆ 4       │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ b       ┆ 5       │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ c       ┆ 6       │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ c       ┆ 7       │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ c       ┆ 8       │
+    #   # └─────────┴─────────┘
     def explode(columns)
       columns = Utils.selection_to_rbexpr_list(columns)
       _from_rbldf(_ldf.explode(columns))
