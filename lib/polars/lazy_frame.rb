@@ -1045,13 +1045,65 @@ module Polars
     # def with_row_count
     # end
 
-    # def take_every
-    # end
+    # Take every nth row in the LazyFrame and return as a new LazyFrame.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   s = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => [5, 6, 7, 8]}).lazy
+    #   s.take_every(2).collect
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 5   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 7   │
+    #   # └─────┴─────┘
+    def take_every(n)
+      select(Utils.col("*").take_every(n))
+    end
 
     # def fill_null
     # end
 
+    # Fill floating point NaN values.
     #
+    # @param fill_value [Object]
+    #   Value to fill the NaN values with.
+    #
+    # @return [LazyFrame]
+    #
+    # @note
+    #   Note that floating point NaN (Not a Number) are not missing values!
+    #   To replace missing values, use `fill_null` instead.
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1.5, 2, Float::NAN, 4],
+    #       "b" => [0.5, 4, Float::NAN, 13],
+    #     }
+    #   ).lazy
+    #   df.fill_nan(99).collect
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌──────┬──────┐
+    #   # │ a    ┆ b    │
+    #   # │ ---  ┆ ---  │
+    #   # │ f64  ┆ f64  │
+    #   # ╞══════╪══════╡
+    #   # │ 1.5  ┆ 0.5  │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 2.0  ┆ 4.0  │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 99.0 ┆ 99.0 │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 4.0  ┆ 13.0 │
+    #   # └──────┴──────┘
     def fill_nan(fill_value)
       if !fill_value.is_a?(Expr)
         fill_value = Utils.lit(fill_value)
