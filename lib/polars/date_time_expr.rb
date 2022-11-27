@@ -269,10 +269,106 @@ module Polars
       Utils.wrap_expr(_rbexpr.weekday)
     end
 
+    # Extract day from underlying Date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the day of month starting from 1.
+    # The return value ranges from 1 to 31. (The last day of month differs by months.)
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 9)
+    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "3d")})
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────────────────┐
+    #   # │ date                │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-04 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-07 00:00:00 │
+    #   # └─────────────────────┘
+    #
+    # @example
+    #   df.select(
+    #     [
+    #       Polars.col("date").dt.weekday.alias("weekday"),
+    #       Polars.col("date").dt.day.alias("day_of_month"),
+    #       Polars.col("date").dt.ordinal_day.alias("day_of_year")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────────┬──────────────┬─────────────┐
+    #   # │ weekday ┆ day_of_month ┆ day_of_year │
+    #   # │ ---     ┆ ---          ┆ ---         │
+    #   # │ u32     ┆ u32          ┆ u32         │
+    #   # ╞═════════╪══════════════╪═════════════╡
+    #   # │ 0       ┆ 1            ┆ 1           │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3       ┆ 4            ┆ 4           │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 6       ┆ 7            ┆ 7           │
+    #   # └─────────┴──────────────┴─────────────┘
     def day
       Utils.wrap_expr(_rbexpr.day)
     end
 
+    # Extract ordinal day from underlying Date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the day of month starting from 1.
+    # The return value ranges from 1 to 31. (The last day of month differs by months.)
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 9)
+    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "3d")})
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────────────────┐
+    #   # │ date                │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-04 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-01-07 00:00:00 │
+    #   # └─────────────────────┘
+    #
+    # @example
+    #   df.select(
+    #     [
+    #       Polars.col("date").dt.weekday.alias("weekday"),
+    #       Polars.col("date").dt.day.alias("day_of_month"),
+    #       Polars.col("date").dt.ordinal_day.alias("day_of_year")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────────┬──────────────┬─────────────┐
+    #   # │ weekday ┆ day_of_month ┆ day_of_year │
+    #   # │ ---     ┆ ---          ┆ ---         │
+    #   # │ u32     ┆ u32          ┆ u32         │
+    #   # ╞═════════╪══════════════╪═════════════╡
+    #   # │ 0       ┆ 1            ┆ 1           │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3       ┆ 4            ┆ 4           │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 6       ┆ 7            ┆ 7           │
+    #   # └─────────┴──────────────┴─────────────┘
     def ordinal_day
       Utils.wrap_expr(_rbexpr.ordinal_day)
     end
@@ -309,7 +405,7 @@ module Polars
       elsif tu == "d"
         Utils.wrap_expr(_rbexpr).cast(:date).cast(:i32)
       else
-        raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms', 's', 'd'}}, got {tu}"
+        raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms', 's', 'd'}}, got #{tu}"
       end
     end
 
