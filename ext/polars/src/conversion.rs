@@ -1,4 +1,5 @@
 use magnus::{RArray, Symbol, TryConvert, Value, QNIL};
+use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
 use polars::frame::DataFrame;
@@ -406,4 +407,20 @@ pub fn parse_parquet_compression(
         }
     };
     Ok(parsed)
+}
+
+pub struct ObjectValue {
+    pub inner: Value,
+}
+
+impl From<&dyn PolarsObjectSafe> for &ObjectValue {
+    fn from(val: &dyn PolarsObjectSafe) -> Self {
+        unsafe { &*(val as *const dyn PolarsObjectSafe as *const ObjectValue) }
+    }
+}
+
+impl ObjectValue {
+    pub fn to_object(&self) -> Value {
+        self.inner.clone()
+    }
 }

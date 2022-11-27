@@ -313,6 +313,32 @@ impl RbDataFrame {
         Ok(())
     }
 
+    pub fn row_tuples(&self) -> Value {
+        let df = &self.df;
+        RArray::from_vec(
+            (0..df.borrow().height())
+                .map(|idx| {
+                    RArray::from_vec(
+                        self.df
+                            .borrow()
+                            .get_columns()
+                            .iter()
+                            .map(|s| match s.dtype() {
+                                DataType::Object(_) => {
+                                    let obj: Option<&ObjectValue> =
+                                        s.get_object(idx).map(|any| any.into());
+                                    obj.unwrap().to_object()
+                                }
+                                _ => Wrap(s.get(idx)).into(),
+                            })
+                            .collect(),
+                    )
+                })
+                .collect(),
+        )
+        .into()
+    }
+
     pub fn write_parquet(
         &self,
         rb_f: Value,
@@ -771,6 +797,11 @@ impl RbDataFrame {
         };
         let out = out.map_err(RbPolarsErr::from)?;
         Ok(out.into())
+    }
+
+    pub fn to_struct(&self, name: String) -> RbSeries {
+        let s = self.df.borrow().clone().into_struct(&name);
+        s.into_series().into()
     }
 
     pub fn unnest(&self, names: Vec<String>) -> RbResult<Self> {

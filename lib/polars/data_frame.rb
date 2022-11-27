@@ -1804,32 +1804,179 @@ module Polars
     # def row
     # end
 
-    # def rows
-    # end
+    # Convert columnar data to rows as Ruby arrays.
+    #
+    # @return [Array]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 3, 5],
+    #       "b" => [2, 4, 6]
+    #     }
+    #   )
+    #   df.rows
+    #   # => [[1, 2], [3, 4], [5, 6]]
+    def rows
+      _df.row_tuples
+    end
 
-    # def shrink_to_fit
-    # end
+    # Shrink DataFrame memory usage.
+    #
+    # Shrinks to fit the exact capacity needed to hold the data.
+    #
+    # @return [DataFrame]
+    def shrink_to_fit(in_place: false)
+      if in_place
+        _df.shrink_to_fit
+        self
+      else
+        df = clone
+        df._df.shrink_to_fit
+        df
+      end
+    end
 
-    # def take_every
-    # end
+    # Take every nth row in the DataFrame and return as a new DataFrame.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   s = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => [5, 6, 7, 8]})
+    #   s.take_every(2)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 5   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 7   │
+    #   # └─────┴─────┘
+    def take_every(n)
+      select(Utils.col("*").take_every(n))
+    end
 
     # def hash_rows
     # end
 
-    # def interpolate
-    # end
-
+    # Interpolate intermediate values. The interpolation method is linear.
     #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, nil, 9, 10],
+    #       "bar" => [6, 7, 9, nil],
+    #       "baz" => [1, nil, nil, 9]
+    #     }
+    #   )
+    #   df.interpolate
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬──────┬─────┐
+    #   # │ foo ┆ bar  ┆ baz │
+    #   # │ --- ┆ ---  ┆ --- │
+    #   # │ i64 ┆ i64  ┆ i64 │
+    #   # ╞═════╪══════╪═════╡
+    #   # │ 1   ┆ 6    ┆ 1   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 5   ┆ 7    ┆ 3   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 9   ┆ 9    ┆ 6   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 10  ┆ null ┆ 9   │
+    #   # └─────┴──────┴─────┘
+    def interpolate
+      select(Utils.col("*").interpolate)
+    end
+
+    # Check if the dataframe is empty.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3], "bar" => [4, 5, 6]})
+    #   df.is_empty
+    #   # => false
+    #   df.filter(Polars.col("foo") > 99).is_empty
+    #   # => true
     def is_empty
       height == 0
     end
     alias_method :empty?, :is_empty
 
-    # def to_struct(name)
-    # end
+    # Convert a `DataFrame` to a `Series` of type `Struct`.
+    #
+    # @param name [String]
+    #   Name for the struct Series
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3, 4, 5],
+    #       "b" => ["one", "two", "three", "four", "five"]
+    #     }
+    #   )
+    #   df.to_struct("nums")
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'nums' [struct[2]]
+    #   # [
+    #   #         {1,"one"}
+    #   #         {2,"two"}
+    #   #         {3,"three"}
+    #   #         {4,"four"}
+    #   #         {5,"five"}
+    #   # ]
+    def to_struct(name)
+      Utils.wrap_s(_df.to_struct(name))
+    end
 
-    # def unnest
-    # end
+    # Decompose a struct into its fields.
+    #
+    # The fields will be inserted into the `DataFrame` on the location of the
+    # `struct` type.
+    #
+    # @param names [Object]
+    #  Names of the struct columns that will be decomposed by its fields
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "before" => ["foo", "bar"],
+    #       "t_a" => [1, 2],
+    #       "t_b" => ["a", "b"],
+    #       "t_c" => [true, nil],
+    #       "t_d" => [[1, 2], [3]],
+    #       "after" => ["baz", "womp"]
+    #     }
+    #   ).select(["before", Polars.struct(Polars.col("^t_.$")).alias("t_struct"), "after"])
+    #   df.unnest("t_struct")
+    #   # =>
+    #   # shape: (2, 6)
+    #   # ┌────────┬─────┬─────┬──────┬───────────┬───────┐
+    #   # │ before ┆ t_a ┆ t_b ┆ t_c  ┆ t_d       ┆ after │
+    #   # │ ---    ┆ --- ┆ --- ┆ ---  ┆ ---       ┆ ---   │
+    #   # │ str    ┆ i64 ┆ str ┆ bool ┆ list[i64] ┆ str   │
+    #   # ╞════════╪═════╪═════╪══════╪═══════════╪═══════╡
+    #   # │ foo    ┆ 1   ┆ a   ┆ true ┆ [1, 2]    ┆ baz   │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ bar    ┆ 2   ┆ b   ┆ null ┆ [3]       ┆ womp  │
+    #   # └────────┴─────┴─────┴──────┴───────────┴───────┘
+    def unnest(names)
+      if names.is_a?(String)
+        names = [names]
+      end
+      _from_rbdf(_df.unnest(names))
+    end
 
     private
 

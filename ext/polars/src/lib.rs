@@ -63,6 +63,7 @@ fn init() -> RbResult<()> {
     class.define_method("write_ndjson", method!(RbDataFrame::write_ndjson, 1))?;
     class.define_method("write_csv", method!(RbDataFrame::write_csv, 10))?;
     class.define_method("write_ipc", method!(RbDataFrame::write_ipc, 2))?;
+    class.define_method("row_tuples", method!(RbDataFrame::row_tuples, 0))?;
     class.define_method("write_parquet", method!(RbDataFrame::write_parquet, 5))?;
     class.define_method("rechunk", method!(RbDataFrame::rechunk, 0))?;
     class.define_method("to_s", method!(RbDataFrame::to_s, 0))?;
@@ -131,6 +132,7 @@ fn init() -> RbResult<()> {
     class.define_method("shrink_to_fit", method!(RbDataFrame::shrink_to_fit, 0))?;
     class.define_method("transpose", method!(RbDataFrame::transpose, 2))?;
     class.define_method("upsample", method!(RbDataFrame::upsample, 5))?;
+    class.define_method("to_struct", method!(RbDataFrame::to_struct, 1))?;
     class.define_method("unnest", method!(RbDataFrame::unnest, 1))?;
 
     let class = module.define_class("RbExpr", Default::default())?;
