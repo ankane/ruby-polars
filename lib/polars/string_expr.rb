@@ -20,7 +20,7 @@ module Polars
     #   need the length in terms of the number of characters, use `n_chars` instead.
     #
     # @example
-    #   df = Polars::DataFrame.new({"s": ["Café", nil, "345", "東京"]}).with_columns(
+    #   df = Polars::DataFrame.new({"s" => ["Café", nil, "345", "東京"]}).with_columns(
     #     [
     #       Polars.col("s").str.lengths.alias("length"),
     #       Polars.col("s").str.n_chars.alias("nchars")
@@ -46,18 +46,104 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_lengths)
     end
 
+    # Get length of the strings as `:u32` (as number of chars).
+    #
+    # @return [Expr]
+    #
+    # @note
+    #  If you know that you are working with ASCII text, `lengths` will be
+    #  equivalent, and faster (returns length in terms of the number of bytes).
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"s" => ["Café", nil, "345", "東京"]}).with_columns(
+    #     [
+    #       Polars.col("s").str.lengths.alias("length"),
+    #       Polars.col("s").str.n_chars.alias("nchars")
+    #     ]
+    #   )
+    #   df
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌──────┬────────┬────────┐
+    #   # │ s    ┆ length ┆ nchars │
+    #   # │ ---  ┆ ---    ┆ ---    │
+    #   # │ str  ┆ u32    ┆ u32    │
+    #   # ╞══════╪════════╪════════╡
+    #   # │ Café ┆ 5      ┆ 4      │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ null ┆ null   ┆ null   │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ 345  ┆ 3      ┆ 3      │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ 東京 ┆ 6      ┆ 2      │
+    #   # └──────┴────────┴────────┘
     def n_chars
       Utils.wrap_expr(_rbexpr.str_n_chars)
     end
 
+    # Vertically concat the values in the Series to a single string value.
+    #
+    # @param delimiter [String]
+    #   The delimiter to insert between consecutive string values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, nil, 2]})
+    #   df.select(Polars.col("foo").str.concat("-"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────────┐
+    #   # │ foo      │
+    #   # │ ---      │
+    #   # │ str      │
+    #   # ╞══════════╡
+    #   # │ 1-null-2 │
+    #   # └──────────┘
     def concat(delimiter = "-")
       Utils.wrap_expr(_rbexpr.str_concat(delimiter))
     end
 
+    # Transform to uppercase variant.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => ["cat", "dog"]})
+    #   df.select(Polars.col("foo").str.to_uppercase)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ CAT │
+    #   # ├╌╌╌╌╌┤
+    #   # │ DOG │
+    #   # └─────┘
     def to_uppercase
       Utils.wrap_expr(_rbexpr.str_to_uppercase)
     end
 
+    # Transform to lowercase variant.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => ["CAT", "DOG"]})
+    #   df.select(Polars.col("foo").str.to_lowercase)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ cat │
+    #   # ├╌╌╌╌╌┤
+    #   # │ dog │
+    #   # └─────┘
     def to_lowercase
       Utils.wrap_expr(_rbexpr.str_to_lowercase)
     end
