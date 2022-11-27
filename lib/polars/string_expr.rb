@@ -288,10 +288,72 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_zfill(alignment))
     end
 
+    # Return the string left justified in a string of length `width`.
+    #
+    # Padding is done using the specified `fillcha``.
+    # The original string is returned if `width` is less than or equal to
+    # `s.length`.
+    #
+    # @param width [Integer]
+    #   Justify left to this length.
+    # @param fillchar [String]
+    #   Fill with this ASCII character.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => ["cow", "monkey", nil, "hippopotamus"]})
+    #   df.select(Polars.col("a").str.ljust(8, "*"))
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌──────────────┐
+    #   # │ a            │
+    #   # │ ---          │
+    #   # │ str          │
+    #   # ╞══════════════╡
+    #   # │ cow*****     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ monkey**     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null         │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ hippopotamus │
+    #   # └──────────────┘
     def ljust(width, fillchar = " ")
       Utils.wrap_expr(_rbexpr.str_ljust(width, fillchar))
     end
 
+    # Return the string right justified in a string of length ``width``.
+    #
+    # Padding is done using the specified `fillchar`.
+    # The original string is returned if `width` is less than or equal to
+    # `s.length`.
+    #
+    # @param width [Integer]
+    #   Justify right to this length.
+    # @param fillchar [String]
+    #   Fill with this ASCII character.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => ["cow", "monkey", nil, "hippopotamus"]})
+    #   df.select(Polars.col("a").str.rjust(8, "*"))
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌──────────────┐
+    #   # │ a            │
+    #   # │ ---          │
+    #   # │ str          │
+    #   # ╞══════════════╡
+    #   # │ *****cow     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ **monkey     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null         │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ hippopotamus │
+    #   # └──────────────┘
     def rjust(width, fillchar = " ")
       Utils.wrap_expr(_rbexpr.str_rjust(width, fillchar))
     end
