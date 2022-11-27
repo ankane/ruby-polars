@@ -30,7 +30,7 @@ class DocsTest < Minitest::Test
   end
 
   def test_lazy_frame
-    assert_docs Polars::LazyFrame
+    assert_docs Polars::LazyFrame, required: true
   end
 
   def test_lazy_functions

@@ -314,7 +314,55 @@ module Polars
     # def profile
     # end
 
+    # Collect into a DataFrame.
     #
+    # Note: use {#fetch} if you want to run your query on the first `n` rows
+    # only. This can be a huge time saver in debugging queries.
+    #
+    # @param type_coercion [Boolean]
+    #   Do type coercion optimization.
+    # @param predicate_pushdown [Boolean]
+    #   Do predicate pushdown optimization.
+    # @param projection_pushdown [Boolean]
+    #   Do projection pushdown optimization.
+    # @param simplify_expression [Boolean]
+    #   Run simplify expressions optimization.
+    # @param string_cache [Boolean]
+    #   This argument is deprecated. Please set the string cache globally.
+    #   The argument will be ignored
+    # @param no_optimization [Boolean]
+    #   Turn off (certain) optimizations.
+    # @param slice_pushdown [Boolean]
+    #   Slice pushdown optimization.
+    # @param common_subplan_elimination [Boolean]
+    #   Will try to cache branching subplans that occur on self-joins or unions.
+    # @param allow_streaming [Boolean]
+    #   Run parts of the query in a streaming fashion (this is in an alpha state)
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => ["a", "b", "a", "b", "b", "c"],
+    #       "b" => [1, 2, 3, 4, 5, 6],
+    #       "c" => [6, 5, 4, 3, 2, 1]
+    #     }
+    #   ).lazy
+    #   df.groupby("a", maintain_order: true).agg(Polars.all.sum).collect
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ a   ┆ b   ┆ c   │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ a   ┆ 4   ┆ 10  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ b   ┆ 11  ┆ 10  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ c   ┆ 6   ┆ 1   │
+    #   # └─────┴─────┴─────┘
     def collect(
       type_coercion: true,
       predicate_pushdown: true,
@@ -349,8 +397,62 @@ module Polars
       Utils.wrap_df(ldf.collect)
     end
 
+    # Collect a small number of rows for debugging purposes.
+    #
+    # Fetch is like a {#collect} operation, but it overwrites the number of rows
+    # read by every scan operation. This is a utility that helps debug a query on a
+    # smaller number of rows.
+    #
+    # Note that the fetch does not guarantee the final number of rows in the
+    # DataFrame. Filter, join operations and a lower number of rows available in the
+    # scanned file influence the final number of rows.
+    #
+    # @param n_rows [Integer]
+    #   Collect n_rows from the data sources.
+    # @param type_coercion [Boolean]
+    #   Run type coercion optimization.
+    # @param predicate_pushdown [Boolean]
+    #   Run predicate pushdown optimization.
+    # @param projection_pushdown [Boolean]
+    #   Run projection pushdown optimization.
+    # @param simplify_expression [Boolean]
+    #   Run simplify expressions optimization.
+    # @param string_cache [Boolean]
+    #   This argument is deprecated. Please set the string cache globally.
+    #   The argument will be ignored
+    # @param no_optimization [Boolean]
+    #   Turn off optimizations.
+    # @param slice_pushdown [Boolean]
+    #   Slice pushdown optimization
+    # @param common_subplan_elimination [Boolean]
+    #   Will try to cache branching subplans that occur on self-joins or unions.
+    # @param allow_streaming [Boolean]
+    #   Run parts of the query in a streaming fashion (this is in an alpha state)
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => ["a", "b", "a", "b", "b", "c"],
+    #       "b" => [1, 2, 3, 4, 5, 6],
+    #       "c" => [6, 5, 4, 3, 2, 1]
+    #     }
+    #   ).lazy
+    #   df.groupby("a", maintain_order: true).agg(Polars.all.sum).fetch(2)
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ a   ┆ b   ┆ c   │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ a   ┆ 1   ┆ 6   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ b   ┆ 2   ┆ 5   │
+    #   # └─────┴─────┴─────┘
     def fetch(
-      n_rows: 500,
+      n_rows = 500,
       type_coercion: true,
       predicate_pushdown: true,
       projection_pushdown: true,
