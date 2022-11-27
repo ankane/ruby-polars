@@ -10,6 +10,7 @@ require "polars/batched_csv_reader"
 require "polars/cat_expr"
 require "polars/data_frame"
 require "polars/date_time_expr"
+require "polars/exceptions"
 require "polars/expr"
 require "polars/functions"
 require "polars/group_by"
@@ -29,16 +30,6 @@ require "polars/when"
 require "polars/when_then"
 
 module Polars
-  # @private
-  class Error < StandardError; end
-
-  # @private
-  class Todo < Error
-    def message
-      "not implemented yet"
-    end
-  end
-
   extend Functions
   extend IO
   extend LazyFunctions

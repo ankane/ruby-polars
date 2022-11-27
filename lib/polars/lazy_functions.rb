@@ -352,8 +352,63 @@ module Polars
       DataFrame.new([]).select(exprs)
     end
 
-    # def struct
-    # end
+    # Collect several columns into a Series of dtype Struct.
+    #
+    # @param exprs [Object]
+    #   Columns/Expressions to collect into a Struct
+    # @param eager [Boolean]
+    #   Evaluate immediately
+    #
+    # @return [Object]
+    #
+    # @example
+    #   Polars::DataFrame.new(
+    #     {
+    #       "int" => [1, 2],
+    #       "str" => ["a", "b"],
+    #       "bool" => [true, nil],
+    #       "list" => [[1, 2], [3]],
+    #     }
+    #   ).select([Polars.struct(Polars.all()).alias("my_struct")])
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────────────────────┐
+    #   # │ my_struct           │
+    #   # │ ---                 │
+    #   # │ struct[4]           │
+    #   # ╞═════════════════════╡
+    #   # │ {1,"a",true,[1, 2]} │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ {2,"b",null,[3]}    │
+    #   # └─────────────────────┘
+    #
+    # @example Only collect specific columns as a struct:
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [1, 2, 3, 4], "b" => ["one", "two", "three", "four"], "c" => [9, 8, 7, 6]}
+    #   )
+    #   df.with_column(pl.struct(pl.col(["a", "b"])).alias("a_and_b"))
+    #   # =>
+    #   # shape: (4, 4)
+    #   # ┌─────┬───────┬─────┬─────────────┐
+    #   # │ a   ┆ b     ┆ c   ┆ a_and_b     │
+    #   # │ --- ┆ ---   ┆ --- ┆ ---         │
+    #   # │ i64 ┆ str   ┆ i64 ┆ struct[2]   │
+    #   # ╞═════╪═══════╪═════╪═════════════╡
+    #   # │ 1   ┆ one   ┆ 9   ┆ {1,"one"}   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ two   ┆ 8   ┆ {2,"two"}   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ three ┆ 7   ┆ {3,"three"} │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 4   ┆ four  ┆ 6   ┆ {4,"four"}  │
+    #   # └─────┴───────┴─────┴─────────────┘
+    def struct(exprs, eager: false)
+      if eager
+        Polars.select(struct(exprs, eager: false)).to_series
+      end
+      exprs = Utils.selection_to_rbexpr_list(exprs)
+      Utils.wrap_expr(_as_struct(exprs))
+    end
 
     # def repeat
     # end

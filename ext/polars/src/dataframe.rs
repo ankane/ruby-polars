@@ -325,6 +325,29 @@ impl RbDataFrame {
         Ok(())
     }
 
+    pub fn row_tuple(&self, idx: i64) -> Value {
+        let idx = if idx < 0 {
+            (self.df.borrow().height() as i64 + idx) as usize
+        } else {
+            idx as usize
+        };
+        RArray::from_vec(
+            self.df
+                .borrow()
+                .get_columns()
+                .iter()
+                .map(|s| match s.dtype() {
+                    DataType::Object(_) => {
+                        let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
+                        obj.unwrap().to_object()
+                    }
+                    _ => Wrap(s.get(idx)).into(),
+                })
+                .collect(),
+        )
+        .into()
+    }
+
     pub fn row_tuples(&self) -> Value {
         let df = &self.df;
         RArray::from_vec(

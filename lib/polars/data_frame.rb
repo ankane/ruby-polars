@@ -2093,20 +2093,200 @@ module Polars
       _from_rbdf(_df.median)
     end
 
-    # def product
-    # end
+    # Aggregate the columns of this DataFrame to their product values.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3],
+    #       "b" => [0.5, 4, 10],
+    #       "c" => [true, true, false]
+    #     }
+    #   )
+    #   df.product
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬──────┬─────┐
+    #   # │ a   ┆ b    ┆ c   │
+    #   # │ --- ┆ ---  ┆ --- │
+    #   # │ i64 ┆ f64  ┆ i64 │
+    #   # ╞═════╪══════╪═════╡
+    #   # │ 6   ┆ 20.0 ┆ 0   │
+    #   # └─────┴──────┴─────┘
+    def product
+      select(Polars.all.product)
+    end
 
-    # def quantile(quantile, interpolation: "nearest")
-    # end
+    # Aggregate the columns of this DataFrame to their quantile value.
+    #
+    # @param quantile [Float]
+    #   Quantile between 0.0 and 1.0.
+    # @param interpolation ["nearest", "higher", "lower", "midpoint", "linear"]
+    #   Interpolation method.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.quantile(0.5, interpolation: "nearest")
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬──────┐
+    #   # │ foo ┆ bar ┆ ham  │
+    #   # │ --- ┆ --- ┆ ---  │
+    #   # │ f64 ┆ f64 ┆ str  │
+    #   # ╞═════╪═════╪══════╡
+    #   # │ 2.0 ┆ 7.0 ┆ null │
+    #   # └─────┴─────┴──────┘
+    def quantile(quantile, interpolation: "nearest")
+      _from_rbdf(_df.quantile(quantile, interpolation))
+    end
 
-    # def to_dummies
-    # end
+    # Get one hot encoded dummy variables.
+    #
+    # @param columns
+    #   A subset of columns to convert to dummy variables. `nil` means
+    #   "all columns".
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2],
+    #       "bar" => [3, 4],
+    #       "ham" => ["a", "b"]
+    #     }
+    #   )
+    #   df.to_dummies
+    #   # =>
+    #   # shape: (2, 6)
+    #   # ┌───────┬───────┬───────┬───────┬───────┬───────┐
+    #   # │ foo_1 ┆ foo_2 ┆ bar_3 ┆ bar_4 ┆ ham_a ┆ ham_b │
+    #   # │ ---   ┆ ---   ┆ ---   ┆ ---   ┆ ---   ┆ ---   │
+    #   # │ u8    ┆ u8    ┆ u8    ┆ u8    ┆ u8    ┆ u8    │
+    #   # ╞═══════╪═══════╪═══════╪═══════╪═══════╪═══════╡
+    #   # │ 1     ┆ 0     ┆ 1     ┆ 0     ┆ 1     ┆ 0     │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 0     ┆ 1     ┆ 0     ┆ 1     ┆ 0     ┆ 1     │
+    #   # └───────┴───────┴───────┴───────┴───────┴───────┘
+    def to_dummies(columns: nil)
+      if columns.is_a?(String)
+        columns = [columns]
+      end
+      _from_rbdf(_df.to_dummies(columns))
+    end
 
-    # def unique
-    # end
+    # Drop duplicate rows from this DataFrame.
+    #
+    # @param maintain_order [Boolean]
+    #   Keep the same order as the original DataFrame. This requires more work to
+    #   compute.
+    # @param subset [Object]
+    #   Subset to use to compare rows.
+    # @param keep ["first", "last"]
+    #   Which of the duplicate rows to keep (in conjunction with `subset`).
+    #
+    # @return [DataFrame]
+    #
+    # @note
+    #   Note that this fails if there is a column of type `List` in the DataFrame or
+    #   subset.
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 1, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 1.0, 2.0, 3.0, 3.0],
+    #       "c" => [true, true, true, false, true, true]
+    #     }
+    #   )
+    #   df.unique
+    #   # =>
+    #   # shape: (5, 3)
+    #   # ┌─────┬─────┬───────┐
+    #   # │ a   ┆ b   ┆ c     │
+    #   # │ --- ┆ --- ┆ ---   │
+    #   # │ i64 ┆ f64 ┆ bool  │
+    #   # ╞═════╪═════╪═══════╡
+    #   # │ 1   ┆ 0.5 ┆ true  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 1.0 ┆ true  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 2.0 ┆ false │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 4   ┆ 3.0 ┆ true  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 5   ┆ 3.0 ┆ true  │
+    #   # └─────┴─────┴───────┘
+    def unique(maintain_order: true, subset: nil, keep: "first")
+      if !subset.nil?
+        if subset.is_a?(String)
+          subset = [subset]
+        elsif !subset.is_a?(Array)
+          subset = subset.to_a
+        end
+      end
 
-    # def n_unique
-    # end
+      _from_rbdf(_df.unique(maintain_order, subset, keep))
+    end
+
+    # Return the number of unique rows, or the number of unique row-subsets.
+    #
+    # @param subset [Object]
+    #   One or more columns/expressions that define what to count;
+    #   omit to return the count of unique rows.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 1, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 1.0, 2.0, 3.0, 3.0],
+    #       "c" => [true, true, true, false, true, true]
+    #     }
+    #   )
+    #   df.n_unique
+    #   # => 5
+    #
+    # @example Simple columns subset
+    #   df.n_unique(subset: ["b", "c"])
+    #   # => 4
+    #
+    # @example Expression subset
+    #   df.n_unique(
+    #     subset: [
+    #       (Polars.col("a").floordiv(2)),
+    #       (Polars.col("c") | (Polars.col("b") >= 2))
+    #     ]
+    #   )
+    #   # => 3
+    def n_unique(subset: nil)
+      if subset.is_a?(StringIO)
+        subset = [Polars.col(subset)]
+      elsif subset.is_a?(Expr)
+        subset = [subset]
+      end
+
+      if subset.is_a?(Array) && subset.length == 1
+        expr = Utils.expr_to_lit_or_expr(subset[0], str_to_lit: false)
+      else
+        struct_fields = subset.nil? ? Polars.all : subset
+        expr = Polars.struct(struct_fields)
+      end
+
+      df = lazy.select(expr.n_unique).collect
+      df.is_empty ? 0 : df.row(0)[0]
+    end
 
     # Rechunk the data in this DataFrame to a contiguous allocation.
 
@@ -2150,8 +2330,57 @@ module Polars
     # def fold
     # end
 
-    # def row
-    # end
+    # Get a row as tuple, either by index or by predicate.
+    #
+    # @param index [Object]
+    #   Row index.
+    # @param by_predicate [Object]
+    #   Select the row according to a given expression/predicate.
+    #
+    # @return [Object]
+    #
+    # @note
+    #   The `index` and `by_predicate` params are mutually exclusive. Additionally,
+    #   to ensure clarity, the `by_predicate` parameter must be supplied by keyword.
+    #
+    #   When using `by_predicate` it is an error condition if anything other than
+    #   one row is returned; more than one row raises `TooManyRowsReturned`, and
+    #   zero rows will raise `NoRowsReturned` (both inherit from `RowsException`).
+    #
+    # @example Return the row at the given index
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.row(2)
+    #   # => [3, 8, "c"]
+    #
+    # @example Return the row that matches the given predicate
+    #   df.row(by_predicate: Polars.col("ham") == "b")
+    #   # => [2, 7, "b"]
+    def row(index = nil, by_predicate: nil)
+      if !index.nil? && !by_predicate.nil?
+        raise ArgumentError, "Cannot set both 'index' and 'by_predicate'; mutually exclusive"
+      elsif index.is_a?(Expr)
+        raise TypeError, "Expressions should be passed to the 'by_predicate' param"
+      elsif index.is_a?(Integer)
+        _df.row_tuple(index)
+      elsif by_predicate.is_a?(Expr)
+        rows = filter(by_predicate).rows
+        n_rows = rows.length
+        if n_rows > 1
+          raise TooManyRowsReturned, "Predicate #{by_predicate} returned #{n_rows} rows"
+        elsif n_rows == 0
+          raise NoRowsReturned, "Predicate <{by_predicate!s}> returned no rows"
+        end
+        rows[0]
+      else
+        raise ArgumentError, "One of 'index' or 'by_predicate' must be set"
+      end
+    end
 
     # Convert columnar data to rows as Ruby arrays.
     #

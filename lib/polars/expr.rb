@@ -65,6 +65,13 @@ module Polars
       wrap_expr(_rbexpr / _to_rbexpr(other))
     end
 
+    # Performs floor division.
+    #
+    # @return [Expr]
+    def floordiv(other)
+      wrap_expr(_rbexpr.floordiv(_to_rbexpr(other)))
+    end
+
     # Returns the modulo.
     #
     # @return [Expr]

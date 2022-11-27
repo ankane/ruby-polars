@@ -15,6 +15,7 @@ use error::{RbPolarsErr, RbValueError};
 use file::get_file_like;
 use lazy::dataframe::{RbLazyFrame, RbLazyGroupBy};
 use lazy::dsl::{RbExpr, RbWhen, RbWhenThen};
+use lazy::utils::rb_exprs_to_exprs;
 use magnus::{
     define_module, function, memoize, method, prelude::*, Error, RArray, RClass, RHash, RModule,
     Value,
@@ -46,6 +47,7 @@ fn init() -> RbResult<()> {
     module.define_singleton_method("_ipc_schema", function!(ipc_schema, 1))?;
     module.define_singleton_method("_parquet_schema", function!(parquet_schema, 1))?;
     module.define_singleton_method("_rb_date_range", function!(rb_date_range, 7))?;
+    module.define_singleton_method("_as_struct", function!(as_struct, 1))?;
     module.define_singleton_method("_arg_where", function!(arg_where, 1))?;
 
     let class = module.define_class("RbBatchedCsv", Default::default())?;
@@ -65,6 +67,7 @@ fn init() -> RbResult<()> {
     class.define_method("write_ndjson", method!(RbDataFrame::write_ndjson, 1))?;
     class.define_method("write_csv", method!(RbDataFrame::write_csv, 10))?;
     class.define_method("write_ipc", method!(RbDataFrame::write_ipc, 2))?;
+    class.define_method("row_tuple", method!(RbDataFrame::row_tuple, 1))?;
     class.define_method("row_tuples", method!(RbDataFrame::row_tuples, 0))?;
     class.define_method("write_parquet", method!(RbDataFrame::write_parquet, 5))?;
     class.define_method("rechunk", method!(RbDataFrame::rechunk, 0))?;
@@ -756,6 +759,11 @@ fn rb_date_range(
     )
     .into_series()
     .into()
+}
+
+fn as_struct(exprs: RArray) -> RbResult<RbExpr> {
+    let exprs = rb_exprs_to_exprs(exprs)?;
+    Ok(polars::lazy::dsl::as_struct(&exprs).into())
 }
 
 fn arg_where(condition: &RbExpr) -> RbExpr {
