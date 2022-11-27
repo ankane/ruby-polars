@@ -884,6 +884,43 @@ module Polars
       )
     end
 
+    # Add or overwrite multiple columns in a DataFrame.
+    #
+    # @param exprs [Object]
+    #   List of Expressions that evaluate to columns.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   ldf = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3, 4],
+    #       "b" => [0.5, 4, 10, 13],
+    #       "c" => [true, true, false, true]
+    #     }
+    #   ).lazy
+    #   ldf.with_columns(
+    #     [
+    #       (Polars.col("a") ** 2).alias("a^2"),
+    #       (Polars.col("b") / 2).alias("b/2"),
+    #       (Polars.col("c").is_not()).alias("not c")
+    #     ]
+    #   ).collect
+    #   # =>
+    #   # shape: (4, 6)
+    #   # ┌─────┬──────┬───────┬──────┬──────┬───────┐
+    #   # │ a   ┆ b    ┆ c     ┆ a^2  ┆ b/2  ┆ not c │
+    #   # │ --- ┆ ---  ┆ ---   ┆ ---  ┆ ---  ┆ ---   │
+    #   # │ i64 ┆ f64  ┆ bool  ┆ f64  ┆ f64  ┆ bool  │
+    #   # ╞═════╪══════╪═══════╪══════╪══════╪═══════╡
+    #   # │ 1   ┆ 0.5  ┆ true  ┆ 1.0  ┆ 0.25 ┆ false │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 4.0  ┆ true  ┆ 4.0  ┆ 2.0  ┆ false │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 10.0 ┆ false ┆ 9.0  ┆ 5.0  ┆ true  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 4   ┆ 13.0 ┆ true  ┆ 16.0 ┆ 6.5  ┆ false │
+    #   # └─────┴──────┴───────┴──────┴──────┴───────┘
     def with_columns(exprs)
       exprs =
         if exprs.nil?
@@ -912,7 +949,50 @@ module Polars
     # def with_context
     # end
 
+    # Add or overwrite column in a DataFrame.
     #
+    # @param column [Object]
+    #   Expression that evaluates to column or a Series to use.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 3, 5],
+    #       "b" => [2, 4, 6]
+    #     }
+    #   ).lazy
+    #   df.with_column((Polars.col("b") ** 2).alias("b_squared")).collect
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬───────────┐
+    #   # │ a   ┆ b   ┆ b_squared │
+    #   # │ --- ┆ --- ┆ ---       │
+    #   # │ i64 ┆ i64 ┆ f64       │
+    #   # ╞═════╪═════╪═══════════╡
+    #   # │ 1   ┆ 2   ┆ 4.0       │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 4   ┆ 16.0      │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 5   ┆ 6   ┆ 36.0      │
+    #   # └─────┴─────┴───────────┘
+    #
+    # @example
+    #   df.with_column(Polars.col("a") ** 2).collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌──────┬─────┐
+    #   # │ a    ┆ b   │
+    #   # │ ---  ┆ --- │
+    #   # │ f64  ┆ i64 │
+    #   # ╞══════╪═════╡
+    #   # │ 1.0  ┆ 2   │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 9.0  ┆ 4   │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 25.0 ┆ 6   │
+    #   # └──────┴─────┘
     def with_column(column)
       with_columns([column])
     end
