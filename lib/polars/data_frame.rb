@@ -1352,6 +1352,24 @@ module Polars
       _df.get_columns.map { |s| Utils.wrap_s(s) }
     end
 
+    # Get a single column as Series by name.
+    #
+    # @param name [String]
+    #   Name of the column to retrieve.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3], "bar" => [4, 5, 6]})
+    #   df.get_column("foo")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'foo' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ]
     def get_column(name)
       self[name]
     end
@@ -1359,11 +1377,82 @@ module Polars
     # def fill_null
     # end
 
+    # Fill floating point NaN values by an Expression evaluation.
     #
+    # @param fill_value [Object]
+    #   Value to fill NaN with.
+    #
+    # @return [DataFrame]
+    #
+    # @note
+    #   Note that floating point NaNs (Not a Number) are not missing values!
+    #   To replace missing values, use `fill_null`.
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1.5, 2, Float::NAN, 4],
+    #       "b" => [0.5, 4, Float::NAN, 13]
+    #     }
+    #   )
+    #   df.fill_nan(99)
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌──────┬──────┐
+    #   # │ a    ┆ b    │
+    #   # │ ---  ┆ ---  │
+    #   # │ f64  ┆ f64  │
+    #   # ╞══════╪══════╡
+    #   # │ 1.5  ┆ 0.5  │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 2.0  ┆ 4.0  │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 99.0 ┆ 99.0 │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 4.0  ┆ 13.0 │
+    #   # └──────┴──────┘
     def fill_nan(fill_value)
       lazy.fill_nan(fill_value).collect(no_optimization: true)
     end
 
+    # Explode `DataFrame` to long format by exploding a column with Lists.
+    #
+    # @param columns [Object]
+    #   Column of LargeList type.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "letters" => ["a", "a", "b", "c"],
+    #       "numbers" => [[1], [2, 3], [4, 5], [6, 7, 8]]
+    #     }
+    #   )
+    #   df.explode("numbers")
+    #   # =>
+    #   # shape: (8, 2)
+    #   # ┌─────────┬─────────┐
+    #   # │ letters ┆ numbers │
+    #   # │ ---     ┆ ---     │
+    #   # │ str     ┆ i64     │
+    #   # ╞═════════╪═════════╡
+    #   # │ a       ┆ 1       │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ a       ┆ 2       │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ a       ┆ 3       │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ b       ┆ 4       │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ b       ┆ 5       │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ c       ┆ 6       │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ c       ┆ 7       │
+    #   # ├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ c       ┆ 8       │
+    #   # └─────────┴─────────┘
     def explode(columns)
       lazy.explode(columns).collect(no_optimization: true)
     end
