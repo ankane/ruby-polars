@@ -1615,11 +1615,91 @@ module Polars
     # def partition_by
     # end
 
-    # def shift
-    # end
+    # Shift values by the given period.
+    #
+    # @param periods [Integer]
+    #   Number of places to shift (may be negative).
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.shift(1)
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ null ┆ null ┆ null │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 1    ┆ 6    ┆ a    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 2    ┆ 7    ┆ b    │
+    #   # └──────┴──────┴──────┘
+    #
+    # @example
+    #   df.shift(-1)
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ 2    ┆ 7    ┆ b    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 3    ┆ 8    ┆ c    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ null ┆ null ┆ null │
+    #   # └──────┴──────┴──────┘
+    def shift(periods)
+      _from_rbdf(_df.shift(periods))
+    end
 
-    # def shift_and_fill
-    # end
+    # Shift the values by a given period and fill the resulting null values.
+    #
+    # @param periods [Integer]
+    #   Number of places to shift (may be negative).
+    # @param fill_value [Object]
+    #   fill nil values with this value.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.shift_and_fill(1, 0)
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 0   ┆ 0   ┆ 0   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 1   ┆ 6   ┆ a   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 7   ┆ b   │
+    #   # └─────┴─────┴─────┘
+    def shift_and_fill(periods, fill_value)
+      lazy
+        .shift_and_fill(periods, fill_value)
+        .collect(no_optimization: true, string_cache: false)
+    end
 
     # Get a mask of all duplicated rows in this DataFrame.
     #
