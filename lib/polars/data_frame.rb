@@ -1759,14 +1759,110 @@ module Polars
       end
     end
 
+    # Aggregate the columns of this DataFrame to their standard deviation value.
+    #
+    # @param ddof [Integer]
+    #   Degrees of freedom
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.std
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬──────┐
+    #   # │ foo ┆ bar ┆ ham  │
+    #   # │ --- ┆ --- ┆ ---  │
+    #   # │ f64 ┆ f64 ┆ str  │
+    #   # ╞═════╪═════╪══════╡
+    #   # │ 1.0 ┆ 1.0 ┆ null │
+    #   # └─────┴─────┴──────┘
+    #
+    # @example
+    #   df.std(ddof: 0)
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌──────────┬──────────┬──────┐
+    #   # │ foo      ┆ bar      ┆ ham  │
+    #   # │ ---      ┆ ---      ┆ ---  │
+    #   # │ f64      ┆ f64      ┆ str  │
+    #   # ╞══════════╪══════════╪══════╡
+    #   # │ 0.816497 ┆ 0.816497 ┆ null │
+    #   # └──────────┴──────────┴──────┘
     def std(ddof: 1)
       _from_rbdf(_df.std(ddof))
     end
 
+    # Aggregate the columns of this DataFrame to their variance value.
+    #
+    # @param ddof [Integer]
+    #   Degrees of freedom
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.var
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬──────┐
+    #   # │ foo ┆ bar ┆ ham  │
+    #   # │ --- ┆ --- ┆ ---  │
+    #   # │ f64 ┆ f64 ┆ str  │
+    #   # ╞═════╪═════╪══════╡
+    #   # │ 1.0 ┆ 1.0 ┆ null │
+    #   # └─────┴─────┴──────┘
+    #
+    # @example
+    #   df.var(ddof: 0)
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌──────────┬──────────┬──────┐
+    #   # │ foo      ┆ bar      ┆ ham  │
+    #   # │ ---      ┆ ---      ┆ ---  │
+    #   # │ f64      ┆ f64      ┆ str  │
+    #   # ╞══════════╪══════════╪══════╡
+    #   # │ 0.666667 ┆ 0.666667 ┆ null │
+    #   # └──────────┴──────────┴──────┘
     def var(ddof: 1)
       _from_rbdf(_df.var(ddof))
     end
 
+    # Aggregate the columns of this DataFrame to their median value.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.median
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬──────┐
+    #   # │ foo ┆ bar ┆ ham  │
+    #   # │ --- ┆ --- ┆ ---  │
+    #   # │ f64 ┆ f64 ┆ str  │
+    #   # ╞═════╪═════╪══════╡
+    #   # │ 2.0 ┆ 7.0 ┆ null │
+    #   # └─────┴─────┴──────┘
     def median
       _from_rbdf(_df.median)
     end
