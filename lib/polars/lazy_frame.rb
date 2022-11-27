@@ -152,14 +152,63 @@ module Polars
     # def self.read_json
     # end
 
-    # def columns
-    # end
+    # Get or set column names.
+    #
+    # @return [Array]
+    #
+    # @example
+    #   df = (
+    #      Polars::DataFrame.new(
+    #        {
+    #          "foo" => [1, 2, 3],
+    #          "bar" => [6, 7, 8],
+    #          "ham" => ["a", "b", "c"]
+    #        }
+    #      )
+    #      .lazy
+    #      .select(["foo", "bar"])
+    #   )
+    #   df.columns
+    #   # => ["foo", "bar"]
+    def columns
+      _ldf.columns
+    end
 
-    # def dtypes
-    # end
+    # Get dtypes of columns in LazyFrame.
+    #
+    # @return [Array]
+    #
+    # @example
+    #   lf = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   ).lazy
+    #   lf.dtypes
+    #   # => [:i64, :f64, :str]
+    def dtypes
+      _ldf.dtypes
+    end
 
-    # def schema
-    # end
+    # Get the schema.
+    #
+    # @return [Hash]
+    #
+    # @example
+    #   lf = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   ).lazy
+    #   lf.schema
+    #   # => {"foo"=>:i64, "bar"=>:f64, "ham"=>:str}
+    def schema
+      _ldf.schema
+    end
 
     # def width
     # end

@@ -634,7 +634,11 @@ macro_rules! impl_neq_num {
     ($name:ident, $type:ty) => {
         impl RbSeries {
             pub fn $name(&self, rhs: $type) -> RbResult<Self> {
-                let s = self.series.borrow().not_equal(rhs).map_err(RbPolarsErr::from)?;
+                let s = self
+                    .series
+                    .borrow()
+                    .not_equal(rhs)
+                    .map_err(RbPolarsErr::from)?;
                 Ok(RbSeries::new(s.into_series()))
             }
         }

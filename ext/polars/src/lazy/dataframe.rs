@@ -520,9 +520,9 @@ impl RbLazyFrame {
         Ok(self.get_schema()?.iter_names().cloned().collect())
     }
 
-    pub fn dtypes(&self) -> RbResult<Vec<String>> {
+    pub fn dtypes(&self) -> RbResult<Vec<Value>> {
         let schema = self.get_schema()?;
-        let iter = schema.iter_dtypes().map(|dt| dt.to_string());
+        let iter = schema.iter_dtypes().map(|dt| Wrap(dt.clone()).into());
         Ok(iter.collect())
     }
 
@@ -533,7 +533,7 @@ impl RbLazyFrame {
         schema.iter_fields().for_each(|fld| {
             // TODO remove unwrap
             schema_dict
-                .aset(fld.name().clone(), fld.data_type().to_string())
+                .aset::<String, Value>(fld.name().clone(), Wrap(fld.data_type().clone()).into())
                 .unwrap();
         });
         Ok(schema_dict)
