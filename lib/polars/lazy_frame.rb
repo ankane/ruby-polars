@@ -986,20 +986,61 @@ module Polars
       _from_rbldf(_ldf.slice(offset, length))
     end
 
-    # def limit
-    # end
+    # Get the first `n` rows.
+    #
+    # Alias for {#head}.
+    #
+    # @param n [Integer]
+    #   Number of rows to return.
+    #
+    # @return [LazyFrame]
+    #
+    # @note
+    #   Consider using the {#fetch} operation if you only want to test your
+    #   query. The {#fetch} operation will load the first `n` rows at the scan
+    #   level, whereas the {#head}/{#limit} are applied at the end.
+    def limit(n = 5)
+      head(5)
+    end
 
-    # def head
-    # end
+    # Get the first `n` rows.
+    #
+    # @param n [Integer]
+    #   Number of rows to return.
+    #
+    # @return [LazyFrame]
+    #
+    # @note
+    #   Consider using the {#fetch} operation if you only want to test your
+    #   query. The {#fetch} operation will load the first `n` rows at the scan
+    #   level, whereas the {#head}/{#limit} are applied at the end.
+    def head(n = 5)
+      slice(0, n)
+    end
 
-    # def tail
-    # end
+    # Get the last `n` rows.
+    #
+    # @param n [Integer]
+    #     Number of rows.
+    #
+    # @return [LazyFrame]
+    def tail(n = 5)
+      _from_rbldf(_ldf.tail(n))
+    end
 
-    # def last
-    # end
+    # Get the last row of the DataFrame.
+    #
+    # @return [LazyFrame]
+    def last
+      tail(1)
+    end
 
-    # def first
-    # end
+    # Get the first row of the DataFrame.
+    #
+    # @return [LazyFrame]
+    def first
+      slice(0, 1)
+    end
 
     # def with_row_count
     # end
