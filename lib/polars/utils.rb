@@ -37,6 +37,34 @@ module Polars
       end
     end
 
+    def self._to_ruby_datetime(value, dtype, tu: "ns", tz: nil)
+      if dtype == :date
+        # days to seconds
+        # important to create from utc. Not doing this leads
+        # to inconsistencies dependent on the timezone you are in.
+        Time.at(value * 86400).utc.to_date
+      # TODO fix dtype
+      elsif dtype.to_s.start_with?("datetime[")
+        if tz.nil? || tz == ""
+          if tu == "ns"
+            raise Todo
+          elsif tu == "us"
+            dt = Time.at(value / 1000000, value % 1000000, :usec).utc
+          elsif tu == "ms"
+            raise Todo
+          else
+            raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms'}}, got #{tu}"
+          end
+        else
+          raise Todo
+        end
+
+        dt
+      else
+        raise NotImplementedError
+      end
+    end
+
     def self.selection_to_rbexpr_list(exprs)
       if exprs.is_a?(String) || exprs.is_a?(Expr) || exprs.is_a?(Series)
         exprs = [exprs]
