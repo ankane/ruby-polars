@@ -374,6 +374,7 @@ fn init() -> RbResult<()> {
     class.define_method("lst_slice", method!(RbExpr::lst_slice, 2))?;
     class.define_method("lst_eval", method!(RbExpr::lst_eval, 2))?;
     class.define_method("cumulative_eval", method!(RbExpr::cumulative_eval, 3))?;
+    class.define_method("lst_to_struct", method!(RbExpr::lst_to_struct, 2))?;
     class.define_method("rank", method!(RbExpr::rank, 2))?;
     class.define_method("diff", method!(RbExpr::diff, 2))?;
     class.define_method("pct_change", method!(RbExpr::pct_change, 1))?;

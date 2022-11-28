@@ -1212,6 +1212,28 @@ impl RbExpr {
             .into()
     }
 
+    pub fn lst_to_struct(
+        &self,
+        width_strat: Wrap<ListToStructWidthStrategy>,
+        _name_gen: Option<Value>,
+    ) -> RbResult<Self> {
+        // TODO fix
+        let name_gen = None;
+        // let name_gen = name_gen.map(|lambda| {
+        //     Arc::new(move |idx: usize| {
+        //         let out: Value = lambda.funcall("call", (idx,)).unwrap();
+        //         out.try_convert::<String>().unwrap()
+        //     }) as NameGenerator
+        // });
+
+        Ok(self
+            .inner
+            .clone()
+            .arr()
+            .to_struct(width_strat.0, name_gen)
+            .into())
+    }
+
     pub fn rank(&self, method: Wrap<RankMethod>, reverse: bool) -> Self {
         let options = RankOptions {
             method: method.0,

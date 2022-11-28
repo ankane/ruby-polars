@@ -4,6 +4,10 @@ module Polars
     include ExprDispatch
 
     # @private
+    def self._accessor
+    end
+
+    # @private
     attr_accessor :_s
 
     # Create a new Series.
@@ -2645,18 +2649,26 @@ module Polars
       super
     end
 
-    # def arr
-    # end
+    # Create an object namespace of all list related methods.
+    #
+    # @return [ListNameSpace]
+    def arr
+      ListNameSpace.new(self)
+    end
 
+    # Create an object namespace of all categorical related methods.
     # def cat
     # end
 
+    # Create an object namespace of all datetime related methods.
     # def dt
     # end
 
+    # Create an object namespace of all string related methods.
     # def str
     # end
 
+    # Create an object namespace of all struct related methods.
     # def struct
     # end
 

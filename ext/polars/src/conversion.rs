@@ -240,6 +240,22 @@ impl TryConvert for Wrap<JoinType> {
     }
 }
 
+impl TryConvert for Wrap<ListToStructWidthStrategy> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "first_non_null" => ListToStructWidthStrategy::FirstNonNull,
+            "max_width" => ListToStructWidthStrategy::MaxWidth,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "n_field_strategy must be one of {{'first_non_null', 'max_width'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<NullBehavior> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match ob.try_convert::<String>()?.as_str() {

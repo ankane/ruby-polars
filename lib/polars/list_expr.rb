@@ -445,8 +445,8 @@ module Polars
     #   # shape: (2,)
     #   # Series: 'a' [list]
     #   # [
-    #   #     [null, 1, ... 1]
-    #   #     [null, -8, -1]
+    #   #         [null, 1, ... 1]
+    #   #         [null, -8, -1]
     #   # ]
     def diff(n: 1, null_behavior: "ignore")
       Utils.wrap_expr(_rbexpr.lst_diff(n, null_behavior))
@@ -466,8 +466,8 @@ module Polars
     #   # shape: (2,)
     #   # Series: 'a' [list]
     #   # [
-    #   #     [null, 1, ... 3]
-    #   #     [null, 10, 2]
+    #   #         [null, 1, ... 3]
+    #   #         [null, 10, 2]
     #   # ]
     def shift(periods = 1)
       Utils.wrap_expr(_rbexpr.lst_shift(periods))
@@ -490,8 +490,8 @@ module Polars
     #   # shape: (2,)
     #   # Series: 'a' [list]
     #   # [
-    #   #     [2, 3]
-    #   #     [2, 1]
+    #   #         [2, 3]
+    #   #         [2, 1]
     #   # ]
     def slice(offset, length = nil)
       offset = Utils.expr_to_lit_or_expr(offset, str_to_lit: false)._rbexpr
@@ -513,8 +513,8 @@ module Polars
     #   # shape: (2,)
     #   # Series: 'a' [list]
     #   # [
-    #   #     [1, 2]
-    #   #     [10, 2]
+    #   #         [1, 2]
+    #   #         [10, 2]
     #   # ]
     def head(n = 5)
       slice(0, n)
@@ -534,8 +534,8 @@ module Polars
     #   # shape: (2,)
     #   # Series: 'a' [list]
     #   # [
-    #   #     [3, 4]
-    #   #     [2, 1]
+    #   #         [3, 4]
+    #   #         [2, 1]
     #   # ]
     def tail(n = 5)
       offset = -Utils.expr_to_lit_or_expr(n, str_to_lit: false)
@@ -554,7 +554,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"a" => [[1, 2, 3], [1, 2]]})
-    #   df.select([pl.col("a").arr.to_struct])
+    #   df.select([Polars.col("a").arr.to_struct])
     #   # =>
     #   # shape: (2, 1)
     #   # ┌────────────┐
@@ -567,6 +567,7 @@ module Polars
     #   # │ {1,2,null} │
     #   # └────────────┘
     def to_struct(n_field_strategy: "first_non_null", name_generator: nil)
+      raise Todo if name_generator
       Utils.wrap_expr(_rbexpr.lst_to_struct(n_field_strategy, name_generator))
     end
 
