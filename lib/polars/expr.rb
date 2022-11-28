@@ -2199,6 +2199,75 @@ module Polars
       wrap_expr(_rbexpr.last)
     end
 
+    # Apply window function over a subgroup.
+    #
+    # This is similar to a groupby + aggregation + self join.
+    # Or similar to [window functions in Postgres](https://www.postgresql.org/docs/current/tutorial-window.html).
+    #
+    # @param expr [Object]
+    #   Column(s) to group by.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "groups" => ["g1", "g1", "g2"],
+    #       "values" => [1, 2, 3]
+    #     }
+    #   )
+    #   df.with_column(
+    #     Polars.col("values").max.over("groups").alias("max_by_group")
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────┬────────┬──────────────┐
+    #   # │ groups ┆ values ┆ max_by_group │
+    #   # │ ---    ┆ ---    ┆ ---          │
+    #   # │ str    ┆ i64    ┆ i64          │
+    #   # ╞════════╪════════╪══════════════╡
+    #   # │ g1     ┆ 1      ┆ 2            │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ g1     ┆ 2      ┆ 2            │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ g2     ┆ 3      ┆ 3            │
+    #   # └────────┴────────┴──────────────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "groups" => [1, 1, 2, 2, 1, 2, 3, 3, 1],
+    #       "values" => [1, 2, 3, 4, 5, 6, 7, 8, 8]
+    #     }
+    #   )
+    #   df.lazy
+    #     .select([Polars.col("groups").sum.over("groups")])
+    #     .collect
+    #   # =>
+    #   # shape: (9, 1)
+    #   # ┌────────┐
+    #   # │ groups │
+    #   # │ ---    │
+    #   # │ i64    │
+    #   # ╞════════╡
+    #   # │ 4      │
+    #   # ├╌╌╌╌╌╌╌╌┤
+    #   # │ 4      │
+    #   # ├╌╌╌╌╌╌╌╌┤
+    #   # │ 6      │
+    #   # ├╌╌╌╌╌╌╌╌┤
+    #   # │ 6      │
+    #   # ├╌╌╌╌╌╌╌╌┤
+    #   # │ ...    │
+    #   # ├╌╌╌╌╌╌╌╌┤
+    #   # │ 6      │
+    #   # ├╌╌╌╌╌╌╌╌┤
+    #   # │ 6      │
+    #   # ├╌╌╌╌╌╌╌╌┤
+    #   # │ 6      │
+    #   # ├╌╌╌╌╌╌╌╌┤
+    #   # │ 4      │
+    #   # └────────┘
     def over(expr)
       rbexprs = Utils.selection_to_rbexpr_list(expr)
       wrap_expr(_rbexpr.over(rbexprs))
@@ -2228,6 +2297,34 @@ module Polars
       wrap_expr(_rbexpr.is_unique)
     end
 
+    # Get a mask of the first unique value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "num" => [1, 2, 3, 1, 5]
+    #     }
+    #   )
+    #   df.with_column(Polars.col("num").is_first.alias("is_first"))
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────┬──────────┐
+    #   # │ num ┆ is_first │
+    #   # │ --- ┆ ---      │
+    #   # │ i64 ┆ bool     │
+    #   # ╞═════╪══════════╡
+    #   # │ 1   ┆ true     │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ true     │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ true     │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1   ┆ false    │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 5   ┆ true     │
+    #   # └─────┴──────────┘
     def is_first
       wrap_expr(_rbexpr.is_first)
     end
@@ -2256,10 +2353,115 @@ module Polars
       wrap_expr(_rbexpr.is_duplicated)
     end
 
+    # Get quantile value.
+    #
+    # @param quantile [Float]
+    #   Quantile between 0.0 and 1.0.
+    # @param interpolation ["nearest", "higher", "lower", "midpoint", "linear"]
+    #   Interpolation method.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [0, 1, 2, 3, 4, 5]})
+    #   df.select(Polars.col("a").quantile(0.3))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 1.0 │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.col("a").quantile(0.3, interpolation: "higher"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 2.0 │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.col("a").quantile(0.3, interpolation: "lower"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 1.0 │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.col("a").quantile(0.3, interpolation: "midpoint"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 1.5 │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.col("a").quantile(0.3, interpolation: "linear"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 1.5 │
+    #   # └─────┘
     def quantile(quantile, interpolation: "nearest")
       wrap_expr(_rbexpr.quantile(quantile, interpolation))
     end
 
+    # Filter a single column.
+    #
+    # Mostly useful in an aggregation context. If you want to filter on a DataFrame
+    # level, use `LazyFrame#filter`.
+    #
+    # @param predicate [Expr]
+    #   Boolean expression.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "group_col" => ["g1", "g1", "g2"],
+    #       "b" => [1, 2, 3]
+    #     }
+    #   )
+    #   (
+    #     df.groupby("group_col").agg(
+    #       [
+    #         Polars.col("b").filter(Polars.col("b") < 2).sum.alias("lt"),
+    #         Polars.col("b").filter(Polars.col("b") >= 2).sum.alias("gte")
+    #       ]
+    #     )
+    #   ).sort("group_col")
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌───────────┬──────┬─────┐
+    #   # │ group_col ┆ lt   ┆ gte │
+    #   # │ ---       ┆ ---  ┆ --- │
+    #   # │ str       ┆ i64  ┆ i64 │
+    #   # ╞═══════════╪══════╪═════╡
+    #   # │ g1        ┆ 1    ┆ 2   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ g2        ┆ null ┆ 3   │
+    #   # └───────────┴──────┴─────┘
     def filter(predicate)
       wrap_expr(_rbexpr.filter(predicate._rbexpr))
     end
