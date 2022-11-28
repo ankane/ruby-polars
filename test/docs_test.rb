@@ -93,7 +93,7 @@ class DocsTest < Minitest::Test
   end
 
   def assert_examples(method)
-    return if [:sample, :struct, :read_csv_batched, :field, :rename_fields, :unnest, :arange, :explode, :is_datelike].include?(method.name)
+    return if [:mode, :sample, :struct, :read_csv_batched, :field, :rename_fields, :unnest, :arange, :explode, :is_datelike].include?(method.name)
 
     code = ""
     method.tags(:example).each do |example|

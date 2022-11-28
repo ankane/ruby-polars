@@ -592,10 +592,60 @@ module Polars
       wrap_expr(_rbexpr.rechunk)
     end
 
+    # Drop null values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [8, 9, 10, 11],
+    #       "b" => [nil, 4.0, 4.0, Float::NAN]
+    #     }
+    #   )
+    #   df.select(Polars.col("b").drop_nulls)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ b   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 4.0 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 4.0 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ NaN │
+    #   # └─────┘
     def drop_nulls
       wrap_expr(_rbexpr.drop_nulls)
     end
 
+    # Drop floating point NaN values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [8, 9, 10, 11],
+    #       "b" => [nil, 4.0, 4.0, Float::NAN]
+    #     }
+    #   )
+    #   df.select(Polars.col("b").drop_nans)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ b    │
+    #   # │ ---  │
+    #   # │ f64  │
+    #   # ╞══════╡
+    #   # │ null │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 4.0  │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 4.0  │
+    #   # └──────┘
     def drop_nans
       wrap_expr(_rbexpr.drop_nans)
     end
@@ -620,14 +670,87 @@ module Polars
       wrap_expr(_rbexpr.cumcount(reverse))
     end
 
+    # Rounds down to the nearest integer value.
+    #
+    # Only works on floating point Series.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [0.3, 0.5, 1.0, 1.1]})
+    #   df.select(Polars.col("a").floor)
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 0.0 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 0.0 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1.0 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1.0 │
+    #   # └─────┘
     def floor
       wrap_expr(_rbexpr.floor)
     end
 
+    # Rounds up to the nearest integer value.
+    #
+    # Only works on floating point Series.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [0.3, 0.5, 1.0, 1.1]})
+    #   df.select(Polars.col("a").ceil)
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 1.0 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1.0 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1.0 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 2.0 │
+    #   # └─────┘
     def ceil
       wrap_expr(_rbexpr.ceil)
     end
 
+    # Round underlying floating point data by `decimals` digits.
+    #
+    # @param decimals [Integer]
+    #   Number of decimals to round by.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [0.33, 0.52, 1.02, 1.17]})
+    #   df.select(Polars.col("a").round(1))
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 0.3 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 0.5 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1.0 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1.2 │
+    #   # └─────┘
     def round(decimals = 0)
       wrap_expr(_rbexpr.round(decimals))
     end
@@ -637,6 +760,31 @@ module Polars
       wrap_expr(_rbexpr.dot(other._rbexpr))
     end
 
+    # Compute the most occurring value(s).
+    #
+    # Can return multiple Values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 1, 2, 3],
+    #       "b" => [1, 1, 2, 2]
+    #     }
+    #   )
+    #   df.select(Polars.all.mode)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 1   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 1   ┆ 2   │
+    #   # └─────┴─────┘
     def mode
       wrap_expr(_rbexpr.mode)
     end
