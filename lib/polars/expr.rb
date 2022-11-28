@@ -1240,14 +1240,165 @@ module Polars
       wrap_expr(_rbexpr.cast(dtype, strict))
     end
 
+    # Sort this column. In projection/ selection context the whole column is sorted.
+    #
+    # If used in a groupby context, the groups are sorted.
+    #
+    # @param reverse [Boolean]
+    #   false -> order from small to large.
+    #   true -> order from large to small.
+    # @param nulls_last [Boolean]
+    #   If true nulls are considered to be larger than any valid value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "group" => [
+    #           "one",
+    #           "one",
+    #           "one",
+    #           "two",
+    #           "two",
+    #           "two"
+    #       ],
+    #       "value" => [1, 98, 2, 3, 99, 4]
+    #     }
+    #   )
+    #   df.select(Polars.col("value").sort)
+    #   # =>
+    #   # shape: (6, 1)
+    #   # ┌───────┐
+    #   # │ value │
+    #   # │ ---   │
+    #   # │ i64   │
+    #   # ╞═══════╡
+    #   # │ 1     │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 2     │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 3     │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 4     │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 98    │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 99    │
+    #   # └───────┘
+    #
+    # @example
+    #   df.select(Polars.col("value").sort)
+    #   # =>
+    #   # shape: (6, 1)
+    #   # ┌───────┐
+    #   # │ value │
+    #   # │ ---   │
+    #   # │ i64   │
+    #   # ╞═══════╡
+    #   # │ 1     │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 2     │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 3     │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 4     │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 98    │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 99    │
+    #   # └───────┘
+    #
+    # @example
+    #   df.groupby("group").agg(Polars.col("value").sort)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌───────┬────────────┐
+    #   # │ group ┆ value      │
+    #   # │ ---   ┆ ---        │
+    #   # │ str   ┆ list[i64]  │
+    #   # ╞═══════╪════════════╡
+    #   # │ two   ┆ [3, 4, 99] │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ one   ┆ [1, 2, 98] │
+    #   # └───────┴────────────┘
     def sort(reverse: false, nulls_last: false)
       wrap_expr(_rbexpr.sort_with(reverse, nulls_last))
     end
 
+    # Return the `k` largest elements.
+    #
+    # If 'reverse: true` the smallest elements will be given.
+    #
+    # @param k [Integer]
+    #   Number of elements to return.
+    # @param reverse [Boolean]
+    #   Return the smallest elements.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "value" => [1, 98, 2, 3, 99, 4]
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("value").top_k.alias("top_k"),
+    #       Polars.col("value").top_k(reverse: true).alias("bottom_k")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌───────┬──────────┐
+    #   # │ top_k ┆ bottom_k │
+    #   # │ ---   ┆ ---      │
+    #   # │ i64   ┆ i64      │
+    #   # ╞═══════╪══════════╡
+    #   # │ 99    ┆ 1        │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 98    ┆ 2        │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 4     ┆ 3        │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3     ┆ 4        │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2     ┆ 98       │
+    #   # └───────┴──────────┘
     def top_k(k: 5, reverse: false)
       wrap_expr(_rbexpr.top_k(k, reverse))
     end
 
+    # Get the index values that would sort this column.
+    #
+    # @param reverse [Boolean]
+    #   Sort in reverse (descending) order.
+    # @param nulls_last [Boolean]
+    #   Place null values last instead of first.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [20, 10, 30]
+    #     }
+    #   )
+    #   df.select(Polars.col("a").arg_sort)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 0   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 2   │
+    #   # └─────┘
     def arg_sort(reverse: false, nulls_last: false)
       wrap_expr(_rbexpr.arg_sort(reverse, nulls_last))
     end
@@ -1300,11 +1451,87 @@ module Polars
       wrap_expr(_rbexpr.arg_min)
     end
 
+    # Find indices where elements should be inserted to maintain order.
+    #
+    # @param element [Object]
+    #   Expression or scalar value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "values" => [1, 2, 3, 5]
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("values").search_sorted(0).alias("zero"),
+    #       Polars.col("values").search_sorted(3).alias("three"),
+    #       Polars.col("values").search_sorted(6).alias("six")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌──────┬───────┬─────┐
+    #   # │ zero ┆ three ┆ six │
+    #   # │ ---  ┆ ---   ┆ --- │
+    #   # │ u32  ┆ u32   ┆ u32 │
+    #   # ╞══════╪═══════╪═════╡
+    #   # │ 0    ┆ 2     ┆ 4   │
+    #   # └──────┴───────┴─────┘
     def search_sorted(element)
       element = Utils.expr_to_lit_or_expr(element, str_to_lit: false)
       wrap_expr(_rbexpr.search_sorted(element._rbexpr))
     end
 
+    # Sort this column by the ordering of another column, or multiple other columns.
+    #
+    # In projection/ selection context the whole column is sorted.
+    # If used in a groupby context, the groups are sorted.
+    #
+    # @param by [Object]
+    #   The column(s) used for sorting.
+    # @param reverse [Boolean]
+    #   false -> order from small to large.
+    #   true -> order from large to small.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "group" => [
+    #         "one",
+    #         "one",
+    #         "one",
+    #         "two",
+    #         "two",
+    #         "two"
+    #       ],
+    #       "value" => [1, 98, 2, 3, 99, 4]
+    #     }
+    #   )
+    #   df.select(Polars.col("group").sort_by("value"))
+    #   # =>
+    #   # shape: (6, 1)
+    #   # ┌───────┐
+    #   # │ group │
+    #   # │ ---   │
+    #   # │ str   │
+    #   # ╞═══════╡
+    #   # │ one   │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ one   │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ two   │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ two   │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ one   │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ two   │
+    #   # └───────┘
     def sort_by(by, reverse: false)
       if !by.is_a?(Array)
         by = [by]
@@ -1317,6 +1544,39 @@ module Polars
       wrap_expr(_rbexpr.sort_by(by, reverse))
     end
 
+    # Take values by index.
+    #
+    # @param indices [Expr]
+    #   An expression that leads to a `:u32` dtyped Series.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "group" => [
+    #         "one",
+    #         "one",
+    #         "one",
+    #         "two",
+    #         "two",
+    #         "two"
+    #       ],
+    #       "value" => [1, 98, 2, 3, 99, 4]
+    #     }
+    #   )
+    #   df.groupby("group", maintain_order: true).agg(Polars.col("value").take(1))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌───────┬───────┐
+    #   # │ group ┆ value │
+    #   # │ ---   ┆ ---   │
+    #   # │ str   ┆ i64   │
+    #   # ╞═══════╪═══════╡
+    #   # │ one   ┆ 98    │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ two   ┆ 99    │
+    #   # └───────┴───────┘
     def take(indices)
       if indices.is_a?(Array)
         indices_lit = Polars.lit(Series.new("", indices, dtype: :u32))
@@ -1355,6 +1615,33 @@ module Polars
       wrap_expr(_rbexpr.shift(periods))
     end
 
+    # Shift the values by a given period and fill the resulting null values.
+    #
+    # @param periods [Integer]
+    #   Number of places to shift (may be negative).
+    # @param fill_value [Object]
+    #   Fill nil values with the result of this expression.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4]})
+    #   df.select(Polars.col("foo").shift_and_fill(1, "a"))
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ a   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 2   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 3   │
+    #   # └─────┘
     def shift_and_fill(periods, fill_value)
       fill_value = Utils.expr_to_lit_or_expr(fill_value, str_to_lit: true)
       wrap_expr(_rbexpr.shift_and_fill(periods, fill_value._rbexpr))
