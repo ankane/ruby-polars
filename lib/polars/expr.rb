@@ -2466,6 +2466,41 @@ module Polars
       wrap_expr(_rbexpr.filter(predicate._rbexpr))
     end
 
+    # Filter a single column.
+    #
+    # Alias for {#filter}.
+    #
+    # @param predicate [Expr]
+    #   Boolean expression.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "group_col" => ["g1", "g1", "g2"],
+    #       "b" => [1, 2, 3]
+    #     }
+    #   )
+    #   (
+    #     df.groupby("group_col").agg(
+    #       [
+    #         Polars.col("b").where(Polars.col("b") < 2).sum.alias("lt"),
+    #         Polars.col("b").where(Polars.col("b") >= 2).sum.alias("gte")
+    #       ]
+    #     )
+    #   ).sort("group_col")
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌───────────┬──────┬─────┐
+    #   # │ group_col ┆ lt   ┆ gte │
+    #   # │ ---       ┆ ---  ┆ --- │
+    #   # │ str       ┆ i64  ┆ i64 │
+    #   # ╞═══════════╪══════╪═════╡
+    #   # │ g1        ┆ 1    ┆ 2   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ g2        ┆ null ┆ 3   │
+    #   # └───────────┴──────┴─────┘
     def where(predicate)
       filter(predicate)
     end
@@ -2476,15 +2511,97 @@ module Polars
     # def apply
     # end
 
+    # Explode a list or utf8 Series. This means that every item is expanded to a new
+    # row.
     #
+    # Alias for {#explode}.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => ["hello", "world"]})
+    #   df.select(Polars.col("foo").flatten)
+    #   # =>
+    #   # shape: (10, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ h   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ e   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ l   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ l   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ ... │
+    #   # ├╌╌╌╌╌┤
+    #   # │ o   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ r   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ l   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ d   │
+    #   # └─────┘
     def flatten
       wrap_expr(_rbexpr.explode)
     end
 
+    # Explode a list or utf8 Series.
+    #
+    # This means that every item is expanded to a new row.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"b" => [[1, 2, 3], [4, 5, 6]]})
+    #   df.select(Polars.col("b").explode)
+    #   # =>
+    #   # shape: (6, 1)
+    #   # ┌─────┐
+    #   # │ b   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 2   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 3   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 4   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 5   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 6   │
+    #   # └─────┘
     def explode
       wrap_expr(_rbexpr.explode)
     end
 
+    # Take every nth value in the Series and return as a new Series.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4, 5, 6, 7, 8, 9]})
+    #   df.select(Polars.col("foo").take_every(3))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 4   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 7   │
+    #   # └─────┘
     def take_every(n)
       wrap_expr(_rbexpr.take_every(n))
     end
@@ -2585,9 +2702,40 @@ module Polars
     # def is_in
     # end
 
+    # Repeat the elements in this Series as specified in the given expression.
     #
+    # The repeated elements are expanded into a `List`.
+    #
+    # @param by [Object]
+    #   Numeric column that determines how often the values will be repeated.
+    #   The column will be coerced to UInt32. Give this dtype to make the coercion a
+    #   no-op.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => ["x", "y", "z"],
+    #       "n" => [1, 2, 3]
+    #     }
+    #   )
+    #   df.select(Polars.col("a").repeat_by("n"))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────────────┐
+    #   # │ a               │
+    #   # │ ---             │
+    #   # │ list[str]       │
+    #   # ╞═════════════════╡
+    #   # │ ["x"]           │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ ["y", "y"]      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ ["z", "z", "z"] │
+    #   # └─────────────────┘
     def repeat_by(by)
-      by = Utils.expr_to_lit_or_expr(by, false)
+      by = Utils.expr_to_lit_or_expr(by, str_to_lit: false)
       wrap_expr(_rbexpr.repeat_by(by._rbexpr))
     end
 
@@ -2597,7 +2745,38 @@ module Polars
     # def _hash
     # end
 
+    # Reinterpret the underlying bits as a signed/unsigned integer.
     #
+    # This operation is only allowed for 64bit integers. For lower bits integers,
+    # you can safely use that cast operation.
+    #
+    # @param signed [Boolean]
+    #   If true, reinterpret as `:i64`. Otherwise, reinterpret as `:u64`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 1, 2], dtype: :u64)
+    #   df = Polars::DataFrame.new([s])
+    #   df.select(
+    #     [
+    #       Polars.col("a").reinterpret(signed: true).alias("reinterpreted"),
+    #       Polars.col("a").alias("original")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌───────────────┬──────────┐
+    #   # │ reinterpreted ┆ original │
+    #   # │ ---           ┆ ---      │
+    #   # │ i64           ┆ u64      │
+    #   # ╞═══════════════╪══════════╡
+    #   # │ 1             ┆ 1        │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1             ┆ 1        │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2             ┆ 2        │
+    #   # └───────────────┴──────────┘
     def reinterpret(signed: false)
       wrap_expr(_rbexpr.reinterpret(signed))
     end
@@ -2605,7 +2784,33 @@ module Polars
     # def _inspect
     # end
 
+    # Fill nulls with linear interpolation over missing values.
     #
+    # Can also be used to regrid data to a new grid - see examples below.
+    #
+    # @return [Expr]
+    #
+    # @example Fill nulls with linear interpolation
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, nil, 3],
+    #       "b" => [1.0, Float::NAN, 3.0]
+    #     }
+    #   )
+    #   df.select(Polars.all.interpolate)
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 1.0 │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ NaN │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 3.0 │
+    #   # └─────┴─────┘
     def interpolate
       wrap_expr(_rbexpr.interpolate)
     end
@@ -2637,7 +2842,14 @@ module Polars
     # def rolling_apply
     # end
 
+    # Compute a rolling skew.
     #
+    # @param window_size [Integer]
+    #   Integer size of the rolling window.
+    # @param bias [Boolean]
+    #   If false, the calculations are corrected for statistical bias.
+    #
+    # @return [Expr]
     def rolling_skew(window_size, bias: true)
       wrap_expr(_rbexpr.rolling_skew(window_size, bias))
     end
@@ -2672,10 +2884,107 @@ module Polars
       wrap_expr(_rbexpr.abs)
     end
 
+    # Get the index values that would sort this column.
+    #
+    # Alias for {#arg_sort}.
+    #
+    # @param reverse [Boolean]
+    #   Sort in reverse (descending) order.
+    # @param nulls_last [Boolean]
+    #   Place null values last instead of first.
+    #
+    # @return [expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [20, 10, 30]
+    #     }
+    #   )
+    #   df.select(Polars.col("a").argsort)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 0   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 2   │
+    #   # └─────┘
     def argsort(reverse: false, nulls_last: false)
       arg_sort(reverse: reverse, nulls_last: nulls_last)
     end
 
+    # Assign ranks to data, dealing with ties appropriately.
+    #
+    # @param method ["average", "min", "max", "dense", "ordinal", "random"]
+    #   The method used to assign ranks to tied elements.
+    #   The following methods are available:
+    #
+    #   - 'average' : The average of the ranks that would have been assigned to
+    #     all the tied values is assigned to each value.
+    #   - 'min' : The minimum of the ranks that would have been assigned to all
+    #     the tied values is assigned to each value. (This is also referred to
+    #     as "competition" ranking.)
+    #   - 'max' : The maximum of the ranks that would have been assigned to all
+    #     the tied values is assigned to each value.
+    #   - 'dense' : Like 'min', but the rank of the next highest element is
+    #     assigned the rank immediately after those assigned to the tied
+    #     elements.
+    #   - 'ordinal' : All values are given a distinct rank, corresponding to
+    #     the order that the values occur in the Series.
+    #   - 'random' : Like 'ordinal', but the rank for ties is not dependent
+    #     on the order that the values occur in the Series.
+    # @param reverse [Boolean]
+    #   Reverse the operation.
+    #
+    # @return [Expr]
+    #
+    # @example The 'average' method:
+    #   df = Polars::DataFrame.new({"a" => [3, 6, 1, 1, 6]})
+    #   df.select(Polars.col("a").rank)
+    #   # =>
+    #   # shape: (5, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f32 │
+    #   # ╞═════╡
+    #   # │ 3.0 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 4.5 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1.5 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1.5 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 4.5 │
+    #   # └─────┘
+    #
+    # @example The 'ordinal' method:
+    #   df = Polars::DataFrame.new({"a" => [3, 6, 1, 1, 6]})
+    #   df.select(Polars.col("a").rank(method: "ordinal"))
+    #   # =>
+    #   # shape: (5, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 3   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 4   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 2   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 5   │
+    #   # └─────┘
     def rank(method: "average", reverse: false)
       wrap_expr(_rbexpr.rank(method, reverse))
     end
