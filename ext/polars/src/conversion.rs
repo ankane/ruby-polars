@@ -89,6 +89,25 @@ impl From<Wrap<AnyValue<'_>>> for Value {
                 .unwrap()
                 .funcall::<_, _, Value>("to_date", ())
                 .unwrap(),
+            AnyValue::Datetime(v, tu, tz) => {
+                let t = match tu {
+                    TimeUnit::Nanoseconds => todo!(),
+                    TimeUnit::Microseconds => {
+                        let sec = v / 1000000;
+                        let subsec = v % 1000000;
+                        class::time()
+                            .funcall::<_, _, Value>("at", (sec, subsec, Symbol::new("usec")))
+                            .unwrap()
+                    }
+                    TimeUnit::Milliseconds => todo!(),
+                };
+
+                if let Some(_) = tz {
+                    todo!();
+                } else {
+                    t.funcall::<_, _, Value>("utc", ()).unwrap()
+                }
+            }
             _ => todo!(),
         }
     }
