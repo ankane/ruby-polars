@@ -359,14 +359,121 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_rjust(width, fillchar))
     end
 
+    # Check if string contains a substring that matches a regex.
+    #
+    # @param pattern [String]
+    #   A valid regex pattern.
+    # @param literal [Boolean]
+    #   Treat pattern as a literal string.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => ["Crab", "cat and dog", "rab$bit", nil]})
+    #   df.select(
+    #     [
+    #       Polars.col("a"),
+    #       Polars.col("a").str.contains("cat|bit").alias("regex"),
+    #       Polars.col("a").str.contains("rab$", literal: true).alias("literal")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────────────┬───────┬─────────┐
+    #   # │ a           ┆ regex ┆ literal │
+    #   # │ ---         ┆ ---   ┆ ---     │
+    #   # │ str         ┆ bool  ┆ bool    │
+    #   # ╞═════════════╪═══════╪═════════╡
+    #   # │ Crab        ┆ false ┆ false   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ cat and dog ┆ true  ┆ false   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ rab$bit     ┆ true  ┆ true    │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ null        ┆ null  ┆ null    │
+    #   # └─────────────┴───────┴─────────┘
     def contains(pattern, literal: false)
       Utils.wrap_expr(_rbexpr.str_contains(pattern, literal))
     end
 
+    # Check if string values end with a substring.
+    #
+    # @param sub [String]
+    #   Suffix substring.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"fruits" => ["apple", "mango", nil]})
+    #   df.with_column(
+    #     Polars.col("fruits").str.ends_with("go").alias("has_suffix")
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌────────┬────────────┐
+    #   # │ fruits ┆ has_suffix │
+    #   # │ ---    ┆ ---        │
+    #   # │ str    ┆ bool       │
+    #   # ╞════════╪════════════╡
+    #   # │ apple  ┆ false      │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ mango  ┆ true       │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null   ┆ null       │
+    #   # └────────┴────────────┘
+    #
+    # @example Using `ends_with` as a filter condition:
+    #   df.filter(Polars.col("fruits").str.ends_with("go"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌────────┐
+    #   # │ fruits │
+    #   # │ ---    │
+    #   # │ str    │
+    #   # ╞════════╡
+    #   # │ mango  │
+    #   # └────────┘
     def ends_with(sub)
       Utils.wrap_expr(_rbexpr.str_ends_with(sub))
     end
 
+    # Check if string values start with a substring.
+    #
+    # @param sub [String]
+    #   Prefix substring.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"fruits" => ["apple", "mango", nil]})
+    #   df.with_column(
+    #     Polars.col("fruits").str.starts_with("app").alias("has_prefix")
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌────────┬────────────┐
+    #   # │ fruits ┆ has_prefix │
+    #   # │ ---    ┆ ---        │
+    #   # │ str    ┆ bool       │
+    #   # ╞════════╪════════════╡
+    #   # │ apple  ┆ true       │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ mango  ┆ false      │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null   ┆ null       │
+    #   # └────────┴────────────┘
+    #
+    # @example Using `starts_with` as a filter condition:
+    #   df.filter(Polars.col("fruits").str.starts_with("app"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌────────┐
+    #   # │ fruits │
+    #   # │ ---    │
+    #   # │ str    │
+    #   # ╞════════╡
+    #   # │ apple  │
+    #   # └────────┘
     def starts_with(sub)
       Utils.wrap_expr(_rbexpr.str_starts_with(sub))
     end
@@ -380,19 +487,125 @@ module Polars
     # def encode
     # end
 
+    # Extract the target capture group from provided patterns.
     #
+    # @param pattern [String]
+    #   A valid regex pattern
+    # @param group_index [Integer]
+    #   Index of the targeted capture group.
+    #   Group 0 mean the whole pattern, first group begin at index 1
+    #   Default to the first capture group
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => ["123 bla 45 asd", "xyz 678 910t"]})
+    #   df.select(
+    #     [
+    #       Polars.col("foo").str.extract('(\d+)')
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ 123 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 678 │
+    #   # └─────┘
     def extract(pattern, group_index: 1)
       Utils.wrap_expr(_rbexpr.str_extract(pattern, group_index))
     end
 
+    # Extracts all matches for the given regex pattern.
+    #
+    # Extracts each successive non-overlapping regex match in an individual string as
+    # an array.
+    #
+    # @param pattern [String]
+    #   A valid regex pattern
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => ["123 bla 45 asd", "xyz 678 910t"]})
+    #   df.select(
+    #     [
+    #       Polars.col("foo").str.extract_all('(\d+)').alias("extracted_nrs")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌────────────────┐
+    #   # │ extracted_nrs  │
+    #   # │ ---            │
+    #   # │ list[str]      │
+    #   # ╞════════════════╡
+    #   # │ ["123", "45"]  │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ ["678", "910"] │
+    #   # └────────────────┘
     def extract_all(pattern)
       Utils.wrap_expr(_rbexpr.str_extract_all(pattern))
     end
 
+    # Count all successive non-overlapping regex matches.
+    #
+    # @param pattern [String]
+    #   A valid regex pattern
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => ["123 bla 45 asd", "xyz 678 910t"]})
+    #   df.select(
+    #     [
+    #       Polars.col("foo").str.count_match('\d').alias("count_digits")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌──────────────┐
+    #   # │ count_digits │
+    #   # │ ---          │
+    #   # │ u32          │
+    #   # ╞══════════════╡
+    #   # │ 5            │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 6            │
+    #   # └──────────────┘
     def count_match(pattern)
       Utils.wrap_expr(_rbexpr.count_match(pattern))
     end
 
+    # Split the string by a substring.
+    #
+    # @param by [String]
+    #   Substring to split by.
+    # @param inclusive [Boolean]
+    #   If true, include the split character/string in the results.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"s" => ["foo bar", "foo-bar", "foo bar baz"]})
+    #   df.select(Polars.col("s").str.split(" "))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌───────────────────────┐
+    #   # │ s                     │
+    #   # │ ---                   │
+    #   # │ list[str]             │
+    #   # ╞═══════════════════════╡
+    #   # │ ["foo", "bar"]        │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ ["foo-bar"]           │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ ["foo", "bar", "baz"] │
+    #   # └───────────────────────┘
     def split(by, inclusive: false)
       if inclusive
         Utils.wrap_expr(_rbexpr.str_split_inclusive(by))
