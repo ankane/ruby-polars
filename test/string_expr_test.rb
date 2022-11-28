@@ -96,11 +96,11 @@ class StringExprTest < Minitest::Test
   end
 
   def test_replace
-    assert_expr str_expr.replace("pattern")
+    assert_expr str_expr.replace("pattern", "value")
   end
 
   def test_replace_all
-    assert_expr str_expr.replace_all("pattern")
+    assert_expr str_expr.replace_all("pattern", "value")
   end
 
   def test_slice

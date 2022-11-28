@@ -38,7 +38,7 @@ class DocsTest < Minitest::Test
   end
 
   def test_lazy_group_by
-    assert_docs Polars::LazyGroupBy
+    assert_docs Polars::LazyGroupBy, required: true
   end
 
   def test_list_expr
@@ -54,7 +54,7 @@ class DocsTest < Minitest::Test
   end
 
   def test_string_expr
-    assert_docs Polars::StringExpr
+    assert_docs Polars::StringExpr, required: true
   end
 
   def test_struct_expr

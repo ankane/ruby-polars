@@ -614,6 +614,43 @@ module Polars
       end
     end
 
+    # Split the string by a substring using `n` splits.
+    #
+    # Results in a struct of `n+1` fields.
+    #
+    # If it cannot make `n` splits, the remaining field elements will be null.
+    #
+    # @param by [String]
+    #   Substring to split by.
+    # @param n [Integer]
+    #   Number of splits to make.
+    # @param inclusive [Boolean]
+    #   If true, include the split character/string in the results.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => ["a_1", nil, "c", "d_4"]})
+    #   df.select(
+    #     [
+    #       Polars.col("x").str.split_exact("_", 1).alias("fields")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌─────────────┐
+    #   # │ fields      │
+    #   # │ ---         │
+    #   # │ struct[2]   │
+    #   # ╞═════════════╡
+    #   # │ {"a","1"}   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ {null,null} │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ {"c",null}  │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ {"d","4"}   │
+    #   # └─────────────┘
     def split_exact(by, n, inclusive: false)
       if inclusive
         Utils.wrap_expr(_rbexpr.str_split_exact_inclusive(by, n))
@@ -622,22 +659,135 @@ module Polars
       end
     end
 
+    # Split the string by a substring, restricted to returning at most ``n`` items.
+    #
+    # If the number of possible splits is less than ``n-1``, the remaining field
+    # elements will be null. If the number of possible splits is ``n-1`` or greater,
+    # the last (nth) substring will contain the remainder of the string.
+    #
+    # @param by [String]
+    #   Substring to split by.
+    # @param n [Integer]
+    #   Max number of items to return.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"s" => ["foo bar", nil, "foo-bar", "foo bar baz"]})
+    #   df.select(Polars.col("s").str.splitn(" ", 2).alias("fields"))
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌───────────────────┐
+    #   # │ fields            │
+    #   # │ ---               │
+    #   # │ struct[2]         │
+    #   # ╞═══════════════════╡
+    #   # │ {"foo","bar"}     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ {null,null}       │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ {"foo-bar",null}  │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ {"foo","bar baz"} │
+    #   # └───────────────────┘
     def splitn(by, n)
       Utils.wrap_expr(_rbexpr.str_splitn(by, n))
     end
 
-    def replace(pattern, literal: false)
+    # Replace first matching regex/literal substring with a new string value.
+    #
+    # @param pattern [String]
+    #   Regex pattern.
+    # @param value [String]
+    #   Replacement string.
+    # @param literal [Boolean]
+    #   Treat pattern as a literal string.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"id" => [1, 2], "text" => ["123abc", "abc456"]})
+    #   df.with_column(
+    #     Polars.col("text").str.replace('abc\b', "ABC")
+    #   )
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬────────┐
+    #   # │ id  ┆ text   │
+    #   # │ --- ┆ ---    │
+    #   # │ i64 ┆ str    │
+    #   # ╞═════╪════════╡
+    #   # │ 1   ┆ 123ABC │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ abc456 │
+    #   # └─────┴────────┘
+    def replace(pattern, value, literal: false)
       pattern = Utils.expr_to_lit_or_expr(pattern, str_to_lit: true)
       value = Utils.expr_to_lit_or_expr(value, str_to_lit: true)
       Utils.wrap_expr(_rbexpr.str_replace(pattern._rbexpr, value._rbexpr, literal))
     end
 
-    def replace_all(pattern, literal: false)
+    # Replace all matching regex/literal substrings with a new string value.
+    #
+    # @param pattern [String]
+    #   Regex pattern.
+    # @param value [String]
+    #   Replacement string.
+    # @param literal [Boolean]
+    #   Treat pattern as a literal string.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"id" => [1, 2], "text" => ["abcabc", "123a123"]})
+    #   df.with_column(Polars.col("text").str.replace_all("a", "-"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────────┐
+    #   # │ id  ┆ text    │
+    #   # │ --- ┆ ---     │
+    #   # │ i64 ┆ str     │
+    #   # ╞═════╪═════════╡
+    #   # │ 1   ┆ -bc-bc  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 123-123 │
+    #   # └─────┴─────────┘
+    def replace_all(pattern, value, literal: false)
       pattern = Utils.expr_to_lit_or_expr(pattern, str_to_lit: true)
       value = Utils.expr_to_lit_or_expr(value, str_to_lit: true)
       Utils.wrap_expr(_rbexpr.str_replace_all(pattern._rbexpr, value._rbexpr, literal))
     end
 
+    # Create subslices of the string values of a Utf8 Series.
+    #
+    # @param offset [Integer]
+    #   Start index. Negative indexing is supported.
+    # @param length [Integer]
+    #   Length of the slice. If set to `nil` (default), the slice is taken to the
+    #   end of the string.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"s" => ["pear", nil, "papaya", "dragonfruit"]})
+    #   df.with_column(
+    #     Polars.col("s").str.slice(-3).alias("s_sliced")
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────────────┬──────────┐
+    #   # │ s           ┆ s_sliced │
+    #   # │ ---         ┆ ---      │
+    #   # │ str         ┆ str      │
+    #   # ╞═════════════╪══════════╡
+    #   # │ pear        ┆ ear      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null        ┆ null     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ papaya      ┆ aya      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ dragonfruit ┆ uit      │
+    #   # └─────────────┴──────────┘
     def slice(offset, length = nil)
       Utils.wrap_expr(_rbexpr.str_slice(offset, length))
     end
