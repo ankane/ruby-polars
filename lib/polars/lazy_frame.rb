@@ -558,7 +558,7 @@ module Polars
     #       "ham" => ["a", "b", "c"]
     #     }
     #   ).lazy
-    #   lf.filter(Polars.col("foo") < 3).collect()
+    #   lf.filter(Polars.col("foo") < 3).collect
     #   # =>
     #   # shape: (2, 3)
     #   # ┌─────┬─────┬─────┐
@@ -910,7 +910,7 @@ module Polars
     #     [
     #       (Polars.col("a") ** 2).alias("a^2"),
     #       (Polars.col("b") / 2).alias("b/2"),
-    #       (Polars.col("c").is_not()).alias("not c")
+    #       (Polars.col("c").is_not).alias("not c")
     #     ]
     #   ).collect
     #   # =>

@@ -880,7 +880,7 @@ module Polars
     #       "val" => [1, 2, 3]
     #     }
     #   )
-    #   df.reverse()
+    #   df.reverse
     #   # =>
     #   # shape: (3, 2)
     #   # ┌─────┬─────┐
@@ -2357,7 +2357,7 @@ module Polars
     #     [
     #       (Polars.col("a") ** 2).alias("a^2"),
     #       (Polars.col("b") / 2).alias("b/2"),
-    #       (Polars.col("c").is_not()).alias("not c")
+    #       (Polars.col("c").is_not).alias("not c")
     #     ]
     #   )
     #   # =>

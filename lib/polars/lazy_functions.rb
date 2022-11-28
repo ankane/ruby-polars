@@ -408,7 +408,7 @@ module Polars
     #       "bool" => [true, nil],
     #       "list" => [[1, 2], [3]],
     #     }
-    #   ).select([Polars.struct(Polars.all()).alias("my_struct")])
+    #   ).select([Polars.struct(Polars.all).alias("my_struct")])
     #   # =>
     #   # shape: (2, 1)
     #   # ┌─────────────────────┐

@@ -14,7 +14,7 @@ class DocsTest < Minitest::Test
   end
 
   def test_expr
-    assert_docs Polars::Expr
+    assert_docs Polars::Expr, required: true
   end
 
   def test_functions
@@ -93,7 +93,7 @@ class DocsTest < Minitest::Test
   end
 
   def assert_examples(method)
-    return if [:mode, :sample, :struct, :read_csv_batched, :field, :rename_fields, :unnest, :arange, :explode, :is_datelike].include?(method.name)
+    return if [:is_nan, :is_not_nan, :mode, :sample, :struct, :read_csv_batched, :field, :rename_fields, :unnest, :arange, :explode, :is_datelike].include?(method.name)
 
     code = ""
     method.tags(:example).each do |example|

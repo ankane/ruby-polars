@@ -258,13 +258,82 @@ module Polars
       wrap_expr(_rbexpr.exp)
     end
 
+    # Rename the output of an expression.
+    #
+    # @param name [String]
+    #   New name.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3],
+    #       "b" => ["a", "b", nil]
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("a").alias("bar"),
+    #       Polars.col("b").alias("foo")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬──────┐
+    #   # │ bar ┆ foo  │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ str  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ a    │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 2   ┆ b    │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 3   ┆ null │
+    #   # └─────┴──────┘
     def alias(name)
       wrap_expr(_rbexpr._alias(name))
     end
 
     # TODO support symbols for exclude
 
+    # Exclude certain columns from a wildcard/regex selection.
     #
+    # You may also use regexes in the exclude list. They must start with `^` and end
+    # with `$`.
+    #
+    # @param columns [Object]
+    #   Column(s) to exclude from selection.
+    #   This can be:
+    #
+    #   - a column name, or multiple column names
+    #   - a regular expression starting with `^` and ending with `$`
+    #   - a dtype or multiple dtypes
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "aa" => [1, 2, 3],
+    #       "ba" => ["a", "b", nil],
+    #       "cc" => [nil, 2.5, 1.5]
+    #     }
+    #   )
+    #   df.select(Polars.all.exclude("ba"))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬──────┐
+    #   # │ aa  ┆ cc   │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ f64  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ null │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 2.5  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 1.5  │
+    #   # └─────┴──────┘
     def exclude(columns)
       if columns.is_a?(String)
         columns = [columns]
@@ -285,14 +354,43 @@ module Polars
       end
     end
 
+    # Keep the original root name of the expression.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2],
+    #       "b" => [3, 4]
+    #     }
+    #   )
+    #   df.with_columns([(Polars.col("a") * 9).alias("c").keep_name])
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 9   ┆ 3   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 18  ┆ 4   │
+    #   # └─────┴─────┘
     def keep_name
       wrap_expr(_rbexpr.keep_name)
     end
 
+    # Add a prefix to the root column name of the expression.
+    #
+    # @return [Expr]
     def prefix(prefix)
       wrap_expr(_rbexpr.prefix(prefix))
     end
 
+    # Add a suffix to the root column name of the expression.
+    #
+    # @return [Expr]
     def suffix(suffix)
       wrap_expr(_rbexpr.suffix(suffix))
     end
@@ -464,14 +562,112 @@ module Polars
       wrap_expr(_rbexpr.is_infinite)
     end
 
+    # Returns a boolean Series indicating which values are NaN.
+    #
+    # @note
+    #   Floating point `NaN` (Not A Number) should not be confused
+    #   with missing data represented as `nil`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, nil, 1, 5],
+    #       "b" => [1.0, 2.0, Float::NAN, 1.0, 5.0]
+    #     }
+    #   )
+    #   df.with_column(Polars.col(Polars::Float64).is_nan.suffix("_isnan"))
+    #   # =>
+    #   # shape: (5, 3)
+    #   # ┌──────┬─────┬─────────┐
+    #   # │ a    ┆ b   ┆ b_isnan │
+    #   # │ ---  ┆ --- ┆ ---     │
+    #   # │ i64  ┆ f64 ┆ bool    │
+    #   # ╞══════╪═════╪═════════╡
+    #   # │ 1    ┆ 1.0 ┆ false   │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2    ┆ 2.0 ┆ false   │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ null ┆ NaN ┆ true    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1    ┆ 1.0 ┆ false   │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ 5    ┆ 5.0 ┆ false   │
+    #   # └──────┴─────┴─────────┘
     def is_nan
       wrap_expr(_rbexpr.is_nan)
     end
 
+    # Returns a boolean Series indicating which values are not NaN.
+    #
+    # @note
+    #   Floating point `NaN` (Not A Number) should not be confused
+    #   with missing data represented as `nil`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, nil, 1, 5],
+    #       "b" => [1.0, 2.0, Float::NAN, 1.0, 5.0]
+    #     }
+    #   )
+    #   df.with_column(Polars.col(Polars::Float64).is_not_nan.suffix("_is_not_nan"))
+    #   # =>
+    #   # shape: (5, 3)
+    #   # ┌──────┬─────┬──────────────┐
+    #   # │ a    ┆ b   ┆ b_is_not_nan │
+    #   # │ ---  ┆ --- ┆ ---          │
+    #   # │ i64  ┆ f64 ┆ bool         │
+    #   # ╞══════╪═════╪══════════════╡
+    #   # │ 1    ┆ 1.0 ┆ true         │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2    ┆ 2.0 ┆ true         │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null ┆ NaN ┆ false        │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1    ┆ 1.0 ┆ true         │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 5    ┆ 5.0 ┆ true         │
+    #   # └──────┴─────┴──────────────┘
     def is_not_nan
       wrap_expr(_rbexpr.is_not_nan)
     end
 
+    # Get the group indexes of the group by operation.
+    #
+    # Should be used in aggregation context only.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "group" => [
+    #         "one",
+    #         "one",
+    #         "one",
+    #         "two",
+    #         "two",
+    #         "two"
+    #       ],
+    #       "value" => [94, 95, 96, 97, 97, 99]
+    #     }
+    #   )
+    #   df.groupby("group", maintain_order: true).agg(Polars.col("value").agg_groups)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌───────┬───────────┐
+    #   # │ group ┆ value     │
+    #   # │ ---   ┆ ---       │
+    #   # │ str   ┆ list[u32] │
+    #   # ╞═══════╪═══════════╡
+    #   # │ one   ┆ [0, 1, 2] │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ two   ┆ [3, 4, 5] │
+    #   # └───────┴───────────┘
     def agg_groups
       wrap_expr(_rbexpr.agg_groups)
     end
@@ -557,6 +753,36 @@ module Polars
       wrap_expr(_rbexpr.slice(offset._rbexpr, length._rbexpr))
     end
 
+    # Append expressions.
+    #
+    # This is done by adding the chunks of `other` to this `Series`.
+    #
+    # @param other [Expr]
+    #   Expression to append.
+    # @param upcast [Boolean]
+    #   Cast both `Series` to the same supertype.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [8, 9, 10],
+    #       "b" => [nil, 4, 4]
+    #     }
+    #   )
+    #   df.select(Polars.all.head(1).append(Polars.all.tail(1)))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬──────┐
+    #   # │ a   ┆ b    │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ i64  │
+    #   # ╞═════╪══════╡
+    #   # │ 8   ┆ null │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 10  ┆ 4    │
+    #   # └─────┴──────┘
     def append(other, upcast: true)
       other = Utils.expr_to_lit_or_expr(other)
       wrap_expr(_rbexpr.append(other._rbexpr, upcast))
@@ -650,22 +876,182 @@ module Polars
       wrap_expr(_rbexpr.drop_nans)
     end
 
+    # Get an array with the cumulative sum computed at every element.
+    #
+    # @param reverse [Boolean]
+    #   Reverse the operation.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   Dtypes in `:i8`, `:u8`, `:i16`, and `:u16` are cast to
+    #   `:i64` before summing to prevent overflow issues.
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4]})
+    #   df.select(
+    #     [
+    #       Polars.col("a").cumsum,
+    #       Polars.col("a").cumsum(reverse: true).alias("a_reverse")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬───────────┐
+    #   # │ a   ┆ a_reverse │
+    #   # │ --- ┆ ---       │
+    #   # │ i64 ┆ i64       │
+    #   # ╞═════╪═══════════╡
+    #   # │ 1   ┆ 10        │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 9         │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 6   ┆ 7         │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 10  ┆ 4         │
+    #   # └─────┴───────────┘
     def cumsum(reverse: false)
       wrap_expr(_rbexpr.cumsum(reverse))
     end
 
+    # Get an array with the cumulative product computed at every element.
+    #
+    # @param reverse [Boolean]
+    #   Reverse the operation.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   Dtypes in `:i8`, `:u8`, `:i16`, and `:u16` are cast to
+    #   `:i64` before summing to prevent overflow issues.
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4]})
+    #   df.select(
+    #     [
+    #       Polars.col("a").cumprod,
+    #       Polars.col("a").cumprod(reverse: true).alias("a_reverse")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬───────────┐
+    #   # │ a   ┆ a_reverse │
+    #   # │ --- ┆ ---       │
+    #   # │ i64 ┆ i64       │
+    #   # ╞═════╪═══════════╡
+    #   # │ 1   ┆ 24        │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 24        │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 6   ┆ 12        │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 24  ┆ 4         │
+    #   # └─────┴───────────┘
     def cumprod(reverse: false)
       wrap_expr(_rbexpr.cumprod(reverse))
     end
 
+    # Get an array with the cumulative min computed at every element.
+    #
+    # @param reverse [Boolean]
+    #   Reverse the operation.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4]})
+    #   df.select(
+    #     [
+    #       Polars.col("a").cummin,
+    #       Polars.col("a").cummin(reverse: true).alias("a_reverse")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬───────────┐
+    #   # │ a   ┆ a_reverse │
+    #   # │ --- ┆ ---       │
+    #   # │ i64 ┆ i64       │
+    #   # ╞═════╪═══════════╡
+    #   # │ 1   ┆ 1         │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1   ┆ 2         │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1   ┆ 3         │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1   ┆ 4         │
+    #   # └─────┴───────────┘
     def cummin(reverse: false)
       wrap_expr(_rbexpr.cummin(reverse))
     end
 
+    # Get an array with the cumulative max computed at every element.
+    #
+    # @param reverse [Boolean]
+    #   Reverse the operation.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4]})
+    #   df.select(
+    #     [
+    #       Polars.col("a").cummax,
+    #       Polars.col("a").cummax(reverse: true).alias("a_reverse")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬───────────┐
+    #   # │ a   ┆ a_reverse │
+    #   # │ --- ┆ ---       │
+    #   # │ i64 ┆ i64       │
+    #   # ╞═════╪═══════════╡
+    #   # │ 1   ┆ 4         │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 4         │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 4         │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 4   ┆ 4         │
+    #   # └─────┴───────────┘
     def cummax(reverse: false)
       wrap_expr(_rbexpr.cummax(reverse))
     end
 
+    # Get an array with the cumulative count computed at every element.
+    #
+    # Counting from 0 to len
+    #
+    # @param reverse [Boolean]
+    #   Reverse the operation.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4]})
+    #   df.select(
+    #     [
+    #       Polars.col("a").cumcount,
+    #       Polars.col("a").cumcount(reverse: true).alias("a_reverse")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬───────────┐
+    #   # │ a   ┆ a_reverse │
+    #   # │ --- ┆ ---       │
+    #   # │ u32 ┆ u32       │
+    #   # ╞═════╪═══════════╡
+    #   # │ 0   ┆ 3         │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1   ┆ 2         │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 1         │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 0         │
+    #   # └─────┴───────────┘
     def cumcount(reverse: false)
       wrap_expr(_rbexpr.cumcount(reverse))
     end
@@ -755,6 +1141,30 @@ module Polars
       wrap_expr(_rbexpr.round(decimals))
     end
 
+    # Compute the dot/inner product between two Expressions.
+    #
+    # @param other [Expr]
+    #   Expression to compute dot product with.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 3, 5],
+    #       "b" => [2, 4, 6]
+    #     }
+    #   )
+    #   df.select(Polars.col("a").dot(Polars.col("b")))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 44  │
+    #   # └─────┘
     def dot(other)
       other = Utils.expr_to_lit_or_expr(other, str_to_lit: false)
       wrap_expr(_rbexpr.dot(other._rbexpr))
@@ -789,6 +1199,42 @@ module Polars
       wrap_expr(_rbexpr.mode)
     end
 
+    # Cast between data types.
+    #
+    # @param dtype [Symbol]
+    #   DataType to cast to.
+    # @param strict [Boolean]
+    #   Throw an error if a cast could not be done.
+    #   For instance, due to an overflow.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3],
+    #       "b" => ["4", "5", "6"]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     [
+    #       Polars.col("a").cast(:f64),
+    #       Polars.col("b").cast(:i32)
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ f64 ┆ i32 │
+    #   # ╞═════╪═════╡
+    #   # │ 1.0 ┆ 4   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2.0 ┆ 5   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3.0 ┆ 6   │
+    #   # └─────┴─────┘
     def cast(dtype, strict: true)
       dtype = Utils.rb_type_to_dtype(dtype)
       wrap_expr(_rbexpr.cast(dtype, strict))
@@ -2165,35 +2611,106 @@ module Polars
     # def set_sorted
     # end
 
+    # Aggregate to list.
     #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3],
+    #       "b" => [4, 5, 6]
+    #     }
+    #   )
+    #   df.select(Polars.all.list)
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌───────────┬───────────┐
+    #   # │ a         ┆ b         │
+    #   # │ ---       ┆ ---       │
+    #   # │ list[i64] ┆ list[i64] │
+    #   # ╞═══════════╪═══════════╡
+    #   # │ [1, 2, 3] ┆ [4, 5, 6] │
+    #   # └───────────┴───────────┘
     def list
       wrap_expr(_rbexpr.list)
     end
 
+    # Shrink numeric columns to the minimal required datatype.
+    #
+    # Shrink to the dtype needed to fit the extrema of this `Series`.
+    # This can be used to reduce memory pressure.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3],
+    #       "b" => [1, 2, 2 << 32],
+    #       "c" => [-1, 2, 1 << 30],
+    #       "d" => [-112, 2, 112],
+    #       "e" => [-112, 2, 129],
+    #       "f" => ["a", "b", "c"],
+    #       "g" => [0.1, 1.32, 0.12],
+    #       "h" => [true, nil, false]
+    #     }
+    #   ).select(Polars.all.shrink_dtype)
+    #   # =>
+    #   # shape: (3, 8)
+    #   # ┌─────┬────────────┬────────────┬──────┬──────┬─────┬──────┬───────┐
+    #   # │ a   ┆ b          ┆ c          ┆ d    ┆ e    ┆ f   ┆ g    ┆ h     │
+    #   # │ --- ┆ ---        ┆ ---        ┆ ---  ┆ ---  ┆ --- ┆ ---  ┆ ---   │
+    #   # │ i8  ┆ i64        ┆ i32        ┆ i8   ┆ i16  ┆ str ┆ f32  ┆ bool  │
+    #   # ╞═════╪════════════╪════════════╪══════╪══════╪═════╪══════╪═══════╡
+    #   # │ 1   ┆ 1          ┆ -1         ┆ -112 ┆ -112 ┆ a   ┆ 0.1  ┆ true  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 2          ┆ 2          ┆ 2    ┆ 2    ┆ b   ┆ 1.32 ┆ null  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 8589934592 ┆ 1073741824 ┆ 112  ┆ 129  ┆ c   ┆ 0.12 ┆ false │
+    #   # └─────┴────────────┴────────────┴──────┴──────┴─────┴──────┴───────┘
     def shrink_dtype
       wrap_expr(_rbexpr.shrink_dtype)
     end
 
+    # Create an object namespace of all list related methods.
+    #
+    # @return [ListExpr]
     def arr
       ListExpr.new(self)
     end
 
+    # Create an object namespace of all categorical related methods.
+    #
+    # @return [CatExpr]
     def cat
       CatExpr.new(self)
     end
 
+    # Create an object namespace of all datetime related methods.
+    #
+    # @return [DateTimeExpr]
     def dt
       DateTimeExpr.new(self)
     end
 
+    # Create an object namespace of all meta related expression methods.
+    #
+    # @return [MetaExpr]
     def meta
       MetaExpr.new(self)
     end
 
+    # Create an object namespace of all string related methods.
+    #
+    # @return [StringExpr]
     def str
       StringExpr.new(self)
     end
 
+    # Create an object namespace of all struct related methods.
+    #
+    # @return [StructExpr]
     def struct
       StructExpr.new(self)
     end

@@ -338,6 +338,7 @@ fn init() -> RbResult<()> {
     class.define_method("dt_tz_localize", method!(RbExpr::dt_tz_localize, 1))?;
     class.define_method("dt_truncate", method!(RbExpr::dt_truncate, 2))?;
     class.define_method("dt_round", method!(RbExpr::dt_round, 2))?;
+    class.define_method("dot", method!(RbExpr::dot, 1))?;
     class.define_method("reinterpret", method!(RbExpr::reinterpret, 1))?;
     class.define_method("mode", method!(RbExpr::mode, 0))?;
     class.define_method("keep_name", method!(RbExpr::keep_name, 0))?;

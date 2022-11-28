@@ -887,6 +887,10 @@ impl RbExpr {
         self.inner.clone().dt().round(&every, &offset).into()
     }
 
+    pub fn dot(&self, other: &RbExpr) -> Self {
+        self.inner.clone().dot(other.inner.clone()).into()
+    }
+
     pub fn reinterpret(&self, signed: bool) -> Self {
         let function = move |s: Series| reinterpret(&s, signed);
         let dt = if signed {
