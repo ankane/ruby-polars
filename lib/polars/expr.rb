@@ -2093,11 +2093,69 @@ module Polars
       wrap_expr(_rbexpr.unique_counts)
     end
 
+    # Compute the logarithm to a given base.
+    #
+    # @param base [Float]
+    #   Given base, defaults to `e`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    #   df.select(Polars.col("a").log(2))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 0.0      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1.0      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1.584963 │
+    #   # └──────────┘
     def log(base = Math::E)
       wrap_expr(_rbexpr.log(base))
     end
 
-    def entropy(base: 2, normalize: false)
+    # Computes the entropy.
+    #
+    # Uses the formula `-sum(pk * log(pk)` where `pk` are discrete probabilities.
+    #
+    # @param base [Float]
+    #   Given base, defaults to `e`.
+    # @param normalize [Boolean]
+    #   Normalize pk if it doesn't sum to 1.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    #   df.select(Polars.col("a").entropy(base: 2))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 1.459148 │
+    #   # └──────────┘
+    #
+    # @example
+    #   df.select(Polars.col("a").entropy(base: 2, normalize: false))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌───────────┐
+    #   # │ a         │
+    #   # │ ---       │
+    #   # │ f64       │
+    #   # ╞═══════════╡
+    #   # │ -6.754888 │
+    #   # └───────────┘
+    def entropy(base: 2, normalize: true)
       wrap_expr(_rbexpr.entropy(base, normalize))
     end
 
