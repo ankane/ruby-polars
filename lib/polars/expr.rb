@@ -806,10 +806,50 @@ module Polars
       wrap_expr(_rbexpr.arg_sort(reverse, nulls_last))
     end
 
+    # Get the index of the maximal value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [20, 10, 30]
+    #     }
+    #   )
+    #   df.select(Polars.col("a").arg_max)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 2   │
+    #   # └─────┘
     def arg_max
       wrap_expr(_rbexpr.arg_max)
     end
 
+    # Get the index of the minimal value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [20, 10, 30]
+    #     }
+    #   )
+    #   df.select(Polars.col("a").arg_min)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # └─────┘
     def arg_min
       wrap_expr(_rbexpr.arg_min)
     end
@@ -840,6 +880,31 @@ module Polars
       wrap_expr(_rbexpr.take(indices_lit._rbexpr))
     end
 
+    # Shift the values by a given period.
+    #
+    # @param periods [Integer]
+    #   Number of places to shift (may be negative).
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4]})
+    #   df.select(Polars.col("foo").shift(1))
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌──────┐
+    #   # │ foo  │
+    #   # │ ---  │
+    #   # │ i64  │
+    #   # ╞══════╡
+    #   # │ null │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 1    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 2    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 3    │
+    #   # └──────┘
     def shift(periods = 1)
       wrap_expr(_rbexpr.shift(periods))
     end
