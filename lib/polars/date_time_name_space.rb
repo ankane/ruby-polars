@@ -231,5 +231,42 @@ module Polars
     def quarter
       super
     end
+
+    # Extract the month from the underlying date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the month number starting from 1.
+    # The return value ranges from 1 to 12.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 4, 1)
+    #   date = Polars.date_range(start, stop, "1mo")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-02-01 00:00:00
+    #   #         2001-03-01 00:00:00
+    #   #         2001-04-01 00:00:00
+    #   # ]
+    #
+    #   date.dt.month
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   #         4
+    #   # ]
+    def month
+      super
+    end
   end
 end
