@@ -2,66 +2,66 @@ require_relative "test_helper"
 
 class DocsTest < Minitest::Test
   def test_cat_expr
-    assert_docs Polars::CatExpr, required: true
+    assert_docs Polars::CatExpr
   end
 
   def test_data_frame
-    assert_docs Polars::DataFrame, required: true
+    assert_docs Polars::DataFrame
   end
 
   def test_date_time_expr
-    assert_docs Polars::DateTimeExpr, required: true
+    assert_docs Polars::DateTimeExpr
   end
 
   def test_expr
-    assert_docs Polars::Expr, required: true
+    assert_docs Polars::Expr
   end
 
   def test_functions
-    assert_docs Polars::Functions, required: true
+    assert_docs Polars::Functions
   end
 
   def test_group_by
-    assert_docs Polars::GroupBy, required: true
+    assert_docs Polars::GroupBy
   end
 
   def test_io
-    assert_docs Polars::IO, required: true
+    assert_docs Polars::IO
   end
 
   def test_lazy_frame
-    assert_docs Polars::LazyFrame, required: true
+    assert_docs Polars::LazyFrame
   end
 
   def test_lazy_functions
-    assert_docs Polars::LazyFunctions, required: true
+    assert_docs Polars::LazyFunctions
   end
 
   def test_lazy_group_by
-    assert_docs Polars::LazyGroupBy, required: true
+    assert_docs Polars::LazyGroupBy
   end
 
   def test_list_expr
-    assert_docs Polars::ListExpr
+    assert_docs Polars::ListExpr, optional: true
   end
 
   def test_meta_expr
-    assert_docs Polars::MetaExpr, required: true
+    assert_docs Polars::MetaExpr
   end
 
   def test_series
-    assert_docs Polars::Series, required: true
+    assert_docs Polars::Series
   end
 
   def test_string_expr
-    assert_docs Polars::StringExpr, required: true
+    assert_docs Polars::StringExpr
   end
 
   def test_struct_expr
-    assert_docs Polars::StructExpr, required: true
+    assert_docs Polars::StructExpr
   end
 
-  def assert_docs(cls, required: false)
+  def assert_docs(cls, optional: false)
     @@once ||= begin
       require "yard"
 
@@ -73,7 +73,7 @@ class DocsTest < Minitest::Test
         next if method.visibility != :public || method.tags(:private).any?
 
         if method.docstring.empty?
-          if required
+          if !optional
             raise "Missing docs (#{method.name})"
           else
             next

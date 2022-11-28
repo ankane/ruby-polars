@@ -9,6 +9,24 @@ module Polars
       self._rbexpr = expr._rbexpr
     end
 
+    # Get the length of the arrays as UInt32.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2], "bar" => [["a", "b"], ["c"]]})
+    #   df.select(Polars.col("bar").arr.lengths)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ bar │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 2   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1   │
+    #   # └─────┘
     def lengths
       Utils.wrap_expr(_rbexpr.arr_lengths)
     end
