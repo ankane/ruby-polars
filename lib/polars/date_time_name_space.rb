@@ -172,5 +172,27 @@ module Polars
     def year
       super
     end
+
+    # Extract ISO year from underlying Date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the year number according to the ISO standard.
+    # This may not correspond with the calendar year.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   dt = DateTime.new(2022, 1, 1, 7, 8, 40)
+    #   Polars::Series.new([dt]).dt.iso_year
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: '' [i32]
+    #   # [
+    #   #         2021
+    #   # ]
+    def iso_year
+      super
+    end
   end
 end

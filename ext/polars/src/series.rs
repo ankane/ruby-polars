@@ -801,4 +801,24 @@ impl RbSeries {
         let ca: ChunkedArray<Int32Type> = builder.finish();
         Ok(ca.into_date().into_series().into())
     }
+
+    pub fn new_opt_datetime(name: String, values: RArray, _strict: Option<bool>) -> RbResult<Self> {
+        let len = values.len();
+        let mut builder = PrimitiveChunkedBuilder::<Int64Type>::new(&name, len);
+        for item in values.each() {
+            let v = item?;
+            if v.is_nil() {
+                builder.append_null();
+            } else {
+                let v: f64 = v.funcall("to_f", ())?;
+                // TODO use strict
+                builder.append_value((v * 1000.0) as i64);
+            }
+        }
+        let ca: ChunkedArray<Int64Type> = builder.finish();
+        Ok(ca
+            .into_datetime(TimeUnit::Milliseconds, None)
+            .into_series()
+            .into())
+    }
 }

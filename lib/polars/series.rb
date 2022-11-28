@@ -2768,6 +2768,10 @@ module Polars
 
           if ruby_dtype == Date
             RbSeries.new_opt_date(name, values, strict)
+          elsif ruby_dtype == Time
+            RbSeries.new_opt_datetime(name, values, strict)
+          elsif ruby_dtype == DateTime
+            RbSeries.new_opt_datetime(name, values.map(&:to_time), strict)
           else
             raise Todo
           end
