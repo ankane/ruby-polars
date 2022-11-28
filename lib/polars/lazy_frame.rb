@@ -1256,8 +1256,12 @@ module Polars
       select(Utils.col("*").take_every(n))
     end
 
-    # def fill_null
-    # end
+    # Fill null values using the specified value or strategy.
+    #
+    # @return [LazyFrame]
+    def fill_null(value = nil, strategy: nil, limit: nil, matches_supertype: nil)
+      select(Polars.all.fill_null(value, strategy: strategy, limit: limit))
+    end
 
     # Fill floating point NaN values.
     #

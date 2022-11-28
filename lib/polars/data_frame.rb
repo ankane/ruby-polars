@@ -1998,8 +1998,105 @@ module Polars
       self[name]
     end
 
-    # def fill_null
-    # end
+    # Fill null values using the specified value or strategy.
+    #
+    # @param value [Numeric]
+    #   Value used to fill null values.
+    # @param strategy [nil, "forward", "backward", "min", "max", "mean", "zero", "one"]
+    #   Strategy used to fill null values.
+    # @param limit [Integer]
+    #   Number of consecutive null values to fill when using the 'forward' or
+    #   'backward' strategy.
+    # @param matches_supertype [Boolean]
+    #   Fill all matching supertype of the fill `value`.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, nil, 4],
+    #       "b" => [0.5, 4, nil, 13]
+    #     }
+    #   )
+    #   df.fill_null(99)
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬──────┐
+    #   # │ a   ┆ b    │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ f64  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ 0.5  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 4.0  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 99  ┆ 99.0 │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 4   ┆ 13.0 │
+    #   # └─────┴──────┘
+    #
+    # @example
+    #   df.fill_null(strategy: "forward")
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬──────┐
+    #   # │ a   ┆ b    │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ f64  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ 0.5  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 4.0  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 4.0  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 4   ┆ 13.0 │
+    #   # └─────┴──────┘
+    #
+    # @example
+    #   df.fill_null(strategy: "max")
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬──────┐
+    #   # │ a   ┆ b    │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ f64  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ 0.5  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 4.0  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 4   ┆ 13.0 │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 4   ┆ 13.0 │
+    #   # └─────┴──────┘
+    #
+    # @example
+    #   df.fill_null(strategy: "zero")
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬──────┐
+    #   # │ a   ┆ b    │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ f64  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ 0.5  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 4.0  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 0   ┆ 0.0  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 4   ┆ 13.0 │
+    #   # └─────┴──────┘
+    def fill_null(value = nil, strategy: nil, limit: nil, matches_supertype: true)
+      _from_rbdf(
+        lazy
+          .fill_null(value, strategy: strategy, limit: limit, matches_supertype: matches_supertype)
+          .collect(no_optimization: true)
+          ._df
+      )
+    end
 
     # Fill floating point NaN values by an Expression evaluation.
     #

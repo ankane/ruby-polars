@@ -1647,6 +1647,73 @@ module Polars
       wrap_expr(_rbexpr.shift_and_fill(periods, fill_value._rbexpr))
     end
 
+    # Fill null values using the specified value or strategy.
+    #
+    # To interpolate over null values see interpolate.
+    #
+    # @param value [Object]
+    #   Value used to fill null values.
+    # @param strategy [nil, "forward", "backward", "min", "max", "mean", "zero", "one"]
+    #   Strategy used to fill null values.
+    # @param limit [Integer]
+    #   Number of consecutive null values to fill when using the 'forward' or
+    #   'backward' strategy.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, nil],
+    #       "b" => [4, nil, 6]
+    #     }
+    #   )
+    #   df.fill_null(strategy: "zero")
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 4   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 0   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 0   ┆ 6   │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df.fill_null(99)
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 4   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 99  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 99  ┆ 6   │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df.fill_null(strategy: "forward")
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 4   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 4   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 6   │
+    #   # └─────┴─────┘
     def fill_null(value = nil, strategy: nil, limit: nil)
       if !value.nil? && !strategy.nil?
         raise ArgumentError, "cannot specify both 'value' and 'strategy'."
@@ -1664,19 +1731,103 @@ module Polars
       end
     end
 
+    # Fill floating point NaN value with a fill value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1.0, nil, Float::NAN],
+    #       "b" => [4.0, Float::NAN, 6]
+    #     }
+    #   )
+    #   df.fill_nan("zero")
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌──────┬──────┐
+    #   # │ a    ┆ b    │
+    #   # │ ---  ┆ ---  │
+    #   # │ str  ┆ str  │
+    #   # ╞══════╪══════╡
+    #   # │ 1.0  ┆ 4.0  │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ null ┆ zero │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ zero ┆ 6.0  │
+    #   # └──────┴──────┘
     def fill_nan(fill_value)
       fill_value = Utils.expr_to_lit_or_expr(fill_value, str_to_lit: true)
       wrap_expr(_rbexpr.fill_nan(fill_value._rbexpr))
     end
 
+    # Fill missing values with the latest seen values.
+    #
+    # @param limit [Integer]
+    #   The number of consecutive null values to forward fill.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a": [1, 2, nil],
+    #       "b": [4, nil, 6]
+    #     }
+    #   )
+    #   df.select(Polars.all.forward_fill)
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 4   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 4   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 6   │
+    #   # └─────┴─────┘
     def forward_fill(limit: nil)
       wrap_expr(_rbexpr.forward_fill(limit))
     end
 
+    # Fill missing values with the next to be seen values.
+    #
+    # @param limit [Integer]
+    #   The number of consecutive null values to backward fill.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, nil],
+    #       "b" => [4, nil, 6]
+    #     }
+    #   )
+    #   df.select(Polars.all.backward_fill)
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌──────┬─────┐
+    #   # │ a    ┆ b   │
+    #   # │ ---  ┆ --- │
+    #   # │ i64  ┆ i64 │
+    #   # ╞══════╪═════╡
+    #   # │ 1    ┆ 4   │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2    ┆ 6   │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ null ┆ 6   │
+    #   # └──────┴─────┘
     def backward_fill(limit: nil)
       wrap_expr(_rbexpr.backward_fill(limit))
     end
 
+    # Reverse the selection.
+    #
+    # @return [Expr]
     def reverse
       wrap_expr(_rbexpr.reverse)
     end
