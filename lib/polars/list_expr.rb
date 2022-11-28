@@ -31,6 +31,24 @@ module Polars
       Utils.wrap_expr(_rbexpr.arr_lengths)
     end
 
+    # Sum all the lists in the array.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"values" => [[1], [2, 3]]})
+    #   df.select(Polars.col("values").arr.sum)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌────────┐
+    #   # │ values │
+    #   # │ ---    │
+    #   # │ i64    │
+    #   # ╞════════╡
+    #   # │ 1      │
+    #   # ├╌╌╌╌╌╌╌╌┤
+    #   # │ 5      │
+    #   # └────────┘
     def sum
       Utils.wrap_expr(_rbexpr.lst_sum)
     end

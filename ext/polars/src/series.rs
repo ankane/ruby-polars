@@ -123,6 +123,11 @@ impl RbSeries {
         RbSeries::new(s)
     }
 
+    pub fn new_object(name: String, val: Vec<ObjectValue>, _strict: bool) -> Self {
+        let s = ObjectChunked::<ObjectValue>::new_from_vec(&name, val).into_series();
+        s.into()
+    }
+
     pub fn estimated_size(&self) -> usize {
         self.series.borrow().estimated_size()
     }

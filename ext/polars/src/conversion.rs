@@ -5,6 +5,8 @@ use polars::datatypes::AnyValue;
 use polars::frame::DataFrame;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
+use std::fmt::{Display, Formatter};
+use std::hash::{Hash, Hasher};
 
 use crate::{RbDataFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
 
@@ -425,8 +427,48 @@ pub fn parse_parquet_compression(
     Ok(parsed)
 }
 
+#[derive(Clone, Debug)]
 pub struct ObjectValue {
     pub inner: Value,
+}
+
+impl Hash for ObjectValue {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        let h = self
+            .inner
+            .funcall::<_, _, isize>("hash", ())
+            .expect("should be hashable");
+        state.write_isize(h)
+    }
+}
+
+impl Eq for ObjectValue {}
+
+impl PartialEq for ObjectValue {
+    fn eq(&self, other: &Self) -> bool {
+        match self.inner.eql(&other.inner) {
+            Ok(result) => result,
+            Err(_) => false,
+        }
+    }
+}
+
+impl Display for ObjectValue {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.inner)
+    }
+}
+
+impl PolarsObject for ObjectValue {
+    fn type_name() -> &'static str {
+        "object"
+    }
+}
+
+impl From<Value> for ObjectValue {
+    fn from(v: Value) -> Self {
+        Self { inner: v }
+    }
 }
 
 impl From<&dyn PolarsObjectSafe> for &ObjectValue {
@@ -438,5 +480,11 @@ impl From<&dyn PolarsObjectSafe> for &ObjectValue {
 impl ObjectValue {
     pub fn to_object(&self) -> Value {
         self.inner
+    }
+}
+
+impl Default for ObjectValue {
+    fn default() -> Self {
+        ObjectValue { inner: *QNIL }
     }
 }

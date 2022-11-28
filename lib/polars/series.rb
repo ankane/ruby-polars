@@ -2764,7 +2764,7 @@ module Polars
             raise Todo
           end
 
-          raise Todo
+          RbSeries.new_object(name, values, strict)
         else
           constructor = rb_type_to_constructor(value.class)
           constructor.call(name, values, strict)
