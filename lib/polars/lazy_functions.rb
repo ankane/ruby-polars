@@ -1,5 +1,8 @@
 module Polars
   module LazyFunctions
+    # Return an expression representing a column in a DataFrame.
+    #
+    # @return [Expr]
     def col(name)
       if name.is_a?(Series)
         name = name.to_a
@@ -21,6 +24,28 @@ module Polars
       end
     end
 
+    # Alias for an element in evaluated in an `eval` expression.
+    #
+    # @return [Expr]
+    #
+    # @example A horizontal rank computation by taking the elements of a list
+    #   df = Polars::DataFrame.new({"a" => [1, 8, 3], "b" => [4, 5, 2]})
+    #   df.with_column(
+    #     Polars.concat_list(["a", "b"]).arr.eval(Polars.element.rank).alias("rank")
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬────────────┐
+    #   # │ a   ┆ b   ┆ rank       │
+    #   # │ --- ┆ --- ┆ ---        │
+    #   # │ i64 ┆ i64 ┆ list[f32]  │
+    #   # ╞═════╪═════╪════════════╡
+    #   # │ 1   ┆ 4   ┆ [1.0, 2.0] │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 8   ┆ 5   ┆ [2.0, 1.0] │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 2   ┆ [2.0, 1.0] │
+    #   # └─────┴─────┴────────────┘
     def element
       col("")
     end
@@ -120,6 +145,9 @@ module Polars
       end
     end
 
+    # Sum values in a column/Series, or horizontally across list of columns/expressions.
+    #
+    # @return [Object]
     def sum(column)
       if column.is_a?(Series)
         column.sum
@@ -152,6 +180,9 @@ module Polars
       mean(column)
     end
 
+    # Get the median value.
+    #
+    # @return [Object]
     def median(column)
       if column.is_a?(Series)
         column.median
@@ -191,7 +222,9 @@ module Polars
     # def tail
     # end
 
+    # Return an expression representing a literal value.
     #
+    # @return [Expr]
     def lit(value)
       if value.is_a?(Polars::Series)
         name = value.name
@@ -224,7 +257,9 @@ module Polars
     # def apply
     # end
 
+    # Accumulate over multiple columns horizontally/ row wise with a left fold.
     #
+    # @return [Expr]
     def fold(acc, f, exprs)
       acc = Utils.expr_to_lit_or_expr(acc, str_to_lit: true)
       if exprs.is_a?(Expr)
@@ -338,7 +373,9 @@ module Polars
     # def format
     # end
 
+    # Concat the arrays in a Series dtype List in linear time.
     #
+    # @return [Expr]
     def concat_list(exprs)
       exprs = Utils.selection_to_rbexpr_list(exprs)
       Utils.wrap_expr(RbExpr.concat_lst(exprs))
@@ -347,7 +384,9 @@ module Polars
     # def collect_all
     # end
 
+    # Run polars expressions without a context.
     #
+    # @return [DataFrame]
     def select(exprs)
       DataFrame.new([]).select(exprs)
     end
@@ -454,7 +493,26 @@ module Polars
     # def from_epoch
     # end
 
+    # Start a "when, then, otherwise" expression.
     #
+    # @return [When]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 3, 4], "bar" => [3, 4, 0]})
+    #   df.with_column(Polars.when(Polars.col("foo") > 2).then(Polars.lit(1)).otherwise(Polars.lit(-1)))
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────────┐
+    #   # │ foo ┆ bar ┆ literal │
+    #   # │ --- ┆ --- ┆ ---     │
+    #   # │ i64 ┆ i64 ┆ i32     │
+    #   # ╞═════╪═════╪═════════╡
+    #   # │ 1   ┆ 3   ┆ -1      │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 4   ┆ 1       │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+    #   # │ 4   ┆ 0   ┆ 1       │
+    #   # └─────┴─────┴─────────┘
     def when(expr)
       expr = Utils.expr_to_lit_or_expr(expr)
       pw = RbExpr.when(expr._rbexpr)

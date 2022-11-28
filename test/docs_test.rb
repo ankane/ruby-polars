@@ -34,7 +34,7 @@ class DocsTest < Minitest::Test
   end
 
   def test_lazy_functions
-    assert_docs Polars::LazyFunctions
+    assert_docs Polars::LazyFunctions, required: true
   end
 
   def test_lazy_group_by

@@ -1403,7 +1403,19 @@ pub fn lit(value: Value) -> RbResult<RbExpr> {
     } else if let Some(v) = RString::from_value(value) {
         Ok(dsl::lit(v.try_convert::<String>()?).into())
     } else if value.is_kind_of(class::integer()) {
-        Ok(dsl::lit(value.try_convert::<i64>()?).into())
+        match value.try_convert::<i64>() {
+            Ok(val) => {
+                if val > 0 && val < i32::MAX as i64 || val < 0 && val > i32::MIN as i64 {
+                    Ok(dsl::lit(val as i32).into())
+                } else {
+                    Ok(dsl::lit(val).into())
+                }
+            }
+            _ => {
+                let val = value.try_convert::<u64>()?;
+                Ok(dsl::lit(val).into())
+            }
+        }
     } else {
         Ok(dsl::lit(value.try_convert::<f64>()?).into())
     }
