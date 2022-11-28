@@ -102,7 +102,7 @@ impl From<Wrap<AnyValue<'_>>> for Value {
                     TimeUnit::Milliseconds => todo!(),
                 };
 
-                if let Some(_) = tz {
+                if tz.is_some() {
                     todo!();
                 } else {
                     t.funcall::<_, _, Value>("utc", ()).unwrap()
@@ -481,10 +481,7 @@ impl Eq for ObjectValue {}
 
 impl PartialEq for ObjectValue {
     fn eq(&self, other: &Self) -> bool {
-        match self.inner.eql(&other.inner) {
-            Ok(result) => result,
-            Err(_) => false,
-        }
+        self.inner.eql(&other.inner).unwrap_or(false)
     }
 }
 
