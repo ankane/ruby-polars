@@ -194,5 +194,42 @@ module Polars
     def iso_year
       super
     end
+
+    # Extract quarter from underlying Date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the quarter ranging from 1 to 4.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 4, 1)
+    #   date = Polars.date_range(start, stop, "1mo")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-02-01 00:00:00
+    #   #         2001-03-01 00:00:00
+    #   #         2001-04-01 00:00:00
+    #   # ]
+    #
+    # @example
+    #   date.dt.quarter
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         1
+    #   #         1
+    #   #         1
+    #   #         2
+    #   # ]
+    def quarter
+      super
+    end
   end
 end

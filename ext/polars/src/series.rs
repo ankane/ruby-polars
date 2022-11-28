@@ -810,14 +810,15 @@ impl RbSeries {
             if v.is_nil() {
                 builder.append_null();
             } else {
-                let v: f64 = v.funcall("to_f", ())?;
+                let sec: i64 = v.funcall("to_i", ())?;
+                let nsec: i64 = v.funcall("nsec", ())?;
                 // TODO use strict
-                builder.append_value((v * 1000.0) as i64);
+                builder.append_value(sec * 1_000_000_000 + nsec);
             }
         }
         let ca: ChunkedArray<Int64Type> = builder.finish();
         Ok(ca
-            .into_datetime(TimeUnit::Milliseconds, None)
+            .into_datetime(TimeUnit::Nanoseconds, None)
             .into_series()
             .into())
     }
