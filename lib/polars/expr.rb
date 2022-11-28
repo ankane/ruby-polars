@@ -11,6 +11,9 @@ module Polars
       expr
     end
 
+    # Returns a string representing the Expr.
+    #
+    # @return [String]
     def to_s
       _rbexpr.to_str
     end
@@ -297,11 +300,79 @@ module Polars
     # def map_alias
     # end
 
+    # Negate a boolean expression.
     #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [true, false, false],
+    #       "b" => ["a", "b", nil]
+    #     }
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌───────┬──────┐
+    #   # │ a     ┆ b    │
+    #   # │ ---   ┆ ---  │
+    #   # │ bool  ┆ str  │
+    #   # ╞═══════╪══════╡
+    #   # │ true  ┆ a    │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ false ┆ b    │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ false ┆ null │
+    #   # └───────┴──────┘
+    #
+    # @example
+    #   df.select(Polars.col("a").is_not)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌───────┐
+    #   # │ a     │
+    #   # │ ---   │
+    #   # │ bool  │
+    #   # ╞═══════╡
+    #   # │ false │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ true  │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ true  │
+    #   # └───────┘
     def is_not
       wrap_expr(_rbexpr.is_not)
     end
 
+    # Returns a boolean Series indicating which values are null.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, nil, 1, 5],
+    #       "b" => [1.0, 2.0, Float::NAN, 1.0, 5.0]
+    #     }
+    #   )
+    #   df.with_column(Polars.all.is_null.suffix("_isnull"))
+    #   # =>
+    #   # shape: (5, 4)
+    #   # ┌──────┬─────┬──────────┬──────────┐
+    #   # │ a    ┆ b   ┆ a_isnull ┆ b_isnull │
+    #   # │ ---  ┆ --- ┆ ---      ┆ ---      │
+    #   # │ i64  ┆ f64 ┆ bool     ┆ bool     │
+    #   # ╞══════╪═════╪══════════╪══════════╡
+    #   # │ 1    ┆ 1.0 ┆ false    ┆ false    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2    ┆ 2.0 ┆ false    ┆ false    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null ┆ NaN ┆ true     ┆ false    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1    ┆ 1.0 ┆ false    ┆ false    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 5    ┆ 5.0 ┆ false    ┆ false    │
+    #   # └──────┴─────┴──────────┴──────────┘
     def is_null
       wrap_expr(_rbexpr.is_null)
     end
