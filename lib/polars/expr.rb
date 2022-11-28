@@ -1877,38 +1877,182 @@ module Polars
       wrap_expr(_rbexpr.tan)
     end
 
+    # Compute the element-wise value for the inverse sine.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1.0]})
+    #   df.select(Polars.col("a").arcsin)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 1.570796 │
+    #   # └──────────┘
     def arcsin
       wrap_expr(_rbexpr.arcsin)
     end
 
+    # Compute the element-wise value for the inverse cosine.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [0.0]})
+    #   df.select(Polars.col("a").arccos)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 1.570796 │
+    #   # └──────────┘
     def arccos
       wrap_expr(_rbexpr.arccos)
     end
 
+    # Compute the element-wise value for the inverse tangent.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1.0]})
+    #   df.select(Polars.col("a").arctan)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 0.785398 │
+    #   # └──────────┘
     def arctan
       wrap_expr(_rbexpr.arctan)
     end
 
+    # Compute the element-wise value for the hyperbolic sine.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1.0]})
+    #   df.select(Polars.col("a").sinh)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 1.175201 │
+    #   # └──────────┘
     def sinh
       wrap_expr(_rbexpr.sinh)
     end
 
+    # Compute the element-wise value for the hyperbolic cosine.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1.0]})
+    #   df.select(Polars.col("a").cosh)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 1.543081 │
+    #   # └──────────┘
     def cosh
       wrap_expr(_rbexpr.cosh)
     end
 
+    # Compute the element-wise value for the hyperbolic tangent.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1.0]})
+    #   df.select(Polars.col("a").tanh)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 0.761594 │
+    #   # └──────────┘
     def tanh
       wrap_expr(_rbexpr.tanh)
     end
 
+    # Compute the element-wise value for the inverse hyperbolic sine.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1.0]})
+    #   df.select(Polars.col("a").arcsinh)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 0.881374 │
+    #   # └──────────┘
     def arcsinh
       wrap_expr(_rbexpr.arcsinh)
     end
 
+    # Compute the element-wise value for the inverse hyperbolic cosine.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1.0]})
+    #   df.select(Polars.col("a").arccosh)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 0.0 │
+    #   # └─────┘
     def arccosh
       wrap_expr(_rbexpr.arccosh)
     end
 
+    # Compute the element-wise value for the inverse hyperbolic tangent.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1.0]})
+    #   df.select(Polars.col("a").arctanh)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ inf │
+    #   # └─────┘
     def arctanh
       wrap_expr(_rbexpr.arctanh)
     end
