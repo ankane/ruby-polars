@@ -72,3 +72,9 @@ features = [
     "trigonometry",
     "unique_counts",
 ]
+
+[target.'cfg(not(target_os = "linux"))'.dependencies]
+mimalloc = { version = "*", default-features = false }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+jemallocator = { version = "0.5", features = ["disable_initial_exec_tls"] }

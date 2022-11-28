@@ -28,6 +28,20 @@ use polars::functions::{diag_concat_df, hor_concat_df};
 use polars::prelude::{ClosedWindow, Duration, IntoSeries, TimeZone};
 use series::RbSeries;
 
+#[cfg(target_os = "linux")]
+use jemallocator::Jemalloc;
+
+#[cfg(not(target_os = "linux"))]
+use mimalloc::MiMalloc;
+
+#[global_allocator]
+#[cfg(target_os = "linux")]
+static GLOBAL: Jemalloc = Jemalloc;
+
+#[global_allocator]
+#[cfg(not(target_os = "linux"))]
+static GLOBAL: MiMalloc = MiMalloc;
+
 type RbResult<T> = Result<T, Error>;
 
 fn module() -> RModule {
