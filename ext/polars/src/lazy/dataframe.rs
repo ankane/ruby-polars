@@ -211,7 +211,7 @@ impl RbLazyFrame {
         projection_pushdown: bool,
         simplify_expr: bool,
         slice_pushdown: bool,
-        _cse: bool,
+        cse: bool,
         allow_streaming: bool,
     ) -> RbLazyFrame {
         let ldf = self.ldf.clone();
@@ -220,7 +220,7 @@ impl RbLazyFrame {
             .with_predicate_pushdown(predicate_pushdown)
             .with_simplify_expr(simplify_expr)
             .with_slice_pushdown(slice_pushdown)
-            // .with_common_subplan_elimination(cse)
+            .with_common_subplan_elimination(cse)
             .with_streaming(allow_streaming)
             .with_projection_pushdown(projection_pushdown);
         ldf.into()
