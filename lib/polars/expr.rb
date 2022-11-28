@@ -793,7 +793,7 @@ module Polars
     # @return [Expr]
     #
     # @example Create a Series with 3 nulls, append column a then rechunk
-    #   df = Polars::DataFrame.new({"a": [1, 1, 2]})
+    #   df = Polars::DataFrame.new({"a" => [1, 1, 2]})
     #   df.select(Polars.repeat(nil, 3).append(Polars.col("a")).rechunk)
     #   # =>
     #   # shape: (6, 1)
@@ -1771,8 +1771,8 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "a": [1, 2, nil],
-    #       "b": [4, nil, 6]
+    #       "a" => [1, 2, nil],
+    #       "b" => [4, nil, 6]
     #     }
     #   )
     #   df.select(Polars.all.forward_fill)

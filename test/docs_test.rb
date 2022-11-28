@@ -42,7 +42,7 @@ class DocsTest < Minitest::Test
   end
 
   def test_list_expr
-    assert_docs Polars::ListExpr, optional: true
+    assert_docs Polars::ListExpr
   end
 
   def test_meta_expr
@@ -61,7 +61,7 @@ class DocsTest < Minitest::Test
     assert_docs Polars::StructExpr
   end
 
-  def assert_docs(cls, optional: false)
+  def assert_docs(cls)
     @@once ||= begin
       require "yard"
 
@@ -73,11 +73,7 @@ class DocsTest < Minitest::Test
         next if method.visibility != :public || method.tags(:private).any?
 
         if method.docstring.empty?
-          if !optional
-            raise "Missing docs (#{method.name})"
-          else
-            next
-          end
+          raise "Missing docs (#{method.name})"
         end
 
         assert_return(method)
@@ -93,7 +89,7 @@ class DocsTest < Minitest::Test
   end
 
   def assert_examples(method)
-    return if [:lengths, :sort, :top_k, :is_nan, :is_not_nan, :mode, :sample, :struct, :read_csv_batched, :field, :rename_fields, :unnest, :arange, :explode, :is_datelike].include?(method.name)
+    return if [:concat, :contains, :join, :lengths, :sort, :top_k, :is_nan, :is_not_nan, :mode, :sample, :struct, :read_csv_batched, :field, :rename_fields, :unnest, :arange, :explode, :is_datelike].include?(method.name)
 
     code = ""
     method.tags(:example).each do |example|

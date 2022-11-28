@@ -3,7 +3,7 @@ use polars::prelude::*;
 use polars_core::utils::CustomIterTools;
 
 use crate::conversion::get_rbseq;
-use crate::RbResult;
+use crate::{RbPolarsErr, RbResult};
 
 pub fn rb_seq_to_list(name: &str, seq: Value, dtype: &DataType) -> RbResult<Series> {
     let (seq, len) = get_rbseq(seq)?;
@@ -89,7 +89,10 @@ pub fn rb_seq_to_list(name: &str, seq: Value, dtype: &DataType) -> RbResult<Seri
             todo!();
         }
         dt => {
-            panic!("cannot create list array from {:?}", dt);
+            return Err(RbPolarsErr::other(format!(
+                "cannot create list array from {:?}",
+                dt
+            )));
         }
     };
 
