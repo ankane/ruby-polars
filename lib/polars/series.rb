@@ -2657,20 +2657,32 @@ module Polars
     end
 
     # Create an object namespace of all categorical related methods.
-    # def cat
-    # end
+    #
+    # @return [CatNameSpace]
+    def cat
+      CatNameSpace.new(self)
+    end
 
     # Create an object namespace of all datetime related methods.
-    # def dt
-    # end
+    #
+    # @return [DateTimeNameSpace]
+    def dt
+      DateTimeNameSpace.new(self)
+    end
 
     # Create an object namespace of all string related methods.
-    # def str
-    # end
+    #
+    # @return [StringNameSpace]
+    def str
+      StringNameSpace.new(self)
+    end
 
     # Create an object namespace of all struct related methods.
-    # def struct
-    # end
+    #
+    # @return [StructNameSpace]
+    def struct
+      StructNameSpace.new(self)
+    end
 
     private
 
