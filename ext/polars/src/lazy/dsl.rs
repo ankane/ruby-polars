@@ -1425,6 +1425,14 @@ pub fn arange(low: &RbExpr, high: &RbExpr, step: usize) -> RbExpr {
     polars::lazy::dsl::arange(low.inner.clone(), high.inner.clone(), step).into()
 }
 
+pub fn repeat(value: Value, n_times: &RbExpr) -> RbResult<RbExpr> {
+    if value.is_nil() {
+        Ok(polars::lazy::dsl::repeat(Null {}, n_times.inner.clone()).into())
+    } else {
+        todo!();
+    }
+}
+
 #[magnus::wrap(class = "Polars::RbWhen")]
 #[derive(Clone)]
 pub struct RbWhen {

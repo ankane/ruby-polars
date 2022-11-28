@@ -449,8 +449,32 @@ module Polars
       Utils.wrap_expr(_as_struct(exprs))
     end
 
-    # def repeat
-    # end
+    # Repeat a single value n times.
+    #
+    # @param value [Object]
+    #   Value to repeat.
+    # @param n [Integer]
+    #   Repeat `n` times.
+    # @param eager [Boolean]
+    #   Run eagerly and collect into a `Series`.
+    # @param name [String]
+    #   Only used in `eager` mode. As expression, use `alias`.
+    #
+    # @return [Expr]
+    def repeat(value, n, eager: false, name: nil)
+      if eager
+        if name.nil?
+          name = ""
+        end
+        dtype = py_type_to_dtype(type(value))
+        Series._repeat(name, value, n, dtype)
+      else
+        if n.is_a?(Integer)
+          n = lit(n)
+        end
+        Utils.wrap_expr(RbExpr.repeat(value, n._rbexpr))
+      end
+    end
 
     # Return indices where `condition` evaluates `true`.
     #

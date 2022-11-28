@@ -377,14 +377,89 @@ module Polars
       wrap_expr(_rbexpr.is_null)
     end
 
+    # Returns a boolean Series indicating which values are not null.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, nil, 1, 5],
+    #       "b" => [1.0, 2.0, Float::NAN, 1.0, 5.0]
+    #     }
+    #   )
+    #   df.with_column(Polars.all.is_not_null.suffix("_not_null"))
+    #   # =>
+    #   # shape: (5, 4)
+    #   # ┌──────┬─────┬────────────┬────────────┐
+    #   # │ a    ┆ b   ┆ a_not_null ┆ b_not_null │
+    #   # │ ---  ┆ --- ┆ ---        ┆ ---        │
+    #   # │ i64  ┆ f64 ┆ bool       ┆ bool       │
+    #   # ╞══════╪═════╪════════════╪════════════╡
+    #   # │ 1    ┆ 1.0 ┆ true       ┆ true       │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2    ┆ 2.0 ┆ true       ┆ true       │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null ┆ NaN ┆ false      ┆ true       │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1    ┆ 1.0 ┆ true       ┆ true       │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 5    ┆ 5.0 ┆ true       ┆ true       │
+    #   # └──────┴─────┴────────────┴────────────┘
     def is_not_null
       wrap_expr(_rbexpr.is_not_null)
     end
 
+    # Returns a boolean Series indicating which values are finite.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "A" => [1.0, 2],
+    #       "B" => [3.0, Float::INFINITY]
+    #     }
+    #   )
+    #   df.select(Polars.all.is_finite)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌──────┬───────┐
+    #   # │ A    ┆ B     │
+    #   # │ ---  ┆ ---   │
+    #   # │ bool ┆ bool  │
+    #   # ╞══════╪═══════╡
+    #   # │ true ┆ true  │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ true ┆ false │
+    #   # └──────┴───────┘
     def is_finite
       wrap_expr(_rbexpr.is_finite)
     end
 
+    # Returns a boolean Series indicating which values are infinite.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "A" => [1.0, 2],
+    #       "B" => [3.0, Float::INFINITY]
+    #     }
+    #   )
+    #   df.select(Polars.all.is_infinite)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌───────┬───────┐
+    #   # │ A     ┆ B     │
+    #   # │ ---   ┆ ---   │
+    #   # │ bool  ┆ bool  │
+    #   # ╞═══════╪═══════╡
+    #   # │ false ┆ false │
+    #   # ├╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ false ┆ true  │
+    #   # └───────┴───────┘
     def is_infinite
       wrap_expr(_rbexpr.is_infinite)
     end
@@ -401,14 +476,77 @@ module Polars
       wrap_expr(_rbexpr.agg_groups)
     end
 
+    # Count the number of values in this expression.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [8, 9, 10], "b" => [nil, 4, 4]})
+    #   df.select(Polars.all.count)
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ u32 ┆ u32 │
+    #   # ╞═════╪═════╡
+    #   # │ 3   ┆ 3   │
+    #   # └─────┴─────┘
     def count
       wrap_expr(_rbexpr.count)
     end
 
+    # Count the number of values in this expression.
+    #
+    # Alias for {#count}.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [8, 9, 10], "b" => [nil, 4, 4]})
+    #   df.select(Polars.all.len)
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ u32 ┆ u32 │
+    #   # ╞═════╪═════╡
+    #   # │ 3   ┆ 3   │
+    #   # └─────┴─────┘
     def len
       count
     end
 
+    # Get a slice of this expression.
+    #
+    # @param offset [Integer]
+    #   Start index. Negative indexing is supported.
+    # @param length [Integer]
+    #   Length of the slice. If set to `nil`, all rows starting at the offset
+    #   will be selected.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [8, 9, 10, 11],
+    #       "b" => [nil, 4, 4, 4]
+    #     }
+    #   )
+    #   df.select(Polars.all.slice(1, 2))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 9   ┆ 4   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 10  ┆ 4   │
+    #   # └─────┴─────┘
     def slice(offset, length = nil)
       if !offset.is_a?(Expr)
         offset = Polars.lit(offset)
@@ -424,6 +562,32 @@ module Polars
       wrap_expr(_rbexpr.append(other._rbexpr, upcast))
     end
 
+    # Create a single chunk of memory for this Series.
+    #
+    # @return [Expr]
+    #
+    # @example Create a Series with 3 nulls, append column a then rechunk
+    #   df = Polars::DataFrame.new({"a": [1, 1, 2]})
+    #   df.select(Polars.repeat(nil, 3).append(Polars.col("a")).rechunk)
+    #   # =>
+    #   # shape: (6, 1)
+    #   # ┌─────────┐
+    #   # │ literal │
+    #   # │ ---     │
+    #   # │ i64     │
+    #   # ╞═════════╡
+    #   # │ null    │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ null    │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ null    │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1       │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1       │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2       │
+    #   # └─────────┘
     def rechunk
       wrap_expr(_rbexpr.rechunk)
     end
