@@ -948,58 +948,325 @@ module Polars
       wrap_expr(_rbexpr.reverse)
     end
 
+    # Get standard deviation.
+    #
+    # @param ddof [Integer]
+    #   Degrees of freedom.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [-1, 0, 1]})
+    #   df.select(Polars.col("a").std)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 1.0 │
+    #   # └─────┘
     def std(ddof: 1)
       wrap_expr(_rbexpr.std(ddof))
     end
 
+    # Get variance.
+    #
+    # @param ddof [Integer]
+    #   Degrees of freedom.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [-1, 0, 1]})
+    #   df.select(Polars.col("a").var)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 1.0 │
+    #   # └─────┘
     def var(ddof: 1)
       wrap_expr(_rbexpr.var(ddof))
     end
 
+    # Get maximum value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [-1.0, Float::NAN, 1.0]})
+    #   df.select(Polars.col("a").max)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 1.0 │
+    #   # └─────┘
     def max
       wrap_expr(_rbexpr.max)
     end
 
+    # Get minimum value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [-1.0, Float::NAN, 1.0]})
+    #   df.select(Polars.col("a").min)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ f64  │
+    #   # ╞══════╡
+    #   # │ -1.0 │
+    #   # └──────┘
     def min
       wrap_expr(_rbexpr.min)
     end
 
+    # Get maximum value, but propagate/poison encountered NaN values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [0.0, Float::NAN]})
+    #   df.select(Polars.col("a").nan_max)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ NaN │
+    #   # └─────┘
     def nan_max
       wrap_expr(_rbexpr.nan_max)
     end
 
+    # Get minimum value, but propagate/poison encountered NaN values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [0.0, Float::NAN]})
+    #   df.select(Polars.col("a").nan_min)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ NaN │
+    #   # └─────┘
     def nan_min
       wrap_expr(_rbexpr.nan_min)
     end
 
+    # Get sum value.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   Dtypes in `:i8`, `:u8`, `:i16`, and `:u16` are cast to
+    #   `:i64` before summing to prevent overflow issues.
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [-1, 0, 1]})
+    #   df.select(Polars.col("a").sum)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 0   │
+    #   # └─────┘
     def sum
       wrap_expr(_rbexpr.sum)
     end
 
+    # Get mean value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [-1, 0, 1]})
+    #   df.select(Polars.col("a").mean)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 0.0 │
+    #   # └─────┘
     def mean
       wrap_expr(_rbexpr.mean)
     end
 
+    # Get median value using linear interpolation.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [-1, 0, 1]})
+    #   df.select(Polars.col("a").median)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 0.0 │
+    #   # └─────┘
     def median
       wrap_expr(_rbexpr.median)
     end
 
+    # Compute the product of an expression.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    #   df.select(Polars.col("a").product)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 6   │
+    #   # └─────┘
     def product
       wrap_expr(_rbexpr.product)
     end
 
+    # Count unique values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 1, 2]})
+    #   df.select(Polars.col("a").n_unique)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 2   │
+    #   # └─────┘
     def n_unique
       wrap_expr(_rbexpr.n_unique)
     end
 
+    # Count null values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [nil, 1, nil],
+    #       "b" => [1, 2, 3]
+    #     }
+    #   )
+    #   df.select(Polars.all.null_count)
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ u32 ┆ u32 │
+    #   # ╞═════╪═════╡
+    #   # │ 2   ┆ 0   │
+    #   # └─────┴─────┘
     def null_count
       wrap_expr(_rbexpr.null_count)
     end
 
+    # Get index of first unique value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [8, 9, 10],
+    #       "b" => [nil, 4, 4]
+    #     }
+    #   )
+    #   df.select(Polars.col("a").arg_unique)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 0   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 2   │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.col("b").arg_unique)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ b   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 0   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1   │
+    #   # └─────┘
     def arg_unique
       wrap_expr(_rbexpr.arg_unique)
     end
 
+    # Get unique values of this expression.
+    #
+    # @param maintain_order [Boolean]
+    #   Maintain order of data. This requires more work.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 1, 2]})
+    #   df.select(Polars.col("a").unique(maintain_order: true))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 2   │
+    #   # └─────┘
     def unique(maintain_order: false)
       if maintain_order
         wrap_expr(_rbexpr.unique_stable)
@@ -1008,10 +1275,42 @@ module Polars
       end
     end
 
+    # Get the first value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 1, 2]})
+    #   df.select(Polars.col("a").first)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # └─────┘
     def first
       wrap_expr(_rbexpr.first)
     end
 
+    # Get the last value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 1, 2]})
+    #   df.select(Polars.col("a").last)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 2   │
+    #   # └─────┘
     def last
       wrap_expr(_rbexpr.last)
     end
@@ -1021,6 +1320,26 @@ module Polars
       wrap_expr(_rbexpr.over(rbexprs))
     end
 
+    # Get mask of unique values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 1, 2]})
+    #   df.select(Polars.col("a").is_unique)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌───────┐
+    #   # │ a     │
+    #   # │ ---   │
+    #   # │ bool  │
+    #   # ╞═══════╡
+    #   # │ false │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ false │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ true  │
+    #   # └───────┘
     def is_unique
       wrap_expr(_rbexpr.is_unique)
     end
@@ -1029,6 +1348,26 @@ module Polars
       wrap_expr(_rbexpr.is_first)
     end
 
+    # Get mask of duplicated values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 1, 2]})
+    #   df.select(Polars.col("a").is_duplicated)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌───────┐
+    #   # │ a     │
+    #   # │ ---   │
+    #   # │ bool  │
+    #   # ╞═══════╡
+    #   # │ true  │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ true  │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ false │
+    #   # └───────┘
     def is_duplicated
       wrap_expr(_rbexpr.is_duplicated)
     end
@@ -1064,18 +1403,94 @@ module Polars
       wrap_expr(_rbexpr.take_every(n))
     end
 
+    # Get the first `n` rows.
+    #
+    # @param n [Integer]
+    #   Number of rows to return.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4, 5, 6, 7]})
+    #   df.head(3)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 2   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 3   │
+    #   # └─────┘
     def head(n = 10)
       wrap_expr(_rbexpr.head(n))
     end
 
+    # Get the last `n` rows.
+    #
+    # @param n [Integer]
+    #   Number of rows to return.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4, 5, 6, 7]})
+    #   df.tail(3)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 5   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 6   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 7   │
+    #   # └─────┘
     def tail(n = 10)
       wrap_expr(_rbexpr.tail(n))
     end
 
+    # Get the first `n` rows.
+    #
+    # Alias for {#head}.
+    #
+    # @param n [Integer]
+    #   Number of rows to return.
+    #
+    # @return [Expr]
     def limit(n = 10)
       head(n)
     end
 
+    # Raise expression to the power of exponent.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4]})
+    #   df.select(Polars.col("foo").pow(3))
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌──────┐
+    #   # │ foo  │
+    #   # │ ---  │
+    #   # │ f64  │
+    #   # ╞══════╡
+    #   # │ 1.0  │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 8.0  │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 27.0 │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 64.0 │
+    #   # └──────┘
     def pow(exponent)
       exponent = Utils.expr_to_lit_or_expr(exponent)
       wrap_expr(_rbexpr.pow(exponent._rbexpr))
@@ -1141,6 +1556,32 @@ module Polars
       wrap_expr(_rbexpr.rolling_skew(window_size, bias))
     end
 
+    # Compute absolute values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "A" => [-1.0, 0.0, 1.0, 2.0]
+    #     }
+    #   )
+    #   df.select(Polars.col("A").abs)
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌─────┐
+    #   # │ A   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 1.0 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 0.0 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1.0 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 2.0 │
+    #   # └─────┘
     def abs
       wrap_expr(_rbexpr.abs)
     end
