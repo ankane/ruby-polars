@@ -70,6 +70,16 @@ fn init() -> RbResult<()> {
     class.define_method("row_tuple", method!(RbDataFrame::row_tuple, 1))?;
     class.define_method("row_tuples", method!(RbDataFrame::row_tuples, 0))?;
     class.define_method("write_parquet", method!(RbDataFrame::write_parquet, 5))?;
+    class.define_method("add", method!(RbDataFrame::add, 1))?;
+    class.define_method("sub", method!(RbDataFrame::sub, 1))?;
+    class.define_method("div", method!(RbDataFrame::div, 1))?;
+    class.define_method("mul", method!(RbDataFrame::mul, 1))?;
+    class.define_method("rem", method!(RbDataFrame::rem, 1))?;
+    class.define_method("add_df", method!(RbDataFrame::add_df, 1))?;
+    class.define_method("sub_df", method!(RbDataFrame::sub_df, 1))?;
+    class.define_method("div_df", method!(RbDataFrame::div_df, 1))?;
+    class.define_method("mul_df", method!(RbDataFrame::mul_df, 1))?;
+    class.define_method("rem_df", method!(RbDataFrame::rem_df, 1))?;
     class.define_method("sample_n", method!(RbDataFrame::sample_n, 4))?;
     class.define_method("sample_frac", method!(RbDataFrame::sample_frac, 4))?;
     class.define_method("rechunk", method!(RbDataFrame::rechunk, 0))?;

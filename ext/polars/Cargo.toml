@@ -22,6 +22,7 @@ features = [
     "csv-file",
     "cum_agg",
     "cumulative_eval",
+    "dataframe_arithmetic",
     "date_offset",
     "diagonal_concat",
     "diff",

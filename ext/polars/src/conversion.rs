@@ -437,6 +437,6 @@ impl From<&dyn PolarsObjectSafe> for &ObjectValue {
 
 impl ObjectValue {
     pub fn to_object(&self) -> Value {
-        self.inner.clone()
+        self.inner
     }
 }

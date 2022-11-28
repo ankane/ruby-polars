@@ -84,6 +84,26 @@ class DataFrameTest < Minitest::Test
     assert_frame ({"a" => [true, true, false]}), a <= 2
   end
 
+  def test_arithmetic_data_frame
+    a = Polars::DataFrame.new({"a" => [10, 20, 30]})
+    b = Polars::DataFrame.new({"a" => [5, 10, 15]})
+    assert_frame ({"a" => [15, 30, 45]}), a + b
+    assert_frame ({"a" => [5, 10, 15]}), a - b
+    assert_frame ({"a" => [50, 200, 450]}), a * b
+    assert_frame ({"a" => [2, 2, 2]}), a / b
+    assert_frame ({"a" => [0, 0, 0]}), a % b
+  end
+
+  def test_arithmetic_series
+    a = Polars::DataFrame.new({"a" => [10, 20, 30]})
+    b = Polars::Series.new("b", [5, 10, 15])
+    assert_frame ({"a" => [15, 30, 45]}), a + b
+    assert_frame ({"a" => [5, 10, 15]}), a - b
+    assert_frame ({"a" => [50, 200, 450]}), a * b
+    assert_frame ({"a" => [2, 2, 2]}), a / b
+    assert_frame ({"a" => [0, 0, 0]}), a % b
+  end
+
   def test_to_s
     df = Polars::DataFrame.new({"a" => [1, 2, 3]})
     assert_match "│ a   │", df.to_s

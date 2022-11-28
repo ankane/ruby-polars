@@ -408,20 +408,65 @@ module Polars
       _comp(other, "lt_eq")
     end
 
-    # def *(other)
-    # end
+    # Performs multiplication.
+    #
+    # @return [DataFrame]
+    def *(other)
+      if other.is_a?(DataFrame)
+        return _from_rbdf(_df.mul_df(other._df))
+      end
 
-    # def /(other)
-    # end
+      other = _prepare_other_arg(other)
+      _from_rbdf(_df.mul(other._s))
+    end
 
-    # def +(other)
-    # end
+    # Performs division.
+    #
+    # @return [DataFrame]
+    def /(other)
+      if other.is_a?(DataFrame)
+        return _from_rbdf(_df.div_df(other._df))
+      end
 
-    # def -(other)
-    # end
+      other = _prepare_other_arg(other)
+      _from_rbdf(_df.div(other._s))
+    end
 
-    # def %(other)
-    # end
+    # Performs addition.
+    #
+    # @return [DataFrame]
+    def +(other)
+      if other.is_a?(DataFrame)
+        return _from_rbdf(_df.add_df(other._df))
+      end
+
+      other = _prepare_other_arg(other)
+      _from_rbdf(_df.add(other._s))
+    end
+
+    # Performs subtraction.
+    #
+    # @return [DataFrame]
+    def -(other)
+      if other.is_a?(DataFrame)
+        return _from_rbdf(_df.sub_df(other._df))
+      end
+
+      other = _prepare_other_arg(other)
+      _from_rbdf(_df.sub(other._s))
+    end
+
+    # Returns the modulo.
+    #
+    # @return [DataFrame]
+    def %(other)
+      if other.is_a?(DataFrame)
+        return _from_rbdf(_df.rem_df(other._df))
+      end
+
+      other = _prepare_other_arg(other)
+      _from_rbdf(_df.rem(other._s))
+    end
 
     # Returns a string representing the DataFrame.
     #
@@ -3272,6 +3317,17 @@ module Polars
       else
         raise ArgumentError, "got unexpected comparison operator: #{op}"
       end
+    end
+
+    def _prepare_other_arg(other)
+      if !other.is_a?(Series)
+        if other.is_a?(Array)
+          raise ArgumentError, "Operation not supported."
+        end
+
+        other = Series.new("", [other])
+      end
+      other
     end
   end
 end

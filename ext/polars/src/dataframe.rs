@@ -399,6 +399,56 @@ impl RbDataFrame {
         Ok(())
     }
 
+    pub fn add(&self, s: &RbSeries) -> RbResult<Self> {
+        let df = (&*self.df.borrow() + &*s.series.borrow()).map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
+    pub fn sub(&self, s: &RbSeries) -> RbResult<Self> {
+        let df = (&*self.df.borrow() - &*s.series.borrow()).map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
+    pub fn div(&self, s: &RbSeries) -> RbResult<Self> {
+        let df = (&*self.df.borrow() / &*s.series.borrow()).map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
+    pub fn mul(&self, s: &RbSeries) -> RbResult<Self> {
+        let df = (&*self.df.borrow() * &*s.series.borrow()).map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
+    pub fn rem(&self, s: &RbSeries) -> RbResult<Self> {
+        let df = (&*self.df.borrow() % &*s.series.borrow()).map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
+    pub fn add_df(&self, s: &Self) -> RbResult<Self> {
+        let df = (&*self.df.borrow() + &*s.df.borrow()).map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
+    pub fn sub_df(&self, s: &Self) -> RbResult<Self> {
+        let df = (&*self.df.borrow() - &*s.df.borrow()).map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
+    pub fn div_df(&self, s: &Self) -> RbResult<Self> {
+        let df = (&*self.df.borrow() / &*s.df.borrow()).map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
+    pub fn mul_df(&self, s: &Self) -> RbResult<Self> {
+        let df = (&*self.df.borrow() * &*s.df.borrow()).map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
+    pub fn rem_df(&self, s: &Self) -> RbResult<Self> {
+        let df = (&*self.df.borrow() % &*s.df.borrow()).map_err(RbPolarsErr::from)?;
+        Ok(df.into())
+    }
+
     pub fn sample_n(
         &self,
         n: usize,
