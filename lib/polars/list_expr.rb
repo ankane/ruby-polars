@@ -9,7 +9,7 @@ module Polars
       self._rbexpr = expr._rbexpr
     end
 
-    # Get the length of the arrays as UInt32.
+    # Get the length of the arrays as `:u32`.
     #
     # @return [Expr]
     #

@@ -1164,6 +1164,7 @@ version = "0.1.3"
 dependencies = [
  "magnus",
  "polars 0.25.1",
+ "polars-core",
  "serde_json",
 ]
 

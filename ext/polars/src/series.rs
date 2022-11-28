@@ -5,6 +5,7 @@ use polars::series::IsSorted;
 use std::cell::RefCell;
 
 use crate::conversion::*;
+use crate::list_construction::rb_seq_to_list;
 use crate::set::set_at_idx;
 use crate::{RbDataFrame, RbPolarsErr, RbResult, RbValueError};
 
@@ -123,9 +124,17 @@ impl RbSeries {
         RbSeries::new(s)
     }
 
-    pub fn new_object(name: String, val: Vec<ObjectValue>, _strict: bool) -> Self {
+    pub fn new_object(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
+        let val = val
+            .each()
+            .map(|v| v.map(ObjectValue::from))
+            .collect::<RbResult<Vec<ObjectValue>>>()?;
         let s = ObjectChunked::<ObjectValue>::new_from_vec(&name, val).into_series();
-        s.into()
+        Ok(s.into())
+    }
+
+    pub fn new_list(name: String, seq: Value, dtype: Wrap<DataType>) -> RbResult<Self> {
+        rb_seq_to_list(&name, seq, &dtype.0).map(|s| s.into())
     }
 
     pub fn estimated_size(&self) -> usize {
