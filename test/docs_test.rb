@@ -5,12 +5,20 @@ class DocsTest < Minitest::Test
     assert_docs Polars::CatExpr
   end
 
+  def test_cat_name_space
+    assert_docs Polars::CatNameSpace
+  end
+
   def test_data_frame
     assert_docs Polars::DataFrame
   end
 
   def test_date_time_expr
     assert_docs Polars::DateTimeExpr
+  end
+
+  def test_date_time_name_space
+    assert_docs Polars::DateTimeNameSpace
   end
 
   def test_expr
@@ -61,8 +69,16 @@ class DocsTest < Minitest::Test
     assert_docs Polars::StringExpr
   end
 
+  def test_string_name_space
+    assert_docs Polars::StringNameSpace
+  end
+
   def test_struct_expr
     assert_docs Polars::StructExpr
+  end
+
+  def test_struct_name_space
+    assert_docs Polars::StructNameSpace
   end
 
   def assert_docs(cls)
