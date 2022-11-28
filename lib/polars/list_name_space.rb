@@ -114,23 +114,66 @@ module Polars
       get(item)
     end
 
-    # def join
-    # end
+    # Join all string items in a sublist and place a separator between them.
+    #
+    # This errors if inner type of list `!= Utf8`.
+    #
+    # @param separator [String]
+    #   string to separate the items with
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([["foo", "bar"], ["hello", "world"]])
+    #   s.arr.join("-")
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [str]
+    #   # [
+    #   #     "foo-bar"
+    #   #     "hello-world"
+    #   # ]
+    def join(separator)
+      super
+    end
 
-    # def first
-    # end
+    # Get the first value of the sublists.
+    #
+    # @return [Series]
+    def first
+      super
+    end
 
-    # def last
-    # end
+    # Get the last value of the sublists.
+    #
+    # @return [Series]
+    def last
+      super
+    end
 
-    # def contains
-    # end
+    # Check if sublists contain the given item.
+    #
+    # @param item [Object]
+    #   Item that will be checked for membership.
+    #
+    # @return [Series]
+    def contains(item)
+      super
+    end
 
-    # def arg_min
-    # end
+    # Retrieve the index of the minimal value in every sublist.
+    #
+    # @return [Series]
+    def arg_min
+      super
+    end
 
-    # def arg_max
-    # end
+    # Retrieve the index of the maximum value in every sublist.
+    #
+    # @return [Series]
+    def arg_max
+      super
+    end
 
     # Calculate the n-th discrete difference of every sublist.
     #
@@ -242,10 +285,68 @@ module Polars
       super
     end
 
-    # def to_struct
-    # end
+    # Convert the series of type `List` to a series of type `Struct`.
+    #
+    # @param n_field_strategy ["first_non_null", "max_width"]
+    #   Strategy to determine the number of fields of the struct.
+    # @param name_generator [Object]
+    #   A custom function that can be used to generate the field names.
+    #   Default field names are `field_0, field_1 .. field_n`
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [[1, 2, 3], [1, 2]]})
+    #   df.select([Polars.col("a").arr.to_struct])
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌────────────┐
+    #   # │ a          │
+    #   # │ ---        │
+    #   # │ struct[3]  │
+    #   # ╞════════════╡
+    #   # │ {1,2,3}    │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ {1,2,null} │
+    #   # └────────────┘
+    def to_struct(n_field_strategy: "first_non_null", name_generator: nil)
+      super
+    end
 
-    # def eval
-    # end
+    # Run any polars expression against the lists' elements.
+    #
+    # @param expr [Expr]
+    #   Expression to run. Note that you can select an element with `Polars.first`, or
+    #   `Polars.col`
+    # @param parallel [Boolean]
+    #   Run all expression parallel. Don't activate this blindly.
+    #   Parallelism is worth it if there is enough work to do per thread.
+    #
+    #   This likely should not be use in the groupby context, because we already
+    #   parallel execution per group
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 8, 3], "b" => [4, 5, 2]})
+    #   df.with_column(
+    #     Polars.concat_list(["a", "b"]).arr.eval(Polars.element.rank).alias("rank")
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬────────────┐
+    #   # │ a   ┆ b   ┆ rank       │
+    #   # │ --- ┆ --- ┆ ---        │
+    #   # │ i64 ┆ i64 ┆ list[f32]  │
+    #   # ╞═════╪═════╪════════════╡
+    #   # │ 1   ┆ 4   ┆ [1.0, 2.0] │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 8   ┆ 5   ┆ [2.0, 1.0] │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 2   ┆ [2.0, 1.0] │
+    #   # └─────┴─────┴────────────┘
+    def eval(expr, parallel: false)
+      super
+    end
   end
 end
