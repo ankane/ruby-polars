@@ -3022,14 +3022,103 @@ module Polars
       wrap_expr(_rbexpr.diff(n, null_behavior))
     end
 
+    # Computes percentage change between values.
+    #
+    # Percentage change (as fraction) between current element and most-recent
+    # non-null element at least `n` period(s) before the current element.
+    #
+    # Computes the change from the previous row by default.
+    #
+    # @param n [Integer]
+    #   Periods to shift for forming percent change.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [10, 11, 12, nil, 12]
+    #     }
+    #   )
+    #   df.with_column(Polars.col("a").pct_change.alias("pct_change"))
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌──────┬────────────┐
+    #   # │ a    ┆ pct_change │
+    #   # │ ---  ┆ ---        │
+    #   # │ i64  ┆ f64        │
+    #   # ╞══════╪════════════╡
+    #   # │ 10   ┆ null       │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 11   ┆ 0.1        │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 12   ┆ 0.090909   │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null ┆ 0.0        │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 12   ┆ 0.0        │
+    #   # └──────┴────────────┘
     def pct_change(n: 1)
       wrap_expr(_rbexpr.pct_change(n))
     end
 
+    # Compute the sample skewness of a data set.
+    #
+    # For normally distributed data, the skewness should be about zero. For
+    # unimodal continuous distributions, a skewness value greater than zero means
+    # that there is more weight in the right tail of the distribution. The
+    # function `skewtest` can be used to determine if the skewness value
+    # is close enough to zero, statistically speaking.
+    #
+    # @param bias [Boolean]
+    #   If false, the calculations are corrected for statistical bias.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 2, 1]})
+    #   df.select(Polars.col("a").skew)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 0.343622 │
+    #   # └──────────┘
     def skew(bias: true)
       wrap_expr(_rbexpr.skew(bias))
     end
 
+    # Compute the kurtosis (Fisher or Pearson) of a dataset.
+    #
+    # Kurtosis is the fourth central moment divided by the square of the
+    # variance. If Fisher's definition is used, then 3.0 is subtracted from
+    # the result to give 0.0 for a normal distribution.
+    # If bias is False then the kurtosis is calculated using k statistics to
+    # eliminate bias coming from biased moment estimators
+    #
+    # @param fisher [Boolean]
+    #   If true, Fisher's definition is used (normal ==> 0.0). If false,
+    #   Pearson's definition is used (normal ==> 3.0).
+    # @param bias [Boolean]
+    #   If false, the calculations are corrected for statistical bias.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 2, 1]})
+    #   df.select(Polars.col("a").kurtosis)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌───────────┐
+    #   # │ a         │
+    #   # │ ---       │
+    #   # │ f64       │
+    #   # ╞═══════════╡
+    #   # │ -1.153061 │
+    #   # └───────────┘
     def kurtosis(fisher: true, bias: true)
       wrap_expr(_rbexpr.kurtosis(fisher, bias))
     end
@@ -3452,10 +3541,58 @@ module Polars
       wrap_expr(_rbexpr.arctanh)
     end
 
+    # Reshape this Expr to a flat Series or a Series of Lists.
+    #
+    # @param dims [Array]
+    #   Tuple of the dimension sizes. If a -1 is used in any of the dimensions, that
+    #   dimension is inferred.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4, 5, 6, 7, 8, 9]})
+    #   df.select(Polars.col("foo").reshape([3, 3]))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌───────────┐
+    #   # │ foo       │
+    #   # │ ---       │
+    #   # │ list[i64] │
+    #   # ╞═══════════╡
+    #   # │ [1, 2, 3] │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ [4, 5, 6] │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ [7, 8, 9] │
+    #   # └───────────┘
     def reshape(dims)
       wrap_expr(_rbexpr.reshape(dims))
     end
 
+    # Shuffle the contents of this expr.
+    #
+    # @param seed [Integer]
+    #   Seed for the random number generator. If set to None (default), a random
+    #   seed is generated using the `random` module.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    #   df.select(Polars.col("a").shuffle(seed: 1))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 2   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 3   │
+    #   # └─────┘
     def shuffle(seed: nil)
       if seed.nil?
         seed = rand(10000)
