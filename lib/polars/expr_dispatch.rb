@@ -3,6 +3,11 @@ module Polars
   module ExprDispatch
     private
 
+    def self.included(base)
+      base.attr_accessor :_s
+      base.singleton_class.attr_accessor :_accessor
+    end
+
     def method_missing(method, ...)
       return super unless self.class.method_defined?(method)
 

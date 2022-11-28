@@ -3,13 +3,7 @@ module Polars
   class ListNameSpace
     include ExprDispatch
 
-    # @private
-    def self._accessor
-      "arr"
-    end
-
-    # @private
-    attr_accessor :_s
+    self._accessor = "arr"
 
     # @private
     def initialize(series)

@@ -3,13 +3,7 @@ module Polars
   class StructNameSpace
     include ExprDispatch
 
-    # @private
-    def self._accessor
-      "struct"
-    end
-
-    # @private
-    attr_accessor :_s
+    self._accessor = "struct"
 
     # @private
     def initialize(series)

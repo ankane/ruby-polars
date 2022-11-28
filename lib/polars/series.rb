@@ -3,13 +3,6 @@ module Polars
   class Series
     include ExprDispatch
 
-    # @private
-    def self._accessor
-    end
-
-    # @private
-    attr_accessor :_s
-
     # Create a new Series.
     #
     # @param name [String, Array, nil]

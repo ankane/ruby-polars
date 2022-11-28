@@ -3,13 +3,7 @@ module Polars
   class DateTimeNameSpace
     include ExprDispatch
 
-    # @private
-    def self._accessor
-      "dt"
-    end
-
-    # @private
-    attr_accessor :_s
+    self._accessor = "dt"
 
     # @private
     def initialize(series)

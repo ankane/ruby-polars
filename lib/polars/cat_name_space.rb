@@ -3,13 +3,7 @@ module Polars
   class CatNameSpace
     include ExprDispatch
 
-    # @private
-    def self._accessor
-      "cat"
-    end
-
-    # @private
-    attr_accessor :_s
+    self._accessor = "cat"
 
     # @private
     def initialize(series)

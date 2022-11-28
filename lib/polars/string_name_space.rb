@@ -3,13 +3,7 @@ module Polars
   class StringNameSpace
     include ExprDispatch
 
-    # @private
-    def self._accessor
-      "str"
-    end
-
-    # @private
-    attr_accessor :_s
+    self._accessor = "str"
 
     # @private
     def initialize(series)
