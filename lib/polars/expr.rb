@@ -1594,6 +1594,35 @@ module Polars
       wrap_expr(_rbexpr.rank(method, reverse))
     end
 
+    # Calculate the n-th discrete difference.
+    #
+    # @param n [Integer]
+    #   Number of slots to shift.
+    # @param null_behavior ["ignore", "drop"]
+    #   How to handle null values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [20, 10, 30]
+    #     }
+    #   )
+    #   df.select(Polars.col("a").diff)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ i64  │
+    #   # ╞══════╡
+    #   # │ null │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ -10  │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 20   │
+    #   # └──────┘
     def diff(n: 1, null_behavior: "ignore")
       wrap_expr(_rbexpr.diff(n, null_behavior))
     end
@@ -1610,38 +1639,240 @@ module Polars
       wrap_expr(_rbexpr.kurtosis(fisher, bias))
     end
 
+    # Clip (limit) the values in an array to a `min` and `max` boundary.
+    #
+    # Only works for numerical types.
+    #
+    # If you want to clip other dtypes, consider writing a "when, then, otherwise"
+    # expression. See `when` for more information.
+    #
+    # @param min_val [Numeric]
+    #   Minimum value.
+    # @param max_val [Numeric]
+    #   Maximum value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [-50, 5, nil, 50]})
+    #   df.with_column(Polars.col("foo").clip(1, 10).alias("foo_clipped"))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌──────┬─────────────┐
+    #   # │ foo  ┆ foo_clipped │
+    #   # │ ---  ┆ ---         │
+    #   # │ i64  ┆ i64         │
+    #   # ╞══════╪═════════════╡
+    #   # │ -50  ┆ 1           │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 5    ┆ 5           │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null ┆ null        │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 50   ┆ 10          │
+    #   # └──────┴─────────────┘
     def clip(min_val, max_val)
       wrap_expr(_rbexpr.clip(min_val, max_val))
     end
 
+    # Clip (limit) the values in an array to a `min` boundary.
+    #
+    # Only works for numerical types.
+    #
+    # If you want to clip other dtypes, consider writing a "when, then, otherwise"
+    # expression. See `when` for more information.
+    #
+    # @param min_val [Numeric]
+    #   Minimum value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [-50, 5, nil, 50]})
+    #   df.with_column(Polars.col("foo").clip_min(0).alias("foo_clipped"))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌──────┬─────────────┐
+    #   # │ foo  ┆ foo_clipped │
+    #   # │ ---  ┆ ---         │
+    #   # │ i64  ┆ i64         │
+    #   # ╞══════╪═════════════╡
+    #   # │ -50  ┆ 0           │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 5    ┆ 5           │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null ┆ null        │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 50   ┆ 50          │
+    #   # └──────┴─────────────┘
     def clip_min(min_val)
       wrap_expr(_rbexpr.clip_min(min_val))
     end
 
+    # Clip (limit) the values in an array to a `max` boundary.
+    #
+    # Only works for numerical types.
+    #
+    # If you want to clip other dtypes, consider writing a "when, then, otherwise"
+    # expression. See `when` for more information.
+    #
+    # @param max_val [Numeric]
+    #   Maximum value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [-50, 5, nil, 50]})
+    #   df.with_column(Polars.col("foo").clip_max(0).alias("foo_clipped"))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌──────┬─────────────┐
+    #   # │ foo  ┆ foo_clipped │
+    #   # │ ---  ┆ ---         │
+    #   # │ i64  ┆ i64         │
+    #   # ╞══════╪═════════════╡
+    #   # │ -50  ┆ -50         │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 5    ┆ 0           │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null ┆ null        │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 50   ┆ 0           │
+    #   # └──────┴─────────────┘
     def clip_max(max_val)
       wrap_expr(_rbexpr.clip_max(max_val))
     end
 
+    # Calculate the lower bound.
+    #
+    # Returns a unit Series with the lowest value possible for the dtype of this
+    # expression.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 2, 1]})
+    #   df.select(Polars.col("a").lower_bound)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────────────────────┐
+    #   # │ a                    │
+    #   # │ ---                  │
+    #   # │ i64                  │
+    #   # ╞══════════════════════╡
+    #   # │ -9223372036854775808 │
+    #   # └──────────────────────┘
     def lower_bound
       wrap_expr(_rbexpr.lower_bound)
     end
 
+    # Calculate the upper bound.
+    #
+    # Returns a unit Series with the highest value possible for the dtype of this
+    # expression.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 2, 1]})
+    #   df.select(Polars.col("a").upper_bound)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────────────────────┐
+    #   # │ a                   │
+    #   # │ ---                 │
+    #   # │ i64                 │
+    #   # ╞═════════════════════╡
+    #   # │ 9223372036854775807 │
+    #   # └─────────────────────┘
     def upper_bound
       wrap_expr(_rbexpr.upper_bound)
     end
 
+    # Compute the element-wise indication of the sign.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [-9.0, -0.0, 0.0, 4.0, nil]})
+    #   df.select(Polars.col("a").sign)
+    #   # =>
+    #   # shape: (5, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ i64  │
+    #   # ╞══════╡
+    #   # │ -1   │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 0    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 0    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 1    │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ null │
+    #   # └──────┘
     def sign
       wrap_expr(_rbexpr.sign)
     end
 
+    # Compute the element-wise value for the sine.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [0.0]})
+    #   df.select(Polars.col("a").sin)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 0.0 │
+    #   # └─────┘
     def sin
       wrap_expr(_rbexpr.sin)
     end
 
+    # Compute the element-wise value for the cosine.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [0.0]})
+    #   df.select(Polars.col("a").cos)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 1.0 │
+    #   # └─────┘
     def cos
       wrap_expr(_rbexpr.cos)
     end
 
+    # Compute the element-wise value for the tangent.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1.0]})
+    #   df.select(Polars.col("a").tan)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 1.557408 │
+    #   # └──────────┘
     def tan
       wrap_expr(_rbexpr.tan)
     end
