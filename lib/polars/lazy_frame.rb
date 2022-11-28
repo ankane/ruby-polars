@@ -234,9 +234,16 @@ module Polars
     # def [](item)
     # end
 
-    # def to_s
-    # end
-    # alias_method :inspect, :to_s
+    # Returns a string representing the LazyFrame.
+    #
+    # @return [String]
+    def to_s
+      <<~EOS
+        naive plan: (run LazyFrame#describe_optimized_plan to see the optimized plan)
+
+        #{describe_plan}
+      EOS
+    end
 
     # def write_json
     # end
