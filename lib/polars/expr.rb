@@ -3612,15 +3612,109 @@ module Polars
     # def ewm_var
     # end
 
+    # Extend the Series with given number of values.
     #
+    # @param value [Object]
+    #   The value to extend the Series with. This value may be nil to fill with
+    #   nulls.
+    # @param n [Integer]
+    #   The number of values to extend.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"values" => [1, 2, 3]})
+    #   df.select(Polars.col("values").extend_constant(99, 2))
+    #   # =>
+    #   # shape: (5, 1)
+    #   # ┌────────┐
+    #   # │ values │
+    #   # │ ---    │
+    #   # │ i64    │
+    #   # ╞════════╡
+    #   # │ 1      │
+    #   # ├╌╌╌╌╌╌╌╌┤
+    #   # │ 2      │
+    #   # ├╌╌╌╌╌╌╌╌┤
+    #   # │ 3      │
+    #   # ├╌╌╌╌╌╌╌╌┤
+    #   # │ 99     │
+    #   # ├╌╌╌╌╌╌╌╌┤
+    #   # │ 99     │
+    #   # └────────┘
     def extend_constant(value, n)
       wrap_expr(_rbexpr.extend_constant(value, n))
     end
 
+    # Count all unique values and create a struct mapping value to count.
+    #
+    # @param multithreaded [Boolean]
+    #   Better to turn this off in the aggregation context, as it can lead to
+    #   contention.
+    # @param sort [Boolean]
+    #   Ensure the output is sorted from most values to least.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "id" => ["a", "b", "b", "c", "c", "c"]
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("id").value_counts(sort: true),
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌───────────┐
+    #   # │ id        │
+    #   # │ ---       │
+    #   # │ struct[2] │
+    #   # ╞═══════════╡
+    #   # │ {"c",3}   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ {"b",2}   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ {"a",1}   │
+    #   # └───────────┘
     def value_counts(multithreaded: false, sort: false)
       wrap_expr(_rbexpr.value_counts(multithreaded, sort))
     end
 
+    # Return a count of the unique values in the order of appearance.
+    #
+    # This method differs from `value_counts` in that it does not return the
+    # values, only the counts and might be faster
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "id" => ["a", "b", "b", "c", "c", "c"]
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("id").unique_counts
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ id  │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 2   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 3   │
+    #   # └─────┘
     def unique_counts
       wrap_expr(_rbexpr.unique_counts)
     end
