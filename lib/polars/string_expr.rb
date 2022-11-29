@@ -366,7 +366,7 @@ module Polars
 
     # Return the string left justified in a string of length `width`.
     #
-    # Padding is done using the specified `fillcha``.
+    # Padding is done using the specified `fillchar`.
     # The original string is returned if `width` is less than or equal to
     # `s.length`.
     #
@@ -399,7 +399,7 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_ljust(width, fillchar))
     end
 
-    # Return the string right justified in a string of length ``width``.
+    # Return the string right justified in a string of length `width`.
     #
     # Padding is done using the specified `fillchar`.
     # The original string is returned if `width` is less than or equal to
@@ -835,10 +835,10 @@ module Polars
       end
     end
 
-    # Split the string by a substring, restricted to returning at most ``n`` items.
+    # Split the string by a substring, restricted to returning at most `n` items.
     #
-    # If the number of possible splits is less than ``n-1``, the remaining field
-    # elements will be null. If the number of possible splits is ``n-1`` or greater,
+    # If the number of possible splits is less than `n-1`, the remaining field
+    # elements will be null. If the number of possible splits is `n-1` or greater,
     # the last (nth) substring will contain the remainder of the string.
     #
     # @param by [String]

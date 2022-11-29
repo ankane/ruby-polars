@@ -1357,9 +1357,9 @@ module Polars
 
     # Offset this date by a relative time offset.
     #
-    # This differs from ``pl.col("foo") + timedelta`` in that it can
+    # This differs from `Polars.col("foo") + timedelta` in that it can
     # take months and leap years into account. Note that only a single minus
-    # sign is allowed in the ``by`` string, as the first character.
+    # sign is allowed in the `by` string, as the first character.
     #
     # @param by [String]
     #   The offset is dictated by the following string language:

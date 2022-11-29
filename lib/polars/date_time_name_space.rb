@@ -464,20 +464,241 @@ module Polars
       super
     end
 
-    # def minute
-    # end
+    # Extract the minutes from the underlying DateTime representation.
+    #
+    # Applies to Datetime columns.
+    #
+    # Returns the minute number from 0 to 59.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 1, 0, 4, 0)
+    #   date = Polars.date_range(start, stop, "2m")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:02:00
+    #   #         2001-01-01 00:04:00
+    #   # ]
+    #
+    # @example
+    #   date.dt.minute
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         0
+    #   #         2
+    #   #         4
+    #   # ]
+    def minute
+      super
+    end
 
-    # def second
-    # end
+    # Extract seconds from underlying DateTime representation.
+    #
+    # Applies to Datetime columns.
+    #
+    # Returns the integer second number from 0 to 59, or a floating
+    # point number from 0 < 60 if `fractional: true` that includes
+    # any milli/micro/nanosecond component.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 1, 0, 0, 4)
+    #   date = Polars.date_range(start, stop, "500ms")
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:00:00.500
+    #   #         2001-01-01 00:00:01
+    #   #         2001-01-01 00:00:01.500
+    #   #         2001-01-01 00:00:02
+    #   #         2001-01-01 00:00:02.500
+    #   #         2001-01-01 00:00:03
+    #   #         2001-01-01 00:00:03.500
+    #   #         2001-01-01 00:00:04
+    #   # ]
+    #
+    # @example
+    #   date.dt.second
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         0
+    #   #         0
+    #   #         1
+    #   #         1
+    #   #         2
+    #   #         2
+    #   #         3
+    #   #         3
+    #   #         4
+    #   # ]
+    #
+    # @example
+    #   date.dt.second(fractional: true)
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         0.0
+    #   #         0.5
+    #   #         1.0
+    #   #         1.5
+    #   #         2.0
+    #   #         2.5
+    #   #         3.0
+    #   #         3.5
+    #   #         4.0
+    #   # ]
+    def second(fractional: false)
+      super
+    end
 
-    # def millisecond
-    # end
+    # Extract the milliseconds from the underlying DateTime representation.
+    #
+    # Applies to Datetime columns.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 1, 0, 0, 4)
+    #   date = Polars.date_range(start, stop, "500ms")
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:00:00.500
+    #   #         2001-01-01 00:00:01
+    #   #         2001-01-01 00:00:01.500
+    #   #         2001-01-01 00:00:02
+    #   #         2001-01-01 00:00:02.500
+    #   #         2001-01-01 00:00:03
+    #   #         2001-01-01 00:00:03.500
+    #   #         2001-01-01 00:00:04
+    #   # ]
+    #
+    # @example
+    #   date.dt.millisecond
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         0
+    #   #         500
+    #   #         0
+    #   #         500
+    #   #         0
+    #   #         500
+    #   #         0
+    #   #         500
+    #   #         0
+    #   # ]
+    def millisecond
+      super
+    end
 
-    # def microsecond
-    # end
+    # Extract the microseconds from the underlying DateTime representation.
+    #
+    # Applies to Datetime columns.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 1, 0, 0, 4)
+    #   date = Polars.date_range(start, stop, "500ms")
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:00:00.500
+    #   #         2001-01-01 00:00:01
+    #   #         2001-01-01 00:00:01.500
+    #   #         2001-01-01 00:00:02
+    #   #         2001-01-01 00:00:02.500
+    #   #         2001-01-01 00:00:03
+    #   #         2001-01-01 00:00:03.500
+    #   #         2001-01-01 00:00:04
+    #   # ]
+    #
+    # @example
+    #   date.dt.microsecond
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         0
+    #   #         500000
+    #   #         0
+    #   #         500000
+    #   #         0
+    #   #         500000
+    #   #         0
+    #   #         500000
+    #   #         0
+    #   # ]
+    def microsecond
+      super
+    end
 
-    # def nanosecond
-    # end
+    # Extract the nanoseconds from the underlying DateTime representation.
+    #
+    # Applies to Datetime columns.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 1, 0, 0, 4)
+    #   date = Polars.date_range(start, stop, "500ms")
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:00:00.500
+    #   #         2001-01-01 00:00:01
+    #   #         2001-01-01 00:00:01.500
+    #   #         2001-01-01 00:00:02
+    #   #         2001-01-01 00:00:02.500
+    #   #         2001-01-01 00:00:03
+    #   #         2001-01-01 00:00:03.500
+    #   #         2001-01-01 00:00:04
+    #   # ]
+    #
+    # @example
+    #   date.dt.nanosecond
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         0
+    #   #         500000000
+    #   #         0
+    #   #         500000000
+    #   #         0
+    #   #         500000000
+    #   #         0
+    #   #         500000000
+    #   #         0
+    #   # ]
+    def nanosecond
+      super
+    end
 
     # def timestamp
     # end
