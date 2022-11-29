@@ -1433,8 +1433,57 @@ module Polars
       super
     end
 
-    # def is_in
-    # end
+    # Check if elements of this Series are in the other Series.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s2 = Polars::Series.new("b", [2, 4])
+    #   s2.is_in(s)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'b' [bool]
+    #   # [
+    #   #         true
+    #   #         false
+    #   # ]
+    #
+    # @example
+    #   sets = Polars::Series.new("sets", [[1, 2, 3], [1, 2], [9, 10]])
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'sets' [list]
+    #   # [
+    #   #         [1, 2, 3]
+    #   #         [1, 2]
+    #   #         [9, 10]
+    #   # ]
+    #
+    # @example
+    #   optional_members = Polars::Series.new("optional_members", [1, 2, 3])
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'optional_members' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ]
+    #
+    # @example
+    #   optional_members.is_in(sets)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'optional_members' [bool]
+    #   # [
+    #   #         true
+    #   #         true
+    #   #         false
+    #   # ]
+    def is_in(other)
+      super
+    end
 
     # Get index values where Boolean Series evaluate `true`.
     #

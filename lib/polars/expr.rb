@@ -2699,8 +2699,43 @@ module Polars
       wrap_expr(_rbexpr.pow(exponent._rbexpr))
     end
 
-    # def is_in
-    # end
+    # Check if elements of this expression are present in the other Series.
+    #
+    # @param other [Object]
+    #   Series or sequence of primitive type.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"sets" => [[1, 2, 3], [1, 2], [9, 10]], "optional_members" => [1, 2, 3]}
+    #   )
+    #   df.select([Polars.col("optional_members").is_in("sets").alias("contains")])
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────────┐
+    #   # │ contains │
+    #   # │ ---      │
+    #   # │ bool     │
+    #   # ╞══════════╡
+    #   # │ true     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ true     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ false    │
+    #   # └──────────┘
+    def is_in(other)
+      if other.is_a?(Array)
+        if other.length == 0
+          other = Polars.lit(nil)
+        else
+          other = Polars.lit(Series.new(other))
+        end
+      else
+        other = Utils.expr_to_lit_or_expr(other, str_to_lit: false)
+      end
+      wrap_expr(_rbexpr.is_in(other._rbexpr))
+    end
 
     # Repeat the elements in this Series as specified in the given expression.
     #
