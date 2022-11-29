@@ -2811,8 +2811,55 @@ module Polars
       wrap_expr(_rbexpr.repeat_by(by._rbexpr))
     end
 
-    # def is_between
-    # end
+    # Check if this expression is between start and end.
+    #
+    # @param start [Object]
+    #   Lower bound as primitive type or datetime.
+    # @param _end [Object]
+    #   Upper bound as primitive type or datetime.
+    # @param include_bounds [Boolean]
+    #   False:           Exclude both start and end (default).
+    #   True:            Include both start and end.
+    #   (False, False):  Exclude start and exclude end.
+    #   (True, True):    Include start and include end.
+    #   (False, True):   Exclude start and include end.
+    #   (True, False):   Include start and exclude end.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"num" => [1, 2, 3, 4, 5]})
+    #   df.with_column(Polars.col("num").is_between(2, 4))
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────┬────────────┐
+    #   # │ num ┆ is_between │
+    #   # │ --- ┆ ---        │
+    #   # │ i64 ┆ bool       │
+    #   # ╞═════╪════════════╡
+    #   # │ 1   ┆ false      │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ false      │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ true       │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 4   ┆ false      │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 5   ┆ false      │
+    #   # └─────┴────────────┘
+    def is_between(start, _end, include_bounds: false)
+      if include_bounds == false || include_bounds == [false, false]
+        ((self > start) & (self < _end)).alias("is_between")
+      elsif include_bounds == true || include_bounds == [true, true]
+        ((self >= start) & (self <= _end)).alias("is_between")
+      elsif include_bounds == [false, true]
+        ((self > start) & (self <= _end)).alias("is_between")
+      elsif include_bounds == [true, false]
+        ((self >= start) & (self < _end)).alias("is_between")
+      else
+        raise ArgumentError, "include_bounds should be a bool or [bool, bool]."
+      end
+    end
 
     # def _hash
     # end
