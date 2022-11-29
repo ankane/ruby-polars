@@ -1955,8 +1955,28 @@ module Polars
       super
     end
 
-    # def dot
-    # end
+    # Compute the dot/inner product between two Series.
+    #
+    # @param other [Object]
+    #   Series (or array) to compute dot product with.
+    #
+    # @return [Numeric]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s2 = Polars::Series.new("b", [4.0, 5.0, 6.0])
+    #   s.dot(s2)
+    #   # => 32.0
+    def dot(other)
+      if !other.is_a?(Series)
+        other = Series.new(other)
+      end
+      if len != other.len
+        n, m = len, other.len
+        raise ArgumentError, "Series length mismatch: expected #{n}, found #{m}"
+      end
+      _s.dot(other._s)
+    end
 
     # Compute the most occurring value(s).
     #
