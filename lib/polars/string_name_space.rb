@@ -46,23 +46,195 @@ module Polars
     # def extract_all
     # end
 
-    # def count_match
-    # end
+    # Count all successive non-overlapping regex matches.
+    #
+    # @param pattern [String]
+    #   A valid regex pattern
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("foo", ["123 bla 45 asd", "xyz 678 910t"])
+    #   s.str.count_match('\d')
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'foo' [u32]
+    #   # [
+    #   #         5
+    #   #         6
+    #   # ]
+    def count_match(pattern)
+      super
+    end
 
-    # def split
-    # end
+    # Split the string by a substring.
+    #
+    # @param by [String]
+    #   Substring to split by.
+    # @param inclusive [Boolean]
+    #   If true, include the split character/string in the results.
+    #
+    # @return [Series]
+    def split(by, inclusive: false)
+      super
+    end
 
-    # def split_exact
-    # end
+    # Split the string by a substring using `n` splits.
+    #
+    # Results in a struct of `n+1` fields.
+    #
+    # If it cannot make `n` splits, the remaining field elements will be null.
+    #
+    # @param by [String]
+    #   Substring to split by.
+    # @param n [Integer]
+    #   Number of splits to make.
+    # @param inclusive [Boolean]
+    #   If true, include the split character/string in the results.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => ["a_1", nil, "c", "d_4"]})
+    #   df["x"].str.split_exact("_", 1).alias("fields")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'fields' [struct[2]]
+    #   # [
+    #   #         {"a","1"}
+    #   #         {null,null}
+    #   #         {"c",null}
+    #   #         {"d","4"}
+    #   # ]
+    #
+    # @example Split string values in column x in exactly 2 parts and assign each part to a new column.
+    #   df["x"]
+    #     .str.split_exact("_", 1)
+    #     .struct.rename_fields(["first_part", "second_part"])
+    #     .alias("fields")
+    #     .to_frame
+    #     .unnest("fields")
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌────────────┬─────────────┐
+    #   # │ first_part ┆ second_part │
+    #   # │ ---        ┆ ---         │
+    #   # │ str        ┆ str         │
+    #   # ╞════════════╪═════════════╡
+    #   # │ a          ┆ 1           │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null       ┆ null        │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ c          ┆ null        │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ d          ┆ 4           │
+    #   # └────────────┴─────────────┘
+    def split_exact(by, n, inclusive: false)
+      super
+    end
 
-    # def splitn
-    # end
+    # Split the string by a substring, restricted to returning at most `n` items.
+    #
+    # If the number of possible splits is less than `n-1`, the remaining field
+    # elements will be null. If the number of possible splits is `n-1` or greater,
+    # the last (nth) substring will contain the remainder of the string.
+    #
+    # @param by [String]
+    #   Substring to split by.
+    # @param n [Integer]
+    #   Max number of items to return.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"s" => ["foo bar", nil, "foo-bar", "foo bar baz"]})
+    #   df["s"].str.splitn(" ", 2).alias("fields")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'fields' [struct[2]]
+    #   # [
+    #   #         {"foo","bar"}
+    #   #         {null,null}
+    #   #         {"foo-bar",null}
+    #   #         {"foo","bar baz"}
+    #   # ]
+    #
+    # @example Split string values in column s in exactly 2 parts and assign each part to a new column.
+    #   df["s"]
+    #     .str.splitn(" ", 2)
+    #     .struct.rename_fields(["first_part", "second_part"])
+    #     .alias("fields")
+    #     .to_frame
+    #     .unnest("fields")
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌────────────┬─────────────┐
+    #   # │ first_part ┆ second_part │
+    #   # │ ---        ┆ ---         │
+    #   # │ str        ┆ str         │
+    #   # ╞════════════╪═════════════╡
+    #   # │ foo        ┆ bar         │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null       ┆ null        │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ foo-bar    ┆ null        │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ foo        ┆ bar baz     │
+    #   # └────────────┴─────────────┘
+    def splitn(by, n)
+      s = Utils.wrap_s(_s)
+      s.to_frame.select(Polars.col(s.name).str.splitn(by, n)).to_series
+    end
 
-    # def replace
-    # end
+    # Replace first matching regex/literal substring with a new string value.
+    #
+    # @param pattern [String]
+    #   A valid regex pattern.
+    # @param value [String]
+    #   Substring to replace.
+    # @param literal [Boolean]
+    #   Treat pattern as a literal string.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(["123abc", "abc456"])
+    #   s.str.replace('abc\b', "ABC")
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "123ABC"
+    #   #         "abc456"
+    #   # ]
+    def replace(pattern, value, literal: false)
+      super
+    end
 
-    # def replace_all
-    # end
+    # Replace all matching regex/literal substrings with a new string value.
+    #
+    # @param pattern [String]
+    #   A valid regex pattern.
+    # @param value [String]
+    #   Substring to replace.
+    # @param literal [Boolean]
+    #   Treat pattern as a literal string.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::Series.new(["abcabc", "123a123"])
+    #   df.str.replace_all("a", "-")
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "-bc-bc"
+    #   #         "123-123"
+    #   # ]
+    def replace_all(pattern, value, literal: false)
+      super
+    end
 
     # Remove leading and trailing whitespace.
     #
