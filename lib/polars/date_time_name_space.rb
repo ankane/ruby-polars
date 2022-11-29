@@ -700,11 +700,95 @@ module Polars
       super
     end
 
-    # def timestamp
-    # end
+    # Return a timestamp in the given time unit.
+    #
+    # @param tu ["us", "ns", "ms"]
+    #   Time unit.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 3)
+    #   date = Polars.date_range(start, stop, "1d")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-02 00:00:00
+    #   #         2001-01-03 00:00:00
+    #   # ]
+    #
+    # @example
+    #   date.dt.timestamp.alias("timestamp_us")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'timestamp_us' [i64]
+    #   # [
+    #   #         978307200000000
+    #   #         978393600000000
+    #   #         978480000000000
+    #   # ]
+    #
+    # @example
+    #   date.dt.timestamp("ns").alias("timestamp_ns")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'timestamp_ns' [i64]
+    #   # [
+    #   #         978307200000000000
+    #   #         978393600000000000
+    #   #         978480000000000000
+    #   # ]
+    def timestamp(tu = "us")
+      super
+    end
 
-    # def epoch
-    # end
+    # Get the time passed since the Unix EPOCH in the give time unit.
+    #
+    # @param tu ["us", "ns", "ms", "s", "d"]
+    #   Time unit.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 3)
+    #   date = Polars.date_range(start, stop, "1d")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-02 00:00:00
+    #   #         2001-01-03 00:00:00
+    #   # ]
+    #
+    # @example
+    #   date.dt.epoch.alias("epoch_ns")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'epoch_ns' [i64]
+    #   # [
+    #   #         978307200000000
+    #   #         978393600000000
+    #   #         978480000000000
+    #   # ]
+    #
+    # @example
+    #   date.dt.epoch("s").alias("epoch_s")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'epoch_s' [i64]
+    #   # [
+    #   #         978307200
+    #   #         978393600
+    #   #         978480000
+    #   # ]
+    def epoch(tu = "us")
+      super
+    end
 
     # def with_time_unit
     # end
