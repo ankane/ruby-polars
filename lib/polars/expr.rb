@@ -138,8 +138,45 @@ module Polars
       Utils.lit(0) - self
     end
 
-    # def to_physical
-    # end
+    # Cast to physical representation of the logical dtype.
+    #
+    # - `:date` -> `:i32`
+    # - `:datetime` -> `:i64`
+    # - `:time` -> `:i64`
+    # - `:duration` -> `:i64`
+    # - `:cat` -> `:u32`
+    # - Other data types will be left unchanged.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   Polars::DataFrame.new({"vals" => ["a", "x", nil, "a"]}).with_columns(
+    #     [
+    #       Polars.col("vals").cast(:cat),
+    #       Polars.col("vals")
+    #         .cast(:cat)
+    #         .to_physical
+    #         .alias("vals_physical")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌──────┬───────────────┐
+    #   # │ vals ┆ vals_physical │
+    #   # │ ---  ┆ ---           │
+    #   # │ cat  ┆ u32           │
+    #   # ╞══════╪═══════════════╡
+    #   # │ a    ┆ 0             │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ x    ┆ 1             │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null ┆ null          │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ a    ┆ 0             │
+    #   # └──────┴───────────────┘
+    def to_physical
+      wrap_expr(_rbexpr.to_physical)
+    end
 
     # Check if any boolean value in a Boolean column is `true`.
     #
