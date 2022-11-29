@@ -2703,8 +2703,32 @@ module Polars
         .to_series
     end
 
-    # def rolling_skew
-    # end
+    # Compute a rolling skew.
+    #
+    # @param window_size [Integer]
+    #   Integer size of the rolling window.
+    # @param bias [Boolean]
+    #   If false, the calculations are corrected for statistical bias.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 2.0, 3.0, 4.0, 6.0, 8.0])
+    #   s.rolling_skew(3)
+    #   # =>
+    #   # shape: (6,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         null
+    #   #         null
+    #   #         0.0
+    #   #         0.0
+    #   #         0.381802
+    #   #         0.0
+    #   # ]
+    def rolling_skew(window_size, bias: true)
+      super
+    end
 
     # def sample
     # end
