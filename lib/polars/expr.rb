@@ -2505,7 +2505,44 @@ module Polars
       filter(predicate)
     end
 
-    # def map
+    # Apply a custom Ruby function to a Series or sequence of Series.
+    #
+    # The output of this custom function must be a Series.
+    # If you want to apply a custom function elementwise over single values, see
+    # {#apply}. A use case for `map` is when you want to transform an
+    # expression with a third-party library.
+    #
+    # Read more in [the book](https://pola-rs.github.io/polars-book/user-guide/dsl/custom_functions.html).
+    #
+    # @param return_dtype [Symbol]
+    #   Dtype of the output Series.
+    # @param agg_list [Boolean]
+    #   Aggregate list.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "sine" => [0.0, 1.0, 0.0, -1.0],
+    #       "cosine" => [1.0, 0.0, -1.0, 0.0]
+    #     }
+    #   )
+    #   df.select(Polars.all.map { |x| x.to_numpy.argmax })
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌──────┬────────┐
+    #   # │ sine ┆ cosine │
+    #   # │ ---  ┆ ---    │
+    #   # │ i64  ┆ i64    │
+    #   # ╞══════╪════════╡
+    #   # │ 1    ┆ 0      │
+    #   # └──────┴────────┘
+    # def map(return_dtype: nil, agg_list: false, &block)
+    #   if !return_dtype.nil?
+    #     return_dtype = Utils.rb_type_to_dtype(return_dtype)
+    #   end
+    #   wrap_expr(_rbexpr.map(return_dtype, agg_list, &block))
     # end
 
     # def apply
@@ -4688,7 +4725,33 @@ module Polars
       )
     end
 
-    # def set_sorted
+    # Flags the expression as 'sorted'.
+    #
+    # Enables downstream code to user fast paths for sorted arrays.
+    #
+    # @param reverse [Boolean]
+    #   If the `Series` order is reversed, e.g. descending.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   This can lead to incorrect results if this `Series` is not sorted!!
+    #   Use with care!
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"values" => [1, 2, 3]})
+    #   df.select(Polars.col("values").set_sorted.max)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌────────┐
+    #   # │ values │
+    #   # │ ---    │
+    #   # │ i64    │
+    #   # ╞════════╡
+    #   # │ 3      │
+    #   # └────────┘
+    # def set_sorted(reverse: false)
+    #   map { |s| s.set_sorted(reverse) }
     # end
 
     # Aggregate to list.
