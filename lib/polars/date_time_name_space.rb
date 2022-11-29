@@ -877,14 +877,133 @@ module Polars
       super
     end
 
-    # def with_time_zone
-    # end
+    # Set time zone a Series of type Datetime.
+    #
+    # @param tz [String]
+    #   Time zone for the `Datetime` Series.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2020, 3, 1)
+    #   stop = DateTime.new(2020, 5, 1)
+    #   date = Polars.date_range(start, stop, "1mo")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2020-03-01 00:00:00
+    #   #         2020-04-01 00:00:00
+    #   #         2020-05-01 00:00:00
+    #   # ]
+    #
+    # @example
+    #   date.dt.with_time_zone("Europe/London").alias("London")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'London' [datetime[μs, Europe/London]]
+    #   # [
+    #   #         2020-03-01 00:00:00 GMT
+    #   #         2020-04-01 01:00:00 BST
+    #   #         2020-05-01 01:00:00 BST
+    #   # ]
+    def with_time_zone(tz)
+      super
+    end
 
-    # def cast_time_zone
-    # end
+    # Cast time zone for a Series of type Datetime.
+    #
+    # Different from `with_time_zone`, this will also modify
+    # the underlying timestamp.
+    #
+    # @param tz [String]
+    #   Time zone for the `Datetime` Series.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2020, 3, 1)
+    #   stop = DateTime.new(2020, 5, 1)
+    #   date = Polars.date_range(start, stop, "1mo")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2020-03-01 00:00:00
+    #   #         2020-04-01 00:00:00
+    #   #         2020-05-01 00:00:00
+    #   # ]
+    #
+    # @example
+    #   date.dt.epoch("s")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [i64]
+    #   # [
+    #   #         1583020800
+    #   #         1585699200
+    #   #         1588291200
+    #   # ]
+    #
+    # @example
+    #   date = date.dt.with_time_zone("Europe/London").alias("London")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'London' [datetime[μs, Europe/London]]
+    #   # [
+    #   #         2020-03-01 00:00:00 GMT
+    #   #         2020-04-01 01:00:00 BST
+    #   #         2020-05-01 01:00:00 BST
+    #   # ]
+    #
+    # @example Timestamps have not changed after with_time_zone
+    #   date.dt.epoch("s")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'London' [i64]
+    #   # [
+    #   #         1583020800
+    #   #         1585699200
+    #   #         1588291200
+    #   # ]
+    #
+    # @example
+    #   date = date.dt.cast_time_zone("America/New_York").alias("NYC")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'NYC' [datetime[μs, America/New_York]]
+    #   # [
+    #   #         2020-02-29 14:00:00 EST
+    #   #         2020-03-31 15:00:00 EDT
+    #   #         2020-04-30 15:00:00 EDT
+    #   # ]
+    #
+    # @example Timestamps have changed after cast_time_zone
+    #   date.dt.epoch("s")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'NYC' [i64]
+    #   # [
+    #   #         1583002800
+    #   #         1585681200
+    #   #         1588273200
+    #   # ]
+    def cast_time_zone(tz)
+      super
+    end
 
-    # def tz_localize
-    # end
+    # Localize tz-naive Datetime Series to tz-aware Datetime Series.
+    #
+    # This method takes a naive Datetime Series and makes this time zone aware.
+    # It does not move the time to another time zone.
+    #
+    # @param tz [String]
+    #   Time zone for the `Datetime` Series.
+    #
+    # @return [Series]
+    def tz_localize(tz)
+      super
+    end
 
     # Extract the days from a Duration type.
     #
