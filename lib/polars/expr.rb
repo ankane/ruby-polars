@@ -3003,8 +3003,99 @@ module Polars
       )
     end
 
-    # def rolling_mean
-    # end
+    # Apply a rolling mean (moving mean) over the values in this array.
+    #
+    # A window of length `window_size` will traverse the array. The values that fill
+    # this window will (optionally) be multiplied with the weights given by the
+    # `weight` vector. The resulting values will be aggregated to their sum.
+    #
+    # @param window_size [Integer]
+    #   The length of the window. Can be a fixed integer size, or a dynamic temporal
+    #   size indicated by a timedelta or the following string language:
+    #
+    #   - 1ns   (1 nanosecond)
+    #   - 1us   (1 microsecond)
+    #   - 1ms   (1 millisecond)
+    #   - 1s    (1 second)
+    #   - 1m    (1 minute)
+    #   - 1h    (1 hour)
+    #   - 1d    (1 day)
+    #   - 1w    (1 week)
+    #   - 1mo   (1 calendar month)
+    #   - 1y    (1 calendar year)
+    #   - 1i    (1 index count)
+    #
+    #   If a timedelta or the dynamic string language is used, the `by`
+    #   and `closed` arguments must also be set.
+    # @param weights [Array]
+    #   An optional slice with the same length as the window that will be multiplied
+    #   elementwise with the values in the window.
+    # @param min_periods [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If None, it will be set equal to window size.
+    # @param center [Boolean]
+    #   Set the labels at the center of the window
+    # @param by [String]
+    #   If the `window_size` is temporal for instance `"5h"` or `"3s`, you must
+    #   set the column that will be used to determine the windows. This column must
+    #   be of dtype `{Date, Datetime}`
+    # @param closed ["left", "right", "both", "none"]
+    #   Define whether the temporal window interval is closed or not.
+    #
+    # @note
+    #   This functionality is experimental and may change without it being considered a
+    #   breaking change.
+    #
+    # @note
+    #   If you want to compute multiple aggregation statistics over the same dynamic
+    #   window, consider using `groupby_rolling` this method can cache the window size
+    #   computation.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"A" => [1.0, 8.0, 6.0, 2.0, 16.0, 10.0]})
+    #   df.select(
+    #     [
+    #       Polars.col("A").rolling_mean(2)
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (6, 1)
+    #   # ┌──────┐
+    #   # │ A    │
+    #   # │ ---  │
+    #   # │ f64  │
+    #   # ╞══════╡
+    #   # │ null │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 4.5  │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 7.0  │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 4.0  │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 9.0  │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 13.0 │
+    #   # └──────┘
+    def rolling_mean(
+      window_size,
+      weights: nil,
+      min_periods: nil,
+      center: false,
+      by: nil,
+      closed: "left"
+    )
+      window_size, min_periods = _prepare_rolling_window_args(
+        window_size, min_periods
+      )
+      wrap_expr(
+        _rbexpr.rolling_mean(
+          window_size, weights, min_periods, center, by, closed
+        )
+      )
+    end
 
     # def rolling_sum
     # end
