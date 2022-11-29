@@ -300,7 +300,10 @@ fn init() -> RbResult<()> {
     class.define_method("str_hex_decode", method!(RbExpr::str_hex_decode, 1))?;
     class.define_method("str_base64_encode", method!(RbExpr::str_base64_encode, 0))?;
     class.define_method("str_base64_decode", method!(RbExpr::str_base64_decode, 1))?;
-    class.define_method("str_json_path_match", method!(RbExpr::str_json_path_match, 1))?;
+    class.define_method(
+        "str_json_path_match",
+        method!(RbExpr::str_json_path_match, 1),
+    )?;
     class.define_method("str_extract", method!(RbExpr::str_extract, 2))?;
     class.define_method("str_extract_all", method!(RbExpr::str_extract_all, 1))?;
     class.define_method("count_match", method!(RbExpr::count_match, 1))?;
@@ -446,6 +449,12 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("lit", function!(crate::lazy::dsl::lit, 1))?;
     class.define_singleton_method("arange", function!(crate::lazy::dsl::arange, 3))?;
     class.define_singleton_method("repeat", function!(crate::lazy::dsl::repeat, 2))?;
+    class.define_singleton_method("pearson_corr", function!(crate::lazy::dsl::pearson_corr, 3))?;
+    class.define_singleton_method(
+        "spearman_rank_corr",
+        function!(crate::lazy::dsl::spearman_rank_corr, 4),
+    )?;
+    class.define_singleton_method("cov", function!(crate::lazy::dsl::cov, 2))?;
     class.define_singleton_method("when", function!(crate::lazy::dsl::when, 1))?;
     class.define_singleton_method("concat_str", function!(crate::lazy::dsl::concat_str, 2))?;
     class.define_singleton_method("concat_lst", function!(crate::lazy::dsl::concat_lst, 1))?;

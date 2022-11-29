@@ -297,14 +297,69 @@ module Polars
     # def cumsum
     # end
 
-    # def spearman_rank_corr
-    # end
+    # Compute the spearman rank correlation between two columns.
+    #
+    # Missing data will be excluded from the computation.
+    #
+    # @param a [Object]
+    #   Column name or Expression.
+    # @param b [Object]
+    #   Column name or Expression.
+    # @param ddof [Integer]
+    #   Delta degrees of freedom
+    # @param propagate_nans [Boolean]
+    #   If `True` any `NaN` encountered will lead to `NaN` in the output.
+    #   Defaults to `False` where `NaN` are regarded as larger than any finite number
+    #   and thus lead to the highest rank.
+    #
+    # @return [Expr]
+    def spearman_rank_corr(a, b, ddof: 1, propagate_nans: false)
+      if a.is_a?(String)
+        a = col(a)
+      end
+      if b.is_a?(String)
+        b = col(b)
+      end
+      Utils.wrap_expr(RbExpr.spearman_rank_corr(a._rbexpr, b._rbexpr, ddof, propagate_nans))
+    end
 
-    # def pearson_corr
-    # end
+    # Compute the pearson's correlation between two columns.
+    #
+    # @param a [Object]
+    #   Column name or Expression.
+    # @param b [Object]
+    #   Column name or Expression.
+    # @param ddof [Integer]
+    #   Delta degrees of freedom
+    #
+    # @return [Expr]
+    def pearson_corr(a, b, ddof: 1)
+      if a.is_a?(String)
+        a = col(a)
+      end
+      if b.is_a?(String)
+        b = col(b)
+      end
+      Utils.wrap_expr(RbExpr.pearson_corr(a._rbexpr, b._rbexpr, ddof))
+    end
 
-    # def cov
-    # end
+    # Compute the covariance between two columns/ expressions.
+    #
+    # @param a [Object]
+    #   Column name or Expression.
+    # @param b [Object]
+    #   Column name or Expression.
+    #
+    # @return [Expr]
+    def cov(a, b)
+      if a.is_a?(String)
+        a = col(a)
+      end
+      if b.is_a?(String)
+        b = col(b)
+      end
+      Utils.wrap_expr(RbExpr.cov(a._rbexpr, b._rbexpr))
+    end
 
     # def map
     # end

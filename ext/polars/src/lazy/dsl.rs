@@ -1518,6 +1518,19 @@ pub fn repeat(value: Value, n_times: &RbExpr) -> RbResult<RbExpr> {
     }
 }
 
+pub fn pearson_corr(a: &RbExpr, b: &RbExpr, ddof: u8) -> RbExpr {
+    polars::lazy::dsl::pearson_corr(a.inner.clone(), b.inner.clone(), ddof).into()
+}
+
+pub fn spearman_rank_corr(a: &RbExpr, b: &RbExpr, ddof: u8, propagate_nans: bool) -> RbExpr {
+    polars::lazy::dsl::spearman_rank_corr(a.inner.clone(), b.inner.clone(), ddof, propagate_nans)
+        .into()
+}
+
+pub fn cov(a: &RbExpr, b: &RbExpr) -> RbExpr {
+    polars::lazy::dsl::cov(a.inner.clone(), b.inner.clone()).into()
+}
+
 #[magnus::wrap(class = "Polars::RbWhen")]
 #[derive(Clone)]
 pub struct RbWhen {
