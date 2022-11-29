@@ -727,8 +727,43 @@ module Polars
       Polars.select(Polars.lit(self).entropy(base: base, normalize: normalize)).to_series[0]
     end
 
-    # def cumulative_eval
-    # end
+    # Run an expression over a sliding window that increases `1` slot every iteration.
+    #
+    # @param expr [Expr]
+    #   Expression to evaluate
+    # @param min_periods [Integer]
+    #   Number of valid values there should be in the window before the expression
+    #   is evaluated. valid values = `length - null_count`
+    # @param parallel [Boolean]
+    #   Run in parallel. Don't do this in a groupby or another operation that
+    #   already has much parallelization.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   This functionality is experimental and may change without it being considered a
+    #   breaking change.
+    #
+    # @note
+    #   This can be really slow as it can have `O(n^2)` complexity. Don't use this
+    #   for operations that visit all elements.
+    #
+    # @example
+    #   s = Polars::Series.new("values", [1, 2, 3, 4, 5])
+    #   s.cumulative_eval(Polars.element.first - Polars.element.last ** 2)
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'values' [f64]
+    #   # [
+    #   #         0.0
+    #   #         -3.0
+    #   #         -8.0
+    #   #         -15.0
+    #   #         -24.0
+    #   # ]
+    def cumulative_eval(expr, min_periods: 1, parallel: false)
+      super
+    end
 
     # Return a copy of the Series with a new alias/name.
     #
