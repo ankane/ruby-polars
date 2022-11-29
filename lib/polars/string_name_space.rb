@@ -22,14 +22,86 @@ module Polars
     # def concat
     # end
 
-    # def contains
-    # end
+    # Check if strings in Series contain a substring that matches a regex.
+    #
+    # @param pattern [String]
+    #   A valid regex pattern.
+    # @param literal [Boolean]
+    #   Treat pattern as a literal string.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(["Crab", "cat and dog", "rab$bit", nil])
+    #   s.str.contains("cat|bit")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [bool]
+    #   # [
+    #   #         false
+    #   #         true
+    #   #         true
+    #   #         null
+    #   # ]
+    #
+    # @example
+    #   s.str.contains("rab$", literal: true)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [bool]
+    #   # [
+    #   #         false
+    #   #         false
+    #   #         true
+    #   #         null
+    #   # ]
+    def contains(pattern, literal: false)
+      super
+    end
 
-    # def ends_with
-    # end
+    # Check if string values end with a substring.
+    #
+    # @param sub [String]
+    #   Suffix substring.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("fruits", ["apple", "mango", nil])
+    #   s.str.ends_with("go")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'fruits' [bool]
+    #   # [
+    #   #         false
+    #   #         true
+    #   #         null
+    #   # ]
+    def ends_with(sub)
+      super
+    end
 
-    # def starts_with
-    # end
+    # Check if string values start with a substring.
+    #
+    # @param sub [String]
+    #   Prefix substring.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("fruits", ["apple", "mango", nil])
+    #   s.str.starts_with("app")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'fruits' [bool]
+    #   # [
+    #   #         true
+    #   #         false
+    #   #         null
+    #   # ]
+    def starts_with(sub)
+      super
+    end
 
     # def decode
     # end
@@ -40,11 +112,58 @@ module Polars
     # def json_path_match
     # end
 
-    # def extract
-    # end
+    # Extract the target capture group from provided patterns.
+    #
+    # @param pattern [String]
+    #   A valid regex pattern
+    # @param group_index [Integer]
+    #   Index of the targeted capture group.
+    #   Group 0 mean the whole pattern, first group begin at index 1
+    #   Default to the first capture group
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => ["123 bla 45 asd", "xyz 678 910t"]})
+    #   df.select([Polars.col("foo").str.extract('(\d+)')])
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ 123 │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 678 │
+    #   # └─────┘
+    def extract(pattern, group_index: 1)
+      super
+    end
 
-    # def extract_all
-    # end
+    # Extracts all matches for the given regex pattern.
+    #
+    # Extract each successive non-overlapping regex match in an individual string as
+    # an array
+    #
+    # @param pattern [String]
+    #   A valid regex pattern
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("foo", ["123 bla 45 asd", "xyz 678 910t"])
+    #   s.str.extract_all('(\d+)')
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'foo' [list]
+    #   # [
+    #   #         ["123", "45"]
+    #   #         ["678", "910"]
+    #   # ]
+    def extract_all(pattern)
+      super
+    end
 
     # Count all successive non-overlapping regex matches.
     #
