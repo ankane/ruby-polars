@@ -255,6 +255,7 @@ module Polars
     #   #         2001-04-01 00:00:00
     #   # ]
     #
+    # @example
     #   date.dt.month
     #   # =>
     #   # shape: (4,)
@@ -268,5 +269,265 @@ module Polars
     def month
       super
     end
+
+    # Extract the week from the underlying date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the ISO week number starting from 1.
+    # The return value ranges from 1 to 53. (The last week of year differs by years.)
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 4, 1)
+    #   date = Polars.date_range(start, stop, "1mo")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-02-01 00:00:00
+    #   #         2001-03-01 00:00:00
+    #   #         2001-04-01 00:00:00
+    #   # ]
+    #
+    # @example
+    #   date.dt.week
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         1
+    #   #         5
+    #   #         9
+    #   #         13
+    #   # ]
+    def week
+      super
+    end
+
+    # Extract the week day from the underlying date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the weekday number where monday = 0 and sunday = 6
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 7)
+    #   date = Polars.date_range(start, stop, "1d")
+    #   # =>
+    #   # shape: (7,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-02 00:00:00
+    #   #         2001-01-03 00:00:00
+    #   #         2001-01-04 00:00:00
+    #   #         2001-01-05 00:00:00
+    #   #         2001-01-06 00:00:00
+    #   #         2001-01-07 00:00:00
+    #   # ]
+    #
+    # @example
+    #   date.dt.weekday
+    #   # =>
+    #   # shape: (7,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         0
+    #   #         1
+    #   #         2
+    #   #         3
+    #   #         4
+    #   #         5
+    #   #         6
+    #   # ]
+    def weekday
+      super
+    end
+
+    # Extract the day from the underlying date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the day of month starting from 1.
+    # The return value ranges from 1 to 31. (The last day of month differs by months.)
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 9)
+    #   date = Polars.date_range(start, stop, "2d")
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-03 00:00:00
+    #   #         2001-01-05 00:00:00
+    #   #         2001-01-07 00:00:00
+    #   #         2001-01-09 00:00:00
+    #   # ]
+    #
+    # @example
+    #   date.dt.day
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         1
+    #   #         3
+    #   #         5
+    #   #         7
+    #   #         9
+    #   # ]
+    def day
+      super
+    end
+
+    # Extract ordinal day from underlying date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the day of year starting from 1.
+    # The return value ranges from 1 to 366. (The last day of year differs by years.)
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 3, 1)
+    #   date = Polars.date_range(start, stop, "1mo")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-02-01 00:00:00
+    #   #         2001-03-01 00:00:00
+    #   # ]
+    #
+    # @example
+    #   date.dt.ordinal_day
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         1
+    #   #         32
+    #   #         60
+    #   # ]
+    def ordinal_day
+      super
+    end
+
+    # Extract the hour from the underlying DateTime representation.
+    #
+    # Applies to Datetime columns.
+    #
+    # Returns the hour number from 0 to 23.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 1, 3)
+    #   date = Polars.date_range(start, stop, "1h")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 01:00:00
+    #   #         2001-01-01 02:00:00
+    #   #         2001-01-01 03:00:00
+    #   # ]
+    #
+    # @example
+    #   date.dt.hour
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         0
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ]
+    def hour
+      super
+    end
+
+    # def minute
+    # end
+
+    # def second
+    # end
+
+    # def millisecond
+    # end
+
+    # def microsecond
+    # end
+
+    # def nanosecond
+    # end
+
+    # def timestamp
+    # end
+
+    # def epoch
+    # end
+
+    # def with_time_unit
+    # end
+
+    # def cast_time_unit
+    # end
+
+    # def with_time_zone
+    # end
+
+    # def cast_time_zone
+    # end
+
+    # def tz_localize
+    # end
+
+    # def days
+    # end
+
+    # def hours
+    # end
+
+    # def minutes
+    # end
+
+    # def seconds
+    # end
+
+    # def milliseconds
+    # end
+
+    # def microseconds
+    # end
+
+    # def nanoseconds
+    # end
+
+    # def offset_by
+    # end
+
+    # def truncate
+    # end
+
+    # def round
+    # end
   end
 end
