@@ -553,14 +553,115 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_starts_with(sub))
     end
 
-    # def json_path_match
+    # Extract the first match of json string with provided JSONPath expression.
+    #
+    # Throw errors if encounter invalid json strings.
+    # All return value will be casted to Utf8 regardless of the original value.
+    #
+    # Documentation on JSONPath standard can be found
+    # [here](https://goessner.net/articles/JsonPath/).
+    #
+    # @param json_path [String]
+    #   A valid JSON path query string.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"json_val" => ['{"a":"1"}', nil, '{"a":2}', '{"a":2.1}', '{"a":true}']}
+    #   )
+    #   df.select(Polars.col("json_val").str.json_path_match("$.a"))
+    #   # =>
+    #   # shape: (5, 1)
+    #   # ┌──────────┐
+    #   # │ json_val │
+    #   # │ ---      │
+    #   # │ str      │
+    #   # ╞══════════╡
+    #   # │ 1        │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2        │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2.1      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ true     │
+    #   # └──────────┘
+    # def json_path_match(json_path)
+    #   Utils.wrap_expr(_rbexpr.str_json_path_match(json_path))
     # end
 
-    # def decode
-    # end
+    # Decode a value using the provided encoding.
+    #
+    # @param encoding ["hex", "base64"]
+    #   The encoding to use.
+    # @param strict [Boolean]
+    #   How to handle invalid inputs:
+    #
+    #   - `true`: An error will be thrown if unable to decode a value.
+    #   - `false`: Unhandled values will be replaced with `nil`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"encoded" => ["666f6f", "626172", nil]})
+    #   df.select(Polars.col("encoded").str.decode("hex"))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────┐
+    #   # │ encoded │
+    #   # │ ---     │
+    #   # │ str     │
+    #   # ╞═════════╡
+    #   # │ foo     │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ bar     │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ null    │
+    #   # └─────────┘
+    def decode(encoding, strict: false)
+      if encoding == "hex"
+        Utils.wrap_expr(_rbexpr.str_hex_decode(strict))
+      elsif encoding == "base64"
+        Utils.wrap_expr(_rbexpr.str_base64_decode(strict))
+      else
+        raise ArgumentError, "encoding must be one of {{'hex', 'base64'}}, got #{encoding}"
+      end
+    end
 
-    # def encode
-    # end
+    # Encode a value using the provided encoding.
+    #
+    # @param encoding ["hex", "base64"]
+    #   The encoding to use.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"strings" => ["foo", "bar", nil]})
+    #   df.select(Polars.col("strings").str.encode("hex"))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────┐
+    #   # │ strings │
+    #   # │ ---     │
+    #   # │ str     │
+    #   # ╞═════════╡
+    #   # │ 666f6f  │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ 626172  │
+    #   # ├╌╌╌╌╌╌╌╌╌┤
+    #   # │ null    │
+    #   # └─────────┘
+    def encode(encoding)
+      if encoding == "hex"
+        Utils.wrap_expr(_rbexpr.str_hex_encode)
+      elsif encoding == "base64"
+        Utils.wrap_expr(_rbexpr.str_base64_encode)
+      else
+        raise ArgumentError, "encoding must be one of {{'hex', 'base64'}}, got #{encoding}"
+      end
+    end
 
     # Extract the target capture group from provided patterns.
     #

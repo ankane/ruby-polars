@@ -64,6 +64,7 @@ features = [
     "semi_anti_join",
     "serde-lazy",
     "sign",
+    "string_encoding",
     "string_justify",
     "strings",
     "timezones",

@@ -659,6 +659,50 @@ impl RbExpr {
         self.inner.clone().str().starts_with(sub).into()
     }
 
+    pub fn str_hex_encode(&self) -> Self {
+        self.clone()
+            .inner
+            .map(
+                move |s| s.utf8().map(|s| s.hex_encode().into_series()),
+                GetOutput::same_type(),
+            )
+            .with_fmt("str.hex_encode")
+            .into()
+    }
+
+    pub fn str_hex_decode(&self, strict: Option<bool>) -> Self {
+        self.clone()
+            .inner
+            .map(
+                move |s| s.utf8()?.hex_decode(strict).map(|s| s.into_series()),
+                GetOutput::same_type(),
+            )
+            .with_fmt("str.hex_decode")
+            .into()
+    }
+
+    pub fn str_base64_encode(&self) -> Self {
+        self.clone()
+            .inner
+            .map(
+                move |s| s.utf8().map(|s| s.base64_encode().into_series()),
+                GetOutput::same_type(),
+            )
+            .with_fmt("str.base64_encode")
+            .into()
+    }
+
+    pub fn str_base64_decode(&self, strict: Option<bool>) -> Self {
+        self.clone()
+            .inner
+            .map(
+                move |s| s.utf8()?.base64_decode(strict).map(|s| s.into_series()),
+                GetOutput::same_type(),
+            )
+            .with_fmt("str.base64_decode")
+            .into()
+    }
+
     pub fn str_extract(&self, pat: String, group_index: usize) -> Self {
         self.inner.clone().str().extract(&pat, group_index).into()
     }

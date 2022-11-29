@@ -207,12 +207,83 @@ module Polars
       super
     end
 
-    # def decode
-    # end
+    # Decode a value using the provided encoding.
+    #
+    # @param encoding ["hex", "base64"]
+    #   The encoding to use.
+    # @param strict [Boolean]
+    #   How to handle invalid inputs:
+    #
+    #   - `true`: An error will be thrown if unable to decode a value.
+    #   - `false`: Unhandled values will be replaced with `nil`.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(["666f6f", "626172", nil])
+    #   s.str.decode("hex")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "foo"
+    #   #         "bar"
+    #   #         null
+    #   # ]
+    def decode(encoding, strict: false)
+      super
+    end
 
-    # def encode
-    # end
+    # Encode a value using the provided encoding.
+    #
+    # @param encoding ["hex", "base64"]
+    #   The encoding to use.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(["foo", "bar", nil])
+    #   s.str.encode("hex")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "666f6f"
+    #   #         "626172"
+    #   #         null
+    #   # ]
+    def encode(encoding)
+      super
+    end
 
+    # Extract the first match of json string with provided JSONPath expression.
+    #
+    # Throw errors if encounter invalid json strings.
+    # All return value will be casted to Utf8 regardless of the original value.
+    #
+    # Documentation on JSONPath standard can be found
+    # [here](https://goessner.net/articles/JsonPath/).
+    #
+    # @param json_path [String]
+    #   A valid JSON path query string.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"json_val" => ['{"a":"1"}', nil, '{"a":2}', '{"a":2.1}', '{"a":true}']}
+    #   )
+    #   df.select(Polars.col("json_val").str.json_path_match("$.a"))[0.., 0]
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'json_val' [str]
+    #   # [
+    #   #         "1"
+    #   #         null
+    #   #         "2"
+    #   #         "2.1"
+    #   #         "true"
+    #   # ]
     # def json_path_match
     # end
 
