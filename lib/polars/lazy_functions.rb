@@ -191,8 +191,16 @@ module Polars
       end
     end
 
-    # def n_unique
-    # end
+    # Count unique values.
+    #
+    # @return [Object]
+    def n_unique(column)
+      if column.is_a?(Series)
+        column.n_unique
+      else
+        col(column).n_unique
+      end
+    end
 
     # Get the first value.
     #
@@ -213,14 +221,61 @@ module Polars
       end
     end
 
-    # def last
-    # end
+    # Get the last value.
+    #
+    # Depending on the input type this function does different things:
+    #
+    # - nil -> expression to take last column of a context.
+    # - String -> syntactic sugar for `Polars.col(..).last`
+    # - Series -> Take last value in `Series`
+    #
+    # @return [Object]
+    def last(column = nil)
+      if column.nil?
+        return Utils.wrap_expr(_last)
+      end
 
-    # def head
-    # end
+      if column.is_a?(Series)
+        if column.len > 0
+          return column[-1]
+        else
+          raise IndexError, "The series is empty, so no last value can be returned"
+        end
+      end
+      col(column).last
+    end
 
-    # def tail
-    # end
+    # Get the first `n` rows.
+    #
+    # @param column [Object]
+    #   Column name or Series.
+    # @param n [Integer]
+    #   Number of rows to return.
+    #
+    # @return [Object]
+    def head(column, n = 10)
+      if column.is_a?(Series)
+        column.head(n)
+      else
+        col(column).head(n)
+      end
+    end
+
+    # Get the last `n` rows.
+    #
+    # @param column [Object]
+    #   Column name or Series.
+    # @param n [Integer]
+    #   Number of rows to return.
+    #
+    # @return [Object]
+    def tail(column, n = 10)
+      if column.is_a?(Series)
+        column.tail(n)
+      else
+        col(column).tail(n)
+      end
+    end
 
     # Return an expression representing a literal value.
     #
