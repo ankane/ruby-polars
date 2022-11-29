@@ -2525,8 +2525,56 @@ module Polars
         .to_series
     end
 
-    # def rolling_var
-    # end
+    # Compute a rolling variance.
+    #
+    # A window of length `window_size` will traverse the array. The values that fill
+    # this window will (optionally) be multiplied with the weights given by the
+    # `weight` vector. The resulting values will be aggregated to their sum.
+    #
+    # @param window_size [Integer]
+    #   The length of the window.
+    # @param weights [Array]
+    #   An optional slice with the same length as the window that will be multiplied
+    #   elementwise with the values in the window.
+    # @param min_periods [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If None, it will be set equal to window size.
+    # @param center [Boolean]
+    #   Set the labels at the center of the window
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 2.0, 3.0, 4.0, 6.0, 8.0])
+    #   s.rolling_var(3)
+    #   # =>
+    #   # shape: (6,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         null
+    #   #         null
+    #   #         1.0
+    #   #         1.0
+    #   #         2.333333
+    #   #         4.0
+    #   # ]
+    def rolling_var(
+      window_size,
+      weights: nil,
+      min_periods: nil,
+      center: false
+    )
+      to_frame
+        .select(
+          Polars.col(name).rolling_var(
+            window_size,
+            weights: weights,
+            min_periods: min_periods,
+            center: center
+          )
+        )
+        .to_series
+    end
 
     # def rolling_apply
     # end
