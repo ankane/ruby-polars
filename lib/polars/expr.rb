@@ -4361,11 +4361,71 @@ module Polars
       wrap_expr(_rbexpr.ewm_mean(alpha, adjust, min_periods))
     end
 
-    # def ewm_std
-    # end
+    # Exponentially-weighted moving standard deviation.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    #   df.select(Polars.col("a").ewm_std(com: 1))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 0.0      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 0.707107 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 0.963624 │
+    #   # └──────────┘
+    def ewm_std(
+      com: nil,
+      span: nil,
+      half_life: nil,
+      alpha: nil,
+      adjust: true,
+      bias: false,
+      min_periods: 1
+    )
+      alpha = _prepare_alpha(com, span, half_life, alpha)
+      wrap_expr(_rbexpr.ewm_std(alpha, adjust, bias, min_periods))
+    end
 
-    # def ewm_var
-    # end
+    # Exponentially-weighted moving variance.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    #   df.select(Polars.col("a").ewm_var(com: 1))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 0.0      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 0.5      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 0.928571 │
+    #   # └──────────┘
+    def ewm_var(
+      com: nil,
+      span: nil,
+      half_life: nil,
+      alpha: nil,
+      adjust: true,
+      bias: false,
+      min_periods: 1
+    )
+      alpha = _prepare_alpha(com, span, half_life, alpha)
+      wrap_expr(_rbexpr.ewm_var(alpha, adjust, bias, min_periods))
+    end
 
     # Extend the Series with given number of values.
     #

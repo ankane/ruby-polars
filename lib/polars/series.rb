@@ -3154,11 +3154,35 @@ module Polars
       super
     end
 
-    # def ewm_std
-    # end
+    # Exponentially-weighted moving standard deviation.
+    #
+    # @return [Series]
+    def ewm_std(
+      com: nil,
+      span: nil,
+      half_life: nil,
+      alpha: nil,
+      adjust: true,
+      bias: false,
+      min_periods: 1
+    )
+      super
+    end
 
-    # def ewm_var
-    # end
+    # Exponentially-weighted moving variance.
+    #
+    # @return [Series]
+    def ewm_var(
+      com: nil,
+      span: nil,
+      half_life: nil,
+      alpha: nil,
+      adjust: true,
+      bias: false,
+      min_periods: 1
+    )
+      super
+    end
 
     # Extend the Series with given number of values.
     #
