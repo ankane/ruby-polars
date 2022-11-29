@@ -1,5 +1,6 @@
 ## 0.1.4 (unreleased)
 
+- Added more methods
 - Improved performance
 
 ## 0.1.3 (2022-11-27)

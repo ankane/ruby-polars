@@ -724,6 +724,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "jsonpath_lib"
+version = "0.3.0"
+source = "git+https://github.com/ritchie46/jsonpath?rev=24eaf0b4416edff38a4d1b6b17bc4b9f3f047b4b#24eaf0b4416edff38a4d1b6b17bc4b9f3f047b4b"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1334,9 +1344,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bfd3f6552b3e9539634c35047f372db331b6227f75c36fcbe4670ab58bbcbeb3"
 dependencies = [
  "arrow2",
+ "jsonpath_lib",
  "polars-arrow",
  "polars-core",
  "polars-utils",
+ "serde_json",
 ]
 
 [[package]]
@@ -1605,6 +1617,7 @@ version = "1.0.88"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8e8b3801309262e8184d9687fb697586833e939767aea0dda89f5a8e650e8bd7"
 dependencies = [
+ "indexmap",
  "itoa",
  "ryu",
  "serde",

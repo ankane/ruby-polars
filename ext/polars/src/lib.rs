@@ -300,6 +300,7 @@ fn init() -> RbResult<()> {
     class.define_method("str_hex_decode", method!(RbExpr::str_hex_decode, 1))?;
     class.define_method("str_base64_encode", method!(RbExpr::str_base64_encode, 0))?;
     class.define_method("str_base64_decode", method!(RbExpr::str_base64_decode, 1))?;
+    class.define_method("str_json_path_match", method!(RbExpr::str_json_path_match, 1))?;
     class.define_method("str_extract", method!(RbExpr::str_extract, 2))?;
     class.define_method("str_extract_all", method!(RbExpr::str_extract_all, 1))?;
     class.define_method("count_match", method!(RbExpr::count_match, 1))?;

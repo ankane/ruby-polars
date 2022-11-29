@@ -703,6 +703,21 @@ impl RbExpr {
             .into()
     }
 
+    pub fn str_json_path_match(&self, pat: String) -> Self {
+        let function = move |s: Series| {
+            let ca = s.utf8()?;
+            match ca.json_path_match(&pat) {
+                Ok(ca) => Ok(ca.into_series()),
+                Err(e) => Err(PolarsError::ComputeError(format!("{:?}", e).into())),
+            }
+        };
+        self.clone()
+            .inner
+            .map(function, GetOutput::from_type(DataType::Utf8))
+            .with_fmt("str.json_path_match")
+            .into()
+    }
+
     pub fn str_extract(&self, pat: String, group_index: usize) -> Self {
         self.inner.clone().str().extract(&pat, group_index).into()
     }

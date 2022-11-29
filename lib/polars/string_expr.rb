@@ -588,9 +588,9 @@ module Polars
     #   # ├╌╌╌╌╌╌╌╌╌╌┤
     #   # │ true     │
     #   # └──────────┘
-    # def json_path_match(json_path)
-    #   Utils.wrap_expr(_rbexpr.str_json_path_match(json_path))
-    # end
+    def json_path_match(json_path)
+      Utils.wrap_expr(_rbexpr.str_json_path_match(json_path))
+    end
 
     # Decode a value using the provided encoding.
     #

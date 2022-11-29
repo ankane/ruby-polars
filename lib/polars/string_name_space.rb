@@ -284,8 +284,9 @@ module Polars
     #   #         "2.1"
     #   #         "true"
     #   # ]
-    # def json_path_match
-    # end
+    def json_path_match(json_path)
+      super
+    end
 
     # Extract the target capture group from provided patterns.
     #
