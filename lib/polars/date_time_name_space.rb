@@ -790,11 +790,87 @@ module Polars
       super
     end
 
-    # def with_time_unit
-    # end
+    # Set time unit a Series of dtype Datetime or Duration.
+    #
+    # This does not modify underlying data, and should be used to fix an incorrect
+    # time unit.
+    #
+    # @param tu ["ns", "us", "ms"]
+    #   Time unit for the `Datetime` Series.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 3)
+    #   date = Polars.date_range(start, stop, "1d", time_unit: "ns")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [datetime[ns]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-02 00:00:00
+    #   #         2001-01-03 00:00:00
+    #   # ]
+    #
+    # @example
+    #   date.dt.with_time_unit("us").alias("tu_us")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'tu_us' [datetime[μs]]
+    #   # [
+    #   #         +32971-04-28 00:00:00
+    #   #         +32974-01-22 00:00:00
+    #   #         +32976-10-18 00:00:00
+    #   # ]
+    def with_time_unit(tu)
+      super
+    end
 
-    # def cast_time_unit
-    # end
+    # Cast the underlying data to another time unit. This may lose precision.
+    #
+    # @param tu ["ns", "us", "ms"]
+    #   Time unit for the `Datetime` Series.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 3)
+    #   date = Polars.date_range(start, stop, "1d")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-02 00:00:00
+    #   #         2001-01-03 00:00:00
+    #   # ]
+    #
+    # @example
+    #   date.dt.cast_time_unit("ms").alias("tu_ms")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'tu_ms' [datetime[ms]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-02 00:00:00
+    #   #         2001-01-03 00:00:00
+    #   # ]
+    #
+    # @example
+    #   date.dt.cast_time_unit("ns").alias("tu_ns")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'tu_ns' [datetime[ns]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-02 00:00:00
+    #   #         2001-01-03 00:00:00
+    #   # ]
+    def cast_time_unit(tu)
+      super
+    end
 
     # def with_time_zone
     # end
@@ -805,8 +881,34 @@ module Polars
     # def tz_localize
     # end
 
-    # def days
-    # end
+    # Extract the days from a Duration type.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   date = Polars.date_range(DateTime.new(2020, 3, 1), DateTime.new(2020, 5, 1), "1mo")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2020-03-01 00:00:00
+    #   #         2020-04-01 00:00:00
+    #   #         2020-05-01 00:00:00
+    #   # ]
+    #
+    # @example
+    #   date.diff.dt.days
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [i64]
+    #   # [
+    #   #         null
+    #   #         31
+    #   #         30
+    #   # ]
+    def days
+      super
+    end
 
     # def hours
     # end
