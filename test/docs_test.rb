@@ -126,7 +126,7 @@ class DocsTest < Minitest::Test
           puts
         end
 
-        next if [:sample, :mode].include?(method.name)
+        next if [:sort, :sample, :mode].include?(method.name)
 
         # check output
         lines = code.split("\n")
