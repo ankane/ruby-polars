@@ -2324,8 +2324,55 @@ module Polars
         .to_series
     end
 
-    # def rolling_max
-    # end
+    # Apply a rolling max (moving max) over the values in this array.
+    #
+    # A window of length `window_size` will traverse the array. The values that fill
+    # this window will (optionally) be multiplied with the weights given by the
+    # `weight` vector. The resulting values will be aggregated to their sum.
+    #
+    # @param window_size [Integer]
+    #   The length of the window.
+    # @param weights [Array]
+    #   An optional slice with the same length as the window that will be multiplied
+    #   elementwise with the values in the window.
+    # @param min_periods [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If None, it will be set equal to window size.
+    # @param center [Boolean]
+    #   Set the labels at the center of the window
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [100, 200, 300, 400, 500])
+    #   s.rolling_max(2)
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         null
+    #   #         200
+    #   #         300
+    #   #         400
+    #   #         500
+    #   # ]
+    def rolling_max(
+      window_size,
+      weights: nil,
+      min_periods: nil,
+      center: false
+    )
+      to_frame
+        .select(
+          Polars.col(name).rolling_max(
+            window_size,
+            weights: weights,
+            min_periods: min_periods,
+            center: center
+          )
+        )
+        .to_series
+    end
 
     # def rolling_mean
     # end
