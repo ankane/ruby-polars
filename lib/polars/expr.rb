@@ -4329,8 +4329,37 @@ module Polars
     # def sample
     # end
 
-    # def ewm_mean
-    # end
+    # Exponentially-weighted moving average.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    #   df.select(Polars.col("a").ewm_mean(com: 1))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 1.0      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1.666667 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2.428571 │
+    #   # └──────────┘
+    def ewm_mean(
+      com: nil,
+      span: nil,
+      half_life: nil,
+      alpha: nil,
+      adjust: true,
+      min_periods: 1
+    )
+      alpha = _prepare_alpha(com, span, half_life, alpha)
+      wrap_expr(_rbexpr.ewm_mean(alpha, adjust, min_periods))
+    end
 
     # def ewm_std
     # end
@@ -4633,6 +4662,39 @@ module Polars
 
     def _to_expr(other)
       other.is_a?(Expr) ? other : Utils.lit(other)
+    end
+
+    def _prepare_alpha(com, span, half_life, alpha)
+      if [com, span, half_life, alpha].count { |v| !v.nil? } > 1
+        raise ArgumentError, "Parameters 'com', 'span', 'half_life', and 'alpha' are mutually exclusive"
+      end
+
+      if !com.nil?
+        if com < 0.0
+          raise ArgumentError, "Require 'com' >= 0 (found #{com})"
+        end
+        alpha = 1.0 / (1.0 + com)
+
+      elsif !span.nil?
+        if span < 1.0
+          raise ArgumentError, "Require 'span' >= 1 (found #{span})"
+        end
+        alpha = 2.0 / (span + 1.0)
+
+      elsif !half_life.nil?
+        if half_life <= 0.0
+          raise ArgumentError, "Require 'half_life' > 0 (found #{half_life})"
+        end
+        alpha = 1.0 - Math.exp(-Math.log(2.0) / half_life)
+
+      elsif alpha.nil?
+        raise ArgumentError, "One of 'com', 'span', 'half_life', or 'alpha' must be set"
+
+      elsif alpha <= 0 || alpha > 1
+        raise ArgumentError, "Require 0 < 'alpha' <= 1 (found #{alpha})"
+      end
+
+      alpha
     end
 
     def _prepare_rolling_window_args(window_size, min_periods)

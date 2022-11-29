@@ -3140,8 +3140,19 @@ module Polars
       super
     end
 
-    # def ewm_mean
-    # end
+    # Exponentially-weighted moving average.
+    #
+    # @return [Series]
+    def ewm_mean(
+      com: nil,
+      span: nil,
+      half_life: nil,
+      alpha: nil,
+      adjust: true,
+      min_periods: 1
+    )
+      super
+    end
 
     # def ewm_std
     # end
