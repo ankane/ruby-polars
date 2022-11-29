@@ -109,7 +109,7 @@ class DocsTest < Minitest::Test
   end
 
   def assert_examples(method)
-    return if [:concat, :contains, :join, :lengths, :sort, :top_k, :is_nan, :is_not_nan, :mode, :sample, :struct, :read_csv_batched, :field, :rename_fields, :unnest, :arange, :explode, :is_datelike].include?(method.name)
+    return if [:arange, :concat, :lengths, :is_nan, :join, :is_not_nan, :read_csv_batched].include?(method.name)
 
     code = ""
     method.tags(:example).each do |example|
@@ -125,6 +125,8 @@ class DocsTest < Minitest::Test
           p output
           puts
         end
+
+        next if [:sample, :mode].include?(method.name)
 
         # check output
         lines = code.split("\n")

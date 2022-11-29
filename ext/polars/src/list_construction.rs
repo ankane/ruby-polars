@@ -86,7 +86,7 @@ pub fn rb_seq_to_list(name: &str, seq: Value, dtype: &DataType) -> RbResult<Seri
             builder.finish().into_series()
         }
         DataType::Utf8 => {
-            todo!();
+            return Err(RbPolarsErr::todo());
         }
         dt => {
             return Err(RbPolarsErr::other(format!(

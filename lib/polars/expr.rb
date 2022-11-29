@@ -4398,8 +4398,60 @@ module Polars
       wrap_expr(_rbexpr.shuffle(seed))
     end
 
-    # def sample
-    # end
+    # Sample from this expression.
+    #
+    # @param frac [Float]
+    #   Fraction of items to return. Cannot be used with `n`.
+    # @param with_replacement [Boolean]
+    #   Allow values to be sampled more than once.
+    # @param shuffle [Boolean]
+    #   Shuffle the order of sampled data points.
+    # @param seed [Integer]
+    #   Seed for the random number generator. If set to None (default), a random
+    #   seed is used.
+    # @param n [Integer]
+    #   Number of items to return. Cannot be used with `frac`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    #   df.select(Polars.col("a").sample(frac: 1.0, with_replacement: true, seed: 1))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 3   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 1   │
+    #   # └─────┘
+    def sample(
+      frac: nil,
+      with_replacement: true,
+      shuffle: false,
+      seed: nil,
+      n: nil
+    )
+      if !n.nil? && !frac.nil?
+        raise ArgumentError, "cannot specify both `n` and `frac`"
+      end
+
+      if !n.nil? && frac.nil?
+        return wrap_expr(_rbexpr.sample_n(n, with_replacement, shuffle, seed))
+      end
+
+      if frac.nil?
+        frac = 1.0
+      end
+      wrap_expr(
+        _rbexpr.sample_frac(frac, with_replacement, shuffle, seed)
+      )
+    end
 
     # Exponentially-weighted moving average.
     #

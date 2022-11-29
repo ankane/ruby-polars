@@ -535,7 +535,7 @@ module Polars
     #   df = Polars::DataFrame.new(
     #     {"a" => [1, 2, 3, 4], "b" => ["one", "two", "three", "four"], "c" => [9, 8, 7, 6]}
     #   )
-    #   df.with_column(pl.struct(pl.col(["a", "b"])).alias("a_and_b"))
+    #   df.with_column(Polars.struct(Polars.col(["a", "b"])).alias("a_and_b"))
     #   # =>
     #   # shape: (4, 4)
     #   # ┌─────┬───────┬─────┬─────────────┐
