@@ -10,17 +10,121 @@ module Polars
       self._s = series._s
     end
 
-    # def strptime
-    # end
+    # Parse a Series of dtype Utf8 to a Date/Datetime Series.
+    #
+    # @param datatype [Symbol]
+    #   `:date`, `:dateime`, or `:time`.
+    # @param fmt [String]
+    #   Format to use, refer to the
+    #   [chrono strftime documentation](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    #   for specification. Example: `"%y-%m-%d"`.
+    # @param strict [Boolean]
+    #   Raise an error if any conversion fails.
+    # @param exact [Boolean]
+    #   - If true, require an exact format match.
+    #   - If false, allow the format to match anywhere in the target string.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     "date",
+    #     [
+    #       "2021-04-22",
+    #       "2022-01-04 00:00:00",
+    #       "01/31/22",
+    #       "Sun Jul  8 00:34:60 2001"
+    #     ]
+    #   )
+    #   s.to_frame.with_column(
+    #     Polars.col("date")
+    #       .str.strptime(:date, "%F", strict: false)
+    #       .fill_null(
+    #         Polars.col("date").str.strptime(:date, "%F %T", strict: false)
+    #       )
+    #       .fill_null(Polars.col("date").str.strptime(:date, "%D", strict: false))
+    #       .fill_null(Polars.col("date").str.strptime(:date, "%c", strict: false))
+    #   )
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌────────────┐
+    #   # │ date       │
+    #   # │ ---        │
+    #   # │ date       │
+    #   # ╞════════════╡
+    #   # │ 2021-04-22 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2022-01-04 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2022-01-31 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-07-08 │
+    #   # └────────────┘
+    def strptime(datatype, fmt = nil, strict: true, exact: true)
+      super
+    end
 
-    # def lengths
-    # end
+    # Get length of the string values in the Series (as number of bytes).
+    #
+    # @return [Series]
+    #
+    # @note
+    #   The returned lengths are equal to the number of bytes in the UTF8 string. If you
+    #   need the length in terms of the number of characters, use `n_chars` instead.
+    #
+    # @example
+    #   s = Polars::Series.new(["Café", nil, "345", "東京"])
+    #   s.str.lengths
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         5
+    #   #         null
+    #   #         3
+    #   #         6
+    #   # ]
+    def lengths
+      super
+    end
 
-    # def n_chars
-    # end
+    # Get length of the string values in the Series (as number of chars).
+    #
+    # @return [Series]
+    #
+    # @note
+    #   If you know that you are working with ASCII text, `lengths` will be
+    #   equivalent, and faster (returns length in terms of the number of bytes).
+    #
+    # @example
+    #   s = Polars::Series.new(["Café", nil, "345", "東京"])
+    #   s.str.n_chars
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         4
+    #   #         null
+    #   #         3
+    #   #         2
+    #   # ]
+    def n_chars
+      super
+    end
 
-    # def concat
-    # end
+    # Vertically concat the values in the Series to a single string value.
+    #
+    # @param delimiter [String]
+    #   The delimiter to insert between consecutive string values.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   Polars::Series.new([1, nil, 2]).str.concat("-")[0]
+    #   # => "1-null-2"
+    def concat(delimiter = "-")
+      super
+    end
 
     # Check if strings in Series contain a substring that matches a regex.
     #

@@ -9,8 +9,83 @@ module Polars
       self._rbexpr = expr._rbexpr
     end
 
-    # def strptime
-    # end
+    # Parse a Utf8 expression to a Date/Datetime/Time type.
+    #
+    # @param datatype [Symbol]
+    #   `:date`, `:dateime`, or `:time`.
+    # @param fmt [String]
+    #   Format to use, refer to the
+    #   [chrono strftime documentation](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    #   for specification. Example: `"%y-%m-%d"`.
+    # @param strict [Boolean]
+    #   Raise an error if any conversion fails.
+    # @param exact [Boolean]
+    #   - If true, require an exact format match.
+    #   - If false, allow the format to match anywhere in the target string.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   When parsing a Datetime the column precision will be inferred from
+    #   the format string, if given, eg: "%F %T%.3f" => Datetime("ms"). If
+    #   no fractional second component is found then the default is "us".
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     "date",
+    #     [
+    #       "2021-04-22",
+    #       "2022-01-04 00:00:00",
+    #       "01/31/22",
+    #       "Sun Jul  8 00:34:60 2001"
+    #     ]
+    #   )
+    #   s.to_frame.with_column(
+    #     Polars.col("date")
+    #       .str.strptime(:date, "%F", strict: false)
+    #       .fill_null(
+    #         Polars.col("date").str.strptime(:date, "%F %T", strict: false)
+    #       )
+    #       .fill_null(Polars.col("date").str.strptime(:date, "%D", strict: false))
+    #       .fill_null(Polars.col("date").str.strptime(:date, "%c", strict: false))
+    #   )
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌────────────┐
+    #   # │ date       │
+    #   # │ ---        │
+    #   # │ date       │
+    #   # ╞════════════╡
+    #   # │ 2021-04-22 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2022-01-04 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2022-01-31 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2001-07-08 │
+    #   # └────────────┘
+    def strptime(datatype, fmt = nil, strict: true, exact: true)
+      if !Utils.is_polars_dtype(datatype)
+        raise ArgumentError, "expected: {DataType} got: #{datatype}"
+      end
+
+      if datatype == :date
+        Utils.wrap_expr(_rbexpr.str_parse_date(fmt, strict, exact))
+      elsif datatype == :datetime
+        # TODO fix
+        tu = nil # datatype.tu
+        dtcol = Utils.wrap_expr(_rbexpr.str_parse_datetime(fmt, strict, exact))
+        if tu.nil?
+          dtcol
+        else
+          dtcol.dt.cast_time_unit(tu)
+        end
+      elsif datatype == :time
+        Utils.wrap_expr(_rbexpr.str_parse_time(fmt, strict, exact))
+      else
+        raise ArgumentError, "dtype should be of type :date, :datetime, or :time"
+      end
+    end
 
     # Get length of the strings as `:u32` (as number of bytes).
     #
