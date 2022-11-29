@@ -2893,8 +2893,61 @@ module Polars
       super
     end
 
-    # def rank
-    # end
+    # Assign ranks to data, dealing with ties appropriately.
+    #
+    # @param method ["average", "min", "max", "dense", "ordinal", "random"]
+    #   The method used to assign ranks to tied elements.
+    #   The following methods are available (default is 'average'):
+    #
+    #   - 'average' : The average of the ranks that would have been assigned to
+    #     all the tied values is assigned to each value.
+    #   - 'min' : The minimum of the ranks that would have been assigned to all
+    #     the tied values is assigned to each value. (This is also referred to
+    #     as "competition" ranking.)
+    #   - 'max' : The maximum of the ranks that would have been assigned to all
+    #     the tied values is assigned to each value.
+    #   - 'dense' : Like 'min', but the rank of the next highest element is
+    #     assigned the rank immediately after those assigned to the tied
+    #     elements.
+    #   - 'ordinal' : All values are given a distinct rank, corresponding to
+    #     the order that the values occur in the Series.
+    #   - 'random' : Like 'ordinal', but the rank for ties is not dependent
+    #     on the order that the values occur in the Series.
+    # @param reverse [Boolean]
+    #   Reverse the operation.
+    #
+    # @return [Series]
+    #
+    # @example The 'average' method:
+    #   s = Polars::Series.new("a", [3, 6, 1, 1, 6])
+    #   s.rank
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'a' [f32]
+    #   # [
+    #   #         3.0
+    #   #         4.5
+    #   #         1.5
+    #   #         1.5
+    #   #         4.5
+    #   # ]
+    #
+    # @example The 'ordinal' method:
+    #   s = Polars::Series.new("a", [3, 6, 1, 1, 6])
+    #   s.rank(method: "ordinal")
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'a' [u32]
+    #   # [
+    #   #         3
+    #   #         4
+    #   #         1
+    #   #         2
+    #   #         5
+    #   # ]
+    def rank(method: "average", reverse: false)
+      super
+    end
 
     # Calculate the n-th discrete difference.
     #
