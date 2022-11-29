@@ -2274,8 +2274,55 @@ module Polars
       Utils.wrap_s(_s.zip_with(mask._s, other._s))
     end
 
-    # def rolling_min
-    # end
+    # Apply a rolling min (moving min) over the values in this array.
+    #
+    # A window of length `window_size` will traverse the array. The values that fill
+    # this window will (optionally) be multiplied with the weights given by the
+    # `weight` vector. The resulting values will be aggregated to their sum.
+    #
+    # @param window_size [Integer]
+    #   The length of the window.
+    # @param weights [Array]
+    #   An optional slice with the same length as the window that will be multiplied
+    #   elementwise with the values in the window.
+    # @param min_periods [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If None, it will be set equal to window size.
+    # @param center [Boolean]
+    #   Set the labels at the center of the window
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [100, 200, 300, 400, 500])
+    #   s.rolling_min(3)
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         null
+    #   #         null
+    #   #         100
+    #   #         200
+    #   #         300
+    #   # ]
+    def rolling_min(
+      window_size,
+      weights: nil,
+      min_periods: nil,
+      center: false
+    )
+      to_frame
+        .select(
+          Polars.col(name).rolling_min(
+            window_size,
+            weights: weights,
+            min_periods: min_periods,
+            center: center
+          )
+        )
+        .to_series
+    end
 
     # def rolling_max
     # end
