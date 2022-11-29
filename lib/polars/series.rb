@@ -2579,8 +2579,56 @@ module Polars
     # def rolling_apply
     # end
 
-    # def rolling_median
-    # end
+    # Compute a rolling median.
+    #
+    # @param window_size [Integer]
+    #   The length of the window.
+    # @param weights [Array]
+    #   An optional slice with the same length as the window that will be multiplied
+    #   elementwise with the values in the window.
+    # @param min_periods [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If None, it will be set equal to window size.
+    # @param center [Boolean]
+    #   Set the labels at the center of the window
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, 2.0, 3.0, 4.0, 6.0, 8.0])
+    #   s.rolling_median(3)
+    #   # =>
+    #   # shape: (6,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         null
+    #   #         null
+    #   #         2.0
+    #   #         3.0
+    #   #         4.0
+    #   #         6.0
+    #   # ]
+    def rolling_median(
+      window_size,
+      weights: nil,
+      min_periods: nil,
+      center: false
+    )
+      if min_periods.nil?
+        min_periods = window_size
+      end
+
+      to_frame
+        .select(
+          Polars.col(name).rolling_median(
+            window_size,
+            weights: weights,
+            min_periods: min_periods,
+            center: center
+          )
+        )
+        .to_series
+    end
 
     # def rolling_quantile
     # end
