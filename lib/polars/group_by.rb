@@ -1,4 +1,5 @@
 module Polars
+  # Starts a new GroupBy operation.
   class GroupBy
     # @private
     attr_accessor :_df, :_dataframe_class, :by, :maintain_order

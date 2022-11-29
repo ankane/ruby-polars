@@ -1,4 +1,5 @@
 module Polars
+  # Created by `df.lazy.groupby("foo")`.
   class LazyGroupBy
     # @private
     def initialize(lgb, lazyframe_class)
