@@ -910,23 +910,195 @@ module Polars
       super
     end
 
-    # def hours
-    # end
+    # Extract the hours from a Duration type.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   date = Polars.date_range(DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 4), "1d")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2020-01-01 00:00:00
+    #   #         2020-01-02 00:00:00
+    #   #         2020-01-03 00:00:00
+    #   #         2020-01-04 00:00:00
+    #   # ]
+    #
+    # @example
+    #   date.diff.dt.hours
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [i64]
+    #   # [
+    #   #         null
+    #   #         24
+    #   #         24
+    #   #         24
+    #   # ]
+    def hours
+      super
+    end
 
-    # def minutes
-    # end
+    # Extract the minutes from a Duration type.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   date = Polars.date_range(DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 4), "1d")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2020-01-01 00:00:00
+    #   #         2020-01-02 00:00:00
+    #   #         2020-01-03 00:00:00
+    #   #         2020-01-04 00:00:00
+    #   # ]
+    #
+    # @example
+    #   date.diff.dt.minutes
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [i64]
+    #   # [
+    #   #         null
+    #   #         1440
+    #   #         1440
+    #   #         1440
+    #   # ]
+    def minutes
+      super
+    end
 
-    # def seconds
-    # end
+    # Extract the seconds from a Duration type.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   date = Polars.date_range(
+    #     DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 4, 0), "1m"
+    #   )
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2020-01-01 00:00:00
+    #   #         2020-01-01 00:01:00
+    #   #         2020-01-01 00:02:00
+    #   #         2020-01-01 00:03:00
+    #   #         2020-01-01 00:04:00
+    #   # ]
+    #
+    # @example
+    #   date.diff.dt.seconds
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: '' [i64]
+    #   # [
+    #   #         null
+    #   #         60
+    #   #         60
+    #   #         60
+    #   #         60
+    #   # ]
+    def seconds
+      super
+    end
 
-    # def milliseconds
-    # end
+    # Extract the milliseconds from a Duration type.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   date = Polars.date_range(
+    #     DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1, 0), "1ms"
+    #   )[0..2]
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2020-01-01 00:00:00
+    #   #         2020-01-01 00:00:00.001
+    #   #         2020-01-01 00:00:00.002
+    #   # ]
+    #
+    # @example
+    #   date.diff.dt.milliseconds
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [i64]
+    #   # [
+    #   #         null
+    #   #         1
+    #   #         1
+    #   # ]
+    def milliseconds
+      super
+    end
 
-    # def microseconds
-    # end
+    # Extract the microseconds from a Duration type.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   date = Polars.date_range(
+    #     DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1, 0), "1ms"
+    #   )[0..2]
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2020-01-01 00:00:00
+    #   #         2020-01-01 00:00:00.001
+    #   #         2020-01-01 00:00:00.002
+    #   # ]
+    #
+    # @example
+    #   date.diff.dt.microseconds
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [i64]
+    #   # [
+    #   #         null
+    #   #         1000
+    #   #         1000
+    #   # ]
+    def microseconds
+      super
+    end
 
-    # def nanoseconds
-    # end
+    # Extract the nanoseconds from a Duration type.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   date = Polars.date_range(
+    #     DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1, 0), "1ms"
+    #   )[0..2]
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2020-01-01 00:00:00
+    #   #         2020-01-01 00:00:00.001
+    #   #         2020-01-01 00:00:00.002
+    #   # ]
+    #
+    # @example
+    #   date.diff.dt.nanoseconds
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [i64]
+    #   # [
+    #   #         null
+    #   #         1000000
+    #   #         1000000
+    #   # ]
+    def nanoseconds
+      super
+    end
 
     # def offset_by
     # end
