@@ -10,8 +10,13 @@ module Polars
       self._s = series._s
     end
 
-    # def [](item)
-    # end
+    # Get item.
+    #
+    # @return [Object]
+    def [](item)
+      s = Utils.wrap_s(_s)
+      s[item]
+    end
 
     # Return minimum as Ruby object.
     #
@@ -1100,13 +1105,261 @@ module Polars
       super
     end
 
-    # def offset_by
-    # end
+    # Offset this date by a relative time offset.
+    #
+    # This differs from `Polars.col("foo") + timedelta` in that it can
+    # take months and leap years into account. Note that only a single minus
+    # sign is allowed in the `by` string, as the first character.
+    #
+    # @param by [String]
+    #   The offset is dictated by the following string language:
+    #
+    #   - 1ns   (1 nanosecond)
+    #   - 1us   (1 microsecond)
+    #   - 1ms   (1 millisecond)
+    #   - 1s    (1 second)
+    #   - 1m    (1 minute)
+    #   - 1h    (1 hour)
+    #   - 1d    (1 day)
+    #   - 1w    (1 week)
+    #   - 1mo   (1 calendar month)
+    #   - 1y    (1 calendar year)
+    #   - 1i    (1 index count)
+    #
+    # @return [Series]
+    #
+    # @example
+    #   dates = Polars.date_range(DateTime.new(2000, 1, 1), DateTime.new(2005, 1, 1), "1y")
+    #   # =>
+    #   # shape: (6,)
+    #   # Series: '' [datetime[μs]]
+    #   # [
+    #   #         2000-01-01 00:00:00
+    #   #         2001-01-01 00:00:00
+    #   #         2002-01-01 00:00:00
+    #   #         2003-01-01 00:00:00
+    #   #         2004-01-01 00:00:00
+    #   #         2005-01-01 00:00:00
+    #   # ]
+    #
+    # @example
+    #   dates.dt.offset_by("1y").alias("date_plus_1y")
+    #   # =>
+    #   # shape: (6,)
+    #   # Series: 'date_plus_1y' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2002-01-01 00:00:00
+    #   #         2003-01-01 00:00:00
+    #   #         2004-01-01 00:00:00
+    #   #         2005-01-01 00:00:00
+    #   #         2006-01-01 00:00:00
+    #   # ]
+    #
+    # @example
+    #   dates.dt.offset_by("-1y2mo").alias("date_minus_1y_2mon")
+    #   # =>
+    #   # shape: (6,)
+    #   # Series: 'date_minus_1y_2mon' [datetime[μs]]
+    #   # [
+    #   #         1998-11-01 00:00:00
+    #   #         1999-11-01 00:00:00
+    #   #         2000-11-01 00:00:00
+    #   #         2001-11-01 00:00:00
+    #   #         2002-11-01 00:00:00
+    #   #         2003-11-01 00:00:00
+    #   # ]
+    def offset_by(by)
+      super
+    end
 
-    # def truncate
-    # end
+    # Divide the date/ datetime range into buckets.
+    #
+    # Each date/datetime is mapped to the start of its bucket.
+    #
+    # The `every` and `offset` argument are created with the
+    # the following string language:
+    #
+    # 1ns # 1 nanosecond
+    # 1us # 1 microsecond
+    # 1ms # 1 millisecond
+    # 1s  # 1 second
+    # 1m  # 1 minute
+    # 1h  # 1 hour
+    # 1d  # 1 day
+    # 1w  # 1 week
+    # 1mo # 1 calendar month
+    # 1y  # 1 calendar year
+    #
+    # 3d12h4m25s # 3 days, 12 hours, 4 minutes, and 25 seconds
+    #
+    # @param every [String]
+    #   Every interval start and period length.
+    # @param offset [String]
+    #   Offset the window.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 2)
+    #   s = Polars.date_range(start, stop, "165m", name: "dates")
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: 'dates' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 02:45:00
+    #   #         2001-01-01 05:30:00
+    #   #         2001-01-01 08:15:00
+    #   #         2001-01-01 11:00:00
+    #   #         2001-01-01 13:45:00
+    #   #         2001-01-01 16:30:00
+    #   #         2001-01-01 19:15:00
+    #   #         2001-01-01 22:00:00
+    #   # ]
+    #
+    # @example
+    #   s.dt.truncate("1h")
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: 'dates' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 02:00:00
+    #   #         2001-01-01 05:00:00
+    #   #         2001-01-01 08:00:00
+    #   #         2001-01-01 11:00:00
+    #   #         2001-01-01 13:00:00
+    #   #         2001-01-01 16:00:00
+    #   #         2001-01-01 19:00:00
+    #   #         2001-01-01 22:00:00
+    #   # ]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 1, 1)
+    #   s = Polars.date_range(start, stop, "10m", name: "dates")
+    #   # =>
+    #   # shape: (7,)
+    #   # Series: 'dates' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:10:00
+    #   #         2001-01-01 00:20:00
+    #   #         2001-01-01 00:30:00
+    #   #         2001-01-01 00:40:00
+    #   #         2001-01-01 00:50:00
+    #   #         2001-01-01 01:00:00
+    #   # ]
+    #
+    # @example
+    #   s.dt.truncate("30m")
+    #   # =>
+    #   # shape: (7,)
+    #   # Series: 'dates' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:30:00
+    #   #         2001-01-01 00:30:00
+    #   #         2001-01-01 00:30:00
+    #   #         2001-01-01 01:00:00
+    #   # ]
+    def truncate(every, offset: nil)
+      super
+    end
 
-    # def round
-    # end
+    # Divide the date/ datetime range into buckets.
+    #
+    # Each date/datetime in the first half of the interval
+    # is mapped to the start of its bucket.
+    # Each date/datetime in the seconod half of the interval
+    # is mapped to the end of its bucket.
+    #
+    # The `every` and `offset` argument are created with the
+    # the following string language:
+    #
+    # 1ns # 1 nanosecond
+    # 1us # 1 microsecond
+    # 1ms # 1 millisecond
+    # 1s  # 1 second
+    # 1m  # 1 minute
+    # 1h  # 1 hour
+    # 1d  # 1 day
+    # 1w  # 1 week
+    # 1mo # 1 calendar month
+    # 1y  # 1 calendar year
+    #
+    # 3d12h4m25s # 3 days, 12 hours, 4 minutes, and 25 seconds
+    #
+    # @param every [String]
+    #   Every interval start and period length.
+    # @param offset [String]
+    #   Offset the window.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   This functionality is currently experimental and may
+    #   change without it being considered a breaking change.
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 2)
+    #   s = Polars.date_range(start, stop, "165m", name: "dates")
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: 'dates' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 02:45:00
+    #   #         2001-01-01 05:30:00
+    #   #         2001-01-01 08:15:00
+    #   #         2001-01-01 11:00:00
+    #   #         2001-01-01 13:45:00
+    #   #         2001-01-01 16:30:00
+    #   #         2001-01-01 19:15:00
+    #   #         2001-01-01 22:00:00
+    #   # ]
+    #
+    # @example
+    #   s.dt.round("1h")
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: 'dates' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 03:00:00
+    #   #         2001-01-01 06:00:00
+    #   #         2001-01-01 08:00:00
+    #   #         2001-01-01 11:00:00
+    #   #         2001-01-01 14:00:00
+    #   #         2001-01-01 17:00:00
+    #   #         2001-01-01 19:00:00
+    #   #         2001-01-01 22:00:00
+    #   # ]
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 1, 1)
+    #   s = Polars.date_range(start, stop, "10m", name: "dates")
+    #   s.dt.round("30m")
+    #   # =>
+    #   # shape: (7,)
+    #   # Series: 'dates' [datetime[μs]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:30:00
+    #   #         2001-01-01 00:30:00
+    #   #         2001-01-01 00:30:00
+    #   #         2001-01-01 01:00:00
+    #   #         2001-01-01 01:00:00
+    #   # ]
+    def round(every, offset: nil)
+      super
+    end
   end
 end
