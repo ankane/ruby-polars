@@ -716,9 +716,9 @@ dependencies = [
 
 [[package]]
 name = "json-deserializer"
-version = "0.4.2"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d784d2d481d0bace3450572391d6076dd6d10c66c0ebc1a0be037b3b420664bd"
+checksum = "daba674f7eecf80fe8bbbf196340908ad1a22510fe71fd6111bb50f441b26440"
 dependencies = [
  "indexmap",
 ]
