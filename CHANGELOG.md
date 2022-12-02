@@ -1,4 +1,4 @@
-## 0.1.4 (unreleased)
+## 0.1.4 (2022-12-02)
 
 - Added more methods
 - Improved performance
