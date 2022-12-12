@@ -1,5 +1,9 @@
 # ext
-require "polars/polars"
+begin
+  require "polars/#{RUBY_VERSION.to_f}/polars"
+rescue LoadError
+  require "polars/polars"
+end
 
 # stdlib
 require "date"

@@ -903,8 +903,7 @@ dependencies = [
 [[package]]
 name = "magnus-macros"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "acc8ba6908cb0f67a4e75cb48fc81a1f0e6a6dd1501936e0c9e2c7c8f9f18e05"
+source = "git+https://github.com/matsadler/magnus#ae792419bed70107d4c930e1f8193272750b9fd2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1500,18 +1499,18 @@ dependencies = [
 
 [[package]]
 name = "rb-sys"
-version = "0.9.44"
+version = "0.9.48"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31f48777b8161ff5c077ad74ce486ebe963ca8a92257512bab473b405a80d69f"
+checksum = "dfc6b8f3bf2d04b0180e243ceeb033b51ca267d839aa1c12fa25f262c17d0596"
 dependencies = [
  "rb-sys-build",
 ]
 
 [[package]]
 name = "rb-sys-build"
-version = "0.9.44"
+version = "0.9.48"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a46785122aff7077527b78c2518d739c45dc0fbc410a2b8361076ff4bbf993f9"
+checksum = "2cd591ebf22c45a44e51192fbeebba473aea0fe2a708b0b24665a13010c58b8d"
 dependencies = [
  "bindgen",
  "regex",
@@ -1521,8 +1520,7 @@ dependencies = [
 [[package]]
 name = "rb-sys-env"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74c38752410925faeb82c400c06ba2fd9ee6aa8f719dd33994c9e53f5242d25f"
+source = "git+https://github.com/oxidize-rb/rb-sys#93c4f97a244168b9ebc2c5682275e7281421f4b8"
 
 [[package]]
 name = "redox_syscall"
