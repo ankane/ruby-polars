@@ -11,7 +11,7 @@ class LazyFrameTest < Minitest::Test
       {
         "foo" => [1, 2, 3],
         "bar" => [6, 7, 8],
-        "ham" => ["a", "b", "c"],
+        "ham" => ["a", "b", "c"]
       }
     ).lazy
     df.select("foo").collect
@@ -47,7 +47,7 @@ class LazyFrameTest < Minitest::Test
       {
         "foo" => [1, 2, 3],
         "bar" => [6, 7, 8],
-        "ham" => ["a", "b", "c"],
+        "ham" => ["a", "b", "c"]
       }
     ).lazy
     path = temp_path
