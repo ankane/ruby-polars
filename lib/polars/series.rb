@@ -1668,8 +1668,32 @@ module Polars
       super
     end
 
-    # def to_physical
-    # end
+    # Cast to physical representation of the logical dtype.
+    #
+    # - `:date` -> `:i32`
+    # - `:datetime` -> `:i64`
+    # - `:time` -> `:i64`
+    # - `:duration` -> `:i64`
+    # - `:cat` -> `:u32`
+    # - other data types will be left unchanged.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("values", ["a", nil, "x", "a"])
+    #   s.cast(:cat).to_physical
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'values' [u32]
+    #   # [
+    #   #         0
+    #   #         null
+    #   #         1
+    #   #         0
+    #   # ]
+    def to_physical
+      super
+    end
 
     # Convert this Series to a Ruby Array. This operation clones data.
     #
