@@ -1,3 +1,7 @@
+## 0.1.5 (unreleased)
+
+- Added `read_avro` and `write_avro` methods
+
 ## 0.1.4 (2022-12-02)
 
 - Added more methods

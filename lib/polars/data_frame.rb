@@ -186,8 +186,14 @@ module Polars
       )
     end
 
-    # def self._read_avro
-    # end
+    # @private
+    def self._read_avro(file, columns: nil, n_rows: nil)
+      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+        file = Utils.format_path(file)
+      end
+      projection, columns = Utils.handle_projection_columns(columns)
+      _from_rbdf(RbDataFrame.read_avro(file, columns, projection, n_rows))
+    end
 
     # @private
     def self._read_ipc(
@@ -762,8 +768,24 @@ module Polars
       nil
     end
 
-    # def write_avro
-    # end
+    # Write to Apache Avro file.
+    #
+    # @param file [String]
+    #   File path to which the file should be written.
+    # @param compression ["uncompressed", "snappy", "deflate"]
+    #   Compression method. Defaults to "uncompressed".
+    #
+    # @return [nil]
+    def write_avro(file, compression = "uncompressed")
+      if compression.nil?
+        compression = "uncompressed"
+      end
+      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+        file = Utils.format_path(file)
+      end
+
+      _df.write_avro(file, compression)
+    end
 
     # Write to Arrow IPC binary stream or Feather file.
     #

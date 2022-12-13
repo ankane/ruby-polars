@@ -451,8 +451,24 @@ module Polars
       )
     end
 
-    # def read_avro
-    # end
+    # Read into a DataFrame from Apache Avro format.
+    #
+    # @param file [Object]
+    #   Path to a file or a file-like object.
+    # @param columns [Object]
+    #   Columns to select. Accepts a list of column indices (starting at zero) or a list
+    #   of column names.
+    # @param n_rows [Integer]
+    #   Stop reading from Apache Avro file after reading ``n_rows``.
+    #
+    # @return [DataFrame]
+    def read_avro(file, columns: nil, n_rows: nil)
+      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+        file = Utils.format_path(file)
+      end
+
+      DataFrame._read_avro(file, n_rows: n_rows, columns: columns)
+    end
 
     # Read into a DataFrame from Arrow IPC (Feather v2) file.
     #

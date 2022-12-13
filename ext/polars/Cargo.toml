@@ -19,6 +19,7 @@ features = [
     "abs",
     "arange",
     "arg_where",
+    "avro",
     "concat_str",
     "cse",
     "csv-file",

@@ -3,6 +3,7 @@ use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
 use polars::frame::DataFrame;
+use polars::io::avro::AvroCompression;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 use std::fmt::{Display, Formatter};
@@ -168,6 +169,23 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
                 ob
             )))
         }
+    }
+}
+
+impl TryConvert for Wrap<Option<AvroCompression>> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "uncompressed" => None,
+            "snappy" => Some(AvroCompression::Snappy),
+            "deflate" => Some(AvroCompression::Deflate),
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "compression must be one of {{'uncompressed', 'snappy', 'deflate'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
     }
 }
 

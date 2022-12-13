@@ -1,4 +1,5 @@
 use magnus::{r_hash::ForEach, RArray, RHash, RString, Value};
+use polars::io::avro::AvroCompression;
 use polars::io::mmap::ReaderBytes;
 use polars::io::RowCount;
 use polars::prelude::*;
@@ -177,6 +178,48 @@ impl RbDataFrame {
             .finish()
             .map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
+    }
+
+    pub fn read_avro(
+        rb_f: Value,
+        columns: Option<Vec<String>>,
+        projection: Option<Vec<usize>>,
+        n_rows: Option<usize>,
+    ) -> RbResult<Self> {
+        use polars::io::avro::AvroReader;
+
+        let file = get_file_like(rb_f, false)?;
+        let df = AvroReader::new(file)
+            .with_projection(projection)
+            .with_columns(columns)
+            .with_n_rows(n_rows)
+            .finish()
+            .map_err(RbPolarsErr::from)?;
+        Ok(RbDataFrame::new(df))
+    }
+
+    pub fn write_avro(
+        &self,
+        rb_f: Value,
+        compression: Wrap<Option<AvroCompression>>,
+    ) -> RbResult<()> {
+        use polars::io::avro::AvroWriter;
+
+        if let Ok(s) = rb_f.try_convert::<String>() {
+            let f = std::fs::File::create(&s).unwrap();
+            AvroWriter::new(f)
+                .with_compression(compression.0)
+                .finish(&mut self.df.borrow_mut())
+                .map_err(RbPolarsErr::from)?;
+        } else {
+            let mut buf = get_file_like(rb_f, true)?;
+            AvroWriter::new(&mut buf)
+                .with_compression(compression.0)
+                .finish(&mut self.df.borrow_mut())
+                .map_err(RbPolarsErr::from)?;
+        }
+
+        Ok(())
     }
 
     pub fn read_json(rb_f: Value) -> RbResult<Self> {
