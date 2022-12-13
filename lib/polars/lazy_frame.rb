@@ -283,8 +283,27 @@ module Polars
     # Create a string representation of the optimized query plan.
     #
     # @return [String]
-    # def describe_optimized_plan
-    # end
+    def describe_optimized_plan(
+      type_coercion: true,
+      predicate_pushdown: true,
+      projection_pushdown: true,
+      simplify_expression: true,
+      slice_pushdown: true,
+      common_subplan_elimination: true,
+      allow_streaming: false
+    )
+      ldf = _ldf.optimization_toggle(
+        type_coercion,
+        predicate_pushdown,
+        projection_pushdown,
+        simplify_expression,
+        slice_pushdown,
+        common_subplan_elimination,
+        allow_streaming,
+      )
+
+      ldf.describe_optimized_plan
+    end
 
     # def show_graph
     # end
