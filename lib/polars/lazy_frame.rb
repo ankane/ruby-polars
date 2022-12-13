@@ -1554,8 +1554,39 @@ module Polars
       _from_rbldf(_ldf.unique(maintain_order, subset, keep))
     end
 
-    # def drop_nulls
-    # end
+    # Drop rows with null values from this LazyFrame.
+    #
+    # @param subset [Object]
+    #   Subset of column(s) on which `drop_nulls` will be applied.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, nil, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.lazy.drop_nulls.collect
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6   ┆ a   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 8   ┆ c   │
+    #   # └─────┴─────┴─────┘
+    def drop_nulls(subset: nil)
+      if !subset.nil? && !subset.is_a?(Array)
+        subset = [subset]
+      end
+      _from_rbldf(_ldf.drop_nulls(subset))
+    end
 
     # def melt
     # end
