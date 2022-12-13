@@ -149,8 +149,19 @@ module Polars
     # def self.from_json
     # end
 
-    # def self.read_json
-    # end
+    # Read a logical plan from a JSON file to construct a LazyFrame.
+    #
+    # @param file [String]
+    #   Path to a file or a file-like object.
+    #
+    # @return [LazyFrame]
+    def self.read_json(file)
+      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+        file = Utils.format_path(file)
+      end
+
+      Utils.wrap_ldf(RbLazyFrame.read_json(file))
+    end
 
     # Get or set column names.
     #
@@ -245,8 +256,19 @@ module Polars
       EOS
     end
 
-    # def write_json
-    # end
+    # Write the logical plan of this LazyFrame to a file or string in JSON format.
+    #
+    # @param file [String]
+    #   File path to which the result should be written.
+    #
+    # @return [nil]
+    def write_json(file)
+      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+        file = Utils.format_path(file)
+      end
+      _ldf.write_json(file)
+      nil
+    end
 
     # def pipe
     # end

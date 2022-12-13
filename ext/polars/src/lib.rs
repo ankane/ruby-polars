@@ -462,6 +462,7 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("concat_lst", function!(crate::lazy::dsl::concat_lst, 1))?;
 
     let class = module.define_class("RbLazyFrame", Default::default())?;
+    class.define_singleton_method("read_json", function!(RbLazyFrame::read_json, 1))?;
     class.define_singleton_method(
         "new_from_ndjson",
         function!(RbLazyFrame::new_from_ndjson, 7),

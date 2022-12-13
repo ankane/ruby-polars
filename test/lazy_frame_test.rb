@@ -41,4 +41,17 @@ class LazyFrameTest < Minitest::Test
     df.fetch
     df.unnest("t_struct").fetch
   end
+
+  def test_write_json
+    df = Polars::DataFrame.new(
+      {
+        "foo" => [1, 2, 3],
+        "bar" => [6, 7, 8],
+        "ham" => ["a", "b", "c"],
+      }
+    ).lazy
+    path = temp_path
+    df.select("foo").write_json(path)
+    assert_frame df.select("foo").collect, Polars::LazyFrame.read_json(path).collect
+  end
 end
