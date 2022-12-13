@@ -1588,8 +1588,72 @@ module Polars
       _from_rbldf(_ldf.drop_nulls(subset))
     end
 
-    # def melt
-    # end
+    # Unpivot a DataFrame from wide to long format.
+    #
+    # Optionally leaves identifiers set.
+    #
+    # This function is useful to massage a DataFrame into a format where one or more
+    # columns are identifier variables (id_vars), while all other columns, considered
+    # measured variables (value_vars), are "unpivoted" to the row axis, leaving just
+    # two non-identifier columns, 'variable' and 'value'.
+    #
+    # @param id_vars [Object]
+    #   Columns to use as identifier variables.
+    # @param value_vars [Object]
+    #   Values to use as identifier variables.
+    #   If `value_vars` is empty all columns that are not in `id_vars` will be used.
+    # @param variable_name [String]
+    #   Name to give to the `value` column. Defaults to "variable"
+    # @param value_name [String]
+    #   Name to give to the `value` column. Defaults to "value"
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => ["x", "y", "z"],
+    #       "b" => [1, 3, 5],
+    #       "c" => [2, 4, 6]
+    #     }
+    #   ).lazy
+    #   df.melt(id_vars: "a", value_vars: ["b", "c"]).collect
+    #   # =>
+    #   # shape: (6, 3)
+    #   # ┌─────┬──────────┬───────┐
+    #   # │ a   ┆ variable ┆ value │
+    #   # │ --- ┆ ---      ┆ ---   │
+    #   # │ str ┆ str      ┆ i64   │
+    #   # ╞═════╪══════════╪═══════╡
+    #   # │ x   ┆ b        ┆ 1     │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ y   ┆ b        ┆ 3     │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ z   ┆ b        ┆ 5     │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ x   ┆ c        ┆ 2     │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ y   ┆ c        ┆ 4     │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ z   ┆ c        ┆ 6     │
+    #   # └─────┴──────────┴───────┘
+    def melt(id_vars: nil, value_vars: nil, variable_name: nil, value_name: nil)
+      if value_vars.is_a?(String)
+        value_vars = [value_vars]
+      end
+      if id_vars.is_a?(String)
+        id_vars = [id_vars]
+      end
+      if value_vars.nil?
+        value_vars = []
+      end
+      if id_vars.nil?
+        id_vars = []
+      end
+      _from_rbldf(
+        _ldf.melt(id_vars, value_vars, value_name, variable_name)
+      )
+    end
 
     # def map
     # end
