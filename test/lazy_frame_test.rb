@@ -54,4 +54,9 @@ class LazyFrameTest < Minitest::Test
     df.select("foo").write_json(path)
     assert_frame df.select("foo").collect, Polars::LazyFrame.read_json(path).collect
   end
+
+  def test_describe_optimized_plan
+    df = Polars::DataFrame.new({"a" => [1, 2, 3]}).lazy
+    assert_match "FastProjection", df.select("a").describe_optimized_plan
+  end
 end
