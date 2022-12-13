@@ -953,8 +953,44 @@ module Polars
       _from_rbldf(_ldf.with_columns(rbexprs))
     end
 
-    # def with_context
-    # end
+    # Add an external context to the computation graph.
+    #
+    # This allows expressions to also access columns from DataFrames
+    # that are not part of this one.
+    #
+    # @param other [Object]
+    #   Lazy DataFrame to join with.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df_a = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["a", "c", nil]}).lazy
+    #   df_other = Polars::DataFrame.new({"c" => ["foo", "ham"]})
+    #   (
+    #     df_a.with_context(df_other.lazy).select(
+    #       [Polars.col("b") + Polars.col("c").first]
+    #     )
+    #   ).collect
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ b    │
+    #   # │ ---  │
+    #   # │ str  │
+    #   # ╞══════╡
+    #   # │ afoo │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ cfoo │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ null │
+    #   # └──────┘
+    def with_context(other)
+      if !other.is_a?(Array)
+        other = [other]
+      end
+
+      _from_rbldf(_ldf.with_context(other.map(&:_ldf)))
+    end
 
     # Add or overwrite column in a DataFrame.
     #

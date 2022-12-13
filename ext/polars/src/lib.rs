@@ -492,6 +492,7 @@ fn init() -> RbResult<()> {
     class.define_method("groupby", method!(RbLazyFrame::groupby, 2))?;
     class.define_method("groupby_rolling", method!(RbLazyFrame::groupby_rolling, 5))?;
     class.define_method("groupby_dynamic", method!(RbLazyFrame::groupby_dynamic, 8))?;
+    class.define_method("with_context", method!(RbLazyFrame::with_context, 1))?;
     class.define_method("join", method!(RbLazyFrame::join, 7))?;
     class.define_method("with_columns", method!(RbLazyFrame::with_columns, 1))?;
     class.define_method("rename", method!(RbLazyFrame::rename, 2))?;

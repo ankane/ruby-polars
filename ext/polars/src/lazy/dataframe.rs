@@ -349,6 +349,18 @@ impl RbLazyFrame {
         })
     }
 
+    pub fn with_context(&self, contexts: RArray) -> RbResult<Self> {
+        let contexts = contexts
+            .each()
+            .map(|v| v.unwrap().try_convert())
+            .collect::<RbResult<Vec<&RbLazyFrame>>>()?;
+        let contexts = contexts
+            .into_iter()
+            .map(|ldf| ldf.ldf.clone())
+            .collect::<Vec<_>>();
+        Ok(self.ldf.clone().with_context(contexts).into())
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn join(
         &self,
