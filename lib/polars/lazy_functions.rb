@@ -943,8 +943,67 @@ module Polars
       Utils.wrap_expr(_coalesce_exprs(exprs))
     end
 
-    # def from_epoch
-    # end
+    # Utility function that parses an epoch timestamp (or Unix time) to Polars Date(time).
+    #
+    # Depending on the `unit` provided, this function will return a different dtype:
+    # - unit: "d" returns pl.Date
+    # - unit: "s" returns pl.Datetime["us"] (pl.Datetime's default)
+    # - unit: "ms" returns pl.Datetime["ms"]
+    # - unit: "us" returns pl.Datetime["us"]
+    # - unit: "ns" returns pl.Datetime["ns"]
+    #
+    # @param column [Object]
+    #     Series or expression to parse integers to pl.Datetime.
+    # @param unit [String]
+    #     The unit of the timesteps since epoch time.
+    # @param eager [Boolean]
+    #     If eager evaluation is `true`, a Series is returned instead of an Expr.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"timestamp" => [1666683077, 1666683099]}).lazy
+    #   df.select(Polars.from_epoch(Polars.col("timestamp"), unit: "s")).collect
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────────────────────┐
+    #   # │ timestamp           │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2022-10-25 07:31:17 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2022-10-25 07:31:39 │
+    #   # └─────────────────────┘
+    def from_epoch(column, unit: "s", eager: false)
+      if column.is_a?(String)
+        column = col(column)
+      elsif !column.is_a?(Series) && !column.is_a?(Expr)
+        column = Series.new(column)
+      end
+
+      if unit == "d"
+        expr = column.cast(:date)
+      elsif unit == "s"
+        raise Todo
+        # expr = (column.cast(:i64) * 1_000_000).cast(Datetime("us"))
+      elsif Utils::DTYPE_TEMPORAL_UNITS.include?(unit)
+        raise Todo
+        # expr = column.cast(Datetime(unit))
+      else
+        raise ArgumentError, "'unit' must be one of {{'ns', 'us', 'ms', 's', 'd'}}, got '#{unit}'."
+      end
+
+      if eager
+        if !column.is_a?(Series)
+          raise ArgumentError, "expected Series or Array if eager: true, got #{column.class.name}"
+        else
+          column.to_frame.select(expr).to_series
+        end
+      else
+        expr
+      end
+    end
 
     # Start a "when, then, otherwise" expression.
     #
