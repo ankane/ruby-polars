@@ -586,8 +586,19 @@ module Polars
     # def groups
     # end
 
-    # def quantile
-    # end
+    # Syntactic sugar for `Polars.col("foo").quantile(...)`.
+    #
+    # @param column [String]
+    #   Column name.
+    # @param quantile [Float]
+    #   Quantile between 0.0 and 1.0.
+    # @param interpolation ["nearest", "higher", "lower", "midpoint", "linear"]
+    #   Interpolation method.
+    #
+    # @return [Expr]
+    def quantile(column, quantile, interpolation: "nearest")
+      col(column).quantile(quantile, interpolation: interpolation)
+    end
 
     # Create a range expression (or Series).
     #
