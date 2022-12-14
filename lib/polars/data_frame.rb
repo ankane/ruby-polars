@@ -888,8 +888,84 @@ module Polars
       Utils.scale_bytes(sz, to: unit)
     end
 
-    # def transpose
-    # end
+    # Transpose a DataFrame over the diagonal.
+    #
+    # @param include_header [Boolean]
+    #   If set, the column names will be added as first column.
+    # @param header_name [String]
+    #   If `include_header` is set, this determines the name of the column that will
+    #   be inserted.
+    # @param column_names [Array]
+    #   Optional generator/iterator that yields column names. Will be used to
+    #   replace the columns in the DataFrame.
+    #
+    # @return [DataFrame]
+    #
+    # @note
+    #   This is a very expensive operation. Perhaps you can do it differently.
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [1, 2, 3]})
+    #   df.transpose(include_header: true)
+    #   # =>
+    #   # shape: (2, 4)
+    #   # ┌────────┬──────────┬──────────┬──────────┐
+    #   # │ column ┆ column_0 ┆ column_1 ┆ column_2 │
+    #   # │ ---    ┆ ---      ┆ ---      ┆ ---      │
+    #   # │ str    ┆ i64      ┆ i64      ┆ i64      │
+    #   # ╞════════╪══════════╪══════════╪══════════╡
+    #   # │ a      ┆ 1        ┆ 2        ┆ 3        │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ b      ┆ 1        ┆ 2        ┆ 3        │
+    #   # └────────┴──────────┴──────────┴──────────┘
+    #
+    # @example Replace the auto-generated column names with a list
+    #   df.transpose(include_header: false, column_names: ["a", "b", "c"])
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ a   ┆ b   ┆ c   │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 2   ┆ 3   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 1   ┆ 2   ┆ 3   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example Include the header as a separate column
+    #   df.transpose(
+    #     include_header: true, header_name: "foo", column_names: ["a", "b", "c"]
+    #   )
+    #   # =>
+    #   # shape: (2, 4)
+    #   # ┌─────┬─────┬─────┬─────┐
+    #   # │ foo ┆ a   ┆ b   ┆ c   │
+    #   # │ --- ┆ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╪═════╡
+    #   # │ a   ┆ 1   ┆ 2   ┆ 3   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ b   ┆ 1   ┆ 2   ┆ 3   │
+    #   # └─────┴─────┴─────┴─────┘
+    def transpose(include_header: false, header_name: "column", column_names: nil)
+      df = _from_rbdf(_df.transpose(include_header, header_name))
+      if !column_names.nil?
+        names = []
+        n = df.width
+        if include_header
+          names << header_name
+          n -= 1
+        end
+
+        column_names = column_names.each
+        n.times do
+          names << column_names.next
+        end
+        df.columns = names
+      end
+      df
+    end
 
     # Reverse the DataFrame.
     #
