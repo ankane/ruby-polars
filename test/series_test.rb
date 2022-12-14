@@ -90,6 +90,11 @@ class SeriesTest < Minitest::Test
     assert_equal "cannot get the last element of endless range", error.message
   end
 
+  def test_new_range_string
+    s = Polars::Series.new("a".."c")
+    assert_series ["a", "b", "c"], s
+  end
+
   def test_dtype
     s = Polars::Series.new([1, 2, 3])
     assert_equal :i64, s.dtype

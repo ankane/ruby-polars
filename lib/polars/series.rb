@@ -45,6 +45,11 @@ module Polars
 
       name = "" if name.nil?
 
+      # TODO improve
+      if values.is_a?(Range) && values.begin.is_a?(String)
+        values = values.to_a
+      end
+
       if values.nil?
         self._s = sequence_to_rbseries(name, [], dtype: dtype, dtype_if_empty: dtype_if_empty)
       elsif values.is_a?(Series)
