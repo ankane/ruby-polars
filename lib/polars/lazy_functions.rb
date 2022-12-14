@@ -480,8 +480,74 @@ module Polars
     # def any
     # end
 
-    # def exclude
-    # end
+    # Exclude certain columns from a wildcard/regex selection.
+    #
+    # @param columns [Object]
+    #   Column(s) to exclude from selection
+    #   This can be:
+    #
+    #   - a column name, or multiple column names
+    #   - a regular expression starting with `^` and ending with `$`
+    #   - a dtype or multiple dtypes
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "aa" => [1, 2, 3],
+    #       "ba" => ["a", "b", nil],
+    #       "cc" => [nil, 2.5, 1.5]
+    #     }
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬──────┬──────┐
+    #   # │ aa  ┆ ba   ┆ cc   │
+    #   # │ --- ┆ ---  ┆ ---  │
+    #   # │ i64 ┆ str  ┆ f64  │
+    #   # ╞═════╪══════╪══════╡
+    #   # │ 1   ┆ a    ┆ null │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 2   ┆ b    ┆ 2.5  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 3   ┆ null ┆ 1.5  │
+    #   # └─────┴──────┴──────┘
+    #
+    # @example Exclude by column name(s):
+    #   df.select(Polars.exclude("ba"))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬──────┐
+    #   # │ aa  ┆ cc   │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ f64  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ null │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 2.5  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ 3   ┆ 1.5  │
+    #   # └─────┴──────┘
+    #
+    # @example Exclude by regex, e.g. removing all columns whose names end with the letter "a":
+    #   df.select(Polars.exclude("^.*a$"))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ cc   │
+    #   # │ ---  │
+    #   # │ f64  │
+    #   # ╞══════╡
+    #   # │ null │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 2.5  │
+    #   # ├╌╌╌╌╌╌┤
+    #   # │ 1.5  │
+    #   # └──────┘
+    def exclude(columns)
+      col("*").exclude(columns)
+    end
 
     # Do one of two things.
     #
