@@ -3390,8 +3390,93 @@ module Polars
       _from_rbdf(_df.sample_n(n, with_replacement, shuffle, seed))
     end
 
-    # def fold
-    # end
+    # Apply a horizontal reduction on a DataFrame.
+    #
+    # This can be used to effectively determine aggregations on a row level, and can
+    # be applied to any DataType that can be supercasted (casted to a similar parent
+    # type).
+    #
+    # An example of the supercast rules when applying an arithmetic operation on two
+    # DataTypes are for instance:
+    #
+    # Int8 + Utf8 = Utf8
+    # Float32 + Int64 = Float32
+    # Float32 + Float64 = Float64
+    #
+    # @return [Series]
+    #
+    # @example A horizontal sum operation:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [2, 1, 3],
+    #       "b" => [1, 2, 3],
+    #       "c" => [1.0, 2.0, 3.0]
+    #     }
+    #   )
+    #   df.fold { |s1, s2| s1 + s2 }
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         4.0
+    #   #         5.0
+    #   #         9.0
+    #   # ]
+    #
+    # @example A horizontal minimum operation:
+    #   df = Polars::DataFrame.new({"a" => [2, 1, 3], "b" => [1, 2, 3], "c" => [1.0, 2.0, 3.0]})
+    #   df.fold { |s1, s2| s1.zip_with(s1 < s2, s2) }
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         1.0
+    #   #         1.0
+    #   #         3.0
+    #   # ]
+    #
+    # @example A horizontal string concatenation:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => ["foo", "bar", 2],
+    #       "b" => [1, 2, 3],
+    #       "c" => [1.0, 2.0, 3.0]
+    #     }
+    #   )
+    #   df.fold { |s1, s2| s1 + s2 }
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [str]
+    #   # [
+    #   #         "foo11.0"
+    #   #         "bar22.0"
+    #   #         null
+    #   # ]
+    #
+    # @example A horizontal boolean or, similar to a row-wise .any():
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [false, false, true],
+    #       "b" => [false, true, false]
+    #     }
+    #   )
+    #   df.fold { |s1, s2| s1 | s2 }
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         false
+    #   #         true
+    #   #         true
+    #   # ]
+    def fold(&operation)
+      acc = to_series(0)
+
+      1.upto(width - 1) do |i|
+        acc = operation.call(acc, to_series(i))
+      end
+      acc
+    end
 
     # Get a row as tuple, either by index or by predicate.
     #
