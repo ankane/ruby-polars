@@ -2582,7 +2582,91 @@ module Polars
     #   wrap_expr(_rbexpr.map(f, return_dtype, agg_list))
     # end
 
-    # def apply
+    # Apply a custom/user-defined function (UDF) in a GroupBy or Projection context.
+    #
+    # Depending on the context it has the following behavior:
+    #
+    # * Selection
+    #     Expects `f` to be of type Callable[[Any], Any].
+    #     Applies a Ruby function over each individual value in the column.
+    # * GroupBy
+    #     Expects `f` to be of type Callable[[Series], Series].
+    #     Applies a Ruby function over each group.
+    #
+    # Implementing logic using a Ruby function is almost always _significantly_
+    # slower and more memory intensive than implementing the same logic using
+    # the native expression API because:
+    #
+    # - The native expression engine runs in Rust; UDFs run in Ruby.
+    # - Use of Ruby UDFs forces the DataFrame to be materialized in memory.
+    # - Polars-native expressions can be parallelised (UDFs cannot).
+    # - Polars-native expressions can be logically optimised (UDFs cannot).
+    #
+    # Wherever possible you should strongly prefer the native expression API
+    # to achieve the best performance.
+    #
+    # @param return_dtype [Symbol]
+    #   Dtype of the output Series.
+    #   If not set, polars will assume that
+    #   the dtype remains unchanged.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3, 1],
+    #       "b" => ["a", "b", "c", "c"]
+    #     }
+    #   )
+    #
+    # @example In a selection context, the function is applied by row.
+    #   df.with_column(
+    #     Polars.col("a").apply { |x| x * 2 }.alias("a_times_2")
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬─────┬───────────┐
+    #   # │ a   ┆ b   ┆ a_times_2 │
+    #   # │ --- ┆ --- ┆ ---       │
+    #   # │ i64 ┆ str ┆ i64       │
+    #   # ╞═════╪═════╪═══════════╡
+    #   # │ 1   ┆ a   ┆ 2         │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ b   ┆ 4         │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ c   ┆ 6         │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1   ┆ c   ┆ 2         │
+    #   # └─────┴─────┴───────────┘
+    #
+    # @example In a GroupBy context the function is applied by group:
+    #   df.lazy
+    #     .groupby("b", maintain_order: true)
+    #     .agg(
+    #       [
+    #         Polars.col("a").apply { |x| x.sum }
+    #       ]
+    #     )
+    #     .collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ b   ┆ a   │
+    #   # │ --- ┆ --- │
+    #   # │ str ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ a   ┆ 1   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ b   ┆ 2   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ c   ┆ 4   │
+    #   # └─────┴─────┘
+    # def apply(return_dtype: nil, &f)
+    #   wrap_f = lambda do |x|
+    #     x.apply(return_dtype: return_dtype, &f)
+    #   end
+    #   map(agg_list: true, return_dtype: return_dtype, &wrap_f)
     # end
 
     # Explode a list or utf8 Series. This means that every item is expanded to a new
