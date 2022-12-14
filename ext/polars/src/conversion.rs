@@ -2,6 +2,7 @@ use magnus::{class, RArray, Symbol, TryConvert, Value, QNIL};
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
+use polars::frame::row::Row;
 use polars::frame::DataFrame;
 use polars::io::avro::AvroCompression;
 use polars::prelude::*;
@@ -494,6 +495,17 @@ pub fn parse_parquet_compression(
         }
     };
     Ok(parsed)
+}
+
+impl<'s> TryConvert for Wrap<Row<'s>> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let mut vals: Vec<Wrap<AnyValue<'s>>> = Vec::new();
+        for item in ob.try_convert::<RArray>()?.each() {
+            vals.push(item?.try_convert::<Wrap<AnyValue<'s>>>()?);
+        }
+        let vals: Vec<AnyValue> = unsafe { std::mem::transmute(vals) };
+        Ok(Wrap(Row(vals)))
+    }
 }
 
 #[derive(Clone, Debug)]

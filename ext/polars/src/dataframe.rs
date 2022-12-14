@@ -7,6 +7,10 @@ use std::cell::RefCell;
 use std::io::{BufWriter, Cursor};
 use std::ops::Deref;
 
+use crate::apply::dataframe::{
+    apply_lambda_unknown, apply_lambda_with_bool_out_type, apply_lambda_with_primitive_out_type,
+    apply_lambda_with_utf8_out_type,
+};
 use crate::conversion::*;
 use crate::file::{get_file_like, get_mmap_bytes_reader};
 use crate::series::{to_rbseries_collection, to_series_collection};
@@ -911,6 +915,60 @@ impl RbDataFrame {
     pub fn null_count(&self) -> Self {
         let df = self.df.borrow().null_count();
         df.into()
+    }
+
+    pub fn apply(
+        &self,
+        lambda: Value,
+        output_type: Option<Wrap<DataType>>,
+        inference_size: usize,
+    ) -> RbResult<(Value, bool)> {
+        let df = &self.df.borrow();
+
+        let output_type = output_type.map(|dt| dt.0);
+        let out = match output_type {
+            Some(DataType::Int32) => {
+                apply_lambda_with_primitive_out_type::<Int32Type>(df, lambda, 0, None).into_series()
+            }
+            Some(DataType::Int64) => {
+                apply_lambda_with_primitive_out_type::<Int64Type>(df, lambda, 0, None).into_series()
+            }
+            Some(DataType::UInt32) => {
+                apply_lambda_with_primitive_out_type::<UInt32Type>(df, lambda, 0, None)
+                    .into_series()
+            }
+            Some(DataType::UInt64) => {
+                apply_lambda_with_primitive_out_type::<UInt64Type>(df, lambda, 0, None)
+                    .into_series()
+            }
+            Some(DataType::Float32) => {
+                apply_lambda_with_primitive_out_type::<Float32Type>(df, lambda, 0, None)
+                    .into_series()
+            }
+            Some(DataType::Float64) => {
+                apply_lambda_with_primitive_out_type::<Float64Type>(df, lambda, 0, None)
+                    .into_series()
+            }
+            Some(DataType::Boolean) => {
+                apply_lambda_with_bool_out_type(df, lambda, 0, None).into_series()
+            }
+            Some(DataType::Date) => {
+                apply_lambda_with_primitive_out_type::<Int32Type>(df, lambda, 0, None)
+                    .into_date()
+                    .into_series()
+            }
+            Some(DataType::Datetime(tu, tz)) => {
+                apply_lambda_with_primitive_out_type::<Int64Type>(df, lambda, 0, None)
+                    .into_datetime(tu, tz)
+                    .into_series()
+            }
+            Some(DataType::Utf8) => {
+                apply_lambda_with_utf8_out_type(df, lambda, 0, None).into_series()
+            }
+            _ => return apply_lambda_unknown(df, lambda, inference_size),
+        };
+
+        Ok((RbSeries::from(out).into(), false))
     }
 
     pub fn shrink_to_fit(&self) {

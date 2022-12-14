@@ -1,3 +1,4 @@
+pub mod dataframe;
 pub mod series;
 
 use magnus::{RHash, Value};

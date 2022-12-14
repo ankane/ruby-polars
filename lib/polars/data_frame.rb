@@ -1697,8 +1697,78 @@ module Polars
         .collect(no_optimization: true)
     end
 
-    # def apply
-    # end
+    # Apply a custom/user-defined function (UDF) over the rows of the DataFrame.
+    #
+    # The UDF will receive each row as a tuple of values: `udf(row)`.
+    #
+    # Implementing logic using a Python function is almost always _significantly_
+    # slower and more memory intensive than implementing the same logic using
+    # the native expression API because:
+    #
+    # - The native expression engine runs in Rust; UDFs run in Python.
+    # - Use of Python UDFs forces the DataFrame to be materialized in memory.
+    # - Polars-native expressions can be parallelised (UDFs cannot).
+    # - Polars-native expressions can be logically optimised (UDFs cannot).
+    #
+    # Wherever possible you should strongly prefer the native expression API
+    # to achieve the best performance.
+    #
+    # @param return_dtype [Symbol]
+    #   Output type of the operation. If none given, Polars tries to infer the type.
+    # @param inference_size [Integer]
+    #   Only used in the case when the custom function returns rows.
+    #   This uses the first `n` rows to determine the output schema
+    #
+    # @return [Object]
+    #
+    # @note
+    #   The frame-level `apply` cannot track column names (as the UDF is a black-box
+    #   that may arbitrarily drop, rearrange, transform, or add new columns); if you
+    #   want to apply a UDF such that column names are preserved, you should use the
+    #   expression-level `apply` syntax instead.
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3], "bar" => [-1, 5, 8]})
+    #
+    # @example Return a DataFrame by mapping each row to a tuple:
+    #   df.apply { |t| [t[0] * 2, t[1] * 3] }
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌──────────┬──────────┐
+    #   # │ column_0 ┆ column_1 │
+    #   # │ ---      ┆ ---      │
+    #   # │ i64      ┆ i64      │
+    #   # ╞══════════╪══════════╡
+    #   # │ 2        ┆ -3       │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 4        ┆ 15       │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 6        ┆ 24       │
+    #   # └──────────┴──────────┘
+    #
+    # @example Return a Series by mapping each row to a scalar:
+    #   df.apply { |t| t[0] * 2 + t[1] }
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌───────┐
+    #   # │ apply │
+    #   # │ ---   │
+    #   # │ i64   │
+    #   # ╞═══════╡
+    #   # │ 1     │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 9     │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 14    │
+    #   # └───────┘
+    def apply(return_dtype: nil, inference_size: 256, &f)
+      out, is_df = _df.apply(f, return_dtype, inference_size)
+      if is_df
+        _from_rbdf(out)
+      else
+        _from_rbdf(Utils.wrap_s(out).to_frame._df)
+      end
+    end
 
     # Return a new DataFrame with the column added or replaced.
     #

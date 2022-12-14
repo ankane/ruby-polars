@@ -164,6 +164,7 @@ fn init() -> RbResult<()> {
     class.define_method("quantile", method!(RbDataFrame::quantile, 2))?;
     class.define_method("to_dummies", method!(RbDataFrame::to_dummies, 1))?;
     class.define_method("null_count", method!(RbDataFrame::null_count, 0))?;
+    class.define_method("apply", method!(RbDataFrame::apply, 3))?;
     class.define_method("shrink_to_fit", method!(RbDataFrame::shrink_to_fit, 0))?;
     class.define_method("transpose", method!(RbDataFrame::transpose, 2))?;
     class.define_method("upsample", method!(RbDataFrame::upsample, 5))?;
