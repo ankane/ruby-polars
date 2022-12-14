@@ -1483,6 +1483,13 @@ pub fn fold(acc: &RbExpr, lambda: Value, exprs: RArray) -> RbResult<RbExpr> {
     Ok(polars::lazy::dsl::fold_exprs(acc.inner.clone(), func, exprs).into())
 }
 
+pub fn cumfold(acc: &RbExpr, lambda: Value, exprs: RArray, include_init: bool) -> RbResult<RbExpr> {
+    let exprs = rb_exprs_to_exprs(exprs)?;
+
+    let func = move |a: Series, b: Series| binary_lambda(lambda, a, b);
+    Ok(polars::lazy::dsl::cumfold_exprs(acc.inner.clone(), func, exprs, include_init).into())
+}
+
 // TODO improve
 pub fn lit(value: Value) -> RbResult<RbExpr> {
     if value.is_nil() {

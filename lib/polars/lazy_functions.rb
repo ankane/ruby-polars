@@ -294,8 +294,69 @@ module Polars
       Utils.wrap_expr(RbExpr.lit(value))
     end
 
-    # def cumsum
-    # end
+    # Cumulatively sum values in a column/Series, or horizontally across list of columns/expressions.
+    #
+    # @param column [Object]
+    #   Column(s) to be used in aggregation.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2],
+    #       "b" => [3, 4],
+    #       "c" => [5, 6]
+    #     }
+    #   )
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ a   ┆ b   ┆ c   │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 3   ┆ 5   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 4   ┆ 6   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example Cumulatively sum a column by name:
+    #   df.select(Polars.cumsum("a"))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 3   │
+    #   # └─────┘
+    #
+    # @example Cumulatively sum a list of columns/expressions horizontally:
+    #   df.with_column(Polars.cumsum(["a", "c"]))
+    #   # =>
+    #   # shape: (2, 4)
+    #   # ┌─────┬─────┬─────┬───────────┐
+    #   # │ a   ┆ b   ┆ c   ┆ cumsum    │
+    #   # │ --- ┆ --- ┆ --- ┆ ---       │
+    #   # │ i64 ┆ i64 ┆ i64 ┆ struct[2] │
+    #   # ╞═════╪═════╪═════╪═══════════╡
+    #   # │ 1   ┆ 3   ┆ 5   ┆ {1,6}     │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ 4   ┆ 6   ┆ {2,8}     │
+    #   # └─────┴─────┴─────┴───────────┘
+    def cumsum(column)
+      if column.is_a?(Series)
+        column.cumsum
+      elsif column.is_a?(String)
+        col(column).cumsum
+      else
+        cumfold(lit(0).cast(:u32), ->(a, b) { a + b }, column).alias("cumsum")
+      end
+    end
 
     # Compute the spearman rank correlation between two columns.
     #
@@ -367,7 +428,7 @@ module Polars
     # def apply
     # end
 
-    # Accumulate over multiple columns horizontally/ row wise with a left fold.
+    # Accumulate over multiple columns horizontally/row wise with a left fold.
     #
     # @return [Expr]
     def fold(acc, f, exprs)
@@ -383,8 +444,35 @@ module Polars
     # def reduce
     # end
 
-    # def cumfold
-    # end
+    # Cumulatively accumulate over multiple columns horizontally/ row wise with a left fold.
+    #
+    # Every cumulative result is added as a separate field in a Struct column.
+    #
+    # @param acc [Object]
+    #   Accumulator Expression. This is the value that will be initialized when the fold
+    #   starts. For a sum this could for instance be lit(0).
+    # @param f [Object]
+    #   Function to apply over the accumulator and the value.
+    #   Fn(acc, value) -> new_value
+    # @param exprs [Object]
+    #   Expressions to aggregate over. May also be a wildcard expression.
+    # @param include_init [Boolean]
+    #   Include the initial accumulator state as struct field.
+    #
+    # @return [Object]
+    #
+    # @note
+    #   If you simply want the first encountered expression as accumulator,
+    #   consider using `cumreduce`.
+    def cumfold(acc, f, exprs, include_init: false)
+      acc = Utils.expr_to_lit_or_expr(acc, str_to_lit: true)
+      if exprs.is_a?(Expr)
+        exprs = [exprs]
+      end
+
+      exprs = Utils.selection_to_rbexpr_list(exprs)
+      Utils.wrap_expr(RbExpr.cumfold(acc._rbexpr, f, exprs, include_init))
+    end
 
     # def cumreduce
     # end
