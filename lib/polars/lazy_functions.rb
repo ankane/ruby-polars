@@ -444,7 +444,7 @@ module Polars
     # def reduce
     # end
 
-    # Cumulatively accumulate over multiple columns horizontally/ row wise with a left fold.
+    # Cumulatively accumulate over multiple columns horizontally/row wise with a left fold.
     #
     # Every cumulative result is added as a separate field in a Struct column.
     #
@@ -639,8 +639,28 @@ module Polars
       end
     end
 
-    # def argsort_by
-    # end
+    # Find the indexes that would sort the columns.
+    #
+    # Argsort by multiple columns. The first column will be used for the ordering.
+    # If there are duplicates in the first column, the second column will be used to
+    # determine the ordering and so on.
+    #
+    # @param exprs [Object]
+    #   Columns use to determine the ordering.
+    # @param reverse [Boolean]
+    #   Default is ascending.
+    #
+    # @return [Expr]
+    def argsort_by(exprs, reverse: false)
+      if !exprs.is_a?(Array)
+        exprs = [exprs]
+      end
+      if reverse == true || reverse == false
+        reverse = [reverse] * exprs.length
+      end
+      exprs = Utils.selection_to_rbexpr_list(exprs)
+      Utils.wrap_expr(RbExpr.argsort_by(exprs, reverse))
+    end
 
     # def duration
     # end

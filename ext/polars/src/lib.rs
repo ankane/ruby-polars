@@ -464,6 +464,7 @@ fn init() -> RbResult<()> {
         function!(crate::lazy::dsl::spearman_rank_corr, 4),
     )?;
     class.define_singleton_method("cov", function!(crate::lazy::dsl::cov, 2))?;
+    class.define_singleton_method("argsort_by", function!(crate::lazy::dsl::argsort_by, 2))?;
     class.define_singleton_method("when", function!(crate::lazy::dsl::when, 1))?;
     class.define_singleton_method("concat_str", function!(crate::lazy::dsl::concat_str, 2))?;
     class.define_singleton_method("concat_lst", function!(crate::lazy::dsl::concat_lst, 1))?;
