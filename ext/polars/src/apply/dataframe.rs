@@ -109,21 +109,20 @@ pub fn apply_lambda_unknown<'a>(
                 "A list output type is invalid. Do you mean to create polars List Series?\
 Then return a Series object."
                     .into(),
-            )
-            .into());
+            ));
         } else {
-            return Err(RbPolarsErr::other("Could not determine output type".into()).into());
+            return Err(RbPolarsErr::other("Could not determine output type".into()));
         }
     }
-    Err(RbPolarsErr::other("Could not determine output type".into()).into())
+    Err(RbPolarsErr::other("Could not determine output type".into()))
 }
 
-fn apply_iter<'a, T>(
-    df: &'a DataFrame,
+fn apply_iter<T>(
+    df: &DataFrame,
     lambda: Value,
     init_null_count: usize,
     skip: usize,
-) -> impl Iterator<Item = Option<T>> + 'a
+) -> impl Iterator<Item = Option<T>> + '_
 where
     T: TryConvert,
 {
@@ -139,8 +138,8 @@ where
 }
 
 /// Apply a lambda with a primitive output type
-pub fn apply_lambda_with_primitive_out_type<'a, D>(
-    df: &'a DataFrame,
+pub fn apply_lambda_with_primitive_out_type<D>(
+    df: &DataFrame,
     lambda: Value,
     init_null_count: usize,
     first_value: Option<D::Native>,
@@ -159,8 +158,8 @@ where
 }
 
 /// Apply a lambda with a boolean output type
-pub fn apply_lambda_with_bool_out_type<'a>(
-    df: &'a DataFrame,
+pub fn apply_lambda_with_bool_out_type(
+    df: &DataFrame,
     lambda: Value,
     init_null_count: usize,
     first_value: Option<bool>,
@@ -175,8 +174,8 @@ pub fn apply_lambda_with_bool_out_type<'a>(
 }
 
 /// Apply a lambda with utf8 output type
-pub fn apply_lambda_with_utf8_out_type<'a>(
-    df: &'a DataFrame,
+pub fn apply_lambda_with_utf8_out_type(
+    df: &DataFrame,
     lambda: Value,
     init_null_count: usize,
     first_value: Option<&str>,
