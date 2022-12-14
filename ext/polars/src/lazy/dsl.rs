@@ -946,6 +946,10 @@ impl RbExpr {
         self.inner.clone().dt().round(&every, &offset).into()
     }
 
+    pub fn map(&self, lambda: Value, output_type: Option<Wrap<DataType>>, agg_list: bool) -> Self {
+        map_single(self, lambda, output_type, agg_list)
+    }
+
     pub fn dot(&self, other: &RbExpr) -> Self {
         self.inner.clone().dot(other.inner.clone()).into()
     }

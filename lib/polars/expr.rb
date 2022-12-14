@@ -2575,11 +2575,11 @@ module Polars
     #   # ╞══════╪════════╡
     #   # │ 1    ┆ 0      │
     #   # └──────┴────────┘
-    # def map(return_dtype: nil, agg_list: false, &block)
+    # def map(return_dtype: nil, agg_list: false, &f)
     #   if !return_dtype.nil?
     #     return_dtype = Utils.rb_type_to_dtype(return_dtype)
     #   end
-    #   wrap_expr(_rbexpr.map(return_dtype, agg_list, &block))
+    #   wrap_expr(_rbexpr.map(f, return_dtype, agg_list))
     # end
 
     # def apply
