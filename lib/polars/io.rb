@@ -59,7 +59,7 @@ module Polars
     #   Lossy means that invalid utf8 values are replaced with `�`
     #   characters. When using other encodings than `utf8` or
     #   `utf8-lossy`, the input is first decoded im memory with
-    #   python.
+    #   Ruby.
     # @param low_memory [Boolean]
     #   Reduce memory usage at expense of performance.
     # @param rechunk [Boolean]

@@ -2320,8 +2320,8 @@ module Polars
     #   Output datatype. If none is given, the same datatype as this Series will be
     #   used.
     # @param skip_nulls [Boolean]
-    #   Nulls will be skipped and not passed to the python function.
-    #   This is faster because python can be skipped and because we call
+    #   Nulls will be skipped and not passed to the Ruby function.
+    #   This is faster because Ruby can be skipped and because we call
     #   more specialized functions.
     #
     # @return [Series]

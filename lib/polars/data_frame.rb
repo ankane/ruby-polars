@@ -1701,12 +1701,12 @@ module Polars
     #
     # The UDF will receive each row as a tuple of values: `udf(row)`.
     #
-    # Implementing logic using a Python function is almost always _significantly_
+    # Implementing logic using a Ruby function is almost always _significantly_
     # slower and more memory intensive than implementing the same logic using
     # the native expression API because:
     #
-    # - The native expression engine runs in Rust; UDFs run in Python.
-    # - Use of Python UDFs forces the DataFrame to be materialized in memory.
+    # - The native expression engine runs in Rust; UDFs run in Ruby.
+    # - Use of Ruby UDFs forces the DataFrame to be materialized in memory.
     # - Polars-native expressions can be parallelised (UDFs cannot).
     # - Polars-native expressions can be logically optimised (UDFs cannot).
     #
