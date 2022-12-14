@@ -665,8 +665,107 @@ module Polars
     # def duration
     # end
 
-    # def format
-    # end
+    # Horizontally concat Utf8 Series in linear time. Non-Utf8 columns are cast to Utf8.
+    #
+    # @param exprs [Object]
+    #   Columns to concat into a Utf8 Series.
+    # @param sep [String]
+    #   String value that will be used to separate the values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3],
+    #       "b" => ["dogs", "cats", nil],
+    #       "c" => ["play", "swim", "walk"]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     [
+    #       Polars.concat_str(
+    #         [
+    #           Polars.col("a") * 2,
+    #           Polars.col("b"),
+    #           Polars.col("c")
+    #         ],
+    #         sep: " "
+    #       ).alias("full_sentence")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌─────┬──────┬──────┬───────────────┐
+    #   # │ a   ┆ b    ┆ c    ┆ full_sentence │
+    #   # │ --- ┆ ---  ┆ ---  ┆ ---           │
+    #   # │ i64 ┆ str  ┆ str  ┆ str           │
+    #   # ╞═════╪══════╪══════╪═══════════════╡
+    #   # │ 1   ┆ dogs ┆ play ┆ 2 dogs play   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2   ┆ cats ┆ swim ┆ 4 cats swim   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 3   ┆ null ┆ walk ┆ null          │
+    #   # └─────┴──────┴──────┴───────────────┘
+    def concat_str(exprs, sep: "")
+      exprs = Utils.selection_to_rbexpr_list(exprs)
+      return Utils.wrap_expr(RbExpr.concat_str(exprs, sep))
+    end
+
+    # Format expressions as a string.
+    #
+    # @param fstring [String]
+    #   A string that with placeholders.
+    #   For example: "hello_{}" or "{}_world
+    # @param args [Object]
+    #   Expression(s) that fill the placeholders
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a": ["a", "b", "c"],
+    #       "b": [1, 2, 3]
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.format("foo_{}_bar_{}", Polars.col("a"), "b").alias("fmt")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────────┐
+    #   # │ fmt         │
+    #   # │ ---         │
+    #   # │ str         │
+    #   # ╞═════════════╡
+    #   # │ foo_a_bar_1 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ foo_b_bar_2 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ foo_c_bar_3 │
+    #   # └─────────────┘
+    def format(fstring, *args)
+      if fstring.scan("{}").length != args.length
+        raise ArgumentError, "number of placeholders should equal the number of arguments"
+      end
+
+      exprs = []
+
+      arguments = args.each
+      fstring.split(/(\{\})/).each do |s|
+        if s == "{}"
+          e = Utils.expr_to_lit_or_expr(arguments.next, str_to_lit: false)
+          exprs << e
+        elsif s.length > 0
+          exprs << lit(s)
+        end
+      end
+
+      concat_str(exprs, sep: "")
+    end
 
     # Concat the arrays in a Series dtype List in linear time.
     #
