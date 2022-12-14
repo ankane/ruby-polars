@@ -1484,8 +1484,48 @@ module Polars
       _from_rbdf(_df.drop_nulls(subset))
     end
 
-    # def pipe
-    # end
+    # Offers a structured way to apply a sequence of user-defined functions (UDFs).
+    #
+    # @param func [Object]
+    #   Callable; will receive the frame as the first parameter,
+    #   followed by any given args/kwargs.
+    # @param args [Object]
+    #   Arguments to pass to the UDF.
+    # @param kwargs [Object]
+    #   Keyword arguments to pass to the UDF.
+    #
+    # @return [Object]
+    #
+    # @note
+    #   It is recommended to use LazyFrame when piping operations, in order
+    #   to fully take advantage of query optimization and parallelization.
+    #   See {#lazy}.
+    #
+    # @example
+    #   cast_str_to_int = lambda do |data, col_name:|
+    #     data.with_column(Polars.col(col_name).cast(:i64))
+    #   end
+    #
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => ["10", "20", "30", "40"]})
+    #   df.pipe(cast_str_to_int, col_name: "b")
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 10  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 20  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 30  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 4   ┆ 40  │
+    #   # └─────┴─────┘
+    def pipe(func, *args, **kwargs)
+      func.call(self, *args, **kwargs)
+    end
 
     # Add a column at index 0 that counts the rows.
     #
