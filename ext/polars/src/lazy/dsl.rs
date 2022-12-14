@@ -1,3 +1,4 @@
+use magnus::block::Proc;
 use magnus::{class, RArray, RString, Value};
 use polars::chunked_array::ops::SortOptions;
 use polars::lazy::dsl;
@@ -981,6 +982,23 @@ impl RbExpr {
 
     pub fn suffix(&self, suffix: String) -> Self {
         self.inner.clone().suffix(&suffix).into()
+    }
+
+    pub fn map_alias(&self, lambda: Proc) -> Self {
+        self.inner
+            .clone()
+            .map_alias(move |name| {
+                let out = lambda.call::<_, String>((name,));
+                // TODO switch to match
+                out.unwrap()
+                // match out {
+                //     Ok(out) => Ok(out.to_string()),
+                //     Err(e) => Err(PolarsError::ComputeError(
+                //         format!("Ruby function in 'map_alias' produced an error: {}.", e).into(),
+                //     )),
+                // }
+            })
+            .into()
     }
 
     pub fn exclude(&self, columns: Vec<String>) -> Self {

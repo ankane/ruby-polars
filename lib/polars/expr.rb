@@ -432,8 +432,34 @@ module Polars
       wrap_expr(_rbexpr.suffix(suffix))
     end
 
-    # def map_alias
-    # end
+    # Rename the output of an expression by mapping a function over the root name.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "A" => [1, 2],
+    #       "B" => [3, 4]
+    #     }
+    #   )
+    #   df.select(
+    #     Polars.all.reverse.map_alias { |colName| colName + "_reverse" }
+    #   )
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌───────────┬───────────┐
+    #   # │ A_reverse ┆ B_reverse │
+    #   # │ ---       ┆ ---       │
+    #   # │ i64       ┆ i64       │
+    #   # ╞═══════════╪═══════════╡
+    #   # │ 2         ┆ 4         │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1         ┆ 3         │
+    #   # └───────────┴───────────┘
+    def map_alias(&f)
+      Utils.wrap_expr(_rbexpr.map_alias(f))
+    end
 
     # Negate a boolean expression.
     #

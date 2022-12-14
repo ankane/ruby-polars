@@ -375,6 +375,7 @@ fn init() -> RbResult<()> {
     class.define_method("keep_name", method!(RbExpr::keep_name, 0))?;
     class.define_method("prefix", method!(RbExpr::prefix, 1))?;
     class.define_method("suffix", method!(RbExpr::suffix, 1))?;
+    class.define_method("map_alias", method!(RbExpr::map_alias, 1))?;
     class.define_method("exclude", method!(RbExpr::exclude, 1))?;
     class.define_method("interpolate", method!(RbExpr::interpolate, 0))?;
     class.define_method("rolling_sum", method!(RbExpr::rolling_sum, 6))?;
