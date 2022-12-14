@@ -146,6 +146,7 @@ fn init() -> RbResult<()> {
     class.define_method("with_row_count", method!(RbDataFrame::with_row_count, 2))?;
     class.define_method("_clone", method!(RbDataFrame::clone, 0))?;
     class.define_method("melt", method!(RbDataFrame::melt, 4))?;
+    class.define_method("pivot_expr", method!(RbDataFrame::pivot_expr, 6))?;
     class.define_method("partition_by", method!(RbDataFrame::partition_by, 2))?;
     class.define_method("shift", method!(RbDataFrame::shift, 1))?;
     class.define_method("unique", method!(RbDataFrame::unique, 3))?;

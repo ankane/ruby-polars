@@ -2519,8 +2519,96 @@ module Polars
       lazy.explode(columns).collect(no_optimization: true)
     end
 
-    # def pivot
-    # end
+    # Create a spreadsheet-style pivot table as a DataFrame.
+    #
+    # @param values [Object]
+    #   Column values to aggregate. Can be multiple columns if the *columns*
+    #   arguments contains multiple columns as well
+    # @param index [Object]
+    #   One or multiple keys to group by
+    # @param columns [Object]
+    #   Columns whose values will be used as the header of the output DataFrame
+    # @param aggregate_fn ["first", "sum", "max", "min", "mean", "median", "last", "count"]
+    #   A predefined aggregate function str or an expression.
+    # @param maintain_order [Object]
+    #   Sort the grouped keys so that the output order is predictable.
+    # @param sort_columns [Object]
+    #   Sort the transposed columns by name. Default is by order of discovery.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => ["one", "one", "one", "two", "two", "two"],
+    #       "bar" => ["A", "B", "C", "A", "B", "C"],
+    #       "baz" => [1, 2, 3, 4, 5, 6]
+    #     }
+    #   )
+    #   df.pivot(values: "baz", index: "foo", columns: "bar")
+    #   # =>
+    #   # shape: (2, 4)
+    #   # ┌─────┬─────┬─────┬─────┐
+    #   # │ foo ┆ A   ┆ B   ┆ C   │
+    #   # │ --- ┆ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╪═════╡
+    #   # │ one ┆ 1   ┆ 2   ┆ 3   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ two ┆ 4   ┆ 5   ┆ 6   │
+    #   # └─────┴─────┴─────┴─────┘
+    def pivot(
+      values:,
+      index:,
+      columns:,
+      aggregate_fn: "first",
+      maintain_order: true,
+      sort_columns: false
+    )
+      if values.is_a?(String)
+        values = [values]
+      end
+      if index.is_a?(String)
+        index = [index]
+      end
+      if columns.is_a?(String)
+        columns = [columns]
+      end
+
+      if aggregate_fn.is_a?(String)
+        case aggregate_fn
+        when "first"
+          aggregate_fn = Polars.element.first
+        when "sum"
+          aggregate_fn = Polars.element.sum
+        when "max"
+          aggregate_fn = Polars.element.max
+        when "min"
+          aggregate_fn = Polars.element.min
+        when "mean"
+          aggregate_fn = Polars.element.mean
+        when "median"
+          aggregate_fn = Polars.element.median
+        when "last"
+          aggregate_fn = Polars.element.last
+        when "count"
+          aggregate_fn = Polars.count
+        else
+          raise ArgumentError, "Argument aggregate fn: '#{aggregate_fn}' was not expected."
+        end
+      end
+
+      _from_rbdf(
+        _df.pivot_expr(
+          values,
+          index,
+          columns,
+          aggregate_fn._rbexpr,
+          maintain_order,
+          sort_columns
+        )
+      )
+    end
 
     # Unpivot a DataFrame from wide to long format.
     #

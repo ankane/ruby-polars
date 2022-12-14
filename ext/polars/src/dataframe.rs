@@ -2,6 +2,7 @@ use magnus::{r_hash::ForEach, RArray, RHash, RString, Value};
 use polars::io::avro::AvroCompression;
 use polars::io::mmap::ReaderBytes;
 use polars::io::RowCount;
+use polars::prelude::pivot::{pivot, pivot_stable};
 use polars::prelude::*;
 use std::cell::RefCell;
 use std::io::{BufWriter, Cursor};
@@ -14,7 +15,7 @@ use crate::apply::dataframe::{
 use crate::conversion::*;
 use crate::file::{get_file_like, get_mmap_bytes_reader};
 use crate::series::{to_rbseries_collection, to_series_collection};
-use crate::{series, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
+use crate::{series, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 
 #[magnus::wrap(class = "Polars::RbDataFrame")]
 pub struct RbDataFrame {
@@ -795,6 +796,31 @@ impl RbDataFrame {
         };
 
         let df = self.df.borrow().melt2(args).map_err(RbPolarsErr::from)?;
+        Ok(RbDataFrame::new(df))
+    }
+
+    pub fn pivot_expr(
+        &self,
+        values: Vec<String>,
+        index: Vec<String>,
+        columns: Vec<String>,
+        aggregate_expr: &RbExpr,
+        maintain_order: bool,
+        sort_columns: bool,
+    ) -> RbResult<Self> {
+        let fun = match maintain_order {
+            true => pivot_stable,
+            false => pivot,
+        };
+        let df = fun(
+            &self.df.borrow(),
+            values,
+            index,
+            columns,
+            aggregate_expr.inner.clone(),
+            sort_columns,
+        )
+        .map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
     }
 
