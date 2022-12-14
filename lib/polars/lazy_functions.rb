@@ -786,8 +786,43 @@ module Polars
       end
     end
 
-    # def coalesce
-    # end
+    # Folds the expressions from left to right, keeping the first non-null value.
+    #
+    # @param exprs [Object]
+    #   Expressions to coalesce.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     [
+    #       [nil, 1.0, 1.0],
+    #       [nil, 2.0, 2.0],
+    #       [nil, nil, 3.0],
+    #       [nil, nil, nil]
+    #     ],
+    #     columns: [["a", :f64], ["b", :f64], ["c", :f64]]
+    #   )
+    #   df.with_column(Polars.coalesce(["a", "b", "c", 99.9]).alias("d"))
+    #   # =>
+    #   # shape: (4, 4)
+    #   # ┌──────┬──────┬──────┬──────┐
+    #   # │ a    ┆ b    ┆ c    ┆ d    │
+    #   # │ ---  ┆ ---  ┆ ---  ┆ ---  │
+    #   # │ f64  ┆ f64  ┆ f64  ┆ f64  │
+    #   # ╞══════╪══════╪══════╪══════╡
+    #   # │ null ┆ 1.0  ┆ 1.0  ┆ 1.0  │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ null ┆ 2.0  ┆ 2.0  ┆ 2.0  │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ null ┆ null ┆ 3.0  ┆ 3.0  │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ null ┆ null ┆ null ┆ 99.9 │
+    #   # └──────┴──────┴──────┴──────┘
+    def coalesce(exprs)
+      exprs = Utils.selection_to_rbexpr_list(exprs)
+      Utils.wrap_expr(_coalesce_exprs(exprs))
+    end
 
     # def from_epoch
     # end

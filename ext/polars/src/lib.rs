@@ -63,6 +63,8 @@ fn init() -> RbResult<()> {
     module.define_singleton_method("_ipc_schema", function!(ipc_schema, 1))?;
     module.define_singleton_method("_parquet_schema", function!(parquet_schema, 1))?;
     module.define_singleton_method("_rb_date_range", function!(rb_date_range, 7))?;
+    module.define_singleton_method("_coalesce_exprs", function!(coalesce_exprs, 1))?;
+    module.define_singleton_method("_sum_exprs", function!(sum_exprs, 1))?;
     module.define_singleton_method("_as_struct", function!(as_struct, 1))?;
     module.define_singleton_method("_arg_where", function!(arg_where, 1))?;
 
@@ -873,6 +875,16 @@ fn rb_date_range(
     )
     .into_series()
     .into()
+}
+
+fn coalesce_exprs(exprs: RArray) -> RbResult<RbExpr> {
+    let exprs = rb_exprs_to_exprs(exprs)?;
+    Ok(polars::lazy::dsl::coalesce(&exprs).into())
+}
+
+fn sum_exprs(exprs: RArray) -> RbResult<RbExpr> {
+    let exprs = rb_exprs_to_exprs(exprs)?;
+    Ok(polars::lazy::dsl::sum_exprs(exprs).into())
 }
 
 fn as_struct(exprs: RArray) -> RbResult<RbExpr> {

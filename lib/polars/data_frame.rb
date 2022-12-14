@@ -4024,8 +4024,30 @@ module Polars
       RbDataFrame.read_hash(data)
     end
 
-    def _unpack_columns(columns, lookup_names: nil)
-      [columns.keys, columns]
+    def _unpack_columns(columns, lookup_names: nil, n_expected: nil)
+      if columns.is_a?(Hash)
+        columns = columns.to_a
+      end
+      column_names =
+        (columns || []).map.with_index do |col, i|
+          if col.is_a?(String)
+            col || "column_#{i}"
+          else
+            col[0]
+          end
+        end
+      if column_names.empty? && n_expected
+        column_names = n_expected.times.map { |i| "column_#{i}" }
+      end
+      # TODO zip_longest
+      lookup = column_names.zip(lookup_names || []).to_h
+
+      [
+        column_names,
+        (columns || []).select { |col| !col.is_a?(String) && col[1] }.to_h do |col|
+          [lookup[col[0]] || col[0], col[1]]
+        end
+      ]
     end
 
     def _handle_columns_arg(data, columns: nil)
@@ -4047,10 +4069,33 @@ module Polars
     end
 
     def sequence_to_rbdf(data, columns: nil, orient: nil)
-      if columns || orient
-        raise Todo
+      if data.length == 0
+        return hash_to_rbdf({}, columns: columns)
       end
-      RbDataFrame.new(data.map(&:_s))
+
+      if data[0].is_a?(Series)
+        series_names = data.map(&:name)
+        columns, dtypes = _unpack_columns(columns || series_names, n_expected: data.length)
+        data_series = []
+        data.each do |s|
+          data_series << s._s
+        end
+      elsif data[0].is_a?(Array)
+        if orient.nil? && !columns.nil?
+          orient = columns.length == data.length ? "col" : "row"
+        end
+
+        if orient == "row"
+          raise Todo
+        elsif orient == "col" || orient.nil?
+          raise Todo
+        else
+          raise ArgumentError, "orient must be one of {{'col', 'row', nil}}, got #{orient} instead."
+        end
+      end
+
+      data_series = _handle_columns_arg(data_series, columns: columns)
+      RbDataFrame.new(data_series)
     end
 
     def series_to_rbdf(data, columns: nil)
