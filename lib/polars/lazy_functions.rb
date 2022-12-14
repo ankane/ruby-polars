@@ -477,8 +477,16 @@ module Polars
     # def cumreduce
     # end
 
-    # def any
-    # end
+    # Evaluate columnwise or elementwise with a bitwise OR operation.
+    #
+    # @return [Expr]
+    def any(name)
+      if name.is_a?(String)
+        col(name).any
+      else
+        fold(lit(false), ->(a, b) { a.cast(:bool) | b.cast(:bool) }, name).alias("any")
+      end
+    end
 
     # Exclude certain columns from a wildcard/regex selection.
     #
