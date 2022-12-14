@@ -3486,7 +3486,14 @@ module Polars
         return Utils.wrap_s(_s.send(op, other._s))
       end
 
-      raise Todo
+      if other.is_a?(Date) || other.is_a?(DateTime) || other.is_a?(Time) || other.is_a?(String)
+        raise Todo
+      end
+      if other.is_a?(Float) && !is_float
+        raise Todo
+      end
+
+      Utils.wrap_s(_s.send("#{op}_#{dtype}", other))
     end
 
     def series_to_rbseries(name, values)

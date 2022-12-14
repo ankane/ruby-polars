@@ -2340,8 +2340,141 @@ module Polars
       )
     end
 
-    # def unstack
-    # end
+    # Unstack a long table to a wide form without doing an aggregation.
+    #
+    # This can be much faster than a pivot, because it can skip the grouping phase.
+    #
+    # @note
+    #   This functionality is experimental and may be subject to changes
+    #   without it being considered a breaking change.
+    #
+    # @param step Integer
+    #   Number of rows in the unstacked frame.
+    # @param how ["vertical", "horizontal"]
+    #   Direction of the unstack.
+    # @param columns [Object]
+    #   Column to include in the operation.
+    # @param fill_values [Object]
+    #   Fill values that don't fit the new size with this value.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "col1" => "A".."I",
+    #       "col2" => Polars.arange(0, 9, eager: true)
+    #     }
+    #   )
+    #   # =>
+    #   # shape: (9, 2)
+    #   # ┌──────┬──────┐
+    #   # │ col1 ┆ col2 │
+    #   # │ ---  ┆ ---  │
+    #   # │ str  ┆ i64  │
+    #   # ╞══════╪══════╡
+    #   # │ A    ┆ 0    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ B    ┆ 1    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ C    ┆ 2    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ D    ┆ 3    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ ...  ┆ ...  │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ F    ┆ 5    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ G    ┆ 6    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ H    ┆ 7    │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌┤
+    #   # │ I    ┆ 8    │
+    #   # └──────┴──────┘
+    #
+    # @example
+    #   df.unstack(step: 3, how: "vertical")
+    #   # =>
+    #   # shape: (3, 6)
+    #   # ┌────────┬────────┬────────┬────────┬────────┬────────┐
+    #   # │ col1_0 ┆ col1_1 ┆ col1_2 ┆ col2_0 ┆ col2_1 ┆ col2_2 │
+    #   # │ ---    ┆ ---    ┆ ---    ┆ ---    ┆ ---    ┆ ---    │
+    #   # │ str    ┆ str    ┆ str    ┆ i64    ┆ i64    ┆ i64    │
+    #   # ╞════════╪════════╪════════╪════════╪════════╪════════╡
+    #   # │ A      ┆ D      ┆ G      ┆ 0      ┆ 3      ┆ 6      │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ B      ┆ E      ┆ H      ┆ 1      ┆ 4      ┆ 7      │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ C      ┆ F      ┆ I      ┆ 2      ┆ 5      ┆ 8      │
+    #   # └────────┴────────┴────────┴────────┴────────┴────────┘
+    #
+    # @example
+    #   df.unstack(step: 3, how: "horizontal")
+    #   # =>
+    #   # shape: (3, 6)
+    #   # ┌────────┬────────┬────────┬────────┬────────┬────────┐
+    #   # │ col1_0 ┆ col1_1 ┆ col1_2 ┆ col2_0 ┆ col2_1 ┆ col2_2 │
+    #   # │ ---    ┆ ---    ┆ ---    ┆ ---    ┆ ---    ┆ ---    │
+    #   # │ str    ┆ str    ┆ str    ┆ i64    ┆ i64    ┆ i64    │
+    #   # ╞════════╪════════╪════════╪════════╪════════╪════════╡
+    #   # │ A      ┆ B      ┆ C      ┆ 0      ┆ 1      ┆ 2      │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ D      ┆ E      ┆ F      ┆ 3      ┆ 4      ┆ 5      │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ G      ┆ H      ┆ I      ┆ 6      ┆ 7      ┆ 8      │
+    #   # └────────┴────────┴────────┴────────┴────────┴────────┘
+    def unstack(step:, how: "vertical", columns: nil, fill_values: nil)
+      if !columns.nil?
+        df = select(columns)
+      else
+        df = self
+      end
+
+      height = df.height
+      if how == "vertical"
+        n_rows = step
+        n_cols = (height / n_rows.to_f).ceil
+      else
+        n_cols = step
+        n_rows = (height / n_cols.to_f).ceil
+      end
+
+      n_fill = n_cols * n_rows - height
+
+      if n_fill > 0
+        if !fill_values.is_a?(Array)
+          fill_values = [fill_values] * df.width
+        end
+
+        df = df.select(
+          df.get_columns.zip(fill_values).map do |s, next_fill|
+            s.extend_constant(next_fill, n_fill)
+          end
+        )
+      end
+
+      if how == "horizontal"
+        df = (
+          df.with_column(
+            (Polars.arange(0, n_cols * n_rows, eager: true) % n_cols).alias(
+              "__sort_order"
+            )
+          )
+          .sort("__sort_order")
+          .drop("__sort_order")
+        )
+      end
+
+      zfill_val = Math.log10(n_cols).floor + 1
+      slices =
+        df.get_columns.flat_map do |s|
+          n_cols.times.map do |slice_nbr|
+            s.slice(slice_nbr * n_rows, n_rows).alias("%s_%0#{zfill_val}d" % [s.name, slice_nbr])
+          end
+        end
+
+      _from_rbdf(DataFrame.new(slices)._df)
+    end
 
     # def partition_by
     # end
