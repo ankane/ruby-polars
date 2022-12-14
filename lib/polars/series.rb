@@ -2310,8 +2310,41 @@ module Polars
       super
     end
 
-    # def apply
-    # end
+    # Apply a custom/user-defined function (UDF) over elements in this Series and
+    # return a new Series.
+    #
+    # If the function returns another datatype, the return_dtype arg should be set,
+    # otherwise the method will fail.
+    #
+    # @param return_dtype [Symbol]
+    #   Output datatype. If none is given, the same datatype as this Series will be
+    #   used.
+    # @param skip_nulls [Boolean]
+    #   Nulls will be skipped and not passed to the python function.
+    #   This is faster because python can be skipped and because we call
+    #   more specialized functions.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.apply { |x| x + 10 }
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         11
+    #   #         12
+    #   #         13
+    #   # ]
+    def apply(return_dtype: nil, skip_nulls: true, &func)
+      if return_dtype.nil?
+        pl_return_dtype = nil
+      else
+        pl_return_dtype = Utils.rb_type_to_dtype(return_dtype)
+      end
+      Utils.wrap_s(_s.apply_lambda(func, pl_return_dtype, skip_nulls))
+    end
 
     # Shift the values by a given period.
     #

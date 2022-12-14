@@ -11,7 +11,23 @@ use std::hash::{Hash, Hasher};
 
 use crate::{RbDataFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
 
+pub(crate) fn slice_to_wrapped<T>(slice: &[T]) -> &[Wrap<T>] {
+    // Safety:
+    // Wrap is transparent.
+    unsafe { std::mem::transmute(slice) }
+}
+
+#[repr(transparent)]
 pub struct Wrap<T>(pub T);
+
+impl<T> Clone for Wrap<T>
+where
+    T: Clone,
+{
+    fn clone(&self) -> Self {
+        Wrap(self.0.clone())
+    }
+}
 
 impl<T> From<T> for Wrap<T> {
     fn from(t: T) -> Self {
@@ -521,15 +537,28 @@ impl From<Value> for ObjectValue {
     }
 }
 
+impl TryConvert for ObjectValue {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        Ok(ObjectValue { inner: ob })
+    }
+}
+
 impl From<&dyn PolarsObjectSafe> for &ObjectValue {
     fn from(val: &dyn PolarsObjectSafe) -> Self {
         unsafe { &*(val as *const dyn PolarsObjectSafe as *const ObjectValue) }
     }
 }
 
+// TODO remove
 impl ObjectValue {
     pub fn to_object(&self) -> Value {
         self.inner
+    }
+}
+
+impl From<ObjectValue> for Value {
+    fn from(val: ObjectValue) -> Self {
+        val.inner
     }
 }
 

@@ -35,3 +35,11 @@ impl RbValueError {
         Error::new(arg_error(), message)
     }
 }
+
+pub struct ComputeError {}
+
+impl ComputeError {
+    pub fn new_err(message: String) -> Error {
+        Error::runtime_error(message)
+    }
+}

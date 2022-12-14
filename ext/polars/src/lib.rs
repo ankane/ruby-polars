@@ -1,3 +1,4 @@
+mod apply;
 mod batched_csv;
 mod conversion;
 mod dataframe;
@@ -601,6 +602,7 @@ fn init() -> RbResult<()> {
     class.define_method("median", method!(RbSeries::median, 0))?;
     class.define_method("quantile", method!(RbSeries::quantile, 2))?;
     class.define_method("_clone", method!(RbSeries::clone, 0))?;
+    class.define_method("apply_lambda", method!(RbSeries::apply_lambda, 3))?;
     class.define_method("zip_with", method!(RbSeries::zip_with, 2))?;
     class.define_method("to_dummies", method!(RbSeries::to_dummies, 0))?;
     class.define_method("peak_max", method!(RbSeries::peak_max, 0))?;
