@@ -19,6 +19,7 @@ features = [
     "abs",
     "arange",
     "arg_where",
+    "asof_join",
     "avro",
     "concat_str",
     "cse",

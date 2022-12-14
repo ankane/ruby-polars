@@ -383,6 +383,44 @@ impl RbLazyFrame {
     }
 
     #[allow(clippy::too_many_arguments)]
+    pub fn join_asof(
+        &self,
+        other: &RbLazyFrame,
+        left_on: &RbExpr,
+        right_on: &RbExpr,
+        left_by: Option<Vec<String>>,
+        right_by: Option<Vec<String>>,
+        allow_parallel: bool,
+        force_parallel: bool,
+        suffix: String,
+        strategy: Wrap<AsofStrategy>,
+        tolerance: Option<Wrap<AnyValue<'_>>>,
+        tolerance_str: Option<String>,
+    ) -> RbResult<Self> {
+        let ldf = self.ldf.clone();
+        let other = other.ldf.clone();
+        let left_on = left_on.inner.clone();
+        let right_on = right_on.inner.clone();
+        Ok(ldf
+            .join_builder()
+            .with(other)
+            .left_on([left_on])
+            .right_on([right_on])
+            .allow_parallel(allow_parallel)
+            .force_parallel(force_parallel)
+            .how(JoinType::AsOf(AsOfOptions {
+                strategy: strategy.0,
+                left_by,
+                right_by,
+                tolerance: tolerance.map(|t| t.0.into_static().unwrap()),
+                tolerance_str,
+            }))
+            .suffix(suffix)
+            .finish()
+            .into())
+    }
+
+    #[allow(clippy::too_many_arguments)]
     pub fn join(
         &self,
         other: &RbLazyFrame,

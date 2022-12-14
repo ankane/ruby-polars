@@ -189,6 +189,22 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
     }
 }
 
+impl TryConvert for Wrap<AsofStrategy> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "backward" => AsofStrategy::Backward,
+            "forward" => AsofStrategy::Forward,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "strategy must be one of {{'backward', 'forward'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<Option<AvroCompression>> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match ob.try_convert::<String>()?.as_str() {

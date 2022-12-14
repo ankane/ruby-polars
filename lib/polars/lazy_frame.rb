@@ -773,8 +773,139 @@ module Polars
     # def groupby_dynamic
     # end
 
-    # def join_asof
-    # end
+    # Perform an asof join.
+    #
+    # This is similar to a left-join except that we match on nearest key rather than
+    # equal keys.
+    #
+    # Both DataFrames must be sorted by the join_asof key.
+    #
+    # For each row in the left DataFrame:
+    #
+    # - A "backward" search selects the last row in the right DataFrame whose 'on' key is less than or equal to the left's key.
+    # - A "forward" search selects the first row in the right DataFrame whose 'on' key is greater than or equal to the left's key.
+    #
+    # The default is "backward".
+    #
+    # @param other [LazyFrame]
+    #   Lazy DataFrame to join with.
+    # @param left_on [String]
+    #   Join column of the left DataFrame.
+    # @param right_on [String]
+    #   Join column of the right DataFrame.
+    # @param on [String]
+    #   Join column of both DataFrames. If set, `left_on` and `right_on` should be
+    #   None.
+    # @param by [Object]
+    #   Join on these columns before doing asof join.
+    # @param by_left [Object]
+    #   Join on these columns before doing asof join.
+    # @param by_right [Object]
+    #   Join on these columns before doing asof join.
+    # @param strategy ["backward", "forward"]
+    #   Join strategy.
+    # @param suffix [String]
+    #   Suffix to append to columns with a duplicate name.
+    # @param tolerance [Object]
+    #   Numeric tolerance. By setting this the join will only be done if the near
+    #   keys are within this distance. If an asof join is done on columns of dtype
+    #   "Date", "Datetime", "Duration" or "Time" you use the following string
+    #   language:
+    #
+    #   - 1ns   (1 nanosecond)
+    #   - 1us   (1 microsecond)
+    #   - 1ms   (1 millisecond)
+    #   - 1s    (1 second)
+    #   - 1m    (1 minute)
+    #   - 1h    (1 hour)
+    #   - 1d    (1 day)
+    #   - 1w    (1 week)
+    #   - 1mo   (1 calendar month)
+    #   - 1y    (1 calendar year)
+    #   - 1i    (1 index count)
+    #
+    #   Or combine them:
+    #   "3d12h4m25s" # 3 days, 12 hours, 4 minutes, and 25 seconds
+    #
+    # @param allow_parallel [Boolean]
+    #   Allow the physical plan to optionally evaluate the computation of both
+    #   DataFrames up to the join in parallel.
+    # @param force_parallel [Boolean]
+    #   Force the physical plan to evaluate the computation of both DataFrames up to
+    #   the join in parallel.
+    #
+    # @return [LazyFrame]
+    def join_asof(
+      other,
+      left_on: nil,
+      right_on: nil,
+      on: nil,
+      by_left: nil,
+      by_right: nil,
+      by: nil,
+      strategy: "backward",
+      suffix: "_right",
+      tolerance: nil,
+      allow_parallel: true,
+      force_parallel: false
+    )
+      if !other.is_a?(LazyFrame)
+        raise ArgumentError, "Expected a `LazyFrame` as join table, got #{other.class.name}"
+      end
+
+      if on.is_a?(String)
+        left_on = on
+        right_on = on
+      end
+
+      if left_on.nil? || right_on.nil?
+        raise ArgumentError, "You should pass the column to join on as an argument."
+      end
+
+      if by_left.is_a?(String) || by_left.is_a?(Expr)
+        by_left_ = [by_left]
+      else
+        by_left_ = by_left
+      end
+
+      if by_right.is_a?(String) || by_right.is_a?(Expr)
+        by_right_ = [by_right]
+      else
+        by_right_ = by_right
+      end
+
+      if by.is_a?(String)
+        by_left_ = [by]
+        by_right_ = [by]
+      elsif by.is_a?(Array)
+        by_left_ = by
+        by_right_ = by
+      end
+
+      tolerance_str = nil
+      tolerance_num = nil
+      if tolerance.is_a?(String)
+        tolerance_str = tolerance
+      else
+        tolerance_num = tolerance
+      end
+
+      _from_rbldf(
+        _ldf.join_asof(
+          other._ldf,
+          Polars.col(left_on)._rbexpr,
+          Polars.col(right_on)._rbexpr,
+          by_left_,
+          by_right_,
+          allow_parallel,
+          force_parallel,
+          suffix,
+          strategy,
+          tolerance_num,
+          tolerance_str
+        )
+      )
+    end
 
     # Add a join operation to the Logical Plan.
     #
