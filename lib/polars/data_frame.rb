@@ -4074,8 +4074,8 @@ module Polars
       end
 
       if data[0].is_a?(Series)
-        series_names = data.map(&:name)
-        columns, dtypes = _unpack_columns(columns || series_names, n_expected: data.length)
+        # series_names = data.map(&:name)
+        # columns, dtypes = _unpack_columns(columns || series_names, n_expected: data.length)
         data_series = []
         data.each do |s|
           data_series << s._s
