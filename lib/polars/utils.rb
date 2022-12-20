@@ -175,5 +175,17 @@ module Polars
     def self.bool?(value)
       value == true || value == false
     end
+
+    def self._is_iterable_of(val, eltype)
+      val.all? { |x| x.is_a?(eltype) }
+    end
+
+    def self.is_str_sequence(val, allow_str: false)
+      if allow_str == false && val.is_a?(String)
+        false
+      else
+        val.is_a?(Array) && _is_iterable_of(val, String)
+      end
+    end
   end
 end

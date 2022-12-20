@@ -1,4 +1,4 @@
-use magnus::{class, RArray, Symbol, TryConvert, Value, QNIL};
+use magnus::{class, r_hash::ForEach, RArray, RHash, Symbol, TryConvert, Value, QNIL};
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
@@ -10,7 +10,7 @@ use polars::series::ops::NullBehavior;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 
-use crate::{RbDataFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
+use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
 
 pub(crate) fn slice_to_wrapped<T>(slice: &[T]) -> &[Wrap<T>] {
     // Safety:
@@ -36,18 +36,23 @@ impl<T> From<T> for Wrap<T> {
     }
 }
 
-pub fn get_rbseq(obj: Value) -> RbResult<(RArray, usize)> {
+pub(crate) fn get_rbseq(obj: Value) -> RbResult<(RArray, usize)> {
     let seq: RArray = obj.try_convert()?;
     let len = seq.len();
     Ok((seq, len))
 }
 
-pub fn get_df(obj: Value) -> RbResult<DataFrame> {
+pub(crate) fn get_df(obj: Value) -> RbResult<DataFrame> {
     let rbdf = obj.funcall::<_, _, &RbDataFrame>("_df", ())?;
     Ok(rbdf.df.borrow().clone())
 }
 
-pub fn get_series(obj: Value) -> RbResult<Series> {
+pub(crate) fn get_lf(obj: Value) -> RbResult<LazyFrame> {
+    let rbdf = obj.funcall::<_, _, &RbLazyFrame>("_ldf", ())?;
+    Ok(rbdf.ldf.clone())
+}
+
+pub(crate) fn get_series(obj: Value) -> RbResult<Series> {
     let rbs = obj.funcall::<_, _, &RbSeries>("_s", ())?;
     Ok(rbs.series.borrow().clone())
 }
@@ -521,6 +526,21 @@ impl<'s> TryConvert for Wrap<Row<'s>> {
         }
         let vals: Vec<AnyValue> = unsafe { std::mem::transmute(vals) };
         Ok(Wrap(Row(vals)))
+    }
+}
+
+impl TryConvert for Wrap<Schema> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let dict = ob.try_convert::<RHash>()?;
+
+        let mut schema = Vec::new();
+        dict.foreach(|key: String, val: Wrap<DataType>| {
+            schema.push(Field::new(&key, val.0));
+            Ok(ForEach::Continue)
+        })
+        .unwrap();
+
+        Ok(Wrap(schema.into_iter().into()))
     }
 }
 

@@ -23,7 +23,7 @@ module Polars
     # @example Constructing a Series by specifying name and values positionally:
     #   s = Polars::Series.new("a", [1, 2, 3])
     #
-    # @example Notice that the dtype is automatically inferred as a polars Int64:
+    # @example Notice that the dtype is automatically inferred as a polars `:i64`:
     #   s.dtype
     #   # => :i64
     #
@@ -1814,8 +1814,34 @@ module Polars
     # def to_numo
     # end
 
-    # def set
-    # end
+    # Set masked values.
+    #
+    # @param filter [Series]
+    #   Boolean mask.
+    # @param value [Object]
+    #   Value with which to replace the masked values.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   Use of this function is frequently an anti-pattern, as it can
+    #   block optimization (predicate pushdown, etc). Consider using
+    #   `Polars.when(predicate).then(value).otherwise(self)` instead.
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.set(s == 2, 10)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         10
+    #   #         3
+    #   # ]
+    def set(filter, value)
+      Utils.wrap_s(_s.send("set_with_mask_#{dtype}", filter._s, value))
+    end
 
     # Set values at the index locations.
     #
@@ -3015,8 +3041,35 @@ module Polars
       end
     end
 
-    # def _hash
-    # end
+    # Hash the Series.
+    #
+    # The hash value is of type `:u64`.
+    #
+    # @param seed [Integer]
+    #   Random seed parameter. Defaults to 0.
+    # @param seed_1 [Integer]
+    #   Random seed parameter. Defaults to `seed` if not set.
+    # @param seed_2 [Integer]
+    #   Random seed parameter. Defaults to `seed` if not set.
+    # @param seed_3 [Integer]
+    #   Random seed parameter. Defaults to `seed` if not set.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s._hash(42)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [u64]
+    #   # [
+    #   #         2374023516666777365
+    #   #         10386026231460783898
+    #   #         17796317186427479491
+    #   # ]
+    def _hash(seed = 0, seed_1 = nil, seed_2 = nil, seed_3 = nil)
+      super
+    end
 
     # Reinterpret the underlying bits as a signed/unsigned integer.
     #

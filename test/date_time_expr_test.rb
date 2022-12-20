@@ -1,12 +1,6 @@
 require_relative "test_helper"
 
 class DateTimeExprTest < Minitest::Test
-  # def test_truncate
-  # end
-
-  # def test_round
-  # end
-
   def test_strftime
     assert_expr dt_expr.strftime("fmt")
   end

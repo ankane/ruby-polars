@@ -821,6 +821,43 @@ impl RbSeries {
     }
 }
 
+macro_rules! impl_set_with_mask {
+    ($name:ident, $native:ty, $cast:ident, $variant:ident) => {
+        fn $name(
+            series: &Series,
+            filter: &RbSeries,
+            value: Option<$native>,
+        ) -> PolarsResult<Series> {
+            let binding = filter.series.borrow();
+            let mask = binding.bool()?;
+            let ca = series.$cast()?;
+            let new = ca.set(mask, value)?;
+            Ok(new.into_series())
+        }
+
+        impl RbSeries {
+            pub fn $name(&self, filter: &RbSeries, value: Option<$native>) -> RbResult<Self> {
+                let series =
+                    $name(&self.series.borrow(), filter, value).map_err(RbPolarsErr::from)?;
+                Ok(Self::new(series))
+            }
+        }
+    };
+}
+
+// impl_set_with_mask!(set_with_mask_str, &str, utf8, Utf8);
+impl_set_with_mask!(set_with_mask_f64, f64, f64, Float64);
+impl_set_with_mask!(set_with_mask_f32, f32, f32, Float32);
+impl_set_with_mask!(set_with_mask_u8, u8, u8, UInt8);
+impl_set_with_mask!(set_with_mask_u16, u16, u16, UInt16);
+impl_set_with_mask!(set_with_mask_u32, u32, u32, UInt32);
+impl_set_with_mask!(set_with_mask_u64, u64, u64, UInt64);
+impl_set_with_mask!(set_with_mask_i8, i8, i8, Int8);
+impl_set_with_mask!(set_with_mask_i16, i16, i16, Int16);
+impl_set_with_mask!(set_with_mask_i32, i32, i32, Int32);
+impl_set_with_mask!(set_with_mask_i64, i64, i64, Int64);
+impl_set_with_mask!(set_with_mask_bool, bool, bool, Boolean);
+
 macro_rules! impl_arithmetic {
     ($name:ident, $type:ty, $operand:tt) => {
         impl RbSeries {

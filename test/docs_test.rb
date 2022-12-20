@@ -9,6 +9,10 @@ class DocsTest < Minitest::Test
     assert_docs Polars::CatNameSpace
   end
 
+  def test_convert
+    assert_docs Polars::Convert
+  end
+
   def test_data_frame
     assert_docs Polars::DataFrame
   end
@@ -109,7 +113,7 @@ class DocsTest < Minitest::Test
   end
 
   def assert_examples(method)
-    return if [:from_epoch, :coalesce, :cumsum, :arange, :concat, :lengths, :is_nan, :join, :is_not_nan, :read_csv_batched].include?(method.name)
+    return if [:align_frames, :from_epoch, :coalesce, :cumsum, :arange, :concat, :lengths, :is_nan, :join, :is_not_nan, :read_csv_batched].include?(method.name)
 
     code = ""
     method.tags(:example).each do |example|

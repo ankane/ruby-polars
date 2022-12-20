@@ -1,9 +1,6 @@
 require_relative "test_helper"
 
 class StringExprTest < Minitest::Test
-  # def test_strptime
-  # end
-
   def test_lengths
     assert_expr str_expr.lengths
   end
@@ -59,15 +56,6 @@ class StringExprTest < Minitest::Test
   def test_starts_with
     assert_expr str_expr.starts_with("sub")
   end
-
-  # def test_json_path_match
-  # end
-
-  # def test_decode
-  # end
-
-  # def test_encode
-  # end
 
   def test_extract
     assert_expr str_expr.extract("pattern")

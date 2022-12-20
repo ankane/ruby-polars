@@ -158,7 +158,7 @@ module Polars
         # TODO
         Utils.wrap_expr(_sum_exprs(exprs))
       else
-        raise Todo
+        fold(lit(0).cast(:u32), ->(a, b) { a + b }, column).alias("sum")
       end
     end
 
@@ -591,8 +591,12 @@ module Polars
       end
     end
 
-    # def groups
-    # end
+    # Syntactic sugar for `Polars.col("foo").agg_groups`.
+    #
+    # @return [Object]
+    def groups(column)
+      col(column).agg_groups
+    end
 
     # Syntactic sugar for `Polars.col("foo").quantile(...)`.
     #
@@ -622,7 +626,7 @@ module Polars
     # @param eager [Boolean]
     #   If eager evaluation is `True`, a Series is returned instead of an Expr.
     # @param dtype [Symbol]
-    #   Apply an explicit integer dtype to the resulting expression (default is Int64).
+    #   Apply an explicit integer dtype to the resulting expression (default is `:i64`).
     #
     # @return [Expr, Series]
     #
@@ -670,8 +674,87 @@ module Polars
       Utils.wrap_expr(RbExpr.argsort_by(exprs, reverse))
     end
 
-    # def duration
-    # end
+    # Create polars `Duration` from distinct time components.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "datetime" => [DateTime.new(2022, 1, 1), DateTime.new(2022, 1, 2)],
+    #       "add" => [1, 2]
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       (Polars.col("datetime") + Polars.duration(weeks: "add")).alias("add_weeks"),
+    #       (Polars.col("datetime") + Polars.duration(days: "add")).alias("add_days"),
+    #       (Polars.col("datetime") + Polars.duration(seconds: "add")).alias("add_seconds"),
+    #       (Polars.col("datetime") + Polars.duration(milliseconds: "add")).alias(
+    #         "add_milliseconds"
+    #       ),
+    #       (Polars.col("datetime") + Polars.duration(hours: "add")).alias("add_hours")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (2, 5)
+    #   # ┌─────────────────────┬─────────────────────┬─────────────────────┬─────────────────────────┬─────────────────────┐
+    #   # │ add_weeks           ┆ add_days            ┆ add_seconds         ┆ add_milliseconds        ┆ add_hours           │
+    #   # │ ---                 ┆ ---                 ┆ ---                 ┆ ---                     ┆ ---                 │
+    #   # │ datetime[ns]        ┆ datetime[ns]        ┆ datetime[ns]        ┆ datetime[ns]            ┆ datetime[ns]        │
+    #   # ╞═════════════════════╪═════════════════════╪═════════════════════╪═════════════════════════╪═════════════════════╡
+    #   # │ 2022-01-08 00:00:00 ┆ 2022-01-02 00:00:00 ┆ 2022-01-01 00:00:01 ┆ 2022-01-01 00:00:00.001 ┆ 2022-01-01 01:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2022-01-16 00:00:00 ┆ 2022-01-04 00:00:00 ┆ 2022-01-02 00:00:02 ┆ 2022-01-02 00:00:00.002 ┆ 2022-01-02 02:00:00 │
+    #   # └─────────────────────┴─────────────────────┴─────────────────────┴─────────────────────────┴─────────────────────┘
+    def duration(
+      days: nil,
+      seconds: nil,
+      nanoseconds: nil,
+      microseconds: nil,
+      milliseconds: nil,
+      minutes: nil,
+      hours: nil,
+      weeks: nil
+    )
+      if !hours.nil?
+        hours = Utils.expr_to_lit_or_expr(hours, str_to_lit: false)._rbexpr
+      end
+      if !minutes.nil?
+        minutes = Utils.expr_to_lit_or_expr(minutes, str_to_lit: false)._rbexpr
+      end
+      if !seconds.nil?
+        seconds = Utils.expr_to_lit_or_expr(seconds, str_to_lit: false)._rbexpr
+      end
+      if !milliseconds.nil?
+        milliseconds = Utils.expr_to_lit_or_expr(milliseconds, str_to_lit: false)._rbexpr
+      end
+      if !microseconds.nil?
+        microseconds = Utils.expr_to_lit_or_expr(microseconds, str_to_lit: false)._rbexpr
+      end
+      if !nanoseconds.nil?
+        nanoseconds = Utils.expr_to_lit_or_expr(nanoseconds, str_to_lit: false)._rbexpr
+      end
+      if !days.nil?
+        days = Utils.expr_to_lit_or_expr(days, str_to_lit: false)._rbexpr
+      end
+      if !weeks.nil?
+        weeks = Utils.expr_to_lit_or_expr(weeks, str_to_lit: false)._rbexpr
+      end
+
+      Utils.wrap_expr(
+        _rb_duration(
+          days,
+          seconds,
+          nanoseconds,
+          microseconds,
+          milliseconds,
+          minutes,
+          hours,
+          weeks
+        )
+      )
+    end
 
     # Horizontally concat Utf8 Series in linear time. Non-Utf8 columns are cast to Utf8.
     #
@@ -783,8 +866,73 @@ module Polars
       Utils.wrap_expr(RbExpr.concat_lst(exprs))
     end
 
-    # def collect_all
-    # end
+    # Collect multiple LazyFrames at the same time.
+    #
+    # This runs all the computation graphs in parallel on Polars threadpool.
+    #
+    # @param lazy_frames [Boolean]
+    #   A list of LazyFrames to collect.
+    # @param type_coercion [Boolean]
+    #   Do type coercion optimization.
+    # @param predicate_pushdown [Boolean]
+    #   Do predicate pushdown optimization.
+    # @param projection_pushdown [Boolean]
+    #   Do projection pushdown optimization.
+    # @param simplify_expression [Boolean]
+    #   Run simplify expressions optimization.
+    # @param string_cache [Boolean]
+    #   This argument is deprecated and will be ignored
+    # @param no_optimization [Boolean]
+    #   Turn off optimizations.
+    # @param slice_pushdown [Boolean]
+    #   Slice pushdown optimization.
+    # @param common_subplan_elimination [Boolean]
+    #   Will try to cache branching subplans that occur on self-joins or unions.
+    # @param allow_streaming [Boolean]
+    #   Run parts of the query in a streaming fashion (this is in an alpha state)
+    #
+    # @return [Array]
+    def collect_all(
+      lazy_frames,
+      type_coercion: true,
+      predicate_pushdown: true,
+      projection_pushdown: true,
+      simplify_expression: true,
+      string_cache: false,
+      no_optimization: false,
+      slice_pushdown: true,
+      common_subplan_elimination: true,
+      allow_streaming: false
+    )
+      if no_optimization
+        predicate_pushdown = false
+        projection_pushdown = false
+        slice_pushdown = false
+        common_subplan_elimination = false
+      end
+
+      prepared = []
+
+      lazy_frames.each do |lf|
+        ldf = lf._ldf.optimization_toggle(
+          type_coercion,
+          predicate_pushdown,
+          projection_pushdown,
+          simplify_expression,
+          slice_pushdown,
+          common_subplan_elimination,
+          allow_streaming
+        )
+        prepared << ldf
+      end
+
+      out = _collect_all(prepared)
+
+      # wrap the rbdataframes into dataframe
+      result = out.map { |rbdf| Utils.wrap_df(rbdf) }
+
+      result
+    end
 
     # Run polars expressions without a context.
     #

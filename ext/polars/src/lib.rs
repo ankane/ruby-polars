@@ -26,7 +26,7 @@ use polars::datatypes::{DataType, TimeUnit};
 use polars::error::PolarsResult;
 use polars::frame::DataFrame;
 use polars::functions::{diag_concat_df, hor_concat_df};
-use polars::prelude::{ClosedWindow, Duration, IntoSeries, TimeZone};
+use polars::prelude::{ClosedWindow, Duration, DurationArgs, IntoSeries, TimeZone};
 use series::RbSeries;
 
 #[cfg(target_os = "linux")]
@@ -56,12 +56,15 @@ fn series() -> RClass {
 #[magnus::init]
 fn init() -> RbResult<()> {
     let module = module();
+    module.define_singleton_method("_rb_duration", function!(rb_duration, 8))?;
     module.define_singleton_method("_concat_df", function!(concat_df, 1))?;
+    module.define_singleton_method("_concat_lf", function!(concat_lf, 3))?;
     module.define_singleton_method("_diag_concat_df", function!(rb_diag_concat_df, 1))?;
     module.define_singleton_method("_hor_concat_df", function!(rb_hor_concat_df, 1))?;
     module.define_singleton_method("_concat_series", function!(concat_series, 1))?;
     module.define_singleton_method("_ipc_schema", function!(ipc_schema, 1))?;
     module.define_singleton_method("_parquet_schema", function!(parquet_schema, 1))?;
+    module.define_singleton_method("_collect_all", function!(collect_all, 1))?;
     module.define_singleton_method("_rb_date_range", function!(rb_date_range, 7))?;
     module.define_singleton_method("_coalesce_exprs", function!(coalesce_exprs, 1))?;
     module.define_singleton_method("_sum_exprs", function!(sum_exprs, 1))?;
@@ -78,6 +81,7 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("read_parquet", function!(RbDataFrame::read_parquet, 7))?;
     class.define_singleton_method("read_ipc", function!(RbDataFrame::read_ipc, 6))?;
     class.define_singleton_method("read_avro", function!(RbDataFrame::read_avro, 4))?;
+    class.define_singleton_method("read_hashes", function!(RbDataFrame::read_hashes, 3))?;
     class.define_singleton_method("read_hash", function!(RbDataFrame::read_hash, 1))?;
     class.define_singleton_method("read_json", function!(RbDataFrame::read_json, 1))?;
     class.define_singleton_method("read_ndjson", function!(RbDataFrame::read_ndjson, 1))?;
@@ -169,6 +173,7 @@ fn init() -> RbResult<()> {
     class.define_method("null_count", method!(RbDataFrame::null_count, 0))?;
     class.define_method("apply", method!(RbDataFrame::apply, 3))?;
     class.define_method("shrink_to_fit", method!(RbDataFrame::shrink_to_fit, 0))?;
+    class.define_method("hash_rows", method!(RbDataFrame::hash_rows, 4))?;
     class.define_method("transpose", method!(RbDataFrame::transpose, 2))?;
     class.define_method("upsample", method!(RbDataFrame::upsample, 5))?;
     class.define_method("to_struct", method!(RbDataFrame::to_struct, 1))?;
@@ -440,6 +445,7 @@ fn init() -> RbResult<()> {
     class.define_method("log", method!(RbExpr::log, 1))?;
     class.define_method("exp", method!(RbExpr::exp, 0))?;
     class.define_method("entropy", method!(RbExpr::entropy, 2))?;
+    class.define_method("_hash", method!(RbExpr::hash, 4))?;
 
     // meta
     class.define_method("meta_pop", method!(RbExpr::meta_pop, 0))?;
@@ -626,6 +632,23 @@ fn init() -> RbResult<()> {
     class.define_method("time_unit", method!(RbSeries::time_unit, 0))?;
     class.define_method("set_at_idx", method!(RbSeries::set_at_idx, 2))?;
 
+    // set
+    // class.define_method("set_with_mask_str", method!(RbSeries::set_with_mask_str, 2))?;
+    class.define_method("set_with_mask_f64", method!(RbSeries::set_with_mask_f64, 2))?;
+    class.define_method("set_with_mask_f32", method!(RbSeries::set_with_mask_f32, 2))?;
+    class.define_method("set_with_mask_u8", method!(RbSeries::set_with_mask_u8, 2))?;
+    class.define_method("set_with_mask_u16", method!(RbSeries::set_with_mask_u16, 2))?;
+    class.define_method("set_with_mask_u32", method!(RbSeries::set_with_mask_u32, 2))?;
+    class.define_method("set_with_mask_u64", method!(RbSeries::set_with_mask_u64, 2))?;
+    class.define_method("set_with_mask_i8", method!(RbSeries::set_with_mask_i8, 2))?;
+    class.define_method("set_with_mask_i16", method!(RbSeries::set_with_mask_i16, 2))?;
+    class.define_method("set_with_mask_i32", method!(RbSeries::set_with_mask_i32, 2))?;
+    class.define_method("set_with_mask_i64", method!(RbSeries::set_with_mask_i64, 2))?;
+    class.define_method(
+        "set_with_mask_bool",
+        method!(RbSeries::set_with_mask_bool, 2),
+    )?;
+
     // arithmetic
     class.define_method("add_u8", method!(RbSeries::add_u8, 1))?;
     class.define_method("add_u16", method!(RbSeries::add_u16, 1))?;
@@ -769,6 +792,31 @@ fn init() -> RbResult<()> {
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
+fn rb_duration(
+    days: Option<&RbExpr>,
+    seconds: Option<&RbExpr>,
+    nanoseconds: Option<&RbExpr>,
+    microseconds: Option<&RbExpr>,
+    milliseconds: Option<&RbExpr>,
+    minutes: Option<&RbExpr>,
+    hours: Option<&RbExpr>,
+    weeks: Option<&RbExpr>,
+) -> RbExpr {
+    let args = DurationArgs {
+        days: days.map(|e| e.inner.clone()),
+        seconds: seconds.map(|e| e.inner.clone()),
+        nanoseconds: nanoseconds.map(|e| e.inner.clone()),
+        microseconds: microseconds.map(|e| e.inner.clone()),
+        milliseconds: milliseconds.map(|e| e.inner.clone()),
+        minutes: minutes.map(|e| e.inner.clone()),
+        hours: hours.map(|e| e.inner.clone()),
+        weeks: weeks.map(|e| e.inner.clone()),
+    };
+
+    polars::lazy::dsl::duration(args).into()
+}
+
 fn concat_df(seq: RArray) -> RbResult<RbDataFrame> {
     let mut iter = seq.each();
     let first = iter.next().unwrap()?;
@@ -795,6 +843,20 @@ fn concat_df(seq: RArray) -> RbResult<RbDataFrame> {
         .map_err(RbPolarsErr::from)?;
 
     Ok(df.into())
+}
+
+fn concat_lf(lfs: Value, rechunk: bool, parallel: bool) -> RbResult<RbLazyFrame> {
+    let (seq, len) = get_rbseq(lfs)?;
+    let mut lfs = Vec::with_capacity(len);
+
+    for res in seq.each() {
+        let item = res?;
+        let lf = get_lf(item)?;
+        lfs.push(lf);
+    }
+
+    let lf = polars::lazy::dsl::concat(lfs, rechunk, parallel).map_err(RbPolarsErr::from)?;
+    Ok(lf.into())
 }
 
 fn rb_diag_concat_df(seq: RArray) -> RbResult<RbDataFrame> {
@@ -855,6 +917,27 @@ fn parquet_schema(rb_f: Value) -> RbResult<Value> {
         dict.aset(field.name, dt)?;
     }
     Ok(dict.into())
+}
+
+fn collect_all(lfs: RArray) -> RbResult<Vec<RbDataFrame>> {
+    use polars_core::utils::rayon::prelude::*;
+
+    let lfs = lfs
+        .each()
+        .map(|v| v?.try_convert::<&RbLazyFrame>())
+        .collect::<RbResult<Vec<&RbLazyFrame>>>()?;
+
+    let out = polars_core::POOL.install(|| {
+        lfs.par_iter()
+            .map(|lf| {
+                let df = lf.ldf.clone().collect()?;
+                Ok(RbDataFrame::new(df))
+            })
+            .collect::<polars_core::error::PolarsResult<Vec<_>>>()
+            .map_err(RbPolarsErr::from)
+    });
+
+    Ok(out?)
 }
 
 fn rb_date_range(

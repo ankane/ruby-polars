@@ -1279,6 +1279,7 @@ dependencies = [
 name = "polars"
 version = "0.1.4"
 dependencies = [
+ "ahash 0.8.2",
  "jemallocator",
  "magnus",
  "mimalloc",

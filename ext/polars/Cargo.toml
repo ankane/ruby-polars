@@ -9,6 +9,7 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
+ahash = "0.8"
 magnus = "0.4"
 polars-core = "0.25.1"
 serde_json = "1"
@@ -64,6 +65,7 @@ features = [
     "repeat_by",
     "rolling_window",
     "round_series",
+    "row_hash",
     "search_sorted",
     "semi_anti_join",
     "serde-lazy",

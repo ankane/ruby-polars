@@ -286,6 +286,14 @@ impl RbDataFrame {
         Ok(())
     }
 
+    pub fn read_hashes(
+        _dicts: Value,
+        _infer_schema_length: Option<usize>,
+        _schema_overwrite: Option<Wrap<Schema>>,
+    ) -> RbResult<Self> {
+        Err(RbPolarsErr::todo())
+    }
+
     pub fn read_hash(data: RHash) -> RbResult<Self> {
         let mut cols: Vec<Series> = Vec::new();
         data.foreach(|name: String, values: Value| {
@@ -999,6 +1007,16 @@ impl RbDataFrame {
 
     pub fn shrink_to_fit(&self) {
         self.df.borrow_mut().shrink_to_fit();
+    }
+
+    pub fn hash_rows(&self, k0: u64, k1: u64, k2: u64, k3: u64) -> RbResult<RbSeries> {
+        let hb = ahash::RandomState::with_seeds(k0, k1, k2, k3);
+        let hash = self
+            .df
+            .borrow_mut()
+            .hash_rows(Some(hb))
+            .map_err(RbPolarsErr::from)?;
+        Ok(hash.into_series().into())
     }
 
     pub fn transpose(&self, include_header: bool, names: String) -> RbResult<Self> {

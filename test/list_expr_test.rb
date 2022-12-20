@@ -33,9 +33,6 @@ class ListExprTest < Minitest::Test
     assert_expr arr_expr.unique
   end
 
-  # def test_concat
-  # end
-
   def test_get
     assert_expr arr_expr.get(0)
   end
@@ -87,10 +84,6 @@ class ListExprTest < Minitest::Test
   def test_tail
     assert_expr arr_expr.tail
   end
-
-  # def test_to_struct
-  #   assert_expr arr_expr.to_struct
-  # end
 
   def test_eval
     rank_pct = Polars.element.rank(reverse: true) / Polars.col("").count

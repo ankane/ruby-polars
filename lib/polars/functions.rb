@@ -199,11 +199,200 @@ module Polars
       dt_range
     end
 
-    # def cut
+    # Bin values into discrete values.
+    #
+    # @param s [Series]
+    #   Series to bin.
+    # @param bins [Array]
+    #   Bins to create.
+    # @param labels [Array]
+    #   Labels to assign to the bins. If given the length of labels must be
+    #   len(bins) + 1.
+    # @param break_point_label [String]
+    #   Name given to the breakpoint column.
+    # @param category_label [String]
+    #   Name given to the category column.
+    #
+    # @return [DataFrame]
+    #
+    # @note
+    #   This functionality is experimental and may change without it being considered a
+    #   breaking change.
+    #
+    # @example
+    #   a = Polars::Series.new("a", 13.times.map { |i| (-30 + i * 5) / 10.0 })
+    #   Polars.cut(a, [-1, 1])
+    #   # =>
+    #   # shape: (12, 3)
+    #   # ┌──────┬─────────────┬──────────────┐
+    #   # │ a    ┆ break_point ┆ category     │
+    #   # │ ---  ┆ ---         ┆ ---          │
+    #   # │ f64  ┆ f64         ┆ cat          │
+    #   # ╞══════╪═════════════╪══════════════╡
+    #   # │ -3.0 ┆ -1.0        ┆ (-inf, -1.0] │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ -2.5 ┆ -1.0        ┆ (-inf, -1.0] │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ -2.0 ┆ -1.0        ┆ (-inf, -1.0] │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ -1.5 ┆ -1.0        ┆ (-inf, -1.0] │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ ...  ┆ ...         ┆ ...          │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1.0  ┆ 1.0         ┆ (-1.0, 1.0]  │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 1.5  ┆ inf         ┆ (1.0, inf]   │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2.0  ┆ inf         ┆ (1.0, inf]   │
+    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2.5  ┆ inf         ┆ (1.0, inf]   │
+    #   # └──────┴─────────────┴──────────────┘
+    # def cut(
+    #   s,
+    #   bins,
+    #   labels: nil,
+    #   break_point_label: "break_point",
+    #   category_label: "category"
+    # )
+    #   var_nm = s.name
+
+    #   cuts_df = DataFrame.new(
+    #     [
+    #       Series.new(
+    #         break_point_label, bins, dtype: :f64
+    #       ).extend_constant(Float::INFINITY, 1)
+    #     ]
+    #   )
+
+    #   if labels
+    #     if labels.length != bins.length + 1
+    #       raise ArgumentError, "expected more labels"
+    #     end
+    #     cuts_df = cuts_df.with_column(Series.new(category_label, labels))
+    #   else
+    #     cuts_df = cuts_df.with_column(
+    #       Polars.format(
+    #         "({}, {}]",
+    #         Polars.col(break_point_label).shift_and_fill(1, -Float::INFINITY),
+    #         Polars.col(break_point_label)
+    #       ).alias(category_label)
+    #     )
+    #   end
+
+    #   cuts_df = cuts_df.with_column(Polars.col(category_label).cast(:cat))
+
+    #   s.cast(:f64)
+    #     .sort
+    #     .to_frame
+    #     .join_asof(
+    #       cuts_df,
+    #       left_on: var_nm,
+    #       right_on: break_point_label,
+    #       strategy: "forward"
+    #     )
     # end
 
-    # def align_frames
-    # end
+    # Align a sequence of frames using the uique values from one or more columns as a key.
+    #
+    # Frames that do not contain the given key values have rows injected (with nulls
+    # filling the non-key columns), and each resulting frame is sorted by the key.
+    #
+    # The original column order of input frames is not changed unless ``select`` is
+    # specified (in which case the final column order is determined from that).
+    #
+    # Note that this does not result in a joined frame - you receive the same number
+    # of frames back that you passed in, but each is now aligned by key and has
+    # the same number of rows.
+    #
+    # @param frames [Array]
+    #   Sequence of DataFrames or LazyFrames.
+    # @param on [Object]
+    #   One or more columns whose unique values will be used to align the frames.
+    # @param select [Object]
+    #   Optional post-alignment column select to constrain and/or order
+    #   the columns returned from the newly aligned frames.
+    # @param reverse [Object]
+    #   Sort the alignment column values in descending order; can be a single
+    #   boolean or a list of booleans associated with each column in `on`.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df1 = Polars::DataFrame.new(
+    #     {
+    #       "dt" => [Date.new(2022, 9, 1), Date.new(2022, 9, 2), Date.new(2022, 9, 3)],
+    #       "x" => [3.5, 4.0, 1.0],
+    #       "y" => [10.0, 2.5, 1.5]
+    #     }
+    #   )
+    #   df2 = Polars::DataFrame.new(
+    #     {
+    #       "dt" => [Date.new(2022, 9, 2), Date.new(2022, 9, 3), Date.new(2022, 9, 1)],
+    #       "x" => [8.0, 1.0, 3.5],
+    #       "y" => [1.5, 12.0, 5.0]
+    #     }
+    #   )
+    #   df3 = Polars::DataFrame.new(
+    #     {
+    #       "dt" => [Date.new(2022, 9, 3), Date.new(2022, 9, 2)],
+    #       "x" => [2.0, 5.0],
+    #       "y" => [2.5, 2.0]
+    #     }
+    #   )
+    #   af1, af2, af3 = Polars.align_frames(
+    #     df1, df2, df3, on: "dt", select: ["x", "y"]
+    #   )
+    #   (af1 * af2 * af3).fill_null(0).select(Polars.sum(Polars.col("*")).alias("dot"))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌───────┐
+    #   # │ dot   │
+    #   # │ ---   │
+    #   # │ f64   │
+    #   # ╞═══════╡
+    #   # │ 0.0   │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 167.5 │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 47.0  │
+    #   # └───────┘
+    def align_frames(
+      *frames,
+      on:,
+      select: nil,
+      reverse: false
+    )
+      if frames.empty?
+        return []
+      elsif frames.map(&:class).uniq.length != 1
+        raise TypeError, "Input frames must be of a consistent type (all LazyFrame or all DataFrame)"
+      end
+
+      # establish the superset of all "on" column values, sort, and cache
+      eager = frames[0].is_a?(DataFrame)
+      alignment_frame = (
+        concat(frames.map { |df| df.lazy.select(on) })
+          .unique(maintain_order: false)
+          .sort(on, reverse: reverse)
+      )
+      alignment_frame = (
+        eager ? alignment_frame.collect.lazy : alignment_frame.cache
+      )
+      # finally, align all frames
+      aligned_frames =
+        frames.map do |df|
+          alignment_frame.join(
+            df.lazy,
+            on: alignment_frame.columns,
+            how: "left"
+          ).select(df.columns)
+        end
+      if !select.nil?
+        aligned_frames = aligned_frames.map { |df| df.select(select) }
+      end
+
+      eager ? aligned_frames.map(&:collect) : aligned_frames
+    end
 
     # Return a new Series of given length and type, filled with ones.
     #

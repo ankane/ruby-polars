@@ -270,8 +270,43 @@ module Polars
       nil
     end
 
-    # def pipe
-    # end
+    # Offers a structured way to apply a sequence of user-defined functions (UDFs).
+    #
+    # @param func [Object]
+    #   Callable; will receive the frame as the first parameter,
+    #   followed by any given args/kwargs.
+    # @param args [Object]
+    #   Arguments to pass to the UDF.
+    # @param kwargs [Object]
+    #   Keyword arguments to pass to the UDF.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   cast_str_to_int = lambda do |data, col_name:|
+    #     data.with_column(Polars.col(col_name).cast(:i64))
+    #   end
+    #
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => ["10", "20", "30", "40"]}).lazy
+    #   df.pipe(cast_str_to_int, col_name: "b").collect()
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 10  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2   ┆ 20  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 3   ┆ 30  │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 4   ┆ 40  │
+    #   # └─────┴─────┘
+    def pipe(func, *args, **kwargs, &block)
+      func.call(self, *args, **kwargs, &block)
+    end
 
     # Create a string representation of the unoptimized query plan.
     #
@@ -767,11 +802,408 @@ module Polars
       LazyGroupBy.new(lgb, self.class)
     end
 
-    # def groupby_rolling
-    # end
+    # Create rolling groups based on a time column.
+    #
+    # Also works for index values of type `:i32` or `:i64`.
+    #
+    # Different from a `dynamic_groupby` the windows are now determined by the
+    # individual values and are not of constant intervals. For constant intervals
+    # use *groupby_dynamic*.
+    #
+    # The `period` and `offset` arguments are created either from a timedelta, or
+    # by using the following string language:
+    #
+    # - 1ns   (1 nanosecond)
+    # - 1us   (1 microsecond)
+    # - 1ms   (1 millisecond)
+    # - 1s    (1 second)
+    # - 1m    (1 minute)
+    # - 1h    (1 hour)
+    # - 1d    (1 day)
+    # - 1w    (1 week)
+    # - 1mo   (1 calendar month)
+    # - 1y    (1 calendar year)
+    # - 1i    (1 index count)
+    #
+    # Or combine them:
+    # "3d12h4m25s" # 3 days, 12 hours, 4 minutes, and 25 seconds
+    #
+    # In case of a groupby_rolling on an integer column, the windows are defined by:
+    #
+    # - "1i"      # length 1
+    # - "10i"     # length 10
+    #
+    # @param index_column [Object]
+    #   Column used to group based on the time window.
+    #   Often to type Date/Datetime
+    #   This column must be sorted in ascending order. If not the output will not
+    #   make sense.
+    #
+    #   In case of a rolling groupby on indices, dtype needs to be one of
+    #   `:i32`, `:i64`. Note that `:i32` gets temporarily cast to `:i64`, so if
+    #   performance matters use an `:i64` column.
+    # @param period [Object]
+    #   Length of the window.
+    # @param offset [Object]
+    #   Offset of the window. Default is -period.
+    # @param closed ["right", "left", "both", "none"]
+    #   Define whether the temporal window interval is closed or not.
+    # @param by [Object]
+    #   Also group by this column/these columns.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   dates = [
+    #     "2020-01-01 13:45:48",
+    #     "2020-01-01 16:42:13",
+    #     "2020-01-01 16:45:09",
+    #     "2020-01-02 18:12:48",
+    #     "2020-01-03 19:45:32",
+    #     "2020-01-08 23:16:43"
+    #   ]
+    #   df = Polars::DataFrame.new({"dt" => dates, "a" => [3, 7, 5, 9, 2, 1]}).with_column(
+    #     Polars.col("dt").str.strptime(:datetime)
+    #   )
+    #   df.groupby_rolling(index_column: "dt", period: "2d").agg(
+    #     [
+    #       Polars.sum("a").alias("sum_a"),
+    #       Polars.min("a").alias("min_a"),
+    #       Polars.max("a").alias("max_a")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (6, 4)
+    #   # ┌─────────────────────┬───────┬───────┬───────┐
+    #   # │ dt                  ┆ sum_a ┆ min_a ┆ max_a │
+    #   # │ ---                 ┆ ---   ┆ ---   ┆ ---   │
+    #   # │ datetime[μs]        ┆ i64   ┆ i64   ┆ i64   │
+    #   # ╞═════════════════════╪═══════╪═══════╪═══════╡
+    #   # │ 2020-01-01 13:45:48 ┆ 3     ┆ 3     ┆ 3     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 16:42:13 ┆ 10    ┆ 3     ┆ 7     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 16:45:09 ┆ 15    ┆ 3     ┆ 7     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-02 18:12:48 ┆ 24    ┆ 3     ┆ 9     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-03 19:45:32 ┆ 11    ┆ 2     ┆ 9     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-08 23:16:43 ┆ 1     ┆ 1     ┆ 1     │
+    #   # └─────────────────────┴───────┴───────┴───────┘
+    def groupby_rolling(
+      index_column:,
+      period:,
+      offset: nil,
+      closed: "right",
+      by: nil
+    )
+      if offset.nil?
+        offset = "-#{period}"
+      end
 
-    # def groupby_dynamic
-    # end
+      rbexprs_by = by.nil? ? [] : Utils.selection_to_rbexpr_list(by)
+      period = Utils._timedelta_to_pl_duration(period)
+      offset = Utils._timedelta_to_pl_duration(offset)
+
+      lgb = _ldf.groupby_rolling(
+        index_column, period, offset, closed, rbexprs_by
+      )
+      LazyGroupBy.new(lgb, self.class)
+    end
+
+    # Group based on a time value (or index value of type `:i32`, `:i64`).
+    #
+    # Time windows are calculated and rows are assigned to windows. Different from a
+    # normal groupby is that a row can be member of multiple groups. The time/index
+    # window could be seen as a rolling window, with a window size determined by
+    # dates/times/values instead of slots in the DataFrame.
+    #
+    # A window is defined by:
+    #
+    # - every: interval of the window
+    # - period: length of the window
+    # - offset: offset of the window
+    #
+    # The `every`, `period` and `offset` arguments are created with
+    # the following string language:
+    #
+    # - 1ns   (1 nanosecond)
+    # - 1us   (1 microsecond)
+    # - 1ms   (1 millisecond)
+    # - 1s    (1 second)
+    # - 1m    (1 minute)
+    # - 1h    (1 hour)
+    # - 1d    (1 day)
+    # - 1w    (1 week)
+    # - 1mo   (1 calendar month)
+    # - 1y    (1 calendar year)
+    # - 1i    (1 index count)
+    #
+    # Or combine them:
+    # "3d12h4m25s" # 3 days, 12 hours, 4 minutes, and 25 seconds
+    #
+    # In case of a groupby_dynamic on an integer column, the windows are defined by:
+    #
+    # - "1i"      # length 1
+    # - "10i"     # length 10
+    #
+    # @param index_column
+    #   Column used to group based on the time window.
+    #   Often to type Date/Datetime
+    #   This column must be sorted in ascending order. If not the output will not
+    #   make sense.
+    #
+    #   In case of a dynamic groupby on indices, dtype needs to be one of
+    #   `:i32`, `:i64`. Note that `:i32` gets temporarily cast to `:i64`, so if
+    #   performance matters use an `:i64` column.
+    # @param every
+    #   Interval of the window.
+    # @param period
+    #   Length of the window, if None it is equal to 'every'.
+    # @param offset
+    #   Offset of the window if None and period is None it will be equal to negative
+    #   `every`.
+    # @param truncate
+    #   Truncate the time value to the window lower bound.
+    # @param include_boundaries
+    #   Add the lower and upper bound of the window to the "_lower_bound" and
+    #   "_upper_bound" columns. This will impact performance because it's harder to
+    #   parallelize
+    # @param closed ["right", "left", "both", "none"]
+    #   Define whether the temporal window interval is closed or not.
+    # @param by
+    #   Also group by this column/these columns
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "time" => Polars.date_range(
+    #         DateTime.new(2021, 12, 16),
+    #         DateTime.new(2021, 12, 16, 3),
+    #         "30m"
+    #       ),
+    #       "n" => 0..6
+    #     }
+    #   )
+    #   # =>
+    #   # shape: (7, 2)
+    #   # ┌─────────────────────┬─────┐
+    #   # │ time                ┆ n   │
+    #   # │ ---                 ┆ --- │
+    #   # │ datetime[μs]        ┆ i64 │
+    #   # ╞═════════════════════╪═════╡
+    #   # │ 2021-12-16 00:00:00 ┆ 0   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2021-12-16 00:30:00 ┆ 1   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2021-12-16 01:00:00 ┆ 2   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2021-12-16 01:30:00 ┆ 3   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2021-12-16 02:00:00 ┆ 4   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2021-12-16 02:30:00 ┆ 5   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2021-12-16 03:00:00 ┆ 6   │
+    #   # └─────────────────────┴─────┘
+    #
+    # @example Group by windows of 1 hour starting at 2021-12-16 00:00:00.
+    #   df.groupby_dynamic("time", every: "1h", closed: "right").agg(
+    #     [
+    #       Polars.col("time").min.alias("time_min"),
+    #       Polars.col("time").max.alias("time_max")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────────────────────┬─────────────────────┬─────────────────────┐
+    #   # │ time                ┆ time_min            ┆ time_max            │
+    #   # │ ---                 ┆ ---                 ┆ ---                 │
+    #   # │ datetime[μs]        ┆ datetime[μs]        ┆ datetime[μs]        │
+    #   # ╞═════════════════════╪═════════════════════╪═════════════════════╡
+    #   # │ 2021-12-15 23:00:00 ┆ 2021-12-16 00:00:00 ┆ 2021-12-16 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 00:00:00 ┆ 2021-12-16 00:30:00 ┆ 2021-12-16 01:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 01:00:00 ┆ 2021-12-16 01:30:00 ┆ 2021-12-16 02:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 02:00:00 ┆ 2021-12-16 02:30:00 ┆ 2021-12-16 03:00:00 │
+    #   # └─────────────────────┴─────────────────────┴─────────────────────┘
+    #
+    # @example The window boundaries can also be added to the aggregation result.
+    #   df.groupby_dynamic(
+    #     "time", every: "1h", include_boundaries: true, closed: "right"
+    #   ).agg([Polars.col("time").count.alias("time_count")])
+    #   # =>
+    #   # shape: (4, 4)
+    #   # ┌─────────────────────┬─────────────────────┬─────────────────────┬────────────┐
+    #   # │ _lower_boundary     ┆ _upper_boundary     ┆ time                ┆ time_count │
+    #   # │ ---                 ┆ ---                 ┆ ---                 ┆ ---        │
+    #   # │ datetime[μs]        ┆ datetime[μs]        ┆ datetime[μs]        ┆ u32        │
+    #   # ╞═════════════════════╪═════════════════════╪═════════════════════╪════════════╡
+    #   # │ 2021-12-15 23:00:00 ┆ 2021-12-16 00:00:00 ┆ 2021-12-15 23:00:00 ┆ 1          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 00:00:00 ┆ 2021-12-16 01:00:00 ┆ 2021-12-16 00:00:00 ┆ 2          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 01:00:00 ┆ 2021-12-16 02:00:00 ┆ 2021-12-16 01:00:00 ┆ 2          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 02:00:00 ┆ 2021-12-16 03:00:00 ┆ 2021-12-16 02:00:00 ┆ 2          │
+    #   # └─────────────────────┴─────────────────────┴─────────────────────┴────────────┘
+    #
+    # @example When closed="left", should not include right end of interval.
+    #   df.groupby_dynamic("time", every: "1h", closed: "left").agg(
+    #     [
+    #       Polars.col("time").count.alias("time_count"),
+    #       Polars.col("time").list.alias("time_agg_list")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────────────────────┬────────────┬─────────────────────────────────────┐
+    #   # │ time                ┆ time_count ┆ time_agg_list                       │
+    #   # │ ---                 ┆ ---        ┆ ---                                 │
+    #   # │ datetime[μs]        ┆ u32        ┆ list[datetime[μs]]                  │
+    #   # ╞═════════════════════╪════════════╪═════════════════════════════════════╡
+    #   # │ 2021-12-16 00:00:00 ┆ 2          ┆ [2021-12-16 00:00:00, 2021-12-16... │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 01:00:00 ┆ 2          ┆ [2021-12-16 01:00:00, 2021-12-16... │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 02:00:00 ┆ 2          ┆ [2021-12-16 02:00:00, 2021-12-16... │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 03:00:00 ┆ 1          ┆ [2021-12-16 03:00:00]               │
+    #   # └─────────────────────┴────────────┴─────────────────────────────────────┘
+    #
+    # @example When closed="both" the time values at the window boundaries belong to 2 groups.
+    #   df.groupby_dynamic("time", every: "1h", closed: "both").agg(
+    #     [Polars.col("time").count.alias("time_count")]
+    #   )
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────────────────────┬────────────┐
+    #   # │ time                ┆ time_count │
+    #   # │ ---                 ┆ ---        │
+    #   # │ datetime[μs]        ┆ u32        │
+    #   # ╞═════════════════════╪════════════╡
+    #   # │ 2021-12-15 23:00:00 ┆ 1          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 00:00:00 ┆ 3          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 01:00:00 ┆ 3          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 02:00:00 ┆ 3          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 03:00:00 ┆ 1          │
+    #   # └─────────────────────┴────────────┘
+    #
+    # @example Dynamic groupbys can also be combined with grouping on normal keys.
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "time" => Polars.date_range(
+    #         DateTime.new(2021, 12, 16),
+    #         DateTime.new(2021, 12, 16, 3),
+    #         "30m"
+    #       ),
+    #       "groups" => ["a", "a", "a", "b", "b", "a", "a"]
+    #     }
+    #   )
+    #   df.groupby_dynamic(
+    #     "time",
+    #     every: "1h",
+    #     closed: "both",
+    #     by: "groups",
+    #     include_boundaries: true
+    #   ).agg([Polars.col("time").count.alias("time_count")])
+    #   # =>
+    #   # shape: (7, 5)
+    #   # ┌────────┬─────────────────────┬─────────────────────┬─────────────────────┬────────────┐
+    #   # │ groups ┆ _lower_boundary     ┆ _upper_boundary     ┆ time                ┆ time_count │
+    #   # │ ---    ┆ ---                 ┆ ---                 ┆ ---                 ┆ ---        │
+    #   # │ str    ┆ datetime[μs]        ┆ datetime[μs]        ┆ datetime[μs]        ┆ u32        │
+    #   # ╞════════╪═════════════════════╪═════════════════════╪═════════════════════╪════════════╡
+    #   # │ a      ┆ 2021-12-15 23:00:00 ┆ 2021-12-16 00:00:00 ┆ 2021-12-15 23:00:00 ┆ 1          │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ a      ┆ 2021-12-16 00:00:00 ┆ 2021-12-16 01:00:00 ┆ 2021-12-16 00:00:00 ┆ 3          │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ a      ┆ 2021-12-16 01:00:00 ┆ 2021-12-16 02:00:00 ┆ 2021-12-16 01:00:00 ┆ 1          │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ a      ┆ 2021-12-16 02:00:00 ┆ 2021-12-16 03:00:00 ┆ 2021-12-16 02:00:00 ┆ 2          │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ a      ┆ 2021-12-16 03:00:00 ┆ 2021-12-16 04:00:00 ┆ 2021-12-16 03:00:00 ┆ 1          │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ b      ┆ 2021-12-16 01:00:00 ┆ 2021-12-16 02:00:00 ┆ 2021-12-16 01:00:00 ┆ 2          │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ b      ┆ 2021-12-16 02:00:00 ┆ 2021-12-16 03:00:00 ┆ 2021-12-16 02:00:00 ┆ 1          │
+    #   # └────────┴─────────────────────┴─────────────────────┴─────────────────────┴────────────┘
+    #
+    # @example Dynamic groupby on an index column.
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "idx" => Polars.arange(0, 6, eager: true),
+    #       "A" => ["A", "A", "B", "B", "B", "C"]
+    #     }
+    #   )
+    #   df.groupby_dynamic(
+    #     "idx",
+    #     every: "2i",
+    #     period: "3i",
+    #     include_boundaries: true,
+    #     closed: "right"
+    #   ).agg(Polars.col("A").list.alias("A_agg_list"))
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌─────────────────┬─────────────────┬─────┬─────────────────┐
+    #   # │ _lower_boundary ┆ _upper_boundary ┆ idx ┆ A_agg_list      │
+    #   # │ ---             ┆ ---             ┆ --- ┆ ---             │
+    #   # │ i64             ┆ i64             ┆ i64 ┆ list[str]       │
+    #   # ╞═════════════════╪═════════════════╪═════╪═════════════════╡
+    #   # │ 0               ┆ 3               ┆ 0   ┆ ["A", "B", "B"] │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2               ┆ 5               ┆ 2   ┆ ["B", "B", "C"] │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 4               ┆ 7               ┆ 4   ┆ ["C"]           │
+    #   # └─────────────────┴─────────────────┴─────┴─────────────────┘
+    def groupby_dynamic(
+      index_column,
+      every:,
+      period: nil,
+      offset: nil,
+      truncate: true,
+      include_boundaries: false,
+      closed: "left",
+      by: nil
+    )
+      if offset.nil?
+        if period.nil?
+          offset = "-#{every}"
+        else
+          offset = "0ns"
+        end
+      end
+
+      if period.nil?
+        period = every
+      end
+
+      period = Utils._timedelta_to_pl_duration(period)
+      offset = Utils._timedelta_to_pl_duration(offset)
+      every = Utils._timedelta_to_pl_duration(every)
+
+      rbexprs_by = by.nil? ? [] : Utils.selection_to_rbexpr_list(by)
+      lgb = _ldf.groupby_dynamic(
+        index_column,
+        every,
+        period,
+        offset,
+        truncate,
+        include_boundaries,
+        closed,
+        rbexprs_by
+      )
+      LazyGroupBy.new(lgb, self.class)
+    end
 
     # Perform an asof join.
     #

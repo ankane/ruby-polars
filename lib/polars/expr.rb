@@ -3008,8 +3008,49 @@ module Polars
       end
     end
 
-    # def _hash
-    # end
+    # Hash the elements in the selection.
+    #
+    # The hash value is of type `:u64`.
+    #
+    # @param seed [Integer]
+    #   Random seed parameter. Defaults to 0.
+    # @param seed_1 [Integer]
+    #   Random seed parameter. Defaults to `seed` if not set.
+    # @param seed_2 [Integer]
+    #   Random seed parameter. Defaults to `seed` if not set.
+    # @param seed_3 [Integer]
+    #   Random seed parameter. Defaults to `seed` if not set.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, nil],
+    #       "b" => ["x", nil, "z"]
+    #     }
+    #   )
+    #   df.with_column(Polars.all._hash(10, 20, 30, 40))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌──────────────────────┬──────────────────────┐
+    #   # │ a                    ┆ b                    │
+    #   # │ ---                  ┆ ---                  │
+    #   # │ u64                  ┆ u64                  │
+    #   # ╞══════════════════════╪══════════════════════╡
+    #   # │ 4629889412789719550  ┆ 6959506404929392568  │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 16386608652769605760 ┆ 11638928888656214026 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 11638928888656214026 ┆ 11040941213715918520 │
+    #   # └──────────────────────┴──────────────────────┘
+    def _hash(seed = 0, seed_1 = nil, seed_2 = nil, seed_3 = nil)
+      k0 = seed
+      k1 = seed_1.nil? ? seed : seed_1
+      k2 = seed_2.nil? ? seed : seed_2
+      k3 = seed_3.nil? ? seed : seed_3
+      wrap_expr(_rbexpr._hash(k0, k1, k2, k3))
+    end
 
     # Reinterpret the underlying bits as a signed/unsigned integer.
     #
@@ -3047,7 +3088,40 @@ module Polars
       wrap_expr(_rbexpr.reinterpret(signed))
     end
 
-    # def _inspect
+    # Print the value that this expression evaluates to and pass on the value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 1, 2]})
+    #   df.select(Polars.col("foo").cumsum._inspect("value is: %s").alias("bar"))
+    #   # =>
+    #   # value is: shape: (3,)
+    #   # Series: 'foo' [i64]
+    #   # [
+    #   #     1
+    #   #     2
+    #   #     4
+    #   # ]
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ bar │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 2   │
+    #   # ├╌╌╌╌╌┤
+    #   # │ 4   │
+    #   # └─────┘
+    # def _inspect(fmt = "%s")
+    #   inspect = lambda do |s|
+    #     puts(fmt % [s])
+    #     s
+    #   end
+
+    #   map(return_dtype: nil, agg_list: true, &inspect)
     # end
 
     # Fill nulls with linear interpolation over missing values.
@@ -3831,7 +3905,72 @@ module Polars
       )
     end
 
-    # def rolling_apply
+    # Apply a custom rolling window function.
+    #
+    # Prefer the specific rolling window functions over this one, as they are faster.
+    #
+    # Prefer:
+    # * rolling_min
+    # * rolling_max
+    # * rolling_mean
+    # * rolling_sum
+    #
+    # @param window_size [Integer]
+    #   The length of the window.
+    # @param weights [Object]
+    #   An optional slice with the same length as the window that will be multiplied
+    #   elementwise with the values in the window.
+    # @param min_periods [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If nil, it will be set equal to window size.
+    # @param center [Boolean]
+    #   Set the labels at the center of the window
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "A" => [1.0, 2.0, 9.0, 2.0, 13.0]
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("A").rolling_apply(window_size: 3) { |s| s.std }
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (5, 1)
+    #   # ┌──────────┐
+    #   # │ A        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ null     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ null     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 4.358899 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 4.041452 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 5.567764 │
+    #   # └──────────┘
+    # def rolling_apply(
+    #   window_size:,
+    #   weights: nil,
+    #   min_periods: nil,
+    #   center: false,
+    #   &function
+    # )
+    #   if min_periods.nil?
+    #     min_periods = window_size
+    #   end
+    #   wrap_expr(
+    #     _rbexpr.rolling_apply(
+    #       function, window_size, weights, min_periods, center
+    #     )
+    #   )
     # end
 
     # Compute a rolling skew.

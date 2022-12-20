@@ -26,14 +26,14 @@ module Polars
       end
 
       if data.nil?
-        self._df = hash_to_rbdf({}, columns: columns)
+        self._df = self.class.hash_to_rbdf({}, columns: columns)
       elsif data.is_a?(Hash)
         data = data.transform_keys { |v| v.is_a?(Symbol) ? v.to_s : v }
-        self._df = hash_to_rbdf(data, columns: columns)
+        self._df = self.class.hash_to_rbdf(data, columns: columns)
       elsif data.is_a?(Array)
-        self._df = sequence_to_rbdf(data, columns: columns, orient: orient)
+        self._df = self.class.sequence_to_rbdf(data, columns: columns, orient: orient)
       elsif data.is_a?(Series)
-        self._df = series_to_rbdf(data, columns: columns)
+        self._df = self.class.series_to_rbdf(data, columns: columns)
       else
         raise ArgumentError, "DataFrame constructor called with unsupported type; got #{data.class.name}"
       end
@@ -46,11 +46,16 @@ module Polars
       df
     end
 
-    # def self._from_hashes
-    # end
+    # @private
+    def self._from_hashes(data, infer_schema_length: 100, schema: nil)
+      rbdf = RbDataFrame.read_hashes(data, infer_schema_length, schema)
+      _from_rbdf(rbdf)
+    end
 
-    # def self._from_hash
-    # end
+    # @private
+    def self._from_hash(data, columns: nil)
+      _from_rbdf(hash_to_rbdf(data, columns: columns))
+    end
 
     # def self._from_records
     # end
@@ -492,12 +497,6 @@ module Polars
     # def each
     # end
 
-    # def _pos_idx
-    # end
-
-    # def _pos_idxs
-    # end
-
     # Returns subset of the DataFrame.
     #
     # @return [Object]
@@ -560,19 +559,33 @@ module Polars
 
         # df[idx]
         if item.is_a?(Integer)
-          return slice(_pos_idx(item, dim: 0), 1)
+          return slice(_pos_idx(item, 0), 1)
         end
 
         # df[..]
         if item.is_a?(Range)
           return Slice.new(self).apply(item)
         end
+
+        if Utils.is_str_sequence(item, allow_str: false)
+          # select multiple columns
+          # df[["foo", "bar"]]
+          return _from_rbdf(_df.select(item))
+        end
       end
 
       raise ArgumentError, "Cannot get item of type: #{item.class.name}"
     end
 
+    # Set item.
+    #
+    # @return [Object]
     # def []=(key, value)
+    #   if key.is_a?(String)
+    #     raise TypeError, "'DataFrame' object does not support 'Series' assignment by index. Use 'DataFrame.with_columns'"
+    #   end
+
+    #   raise Todo
     # end
 
     # no to_arrow
@@ -588,8 +601,24 @@ module Polars
       end
     end
 
-    # def to_hashes / to_a
-    # end
+    # Convert every row to a dictionary.
+    #
+    # Note that this is slow.
+    #
+    # @return [Array]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3], "bar" => [4, 5, 6]})
+    #   df.to_hashes
+    #   [{'foo': 1, 'bar': 4}, {'foo': 2, 'bar': 5}, {'foo': 3, 'bar': 6}]
+    def to_hashes
+      rbdf = _df
+      names = columns
+
+      height.times.map do |i|
+        names.zip(rbdf.row_tuple(i)).to_h
+      end
+    end
 
     # def to_numo
     # end
@@ -1599,8 +1628,8 @@ module Polars
     #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
     #   # │ 4   ┆ 40  │
     #   # └─────┴─────┘
-    def pipe(func, *args, **kwargs)
-      func.call(self, *args, **kwargs)
+    def pipe(func, *args, **kwargs, &block)
+      func.call(self, *args, **kwargs, &block)
     end
 
     # Add a column at index 0 that counts the rows.
@@ -1685,14 +1714,476 @@ module Polars
       )
     end
 
-    # def groupby_rolling
-    # end
+    # Create rolling groups based on a time column.
+    #
+    # Also works for index values of type `:i32` or `:i64`.
+    #
+    # Different from a `dynamic_groupby` the windows are now determined by the
+    # individual values and are not of constant intervals. For constant intervals use
+    # *groupby_dynamic*
+    #
+    # The `period` and `offset` arguments are created either from a timedelta, or
+    # by using the following string language:
+    #
+    # - 1ns   (1 nanosecond)
+    # - 1us   (1 microsecond)
+    # - 1ms   (1 millisecond)
+    # - 1s    (1 second)
+    # - 1m    (1 minute)
+    # - 1h    (1 hour)
+    # - 1d    (1 day)
+    # - 1w    (1 week)
+    # - 1mo   (1 calendar month)
+    # - 1y    (1 calendar year)
+    # - 1i    (1 index count)
+    #
+    # Or combine them:
+    # "3d12h4m25s" # 3 days, 12 hours, 4 minutes, and 25 seconds
+    #
+    # In case of a groupby_rolling on an integer column, the windows are defined by:
+    #
+    # - **"1i"      # length 1**
+    # - **"10i"     # length 10**
+    #
+    # @param index_column [Object]
+    #   Column used to group based on the time window.
+    #   Often to type Date/Datetime
+    #   This column must be sorted in ascending order. If not the output will not
+    #   make sense.
+    #
+    #   In case of a rolling groupby on indices, dtype needs to be one of
+    #   `:i32`, `:i64`. Note that `:i32` gets temporarily cast to `:i64`, so if
+    #   performance matters use an `:i64` column.
+    # @param period [Object]
+    #   Length of the window.
+    # @param offset [Object]
+    #   Offset of the window. Default is -period.
+    # @param closed ["right", "left", "both", "none"]
+    #   Define whether the temporal window interval is closed or not.
+    # @param by [Object]
+    #   Also group by this column/these columns.
+    #
+    # @return [RollingGroupBy]
+    #
+    # @example
+    #   dates = [
+    #     "2020-01-01 13:45:48",
+    #     "2020-01-01 16:42:13",
+    #     "2020-01-01 16:45:09",
+    #     "2020-01-02 18:12:48",
+    #     "2020-01-03 19:45:32",
+    #     "2020-01-08 23:16:43"
+    #   ]
+    #   df = Polars::DataFrame.new({"dt" => dates, "a" => [3, 7, 5, 9, 2, 1]}).with_column(
+    #     Polars.col("dt").str.strptime(:datetime)
+    #   )
+    #   df.groupby_rolling(index_column: "dt", period: "2d").agg(
+    #     [
+    #       Polars.sum("a").alias("sum_a"),
+    #       Polars.min("a").alias("min_a"),
+    #       Polars.max("a").alias("max_a")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (6, 4)
+    #   # ┌─────────────────────┬───────┬───────┬───────┐
+    #   # │ dt                  ┆ sum_a ┆ min_a ┆ max_a │
+    #   # │ ---                 ┆ ---   ┆ ---   ┆ ---   │
+    #   # │ datetime[μs]        ┆ i64   ┆ i64   ┆ i64   │
+    #   # ╞═════════════════════╪═══════╪═══════╪═══════╡
+    #   # │ 2020-01-01 13:45:48 ┆ 3     ┆ 3     ┆ 3     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 16:42:13 ┆ 10    ┆ 3     ┆ 7     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-01 16:45:09 ┆ 15    ┆ 3     ┆ 7     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-02 18:12:48 ┆ 24    ┆ 3     ┆ 9     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-03 19:45:32 ┆ 11    ┆ 2     ┆ 9     │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
+    #   # │ 2020-01-08 23:16:43 ┆ 1     ┆ 1     ┆ 1     │
+    #   # └─────────────────────┴───────┴───────┴───────┘
+    def groupby_rolling(
+      index_column:,
+      period:,
+      offset: nil,
+      closed: "right",
+      by: nil
+    )
+      RollingGroupBy.new(self, index_column, period, offset, closed, by)
+    end
 
-    # def groupby_dynamic
-    # end
+    # Group based on a time value (or index value of type `:i32`, `:i64`).
+    #
+    # Time windows are calculated and rows are assigned to windows. Different from a
+    # normal groupby is that a row can be member of multiple groups. The time/index
+    # window could be seen as a rolling window, with a window size determined by
+    # dates/times/values instead of slots in the DataFrame.
+    #
+    # A window is defined by:
+    #
+    # - every: interval of the window
+    # - period: length of the window
+    # - offset: offset of the window
+    #
+    # The `every`, `period` and `offset` arguments are created with
+    # the following string language:
+    #
+    # - 1ns   (1 nanosecond)
+    # - 1us   (1 microsecond)
+    # - 1ms   (1 millisecond)
+    # - 1s    (1 second)
+    # - 1m    (1 minute)
+    # - 1h    (1 hour)
+    # - 1d    (1 day)
+    # - 1w    (1 week)
+    # - 1mo   (1 calendar month)
+    # - 1y    (1 calendar year)
+    # - 1i    (1 index count)
+    #
+    # Or combine them:
+    # "3d12h4m25s" # 3 days, 12 hours, 4 minutes, and 25 seconds
+    #
+    # In case of a groupby_dynamic on an integer column, the windows are defined by:
+    #
+    # - "1i"      # length 1
+    # - "10i"     # length 10
+    #
+    # @param index_column
+    #   Column used to group based on the time window.
+    #   Often to type Date/Datetime
+    #   This column must be sorted in ascending order. If not the output will not
+    #   make sense.
+    #
+    #   In case of a dynamic groupby on indices, dtype needs to be one of
+    #   `:i32`, `:i64`. Note that `:i32` gets temporarily cast to `:i64`, so if
+    #   performance matters use an `:i64` column.
+    # @param every
+    #   Interval of the window.
+    # @param period
+    #   Length of the window, if None it is equal to 'every'.
+    # @param offset
+    #   Offset of the window if None and period is None it will be equal to negative
+    #   `every`.
+    # @param truncate
+    #   Truncate the time value to the window lower bound.
+    # @param include_boundaries
+    #   Add the lower and upper bound of the window to the "_lower_bound" and
+    #   "_upper_bound" columns. This will impact performance because it's harder to
+    #   parallelize
+    # @param closed ["right", "left", "both", "none"]
+    #   Define whether the temporal window interval is closed or not.
+    # @param by
+    #   Also group by this column/these columns
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "time" => Polars.date_range(
+    #         DateTime.new(2021, 12, 16),
+    #         DateTime.new(2021, 12, 16, 3),
+    #         "30m"
+    #       ),
+    #       "n" => 0..6
+    #     }
+    #   )
+    #   # =>
+    #   # shape: (7, 2)
+    #   # ┌─────────────────────┬─────┐
+    #   # │ time                ┆ n   │
+    #   # │ ---                 ┆ --- │
+    #   # │ datetime[μs]        ┆ i64 │
+    #   # ╞═════════════════════╪═════╡
+    #   # │ 2021-12-16 00:00:00 ┆ 0   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2021-12-16 00:30:00 ┆ 1   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2021-12-16 01:00:00 ┆ 2   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2021-12-16 01:30:00 ┆ 3   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2021-12-16 02:00:00 ┆ 4   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2021-12-16 02:30:00 ┆ 5   │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ 2021-12-16 03:00:00 ┆ 6   │
+    #   # └─────────────────────┴─────┘
+    #
+    # @example Group by windows of 1 hour starting at 2021-12-16 00:00:00.
+    #   df.groupby_dynamic("time", every: "1h", closed: "right").agg(
+    #     [
+    #       Polars.col("time").min.alias("time_min"),
+    #       Polars.col("time").max.alias("time_max")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────────────────────┬─────────────────────┬─────────────────────┐
+    #   # │ time                ┆ time_min            ┆ time_max            │
+    #   # │ ---                 ┆ ---                 ┆ ---                 │
+    #   # │ datetime[μs]        ┆ datetime[μs]        ┆ datetime[μs]        │
+    #   # ╞═════════════════════╪═════════════════════╪═════════════════════╡
+    #   # │ 2021-12-15 23:00:00 ┆ 2021-12-16 00:00:00 ┆ 2021-12-16 00:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 00:00:00 ┆ 2021-12-16 00:30:00 ┆ 2021-12-16 01:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 01:00:00 ┆ 2021-12-16 01:30:00 ┆ 2021-12-16 02:00:00 │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 02:00:00 ┆ 2021-12-16 02:30:00 ┆ 2021-12-16 03:00:00 │
+    #   # └─────────────────────┴─────────────────────┴─────────────────────┘
+    #
+    # @example The window boundaries can also be added to the aggregation result.
+    #   df.groupby_dynamic(
+    #     "time", every: "1h", include_boundaries: true, closed: "right"
+    #   ).agg([Polars.col("time").count.alias("time_count")])
+    #   # =>
+    #   # shape: (4, 4)
+    #   # ┌─────────────────────┬─────────────────────┬─────────────────────┬────────────┐
+    #   # │ _lower_boundary     ┆ _upper_boundary     ┆ time                ┆ time_count │
+    #   # │ ---                 ┆ ---                 ┆ ---                 ┆ ---        │
+    #   # │ datetime[μs]        ┆ datetime[μs]        ┆ datetime[μs]        ┆ u32        │
+    #   # ╞═════════════════════╪═════════════════════╪═════════════════════╪════════════╡
+    #   # │ 2021-12-15 23:00:00 ┆ 2021-12-16 00:00:00 ┆ 2021-12-15 23:00:00 ┆ 1          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 00:00:00 ┆ 2021-12-16 01:00:00 ┆ 2021-12-16 00:00:00 ┆ 2          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 01:00:00 ┆ 2021-12-16 02:00:00 ┆ 2021-12-16 01:00:00 ┆ 2          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 02:00:00 ┆ 2021-12-16 03:00:00 ┆ 2021-12-16 02:00:00 ┆ 2          │
+    #   # └─────────────────────┴─────────────────────┴─────────────────────┴────────────┘
+    #
+    # @example When closed="left", should not include right end of interval.
+    #   df.groupby_dynamic("time", every: "1h", closed: "left").agg(
+    #     [
+    #       Polars.col("time").count.alias("time_count"),
+    #       Polars.col("time").list.alias("time_agg_list")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────────────────────┬────────────┬─────────────────────────────────────┐
+    #   # │ time                ┆ time_count ┆ time_agg_list                       │
+    #   # │ ---                 ┆ ---        ┆ ---                                 │
+    #   # │ datetime[μs]        ┆ u32        ┆ list[datetime[μs]]                  │
+    #   # ╞═════════════════════╪════════════╪═════════════════════════════════════╡
+    #   # │ 2021-12-16 00:00:00 ┆ 2          ┆ [2021-12-16 00:00:00, 2021-12-16... │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 01:00:00 ┆ 2          ┆ [2021-12-16 01:00:00, 2021-12-16... │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 02:00:00 ┆ 2          ┆ [2021-12-16 02:00:00, 2021-12-16... │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 03:00:00 ┆ 1          ┆ [2021-12-16 03:00:00]               │
+    #   # └─────────────────────┴────────────┴─────────────────────────────────────┘
+    #
+    # @example When closed="both" the time values at the window boundaries belong to 2 groups.
+    #   df.groupby_dynamic("time", every: "1h", closed: "both").agg(
+    #     [Polars.col("time").count.alias("time_count")]
+    #   )
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────────────────────┬────────────┐
+    #   # │ time                ┆ time_count │
+    #   # │ ---                 ┆ ---        │
+    #   # │ datetime[μs]        ┆ u32        │
+    #   # ╞═════════════════════╪════════════╡
+    #   # │ 2021-12-15 23:00:00 ┆ 1          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 00:00:00 ┆ 3          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 01:00:00 ┆ 3          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 02:00:00 ┆ 3          │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-12-16 03:00:00 ┆ 1          │
+    #   # └─────────────────────┴────────────┘
+    #
+    # @example Dynamic groupbys can also be combined with grouping on normal keys.
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "time" => Polars.date_range(
+    #         DateTime.new(2021, 12, 16),
+    #         DateTime.new(2021, 12, 16, 3),
+    #         "30m"
+    #       ),
+    #       "groups" => ["a", "a", "a", "b", "b", "a", "a"]
+    #     }
+    #   )
+    #   df.groupby_dynamic(
+    #     "time",
+    #     every: "1h",
+    #     closed: "both",
+    #     by: "groups",
+    #     include_boundaries: true
+    #   ).agg([Polars.col("time").count.alias("time_count")])
+    #   # =>
+    #   # shape: (7, 5)
+    #   # ┌────────┬─────────────────────┬─────────────────────┬─────────────────────┬────────────┐
+    #   # │ groups ┆ _lower_boundary     ┆ _upper_boundary     ┆ time                ┆ time_count │
+    #   # │ ---    ┆ ---                 ┆ ---                 ┆ ---                 ┆ ---        │
+    #   # │ str    ┆ datetime[μs]        ┆ datetime[μs]        ┆ datetime[μs]        ┆ u32        │
+    #   # ╞════════╪═════════════════════╪═════════════════════╪═════════════════════╪════════════╡
+    #   # │ a      ┆ 2021-12-15 23:00:00 ┆ 2021-12-16 00:00:00 ┆ 2021-12-15 23:00:00 ┆ 1          │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ a      ┆ 2021-12-16 00:00:00 ┆ 2021-12-16 01:00:00 ┆ 2021-12-16 00:00:00 ┆ 3          │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ a      ┆ 2021-12-16 01:00:00 ┆ 2021-12-16 02:00:00 ┆ 2021-12-16 01:00:00 ┆ 1          │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ a      ┆ 2021-12-16 02:00:00 ┆ 2021-12-16 03:00:00 ┆ 2021-12-16 02:00:00 ┆ 2          │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ a      ┆ 2021-12-16 03:00:00 ┆ 2021-12-16 04:00:00 ┆ 2021-12-16 03:00:00 ┆ 1          │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ b      ┆ 2021-12-16 01:00:00 ┆ 2021-12-16 02:00:00 ┆ 2021-12-16 01:00:00 ┆ 2          │
+    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ b      ┆ 2021-12-16 02:00:00 ┆ 2021-12-16 03:00:00 ┆ 2021-12-16 02:00:00 ┆ 1          │
+    #   # └────────┴─────────────────────┴─────────────────────┴─────────────────────┴────────────┘
+    #
+    # @example Dynamic groupby on an index column.
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "idx" => Polars.arange(0, 6, eager: true),
+    #       "A" => ["A", "A", "B", "B", "B", "C"]
+    #     }
+    #   )
+    #   df.groupby_dynamic(
+    #     "idx",
+    #     every: "2i",
+    #     period: "3i",
+    #     include_boundaries: true,
+    #     closed: "right"
+    #   ).agg(Polars.col("A").list.alias("A_agg_list"))
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌─────────────────┬─────────────────┬─────┬─────────────────┐
+    #   # │ _lower_boundary ┆ _upper_boundary ┆ idx ┆ A_agg_list      │
+    #   # │ ---             ┆ ---             ┆ --- ┆ ---             │
+    #   # │ i64             ┆ i64             ┆ i64 ┆ list[str]       │
+    #   # ╞═════════════════╪═════════════════╪═════╪═════════════════╡
+    #   # │ 0               ┆ 3               ┆ 0   ┆ ["A", "B", "B"] │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 2               ┆ 5               ┆ 2   ┆ ["B", "B", "C"] │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+    #   # │ 4               ┆ 7               ┆ 4   ┆ ["C"]           │
+    #   # └─────────────────┴─────────────────┴─────┴─────────────────┘
+    def groupby_dynamic(
+      index_column,
+      every:,
+      period: nil,
+      offset: nil,
+      truncate: true,
+      include_boundaries: false,
+      closed: "left",
+      by: nil
+    )
+      DynamicGroupBy.new(
+        self,
+        index_column,
+        every,
+        period,
+        offset,
+        truncate,
+        include_boundaries,
+        closed,
+        by
+      )
+    end
 
-    # def upsample
-    # end
+    # Upsample a DataFrame at a regular frequency.
+    #
+    # @param time_column [Object]
+    #   time column will be used to determine a date_range.
+    #   Note that this column has to be sorted for the output to make sense.
+    # @param every [String]
+    #   interval will start 'every' duration
+    # @param offset [String]
+    #   change the start of the date_range by this offset.
+    # @param by [Object]
+    #   First group by these columns and then upsample for every group
+    # @param maintain_order [Boolean]
+    #   Keep the ordering predictable. This is slower.
+    #
+    # The `every` and `offset` arguments are created with
+    # the following string language:
+    #
+    # - 1ns   (1 nanosecond)
+    # - 1us   (1 microsecond)
+    # - 1ms   (1 millisecond)
+    # - 1s    (1 second)
+    # - 1m    (1 minute)
+    # - 1h    (1 hour)
+    # - 1d    (1 day)
+    # - 1w    (1 week)
+    # - 1mo   (1 calendar month)
+    # - 1y    (1 calendar year)
+    # - 1i    (1 index count)
+    #
+    # Or combine them:
+    # "3d12h4m25s" # 3 days, 12 hours, 4 minutes, and 25 seconds
+    #
+    # @return [DataFrame]
+    #
+    # @example Upsample a DataFrame by a certain interval.
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "time" => [
+    #         DateTime.new(2021, 2, 1),
+    #         DateTime.new(2021, 4, 1),
+    #         DateTime.new(2021, 5, 1),
+    #         DateTime.new(2021, 6, 1)
+    #       ],
+    #       "groups" => ["A", "B", "A", "B"],
+    #       "values" => [0, 1, 2, 3]
+    #     }
+    #   )
+    #   df.upsample(
+    #     time_column: "time", every: "1mo", by: "groups", maintain_order: true
+    #   ).select(Polars.all.forward_fill)
+    #   # =>
+    #   # shape: (7, 3)
+    #   # ┌─────────────────────┬────────┬────────┐
+    #   # │ time                ┆ groups ┆ values │
+    #   # │ ---                 ┆ ---    ┆ ---    │
+    #   # │ datetime[ns]        ┆ str    ┆ i64    │
+    #   # ╞═════════════════════╪════════╪════════╡
+    #   # │ 2021-02-01 00:00:00 ┆ A      ┆ 0      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-03-01 00:00:00 ┆ A      ┆ 0      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-04-01 00:00:00 ┆ A      ┆ 0      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-05-01 00:00:00 ┆ A      ┆ 2      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-04-01 00:00:00 ┆ B      ┆ 1      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-05-01 00:00:00 ┆ B      ┆ 1      │
+    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
+    #   # │ 2021-06-01 00:00:00 ┆ B      ┆ 3      │
+    #   # └─────────────────────┴────────┴────────┘
+    def upsample(
+      time_column:,
+      every:,
+      offset: nil,
+      by: nil,
+      maintain_order: false
+    )
+      if by.nil?
+        by = []
+      end
+      if by.is_a?(String)
+        by = [by]
+      end
+      if offset.nil?
+        offset = "0ns"
+      end
+
+      every = Utils._timedelta_to_pl_duration(every)
+      offset = Utils._timedelta_to_pl_duration(offset)
+
+      _from_rbdf(
+        _df.upsample(by, time_column, every, offset, maintain_order)
+      )
+    end
 
     # Perform an asof join.
     #
@@ -2813,8 +3304,110 @@ module Polars
       _from_rbdf(DataFrame.new(slices)._df)
     end
 
-    # def partition_by
-    # end
+    # Split into multiple DataFrames partitioned by groups.
+    #
+    # @param groups [Object]
+    #   Groups to partition by.
+    # @param maintain_order [Boolean]
+    #   Keep predictable output order. This is slower as it requires an extra sort
+    #   operation.
+    # @param as_dict [Boolean]
+    #   If true, return the partitions in a dictionary keyed by the distinct group
+    #   values instead of a list.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => ["A", "A", "B", "B", "C"],
+    #       "N" => [1, 2, 2, 4, 2],
+    #       "bar" => ["k", "l", "m", "m", "l"]
+    #     }
+    #   )
+    #   df.partition_by("foo", maintain_order: true)
+    #   # =>
+    #   # [shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ N   ┆ bar │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ A   ┆ 1   ┆ k   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ A   ┆ 2   ┆ l   │
+    #   # └─────┴─────┴─────┘, shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ N   ┆ bar │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ B   ┆ 2   ┆ m   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ B   ┆ 4   ┆ m   │
+    #   # └─────┴─────┴─────┘, shape: (1, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ N   ┆ bar │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ C   ┆ 2   ┆ l   │
+    #   # └─────┴─────┴─────┘]
+    #
+    # @example
+    #   df.partition_by("foo", maintain_order: true, as_dict: true)
+    #   # =>
+    #   # {"A"=>shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ N   ┆ bar │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ A   ┆ 1   ┆ k   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ A   ┆ 2   ┆ l   │
+    #   # └─────┴─────┴─────┘, "B"=>shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ N   ┆ bar │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ B   ┆ 2   ┆ m   │
+    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
+    #   # │ B   ┆ 4   ┆ m   │
+    #   # └─────┴─────┴─────┘, "C"=>shape: (1, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ N   ┆ bar │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ C   ┆ 2   ┆ l   │
+    #   # └─────┴─────┴─────┘}
+    def partition_by(groups, maintain_order: true, as_dict: false)
+      if groups.is_a?(String)
+        groups = [groups]
+      elsif !groups.is_a?(Array)
+        groups = Array(groups)
+      end
+
+      if as_dict
+        out = {}
+        if groups.length == 1
+          _df.partition_by(groups, maintain_order).each do |df|
+            df = _from_rbdf(df)
+            out[df[groups][0, 0]] = df
+          end
+        else
+          _df.partition_by(groups, maintain_order).each do |df|
+            df = _from_rbdf(df)
+            out[df[groups].row(0)] = df
+          end
+        end
+        out
+      else
+        _df.partition_by(groups, maintain_order).map { |df| _from_rbdf(df) }
+      end
+    end
 
     # Shift values by the given period.
     #
@@ -3696,9 +4289,9 @@ module Polars
     # An example of the supercast rules when applying an arithmetic operation on two
     # DataTypes are for instance:
     #
-    # Int8 + Utf8 = Utf8
-    # Float32 + Int64 = Float32
-    # Float32 + Float64 = Float64
+    # i8 + str = str
+    # f32 + i64 = f32
+    # f32 + f64 = f64
     #
     # @return [Series]
     #
@@ -3882,8 +4475,45 @@ module Polars
       select(Utils.col("*").take_every(n))
     end
 
-    # def hash_rows
-    # end
+    # Hash and combine the rows in this DataFrame.
+    #
+    # The hash value is of type `:u64`.
+    #
+    # @param seed [Integer]
+    #   Random seed parameter. Defaults to 0.
+    # @param seed_1 [Integer]
+    #   Random seed parameter. Defaults to `seed` if not set.
+    # @param seed_2 [Integer]
+    #   Random seed parameter. Defaults to `seed` if not set.
+    # @param seed_3 [Integer]
+    #   Random seed parameter. Defaults to `seed` if not set.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, nil, 3, 4],
+    #       "ham" => ["a", "b", nil, "d"]
+    #     }
+    #   )
+    #   df.hash_rows(seed: 42)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [u64]
+    #   # [
+    #   #         4238614331852490969
+    #   #         17976148875586754089
+    #   #         4702262519505526977
+    #   #         18144177983981041107
+    #   # ]
+    def hash_rows(seed: 0, seed_1: nil, seed_2: nil, seed_3: nil)
+      k0 = seed
+      k1 = seed_1.nil? ? seed : seed_1
+      k2 = seed_2.nil? ? seed : seed_2
+      k3 = seed_3.nil? ? seed : seed_3
+      Utils.wrap_s(_df.hash_rows(k0, k1, k2, k3))
+    end
 
     # Interpolate intermediate values. The interpolation method is linear.
     #
@@ -4008,7 +4638,19 @@ module Polars
       self._df = _df._clone
     end
 
-    def hash_to_rbdf(data, columns: nil)
+    def _pos_idx(idx, dim)
+      if idx >= 0
+        idx
+      else
+        shape[dim] + idx
+      end
+    end
+
+    # def _pos_idxs
+    # end
+
+    # @private
+    def self.hash_to_rbdf(data, columns: nil)
       if !columns.nil?
         columns, dtypes = _unpack_columns(columns, lookup_names: data.keys)
 
@@ -4024,7 +4666,8 @@ module Polars
       RbDataFrame.read_hash(data)
     end
 
-    def _unpack_columns(columns, lookup_names: nil, n_expected: nil)
+    # @private
+    def self._unpack_columns(columns, lookup_names: nil, n_expected: nil)
       if columns.is_a?(Hash)
         columns = columns.to_a
       end
@@ -4050,7 +4693,7 @@ module Polars
       ]
     end
 
-    def _handle_columns_arg(data, columns: nil)
+    def self._handle_columns_arg(data, columns: nil)
       if columns.nil?
         data
       else
@@ -4068,7 +4711,8 @@ module Polars
       end
     end
 
-    def sequence_to_rbdf(data, columns: nil, orient: nil)
+    # @private
+    def self.sequence_to_rbdf(data, columns: nil, orient: nil)
       if data.length == 0
         return hash_to_rbdf({}, columns: columns)
       end
@@ -4098,7 +4742,8 @@ module Polars
       RbDataFrame.new(data_series)
     end
 
-    def series_to_rbdf(data, columns: nil)
+    # @private
+    def self.series_to_rbdf(data, columns: nil)
       if columns
         raise Todo
       end
