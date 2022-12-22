@@ -2486,7 +2486,8 @@ module Polars
     #   # │ 1.5 │
     #   # └─────┘
     def quantile(quantile, interpolation: "nearest")
-      wrap_expr(_rbexpr.quantile(quantile, interpolation))
+      quantile = Utils.expr_to_lit_or_expr(quantile, str_to_lit: false)
+      wrap_expr(_rbexpr.quantile(quantile._rbexpr, interpolation))
     end
 
     # Filter a single column.
@@ -3151,8 +3152,8 @@ module Polars
     #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
     #   # │ 3   ┆ 3.0 │
     #   # └─────┴─────┘
-    def interpolate
-      wrap_expr(_rbexpr.interpolate)
+    def interpolate(method: "linear")
+      wrap_expr(_rbexpr.interpolate(method))
     end
 
     # Apply a rolling min (moving min) over the values in this array.

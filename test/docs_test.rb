@@ -130,7 +130,7 @@ class DocsTest < Minitest::Test
           puts
         end
 
-        next if [:sort, :sample, :mode, :duration].include?(method.name)
+        next if [:sort, :sample, :mode, :duration, :_hash, :hash_rows].include?(method.name)
 
         # check output
         lines = code.split("\n")

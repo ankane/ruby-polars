@@ -276,7 +276,7 @@ class SeriesTest < Minitest::Test
 
   def test_sum
     assert_equal 6, Polars::Series.new([1, 2, 3]).sum
-    assert_nil Polars::Series.new([]).sum
+    assert_in_delta 0, Polars::Series.new([]).sum
   end
 
   def test_mean

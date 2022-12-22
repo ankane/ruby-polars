@@ -1,3 +1,7 @@
+## 0.2.0 (unreleased)
+
+- Updated Polars to 0.26.1
+
 ## 0.1.5 (2022-12-22)
 
 - Added `read_avro` and `write_avro` methods

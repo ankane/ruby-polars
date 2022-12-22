@@ -568,7 +568,7 @@ module Polars
     #   # └────────────┘
     def to_struct(n_field_strategy: "first_non_null", name_generator: nil)
       raise Todo if name_generator
-      Utils.wrap_expr(_rbexpr.lst_to_struct(n_field_strategy, name_generator))
+      Utils.wrap_expr(_rbexpr.lst_to_struct(n_field_strategy, name_generator, 0))
     end
 
     # Run any polars expression against the lists' elements.

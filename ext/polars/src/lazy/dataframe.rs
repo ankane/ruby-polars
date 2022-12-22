@@ -348,6 +348,7 @@ impl RbLazyFrame {
         include_boundaries: bool,
         closed: Wrap<ClosedWindow>,
         by: RArray,
+        start_by: Wrap<StartBy>,
     ) -> RbResult<RbLazyGroupBy> {
         let closed_window = closed.0;
         let by = rb_exprs_to_exprs(by)?;
@@ -362,6 +363,7 @@ impl RbLazyFrame {
                 truncate,
                 include_boundaries,
                 closed_window,
+                start_by: start_by.0,
             },
         );
 
@@ -514,9 +516,13 @@ impl RbLazyFrame {
         ldf.median().into()
     }
 
-    pub fn quantile(&self, quantile: f64, interpolation: Wrap<QuantileInterpolOptions>) -> Self {
+    pub fn quantile(
+        &self,
+        quantile: &RbExpr,
+        interpolation: Wrap<QuantileInterpolOptions>,
+    ) -> Self {
         let ldf = self.ldf.clone();
-        ldf.quantile(quantile, interpolation.0).into()
+        ldf.quantile(quantile.inner.clone(), interpolation.0).into()
     }
 
     pub fn explode(&self, column: RArray) -> RbResult<Self> {

@@ -64,24 +64,24 @@ module Polars
     #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 2001-07-08 │
     #   # └────────────┘
-    def strptime(datatype, fmt = nil, strict: true, exact: true)
+    def strptime(datatype, fmt = nil, strict: true, exact: true, cache: true, tz_aware: false)
       if !Utils.is_polars_dtype(datatype)
         raise ArgumentError, "expected: {DataType} got: #{datatype}"
       end
 
       if datatype == :date
-        Utils.wrap_expr(_rbexpr.str_parse_date(fmt, strict, exact))
+        Utils.wrap_expr(_rbexpr.str_parse_date(fmt, strict, exact, cache))
       elsif datatype == :datetime
         # TODO fix
         tu = nil # datatype.tu
-        dtcol = Utils.wrap_expr(_rbexpr.str_parse_datetime(fmt, strict, exact))
+        dtcol = Utils.wrap_expr(_rbexpr.str_parse_datetime(fmt, strict, exact, cache, tz_aware))
         if tu.nil?
           dtcol
         else
           dtcol.dt.cast_time_unit(tu)
         end
       elsif datatype == :time
-        Utils.wrap_expr(_rbexpr.str_parse_time(fmt, strict, exact))
+        Utils.wrap_expr(_rbexpr.str_parse_time(fmt, strict, exact, cache))
       else
         raise ArgumentError, "dtype should be of type :date, :datetime, or :time"
       end
@@ -725,7 +725,8 @@ module Polars
     #   # │ ["678", "910"] │
     #   # └────────────────┘
     def extract_all(pattern)
-      Utils.wrap_expr(_rbexpr.str_extract_all(pattern))
+      pattern = Utils.expr_to_lit_or_expr(pattern, str_to_lit: true)
+      Utils.wrap_expr(_rbexpr.str_extract_all(pattern._rbexpr))
     end
 
     # Count all successive non-overlapping regex matches.

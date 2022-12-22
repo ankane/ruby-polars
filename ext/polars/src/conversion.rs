@@ -3,7 +3,7 @@ use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
 use polars::frame::row::Row;
-use polars::frame::DataFrame;
+use polars::frame::NullStrategy;
 use polars::io::avro::AvroCompression;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
@@ -210,6 +210,21 @@ impl TryConvert for Wrap<AsofStrategy> {
     }
 }
 
+impl TryConvert for Wrap<InterpolationMethod> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "linear" => InterpolationMethod::Linear,
+            "nearest" => InterpolationMethod::Nearest,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "method must be one of {{'linear', 'nearest'}}, got {v}",
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<Option<AvroCompression>> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match ob.try_convert::<String>()?.as_str() {
@@ -236,6 +251,22 @@ impl TryConvert for Wrap<CategoricalOrdering> {
                 return Err(RbValueError::new_err(format!(
                     "ordering must be one of {{'physical', 'lexical'}}, got {}",
                     v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<StartBy> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "window" => StartBy::WindowBound,
+            "datapoint" => StartBy::DataPoint,
+            "monday" => StartBy::Monday,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "closed must be one of {{'window', 'datapoint', 'monday'}}, got {v}",
                 )))
             }
         };

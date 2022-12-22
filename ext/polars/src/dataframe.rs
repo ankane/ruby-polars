@@ -1,4 +1,5 @@
 use magnus::{r_hash::ForEach, RArray, RHash, RString, Value};
+use polars::frame::NullStrategy;
 use polars::io::avro::AvroCompression;
 use polars::io::mmap::ReaderBytes;
 use polars::io::RowCount;
@@ -397,7 +398,7 @@ impl RbDataFrame {
                         let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
                         obj.unwrap().to_object()
                     }
-                    _ => Wrap(s.get(idx)).into(),
+                    _ => Wrap(s.get(idx).unwrap()).into(),
                 })
                 .collect(),
         )
@@ -420,7 +421,7 @@ impl RbDataFrame {
                                         s.get_object(idx).map(|any| any.into());
                                     obj.unwrap().to_object()
                                 }
-                                _ => Wrap(s.get(idx)).into(),
+                                _ => Wrap(s.get(idx).unwrap()).into(),
                             })
                             .collect(),
                     )
@@ -573,9 +574,8 @@ impl RbDataFrame {
             .collect()
     }
 
-    pub fn n_chunks(&self) -> RbResult<usize> {
-        let n = self.df.borrow().n_chunks().map_err(RbPolarsErr::from)?;
-        Ok(n)
+    pub fn n_chunks(&self) -> usize {
+        self.df.borrow().n_chunks()
     }
 
     pub fn shape(&self) -> (usize, usize) {

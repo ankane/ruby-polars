@@ -3101,7 +3101,7 @@ module Polars
     #   #         4
     #   #         5
     #   # ]
-    def interpolate
+    def interpolate(method: "linear")
       super
     end
 

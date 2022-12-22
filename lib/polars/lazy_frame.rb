@@ -1173,7 +1173,8 @@ module Polars
       truncate: true,
       include_boundaries: false,
       closed: "left",
-      by: nil
+      by: nil,
+      start_by: "window"
     )
       if offset.nil?
         if period.nil?
@@ -1200,7 +1201,8 @@ module Polars
         truncate,
         include_boundaries,
         closed,
-        rbexprs_by
+        rbexprs_by,
+        start_by
       )
       LazyGroupBy.new(lgb, self.class)
     end
@@ -2165,7 +2167,8 @@ module Polars
     #   # │ 3.0 ┆ 1.0 │
     #   # └─────┴─────┘
     def quantile(quantile, interpolation: "nearest")
-      _from_rbldf(_ldf.quantile(quantile, interpolation))
+      quantile = Utils.expr_to_lit_or_expr(quantile, str_to_lit: false)
+      _from_rbldf(_ldf.quantile(quantile._rbexpr, interpolation))
     end
 
     # Explode lists to long format.

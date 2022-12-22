@@ -57,6 +57,6 @@ class LazyFrameTest < Minitest::Test
 
   def test_describe_optimized_plan
     df = Polars::DataFrame.new({"a" => [1, 2, 3]}).lazy
-    assert_match "FastProjection", df.select("a").describe_optimized_plan
+    assert_match "FAST_PROJECT", df.select("a").describe_optimized_plan
   end
 end

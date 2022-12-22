@@ -1,20 +1,32 @@
 use magnus::{class, RArray, TryConvert, Value};
 use polars::prelude::*;
 use polars_core::frame::row::{rows_to_schema_first_non_null, Row};
+use polars_core::series::SeriesIter;
 
 use super::*;
 use crate::{RbDataFrame, RbPolarsErr, RbSeries, Wrap};
+
+fn get_iters(df: &DataFrame) -> Vec<SeriesIter> {
+    df.get_columns().iter().map(|s| s.iter()).collect()
+}
+
+fn get_iters_skip(df: &DataFrame, skip: usize) -> Vec<std::iter::Skip<SeriesIter>> {
+    df.get_columns()
+        .iter()
+        .map(|s| s.iter().skip(skip))
+        .collect()
+}
 
 pub fn apply_lambda_unknown<'a>(
     df: &'a DataFrame,
     lambda: Value,
     inference_size: usize,
 ) -> RbResult<(Value, bool)> {
-    let columns = df.get_columns();
     let mut null_count = 0;
+    let mut iters = get_iters(df);
 
-    for idx in 0..df.height() {
-        let iter = columns.iter().map(|s: &Series| Wrap(s.get(idx)));
+    for _ in 0..df.height() {
+        let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
         let arg = (iter.collect::<Vec<Wrap<AnyValue>>>(),);
         let out: Value = lambda.funcall("call", arg)?;
 
@@ -126,9 +138,9 @@ fn apply_iter<T>(
 where
     T: TryConvert,
 {
-    let columns = df.get_columns();
-    ((init_null_count + skip)..df.height()).map(move |idx| {
-        let iter = columns.iter().map(|s: &Series| Wrap(s.get(idx)));
+    let mut iters = get_iters_skip(df, init_null_count + skip);
+    ((init_null_count + skip)..df.height()).map(move |_| {
+        let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
         let tpl = (iter.collect::<Vec<Wrap<AnyValue>>>(),);
         match lambda.funcall::<_, _, Value>("call", tpl) {
             Ok(val) => val.try_convert::<T>().ok(),
@@ -197,14 +209,13 @@ pub fn apply_lambda_with_list_out_type<'a>(
     first_value: Option<&Series>,
     dt: &DataType,
 ) -> RbResult<ListChunked> {
-    let columns = df.get_columns();
-
     let skip = usize::from(first_value.is_some());
     if init_null_count == df.height() {
         Ok(ChunkedArray::full_null("apply", df.height()))
     } else {
-        let iter = ((init_null_count + skip)..df.height()).map(|idx| {
-            let iter = columns.iter().map(|s: &Series| Wrap(s.get(idx)));
+        let mut iters = get_iters_skip(df, init_null_count + skip);
+        let iter = ((init_null_count + skip)..df.height()).map(|_| {
+            let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
             let tpl = (iter.collect::<Vec<Wrap<AnyValue>>>(),);
             match lambda.funcall::<_, _, Value>("call", tpl) {
                 Ok(val) => match val.funcall::<_, _, Value>("_s", ()) {
@@ -234,15 +245,15 @@ pub fn apply_lambda_with_rows_output<'a>(
     first_value: Row<'a>,
     inference_size: usize,
 ) -> PolarsResult<DataFrame> {
-    let columns = df.get_columns();
     let width = first_value.0.len();
     let null_row = Row::new(vec![AnyValue::Null; width]);
 
     let mut row_buf = Row::default();
 
     let skip = 1;
-    let mut row_iter = ((init_null_count + skip)..df.height()).map(|idx| {
-        let iter = columns.iter().map(|s: &Series| Wrap(s.get(idx)));
+    let mut iters = get_iters_skip(df, init_null_count + skip);
+    let mut row_iter = ((init_null_count + skip)..df.height()).map(|_| {
+        let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
         let tpl = (iter.collect::<Vec<Wrap<AnyValue>>>(),);
         match lambda.funcall::<_, _, Value>("call", tpl) {
             Ok(val) => {

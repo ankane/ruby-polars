@@ -60,7 +60,7 @@ module Polars
     #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 2001-07-08 │
     #   # └────────────┘
-    def strptime(datatype, fmt = nil, strict: true, exact: true)
+    def strptime(datatype, fmt = nil, strict: true, exact: true, cache: true, tz_aware: false)
       super
     end
 

@@ -164,10 +164,14 @@ impl RbExpr {
         self.clone().inner.list().into()
     }
 
-    pub fn quantile(&self, quantile: f64, interpolation: Wrap<QuantileInterpolOptions>) -> Self {
+    pub fn quantile(
+        &self,
+        quantile: &RbExpr,
+        interpolation: Wrap<QuantileInterpolOptions>,
+    ) -> Self {
         self.clone()
             .inner
-            .quantile(quantile, interpolation.0)
+            .quantile(quantile.inner.clone(), interpolation.0)
             .into()
     }
 
@@ -506,7 +510,13 @@ impl RbExpr {
         self.inner.clone().shrink_dtype().into()
     }
 
-    pub fn str_parse_date(&self, fmt: Option<String>, strict: bool, exact: bool) -> Self {
+    pub fn str_parse_date(
+        &self,
+        fmt: Option<String>,
+        strict: bool,
+        exact: bool,
+        cache: bool,
+    ) -> Self {
         self.inner
             .clone()
             .str()
@@ -515,11 +525,20 @@ impl RbExpr {
                 fmt,
                 strict,
                 exact,
+                cache,
+                tz_aware: false,
             })
             .into()
     }
 
-    pub fn str_parse_datetime(&self, fmt: Option<String>, strict: bool, exact: bool) -> Self {
+    pub fn str_parse_datetime(
+        &self,
+        fmt: Option<String>,
+        strict: bool,
+        exact: bool,
+        cache: bool,
+        tz_aware: bool,
+    ) -> Self {
         let tu = match fmt {
             Some(ref fmt) => {
                 if fmt.contains("%.9f")
@@ -544,11 +563,19 @@ impl RbExpr {
                 fmt,
                 strict,
                 exact,
+                cache,
+                tz_aware,
             })
             .into()
     }
 
-    pub fn str_parse_time(&self, fmt: Option<String>, strict: bool, exact: bool) -> Self {
+    pub fn str_parse_time(
+        &self,
+        fmt: Option<String>,
+        strict: bool,
+        exact: bool,
+        cache: bool,
+    ) -> Self {
         self.inner
             .clone()
             .str()
@@ -557,6 +584,8 @@ impl RbExpr {
                 fmt,
                 strict,
                 exact,
+                cache,
+                tz_aware: false,
             })
             .into()
     }
@@ -723,8 +752,12 @@ impl RbExpr {
         self.inner.clone().str().extract(&pat, group_index).into()
     }
 
-    pub fn str_extract_all(&self, pat: String) -> Self {
-        self.inner.clone().str().extract_all(&pat).into()
+    pub fn str_extract_all(&self, pat: &RbExpr) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .extract_all(pat.inner.clone())
+            .into()
     }
 
     pub fn count_match(&self, pat: String) -> Self {
@@ -989,14 +1022,12 @@ impl RbExpr {
             .clone()
             .map_alias(move |name| {
                 let out = lambda.call::<_, String>((name,));
-                // TODO switch to match
-                out.unwrap()
-                // match out {
-                //     Ok(out) => Ok(out.to_string()),
-                //     Err(e) => Err(PolarsError::ComputeError(
-                //         format!("Ruby function in 'map_alias' produced an error: {}.", e).into(),
-                //     )),
-                // }
+                match out {
+                    Ok(out) => Ok(out.to_string()),
+                    Err(e) => Err(PolarsError::ComputeError(
+                        format!("Ruby function in 'map_alias' produced an error: {}.", e).into(),
+                    )),
+                }
             })
             .into()
     }
@@ -1005,8 +1036,8 @@ impl RbExpr {
         self.inner.clone().exclude(columns).into()
     }
 
-    pub fn interpolate(&self) -> Self {
-        self.inner.clone().interpolate().into()
+    pub fn interpolate(&self, method: Wrap<InterpolationMethod>) -> Self {
+        self.inner.clone().interpolate(method.0).into()
     }
 
     pub fn rolling_sum(
@@ -1297,6 +1328,7 @@ impl RbExpr {
         &self,
         width_strat: Wrap<ListToStructWidthStrategy>,
         _name_gen: Option<Value>,
+        upper_bound: usize,
     ) -> RbResult<Self> {
         // TODO fix
         let name_gen = None;
@@ -1311,7 +1343,7 @@ impl RbExpr {
             .inner
             .clone()
             .arr()
-            .to_struct(width_strat.0, name_gen)
+            .to_struct(width_strat.0, name_gen, upper_bound)
             .into())
     }
 

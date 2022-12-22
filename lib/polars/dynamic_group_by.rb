@@ -13,7 +13,8 @@ module Polars
       truncate,
       include_boundaries,
       closed,
-      by
+      by,
+      start_by
     )
       period = Utils._timedelta_to_pl_duration(period)
       offset = Utils._timedelta_to_pl_duration(offset)
@@ -28,6 +29,7 @@ module Polars
       @include_boundaries = include_boundaries
       @closed = closed
       @by = by
+      @start_by = start_by
     end
 
     def agg(aggs)
@@ -40,7 +42,8 @@ module Polars
           truncate: @truncate,
           include_boundaries: @include_boundaries,
           closed: @closed,
-          by: @by
+          by: @by,
+          start_by: @start_by
         )
         .agg(aggs)
         .collect(no_optimization: true, string_cache: false)

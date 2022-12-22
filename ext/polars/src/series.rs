@@ -144,7 +144,7 @@ impl RbSeries {
     }
 
     pub fn get_fmt(&self, index: usize, str_lengths: usize) -> String {
-        let val = format!("{}", self.series.borrow().get(index));
+        let val = format!("{}", self.series.borrow().get(index).unwrap());
         if let DataType::Utf8 | DataType::Categorical(_) = self.series.borrow().dtype() {
             let v_trunc = &val[..val
                 .char_indices()
@@ -172,8 +172,8 @@ impl RbSeries {
         }
     }
 
-    pub fn get_idx(&self, idx: usize) -> Value {
-        Wrap(self.series.borrow().get(idx)).into()
+    pub fn get_idx(&self, idx: usize) -> RbResult<Value> {
+        Ok(Wrap(self.series.borrow().get(idx).map_err(RbPolarsErr::from)?).into())
     }
 
     pub fn bitand(&self, other: &RbSeries) -> RbResult<Self> {
@@ -247,16 +247,37 @@ impl RbSeries {
         }
     }
 
-    pub fn max(&self) -> Value {
-        Wrap(self.series.borrow().max_as_series().get(0)).into()
+    pub fn max(&self) -> RbResult<Value> {
+        Ok(Wrap(
+            self.series
+                .borrow()
+                .max_as_series()
+                .get(0)
+                .map_err(RbPolarsErr::from)?,
+        )
+        .into())
     }
 
-    pub fn min(&self) -> Value {
-        Wrap(self.series.borrow().min_as_series().get(0)).into()
+    pub fn min(&self) -> RbResult<Value> {
+        Ok(Wrap(
+            self.series
+                .borrow()
+                .min_as_series()
+                .get(0)
+                .map_err(RbPolarsErr::from)?,
+        )
+        .into())
     }
 
-    pub fn sum(&self) -> Value {
-        Wrap(self.series.borrow().sum_as_series().get(0)).into()
+    pub fn sum(&self) -> RbResult<Value> {
+        Ok(Wrap(
+            self.series
+                .borrow()
+                .sum_as_series()
+                .get(0)
+                .map_err(RbPolarsErr::from)?,
+        )
+        .into())
     }
 
     pub fn n_chunks(&self) -> usize {
@@ -522,7 +543,8 @@ impl RbSeries {
                 .borrow()
                 .quantile_as_series(quantile, interpolation.0)
                 .map_err(|_| RbValueError::new_err("invalid quantile".into()))?
-                .get(0),
+                .get(0)
+                .unwrap_or(AnyValue::Null),
         )
         .into())
     }

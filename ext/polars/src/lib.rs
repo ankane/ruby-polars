@@ -289,9 +289,9 @@ fn init() -> RbResult<()> {
     class.define_method("cumprod", method!(RbExpr::cumprod, 1))?;
     class.define_method("product", method!(RbExpr::product, 0))?;
     class.define_method("shrink_dtype", method!(RbExpr::shrink_dtype, 0))?;
-    class.define_method("str_parse_date", method!(RbExpr::str_parse_date, 3))?;
-    class.define_method("str_parse_datetime", method!(RbExpr::str_parse_datetime, 3))?;
-    class.define_method("str_parse_time", method!(RbExpr::str_parse_time, 3))?;
+    class.define_method("str_parse_date", method!(RbExpr::str_parse_date, 4))?;
+    class.define_method("str_parse_datetime", method!(RbExpr::str_parse_datetime, 5))?;
+    class.define_method("str_parse_time", method!(RbExpr::str_parse_time, 4))?;
     class.define_method("str_strip", method!(RbExpr::str_strip, 1))?;
     class.define_method("str_rstrip", method!(RbExpr::str_rstrip, 1))?;
     class.define_method("str_lstrip", method!(RbExpr::str_lstrip, 1))?;
@@ -382,7 +382,7 @@ fn init() -> RbResult<()> {
     class.define_method("suffix", method!(RbExpr::suffix, 1))?;
     class.define_method("map_alias", method!(RbExpr::map_alias, 1))?;
     class.define_method("exclude", method!(RbExpr::exclude, 1))?;
-    class.define_method("interpolate", method!(RbExpr::interpolate, 0))?;
+    class.define_method("interpolate", method!(RbExpr::interpolate, 1))?;
     class.define_method("rolling_sum", method!(RbExpr::rolling_sum, 6))?;
     class.define_method("rolling_min", method!(RbExpr::rolling_min, 6))?;
     class.define_method("rolling_max", method!(RbExpr::rolling_max, 6))?;
@@ -410,7 +410,7 @@ fn init() -> RbResult<()> {
     class.define_method("lst_slice", method!(RbExpr::lst_slice, 2))?;
     class.define_method("lst_eval", method!(RbExpr::lst_eval, 2))?;
     class.define_method("cumulative_eval", method!(RbExpr::cumulative_eval, 3))?;
-    class.define_method("lst_to_struct", method!(RbExpr::lst_to_struct, 2))?;
+    class.define_method("lst_to_struct", method!(RbExpr::lst_to_struct, 3))?;
     class.define_method("rank", method!(RbExpr::rank, 2))?;
     class.define_method("diff", method!(RbExpr::diff, 2))?;
     class.define_method("pct_change", method!(RbExpr::pct_change, 1))?;
@@ -507,7 +507,7 @@ fn init() -> RbResult<()> {
     class.define_method("select", method!(RbLazyFrame::select, 1))?;
     class.define_method("groupby", method!(RbLazyFrame::groupby, 2))?;
     class.define_method("groupby_rolling", method!(RbLazyFrame::groupby_rolling, 5))?;
-    class.define_method("groupby_dynamic", method!(RbLazyFrame::groupby_dynamic, 8))?;
+    class.define_method("groupby_dynamic", method!(RbLazyFrame::groupby_dynamic, 9))?;
     class.define_method("with_context", method!(RbLazyFrame::with_context, 1))?;
     class.define_method("join_asof", method!(RbLazyFrame::join_asof, 11))?;
     class.define_method("join", method!(RbLazyFrame::join, 7))?;
@@ -956,7 +956,7 @@ fn rb_date_range(
         Duration::parse(&every),
         closed.0,
         tu.0,
-        tz,
+        tz.as_ref(),
     )
     .into_series()
     .into()
