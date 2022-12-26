@@ -3,7 +3,6 @@ members = ["ext/polars"]
 
 [patch.crates-io]
 jsonpath_lib = { git = "https://github.com/ritchie46/jsonpath", rev = "24eaf0b4416edff38a4d1b6b17bc4b9f3f047b4b" }
-magnus-macros = { git = "https://github.com/matsadler/magnus", rev = "ae792419bed70107d4c930e1f8193272750b9fd2" }
 rb-sys-env = { git = "https://github.com/oxidize-rb/rb-sys" }
 
 [profile.release]
