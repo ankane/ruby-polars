@@ -1723,7 +1723,8 @@ dependencies = [
 [[package]]
 name = "rb-sys-env"
 version = "0.1.1"
-source = "git+https://github.com/oxidize-rb/rb-sys#e8d8d8b354f513688ece70d8c88aba31f3bbf3ee"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74c38752410925faeb82c400c06ba2fd9ee6aa8f719dd33994c9e53f5242d25f"
 
 [[package]]
 name = "redox_syscall"
