@@ -28,8 +28,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: |
-          cargo install --git https://github.com/ankane/cargo-3pl
-          cargo 3pl --target ${{ matrix.target }} > LICENSE-THIRD-PARTY.txt
+          cargo install --locked --git https://github.com/ankane/cargo-3pl
+          git clone https://github.com/ankane/3pl-source.git
+          cargo 3pl --target ${{ matrix.target }} --require-files --source 3pl-source > LICENSE-THIRD-PARTY.txt
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.1
