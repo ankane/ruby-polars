@@ -438,8 +438,8 @@ module Polars
 
     def _ensure_datetime(value)
       is_date_type = false
-      if !value.is_a?(DateTime)
-        value = DateTime.new(value.year, value.month, value.day)
+      if !value.is_a?(::DateTime)
+        value = ::DateTime.new(value.year, value.month, value.day)
         is_date_type = true
       end
       [value, is_date_type]

@@ -46,14 +46,14 @@ module Polars
         # days to seconds
         # important to create from utc. Not doing this leads
         # to inconsistencies dependent on the timezone you are in.
-        Time.at(value * 86400).utc.to_date
+        ::Time.at(value * 86400).utc.to_date
       # TODO fix dtype
       elsif dtype.to_s.start_with?("datetime[")
         if tz.nil? || tz == ""
           if tu == "ns"
             raise Todo
           elsif tu == "us"
-            dt = Time.at(value / 1000000, value % 1000000, :usec).utc
+            dt = ::Time.at(value / 1000000, value % 1000000, :usec).utc
           elsif tu == "ms"
             raise Todo
           else
@@ -108,14 +108,15 @@ module Polars
       String => :str,
       TrueClass => :bool,
       FalseClass => :bool,
-      Date => :date,
-      DateTime => :datetime
+      ::Date => :date,
+      ::DateTime => :datetime
     }
 
     # TODO fix
     def self.rb_type_to_dtype(data_type)
       if is_polars_dtype(data_type)
-        return data_type.to_s
+        data_type = data_type.to_s if data_type.is_a?(Symbol)
+        return data_type
       end
 
       begin

@@ -3539,7 +3539,7 @@ module Polars
         return Utils.wrap_s(_s.send(op, other._s))
       end
 
-      if other.is_a?(::Date) || other.is_a?(::DateTime) || other.is_a?(Time) || other.is_a?(String)
+      if other.is_a?(::Date) || other.is_a?(::DateTime) || other.is_a?(::Time) || other.is_a?(String)
         raise Todo
       end
       if other.is_a?(Float) && !is_float
@@ -3573,7 +3573,7 @@ module Polars
       rb_temporal_types = []
       rb_temporal_types << ::Date if defined?(::Date)
       rb_temporal_types << ::DateTime if defined?(::DateTime)
-      rb_temporal_types << Time if defined?(Time)
+      rb_temporal_types << ::Time if defined?(::Time)
 
       value = _get_first_non_none(values)
 
@@ -3601,7 +3601,7 @@ module Polars
 
           if ruby_dtype == ::Date
             RbSeries.new_opt_date(name, values, strict)
-          elsif ruby_dtype == Time
+          elsif ruby_dtype == ::Time
             RbSeries.new_opt_datetime(name, values, strict)
           elsif ruby_dtype == ::DateTime
             RbSeries.new_opt_datetime(name, values.map(&:to_time), strict)
