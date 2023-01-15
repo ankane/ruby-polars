@@ -1,6 +1,7 @@
-## 0.2.0 (unreleased)
+## 0.2.0 (2023-01-14)
 
 - Updated Polars to 0.26.1
+- Added precompiled gems for Linux and Mac
 - Added data type classes
 - Changed `dtype` and `schema` methods to return data type class instead of symbol
 - Dropped support for Ruby < 3

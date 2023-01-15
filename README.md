@@ -12,8 +12,6 @@ Add this line to your application’s Gemfile:
 gem "polars-df"
 ```
 
-Note: Rust is currently required for installation, and it can take 15-20 minutes to compile the extension.
-
 ## Getting Started
 
 This library follows the [Polars Python API](https://pola-rs.github.io/polars/py-polars/html/reference/index.html).
