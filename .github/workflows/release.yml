@@ -34,7 +34,8 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.2
-      - uses: oxidize-rb/cross-gem-action@v7
+      # TODO use v8 when released
+      - uses: oxidize-rb/cross-gem-action@main
         with:
           platform: ${{ matrix.platform }}
           version: latest
@@ -42,3 +43,4 @@ jobs:
           setup: |
             bundle install
             ${{ matrix.setup }}
+          use-ruby-linker-for-cargo: ${{ matrix.platform == 'aarch64-linux' }}
