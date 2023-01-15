@@ -1023,7 +1023,7 @@ impl RbExpr {
             .map_alias(move |name| {
                 let out = lambda.call::<_, String>((name,));
                 match out {
-                    Ok(out) => Ok(out.to_string()),
+                    Ok(out) => Ok(out),
                     Err(e) => Err(PolarsError::ComputeError(
                         format!("Ruby function in 'map_alias' produced an error: {}.", e).into(),
                     )),

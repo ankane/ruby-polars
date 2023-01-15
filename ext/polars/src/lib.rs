@@ -937,7 +937,7 @@ fn collect_all(lfs: RArray) -> RbResult<Vec<RbDataFrame>> {
         .map(|v| v?.try_convert::<&RbLazyFrame>())
         .collect::<RbResult<Vec<&RbLazyFrame>>>()?;
 
-    let out = polars_core::POOL.install(|| {
+    polars_core::POOL.install(|| {
         lfs.par_iter()
             .map(|lf| {
                 let df = lf.ldf.clone().collect()?;
@@ -945,9 +945,7 @@ fn collect_all(lfs: RArray) -> RbResult<Vec<RbDataFrame>> {
             })
             .collect::<polars_core::error::PolarsResult<Vec<_>>>()
             .map_err(RbPolarsErr::from)
-    });
-
-    Ok(out?)
+    })
 }
 
 fn rb_date_range(
