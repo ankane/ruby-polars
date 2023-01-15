@@ -23,9 +23,9 @@ module Polars
     # @example Constructing a Series by specifying name and values positionally:
     #   s = Polars::Series.new("a", [1, 2, 3])
     #
-    # @example Notice that the dtype is automatically inferred as a polars `:i64`:
+    # @example Notice that the dtype is automatically inferred as a polars `Int64`:
     #   s.dtype
-    #   # => :i64
+    #   # => Polars::Int64
     #
     # @example Constructing a Series with a specific dtype:
     #   s2 = Polars::Series.new("a", [1, 2, 3], dtype: :f32)
@@ -1751,7 +1751,7 @@ module Polars
     #   s.is_numeric
     #   # => true
     def is_numeric
-      [:i8, :i16, :i32, :i64, :u8, :u16, :u32, :u64, :f32, :f64].include?(dtype)
+      [Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64, Float32, Float64].include?(dtype)
     end
     alias_method :numeric?, :is_numeric
 
@@ -1764,7 +1764,7 @@ module Polars
     #   s.is_datelike
     #   # => true
     def is_datelike
-      [:date, :datetime, :duration, :time].include?(dtype)
+      [Date, Datetime, Duration, Time].include?(dtype)
     end
 
     # Check if this Series has floating point numbers.
@@ -1776,7 +1776,7 @@ module Polars
     #   s.is_float
     #   # => true
     def is_float
-      [:f32, :f64].include?(dtype)
+      [Float32, Float64].include?(dtype)
     end
     alias_method :float?, :is_float
 
@@ -1789,7 +1789,7 @@ module Polars
     #   s.is_boolean
     #   # => true
     def is_boolean
-      dtype == :bool
+      dtype == Boolean
     end
     alias_method :boolean?, :is_boolean
     alias_method :is_bool, :is_boolean
@@ -1804,7 +1804,7 @@ module Polars
     #   s.is_utf8
     #   # => true
     def is_utf8
-      dtype == :str
+      dtype == Utf8
     end
     alias_method :utf8?, :is_utf8
 
@@ -1840,7 +1840,7 @@ module Polars
     #   #         3
     #   # ]
     def set(filter, value)
-      Utils.wrap_s(_s.send("set_with_mask_#{dtype}", filter._s, value))
+      Utils.wrap_s(_s.send("set_with_mask_#{DTYPE_TO_FFINAME.fetch(dtype)}", filter._s, value))
     end
 
     # Set values at the index locations.
@@ -3525,10 +3525,10 @@ module Polars
         return Utils.wrap_s(_s.send(op, other._s))
       end
 
-      if dtype == :str
+      if dtype == Utf8
         raise Todo
       end
-      Utils.wrap_s(_s.send("#{op}_#{dtype}", other))
+      Utils.wrap_s(_s.send("#{op}_#{DTYPE_TO_FFINAME.fetch(dtype)}", other))
     end
 
     def _arithmetic(other, op)
@@ -3546,8 +3546,32 @@ module Polars
         raise Todo
       end
 
-      Utils.wrap_s(_s.send("#{op}_#{dtype}", other))
+      Utils.wrap_s(_s.send("#{op}_#{DTYPE_TO_FFINAME.fetch(dtype)}", other))
     end
+
+    DTYPE_TO_FFINAME = {
+      Int8 => "i8",
+      Int16 => "i16",
+      Int32 => "i32",
+      Int64 => "i64",
+      UInt8 => "u8",
+      UInt16 => "u16",
+      UInt32 => "u32",
+      UInt64 => "u64",
+      Float32 => "f32",
+      Float64 => "f64",
+      Boolean => "bool",
+      Utf8 => "str",
+      List => "list",
+      Date => "date",
+      Datetime => "datetime",
+      Duration => "duration",
+      Time => "time",
+      Object => "object",
+      Categorical => "categorical",
+      Struct => "struct",
+      Binary => "binary"
+    }
 
     def series_to_rbseries(name, values)
       # should not be in-place?
@@ -3646,6 +3670,21 @@ module Polars
     end
 
     POLARS_TYPE_TO_CONSTRUCTOR = {
+      Float32 => RbSeries.method(:new_opt_f32),
+      Float64 => RbSeries.method(:new_opt_f64),
+      Int8 => RbSeries.method(:new_opt_i8),
+      Int16 => RbSeries.method(:new_opt_i16),
+      Int32 => RbSeries.method(:new_opt_i32),
+      Int64 => RbSeries.method(:new_opt_i64),
+      UInt8 => RbSeries.method(:new_opt_u8),
+      UInt16 => RbSeries.method(:new_opt_u16),
+      UInt32 => RbSeries.method(:new_opt_u32),
+      UInt64 => RbSeries.method(:new_opt_u64),
+      Boolean => RbSeries.method(:new_opt_bool),
+      Utf8 => RbSeries.method(:new_str)
+    }
+
+    SYM_TYPE_TO_CONSTRUCTOR = {
       f32: RbSeries.method(:new_opt_f32),
       f64: RbSeries.method(:new_opt_f64),
       i8: RbSeries.method(:new_opt_i8),
@@ -3661,7 +3700,11 @@ module Polars
     }
 
     def polars_type_to_constructor(dtype)
-      POLARS_TYPE_TO_CONSTRUCTOR.fetch(dtype.to_sym)
+      if dtype.is_a?(Class) && dtype < DataType
+        POLARS_TYPE_TO_CONSTRUCTOR.fetch(dtype)
+      else
+        SYM_TYPE_TO_CONSTRUCTOR.fetch(dtype.to_sym)
+      end
     rescue KeyError
       raise ArgumentError, "Cannot construct RbSeries for type #{dtype}."
     end

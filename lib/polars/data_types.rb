@@ -75,8 +75,8 @@ module Polars
   end
 
   # Calendar date and time type.
-  class DateTime < DataType
-    def initialize(time_unit = "us", time_zone: nil)
+  class Datetime < DataType
+    def initialize(time_unit = "us", time_zone = nil)
       @tu = time_unit || "us"
       @time_zone = time_zone
     end

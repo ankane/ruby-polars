@@ -198,7 +198,7 @@ module Polars
     #     }
     #   ).lazy
     #   lf.dtypes
-    #   # => [:i64, :f64, :str]
+    #   # => [Polars::Int64, Polars::Float64, Polars::Utf8]
     def dtypes
       _ldf.dtypes
     end
@@ -216,7 +216,7 @@ module Polars
     #     }
     #   ).lazy
     #   lf.schema
-    #   # => {"foo"=>:i64, "bar"=>:f64, "ham"=>:str}
+    #   # => {"foo"=>Polars::Int64, "bar"=>Polars::Float64, "ham"=>Polars::Utf8}
     def schema
       _ldf.schema
     end

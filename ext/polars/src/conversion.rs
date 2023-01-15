@@ -1,4 +1,4 @@
-use magnus::{class, r_hash::ForEach, RArray, RHash, Symbol, TryConvert, Value, QNIL};
+use magnus::{class, r_hash::ForEach, Module, RArray, RHash, Symbol, TryConvert, Value, QNIL};
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
@@ -144,7 +144,61 @@ impl From<Wrap<AnyValue<'_>>> for Value {
 
 impl From<Wrap<DataType>> for Value {
     fn from(w: Wrap<DataType>) -> Self {
-        Symbol::from(w.0.to_string()).into()
+        let pl = crate::module();
+
+        match &w.0 {
+            DataType::Int8 => pl.const_get::<_, Value>("Int8").unwrap(),
+            DataType::Int16 => pl.const_get::<_, Value>("Int16").unwrap(),
+            DataType::Int32 => pl.const_get::<_, Value>("Int32").unwrap(),
+            DataType::Int64 => pl.const_get::<_, Value>("Int64").unwrap(),
+            DataType::UInt8 => pl.const_get::<_, Value>("UInt8").unwrap(),
+            DataType::UInt16 => pl.const_get::<_, Value>("UInt16").unwrap(),
+            DataType::UInt32 => pl.const_get::<_, Value>("UInt32").unwrap(),
+            DataType::UInt64 => pl.const_get::<_, Value>("UInt64").unwrap(),
+            DataType::Float32 => pl.const_get::<_, Value>("Float32").unwrap(),
+            DataType::Float64 => pl.const_get::<_, Value>("Float64").unwrap(),
+            DataType::Boolean => pl.const_get::<_, Value>("Boolean").unwrap(),
+            DataType::Utf8 => pl.const_get::<_, Value>("Utf8").unwrap(),
+            DataType::Binary => pl.const_get::<_, Value>("Binary").unwrap(),
+            DataType::List(inner) => {
+                let inner = Wrap(*inner.clone());
+                let list_class = pl.const_get::<_, Value>("List").unwrap();
+                list_class.funcall::<_, _, Value>("new", (inner,)).unwrap()
+            }
+            DataType::Date => pl.const_get::<_, Value>("Date").unwrap(),
+            DataType::Datetime(tu, tz) => {
+                let datetime_class = pl.const_get::<_, Value>("Datetime").unwrap();
+                datetime_class
+                    .funcall::<_, _, Value>("new", (tu.to_ascii(), tz.clone()))
+                    .unwrap()
+            }
+            DataType::Duration(tu) => {
+                let duration_class = pl.const_get::<_, Value>("Duration").unwrap();
+                duration_class
+                    .funcall::<_, _, Value>("new", (tu.to_ascii(),))
+                    .unwrap()
+            }
+            DataType::Object(_) => pl.const_get::<_, Value>("Object").unwrap(),
+            DataType::Categorical(_) => pl.const_get::<_, Value>("Categorical").unwrap(),
+            DataType::Time => pl.const_get::<_, Value>("Time").unwrap(),
+            DataType::Struct(fields) => {
+                let field_class = pl.const_get::<_, Value>("Field").unwrap();
+                let iter = fields.iter().map(|fld| {
+                    let name = fld.name().clone();
+                    let dtype = Wrap(fld.data_type().clone());
+                    field_class
+                        .funcall::<_, _, Value>("new", (name, dtype))
+                        .unwrap()
+                });
+                let fields = RArray::from_iter(iter);
+                let struct_class = pl.const_get::<_, Value>("Struct").unwrap();
+                struct_class
+                    .funcall::<_, _, Value>("new", (fields,))
+                    .unwrap()
+            }
+            DataType::Null => pl.const_get::<_, Value>("Null").unwrap(),
+            DataType::Unknown => pl.const_get::<_, Value>("Unknown").unwrap(),
+        }
     }
 }
 

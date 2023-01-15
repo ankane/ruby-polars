@@ -354,7 +354,7 @@ module Polars
     #     }
     #   )
     #   df.dtypes
-    #   # => [:i64, :f64, :str]
+    #   # => [Polars::Int64, Polars::Float64, Polars::Utf8]
     def dtypes
       _df.dtypes
     end
@@ -372,7 +372,7 @@ module Polars
     #     }
     #   )
     #   df.schema
-    #   # => {"foo"=>:i64, "bar"=>:f64, "ham"=>:str}
+    #   # => {"foo"=>Polars::Int64, "bar"=>Polars::Float64, "ham"=>Polars::Utf8}
     def schema
       columns.zip(dtypes).to_h
     end

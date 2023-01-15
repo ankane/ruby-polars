@@ -3,28 +3,28 @@ require_relative "test_helper"
 class SeriesTest < Minitest::Test
   def test_new_int
     s = Polars::Series.new([1, 2, 3])
-    assert_series [1, 2, 3], s, dtype: :i64
+    assert_series [1, 2, 3], s, dtype: Polars::Int64
   end
 
   def test_new_float
     s = Polars::Series.new([1.0, 2, 3])
-    assert_series [1, 2, 3], s, dtype: :f64
+    assert_series [1, 2, 3], s, dtype: Polars::Float64
   end
 
   def test_new_string
     s = Polars::Series.new(["a", "b", "c"])
-    assert_series ["a", "b", "c"], s, dtype: :str
+    assert_series ["a", "b", "c"], s, dtype: Polars::Utf8
   end
 
   def test_new_bool
     s = Polars::Series.new([true, false, true])
-    assert_series [true, false, true], s, dtype: :bool
+    assert_series [true, false, true], s, dtype: Polars::Boolean
   end
 
   def test_new_date
     dates = [Date.new(2022, 1, 1), Date.new(2022, 1, 2), Date.new(2022, 1, 3)]
     s = Polars::Series.new(dates)
-    assert_series dates, s, dtype: :date
+    assert_series dates, s, dtype: Polars::Date
   end
 
   # def test_new_datetime
@@ -41,16 +41,16 @@ class SeriesTest < Minitest::Test
 
   def test_new_nil
     s = Polars::Series.new([1, nil, 3])
-    assert_series [1, nil, 3], s, dtype: :i64
+    assert_series [1, nil, 3], s, dtype: Polars::Int64
   end
 
   def test_new_strict
     s = Polars::Series.new([1.0, "hello", 3], strict: false)
-    assert_series [1, nil, 3], s, dtype: :f64
+    assert_series [1, nil, 3], s, dtype: Polars::Float64
 
     s = Polars::Series.new([1, "hello", 3.5], strict: false)
     # assert_series [1, nil, nil], s
-    assert_series [1, nil, 3], s, dtype: :i64
+    assert_series [1, nil, 3], s, dtype: Polars::Int64
   end
 
   def test_new_unsupported
@@ -63,7 +63,7 @@ class SeriesTest < Minitest::Test
   def test_new_int_float
     skip
     s = Polars::Series.new([1, 2.5])
-    assert_series [1, 2.5], s, dtype: :f64
+    assert_series [1, 2.5], s, dtype: Polars::Float64
   end
 
   def test_new_different
@@ -97,7 +97,7 @@ class SeriesTest < Minitest::Test
 
   def test_dtype
     s = Polars::Series.new([1, 2, 3])
-    assert_equal :i64, s.dtype
+    assert_equal Polars::Int64, s.dtype
   end
 
   def test_flags
@@ -575,7 +575,7 @@ class SeriesTest < Minitest::Test
   end
 
   def test_reinterpret
-    s = Polars::Series.new("a", [2**64 - 1, 0, 1], dtype: :u64)
+    s = Polars::Series.new("a", [2**64 - 1, 0, 1], dtype: Polars::UInt64)
     assert_series [-1, 0, 1], s.reinterpret
   end
 
@@ -644,6 +644,6 @@ class SeriesTest < Minitest::Test
 
   def test_shrink_dtype
     s = Polars::Series.new([1, 2, 3])
-    assert_series [1, 2, 3], s.shrink_dtype, dtype: :i8
+    assert_series [1, 2, 3], s.shrink_dtype, dtype: Polars::Int8
   end
 end

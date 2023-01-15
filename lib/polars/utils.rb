@@ -42,13 +42,13 @@ module Polars
     end
 
     def self._to_ruby_datetime(value, dtype, tu: "ns", tz: nil)
-      if dtype == :date
+      if dtype == :date || dtype == Date
         # days to seconds
         # important to create from utc. Not doing this leads
         # to inconsistencies dependent on the timezone you are in.
         ::Time.at(value * 86400).utc.to_date
       # TODO fix dtype
-      elsif dtype.to_s.start_with?("datetime[")
+      elsif dtype.to_s.start_with?("datetime[") || dtype.is_a?(Datetime)
         if tz.nil? || tz == ""
           if tu == "ns"
             raise Todo

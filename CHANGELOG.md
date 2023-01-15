@@ -2,6 +2,7 @@
 
 - Updated Polars to 0.26.1
 - Added data type classes
+- Changed `dtype` and `schema` methods to return data type class instead of symbol
 
 ## 0.1.5 (2022-12-22)
 
