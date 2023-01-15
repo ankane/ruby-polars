@@ -63,15 +63,31 @@ module Polars
   class Unknown < DataType
   end
 
-  # TODO List
+  # Nested list/array type.
+  class List < DataType
+    def initialize(inner)
+      @inner = Utils.rb_type_to_dtype(inner)
+    end
+  end
 
   # Calendar date type.
   class Date < DataType
   end
 
-  # TODO DateTime
+  # Calendar date and time type.
+  class DateTime < DataType
+    def initialize(time_unit = "us", time_zone: nil)
+      @tu = time_unit || "us"
+      @time_zone = time_zone
+    end
+  end
 
-  # TODO Duration
+  # Time duration/delta type.
+  class Duration < DataType
+    def initialize(time_unit = "us")
+      @tu = time_unit
+    end
+  end
 
   # Time of day type.
   class Time < DataType
@@ -85,7 +101,22 @@ module Polars
   class Categorical < DataType
   end
 
-  # TODO Field
+  # Definition of a single field within a `Struct` DataType.
+  class Field < DataType
+    def initialize(name, dtype)
+      @name = name
+      @dtype = Utils.rb_type_to_dtype(dtype)
+    end
+  end
 
-  # TODO Struct
+  # Struct composite type.
+  class Struct < DataType
+    def initialize(fields)
+      if fields.is_a?(Hash)
+        @fields = fields.map { |n, d| Field.new(n, d) }
+      else
+        @fields = fields
+      end
+    end
+  end
 end
