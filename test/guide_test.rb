@@ -297,7 +297,7 @@ class GuideTest < Minitest::Test
 
     output df.select(Polars.col("^col.*$"))
 
-    # output df.select(Polars.col(Polars::Int64))
+    output df.select(Polars.col(Polars::Int64))
 
     output df.filter(Polars.col("id") <= 2).select(["id", "color"])
   end

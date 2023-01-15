@@ -1530,6 +1530,10 @@ pub fn cols(names: Vec<String>) -> RbExpr {
     dsl::cols(names).into()
 }
 
+pub fn dtype_cols(dtypes: Vec<DataType>) -> RbExpr {
+    dsl::dtype_cols(dtypes).into()
+}
+
 pub fn fold(acc: &RbExpr, lambda: Value, exprs: RArray) -> RbResult<RbExpr> {
     let exprs = rb_exprs_to_exprs(exprs)?;
 

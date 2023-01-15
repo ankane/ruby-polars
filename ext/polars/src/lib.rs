@@ -56,6 +56,7 @@ fn series() -> RClass {
 #[magnus::init]
 fn init() -> RbResult<()> {
     let module = module();
+    module.define_singleton_method("_dtype_cols", function!(dtype_cols, 1))?;
     module.define_singleton_method("_rb_duration", function!(rb_duration, 8))?;
     module.define_singleton_method("_concat_df", function!(concat_df, 1))?;
     module.define_singleton_method("_concat_lf", function!(concat_lf, 3))?;
@@ -790,6 +791,15 @@ fn init() -> RbResult<()> {
     class.define_method("otherwise", method!(RbWhenThen::overwise, 1))?;
 
     Ok(())
+}
+
+fn dtype_cols(dtypes: RArray) -> RbResult<RbExpr> {
+    let dtypes = dtypes
+        .each()
+        .map(|v| v?.try_convert::<Wrap<DataType>>())
+        .collect::<RbResult<Vec<Wrap<DataType>>>>()?;
+    let dtypes = vec_extract_wrapped(dtypes);
+    Ok(crate::lazy::dsl::dtype_cols(dtypes))
 }
 
 #[allow(clippy::too_many_arguments)]

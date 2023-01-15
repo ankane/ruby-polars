@@ -99,7 +99,7 @@ module Polars
 
     # TODO fix
     def self.is_polars_dtype(data_type)
-      data_type.is_a?(Symbol) || data_type.is_a?(String)
+      data_type.is_a?(Symbol) || data_type.is_a?(String) || data_type.is_a?(DataType) || (data_type.is_a?(Class) && data_type < DataType)
     end
 
     RB_TYPE_TO_DTYPE = {

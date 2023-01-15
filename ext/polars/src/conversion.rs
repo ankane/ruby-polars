@@ -18,6 +18,12 @@ pub(crate) fn slice_to_wrapped<T>(slice: &[T]) -> &[Wrap<T>] {
     unsafe { std::mem::transmute(slice) }
 }
 
+pub(crate) fn vec_extract_wrapped<T>(buf: Vec<Wrap<T>>) -> Vec<T> {
+    // Safety:
+    // Wrap is transparent.
+    unsafe { std::mem::transmute(buf) }
+}
+
 #[repr(transparent)]
 pub struct Wrap<T>(pub T);
 
@@ -144,34 +150,67 @@ impl From<Wrap<DataType>> for Value {
 
 impl TryConvert for Wrap<DataType> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let dtype = match ob.try_convert::<String>()?.as_str() {
-            "u8" => DataType::UInt8,
-            "u16" => DataType::UInt16,
-            "u32" => DataType::UInt32,
-            "u64" => DataType::UInt64,
-            "i8" => DataType::Int8,
-            "i16" => DataType::Int16,
-            "i32" => DataType::Int32,
-            "i64" => DataType::Int64,
-            "str" => DataType::Utf8,
-            "bin" => DataType::Binary,
-            "bool" => DataType::Boolean,
-            "cat" => DataType::Categorical(None),
-            "date" => DataType::Date,
-            "datetime" => DataType::Datetime(TimeUnit::Microseconds, None),
-            "f32" => DataType::Float32,
-            "time" => DataType::Time,
-            "dur" => DataType::Duration(TimeUnit::Microseconds),
-            "f64" => DataType::Float64,
-            // "obj" => DataType::Object(OBJECT_NAME),
-            "list" => DataType::List(Box::new(DataType::Boolean)),
-            "null" => DataType::Null,
-            "unk" => DataType::Unknown,
-            _ => {
-                return Err(RbValueError::new_err(format!(
-                    "{} is not a supported DataType.",
-                    ob
-                )))
+        let dtype = if ob.is_kind_of(class::class()) {
+            let name = ob.funcall::<_, _, String>("name", ())?;
+            match name.as_str() {
+                "Polars::UInt8" => DataType::UInt8,
+                "Polars::UInt16" => DataType::UInt16,
+                "Polars::UInt32" => DataType::UInt32,
+                "Polars::UInt64" => DataType::UInt64,
+                "Polars::Int8" => DataType::Int8,
+                "Polars::Int16" => DataType::Int16,
+                "Polars::Int32" => DataType::Int32,
+                "Polars::Int64" => DataType::Int64,
+                "Polars::Utf8" => DataType::Utf8,
+                "Polars::Binary" => DataType::Binary,
+                "Polars::Boolean" => DataType::Boolean,
+                "Polars::Categorical" => DataType::Categorical(None),
+                "Polars::Date" => DataType::Date,
+                "Polars::Datetime" => DataType::Datetime(TimeUnit::Microseconds, None),
+                "Polars::Time" => DataType::Time,
+                "Polars::Duration" => DataType::Duration(TimeUnit::Microseconds),
+                "Polars::Float32" => DataType::Float32,
+                "Polars::Float64" => DataType::Float64,
+                // "Polars::Object" => DataType::Object(OBJECT_NAME),
+                "Polars::List" => DataType::List(Box::new(DataType::Boolean)),
+                "Polars::Null" => DataType::Null,
+                "Polars::Unknown" => DataType::Unknown,
+                dt => {
+                    return Err(RbValueError::new_err(format!(
+                        "{dt} is not a correct polars DataType.",
+                    )))
+                }
+            }
+        } else {
+            match ob.try_convert::<String>()?.as_str() {
+                "u8" => DataType::UInt8,
+                "u16" => DataType::UInt16,
+                "u32" => DataType::UInt32,
+                "u64" => DataType::UInt64,
+                "i8" => DataType::Int8,
+                "i16" => DataType::Int16,
+                "i32" => DataType::Int32,
+                "i64" => DataType::Int64,
+                "str" => DataType::Utf8,
+                "bin" => DataType::Binary,
+                "bool" => DataType::Boolean,
+                "cat" => DataType::Categorical(None),
+                "date" => DataType::Date,
+                "datetime" => DataType::Datetime(TimeUnit::Microseconds, None),
+                "f32" => DataType::Float32,
+                "time" => DataType::Time,
+                "dur" => DataType::Duration(TimeUnit::Microseconds),
+                "f64" => DataType::Float64,
+                // "obj" => DataType::Object(OBJECT_NAME),
+                "list" => DataType::List(Box::new(DataType::Boolean)),
+                "null" => DataType::Null,
+                "unk" => DataType::Unknown,
+                _ => {
+                    return Err(RbValueError::new_err(format!(
+                        "{} is not a supported DataType.",
+                        ob
+                    )))
+                }
             }
         };
         Ok(Wrap(dtype))

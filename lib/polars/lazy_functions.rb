@@ -8,13 +8,18 @@ module Polars
         name = name.to_a
       end
 
-      if name.is_a?(Array)
+      if name.is_a?(Class) && name < DataType
+        name = [name]
+      end
+
+      if name.is_a?(DataType)
+        Utils.wrap_expr(_dtype_cols([name]))
+      elsif name.is_a?(Array)
         if name.length == 0 || name[0].is_a?(String) || name[0].is_a?(Symbol)
           name = name.map { |v| v.is_a?(Symbol) ? v.to_s : v }
           Utils.wrap_expr(RbExpr.cols(name))
         elsif Utils.is_polars_dtype(name[0])
-          raise Todo
-          # Utils.wrap_expr(_dtype_cols(name))
+          Utils.wrap_expr(_dtype_cols(name))
         else
           raise ArgumentError, "Expected list values to be all `str` or all `DataType`"
         end
