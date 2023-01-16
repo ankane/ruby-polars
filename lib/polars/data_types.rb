@@ -93,7 +93,7 @@ module Polars
   class Time < DataType
   end
 
-  # Type for wrapping arbitrary Python objects.
+  # Type for wrapping arbitrary Ruby objects.
   class Object < DataType
   end
 
