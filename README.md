@@ -27,6 +27,12 @@ Polars.read_csv("iris.csv")
 
 You can follow [Polars tutorials](https://pola-rs.github.io/polars-book/user-guide/introduction.html) and convert the code to Ruby in many cases. Feel free to open an issue if you run into problems. Some methods are missing at the moment.
 
+## Reference
+
+- [Series](https://www.rubydoc.info/gems/polars-df/Polars/Series)
+- [DataFrame](https://www.rubydoc.info/gems/polars-df/Polars/DataFrame)
+- [LazyFrame](https://www.rubydoc.info/gems/polars-df/Polars/LazyFrame)
+
 ## Examples
 
 ### Creating DataFrames
