@@ -7,6 +7,7 @@ end
 
 # stdlib
 require "date"
+require "stringio"
 
 # modules
 require_relative "polars/expr_dispatch"
