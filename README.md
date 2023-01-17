@@ -73,6 +73,221 @@ Polars::DataFrame.new([
 ])
 ```
 
+## Attributes
+
+Get number of rows
+
+```ruby
+df.height
+```
+
+Get column names
+
+```ruby
+df.columns
+```
+
+Check if a column exists
+
+```ruby
+df.include?(name)
+```
+
+## Selecting Data
+
+Select a column
+
+```ruby
+df["a"]
+```
+
+Select multiple columns
+
+```ruby
+df[["a", "b"]]
+```
+
+Select first rows
+
+```ruby
+df.head
+```
+
+Select last rows
+
+```ruby
+df.tail
+```
+
+## Filtering
+
+Filter on a condition
+
+```ruby
+df.filter(Polars.col("a") == 100)
+df.filter(Polars.col("a") != 100)
+df.filter(Polars.col("a") > 100)
+df.filter(Polars.col("a") >= 100)
+df.filter(Polars.col("a") < 100)
+df.filter(Polars.col("a") <= 100)
+```
+
+And, or, and exclusive or
+
+```ruby
+df.filter((Polars.col("a") > 100) & (Polars.col("b") == "one")) # and
+df.filter((Polars.col("a") > 100) | (Polars.col("b") == "one")) # or
+df.filter((Polars.col("a") > 100) ^ (Polars.col("b") == "one")) # xor
+```
+
+## Operations
+
+Basic operations
+
+```ruby
+df["a"] + 5
+df["a"] - 5
+df["a"] * 5
+df["a"] / 5
+df["a"] % 5
+df["a"] ** 2
+df["a"].sqrt
+df["a"].abs
+```
+
+Rounding
+
+```ruby
+df["a"].round(2)
+df["a"].ceil
+df["a"].floor
+```
+
+Logarithm
+
+```ruby
+df["a"].log # natural log
+df["a"].log(10)
+```
+
+Exponentiation
+
+```ruby
+df["a"].exp
+```
+
+Trigonometric functions
+
+```ruby
+df["a"].sin
+df["a"].cos
+df["a"].tan
+df["a"].arcsin
+df["a"].arccos
+df["a"].arctan
+```
+
+Hyperbolic functions
+
+```ruby
+df["a"].sinh
+df["a"].cosh
+df["a"].tanh
+df["a"].arcsinh
+df["a"].arccosh
+df["a"].arctanh
+```
+
+Summary statistics
+
+```ruby
+df["a"].sum
+df["a"].mean
+df["a"].median
+df["a"].quantile(0.90)
+df["a"].min
+df["a"].max
+df["a"].std
+df["a"].var
+```
+
+## Grouping
+
+Group
+
+```ruby
+df.groupby("a").count
+```
+
+Works with all summary statistics
+
+```ruby
+df.groupby("a").max
+```
+
+Multiple groups
+
+```ruby
+df.groupby(["a", "b"]).count
+```
+
+## Encoding
+
+One-hot encoding
+
+```ruby
+df.to_dummies
+```
+
+## Conversion
+
+Array of rows
+
+```ruby
+df.rows
+```
+
+Hash of series
+
+```ruby
+df.to_h
+```
+
+## Types
+
+You can specify column types when creating a data frame
+
+```ruby
+Polars::DataFrame.new(data, columns: {"a" => Polars::Int32, "b" => Polars::Float32})
+```
+
+Supported types are:
+
+- boolean - `Boolean`
+- float - `Float64`, `Float32`
+- integer - `Int64`, `Int32`, `Int16`, `Int8`
+- unsigned integer - `UInt64`, `UInt32`, `UInt16`, `UInt8`
+- string - `Utf8`, `Categorical`
+- temporal - `Date`, `Datetime`, `Time`, `Duration`
+
+Get column types
+
+```ruby
+df.schema
+```
+
+For a specific column
+
+```ruby
+df["a"].dtype
+```
+
+Cast a column
+
+```ruby
+df["a"].cast(Polars::Int32)
+```
+
 ## History
 
 View the [changelog](CHANGELOG.md)
