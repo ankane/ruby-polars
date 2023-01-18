@@ -521,13 +521,13 @@ module Polars
             return df.slice(row_selection, 1)
           end
           # df[2, "a"]
-          if col_selection.is_a?(String)
+          if col_selection.is_a?(String) || col_selection.is_a?(Symbol)
             return self[col_selection][row_selection]
           end
         end
 
         # column selection can be "a" and ["a", "b"]
-        if col_selection.is_a?(String)
+        if col_selection.is_a?(String) || col_selection.is_a?(Symbol)
           col_selection = [col_selection]
         end
 
@@ -553,8 +553,8 @@ module Polars
 
         # select single column
         # df["foo"]
-        if item.is_a?(String)
-          return Utils.wrap_s(_df.column(item))
+        if item.is_a?(String) || item.is_a?(Symbol)
+          return Utils.wrap_s(_df.column(item.to_s))
         end
 
         # df[idx]

@@ -1,3 +1,7 @@
+## 0.2.1 (unreleased)
+
+- Added support for symbol keys
+
 ## 0.2.0 (2023-01-14)
 
 - Updated Polars to 0.26.1
