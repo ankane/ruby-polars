@@ -44,4 +44,11 @@ class ActiveRecordTest < Minitest::Test
     assert_series users.map(&:id), df["id"]
     assert_series users.map(&:name), df["name"]
   end
+
+  def test_read_sql_unsupported
+    error = assert_raises(ArgumentError) do
+      Polars.read_sql(Object.new)
+    end
+    assert_equal "Expected ActiveRecord::Relation, ActiveRecord::Result, or String", error.message
+  end
 end

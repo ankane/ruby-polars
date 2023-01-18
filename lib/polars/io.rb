@@ -609,7 +609,7 @@ module Polars
         elsif sql.is_a?(String)
           ActiveRecord::Base.connection.select_all(sql)
         else
-          raise ArgumentError, "Expected ActiveRecord::Relation or ActiveRecord::Result"
+          raise ArgumentError, "Expected ActiveRecord::Relation, ActiveRecord::Result, or String"
         end
       data = {}
       result.columns.each_with_index do |k, i|
