@@ -41,6 +41,8 @@ From a CSV
 
 ```ruby
 Polars.read_csv("file.csv")
+# or lazily with
+Polars.scan_csv("file.csv")
 ```
 
 From Parquet
@@ -135,9 +137,9 @@ df[Polars.col("a") <= 2]
 And, or, and exclusive or
 
 ```ruby
-df[(Polars.col("a") > 100) & (Polars.col("b") == "one")] # and
-df[(Polars.col("a") > 100) | (Polars.col("b") == "one")] # or
-df[(Polars.col("a") > 100) ^ (Polars.col("b") == "one")] # xor
+df[(Polars.col("a") > 1) & (Polars.col("b") == "two")] # and
+df[(Polars.col("a") > 1) | (Polars.col("b") == "two")] # or
+df[(Polars.col("a") > 1) ^ (Polars.col("b") == "two")] # xor
 ```
 
 ## Operations
