@@ -215,6 +215,11 @@ class DataFrameTest < Minitest::Test
   end
 
   def test_groupby
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    df.groupby("a").count
+    df.groupby(:a).count
+    df.groupby(["a", "b"]).count
+    df.groupby([:a, :b]).count
   end
 
   def test_join

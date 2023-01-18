@@ -70,7 +70,7 @@ module Polars
     end
 
     def self.selection_to_rbexpr_list(exprs)
-      if exprs.is_a?(String) || exprs.is_a?(Expr) || exprs.is_a?(Series)
+      if exprs.is_a?(String) || exprs.is_a?(Symbol) || exprs.is_a?(Expr) || exprs.is_a?(Series)
         exprs = [exprs]
       end
 
@@ -78,7 +78,7 @@ module Polars
     end
 
     def self.expr_to_lit_or_expr(expr, str_to_lit: true)
-      if expr.is_a?(String) && !str_to_lit
+      if (expr.is_a?(String) || expr.is_a?(Symbol)) && !str_to_lit
         col(expr)
       elsif expr.is_a?(Integer) || expr.is_a?(Float) || expr.is_a?(String) || expr.is_a?(Series) || expr.nil?
         lit(expr)
