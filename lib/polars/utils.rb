@@ -80,7 +80,7 @@ module Polars
     def self.expr_to_lit_or_expr(expr, str_to_lit: true)
       if (expr.is_a?(String) || expr.is_a?(Symbol)) && !str_to_lit
         col(expr)
-      elsif expr.is_a?(Integer) || expr.is_a?(Float) || expr.is_a?(String) || expr.is_a?(Series) || expr.nil?
+      elsif expr.is_a?(Integer) || expr.is_a?(Float) || expr.is_a?(String) || expr.is_a?(Symbol) || expr.is_a?(Series) || expr.nil?
         lit(expr)
       elsif expr.is_a?(Expr)
         expr
