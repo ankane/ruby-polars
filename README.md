@@ -52,7 +52,7 @@ Polars.read_parquet("file.parquet")
 From Active Record
 
 ```ruby
-Polars::DataFrame.new(User.all)
+Polars.read_sql(User.all)
 ```
 
 From a hash
@@ -124,20 +124,20 @@ df.tail
 Filter on a condition
 
 ```ruby
-df.filter(Polars.col("a") == 100)
-df.filter(Polars.col("a") != 100)
-df.filter(Polars.col("a") > 100)
-df.filter(Polars.col("a") >= 100)
-df.filter(Polars.col("a") < 100)
-df.filter(Polars.col("a") <= 100)
+df[Polars.col("a") == 2]
+df[Polars.col("a") != 2]
+df[Polars.col("a") > 2]
+df[Polars.col("a") >= 2]
+df[Polars.col("a") < 2]
+df[Polars.col("a") <= 2]
 ```
 
 And, or, and exclusive or
 
 ```ruby
-df.filter((Polars.col("a") > 100) & (Polars.col("b") == "one")) # and
-df.filter((Polars.col("a") > 100) | (Polars.col("b") == "one")) # or
-df.filter((Polars.col("a") > 100) ^ (Polars.col("b") == "one")) # xor
+df[(Polars.col("a") > 100) & (Polars.col("b") == "one")] # and
+df[(Polars.col("a") > 100) | (Polars.col("b") == "one")] # or
+df[(Polars.col("a") > 100) ^ (Polars.col("b") == "one")] # xor
 ```
 
 ## Operations
@@ -182,9 +182,9 @@ Trigonometric functions
 df["a"].sin
 df["a"].cos
 df["a"].tan
-df["a"].arcsin
-df["a"].arccos
-df["a"].arctan
+df["a"].asin
+df["a"].acos
+df["a"].atan
 ```
 
 Hyperbolic functions
@@ -193,9 +193,9 @@ Hyperbolic functions
 df["a"].sinh
 df["a"].cosh
 df["a"].tanh
-df["a"].arcsinh
-df["a"].arccosh
-df["a"].arctanh
+df["a"].asinh
+df["a"].acosh
+df["a"].atanh
 ```
 
 Summary statistics
@@ -282,6 +282,8 @@ df.to_h
 CSV
 
 ```ruby
+df.to_csv
+# or
 df.write_csv("data.csv")
 ```
 

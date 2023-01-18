@@ -1,4 +1,4 @@
-## 0.2.1 (unreleased)
+## 0.2.1 (2023-01-18)
 
 - Added `read_sql` method
 - Added `to_csv` method
