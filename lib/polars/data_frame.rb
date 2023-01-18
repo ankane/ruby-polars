@@ -574,6 +574,11 @@ module Polars
         end
       end
 
+      # Ruby-specific
+      if item.is_a?(Expr)
+        return filter(item)
+      end
+
       raise ArgumentError, "Cannot get item of type: #{item.class.name}"
     end
 

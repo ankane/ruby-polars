@@ -125,6 +125,7 @@ class DataFrameTest < Minitest::Test
     df = Polars::DataFrame.new([a])
     assert_equal a, df["a"]
     assert_equal a, df[:a]
+    assert_frame({"a" => [2, 3]}, df[Polars.col("a") > 1])
   end
 
   def test_to_h
