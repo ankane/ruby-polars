@@ -231,6 +231,32 @@ Multiple groups
 df.groupby(["a", "b"]).count
 ```
 
+## Combining Data Frames
+
+Add rows
+
+```ruby
+df.vstack(other_df)
+```
+
+Add columns
+
+```ruby
+df.hstack(other_df.get_columns)
+```
+
+Inner join
+
+```ruby
+df.join(other_df, on: "a")
+```
+
+Left join
+
+```ruby
+df.join(other_df, on: "a", how: "left")
+```
+
 ## Encoding
 
 One-hot encoding

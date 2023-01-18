@@ -223,6 +223,26 @@ class DataFrameTest < Minitest::Test
   end
 
   def test_join
+    df = Polars::DataFrame.new({
+      a: [1, 2, 3],
+      b: ["one", "two", "three"]
+    })
+
+    other_df = Polars::DataFrame.new({
+      a: [1, 1, 2],
+      c: ["c1", "c2", "c3"]
+    })
+
+    expected = Polars::DataFrame.new({
+      a: [1, 1, 2],
+      b: ["one", "one", "two"],
+      c: ["c1", "c2", "c3"]
+    })
+
+    assert_equal expected, df.join(other_df, on: "a")
+    assert_equal expected, df.join(other_df, on: :a)
+    assert_equal expected, df.join(other_df, on: ["a"])
+    assert_equal expected, df.join(other_df, on: [:a])
   end
 
   def test_with_column
