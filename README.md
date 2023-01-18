@@ -41,6 +41,7 @@ From a CSV
 
 ```ruby
 Polars.read_csv("file.csv")
+
 # or lazily with
 Polars.scan_csv("file.csv")
 ```
