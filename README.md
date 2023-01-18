@@ -242,7 +242,7 @@ df.vstack(other_df)
 Add columns
 
 ```ruby
-df.hstack(other_df.get_columns)
+df.hstack(other_df)
 ```
 
 Inner join
