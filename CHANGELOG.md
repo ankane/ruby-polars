@@ -1,3 +1,7 @@
+## 0.2.2 (unreleased)
+
+- Added support for strings to `read_sql` method
+
 ## 0.2.1 (2023-01-18)
 
 - Added `read_sql` method

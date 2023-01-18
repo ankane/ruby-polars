@@ -36,4 +36,12 @@ class ActiveRecordTest < Minitest::Test
     assert_series users.map(&:id), df["id"]
     assert_series users.map(&:name), df["name"]
   end
+
+  def test_read_sql_string
+    users = 3.times.map { |i| User.create!(name: "User #{i}") }
+    df = Polars.read_sql("SELECT * FROM users ORDER BY id")
+    assert_equal ["id", "name"], df.columns
+    assert_series users.map(&:id), df["id"]
+    assert_series users.map(&:name), df["name"]
+  end
 end

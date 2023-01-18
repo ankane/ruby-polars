@@ -606,6 +606,8 @@ module Polars
           sql
         elsif sql.is_a?(ActiveRecord::Relation)
           sql.connection.select_all(sql.to_sql)
+        elsif sql.is_a?(String)
+          ActiveRecord::Base.connection.select_all(sql)
         else
           raise ArgumentError, "Expected ActiveRecord::Relation or ActiveRecord::Result"
         end
