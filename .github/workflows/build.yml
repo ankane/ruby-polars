@@ -11,7 +11,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             tmp
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.2
