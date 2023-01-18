@@ -590,8 +590,31 @@ module Polars
       DataFrame._read_ndjson(file)
     end
 
-    # def read_sql
-    # end
+    # Read a SQL query into a DataFrame.
+    #
+    # @param sql [Object]
+    #   ActiveRecord::Relation or ActiveRecord::Result.
+    #
+    # @return [DataFrame]
+    def read_sql(sql)
+      if !defined?(ActiveRecord)
+        raise Error, "Active Record not available"
+      end
+
+      result =
+        if sql.is_a?(ActiveRecord::Result)
+          sql
+        elsif sql.is_a?(ActiveRecord::Relation)
+          sql.connection.select_all(sql.to_sql)
+        else
+          raise ArgumentError, "Expected ActiveRecord::Relation or ActiveRecord::Result"
+        end
+      data = {}
+      result.columns.each_with_index do |k, i|
+        data[k] = result.rows.map { |r| r[i] }
+      end
+      DataFrame.new(data)
+    end
 
     # def read_excel
     # end

@@ -17,6 +17,7 @@ module Polars
     #   the orientation is inferred by matching the columns and data dimensions. If
     #   this does not yield conclusive results, column orientation is used.
     def initialize(data = nil, columns: nil, orient: nil)
+      # TODO deprecate in favor of read_sql
       if defined?(ActiveRecord) && (data.is_a?(ActiveRecord::Relation) || data.is_a?(ActiveRecord::Result))
         result = data.is_a?(ActiveRecord::Result) ? data : data.connection.select_all(data.to_sql)
         data = {}
