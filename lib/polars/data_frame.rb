@@ -803,6 +803,13 @@ module Polars
       nil
     end
 
+    # Write to comma-separated values (CSV) string.
+    #
+    # @return [String]
+    def to_csv(**options)
+      write_csv(**options)
+    end
+
     # Write to Apache Avro file.
     #
     # @param file [String]
