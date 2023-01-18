@@ -253,6 +253,18 @@ Hash of series
 df.to_h
 ```
 
+CSV
+
+```ruby
+df.write_csv("data.csv")
+```
+
+Parquet
+
+```ruby
+df.write_parquet("data.parquet")
+```
+
 ## Types
 
 You can specify column types when creating a data frame
