@@ -276,6 +276,7 @@ module Polars
     def height
       _df.height
     end
+    alias_method :count, :height
 
     # Get the width of the DataFrame.
     #

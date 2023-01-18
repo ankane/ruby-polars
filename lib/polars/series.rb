@@ -1647,6 +1647,7 @@ module Polars
     def len
       _s.len
     end
+    alias_method :count, :len
     alias_method :length, :len
 
     # Cast between data types.
