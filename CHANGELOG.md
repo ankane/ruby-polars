@@ -1,4 +1,4 @@
-## 0.2.2 (unreleased)
+## 0.2.2 (2023-01-20)
 
 - Added support for strings to `read_sql` method
 - Improved indexing
