@@ -574,6 +574,23 @@ module Polars
           # df[["foo", "bar"]]
           return _from_rbdf(_df.select(item))
         end
+
+        if Utils.is_int_sequence(item)
+          item = Series.new("", item)
+        end
+
+        if item.is_a?(Series)
+          dtype = item.dtype
+          if dtype == Utf8
+            return _from_rbdf(_df.select(item))
+          elsif dtype == UInt32
+            return _from_rbdf(_df.take_with_series(item._s))
+          elsif [UInt8, UInt16, UInt64, Int8, Int16, Int32, Int64].include?(dtype)
+            return _from_rbdf(
+              _df.take_with_series(_pos_idxs(item, 0)._s)
+            )
+          end
+        end
       end
 
       # Ruby-specific
@@ -4662,8 +4679,53 @@ module Polars
       end
     end
 
-    # def _pos_idxs
-    # end
+    def _pos_idxs(idxs, dim)
+      idx_type = Polars._get_idx_type
+
+      if idxs.is_a?(Series)
+        if idxs.dtype == idx_type
+          return idxs
+        end
+        if [UInt8, UInt16, idx_type == UInt32 ? UInt64 : UInt32, Int8, Int16, Int32, Int64].include?(idxs.dtype)
+          if idx_type == UInt32
+            if [Int64, UInt64].include?(idxs.dtype)
+              if idxs.max >= 2**32
+                raise ArgumentError, "Index positions should be smaller than 2^32."
+              end
+            end
+            if idxs.dtype == Int64
+              if idxs.min < -(2**32)
+                raise ArgumentError, "Index positions should be bigger than -2^32 + 1."
+              end
+            end
+          end
+          if [Int8, Int16, Int32, Int64].include?(idxs.dtype)
+            if idxs.min < 0
+              if idx_type == UInt32
+                if [Int8, Int16].include?(idxs.dtype)
+                  idxs = idxs.cast(Int32)
+                end
+              else
+                if [Int8, Int16, Int32].include?(idxs.dtype)
+                  idxs = idxs.cast(Int64)
+                end
+              end
+
+              idxs =
+                Polars.select(
+                  Polars.when(Polars.lit(idxs) < 0)
+                    .then(shape[dim] + Polars.lit(idxs))
+                    .otherwise(Polars.lit(idxs))
+                ).to_series
+            end
+          end
+
+          return idxs.cast(idx_type)
+        end
+      end
+
+      raise ArgumentError, "Unsupported idxs datatype."
+    end
 
     # @private
     def self.hash_to_rbdf(data, columns: nil)
