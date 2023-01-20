@@ -275,6 +275,10 @@ module Polars
         return Slice.new(self).apply(item)
       end
 
+      if Utils.is_int_sequence(item)
+        return Utils.wrap_s(_s.take_with_series(_pos_idxs(Series.new("", item))._s))
+      end
+
       raise ArgumentError, "Cannot get item of type: #{item.class.name}"
     end
 

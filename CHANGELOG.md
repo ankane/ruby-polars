@@ -1,6 +1,7 @@
 ## 0.2.2 (unreleased)
 
 - Added support for strings to `read_sql` method
+- Improved indexing
 
 ## 0.2.1 (2023-01-18)
 

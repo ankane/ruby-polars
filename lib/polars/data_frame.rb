@@ -541,7 +541,7 @@ module Polars
 
         if col_selection.is_a?(Array)
           # df[.., [1, 2]]
-          if is_int_sequence(col_selection)
+          if Utils.is_int_sequence(col_selection)
             series_list = col_selection.map { |i| to_series(i) }
             df = self.class.new(series_list)
             return df[row_selection]
