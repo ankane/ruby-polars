@@ -120,13 +120,15 @@ class DataFrameTest < Minitest::Test
     refute df.include?("c")
   end
 
-  def test_get_item
+  def test_get
     a = Polars::Series.new("a", [1, 2, 3])
     df = Polars::DataFrame.new([a])
     assert_equal a, df["a"]
     assert_equal a, df[:a]
     assert_frame({"a" => [2, 3]}, df[Polars.col("a") > 1])
     assert_frame({"a" => [2, 3]}, df[[1, 2]])
+    assert_frame({"a" => [2, 3]}, df[1..2])
+    assert_frame({"a" => [2]}, df[1...2])
   end
 
   def test_to_h

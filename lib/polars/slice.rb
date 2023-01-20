@@ -56,7 +56,7 @@ module Polars
     # Normalize slice bounds, identify unbounded and/or zero-length slices.
     def _slice_setup(s)
       # can normalize slice indices as we know object size
-      obj_len = @obj.len
+      obj_len = @obj.length
       start = if s.begin
         if s.begin < 0
           [s.begin + obj_len, 0].max
