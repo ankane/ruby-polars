@@ -231,6 +231,12 @@ class SeriesTest < Minitest::Test
     assert_series [1, 9, 3], s
     s[[0, 2]] = 2
     assert_series [2, 9, 2], s
+    s[1..2] = 4
+    assert_series [2, 4, 4], s
+    s[1...2] = 5
+    assert_series [2, 5, 4], s
+    s[[0, 1]] = [7, 8]
+    assert_series [7, 8, 4], s
   end
 
   def test_estimated_size

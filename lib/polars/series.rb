@@ -307,6 +307,9 @@ module Polars
       elsif key.is_a?(Array)
         s = Utils.wrap_s(sequence_to_rbseries("", key, dtype: UInt32))
         self[s] = value
+      elsif key.is_a?(Range)
+        s = Series.new("", key, dtype: UInt32)
+        self[s] = value
       elsif key.is_a?(Integer)
         self[[key]] = value
       else
