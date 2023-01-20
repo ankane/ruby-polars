@@ -229,6 +229,8 @@ class SeriesTest < Minitest::Test
     s = Polars::Series.new(1..3)
     s[1] = 9
     assert_series [1, 9, 3], s
+    s[[0, 2]] = 2
+    assert_series [2, 9, 2], s
   end
 
   def test_estimated_size

@@ -295,24 +295,20 @@ module Polars
       end
 
       if key.is_a?(Series)
-        if key.dtype == :bool
+        if key.dtype == Boolean
           self._s = set(key, value)._s
-        elsif key.dtype == :u64
-          self._s = set_at_idx(key.cast(:u32), value)._s
-        elsif key.dtype == :u32
+        elsif key.dtype == UInt64
+          self._s = set_at_idx(key.cast(UInt32), value)._s
+        elsif key.dtype == UInt32
           self._s = set_at_idx(key, value)._s
         else
           raise Todo
         end
-      end
-
-      if key.is_a?(Array)
-        s = Utils.wrap_s(sequence_to_rbseries("", key, dtype: :u32))
+      elsif key.is_a?(Array)
+        s = Utils.wrap_s(sequence_to_rbseries("", key, dtype: UInt32))
         self[s] = value
       elsif key.is_a?(Integer)
-        # TODO fix
-        # self[[key]] = value
-        set_at_idx(key, value)
+        self[[key]] = value
       else
         raise ArgumentError, "cannot use #{key} for indexing"
       end
