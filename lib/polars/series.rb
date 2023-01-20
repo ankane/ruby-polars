@@ -263,6 +263,10 @@ module Polars
     #
     # @return [Object]
     def [](item)
+      if item.is_a?(Series) && [UInt8, UInt16, UInt32, UInt64, Int8, Int16, Int32, Int64].include?(item.dtype)
+        return Utils.wrap_s(_s.take_with_series(_pos_idxs(item)._s))
+      end
+
       if item.is_a?(Integer)
         return _s.get_idx(item)
       end
@@ -3525,6 +3529,59 @@ module Polars
       else
         raise TypeError, "#{self.class} can't be coerced into #{other.class}"
       end
+    end
+
+    def _pos_idxs(idxs)
+      idx_type = Polars._get_idx_type
+
+      if idxs.is_a?(Series)
+        if idxs.dtype == idx_type
+          return idxs
+        end
+        if [UInt8, UInt16, idx_type == UInt32 ? UInt64 : UInt32, Int8, Int16, Int32, Int64].include?(idxs.dtype)
+          if idx_type == UInt32
+            if [Int64, UInt64].include?(idxs.dtype)
+              if idxs.max >= 2**32
+                raise ArgumentError, "Index positions should be smaller than 2^32."
+              end
+            end
+            if idxs.dtype == Int64
+              if idxs.min < -(2**32)
+                raise ArgumentError, "Index positions should be bigger than -2^32 + 1."
+              end
+            end
+          end
+          if [Int8, Int16, Int32, Int64].include?(idxs.dtype)
+            if idxs.min < 0
+              if idx_type == UInt32
+                if [Int8, Int16].include?(idxs.dtype)
+                  idxs = idxs.cast(Int32)
+                end
+              else
+                if [Int8, Int16, Int32].include?(idxs.dtype)
+                  idxs = idxs.cast(Int64)
+                end
+              end
+
+              # Update negative indexes to absolute indexes.
+              return (
+                idxs.to_frame
+                .select(
+                  Polars.when(Polars.col(idxs.name) < 0)
+                    .then(len + Polars.col(idxs.name))
+                    .otherwise(Polars.col(idxs.name))
+                    .cast(idx_type)
+                )
+                .to_series(0)
+              )
+            end
+          end
+
+          return idxs.cast(idx_type)
+        end
+      end
+
+      raise ArgumentError, "Unsupported idxs datatype."
     end
 
     def _comp(other, op)

@@ -22,7 +22,7 @@ use magnus::{
     define_module, function, memoize, method, prelude::*, Error, RArray, RClass, RHash, RModule,
     Value,
 };
-use polars::datatypes::{DataType, TimeUnit};
+use polars::datatypes::{DataType, TimeUnit, IDX_DTYPE};
 use polars::error::PolarsResult;
 use polars::frame::DataFrame;
 use polars::functions::{diag_concat_df, hor_concat_df};
@@ -71,6 +71,7 @@ fn init() -> RbResult<()> {
     module.define_singleton_method("_sum_exprs", function!(sum_exprs, 1))?;
     module.define_singleton_method("_as_struct", function!(as_struct, 1))?;
     module.define_singleton_method("_arg_where", function!(arg_where, 1))?;
+    module.define_singleton_method("_get_idx_type", function!(get_idx_type, 0))?;
 
     let class = module.define_class("RbBatchedCsv", Default::default())?;
     class.define_singleton_method("new", function!(RbBatchedCsv::new, -1))?;
@@ -987,4 +988,8 @@ fn as_struct(exprs: RArray) -> RbResult<RbExpr> {
 
 fn arg_where(condition: &RbExpr) -> RbExpr {
     polars::lazy::dsl::arg_where(condition.inner.clone()).into()
+}
+
+fn get_idx_type() -> Value {
+    Wrap(IDX_DTYPE).into()
 }
