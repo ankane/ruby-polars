@@ -43,4 +43,4 @@ jobs:
           setup: |
             bundle install
             ${{ matrix.setup }}
-          use-ruby-linker-for-cargo: ${{ matrix.platform == 'aarch64-linux' }}
+          use-ruby-linker-for-cargo: ${{ contains(matrix.target, 'aarch64') }}

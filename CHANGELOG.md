@@ -2,6 +2,7 @@
 
 - Added support for strings to `read_sql` method
 - Improved indexing
+- Fixed error with precompiled gem on Mac ARM
 
 ## 0.2.1 (2023-01-18)
 
