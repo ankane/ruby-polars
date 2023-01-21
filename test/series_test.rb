@@ -44,6 +44,10 @@ class SeriesTest < Minitest::Test
     assert_series [1, nil, 3], s, dtype: Polars::Int64
   end
 
+  def test_new_struct
+    # Polars::Series.new([{"f1" => 1}, {"f1" => 2}])
+  end
+
   def test_new_strict
     s = Polars::Series.new([1.0, "hello", 3], strict: false)
     assert_series [1, nil, 3], s, dtype: Polars::Float64

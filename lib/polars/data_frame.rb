@@ -4746,6 +4746,11 @@ module Polars
     end
 
     # @private
+    def self.include_unknowns(schema, cols)
+      cols.to_h { |col| [col, schema.fetch(col, Unknown)] }
+    end
+
+    # @private
     def self._unpack_columns(columns, lookup_names: nil, n_expected: nil)
       if columns.is_a?(Hash)
         columns = columns.to_a
@@ -4791,7 +4796,7 @@ module Polars
     end
 
     # @private
-    def self.sequence_to_rbdf(data, columns: nil, orient: nil)
+    def self.sequence_to_rbdf(data, columns: nil, orient: nil, infer_schema_length: 50)
       if data.length == 0
         return hash_to_rbdf({}, columns: columns)
       end
@@ -4803,6 +4808,15 @@ module Polars
         data.each do |s|
           data_series << s._s
         end
+      elsif data[0].is_a?(Hash)
+        column_names, dtypes = _unpack_columns(columns)
+        schema_overrides = dtypes ? include_unknowns(dtypes, column_names) : nil
+        rbdf = RbDataFrame.read_hashes(data, infer_schema_length, schema_overrides)
+        if column_names
+          # rbdf = _post_apply_columns(rbdf, column_names)
+          raise Todo
+        end
+        return rbdf
       elsif data[0].is_a?(Array)
         if orient.nil? && !columns.nil?
           orient = columns.length == data.length ? "col" : "row"

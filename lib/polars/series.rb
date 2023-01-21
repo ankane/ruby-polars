@@ -3667,6 +3667,11 @@ module Polars
       rb_temporal_types << ::Time if defined?(::Time)
 
       value = _get_first_non_none(values)
+      if !value.nil?
+        if value.is_a?(Hash)
+          return DataFrame.new(values).to_struct(name)._s
+        end
+      end
 
       if !dtype.nil? && Utils.is_polars_dtype(dtype) && ruby_dtype.nil?
         constructor = polars_type_to_constructor(dtype)
