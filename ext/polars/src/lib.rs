@@ -6,6 +6,9 @@ mod error;
 mod file;
 mod lazy;
 mod list_construction;
+mod object;
+mod prelude;
+pub(crate) mod rb_modules;
 mod series;
 mod set;
 mod utils;
@@ -18,15 +21,13 @@ use file::get_file_like;
 use lazy::dataframe::{RbLazyFrame, RbLazyGroupBy};
 use lazy::dsl::{RbExpr, RbWhen, RbWhenThen};
 use lazy::utils::rb_exprs_to_exprs;
-use magnus::{
-    define_module, function, memoize, method, prelude::*, Error, RArray, RClass, RHash, RModule,
-    Value,
-};
+use magnus::{function, method, prelude::*, Error, RArray, RHash, Value};
 use polars::datatypes::{DataType, TimeUnit, IDX_DTYPE};
 use polars::error::PolarsResult;
 use polars::frame::DataFrame;
 use polars::functions::{diag_concat_df, hor_concat_df};
 use polars::prelude::{ClosedWindow, Duration, DurationArgs, IntoSeries, TimeZone};
+use rb_modules::module;
 use series::RbSeries;
 
 #[cfg(target_os = "linux")]
@@ -44,14 +45,6 @@ static GLOBAL: Jemalloc = Jemalloc;
 static GLOBAL: MiMalloc = MiMalloc;
 
 type RbResult<T> = Result<T, Error>;
-
-fn module() -> RModule {
-    *memoize!(RModule: define_module("Polars").unwrap())
-}
-
-fn series() -> RClass {
-    *memoize!(RClass: module().define_class("Series", Default::default()).unwrap())
-}
 
 #[magnus::init]
 fn init() -> RbResult<()> {

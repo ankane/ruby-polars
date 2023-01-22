@@ -45,7 +45,19 @@ class SeriesTest < Minitest::Test
   end
 
   def test_new_struct
-    # Polars::Series.new([{"f1" => 1}, {"f1" => 2}])
+    s = Polars::Series.new([{"f1" => 1}, {"f1" => 2}])
+    assert_kind_of Polars::Struct, s.dtype
+    assert_series [1, 2], s.struct["f1"]
+  end
+
+  def test_new_struct_nested
+    data = [
+      {"a" => {"b" => {"c" => 1}}},
+      {"a" => {"b" => {"c" => 2}}}
+    ]
+    s = Polars::Series.new(data)
+    assert_kind_of Polars::Struct, s.dtype
+    assert_series [1, 2], s.struct["a"].struct["b"].struct["c"]
   end
 
   def test_new_strict

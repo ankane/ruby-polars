@@ -4751,7 +4751,9 @@ module Polars
     end
 
     # @private
-    def self._unpack_columns(columns, lookup_names: nil, n_expected: nil)
+    def self._unpack_columns(columns, schema_overrides: nil, lookup_names: nil, n_expected: nil)
+      raise Todo if schema_overrides
+
       if columns.is_a?(Hash)
         columns = columns.to_a
       end
@@ -4795,6 +4797,46 @@ module Polars
       end
     end
 
+    def self._post_apply_columns(rbdf, columns, structs: nil, schema_overrides: nil)
+      rbdf_columns = rbdf.columns
+      rbdf_dtypes = rbdf.dtypes
+      columns, dtypes = _unpack_columns(
+        (columns || rbdf_columns), schema_overrides: schema_overrides
+      )
+      column_subset = []
+      if columns != rbdf_columns
+        if columns.length < rbdf_columns.length && columns == rbdf_columns.first(columns.length)
+          column_subset = columns
+        else
+          rbdf.set_column_names(columns)
+        end
+      end
+
+      column_casts = []
+      columns.each do |col, i|
+        if dtypes[col] == Categorical # != rbdf_dtypes[i]
+          column_casts << Polars.col(col).cast(Categorical)._rbexpr
+        elsif structs.any? && structs.include?(col) && structs[col] != rbdf_dtypes[i]
+          column_casts << Polars.col(col).cast(structs[col])._rbexpr
+        elsif dtypes.include?(col) && dtypes[col] != rbdf_dtypes[i]
+          column_casts << Polars.col(col).cast(dtypes[col])._rbexpr
+        end
+      end
+
+      if column_casts.any? || column_subset.any?
+        rbdf = rbdf.lazy
+        if column_casts.any?
+          rbdf = rbdf.with_columns(column_casts)
+        end
+        if column_subset.any?
+          rbdf = rbdf.select(column_subset.map { |col| Polars.col(col)._rbexpr })
+        end
+        rbdf = rbdf.collect
+      end
+
+      rbdf
+    end
+
     # @private
     def self.sequence_to_rbdf(data, columns: nil, orient: nil, infer_schema_length: 50)
       if data.length == 0
@@ -4813,8 +4855,7 @@ module Polars
         schema_overrides = dtypes ? include_unknowns(dtypes, column_names) : nil
         rbdf = RbDataFrame.read_hashes(data, infer_schema_length, schema_overrides)
         if column_names
-          # rbdf = _post_apply_columns(rbdf, column_names)
-          raise Todo
+          rbdf = _post_apply_columns(rbdf, column_names)
         end
         return rbdf
       elsif data[0].is_a?(Array)

@@ -1,3 +1,7 @@
+## 0.2.3 (unreleased)
+
+- Fixed issue with structs
+
 ## 0.2.2 (2023-01-20)
 
 - Added support for strings to `read_sql` method

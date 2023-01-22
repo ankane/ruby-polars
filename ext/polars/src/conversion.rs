@@ -144,7 +144,7 @@ impl From<Wrap<AnyValue<'_>>> for Value {
 
 impl From<Wrap<DataType>> for Value {
     fn from(w: Wrap<DataType>) -> Self {
-        let pl = crate::module();
+        let pl = crate::rb_modules::module();
 
         match &w.0 {
             DataType::Int8 => pl.const_get::<_, Value>("Int8").unwrap(),
@@ -278,6 +278,22 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
             Ok(AnyValue::Int64(v).into())
         } else if let Ok(v) = ob.try_convert::<f64>() {
             Ok(AnyValue::Float64(v).into())
+        } else if ob.is_nil() {
+            Ok(AnyValue::Null.into())
+        } else if ob.is_kind_of(class::hash()) {
+            let dict = ob.try_convert::<RHash>().unwrap();
+            let len = dict.len();
+            let mut keys = Vec::with_capacity(len);
+            let mut vals = Vec::with_capacity(len);
+            dict.foreach(|k: Value, v: Value| {
+                let key = k.try_convert::<String>()?;
+                let val = v.try_convert::<Wrap<AnyValue>>()?.0;
+                let dtype = DataType::from(&val);
+                keys.push(Field::new(&key, dtype));
+                vals.push(val);
+                Ok(ForEach::Continue)
+            })?;
+            Ok(Wrap(AnyValue::StructOwned(Box::new((vals, keys)))))
         } else {
             Err(RbPolarsErr::other(format!(
                 "object type not supported {:?}",
@@ -738,4 +754,41 @@ impl Default for ObjectValue {
     fn default() -> Self {
         ObjectValue { inner: *QNIL }
     }
+}
+
+pub(crate) fn dicts_to_rows(
+    records: &Value,
+    infer_schema_len: usize,
+) -> RbResult<(Vec<Row>, Vec<String>)> {
+    let (dicts, len) = get_rbseq(*records)?;
+
+    let mut key_names = PlIndexSet::new();
+    for d in dicts.each().take(infer_schema_len) {
+        let d = d?;
+        let d = d.try_convert::<RHash>()?;
+
+        d.foreach(|name: String, _value: Value| {
+            key_names.insert(name);
+            Ok(ForEach::Continue)
+        })?;
+    }
+
+    let mut rows = Vec::with_capacity(len);
+
+    for d in dicts.each() {
+        let d = d?;
+        let d = d.try_convert::<RHash>()?;
+
+        let mut row = Vec::with_capacity(key_names.len());
+
+        for k in key_names.iter() {
+            let val = match d.get(k.clone()) {
+                None => AnyValue::Null,
+                Some(val) => val.try_convert::<Wrap<AnyValue>>()?.0,
+            };
+            row.push(val)
+        }
+        rows.push(Row(row))
+    }
+    Ok((rows, key_names.into_iter().collect()))
 }

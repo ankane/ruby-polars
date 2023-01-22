@@ -29,6 +29,20 @@ class ParquetTest < Minitest::Test
     assert_nil df.write_parquet(temp_path)
   end
 
+  def test_write_parquet_struct
+    df = Polars::DataFrame.new({"a" => [{"f1" => 1}, {"f1" => 2}]})
+    assert_nil df.write_parquet(temp_path)
+  end
+
+  def test_write_parquet_struct_nested
+    data = [
+      {"a" => {"b" => {"c" => 1}}},
+      {"a" => {"b" => {"c" => 2}}}
+    ]
+    df = Polars::DataFrame.new({"s" => data})
+    assert_nil df.write_parquet(temp_path)
+  end
+
   def test_types
     df = Polars.read_parquet("test/support/types.parquet")
     assert_nil df.write_parquet(temp_path)

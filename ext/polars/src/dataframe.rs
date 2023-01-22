@@ -1,4 +1,5 @@
 use magnus::{r_hash::ForEach, RArray, RHash, RString, Value};
+use polars::frame::row::{rows_to_schema_supertypes, Row};
 use polars::frame::NullStrategy;
 use polars::io::avro::AvroCompression;
 use polars::io::mmap::ReaderBytes;
@@ -15,8 +16,9 @@ use crate::apply::dataframe::{
 };
 use crate::conversion::*;
 use crate::file::{get_file_like, get_mmap_bytes_reader};
+use crate::rb_modules;
 use crate::series::{to_rbseries_collection, to_series_collection};
-use crate::{series, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
+use crate::{RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 
 #[magnus::wrap(class = "Polars::RbDataFrame")]
 pub struct RbDataFrame {
@@ -34,6 +36,45 @@ impl RbDataFrame {
         RbDataFrame {
             df: RefCell::new(df),
         }
+    }
+
+    fn finish_from_rows(
+        rows: Vec<Row>,
+        infer_schema_length: Option<usize>,
+        schema_overwrite: Option<Schema>,
+    ) -> RbResult<Self> {
+        // object builder must be registered.
+        crate::object::register_object_builder();
+
+        let schema =
+            rows_to_schema_supertypes(&rows, infer_schema_length).map_err(RbPolarsErr::from)?;
+        // replace inferred nulls with boolean
+        let fields = schema.iter_fields().map(|mut fld| match fld.data_type() {
+            DataType::Null => {
+                fld.coerce(DataType::Boolean);
+                fld
+            }
+            _ => fld,
+        });
+        let mut schema = Schema::from(fields);
+
+        if let Some(schema_overwrite) = schema_overwrite {
+            for (i, (name, dtype)) in schema_overwrite.into_iter().enumerate() {
+                if let Some((name_, dtype_)) = schema.get_index_mut(i) {
+                    *name_ = name;
+
+                    // if user sets dtype unknown, we use the inferred datatype
+                    if !matches!(dtype, DataType::Unknown) {
+                        *dtype_ = dtype;
+                    }
+                } else {
+                    schema.with_column(name, dtype)
+                }
+            }
+        }
+
+        let df = DataFrame::from_rows_and_schema(&rows, &schema).map_err(RbPolarsErr::from)?;
+        Ok(df.into())
     }
 
     pub fn init(columns: RArray) -> RbResult<Self> {
@@ -288,17 +329,45 @@ impl RbDataFrame {
     }
 
     pub fn read_hashes(
-        _dicts: Value,
-        _infer_schema_length: Option<usize>,
-        _schema_overwrite: Option<Wrap<Schema>>,
+        dicts: Value,
+        infer_schema_length: Option<usize>,
+        schema_overwrite: Option<Wrap<Schema>>,
     ) -> RbResult<Self> {
-        Err(RbPolarsErr::todo())
+        let (rows, mut names) = dicts_to_rows(&dicts, infer_schema_length.unwrap_or(50))?;
+
+        // ensure the new names are used
+        if let Some(schema) = &schema_overwrite {
+            for (new_name, name) in schema.0.iter_names().zip(names.iter_mut()) {
+                *name = new_name.clone();
+            }
+        }
+        let rbdf = Self::finish_from_rows(
+            rows,
+            infer_schema_length,
+            schema_overwrite.map(|wrap| wrap.0),
+        )?;
+
+        rbdf.df
+            .borrow_mut()
+            .get_columns_mut()
+            .iter_mut()
+            .zip(&names)
+            .for_each(|(s, name)| {
+                s.rename(name);
+            });
+        let length = names.len();
+        if names.into_iter().collect::<PlHashSet<_>>().len() != length {
+            let err = PolarsError::SchemaMisMatch("duplicate column names found".into());
+            Err(RbPolarsErr::from(err))?;
+        }
+
+        Ok(rbdf)
     }
 
     pub fn read_hash(data: RHash) -> RbResult<Self> {
         let mut cols: Vec<Series> = Vec::new();
         data.foreach(|name: String, values: Value| {
-            let obj: Value = series().funcall("new", (name, values))?;
+            let obj: Value = rb_modules::series().funcall("new", (name, values))?;
             let rbseries = obj.funcall::<_, _, &RbSeries>("_s", ())?;
             cols.push(rbseries.series.borrow().clone());
             Ok(ForEach::Continue)
