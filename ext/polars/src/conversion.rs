@@ -144,7 +144,7 @@ impl From<Wrap<AnyValue<'_>>> for Value {
 
 impl From<Wrap<DataType>> for Value {
     fn from(w: Wrap<DataType>) -> Self {
-        let pl = crate::rb_modules::module();
+        let pl = crate::rb_modules::polars();
 
         match &w.0 {
             DataType::Int8 => pl.const_get::<_, Value>("Int8").unwrap(),

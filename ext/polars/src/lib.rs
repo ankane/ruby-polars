@@ -27,7 +27,7 @@ use polars::error::PolarsResult;
 use polars::frame::DataFrame;
 use polars::functions::{diag_concat_df, hor_concat_df};
 use polars::prelude::{ClosedWindow, Duration, DurationArgs, IntoSeries, TimeZone};
-use rb_modules::module;
+use rb_modules::polars;
 use series::RbSeries;
 
 #[cfg(target_os = "linux")]
@@ -48,7 +48,7 @@ type RbResult<T> = Result<T, Error>;
 
 #[magnus::init]
 fn init() -> RbResult<()> {
-    let module = module();
+    let module = polars();
     module.define_singleton_method("_dtype_cols", function!(dtype_cols, 1))?;
     module.define_singleton_method("_rb_duration", function!(rb_duration, 8))?;
     module.define_singleton_method("_concat_df", function!(concat_df, 1))?;
