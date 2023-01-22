@@ -52,12 +52,12 @@ From Parquet
 Polars.read_parquet("file.parquet")
 ```
 
-From SQL (requires Active Record)
+From Active Record
 
 ```ruby
-Polars.read_sql("SELECT * FROM users")
-# or
 Polars.read_sql(User.all)
+# or
+Polars.read_sql("SELECT * FROM users")
 ```
 
 From a hash
