@@ -6,6 +6,16 @@ class TypesTest < Minitest::Test
     assert_equal [Polars::Int64, Polars::Utf8], df.dtypes
   end
 
+  def test_dtypes_hashes
+    # TODO support symbols
+    data = [
+      {"b" => true, "i" => 1, "f" => 1.5},
+      {"b" => false, "i" => 2, "f" => 2.5}
+    ]
+    df = Polars::DataFrame.new(data)
+    assert_equal [Polars::Boolean, Polars::Int64, Polars::Float64], df.dtypes
+  end
+
   def test_series_dtype_int
     [Polars::Int8, Polars::Int16, Polars::Int32, Polars::Int64].each do |dtype|
       s = Polars::Series.new([1, nil, 3], dtype: dtype)
