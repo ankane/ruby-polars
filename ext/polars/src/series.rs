@@ -1109,11 +1109,13 @@ impl RbSeries {
                 builder.append_null();
             } else {
                 // convert to DateTime for UTC
-                let v: Value = v.funcall("to_datetime", ())?;
-                let v: Value = v.funcall("to_time", ())?;
-                let v: Value = v.funcall("to_i", ())?;
+                let v = v
+                    .funcall::<_, _, Value>("to_datetime", ())?
+                    .funcall::<_, _, Value>("to_time", ())?
+                    .funcall::<_, _, i64>("to_i", ())?;
+
                 // TODO use strict
-                builder.append_value(v.try_convert::<i32>()? / 86400);
+                builder.append_value((v / 86400) as i32);
             }
         }
         let ca: ChunkedArray<Int32Type> = builder.finish();

@@ -312,6 +312,13 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
                     .map_err(RbPolarsErr::from)?;
                 Ok(Wrap(AnyValue::List(s)))
             }
+        } else if ob.class().funcall::<_, _, String>("name", ())? == "Date" {
+            // convert to DateTime for UTC
+            let v = ob
+                .funcall::<_, _, Value>("to_datetime", ())?
+                .funcall::<_, _, Value>("to_time", ())?
+                .funcall::<_, _, i64>("to_i", ())?;
+            Ok(Wrap(AnyValue::Date((v / 86400) as i32)))
         } else {
             Err(RbPolarsErr::other(format!(
                 "object type not supported {:?}",
