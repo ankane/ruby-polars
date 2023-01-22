@@ -1,4 +1,4 @@
-## 0.2.3 (unreleased)
+## 0.2.3 (2023-01-22)
 
 - Fixed error with precompiled gem on Mac ARM
 - Fixed issue with structs
