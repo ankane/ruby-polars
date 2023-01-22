@@ -2,7 +2,7 @@ use magnus::{class, r_hash::ForEach, Module, RArray, RHash, Symbol, TryConvert, 
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
-use polars::frame::row::Row;
+use polars::frame::row::{any_values_to_dtype, Row};
 use polars::frame::NullStrategy;
 use polars::io::avro::AvroCompression;
 use polars::prelude::*;
@@ -273,15 +273,18 @@ impl TryConvert for Wrap<DataType> {
 
 impl<'s> TryConvert for Wrap<AnyValue<'s>> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        // TODO improve
-        if let Ok(v) = ob.try_convert::<i64>() {
-            Ok(AnyValue::Int64(v).into())
+        if ob.is_kind_of(class::true_class()) || ob.is_kind_of(class::false_class()) {
+            Ok(AnyValue::Boolean(ob.try_convert::<bool>()?).into())
+        } else if ob.is_kind_of(class::integer()) {
+            Ok(AnyValue::Int64(ob.try_convert::<i64>()?).into())
         } else if let Ok(v) = ob.try_convert::<f64>() {
             Ok(AnyValue::Float64(v).into())
+        // } else if let Ok(v) = ob.try_convert::<String>() {
+        //     Ok(AnyValue::Utf8(&v).into())
         } else if ob.is_nil() {
             Ok(AnyValue::Null.into())
         } else if ob.is_kind_of(class::hash()) {
-            let dict = ob.try_convert::<RHash>().unwrap();
+            let dict = ob.try_convert::<RHash>()?;
             let len = dict.len();
             let mut keys = Vec::with_capacity(len);
             let mut vals = Vec::with_capacity(len);
@@ -294,6 +297,21 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
                 Ok(ForEach::Continue)
             })?;
             Ok(Wrap(AnyValue::StructOwned(Box::new((vals, keys)))))
+        } else if ob.is_kind_of(class::array()) {
+            if ob.try_convert::<RArray>()?.is_empty() {
+                Ok(Wrap(AnyValue::List(Series::new_empty("", &DataType::Null))))
+            } else {
+                let avs = ob.try_convert::<Wrap<Row>>()?.0 .0;
+                // use first `n` values to infer datatype
+                // this value is not too large as this will be done with every
+                // anyvalue that has to be converted, which can be many
+                let n = 25;
+                let dtype = any_values_to_dtype(&avs[..std::cmp::min(avs.len(), n)])
+                    .map_err(RbPolarsErr::from)?;
+                let s = Series::from_any_values_and_dtype("", &avs, &dtype)
+                    .map_err(RbPolarsErr::from)?;
+                Ok(Wrap(AnyValue::List(s)))
+            }
         } else {
             Err(RbPolarsErr::other(format!(
                 "object type not supported {:?}",
