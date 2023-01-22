@@ -303,6 +303,141 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
     }
 }
 
+impl<'s> TryConvert for Wrap<Row<'s>> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let mut vals: Vec<Wrap<AnyValue<'s>>> = Vec::new();
+        for item in ob.try_convert::<RArray>()?.each() {
+            vals.push(item?.try_convert::<Wrap<AnyValue<'s>>>()?);
+        }
+        let vals: Vec<AnyValue> = unsafe { std::mem::transmute(vals) };
+        Ok(Wrap(Row(vals)))
+    }
+}
+
+impl TryConvert for Wrap<Schema> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let dict = ob.try_convert::<RHash>()?;
+
+        let mut schema = Vec::new();
+        dict.foreach(|key: String, val: Wrap<DataType>| {
+            schema.push(Field::new(&key, val.0));
+            Ok(ForEach::Continue)
+        })
+        .unwrap();
+
+        Ok(Wrap(schema.into_iter().into()))
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ObjectValue {
+    pub inner: Value,
+}
+
+impl Hash for ObjectValue {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        let h = self
+            .inner
+            .funcall::<_, _, isize>("hash", ())
+            .expect("should be hashable");
+        state.write_isize(h)
+    }
+}
+
+impl Eq for ObjectValue {}
+
+impl PartialEq for ObjectValue {
+    fn eq(&self, other: &Self) -> bool {
+        self.inner.eql(&other.inner).unwrap_or(false)
+    }
+}
+
+impl Display for ObjectValue {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.inner)
+    }
+}
+
+impl PolarsObject for ObjectValue {
+    fn type_name() -> &'static str {
+        "object"
+    }
+}
+
+impl From<Value> for ObjectValue {
+    fn from(v: Value) -> Self {
+        Self { inner: v }
+    }
+}
+
+impl TryConvert for ObjectValue {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        Ok(ObjectValue { inner: ob })
+    }
+}
+
+impl From<&dyn PolarsObjectSafe> for &ObjectValue {
+    fn from(val: &dyn PolarsObjectSafe) -> Self {
+        unsafe { &*(val as *const dyn PolarsObjectSafe as *const ObjectValue) }
+    }
+}
+
+// TODO remove
+impl ObjectValue {
+    pub fn to_object(&self) -> Value {
+        self.inner
+    }
+}
+
+impl From<ObjectValue> for Value {
+    fn from(val: ObjectValue) -> Self {
+        val.inner
+    }
+}
+
+impl Default for ObjectValue {
+    fn default() -> Self {
+        ObjectValue { inner: *QNIL }
+    }
+}
+
+pub(crate) fn dicts_to_rows(
+    records: &Value,
+    infer_schema_len: usize,
+) -> RbResult<(Vec<Row>, Vec<String>)> {
+    let (dicts, len) = get_rbseq(*records)?;
+
+    let mut key_names = PlIndexSet::new();
+    for d in dicts.each().take(infer_schema_len) {
+        let d = d?;
+        let d = d.try_convert::<RHash>()?;
+
+        d.foreach(|name: String, _value: Value| {
+            key_names.insert(name);
+            Ok(ForEach::Continue)
+        })?;
+    }
+
+    let mut rows = Vec::with_capacity(len);
+
+    for d in dicts.each() {
+        let d = d?;
+        let d = d.try_convert::<RHash>()?;
+
+        let mut row = Vec::with_capacity(key_names.len());
+
+        for k in key_names.iter() {
+            let val = match d.get(k.clone()) {
+                None => AnyValue::Null,
+                Some(val) => val.try_convert::<Wrap<AnyValue>>()?.0,
+            };
+            row.push(val)
+        }
+        rows.push(Row(row))
+    }
+    Ok((rows, key_names.into_iter().collect()))
+}
+
 impl TryConvert for Wrap<AsofStrategy> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match ob.try_convert::<String>()?.as_str() {
@@ -656,139 +791,4 @@ pub fn parse_parquet_compression(
         }
     };
     Ok(parsed)
-}
-
-impl<'s> TryConvert for Wrap<Row<'s>> {
-    fn try_convert(ob: Value) -> RbResult<Self> {
-        let mut vals: Vec<Wrap<AnyValue<'s>>> = Vec::new();
-        for item in ob.try_convert::<RArray>()?.each() {
-            vals.push(item?.try_convert::<Wrap<AnyValue<'s>>>()?);
-        }
-        let vals: Vec<AnyValue> = unsafe { std::mem::transmute(vals) };
-        Ok(Wrap(Row(vals)))
-    }
-}
-
-impl TryConvert for Wrap<Schema> {
-    fn try_convert(ob: Value) -> RbResult<Self> {
-        let dict = ob.try_convert::<RHash>()?;
-
-        let mut schema = Vec::new();
-        dict.foreach(|key: String, val: Wrap<DataType>| {
-            schema.push(Field::new(&key, val.0));
-            Ok(ForEach::Continue)
-        })
-        .unwrap();
-
-        Ok(Wrap(schema.into_iter().into()))
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct ObjectValue {
-    pub inner: Value,
-}
-
-impl Hash for ObjectValue {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        let h = self
-            .inner
-            .funcall::<_, _, isize>("hash", ())
-            .expect("should be hashable");
-        state.write_isize(h)
-    }
-}
-
-impl Eq for ObjectValue {}
-
-impl PartialEq for ObjectValue {
-    fn eq(&self, other: &Self) -> bool {
-        self.inner.eql(&other.inner).unwrap_or(false)
-    }
-}
-
-impl Display for ObjectValue {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.inner)
-    }
-}
-
-impl PolarsObject for ObjectValue {
-    fn type_name() -> &'static str {
-        "object"
-    }
-}
-
-impl From<Value> for ObjectValue {
-    fn from(v: Value) -> Self {
-        Self { inner: v }
-    }
-}
-
-impl TryConvert for ObjectValue {
-    fn try_convert(ob: Value) -> RbResult<Self> {
-        Ok(ObjectValue { inner: ob })
-    }
-}
-
-impl From<&dyn PolarsObjectSafe> for &ObjectValue {
-    fn from(val: &dyn PolarsObjectSafe) -> Self {
-        unsafe { &*(val as *const dyn PolarsObjectSafe as *const ObjectValue) }
-    }
-}
-
-// TODO remove
-impl ObjectValue {
-    pub fn to_object(&self) -> Value {
-        self.inner
-    }
-}
-
-impl From<ObjectValue> for Value {
-    fn from(val: ObjectValue) -> Self {
-        val.inner
-    }
-}
-
-impl Default for ObjectValue {
-    fn default() -> Self {
-        ObjectValue { inner: *QNIL }
-    }
-}
-
-pub(crate) fn dicts_to_rows(
-    records: &Value,
-    infer_schema_len: usize,
-) -> RbResult<(Vec<Row>, Vec<String>)> {
-    let (dicts, len) = get_rbseq(*records)?;
-
-    let mut key_names = PlIndexSet::new();
-    for d in dicts.each().take(infer_schema_len) {
-        let d = d?;
-        let d = d.try_convert::<RHash>()?;
-
-        d.foreach(|name: String, _value: Value| {
-            key_names.insert(name);
-            Ok(ForEach::Continue)
-        })?;
-    }
-
-    let mut rows = Vec::with_capacity(len);
-
-    for d in dicts.each() {
-        let d = d?;
-        let d = d.try_convert::<RHash>()?;
-
-        let mut row = Vec::with_capacity(key_names.len());
-
-        for k in key_names.iter() {
-            let val = match d.get(k.clone()) {
-                None => AnyValue::Null,
-                Some(val) => val.try_convert::<Wrap<AnyValue>>()?.0,
-            };
-            row.push(val)
-        }
-        rows.push(Row(row))
-    }
-    Ok((rows, key_names.into_iter().collect()))
 }
