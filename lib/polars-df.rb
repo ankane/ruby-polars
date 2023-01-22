@@ -1,1 +1,1 @@
-require "polars"
+require_relative "polars"
