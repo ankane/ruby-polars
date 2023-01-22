@@ -8,12 +8,20 @@ class TypesTest < Minitest::Test
 
   def test_dtypes_hashes
     # TODO support symbols
-    data = [
-      {"b" => true, "i" => 1, "f" => 1.5},
-      {"b" => false, "i" => 2, "f" => 2.5}
-    ]
-    df = Polars::DataFrame.new(data)
-    assert_equal [Polars::Boolean, Polars::Int64, Polars::Float64], df.dtypes
+    row = {
+      "b" => true,
+      "i" => 1,
+      "f" => 1.5,
+      "h" => {"f" => 1},
+      "a" => [1, 2, 3]
+    }
+    df = Polars::DataFrame.new([row])
+    schema = df.schema
+    assert_equal Polars::Boolean, schema["b"]
+    assert_equal Polars::Int64, schema["i"]
+    assert_equal Polars::Float64, schema["f"]
+    assert_kind_of Polars::Struct, schema["h"]
+    assert_kind_of Polars::List, schema["a"]
   end
 
   def test_series_dtype_int
