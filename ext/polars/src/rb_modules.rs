@@ -1,9 +1,13 @@
-use magnus::{define_module, memoize, Module, RClass, RModule};
+use magnus::{class, memoize, Module, RClass, RModule};
 
 pub(crate) fn polars() -> RModule {
-    *memoize!(RModule: define_module("Polars").unwrap())
+    *memoize!(RModule: class::object().const_get("Polars").unwrap())
 }
 
 pub(crate) fn series() -> RClass {
-    *memoize!(RClass: polars().define_class("Series", Default::default()).unwrap())
+    *memoize!(RClass: polars().const_get("Series").unwrap())
+}
+
+pub(crate) fn date() -> RClass {
+    *memoize!(RClass: class::object().const_get("Date").unwrap())
 }

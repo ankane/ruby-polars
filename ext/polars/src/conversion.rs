@@ -312,7 +312,7 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
                     .map_err(RbPolarsErr::from)?;
                 Ok(Wrap(AnyValue::List(s)))
             }
-        } else if ob.class().funcall::<_, _, String>("name", ())? == "Date" {
+        } else if ob.is_kind_of(crate::rb_modules::date()) {
             // convert to DateTime for UTC
             let v = ob
                 .funcall::<_, _, Value>("to_datetime", ())?
