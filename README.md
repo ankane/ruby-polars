@@ -56,6 +56,8 @@ From Active Record
 
 ```ruby
 Polars.read_sql(User.all)
+# or
+Polars.read_sql("SELECT * FROM users")
 ```
 
 From a hash
@@ -287,13 +289,13 @@ CSV
 ```ruby
 df.to_csv
 # or
-df.write_csv("data.csv")
+df.write_csv("file.csv")
 ```
 
 Parquet
 
 ```ruby
-df.write_parquet("data.parquet")
+df.write_parquet("file.parquet")
 ```
 
 ## Types
