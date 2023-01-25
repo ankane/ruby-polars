@@ -284,7 +284,8 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
             Ok(AnyValue::Float64(v.to_f64()).into())
         } else if let Some(v) = RString::from_value(ob) {
             Ok(AnyValue::Utf8Owned(v.to_string()?.into()).into())
-        } else if ob.is_kind_of(class::time()) {
+        // call is_a? for ActiveSupport::TimeWithZone
+        } else if ob.funcall::<_, _, bool>("is_a?", (class::time(),))? {
             let sec = ob.funcall::<_, _, i64>("to_i", ())?;
             let nsec = ob.funcall::<_, _, i64>("nsec", ())?;
             let v = sec * 1_000_000_000 + nsec;

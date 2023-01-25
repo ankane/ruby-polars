@@ -7,16 +7,16 @@ class TypesTest < Minitest::Test
   end
 
   def test_dtypes_hashes
-    # TODO support symbol keys
     row = {
-      "b" => true,
-      "i" => 1,
-      "f" => 1.5,
-      "s" => "one",
-      "d" => Date.today,
-      "t" => Time.now,
-      "h" => {"f" => 1},
-      "a" => [1, 2, 3]
+      b: true,
+      i: 1,
+      f: 1.5,
+      s: "one",
+      d: Date.today,
+      t: Time.now,
+      z: Time.now.in_time_zone("Eastern Time (US & Canada)"),
+      h: {"f" => 1},
+      a: [1, 2, 3]
     }
     df = Polars::DataFrame.new([row])
     schema = df.schema
@@ -26,6 +26,7 @@ class TypesTest < Minitest::Test
     assert_equal Polars::Utf8, schema["s"]
     assert_equal Polars::Date, schema["d"]
     assert_kind_of Polars::Datetime, schema["t"]
+    assert_kind_of Polars::Datetime, schema["z"]
     assert_kind_of Polars::Struct, schema["h"]
     assert_kind_of Polars::List, schema["a"]
   end
