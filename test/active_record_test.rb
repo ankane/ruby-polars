@@ -6,43 +6,48 @@ class ActiveRecordTest < Minitest::Test
   end
 
   def test_relation
-    users = 3.times.map { |i| User.create!(name: "User #{i}") }
+    users = create_users
     df = Polars::DataFrame.new(User.order(:id))
-    assert_equal ["id", "name"], df.columns
+    assert_equal ["id", "name", "number"], df.columns
     assert_series users.map(&:id), df["id"]
     assert_series users.map(&:name), df["name"]
+    assert_equal Polars::Int64, df["number"].dtype
   end
 
   def test_result
-    users = 3.times.map { |i| User.create!(name: "User #{i}") }
+    users = create_users
     df = Polars::DataFrame.new(User.connection.select_all("SELECT * FROM users ORDER BY id"))
-    assert_equal ["id", "name"], df.columns
+    assert_equal ["id", "name", "number"], df.columns
     assert_series users.map(&:id), df["id"]
     assert_series users.map(&:name), df["name"]
+    assert_equal Polars::Int64, df["number"].dtype
   end
 
   def test_read_sql_relation
-    users = 3.times.map { |i| User.create!(name: "User #{i}") }
+    users = create_users
     df = Polars.read_sql(User.order(:id))
-    assert_equal ["id", "name"], df.columns
+    assert_equal ["id", "name", "number"], df.columns
     assert_series users.map(&:id), df["id"]
     assert_series users.map(&:name), df["name"]
+    assert_equal Polars::Int64, df["number"].dtype
   end
 
   def test_read_sql_result
-    users = 3.times.map { |i| User.create!(name: "User #{i}") }
+    users = create_users
     df = Polars.read_sql(User.connection.select_all("SELECT * FROM users ORDER BY id"))
-    assert_equal ["id", "name"], df.columns
+    assert_equal ["id", "name", "number"], df.columns
     assert_series users.map(&:id), df["id"]
     assert_series users.map(&:name), df["name"]
+    assert_equal Polars::Int64, df["number"].dtype
   end
 
   def test_read_sql_string
-    users = 3.times.map { |i| User.create!(name: "User #{i}") }
+    users = create_users
     df = Polars.read_sql("SELECT * FROM users ORDER BY id")
-    assert_equal ["id", "name"], df.columns
+    assert_equal ["id", "name", "number"], df.columns
     assert_series users.map(&:id), df["id"]
     assert_series users.map(&:name), df["name"]
+    assert_equal Polars::Int64, df["number"].dtype
   end
 
   def test_read_sql_unsupported
@@ -50,5 +55,11 @@ class ActiveRecordTest < Minitest::Test
       Polars.read_sql(Object.new)
     end
     assert_equal "Expected ActiveRecord::Relation, ActiveRecord::Result, or String", error.message
+  end
+
+  private
+
+  def create_users
+    3.times.map { |i| User.create!(name: "User #{i}", number: i) }
   end
 end
