@@ -7,11 +7,12 @@ class TypesTest < Minitest::Test
   end
 
   def test_dtypes_hashes
-    # TODO support symbols
+    # TODO support symbol keys
     row = {
       "b" => true,
       "i" => 1,
       "f" => 1.5,
+      "s" => "one",
       "d" => Date.today,
       "h" => {"f" => 1},
       "a" => [1, 2, 3]
@@ -21,6 +22,7 @@ class TypesTest < Minitest::Test
     assert_equal Polars::Boolean, schema["b"]
     assert_equal Polars::Int64, schema["i"]
     assert_equal Polars::Float64, schema["f"]
+    assert_equal Polars::Utf8, schema["s"]
     assert_equal Polars::Date, schema["d"]
     assert_kind_of Polars::Struct, schema["h"]
     assert_kind_of Polars::List, schema["a"]

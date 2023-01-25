@@ -279,8 +279,8 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
             Ok(AnyValue::Int64(ob.try_convert::<i64>()?).into())
         } else if let Ok(v) = ob.try_convert::<f64>() {
             Ok(AnyValue::Float64(v).into())
-        // } else if let Ok(v) = ob.try_convert::<String>() {
-        //     Ok(AnyValue::Utf8(&v).into())
+        } else if let Ok(v) = ob.try_convert::<String>() {
+            Ok(AnyValue::Utf8Owned(v.into()).into())
         } else if ob.is_nil() {
             Ok(AnyValue::Null.into())
         } else if ob.is_kind_of(class::hash()) {
