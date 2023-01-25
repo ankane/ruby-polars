@@ -1,4 +1,7 @@
-use magnus::{class, r_hash::ForEach, Module, RArray, RHash, Symbol, TryConvert, Value, QNIL};
+use magnus::{
+    class, r_hash::ForEach, Integer, Module, RArray, RFloat, RHash, RString, Symbol, TryConvert,
+    Value, QNIL,
+};
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
@@ -275,16 +278,21 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         if ob.is_kind_of(class::true_class()) || ob.is_kind_of(class::false_class()) {
             Ok(AnyValue::Boolean(ob.try_convert::<bool>()?).into())
-        } else if ob.is_kind_of(class::integer()) {
-            Ok(AnyValue::Int64(ob.try_convert::<i64>()?).into())
-        } else if let Ok(v) = ob.try_convert::<f64>() {
-            Ok(AnyValue::Float64(v).into())
-        } else if let Ok(v) = ob.try_convert::<String>() {
-            Ok(AnyValue::Utf8Owned(v.into()).into())
+        } else if let Some(v) = Integer::from_value(ob) {
+            Ok(AnyValue::Int64(v.to_i64()?).into())
+        } else if let Some(v) = RFloat::from_value(ob) {
+            Ok(AnyValue::Float64(v.to_f64()).into())
+        } else if let Some(v) = RString::from_value(ob) {
+            Ok(AnyValue::Utf8Owned(v.to_string()?.into()).into())
+        } else if ob.is_kind_of(class::time()) {
+            let sec = ob.funcall::<_, _, i64>("to_i", ())?;
+            let nsec = ob.funcall::<_, _, i64>("nsec", ())?;
+            let v = sec * 1_000_000_000 + nsec;
+            // TODO support time zone
+            Ok(AnyValue::Datetime(v, TimeUnit::Nanoseconds, &None).into())
         } else if ob.is_nil() {
             Ok(AnyValue::Null.into())
-        } else if ob.is_kind_of(class::hash()) {
-            let dict = ob.try_convert::<RHash>()?;
+        } else if let Some(dict) = RHash::from_value(ob) {
             let len = dict.len();
             let mut keys = Vec::with_capacity(len);
             let mut vals = Vec::with_capacity(len);
@@ -297,11 +305,11 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
                 Ok(ForEach::Continue)
             })?;
             Ok(Wrap(AnyValue::StructOwned(Box::new((vals, keys)))))
-        } else if ob.is_kind_of(class::array()) {
-            if ob.try_convert::<RArray>()?.is_empty() {
+        } else if let Some(v) = RArray::from_value(ob) {
+            if v.is_empty() {
                 Ok(Wrap(AnyValue::List(Series::new_empty("", &DataType::Null))))
             } else {
-                let avs = ob.try_convert::<Wrap<Row>>()?.0 .0;
+                let avs = v.try_convert::<Wrap<Row>>()?.0 .0;
                 // use first `n` values to infer datatype
                 // this value is not too large as this will be done with every
                 // anyvalue that has to be converted, which can be many

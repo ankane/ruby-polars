@@ -14,6 +14,7 @@ class TypesTest < Minitest::Test
       "f" => 1.5,
       "s" => "one",
       "d" => Date.today,
+      "t" => Time.now,
       "h" => {"f" => 1},
       "a" => [1, 2, 3]
     }
@@ -24,6 +25,7 @@ class TypesTest < Minitest::Test
     assert_equal Polars::Float64, schema["f"]
     assert_equal Polars::Utf8, schema["s"]
     assert_equal Polars::Date, schema["d"]
+    assert_kind_of Polars::Datetime, schema["t"]
     assert_kind_of Polars::Struct, schema["h"]
     assert_kind_of Polars::List, schema["a"]
   end

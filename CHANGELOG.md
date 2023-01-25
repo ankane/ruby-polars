@@ -1,3 +1,7 @@
+## 0.2.4 (unreleased)
+
+- Added support for more types when creating a data frame from an array of hashes
+
 ## 0.2.3 (2023-01-22)
 
 - Fixed error with precompiled gem on Mac ARM
