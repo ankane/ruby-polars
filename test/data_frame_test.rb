@@ -1,6 +1,26 @@
 require_relative "test_helper"
 
 class DataFrameTest < Minitest::Test
+  def test_new_array_hashes
+    df = Polars::DataFrame.new([
+      {"a" => 1, "b" => "one"},
+      {"a" => 2, "b" => "two"},
+      {"a" => 3, "b" => "three"}
+    ])
+    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_frame expected, df
+  end
+
+  def test_new_array_hashes_symbol_keys
+    df = Polars::DataFrame.new([
+      {a: 1, b: "one"},
+      {a: 2, b: "two"},
+      {a: 3, b: "three"}
+    ])
+    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_frame expected, df
+  end
+
   def test_new_array_series
     df = Polars::DataFrame.new([
       Polars::Series.new("a", [1, 2, 3]),

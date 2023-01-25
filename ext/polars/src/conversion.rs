@@ -445,8 +445,12 @@ pub(crate) fn dicts_to_rows(
         let d = d?;
         let d = d.try_convert::<RHash>()?;
 
-        d.foreach(|name: String, _value: Value| {
-            key_names.insert(name);
+        d.foreach(|name: Value, _value: Value| {
+            if let Some(v) = Symbol::from_value(name) {
+                key_names.insert(v.name()?.into());
+            } else {
+                key_names.insert(name.try_convert::<String>()?);
+            };
             Ok(ForEach::Continue)
         })?;
     }
@@ -460,7 +464,8 @@ pub(crate) fn dicts_to_rows(
         let mut row = Vec::with_capacity(key_names.len());
 
         for k in key_names.iter() {
-            let val = match d.get(k.clone()) {
+            // TODO improve performance
+            let val = match d.get(k.clone()).or_else(|| d.get(Symbol::new(k))) {
                 None => AnyValue::Null,
                 Some(val) => val.try_convert::<Wrap<AnyValue>>()?.0,
             };
