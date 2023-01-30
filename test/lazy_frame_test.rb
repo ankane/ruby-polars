@@ -55,6 +55,18 @@ class LazyFrameTest < Minitest::Test
     assert_frame df.select("foo").collect, Polars::LazyFrame.read_json(path).collect
   end
 
+  def test_pearson_corr
+    df = Polars::DataFrame.new({
+        a: [1, 2, 3, 4],
+        b: [2, 4, 6, 7]
+      })
+      .lazy
+      .select(
+        Polars.pearson_corr(Polars.col('a'), Polars.col('b'))
+      )
+      .collect
+  end
+
   def test_describe_optimized_plan
     df = Polars::DataFrame.new({"a" => [1, 2, 3]}).lazy
     assert_match "FAST_PROJECT", df.select("a").describe_optimized_plan
