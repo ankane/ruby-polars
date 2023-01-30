@@ -400,10 +400,10 @@ module Polars
     #
     # @return [Expr]
     def pearson_corr(a, b, ddof: 1)
-      if a.is_a?(String)
+      if a.is_a?(String) || a.is_a?(Symbol)
         a = col(a)
       end
-      if b.is_a?(String)
+      if b.is_a?(String) || b.is_a?(Symbol)
         b = col(b)
       end
       Utils.wrap_expr(RbExpr.pearson_corr(a._rbexpr, b._rbexpr, ddof))
