@@ -15,7 +15,7 @@ module Polars
       if name.is_a?(DataType)
         Utils.wrap_expr(_dtype_cols([name]))
       elsif name.is_a?(Array)
-        if name.length == 0 || name[0].is_a?(String) || name[0].is_a?(Symbol)
+        if name.length == 0 || Utils.strlike?(name[0])
           name = name.map { |v| v.is_a?(Symbol) ? v.to_s : v }
           Utils.wrap_expr(RbExpr.cols(name))
         elsif Utils.is_polars_dtype(name[0])
@@ -119,7 +119,7 @@ module Polars
     def max(column)
       if column.is_a?(Series)
         column.max
-      elsif column.is_a?(String) || column.is_a?(Symbol)
+      elsif Utils.strlike?(column)
         col(column).max
       else
         exprs = Utils.selection_to_rbexpr_list(column)
@@ -141,7 +141,7 @@ module Polars
     def min(column)
       if column.is_a?(Series)
         column.min
-      elsif column.is_a?(String) || column.is_a?(Symbol)
+      elsif Utils.strlike?(column)
         col(column).min
       else
         exprs = Utils.selection_to_rbexpr_list(column)
@@ -156,7 +156,7 @@ module Polars
     def sum(column)
       if column.is_a?(Series)
         column.sum
-      elsif column.is_a?(String) || column.is_a?(Symbol)
+      elsif Utils.strlike?(column)
         col(column.to_s).sum
       elsif column.is_a?(Array)
         exprs = Utils.selection_to_rbexpr_list(column)
@@ -356,7 +356,7 @@ module Polars
     def cumsum(column)
       if column.is_a?(Series)
         column.cumsum
-      elsif column.is_a?(String)
+      elsif Utils.strlike?(column)
         col(column).cumsum
       else
         cumfold(lit(0).cast(:u32), ->(a, b) { a + b }, column).alias("cumsum")
@@ -486,7 +486,7 @@ module Polars
     #
     # @return [Expr]
     def any(name)
-      if name.is_a?(String)
+      if Utils.strlike?(name)
         col(name).any
       else
         fold(lit(false), ->(a, b) { a.cast(:bool) | b.cast(:bool) }, name).alias("any")
@@ -589,7 +589,7 @@ module Polars
     def all(name = nil)
       if name.nil?
         col("*")
-      elsif name.is_a?(String) || name.is_a?(Symbol)
+      elsif Utils.strlike?(name)
         col(name).all
       else
         raise Todo
@@ -1137,7 +1137,7 @@ module Polars
     #   # │ 2022-10-25 07:31:39 │
     #   # └─────────────────────┘
     def from_epoch(column, unit: "s", eager: false)
-      if column.is_a?(String)
+      if Utils.strlike?(column)
         column = col(column)
       elsif !column.is_a?(Series) && !column.is_a?(Expr)
         column = Series.new(column)
