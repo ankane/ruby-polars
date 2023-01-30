@@ -65,6 +65,7 @@ class LazyFrameTest < Minitest::Test
         Polars.pearson_corr(Polars.col('a'), Polars.col('b'))
       )
       .collect
+    assert_in_delta 0.989778, df["a"][0]
   end
 
   def test_describe_optimized_plan
