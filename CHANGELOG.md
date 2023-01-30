@@ -1,4 +1,4 @@
-## 0.2.4 (unreleased)
+## 0.2.4 (2023-01-29)
 
 - Added support for more types when creating a data frame from an array of hashes
 
