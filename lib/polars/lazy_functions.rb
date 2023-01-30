@@ -380,10 +380,10 @@ module Polars
     #
     # @return [Expr]
     def spearman_rank_corr(a, b, ddof: 1, propagate_nans: false)
-      if a.is_a?(String)
+      if Utils.strlike?(a)
         a = col(a)
       end
-      if b.is_a?(String)
+      if Utils.strlike?(b)
         b = col(b)
       end
       Utils.wrap_expr(RbExpr.spearman_rank_corr(a._rbexpr, b._rbexpr, ddof, propagate_nans))
@@ -400,10 +400,10 @@ module Polars
     #
     # @return [Expr]
     def pearson_corr(a, b, ddof: 1)
-      if a.is_a?(String) || a.is_a?(Symbol)
+      if Utils.strlike?(a)
         a = col(a)
       end
-      if b.is_a?(String) || b.is_a?(Symbol)
+      if Utils.strlike?(b)
         b = col(b)
       end
       Utils.wrap_expr(RbExpr.pearson_corr(a._rbexpr, b._rbexpr, ddof))
@@ -418,10 +418,10 @@ module Polars
     #
     # @return [Expr]
     def cov(a, b)
-      if a.is_a?(String)
+      if Utils.strlike?(a)
         a = col(a)
       end
-      if b.is_a?(String)
+      if Utils.strlike?(b)
         b = col(b)
       end
       Utils.wrap_expr(RbExpr.cov(a._rbexpr, b._rbexpr))

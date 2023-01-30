@@ -177,6 +177,10 @@ module Polars
       value == true || value == false
     end
 
+    def self.strlike?(value)
+      value.is_a?(String) || value.is_a?(Symbol)
+    end
+
     def self._is_iterable_of(val, eltype)
       val.all? { |x| x.is_a?(eltype) }
     end
