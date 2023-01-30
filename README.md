@@ -73,9 +73,9 @@ From an array of hashes
 
 ```ruby
 Polars::DataFrame.new([
-  {"a" => 1, "b" => "one"},
-  {"a" => 2, "b" => "two"},
-  {"a" => 3, "b" => "three"}
+  {a: 1, b: "one"},
+  {a: 2, b: "two"},
+  {a: 3, b: "three"}
 ])
 ```
 
