@@ -268,7 +268,7 @@ module Polars
       _check_arg_is_1byte("comment_char", comment_char, false)
       _check_arg_is_1byte("quote_char", quote_char, true)
 
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
@@ -384,7 +384,7 @@ module Polars
       storage_options: nil,
       low_memory: false
     )
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
@@ -435,7 +435,7 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0
     )
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
@@ -463,7 +463,7 @@ module Polars
     #
     # @return [DataFrame]
     def read_avro(file, columns: nil, n_rows: nil)
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
@@ -786,7 +786,7 @@ module Polars
     #
     # @return [Hash]
     def read_ipc_schema(file)
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
@@ -800,7 +800,7 @@ module Polars
     #
     # @return [Hash]
     def read_parquet_schema(file)
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 

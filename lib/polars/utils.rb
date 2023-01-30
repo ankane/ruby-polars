@@ -181,6 +181,10 @@ module Polars
       value.is_a?(String) || value.is_a?(Symbol)
     end
 
+    def self.pathlike?(value)
+      value.is_a?(String) || (defined?(Pathname) && value.is_a?(Pathname))
+    end
+
     def self._is_iterable_of(val, eltype)
       val.all? { |x| x.is_a?(eltype) }
     end

@@ -29,7 +29,7 @@ module Polars
       eol_char: "\n",
       new_columns: nil
     )
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         path = Utils.format_path(file)
       end
 

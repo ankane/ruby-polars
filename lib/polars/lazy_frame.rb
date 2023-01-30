@@ -106,7 +106,7 @@ module Polars
       storage_options: nil,
       memory_map: true
     )
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
@@ -156,7 +156,7 @@ module Polars
     #
     # @return [LazyFrame]
     def self.read_json(file)
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
@@ -263,7 +263,7 @@ module Polars
     #
     # @return [nil]
     def write_json(file)
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
       _ldf.write_json(file)

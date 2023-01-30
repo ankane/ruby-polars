@@ -94,7 +94,7 @@ module Polars
       sample_size: 1024,
       eol_char: "\n"
     )
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         path = Utils.format_path(file)
       else
         path = nil
@@ -170,7 +170,7 @@ module Polars
       row_count_offset: 0,
       low_memory: false
     )
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
@@ -194,7 +194,7 @@ module Polars
 
     # @private
     def self._read_avro(file, columns: nil, n_rows: nil)
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
       projection, columns = Utils.handle_projection_columns(columns)
@@ -211,7 +211,7 @@ module Polars
       rechunk: true,
       memory_map: true
     )
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
       if columns.is_a?(String)
@@ -237,7 +237,7 @@ module Polars
 
     # @private
     def self._read_json(file)
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
@@ -246,7 +246,7 @@ module Polars
 
     # @private
     def self._read_ndjson(file)
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
@@ -698,7 +698,7 @@ module Polars
       pretty: false,
       row_oriented: false
     )
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
@@ -713,7 +713,7 @@ module Polars
     #
     # @return [nil]
     def write_ndjson(file)
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
@@ -803,7 +803,7 @@ module Polars
         return buffer.string.force_encoding(Encoding::UTF_8)
       end
 
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
@@ -841,7 +841,7 @@ module Polars
       if compression.nil?
         compression = "uncompressed"
       end
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
@@ -860,7 +860,7 @@ module Polars
       if compression.nil?
         compression = "uncompressed"
       end
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
@@ -902,7 +902,7 @@ module Polars
       if compression.nil?
         compression = "uncompressed"
       end
-      if file.is_a?(String) || (defined?(Pathname) && file.is_a?(Pathname))
+      if Utils.pathlike?(file)
         file = Utils.format_path(file)
       end
 
