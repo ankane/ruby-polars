@@ -62,7 +62,7 @@ class LazyFrameTest < Minitest::Test
       })
       .lazy
       .select(
-        Polars.pearson_corr(Polars.col('a'), Polars.col('b'))
+        Polars.pearson_corr("a", "b")
       )
       .collect
     assert_in_delta 0.989778, df["a"][0]
