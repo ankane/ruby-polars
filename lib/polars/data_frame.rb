@@ -124,7 +124,39 @@ module Polars
         columns = [columns]
       end
       if file.is_a?(String) && file.include?("*")
-        raise Todo
+        dtypes_dict = nil
+        if !dtype_list.nil?
+          dtypes_dict = dtype_list.to_h
+        end
+        if !dtype_slice.nil?
+          raise ArgumentError, "cannot use glob patterns and unnamed dtypes as `dtypes` argument; Use dtypes: Mapping[str, Type[DataType]"
+        end
+        scan = Polars.scan_csv(
+          file,
+          has_header: has_header,
+          sep: sep,
+          comment_char: comment_char,
+          quote_char: quote_char,
+          skip_rows: skip_rows,
+          dtypes: dtypes_dict,
+          null_values: null_values,
+          ignore_errors: ignore_errors,
+          infer_schema_length: infer_schema_length,
+          n_rows: n_rows,
+          low_memory: low_memory,
+          rechunk: rechunk,
+          skip_rows_after_header: skip_rows_after_header,
+          row_count_name: row_count_name,
+          row_count_offset: row_count_offset,
+          eol_char: eol_char
+        )
+        if columns.nil?
+          return _from_rbdf(scan.collect._df)
+        elsif is_str_sequence(columns, allow_str: false)
+          return _from_rbdf(scan.select(columns).collect._df)
+        else
+          raise ArgumentError, "cannot use glob patterns and integer based projection as `columns` argument; Use columns: List[str]"
+        end
       end
 
       projection, columns = Utils.handle_projection_columns(columns)

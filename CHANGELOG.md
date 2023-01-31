@@ -1,5 +1,6 @@
 ## 0.2.5 (unreleased)
 
+- Added support for glob patterns to `read_csv` method
 - Added support for symbols to more methods
 
 ## 0.2.4 (2023-01-29)

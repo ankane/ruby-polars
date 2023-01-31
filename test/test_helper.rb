@@ -36,7 +36,7 @@ class Minitest::Test
 
   def assert_frame(exp, act)
     if exp.is_a?(Hash)
-      assert_equal exp, act.to_h(as_series: false)
+      assert_equal exp.transform_keys(&:to_s), act.to_h(as_series: false)
     else
       assert exp.frame_equal(act)
     end

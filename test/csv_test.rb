@@ -51,6 +51,21 @@ class CsvTest < Minitest::Test
     assert_equal "use URI(...) for remote files", error.message
   end
 
+  def test_read_csv_glob
+    expected = {
+      a: [1, 2, 3, 4, 5],
+      b: ["one", "two", "three", "four", "five"]
+    }
+    assert_frame expected, Polars.read_csv("test/support/data*.csv")
+  end
+
+  def test_read_csv_glob_mismatch
+    error = assert_raises(RuntimeError) do
+      Polars.read_csv("test/support/*.csv")
+    end
+    assert_match "Could not vertically stack DataFrame", error.message
+  end
+
   def test_read_csv_batched
     reader = Polars.read_csv_batched("test/support/data.csv")
     batch = reader.next_batches(5)
