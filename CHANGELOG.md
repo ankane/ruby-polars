@@ -1,4 +1,4 @@
-## 0.2.5 (unreleased)
+## 0.2.5 (2023-02-01)
 
 - Added support for glob patterns to `read_csv` method
 - Added support for symbols to more methods
