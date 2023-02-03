@@ -817,7 +817,7 @@ module Polars
       if defined?(URI) && file.is_a?(URI)
         require "open-uri"
 
-        file = URI.open(file)
+        file = file.open
       end
 
       yield file
