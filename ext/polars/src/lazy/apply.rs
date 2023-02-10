@@ -4,7 +4,7 @@ use polars::prelude::*;
 use crate::lazy::dsl::RbExpr;
 use crate::Wrap;
 
-pub fn binary_lambda(_lambda: Value, _a: Series, _b: Series) -> PolarsResult<Series> {
+pub fn binary_lambda(_lambda: Value, _a: Series, _b: Series) -> PolarsResult<Option<Series>> {
     todo!();
 }
 

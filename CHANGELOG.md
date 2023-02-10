@@ -1,3 +1,7 @@
+## 0.3.0 (unreleased)
+
+- Updated Polars to 0.27.1
+
 ## 0.2.5 (2023-02-01)
 
 - Added support for glob patterns to `read_csv` method

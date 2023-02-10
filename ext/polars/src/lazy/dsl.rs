@@ -214,6 +214,7 @@ impl RbExpr {
             .sort_with(SortOptions {
                 descending,
                 nulls_last,
+                multithreaded: true,
             })
             .into()
     }
@@ -224,6 +225,7 @@ impl RbExpr {
             .arg_sort(SortOptions {
                 descending: reverse,
                 nulls_last,
+                multithreaded: true,
             })
             .into()
     }
@@ -240,10 +242,10 @@ impl RbExpr {
         self.clone().inner.arg_min().into()
     }
 
-    pub fn search_sorted(&self, element: &RbExpr) -> Self {
+    pub fn search_sorted(&self, element: &RbExpr, side: Wrap<SearchSortedSide>) -> Self {
         self.inner
             .clone()
-            .search_sorted(element.inner.clone())
+            .search_sorted(element.inner.clone(), side.0)
             .into()
     }
 
@@ -287,7 +289,10 @@ impl RbExpr {
         Ok(self
             .inner
             .clone()
-            .apply(move |s| s.fill_null(strat), GetOutput::same_type())
+            .apply(
+                move |s| s.fill_null(strat).map(Some),
+                GetOutput::same_type(),
+            )
             .with_fmt("fill_null_with_strategy")
             .into())
     }
@@ -335,7 +340,10 @@ impl RbExpr {
     pub fn take_every(&self, n: usize) -> Self {
         self.clone()
             .inner
-            .map(move |s: Series| Ok(s.take_every(n)), GetOutput::same_type())
+            .map(
+                move |s: Series| Ok(Some(s.take_every(n))),
+                GetOutput::same_type(),
+            )
             .with_fmt("take_every")
             .into()
     }
@@ -365,7 +373,7 @@ impl RbExpr {
     pub fn rechunk(&self) -> Self {
         self.inner
             .clone()
-            .map(|s| Ok(s.rechunk()), GetOutput::same_type())
+            .map(|s| Ok(Some(s.rechunk())), GetOutput::same_type())
             .into()
     }
 
@@ -527,6 +535,7 @@ impl RbExpr {
                 exact,
                 cache,
                 tz_aware: false,
+                utc: false,
             })
             .into()
     }
@@ -538,6 +547,7 @@ impl RbExpr {
         exact: bool,
         cache: bool,
         tz_aware: bool,
+        utc: bool,
     ) -> Self {
         let tu = match fmt {
             Some(ref fmt) => {
@@ -565,6 +575,7 @@ impl RbExpr {
                 exact,
                 cache,
                 tz_aware,
+                utc,
             })
             .into()
     }
@@ -586,26 +597,27 @@ impl RbExpr {
                 exact,
                 cache,
                 tz_aware: false,
+                utc: false,
             })
             .into()
     }
 
-    pub fn str_strip(&self, matches: Option<char>) -> Self {
+    pub fn str_strip(&self, matches: Option<String>) -> Self {
         self.inner.clone().str().strip(matches).into()
     }
 
-    pub fn str_rstrip(&self, matches: Option<char>) -> Self {
+    pub fn str_rstrip(&self, matches: Option<String>) -> Self {
         self.inner.clone().str().rstrip(matches).into()
     }
 
-    pub fn str_lstrip(&self, matches: Option<char>) -> Self {
+    pub fn str_lstrip(&self, matches: Option<String>) -> Self {
         self.inner.clone().str().lstrip(matches).into()
     }
 
     pub fn str_slice(&self, start: i64, length: Option<u64>) -> Self {
         let function = move |s: Series| {
             let ca = s.utf8()?;
-            Ok(ca.str_slice(start, length)?.into_series())
+            Ok(Some(ca.str_slice(start, length)?.into_series()))
         };
         self.clone()
             .inner
@@ -625,7 +637,7 @@ impl RbExpr {
     pub fn str_lengths(&self) -> Self {
         let function = |s: Series| {
             let ca = s.utf8()?;
-            Ok(ca.str_lengths().into_series())
+            Ok(Some(ca.str_lengths().into_series()))
         };
         self.clone()
             .inner
@@ -637,7 +649,7 @@ impl RbExpr {
     pub fn str_n_chars(&self) -> Self {
         let function = |s: Series| {
             let ca = s.utf8()?;
-            Ok(ca.str_n_chars().into_series())
+            Ok(Some(ca.str_n_chars().into_series()))
         };
         self.clone()
             .inner
@@ -674,37 +686,51 @@ impl RbExpr {
         self.clone().inner.str().rjust(width, fillchar).into()
     }
 
-    pub fn str_contains(&self, pat: String, literal: Option<bool>) -> Self {
+    pub fn str_contains(&self, pat: &RbExpr, literal: Option<bool>, strict: bool) -> Self {
         match literal {
-            Some(true) => self.inner.clone().str().contains_literal(pat).into(),
-            _ => self.inner.clone().str().contains(pat).into(),
+            Some(true) => self
+                .inner
+                .clone()
+                .str()
+                .contains_literal(pat.inner.clone())
+                .into(),
+            _ => self
+                .inner
+                .clone()
+                .str()
+                .contains(pat.inner.clone(), strict)
+                .into(),
         }
     }
 
-    pub fn str_ends_with(&self, sub: String) -> Self {
-        self.inner.clone().str().ends_with(sub).into()
+    pub fn str_ends_with(&self, sub: &RbExpr) -> Self {
+        self.inner.clone().str().ends_with(sub.inner.clone()).into()
     }
 
-    pub fn str_starts_with(&self, sub: String) -> Self {
-        self.inner.clone().str().starts_with(sub).into()
+    pub fn str_starts_with(&self, sub: &RbExpr) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .starts_with(sub.inner.clone())
+            .into()
     }
 
     pub fn str_hex_encode(&self) -> Self {
         self.clone()
             .inner
             .map(
-                move |s| s.utf8().map(|s| s.hex_encode().into_series()),
+                move |s| s.utf8().map(|s| Some(s.hex_encode().into_series())),
                 GetOutput::same_type(),
             )
             .with_fmt("str.hex_encode")
             .into()
     }
 
-    pub fn str_hex_decode(&self, strict: Option<bool>) -> Self {
+    pub fn str_hex_decode(&self) -> Self {
         self.clone()
             .inner
             .map(
-                move |s| s.utf8()?.hex_decode(strict).map(|s| s.into_series()),
+                move |s| s.utf8()?.hex_decode().map(|s| Some(s.into_series())),
                 GetOutput::same_type(),
             )
             .with_fmt("str.hex_decode")
@@ -715,18 +741,18 @@ impl RbExpr {
         self.clone()
             .inner
             .map(
-                move |s| s.utf8().map(|s| s.base64_encode().into_series()),
+                move |s| s.utf8().map(|s| Some(s.base64_encode().into_series())),
                 GetOutput::same_type(),
             )
             .with_fmt("str.base64_encode")
             .into()
     }
 
-    pub fn str_base64_decode(&self, strict: Option<bool>) -> Self {
+    pub fn str_base64_decode(&self) -> Self {
         self.clone()
             .inner
             .map(
-                move |s| s.utf8()?.base64_decode(strict).map(|s| s.into_series()),
+                move |s| s.utf8()?.base64_decode().map(|s| Some(s.into_series())),
                 GetOutput::same_type(),
             )
             .with_fmt("str.base64_decode")
@@ -737,7 +763,7 @@ impl RbExpr {
         let function = move |s: Series| {
             let ca = s.utf8()?;
             match ca.json_path_match(&pat) {
-                Ok(ca) => Ok(ca.into_series()),
+                Ok(ca) => Ok(Some(ca.into_series())),
                 Err(e) => Err(PolarsError::ComputeError(format!("{:?}", e).into())),
             }
         };
@@ -864,7 +890,7 @@ impl RbExpr {
         self.inner
             .clone()
             .map(
-                |s| Ok(s.duration()?.days().into_series()),
+                |s| Ok(Some(s.duration()?.days().into_series())),
                 GetOutput::from_type(DataType::Int64),
             )
             .into()
@@ -874,7 +900,7 @@ impl RbExpr {
         self.inner
             .clone()
             .map(
-                |s| Ok(s.duration()?.hours().into_series()),
+                |s| Ok(Some(s.duration()?.hours().into_series())),
                 GetOutput::from_type(DataType::Int64),
             )
             .into()
@@ -884,7 +910,7 @@ impl RbExpr {
         self.inner
             .clone()
             .map(
-                |s| Ok(s.duration()?.minutes().into_series()),
+                |s| Ok(Some(s.duration()?.minutes().into_series())),
                 GetOutput::from_type(DataType::Int64),
             )
             .into()
@@ -894,7 +920,7 @@ impl RbExpr {
         self.inner
             .clone()
             .map(
-                |s| Ok(s.duration()?.seconds().into_series()),
+                |s| Ok(Some(s.duration()?.seconds().into_series())),
                 GetOutput::from_type(DataType::Int64),
             )
             .into()
@@ -904,7 +930,7 @@ impl RbExpr {
         self.inner
             .clone()
             .map(
-                |s| Ok(s.duration()?.nanoseconds().into_series()),
+                |s| Ok(Some(s.duration()?.nanoseconds().into_series())),
                 GetOutput::from_type(DataType::Int64),
             )
             .into()
@@ -914,7 +940,7 @@ impl RbExpr {
         self.inner
             .clone()
             .map(
-                |s| Ok(s.duration()?.microseconds().into_series()),
+                |s| Ok(Some(s.duration()?.microseconds().into_series())),
                 GetOutput::from_type(DataType::Int64),
             )
             .into()
@@ -924,7 +950,7 @@ impl RbExpr {
         self.inner
             .clone()
             .map(
-                |s| Ok(s.duration()?.milliseconds().into_series()),
+                |s| Ok(Some(s.duration()?.milliseconds().into_series())),
                 GetOutput::from_type(DataType::Int64),
             )
             .into()
@@ -945,7 +971,7 @@ impl RbExpr {
             .map(
                 |s| {
                     s.timestamp(TimeUnit::Milliseconds)
-                        .map(|ca| (ca / 1000).into_series())
+                        .map(|ca| Some((ca / 1000).into_series()))
                 },
                 GetOutput::from_type(DataType::Int64),
             )
@@ -956,18 +982,19 @@ impl RbExpr {
         self.inner.clone().dt().with_time_unit(tu.0).into()
     }
 
-    pub fn dt_with_time_zone(&self, tz: Option<TimeZone>) -> Self {
-        self.inner.clone().dt().with_time_zone(tz).into()
+    pub fn dt_convert_time_zone(&self, tz: TimeZone) -> Self {
+        self.inner.clone().dt().convert_time_zone(tz).into()
     }
 
     pub fn dt_cast_time_unit(&self, tu: Wrap<TimeUnit>) -> Self {
         self.inner.clone().dt().cast_time_unit(tu.0).into()
     }
 
-    pub fn dt_cast_time_zone(&self, tz: String) -> Self {
-        self.inner.clone().dt().cast_time_zone(tz).into()
+    pub fn dt_replace_time_zone(&self, tz: Option<String>) -> Self {
+        self.inner.clone().dt().replace_time_zone(tz).into()
     }
 
+    #[allow(deprecated)]
     pub fn dt_tz_localize(&self, tz: String) -> Self {
         self.inner.clone().dt().tz_localize(tz).into()
     }
@@ -989,7 +1016,7 @@ impl RbExpr {
     }
 
     pub fn reinterpret(&self, signed: bool) -> Self {
-        let function = move |s: Series| reinterpret(&s, signed);
+        let function = move |s: Series| reinterpret(&s, signed).map(Some);
         let dt = if signed {
             DataType::Int64
         } else {
@@ -1391,7 +1418,7 @@ impl RbExpr {
         self.inner
             .clone()
             .map(
-                |s| Ok(s.to_physical_repr().into_owned()),
+                |s| Ok(Some(s.to_physical_repr().into_owned())),
                 GetOutput::map_dtype(|dt| dt.to_physical()),
             )
             .with_fmt("to_physical")
@@ -1428,32 +1455,55 @@ impl RbExpr {
             .into()
     }
 
-    pub fn ewm_mean(&self, alpha: f64, adjust: bool, min_periods: usize) -> Self {
+    pub fn ewm_mean(
+        &self,
+        alpha: f64,
+        adjust: bool,
+        min_periods: usize,
+        ignore_nulls: bool,
+    ) -> Self {
         let options = EWMOptions {
             alpha,
             adjust,
             bias: false,
             min_periods,
+            ignore_nulls,
         };
         self.inner.clone().ewm_mean(options).into()
     }
 
-    pub fn ewm_std(&self, alpha: f64, adjust: bool, bias: bool, min_periods: usize) -> Self {
+    pub fn ewm_std(
+        &self,
+        alpha: f64,
+        adjust: bool,
+        bias: bool,
+        min_periods: usize,
+        ignore_nulls: bool,
+    ) -> Self {
         let options = EWMOptions {
             alpha,
             adjust,
             bias,
             min_periods,
+            ignore_nulls,
         };
         self.inner.clone().ewm_std(options).into()
     }
 
-    pub fn ewm_var(&self, alpha: f64, adjust: bool, bias: bool, min_periods: usize) -> Self {
+    pub fn ewm_var(
+        &self,
+        alpha: f64,
+        adjust: bool,
+        bias: bool,
+        min_periods: usize,
+        ignore_nulls: bool,
+    ) -> Self {
         let options = EWMOptions {
             alpha,
             adjust,
             bias,
             min_periods,
+            ignore_nulls,
         };
         self.inner.clone().ewm_var(options).into()
     }
@@ -1465,7 +1515,7 @@ impl RbExpr {
             .apply(
                 move |s| {
                     let value = value.try_convert::<Wrap<AnyValue>>().unwrap().0;
-                    s.extend_constant(value, n)
+                    s.extend_constant(value, n).map(Some)
                 },
                 GetOutput::same_type(),
             )

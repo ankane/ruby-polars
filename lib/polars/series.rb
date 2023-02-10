@@ -665,8 +665,8 @@ module Polars
     #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌┤
     #   # │ 0   ┆ 0   ┆ 1   │
     #   # └─────┴─────┴─────┘
-    def to_dummies
-      Utils.wrap_df(_s.to_dummies)
+    def to_dummies(separator: "_")
+      Utils.wrap_df(_s.to_dummies(separator))
     end
 
     # Count the unique values in a Series.
@@ -1285,8 +1285,12 @@ module Polars
     #   Expression or scalar value.
     #
     # @return [Integer]
-    def search_sorted(element)
-      Polars.select(Polars.lit(self).search_sorted(element))[0, 0]
+    def search_sorted(element, side: "any")
+      if element.is_a?(Integer) || element.is_a?(Float)
+        return Polars.select(Polars.lit(self).search_sorted(element, side: side)).item
+      end
+      element = Series.new(element)
+      Polars.select(Polars.lit(self).search_sorted(element, side: side)).to_series
     end
 
     # Get unique elements in series.

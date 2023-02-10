@@ -30,11 +30,11 @@ impl RbSeries {
     }
 
     pub fn is_sorted_flag(&self) -> bool {
-        matches!(self.series.borrow().is_sorted(), IsSorted::Ascending)
+        matches!(self.series.borrow().is_sorted_flag(), IsSorted::Ascending)
     }
 
     pub fn is_sorted_reverse_flag(&self) -> bool {
-        matches!(self.series.borrow().is_sorted(), IsSorted::Descending)
+        matches!(self.series.borrow().is_sorted_flag(), IsSorted::Descending)
     }
 
     pub fn new_opt_bool(name: String, obj: RArray, strict: bool) -> RbResult<RbSeries> {
@@ -230,9 +230,9 @@ impl RbSeries {
     pub fn set_sorted(&self, reverse: bool) -> Self {
         let mut out = self.series.borrow().clone();
         if reverse {
-            out.set_sorted(IsSorted::Descending);
+            out.set_sorted_flag(IsSorted::Descending);
         } else {
-            out.set_sorted(IsSorted::Ascending)
+            out.set_sorted_flag(IsSorted::Ascending)
         }
         out.into()
     }
@@ -756,11 +756,11 @@ impl RbSeries {
         Ok(RbSeries::new(s))
     }
 
-    pub fn to_dummies(&self) -> RbResult<RbDataFrame> {
+    pub fn to_dummies(&self, sep: Option<String>) -> RbResult<RbDataFrame> {
         let df = self
             .series
             .borrow()
-            .to_dummies()
+            .to_dummies(sep.as_deref())
             .map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }

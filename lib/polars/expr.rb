@@ -1543,9 +1543,9 @@ module Polars
     #   # ╞══════╪═══════╪═════╡
     #   # │ 0    ┆ 2     ┆ 4   │
     #   # └──────┴───────┴─────┘
-    def search_sorted(element)
+    def search_sorted(element, side: "any")
       element = Utils.expr_to_lit_or_expr(element, str_to_lit: false)
-      wrap_expr(_rbexpr.search_sorted(element._rbexpr))
+      wrap_expr(_rbexpr.search_sorted(element._rbexpr, side))
     end
 
     # Sort this column by the ordering of another column, or multiple other columns.

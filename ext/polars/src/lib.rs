@@ -146,7 +146,7 @@ fn init() -> RbResult<()> {
     class.define_method("with_row_count", method!(RbDataFrame::with_row_count, 2))?;
     class.define_method("_clone", method!(RbDataFrame::clone, 0))?;
     class.define_method("melt", method!(RbDataFrame::melt, 4))?;
-    class.define_method("pivot_expr", method!(RbDataFrame::pivot_expr, 6))?;
+    class.define_method("pivot_expr", method!(RbDataFrame::pivot_expr, 7))?;
     class.define_method("partition_by", method!(RbDataFrame::partition_by, 2))?;
     class.define_method("shift", method!(RbDataFrame::shift, 1))?;
     class.define_method("unique", method!(RbDataFrame::unique, 3))?;
@@ -163,7 +163,7 @@ fn init() -> RbResult<()> {
     class.define_method("hmin", method!(RbDataFrame::hmin, 0))?;
     class.define_method("hsum", method!(RbDataFrame::hsum, 1))?;
     class.define_method("quantile", method!(RbDataFrame::quantile, 2))?;
-    class.define_method("to_dummies", method!(RbDataFrame::to_dummies, 1))?;
+    class.define_method("to_dummies", method!(RbDataFrame::to_dummies, 2))?;
     class.define_method("null_count", method!(RbDataFrame::null_count, 0))?;
     class.define_method("apply", method!(RbDataFrame::apply, 3))?;
     class.define_method("shrink_to_fit", method!(RbDataFrame::shrink_to_fit, 0))?;
@@ -221,7 +221,7 @@ fn init() -> RbResult<()> {
     class.define_method("top_k", method!(RbExpr::top_k, 2))?;
     class.define_method("arg_max", method!(RbExpr::arg_max, 0))?;
     class.define_method("arg_min", method!(RbExpr::arg_min, 0))?;
-    class.define_method("search_sorted", method!(RbExpr::search_sorted, 1))?;
+    class.define_method("search_sorted", method!(RbExpr::search_sorted, 2))?;
     class.define_method("take", method!(RbExpr::take, 1))?;
     class.define_method("sort_by", method!(RbExpr::sort_by, 2))?;
     class.define_method("backward_fill", method!(RbExpr::backward_fill, 1))?;
@@ -284,7 +284,7 @@ fn init() -> RbResult<()> {
     class.define_method("product", method!(RbExpr::product, 0))?;
     class.define_method("shrink_dtype", method!(RbExpr::shrink_dtype, 0))?;
     class.define_method("str_parse_date", method!(RbExpr::str_parse_date, 4))?;
-    class.define_method("str_parse_datetime", method!(RbExpr::str_parse_datetime, 5))?;
+    class.define_method("str_parse_datetime", method!(RbExpr::str_parse_datetime, 6))?;
     class.define_method("str_parse_time", method!(RbExpr::str_parse_time, 4))?;
     class.define_method("str_strip", method!(RbExpr::str_strip, 1))?;
     class.define_method("str_rstrip", method!(RbExpr::str_rstrip, 1))?;
@@ -299,13 +299,13 @@ fn init() -> RbResult<()> {
     class.define_method("str_zfill", method!(RbExpr::str_zfill, 1))?;
     class.define_method("str_ljust", method!(RbExpr::str_ljust, 2))?;
     class.define_method("str_rjust", method!(RbExpr::str_rjust, 2))?;
-    class.define_method("str_contains", method!(RbExpr::str_contains, 2))?;
+    class.define_method("str_contains", method!(RbExpr::str_contains, 3))?;
     class.define_method("str_ends_with", method!(RbExpr::str_ends_with, 1))?;
     class.define_method("str_starts_with", method!(RbExpr::str_starts_with, 1))?;
     class.define_method("str_hex_encode", method!(RbExpr::str_hex_encode, 0))?;
-    class.define_method("str_hex_decode", method!(RbExpr::str_hex_decode, 1))?;
+    class.define_method("str_hex_decode", method!(RbExpr::str_hex_decode, 0))?;
     class.define_method("str_base64_encode", method!(RbExpr::str_base64_encode, 0))?;
-    class.define_method("str_base64_decode", method!(RbExpr::str_base64_decode, 1))?;
+    class.define_method("str_base64_decode", method!(RbExpr::str_base64_decode, 0))?;
     class.define_method(
         "str_json_path_match",
         method!(RbExpr::str_json_path_match, 1),
@@ -361,9 +361,15 @@ fn init() -> RbResult<()> {
     class.define_method("dt_offset_by", method!(RbExpr::dt_offset_by, 1))?;
     class.define_method("dt_epoch_seconds", method!(RbExpr::dt_epoch_seconds, 0))?;
     class.define_method("dt_with_time_unit", method!(RbExpr::dt_with_time_unit, 1))?;
-    class.define_method("dt_with_time_zone", method!(RbExpr::dt_with_time_zone, 1))?;
+    class.define_method(
+        "dt_convert_time_zone",
+        method!(RbExpr::dt_convert_time_zone, 1),
+    )?;
     class.define_method("dt_cast_time_unit", method!(RbExpr::dt_cast_time_unit, 1))?;
-    class.define_method("dt_cast_time_zone", method!(RbExpr::dt_cast_time_zone, 1))?;
+    class.define_method(
+        "dt_replace_time_zone",
+        method!(RbExpr::dt_replace_time_zone, 1),
+    )?;
     class.define_method("dt_tz_localize", method!(RbExpr::dt_tz_localize, 1))?;
     class.define_method("dt_truncate", method!(RbExpr::dt_truncate, 2))?;
     class.define_method("dt_round", method!(RbExpr::dt_round, 2))?;
@@ -418,9 +424,9 @@ fn init() -> RbResult<()> {
     class.define_method("shuffle", method!(RbExpr::shuffle, 1))?;
     class.define_method("sample_n", method!(RbExpr::sample_n, 4))?;
     class.define_method("sample_frac", method!(RbExpr::sample_frac, 4))?;
-    class.define_method("ewm_mean", method!(RbExpr::ewm_mean, 3))?;
-    class.define_method("ewm_std", method!(RbExpr::ewm_std, 4))?;
-    class.define_method("ewm_var", method!(RbExpr::ewm_var, 4))?;
+    class.define_method("ewm_mean", method!(RbExpr::ewm_mean, 4))?;
+    class.define_method("ewm_std", method!(RbExpr::ewm_std, 5))?;
+    class.define_method("ewm_var", method!(RbExpr::ewm_var, 5))?;
     class.define_method("extend_constant", method!(RbExpr::extend_constant, 2))?;
     class.define_method("any", method!(RbExpr::any, 0))?;
     class.define_method("all", method!(RbExpr::all, 0))?;
@@ -613,7 +619,7 @@ fn init() -> RbResult<()> {
     class.define_method("_clone", method!(RbSeries::clone, 0))?;
     class.define_method("apply_lambda", method!(RbSeries::apply_lambda, 3))?;
     class.define_method("zip_with", method!(RbSeries::zip_with, 2))?;
-    class.define_method("to_dummies", method!(RbSeries::to_dummies, 0))?;
+    class.define_method("to_dummies", method!(RbSeries::to_dummies, 1))?;
     class.define_method("peak_max", method!(RbSeries::peak_max, 0))?;
     class.define_method("peak_min", method!(RbSeries::peak_min, 0))?;
     class.define_method("n_unique", method!(RbSeries::n_unique, 0))?;
@@ -949,8 +955,8 @@ fn rb_date_range(
     name: String,
     tu: Wrap<TimeUnit>,
     tz: Option<TimeZone>,
-) -> RbSeries {
-    polars::time::date_range_impl(
+) -> RbResult<RbSeries> {
+    let date_range = polars::time::date_range_impl(
         &name,
         start,
         stop,
@@ -959,8 +965,8 @@ fn rb_date_range(
         tu.0,
         tz.as_ref(),
     )
-    .into_series()
-    .into()
+    .map_err(RbPolarsErr::from)?;
+    Ok(date_range.into_series().into())
 }
 
 fn coalesce_exprs(exprs: RArray) -> RbResult<RbExpr> {

@@ -140,7 +140,7 @@ impl RbLazyFrame {
             .with_infer_schema_length(infer_schema_length)
             .with_delimiter(delimiter)
             .has_header(has_header)
-            .with_ignore_parser_errors(ignore_errors)
+            .with_ignore_errors(ignore_errors)
             .with_skip_rows(skip_rows)
             .with_n_rows(n_rows)
             .with_cache(cache)
@@ -180,6 +180,8 @@ impl RbLazyFrame {
             rechunk,
             row_count,
             low_memory,
+            // TODO support cloud options
+            cloud_options: None,
         };
         let lf = LazyFrame::scan_parquet(path, args).map_err(RbPolarsErr::from)?;
         Ok(lf.into())
@@ -254,6 +256,7 @@ impl RbLazyFrame {
             SortOptions {
                 descending: reverse,
                 nulls_last,
+                multithreaded: true,
             },
         )
         .into()

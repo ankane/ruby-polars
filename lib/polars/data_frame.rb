@@ -637,6 +637,7 @@ module Polars
     # Set item.
     #
     # @return [Object]
+    #
     # def []=(key, value)
     #   if key.is_a?(String)
     #     raise TypeError, "'DataFrame' object does not support 'Series' assignment by index. Use 'DataFrame.with_columns'"
@@ -644,6 +645,25 @@ module Polars
 
     #   raise Todo
     # end
+
+
+    # Return the dataframe as a scalar.
+    #
+    # Equivalent to `df[0,0]`, with a check that the shape is (1,1).
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
+    #   result = df.select((Polars.col("a") * Polars.col("b")).sum))
+    #   result.item
+    #   # => 32
+    def item
+      if shape != [1, 1]
+        raise ArgumentError, "Can only call .item if the dataframe is of shape (1,1), dataframe is of shape #{shape}"
+      end
+      self[0, 0]
+    end
 
     # no to_arrow
 

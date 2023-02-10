@@ -12,11 +12,11 @@ crate-type = ["cdylib"]
 [dependencies]
 ahash = "0.8"
 magnus = "0.4"
-polars-core = "0.26.1"
+polars-core = "0.27.0"
 serde_json = "1"
 
 [dependencies.polars]
-version = "0.26.1"
+version = "0.27.0"
 features = [
     "abs",
     "arange",

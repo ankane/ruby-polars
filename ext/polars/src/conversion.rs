@@ -160,6 +160,7 @@ impl From<Wrap<DataType>> for Value {
             DataType::UInt64 => pl.const_get::<_, Value>("UInt64").unwrap(),
             DataType::Float32 => pl.const_get::<_, Value>("Float32").unwrap(),
             DataType::Float64 => pl.const_get::<_, Value>("Float64").unwrap(),
+            DataType::Decimal128(_) => todo!(),
             DataType::Boolean => pl.const_get::<_, Value>("Boolean").unwrap(),
             DataType::Utf8 => pl.const_get::<_, Value>("Utf8").unwrap(),
             DataType::Binary => pl.const_get::<_, Value>("Binary").unwrap(),
@@ -760,6 +761,22 @@ impl TryConvert for Wrap<UniqueKeepStrategy> {
                 return Err(RbValueError::new_err(format!(
                     "keep must be one of {{'first', 'last'}}, got {}",
                     v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<SearchSortedSide> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match ob.try_convert::<String>()?.as_str() {
+            "any" => SearchSortedSide::Any,
+            "left" => SearchSortedSide::Left,
+            "right" => SearchSortedSide::Right,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "side must be one of {{'any', 'left', 'right'}}, got {v}",
                 )))
             }
         };

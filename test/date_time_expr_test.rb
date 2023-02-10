@@ -79,12 +79,12 @@ class DateTimeExprTest < Minitest::Test
     assert_expr dt_expr.cast_time_unit("us")
   end
 
-  def test_with_time_zone
-    assert_expr dt_expr.with_time_zone("tz")
+  def test_convert_time_zone
+    assert_expr dt_expr.convert_time_zone("tz")
   end
 
-  def test_cast_time_zone
-    assert_expr dt_expr.cast_time_zone("tz")
+  def test_replace_time_zone
+    assert_expr dt_expr.replace_time_zone("tz")
   end
 
   def test_tz_localize

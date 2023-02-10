@@ -1036,8 +1036,8 @@ module Polars
     #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 2020-05-01 00:00:00 ┆ 2020-05-01 01:00:00 BST     │
     #   # └─────────────────────┴─────────────────────────────┘
-    def with_time_zone(tz)
-      Utils.wrap_expr(_rbexpr.dt_with_time_zone(tz))
+    def convert_time_zone(tz)
+      Utils.wrap_expr(_rbexpr.dt_convert_time_zone(tz))
     end
 
     # Cast time zone for a Series of type Datetime.
@@ -1049,8 +1049,8 @@ module Polars
     #   Time zone for the `Datetime` Series.
     #
     # @return [Expr]
-    def cast_time_zone(tz)
-      Utils.wrap_expr(_rbexpr.dt_cast_time_zone(tz))
+    def replace_time_zone(tz)
+      Utils.wrap_expr(_rbexpr.dt_replace_time_zone(tz))
     end
 
     # Localize tz-naive Datetime Series to tz-aware Datetime Series.

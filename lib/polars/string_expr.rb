@@ -467,8 +467,9 @@ module Polars
     #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
     #   # │ null        ┆ null  ┆ null    │
     #   # └─────────────┴───────┴─────────┘
-    def contains(pattern, literal: false)
-      Utils.wrap_expr(_rbexpr.str_contains(pattern, literal))
+    def contains(pattern, literal: false, strict: true)
+      pattern = Utils.expr_to_lit_or_expr(pattern, str_to_lit: true)._rbexpr
+      Utils.wrap_expr(_rbexpr.str_contains(pattern, literal, strict))
     end
 
     # Check if string values end with a substring.
@@ -509,6 +510,7 @@ module Polars
     #   # │ mango  │
     #   # └────────┘
     def ends_with(sub)
+      sub = Utils.expr_to_lit_or_expr(sub, str_to_lit: true)._rbexpr
       Utils.wrap_expr(_rbexpr.str_ends_with(sub))
     end
 
@@ -550,6 +552,7 @@ module Polars
     #   # │ apple  │
     #   # └────────┘
     def starts_with(sub)
+      sub = Utils.expr_to_lit_or_expr(sub, str_to_lit: true)._rbexpr
       Utils.wrap_expr(_rbexpr.str_starts_with(sub))
     end
 

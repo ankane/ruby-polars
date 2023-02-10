@@ -68,7 +68,7 @@ impl RbDataFrame {
                         *dtype_ = dtype;
                     }
                 } else {
-                    schema.with_column(name, dtype)
+                    schema.with_column(name, dtype);
                 }
             }
         }
@@ -159,7 +159,7 @@ impl RbDataFrame {
             .with_n_rows(n_rows)
             .with_delimiter(sep.as_bytes()[0])
             .with_skip_rows(skip_rows)
-            .with_ignore_parser_errors(ignore_errors)
+            .with_ignore_errors(ignore_errors)
             .with_projection(projection)
             .with_rechunk(rechunk)
             .with_chunk_size(chunk_size)
@@ -777,6 +777,7 @@ impl RbDataFrame {
                 SortOptions {
                     descending: reverse,
                     nulls_last,
+                    multithreaded: true,
                 },
             )
             .map_err(RbPolarsErr::from)?;
@@ -884,6 +885,7 @@ impl RbDataFrame {
         aggregate_expr: &RbExpr,
         maintain_order: bool,
         sort_columns: bool,
+        separator: Option<String>,
     ) -> RbResult<Self> {
         let fun = match maintain_order {
             true => pivot_stable,
@@ -896,6 +898,7 @@ impl RbDataFrame {
             columns,
             aggregate_expr.inner.clone(),
             sort_columns,
+            separator.as_deref(),
         )
         .map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
@@ -1003,13 +1006,17 @@ impl RbDataFrame {
         Ok(df.into())
     }
 
-    pub fn to_dummies(&self, columns: Option<Vec<String>>) -> RbResult<Self> {
+    pub fn to_dummies(
+        &self,
+        columns: Option<Vec<String>>,
+        separator: Option<String>,
+    ) -> RbResult<Self> {
         let df = match columns {
-            Some(cols) => self
-                .df
-                .borrow()
-                .columns_to_dummies(cols.iter().map(|x| x as &str).collect()),
-            None => self.df.borrow().to_dummies(),
+            Some(cols) => self.df.borrow().columns_to_dummies(
+                cols.iter().map(|x| x as &str).collect(),
+                separator.as_deref(),
+            ),
+            None => self.df.borrow().to_dummies(separator.as_deref()),
         }
         .map_err(RbPolarsErr::from)?;
         Ok(df.into())
