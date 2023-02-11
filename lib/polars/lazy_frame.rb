@@ -1487,7 +1487,7 @@ module Polars
         when Expr
           rbexprs << e._rbexpr
         when Series
-          rbexprs = Utils.lit(e)._rbexpr
+          rbexprs << Utils.lit(e)._rbexpr
         else
           raise ArgumentError, "Expected an expression, got #{e}"
         end

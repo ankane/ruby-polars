@@ -1,4 +1,4 @@
-use magnus::{exception, Error, RArray, Value};
+use magnus::{exception, Error, IntoValue, RArray, Value};
 use polars::prelude::*;
 use polars::series::IsSorted;
 use std::cell::RefCell;
@@ -172,7 +172,7 @@ impl RbSeries {
     }
 
     pub fn get_idx(&self, idx: usize) -> RbResult<Value> {
-        Ok(Wrap(self.series.borrow().get(idx).map_err(RbPolarsErr::from)?).into())
+        Ok(Wrap(self.series.borrow().get(idx).map_err(RbPolarsErr::from)?).into_value())
     }
 
     pub fn bitand(&self, other: &RbSeries) -> RbResult<Self> {
@@ -215,7 +215,7 @@ impl RbSeries {
     }
 
     pub fn dtype(&self) -> Value {
-        Wrap(self.series.borrow().dtype().clone()).into()
+        Wrap(self.series.borrow().dtype().clone()).into_value()
     }
 
     pub fn inner_dtype(&self) -> Option<Value> {
@@ -223,7 +223,7 @@ impl RbSeries {
             .borrow()
             .dtype()
             .inner_dtype()
-            .map(|dt| Wrap(dt.clone()).into())
+            .map(|dt| Wrap(dt.clone()).into_value())
     }
 
     pub fn set_sorted(&self, reverse: bool) -> Self {
@@ -254,7 +254,7 @@ impl RbSeries {
                 .get(0)
                 .map_err(RbPolarsErr::from)?,
         )
-        .into())
+        .into_value())
     }
 
     pub fn min(&self) -> RbResult<Value> {
@@ -265,7 +265,7 @@ impl RbSeries {
                 .get(0)
                 .map_err(RbPolarsErr::from)?,
         )
-        .into())
+        .into_value())
     }
 
     pub fn sum(&self) -> RbResult<Value> {
@@ -276,7 +276,7 @@ impl RbSeries {
                 .get(0)
                 .map_err(RbPolarsErr::from)?,
         )
-        .into())
+        .into_value())
     }
 
     pub fn n_chunks(&self) -> usize {
@@ -517,7 +517,7 @@ impl RbSeries {
         } else if let Ok(_s) = series.date() {
             let a = RArray::with_capacity(series.len());
             for v in series.iter() {
-                a.push::<Value>(Wrap(v).into()).unwrap();
+                a.push::<Value>(Wrap(v).into_value()).unwrap();
             }
             a
         } else {
@@ -548,7 +548,7 @@ impl RbSeries {
                 .get(0)
                 .unwrap_or(AnyValue::Null),
         )
-        .into())
+        .into_value())
     }
 
     pub fn clone(&self) -> Self {
@@ -1097,8 +1097,8 @@ pub fn to_series_collection(rs: RArray) -> RbResult<Vec<Series>> {
     Ok(series)
 }
 
-pub fn to_rbseries_collection(s: Vec<Series>) -> Vec<RbSeries> {
-    s.into_iter().map(RbSeries::new).collect()
+pub fn to_rbseries_collection(s: Vec<Series>) -> RArray {
+    RArray::from_iter(s.into_iter().map(RbSeries::new))
 }
 
 impl RbSeries {

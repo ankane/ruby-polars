@@ -1,4 +1,4 @@
-use magnus::Value;
+use magnus::{RArray, Value};
 use polars::io::mmap::MmapBytesReader;
 use polars::io::RowCount;
 use polars::prelude::read_impl::OwnedBatchedCsvReader;
@@ -109,12 +109,14 @@ impl RbBatchedCsv {
         })
     }
 
-    pub fn next_batches(&self, n: usize) -> RbResult<Option<Vec<RbDataFrame>>> {
+    pub fn next_batches(&self, n: usize) -> RbResult<Option<RArray>> {
         let batches = self
             .reader
             .borrow_mut()
             .next_batches(n)
             .map_err(RbPolarsErr::from)?;
-        Ok(batches.map(|batches| batches.into_iter().map(|out| out.1.into()).collect()))
+        Ok(batches.map(|batches| {
+            RArray::from_iter(batches.into_iter().map(|out| RbDataFrame::from(out.1)))
+        }))
     }
 }

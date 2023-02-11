@@ -1,4 +1,4 @@
-use magnus::{r_hash::ForEach, RArray, RHash, RString, Value};
+use magnus::{r_hash::ForEach, IntoValue, RArray, RHash, RString, Value};
 use polars::frame::row::{rows_to_schema_supertypes, Row};
 use polars::frame::NullStrategy;
 use polars::io::avro::AvroCompression;
@@ -457,7 +457,7 @@ impl RbDataFrame {
         } else {
             idx as usize
         };
-        RArray::from_vec(
+        RArray::from_iter(
             self.df
                 .borrow()
                 .get_columns()
@@ -467,36 +467,29 @@ impl RbDataFrame {
                         let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
                         obj.unwrap().to_object()
                     }
-                    _ => Wrap(s.get(idx).unwrap()).into(),
-                })
-                .collect(),
+                    _ => Wrap(s.get(idx).unwrap()).into_value(),
+                }),
         )
         .into()
     }
 
     pub fn row_tuples(&self) -> Value {
         let df = &self.df;
-        RArray::from_vec(
-            (0..df.borrow().height())
-                .map(|idx| {
-                    RArray::from_vec(
-                        self.df
-                            .borrow()
-                            .get_columns()
-                            .iter()
-                            .map(|s| match s.dtype() {
-                                DataType::Object(_) => {
-                                    let obj: Option<&ObjectValue> =
-                                        s.get_object(idx).map(|any| any.into());
-                                    obj.unwrap().to_object()
-                                }
-                                _ => Wrap(s.get(idx).unwrap()).into(),
-                            })
-                            .collect(),
-                    )
-                })
-                .collect(),
-        )
+        RArray::from_iter((0..df.borrow().height()).map(|idx| {
+            RArray::from_iter(
+                self.df
+                    .borrow()
+                    .get_columns()
+                    .iter()
+                    .map(|s| match s.dtype() {
+                        DataType::Object(_) => {
+                            let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
+                            obj.unwrap().to_object()
+                        }
+                        _ => Wrap(s.get(idx).unwrap()).into_value(),
+                    }),
+            )
+        }))
         .into()
     }
 
@@ -613,7 +606,7 @@ impl RbDataFrame {
         format!("{}", self.df.borrow())
     }
 
-    pub fn get_columns(&self) -> Vec<RbSeries> {
+    pub fn get_columns(&self) -> RArray {
         let cols = self.df.borrow().get_columns().clone();
         to_rbseries_collection(cols)
     }
@@ -635,12 +628,13 @@ impl RbDataFrame {
         Ok(())
     }
 
-    pub fn dtypes(&self) -> Vec<Value> {
-        self.df
-            .borrow()
-            .iter()
-            .map(|s| Wrap(s.dtype().clone()).into())
-            .collect()
+    pub fn dtypes(&self) -> RArray {
+        RArray::from_iter(
+            self.df
+                .borrow()
+                .iter()
+                .map(|s| Wrap(s.dtype().clone()).into_value()),
+        )
     }
 
     pub fn n_chunks(&self) -> usize {
@@ -905,14 +899,14 @@ impl RbDataFrame {
         Ok(RbDataFrame::new(df))
     }
 
-    pub fn partition_by(&self, groups: Vec<String>, stable: bool) -> RbResult<Vec<Self>> {
+    pub fn partition_by(&self, groups: Vec<String>, stable: bool) -> RbResult<RArray> {
         let out = if stable {
             self.df.borrow().partition_by_stable(groups)
         } else {
             self.df.borrow().partition_by(groups)
         }
         .map_err(RbPolarsErr::from)?;
-        Ok(out.into_iter().map(RbDataFrame::new).collect())
+        Ok(RArray::from_iter(out.into_iter().map(RbDataFrame::new)))
     }
 
     pub fn shift(&self, periods: i64) -> Self {

@@ -1,4 +1,4 @@
-use magnus::{RArray, RHash, Value};
+use magnus::{IntoValue, RArray, RHash, Value};
 use polars::io::RowCount;
 use polars::lazy::frame::{LazyFrame, LazyGroupBy};
 use polars::prelude::*;
@@ -600,10 +600,10 @@ impl RbLazyFrame {
         Ok(self.get_schema()?.iter_names().cloned().collect())
     }
 
-    pub fn dtypes(&self) -> RbResult<Vec<Value>> {
+    pub fn dtypes(&self) -> RbResult<RArray> {
         let schema = self.get_schema()?;
-        let iter = schema.iter_dtypes().map(|dt| Wrap(dt.clone()).into());
-        Ok(iter.collect())
+        let iter = schema.iter_dtypes().map(|dt| Wrap(dt.clone()).into_value());
+        Ok(RArray::from_iter(iter))
     }
 
     pub fn schema(&self) -> RbResult<RHash> {
@@ -613,7 +613,10 @@ impl RbLazyFrame {
         schema.iter_fields().for_each(|fld| {
             // TODO remove unwrap
             schema_dict
-                .aset::<String, Value>(fld.name().clone(), Wrap(fld.data_type().clone()).into())
+                .aset::<String, Value>(
+                    fld.name().clone(),
+                    Wrap(fld.data_type().clone()).into_value(),
+                )
                 .unwrap();
         });
         Ok(schema_dict)

@@ -1,4 +1,4 @@
-use magnus::{class, RHash, TryConvert, Value};
+use magnus::{class, IntoValue, RHash, TryConvert, Value};
 use polars::prelude::*;
 
 use super::*;
@@ -85,7 +85,7 @@ pub trait ApplyLambda<'a> {
     ) -> RbResult<ChunkedArray<D>>
     where
         D: RbArrowPrimitiveType,
-        D::Native: Into<Value> + TryConvert;
+        D::Native: IntoValue + TryConvert;
 
     /// Apply a lambda with a boolean output type
     fn apply_lambda_with_bool_out_type(
@@ -130,14 +130,14 @@ pub trait ApplyLambda<'a> {
 
 pub fn call_lambda<T>(lambda: Value, in_val: T) -> RbResult<Value>
 where
-    T: Into<Value>,
+    T: IntoValue,
 {
     lambda.funcall("call", (in_val,))
 }
 
 pub(crate) fn call_lambda_and_extract<T, S>(lambda: Value, in_val: T) -> RbResult<S>
 where
-    T: Into<Value>,
+    T: IntoValue,
     S: TryConvert,
 {
     match call_lambda(lambda, in_val) {
@@ -148,7 +148,7 @@ where
 
 fn call_lambda_series_out<T>(lambda: Value, in_val: T) -> RbResult<Series>
 where
-    T: Into<Value>,
+    T: IntoValue,
 {
     let out: Value = lambda.funcall("call", (in_val,))?;
     let py_series: Value = out.funcall("_s", ())?;
@@ -216,7 +216,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
     ) -> RbResult<ChunkedArray<D>>
     where
         D: RbArrowPrimitiveType,
-        D::Native: Into<Value> + TryConvert,
+        D::Native: IntoValue + TryConvert,
     {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
@@ -435,7 +435,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
 impl<'a, T> ApplyLambda<'a> for ChunkedArray<T>
 where
     T: RbArrowPrimitiveType + PolarsNumericType,
-    T::Native: Into<Value> + TryConvert,
+    T::Native: IntoValue + TryConvert,
     ChunkedArray<T>: IntoSeries,
 {
     fn apply_lambda_unknown(&'a self, lambda: Value) -> RbResult<RbSeries> {
@@ -493,7 +493,7 @@ where
     ) -> RbResult<ChunkedArray<D>>
     where
         D: RbArrowPrimitiveType,
-        D::Native: Into<Value> + TryConvert,
+        D::Native: IntoValue + TryConvert,
     {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
@@ -765,7 +765,7 @@ impl<'a> ApplyLambda<'a> for Utf8Chunked {
     ) -> RbResult<ChunkedArray<D>>
     where
         D: RbArrowPrimitiveType,
-        D::Native: Into<Value> + TryConvert,
+        D::Native: IntoValue + TryConvert,
     {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
@@ -1036,7 +1036,7 @@ impl<'a> ApplyLambda<'a> for StructChunked {
     ) -> RbResult<ChunkedArray<D>>
     where
         D: RbArrowPrimitiveType,
-        D::Native: Into<Value> + TryConvert,
+        D::Native: IntoValue + TryConvert,
     {
         let names = self.fields().iter().map(|s| s.name()).collect::<Vec<_>>();
 

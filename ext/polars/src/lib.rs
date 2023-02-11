@@ -21,7 +21,7 @@ use file::get_file_like;
 use lazy::dataframe::{RbLazyFrame, RbLazyGroupBy};
 use lazy::dsl::{RbExpr, RbWhen, RbWhenThen};
 use lazy::utils::rb_exprs_to_exprs;
-use magnus::{define_module, function, method, prelude::*, Error, RArray, RHash, Value};
+use magnus::{define_module, function, method, prelude::*, Error, IntoValue, RArray, RHash, Value};
 use polars::datatypes::{DataType, TimeUnit, IDX_DTYPE};
 use polars::error::PolarsResult;
 use polars::frame::DataFrame;
@@ -928,23 +928,16 @@ fn parquet_schema(rb_f: Value) -> RbResult<Value> {
     Ok(dict.into())
 }
 
-fn collect_all(lfs: RArray) -> RbResult<Vec<RbDataFrame>> {
-    use polars_core::utils::rayon::prelude::*;
-
+fn collect_all(lfs: RArray) -> RbResult<RArray> {
     let lfs = lfs
         .each()
         .map(|v| v?.try_convert::<&RbLazyFrame>())
         .collect::<RbResult<Vec<&RbLazyFrame>>>()?;
 
-    polars_core::POOL.install(|| {
-        lfs.par_iter()
-            .map(|lf| {
-                let df = lf.ldf.clone().collect()?;
-                Ok(RbDataFrame::new(df))
-            })
-            .collect::<polars_core::error::PolarsResult<Vec<_>>>()
-            .map_err(RbPolarsErr::from)
-    })
+    Ok(RArray::from_iter(lfs.iter().map(|lf| {
+        let df = lf.ldf.clone().collect().unwrap();
+        RbDataFrame::new(df)
+    })))
 }
 
 fn rb_date_range(
@@ -989,5 +982,5 @@ fn arg_where(condition: &RbExpr) -> RbExpr {
 }
 
 fn get_idx_type() -> Value {
-    Wrap(IDX_DTYPE).into()
+    Wrap(IDX_DTYPE).into_value()
 }

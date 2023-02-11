@@ -1,5 +1,5 @@
 use magnus::block::Proc;
-use magnus::{class, RArray, RString, Value};
+use magnus::{class, IntoValue, RArray, RString, Value};
 use polars::chunked_array::ops::SortOptions;
 use polars::lazy::dsl;
 use polars::lazy::dsl::Operator;
@@ -1513,7 +1513,7 @@ impl RbExpr {
     }
 
     pub fn extend_constant(&self, value: Wrap<AnyValue>, n: usize) -> Self {
-        let value = Value::from(value);
+        let value = value.into_value();
         self.inner
             .clone()
             .apply(

@@ -1,4 +1,4 @@
-use magnus::{class, RArray, TryConvert, Value};
+use magnus::{class, IntoValue, RArray, TryConvert, Value};
 use polars::prelude::*;
 use polars_core::frame::row::{rows_to_schema_first_non_null, Row};
 use polars_core::series::SeriesIter;
@@ -27,7 +27,7 @@ pub fn apply_lambda_unknown<'a>(
 
     for _ in 0..df.height() {
         let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
-        let arg = (iter.collect::<Vec<Wrap<AnyValue>>>(),);
+        let arg = (RArray::from_iter(iter),);
         let out: Value = lambda.funcall("call", arg)?;
 
         if out.is_nil() {
@@ -141,7 +141,7 @@ where
     let mut iters = get_iters_skip(df, init_null_count + skip);
     ((init_null_count + skip)..df.height()).map(move |_| {
         let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
-        let tpl = (iter.collect::<Vec<Wrap<AnyValue>>>(),);
+        let tpl = (RArray::from_iter(iter),);
         match lambda.funcall::<_, _, Value>("call", tpl) {
             Ok(val) => val.try_convert::<T>().ok(),
             Err(e) => panic!("ruby function failed {}", e),
@@ -158,7 +158,7 @@ pub fn apply_lambda_with_primitive_out_type<D>(
 ) -> ChunkedArray<D>
 where
     D: RbArrowPrimitiveType,
-    D::Native: Into<Value> + TryConvert,
+    D::Native: IntoValue + TryConvert,
 {
     let skip = usize::from(first_value.is_some());
     if init_null_count == df.height() {
@@ -216,7 +216,7 @@ pub fn apply_lambda_with_list_out_type<'a>(
         let mut iters = get_iters_skip(df, init_null_count + skip);
         let iter = ((init_null_count + skip)..df.height()).map(|_| {
             let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
-            let tpl = (iter.collect::<Vec<Wrap<AnyValue>>>(),);
+            let tpl = (RArray::from_iter(iter),);
             match lambda.funcall::<_, _, Value>("call", tpl) {
                 Ok(val) => match val.funcall::<_, _, Value>("_s", ()) {
                     Ok(val) => val
@@ -254,7 +254,7 @@ pub fn apply_lambda_with_rows_output<'a>(
     let mut iters = get_iters_skip(df, init_null_count + skip);
     let mut row_iter = ((init_null_count + skip)..df.height()).map(|_| {
         let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
-        let tpl = (iter.collect::<Vec<Wrap<AnyValue>>>(),);
+        let tpl = (RArray::from_iter(iter),);
         match lambda.funcall::<_, _, Value>("call", tpl) {
             Ok(val) => {
                 match val.try_convert::<RArray>().ok() {

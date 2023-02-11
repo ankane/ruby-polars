@@ -1,6 +1,6 @@
 use magnus::{
-    class, exception, r_hash::ForEach, Integer, Module, RArray, RFloat, RHash, RString, Symbol,
-    TryConvert, Value, QNIL,
+    class, exception, r_hash::ForEach, ruby_handle::RubyHandle, Integer, IntoValue, Module, RArray,
+    RFloat, RHash, RString, Symbol, TryConvert, Value, QNIL,
 };
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
@@ -98,9 +98,9 @@ impl TryConvert for Wrap<NullValues> {
     }
 }
 
-impl From<Wrap<AnyValue<'_>>> for Value {
-    fn from(w: Wrap<AnyValue<'_>>) -> Self {
-        match w.0 {
+impl IntoValue for Wrap<AnyValue<'_>> {
+    fn into_value_with(self, _: &RubyHandle) -> Value {
+        match self.0 {
             AnyValue::UInt8(v) => Value::from(v),
             AnyValue::UInt16(v) => Value::from(v),
             AnyValue::UInt32(v) => Value::from(v),
@@ -145,11 +145,11 @@ impl From<Wrap<AnyValue<'_>>> for Value {
     }
 }
 
-impl From<Wrap<DataType>> for Value {
-    fn from(w: Wrap<DataType>) -> Self {
+impl IntoValue for Wrap<DataType> {
+    fn into_value_with(self, _: &RubyHandle) -> Value {
         let pl = crate::rb_modules::polars();
 
-        match &w.0 {
+        match self.0 {
             DataType::Int8 => pl.const_get::<_, Value>("Int8").unwrap(),
             DataType::Int16 => pl.const_get::<_, Value>("Int16").unwrap(),
             DataType::Int32 => pl.const_get::<_, Value>("Int32").unwrap(),
@@ -424,9 +424,9 @@ impl ObjectValue {
     }
 }
 
-impl From<ObjectValue> for Value {
-    fn from(val: ObjectValue) -> Self {
-        val.inner
+impl IntoValue for ObjectValue {
+    fn into_value_with(self, _: &RubyHandle) -> Value {
+        self.inner
     }
 }
 

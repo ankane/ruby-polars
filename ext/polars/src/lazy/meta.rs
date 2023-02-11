@@ -1,14 +1,15 @@
-use crate::{RbExpr, RbPolarsErr, RbResult};
+use crate::{RArray, RbExpr, RbPolarsErr, RbResult};
 
 impl RbExpr {
-    pub fn meta_pop(&self) -> Vec<RbExpr> {
-        self.inner
-            .clone()
-            .meta()
-            .pop()
-            .into_iter()
-            .map(RbExpr::from)
-            .collect()
+    pub fn meta_pop(&self) -> RArray {
+        RArray::from_iter(
+            self.inner
+                .clone()
+                .meta()
+                .pop()
+                .into_iter()
+                .map(RbExpr::from),
+        )
     }
 
     pub fn meta_eq(&self, other: &RbExpr) -> bool {
