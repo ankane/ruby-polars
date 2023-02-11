@@ -51,7 +51,6 @@ module Polars
     #   # │ str │
     #   # ╞═════╡
     #   # │ a   │
-    #   # ├╌╌╌╌╌┤
     #   # │ b   │
     #   # └─────┘
     def field(name)
@@ -90,7 +89,6 @@ module Polars
     #   # │ i64 │
     #   # ╞═════╡
     #   # │ 1   │
-    #   # ├╌╌╌╌╌┤
     #   # │ 2   │
     #   # └─────┘
     def rename_fields(names)

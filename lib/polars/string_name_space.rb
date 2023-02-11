@@ -53,14 +53,11 @@ module Polars
     #   # │ date       │
     #   # ╞════════════╡
     #   # │ 2021-04-22 │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 2022-01-04 │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 2022-01-31 │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 2001-07-08 │
     #   # └────────────┘
-    def strptime(datatype, fmt = nil, strict: true, exact: true, cache: true, tz_aware: false)
+    def strptime(datatype, fmt = nil, strict: true, exact: true, cache: true, tz_aware: false, utc: false)
       super
     end
 
@@ -224,10 +221,10 @@ module Polars
     #   s.str.decode("hex")
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [str]
+    #   # Series: '' [binary]
     #   # [
-    #   #         "foo"
-    #   #         "bar"
+    #   #         [binary data]
+    #   #         [binary data]
     #   #         null
     #   # ]
     def decode(encoding, strict: false)
@@ -310,7 +307,6 @@ module Polars
     #   # │ str │
     #   # ╞═════╡
     #   # │ 123 │
-    #   # ├╌╌╌╌╌┤
     #   # │ 678 │
     #   # └─────┘
     def extract(pattern, group_index: 1)
@@ -332,7 +328,7 @@ module Polars
     #   s.str.extract_all('(\d+)')
     #   # =>
     #   # shape: (2,)
-    #   # Series: 'foo' [list]
+    #   # Series: 'foo' [list[str]]
     #   # [
     #   #         ["123", "45"]
     #   #         ["678", "910"]
@@ -417,11 +413,8 @@ module Polars
     #   # │ str        ┆ str         │
     #   # ╞════════════╪═════════════╡
     #   # │ a          ┆ 1           │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ null       ┆ null        │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ c          ┆ null        │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ d          ┆ 4           │
     #   # └────────────┴─────────────┘
     def split_exact(by, n, inclusive: false)
@@ -469,11 +462,8 @@ module Polars
     #   # │ str        ┆ str         │
     #   # ╞════════════╪═════════════╡
     #   # │ foo        ┆ bar         │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ null       ┆ null        │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ foo-bar    ┆ null        │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ foo        ┆ bar baz     │
     #   # └────────────┴─────────────┘
     def splitn(by, n)

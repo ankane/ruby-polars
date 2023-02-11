@@ -22,6 +22,9 @@ module Polars
     # @param exact [Boolean]
     #   - If true, require an exact format match.
     #   - If false, allow the format to match anywhere in the target string.
+    # @param utc [Boolean]
+    #   Parse timezone aware datetimes as UTC. This may be useful if you have data
+    #   with mixed offsets.
     #
     # @return [Expr]
     #
@@ -57,14 +60,11 @@ module Polars
     #   # │ date       │
     #   # ╞════════════╡
     #   # │ 2021-04-22 │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 2022-01-04 │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 2022-01-31 │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 2001-07-08 │
     #   # └────────────┘
-    def strptime(datatype, fmt = nil, strict: true, exact: true, cache: true, tz_aware: false)
+    def strptime(datatype, fmt = nil, strict: true, exact: true, cache: true, tz_aware: false, utc: false)
       if !Utils.is_polars_dtype(datatype)
         raise ArgumentError, "expected: {DataType} got: #{datatype}"
       end
@@ -74,7 +74,7 @@ module Polars
       elsif datatype == :datetime
         # TODO fix
         tu = nil # datatype.tu
-        dtcol = Utils.wrap_expr(_rbexpr.str_parse_datetime(fmt, strict, exact, cache, tz_aware))
+        dtcol = Utils.wrap_expr(_rbexpr.str_parse_datetime(fmt, strict, exact, cache, tz_aware, utc))
         if tu.nil?
           dtcol
         else
@@ -111,11 +111,8 @@ module Polars
     #   # │ str  ┆ u32    ┆ u32    │
     #   # ╞══════╪════════╪════════╡
     #   # │ Café ┆ 5      ┆ 4      │
-    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
     #   # │ null ┆ null   ┆ null   │
-    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
     #   # │ 345  ┆ 3      ┆ 3      │
-    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
     #   # │ 東京 ┆ 6      ┆ 2      │
     #   # └──────┴────────┴────────┘
     def lengths
@@ -146,11 +143,8 @@ module Polars
     #   # │ str  ┆ u32    ┆ u32    │
     #   # ╞══════╪════════╪════════╡
     #   # │ Café ┆ 5      ┆ 4      │
-    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
     #   # │ null ┆ null   ┆ null   │
-    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
     #   # │ 345  ┆ 3      ┆ 3      │
-    #   # ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
     #   # │ 東京 ┆ 6      ┆ 2      │
     #   # └──────┴────────┴────────┘
     def n_chars
@@ -195,7 +189,6 @@ module Polars
     #   # │ str │
     #   # ╞═════╡
     #   # │ CAT │
-    #   # ├╌╌╌╌╌┤
     #   # │ DOG │
     #   # └─────┘
     def to_uppercase
@@ -217,7 +210,6 @@ module Polars
     #   # │ str │
     #   # ╞═════╡
     #   # │ cat │
-    #   # ├╌╌╌╌╌┤
     #   # │ dog │
     #   # └─────┘
     def to_lowercase
@@ -242,9 +234,7 @@ module Polars
     #   # │ str   │
     #   # ╞═══════╡
     #   # │ lead  │
-    #   # ├╌╌╌╌╌╌╌┤
     #   # │ trail │
-    #   # ├╌╌╌╌╌╌╌┤
     #   # │ both  │
     #   # └───────┘
     def strip(matches = nil)
@@ -272,9 +262,7 @@ module Polars
     #   # │ str    │
     #   # ╞════════╡
     #   # │ lead   │
-    #   # ├╌╌╌╌╌╌╌╌┤
     #   # │ trail  │
-    #   # ├╌╌╌╌╌╌╌╌┤
     #   # │ both   │
     #   # └────────┘
     def lstrip(matches = nil)
@@ -302,9 +290,7 @@ module Polars
     #   # │ str   │
     #   # ╞═══════╡
     #   # │  lead │
-    #   # ├╌╌╌╌╌╌╌┤
     #   # │ trail │
-    #   # ├╌╌╌╌╌╌╌┤
     #   # │  both │
     #   # └───────┘
     def rstrip(matches = nil)
@@ -343,21 +329,13 @@ module Polars
     #   # │ str     │
     #   # ╞═════════╡
     #   # │ -0010   │
-    #   # ├╌╌╌╌╌╌╌╌╌┤
     #   # │ -0001   │
-    #   # ├╌╌╌╌╌╌╌╌╌┤
     #   # │ 00000   │
-    #   # ├╌╌╌╌╌╌╌╌╌┤
     #   # │ 00001   │
-    #   # ├╌╌╌╌╌╌╌╌╌┤
     #   # │ ...     │
-    #   # ├╌╌╌╌╌╌╌╌╌┤
     #   # │ 10000   │
-    #   # ├╌╌╌╌╌╌╌╌╌┤
     #   # │ 100000  │
-    #   # ├╌╌╌╌╌╌╌╌╌┤
     #   # │ 1000000 │
-    #   # ├╌╌╌╌╌╌╌╌╌┤
     #   # │ null    │
     #   # └─────────┘
     def zfill(alignment)
@@ -388,11 +366,8 @@ module Polars
     #   # │ str          │
     #   # ╞══════════════╡
     #   # │ cow*****     │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ monkey**     │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ null         │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ hippopotamus │
     #   # └──────────────┘
     def ljust(width, fillchar = " ")
@@ -423,11 +398,8 @@ module Polars
     #   # │ str          │
     #   # ╞══════════════╡
     #   # │ *****cow     │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ **monkey     │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ null         │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ hippopotamus │
     #   # └──────────────┘
     def rjust(width, fillchar = " ")
@@ -460,11 +432,8 @@ module Polars
     #   # │ str         ┆ bool  ┆ bool    │
     #   # ╞═════════════╪═══════╪═════════╡
     #   # │ Crab        ┆ false ┆ false   │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
     #   # │ cat and dog ┆ true  ┆ false   │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
     #   # │ rab$bit     ┆ true  ┆ true    │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
     #   # │ null        ┆ null  ┆ null    │
     #   # └─────────────┴───────┴─────────┘
     def contains(pattern, literal: false, strict: true)
@@ -492,9 +461,7 @@ module Polars
     #   # │ str    ┆ bool       │
     #   # ╞════════╪════════════╡
     #   # │ apple  ┆ false      │
-    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ mango  ┆ true       │
-    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ null   ┆ null       │
     #   # └────────┴────────────┘
     #
@@ -534,9 +501,7 @@ module Polars
     #   # │ str    ┆ bool       │
     #   # ╞════════╪════════════╡
     #   # │ apple  ┆ true       │
-    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ mango  ┆ false      │
-    #   # ├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ null   ┆ null       │
     #   # └────────┴────────────┘
     #
@@ -582,13 +547,9 @@ module Polars
     #   # │ str      │
     #   # ╞══════════╡
     #   # │ 1        │
-    #   # ├╌╌╌╌╌╌╌╌╌╌┤
     #   # │ null     │
-    #   # ├╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 2        │
-    #   # ├╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 2.1      │
-    #   # ├╌╌╌╌╌╌╌╌╌╌┤
     #   # │ true     │
     #   # └──────────┘
     def json_path_match(json_path)
@@ -612,18 +573,16 @@ module Polars
     #   df.select(Polars.col("encoded").str.decode("hex"))
     #   # =>
     #   # shape: (3, 1)
-    #   # ┌─────────┐
-    #   # │ encoded │
-    #   # │ ---     │
-    #   # │ str     │
-    #   # ╞═════════╡
-    #   # │ foo     │
-    #   # ├╌╌╌╌╌╌╌╌╌┤
-    #   # │ bar     │
-    #   # ├╌╌╌╌╌╌╌╌╌┤
-    #   # │ null    │
-    #   # └─────────┘
-    def decode(encoding, strict: false)
+    #   # ┌───────────────┐
+    #   # │ encoded       │
+    #   # │ ---           │
+    #   # │ binary        │
+    #   # ╞═══════════════╡
+    #   # │ [binary data] │
+    #   # │ [binary data] │
+    #   # │ null          │
+    #   # └───────────────┘
+    def decode(encoding, strict: true)
       if encoding == "hex"
         Utils.wrap_expr(_rbexpr.str_hex_decode(strict))
       elsif encoding == "base64"
@@ -651,9 +610,7 @@ module Polars
     #   # │ str     │
     #   # ╞═════════╡
     #   # │ 666f6f  │
-    #   # ├╌╌╌╌╌╌╌╌╌┤
     #   # │ 626172  │
-    #   # ├╌╌╌╌╌╌╌╌╌┤
     #   # │ null    │
     #   # └─────────┘
     def encode(encoding)
@@ -692,7 +649,6 @@ module Polars
     #   # │ str │
     #   # ╞═════╡
     #   # │ 123 │
-    #   # ├╌╌╌╌╌┤
     #   # │ 678 │
     #   # └─────┘
     def extract(pattern, group_index: 1)
@@ -724,7 +680,6 @@ module Polars
     #   # │ list[str]      │
     #   # ╞════════════════╡
     #   # │ ["123", "45"]  │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ ["678", "910"] │
     #   # └────────────────┘
     def extract_all(pattern)
@@ -754,7 +709,6 @@ module Polars
     #   # │ u32          │
     #   # ╞══════════════╡
     #   # │ 5            │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 6            │
     #   # └──────────────┘
     def count_match(pattern)
@@ -781,9 +735,7 @@ module Polars
     #   # │ list[str]             │
     #   # ╞═══════════════════════╡
     #   # │ ["foo", "bar"]        │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ ["foo-bar"]           │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ ["foo", "bar", "baz"] │
     #   # └───────────────────────┘
     def split(by, inclusive: false)
@@ -824,11 +776,8 @@ module Polars
     #   # │ struct[2]   │
     #   # ╞═════════════╡
     #   # │ {"a","1"}   │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ {null,null} │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ {"c",null}  │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ {"d","4"}   │
     #   # └─────────────┘
     def split_exact(by, n, inclusive: false)
@@ -863,11 +812,8 @@ module Polars
     #   # │ struct[2]         │
     #   # ╞═══════════════════╡
     #   # │ {"foo","bar"}     │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ {null,null}       │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ {"foo-bar",null}  │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ {"foo","bar baz"} │
     #   # └───────────────────┘
     def splitn(by, n)
@@ -898,7 +844,6 @@ module Polars
     #   # │ i64 ┆ str    │
     #   # ╞═════╪════════╡
     #   # │ 1   ┆ 123ABC │
-    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤
     #   # │ 2   ┆ abc456 │
     #   # └─────┴────────┘
     def replace(pattern, value, literal: false)
@@ -929,7 +874,6 @@ module Polars
     #   # │ i64 ┆ str     │
     #   # ╞═════╪═════════╡
     #   # │ 1   ┆ -bc-bc  │
-    #   # ├╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
     #   # │ 2   ┆ 123-123 │
     #   # └─────┴─────────┘
     def replace_all(pattern, value, literal: false)
@@ -961,11 +905,8 @@ module Polars
     #   # │ str         ┆ str      │
     #   # ╞═════════════╪══════════╡
     #   # │ pear        ┆ ear      │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
     #   # │ null        ┆ null     │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
     #   # │ papaya      ┆ aya      │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
     #   # │ dragonfruit ┆ uit      │
     #   # └─────────────┴──────────┘
     def slice(offset, length = nil)

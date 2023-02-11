@@ -24,7 +24,6 @@ module Polars
     #   # │ u32 │
     #   # ╞═════╡
     #   # │ 2   │
-    #   # ├╌╌╌╌╌┤
     #   # │ 1   │
     #   # └─────┘
     def lengths
@@ -46,7 +45,6 @@ module Polars
     #   # │ i64    │
     #   # ╞════════╡
     #   # │ 1      │
-    #   # ├╌╌╌╌╌╌╌╌┤
     #   # │ 5      │
     #   # └────────┘
     def sum
@@ -68,7 +66,6 @@ module Polars
     #   # │ i64    │
     #   # ╞════════╡
     #   # │ 1      │
-    #   # ├╌╌╌╌╌╌╌╌┤
     #   # │ 3      │
     #   # └────────┘
     def max
@@ -90,7 +87,6 @@ module Polars
     #   # │ i64    │
     #   # ╞════════╡
     #   # │ 1      │
-    #   # ├╌╌╌╌╌╌╌╌┤
     #   # │ 2      │
     #   # └────────┘
     def min
@@ -112,7 +108,6 @@ module Polars
     #   # │ f64    │
     #   # ╞════════╡
     #   # │ 1.0    │
-    #   # ├╌╌╌╌╌╌╌╌┤
     #   # │ 2.5    │
     #   # └────────┘
     def mean
@@ -138,7 +133,6 @@ module Polars
     #   # │ list[i64] │
     #   # ╞═══════════╡
     #   # │ [1, 2, 3] │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ [1, 2, 9] │
     #   # └───────────┘
     def sort(reverse: false)
@@ -164,7 +158,6 @@ module Polars
     #   # │ list[i64] │
     #   # ╞═══════════╡
     #   # │ [1, 2, 3] │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ [2, 1, 9] │
     #   # └───────────┘
     def reverse
@@ -218,7 +211,6 @@ module Polars
     #   # │ list[str]       │
     #   # ╞═════════════════╡
     #   # │ ["a", "b", "c"] │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ ["x", "y", "z"] │
     #   # └─────────────────┘
     def concat(other)
@@ -258,9 +250,7 @@ module Polars
     #   # │ i64  │
     #   # ╞══════╡
     #   # │ 3    │
-    #   # ├╌╌╌╌╌╌┤
     #   # │ null │
-    #   # ├╌╌╌╌╌╌┤
     #   # │ 1    │
     #   # └──────┘
     def get(index)
@@ -290,9 +280,7 @@ module Polars
     #   # │ i64  │
     #   # ╞══════╡
     #   # │ 3    │
-    #   # ├╌╌╌╌╌╌┤
     #   # │ null │
-    #   # ├╌╌╌╌╌╌┤
     #   # │ 1    │
     #   # └──────┘
     def first
@@ -314,9 +302,7 @@ module Polars
     #   # │ i64  │
     #   # ╞══════╡
     #   # │ 1    │
-    #   # ├╌╌╌╌╌╌┤
     #   # │ null │
-    #   # ├╌╌╌╌╌╌┤
     #   # │ 2    │
     #   # └──────┘
     def last
@@ -341,9 +327,7 @@ module Polars
     #   # │ bool  │
     #   # ╞═══════╡
     #   # │ true  │
-    #   # ├╌╌╌╌╌╌╌┤
     #   # │ false │
-    #   # ├╌╌╌╌╌╌╌┤
     #   # │ true  │
     #   # └───────┘
     def contains(item)
@@ -370,7 +354,6 @@ module Polars
     #   # │ str   │
     #   # ╞═══════╡
     #   # │ a b c │
-    #   # ├╌╌╌╌╌╌╌┤
     #   # │ x y   │
     #   # └───────┘
     def join(separator)
@@ -396,7 +379,6 @@ module Polars
     #   # │ u32 │
     #   # ╞═════╡
     #   # │ 0   │
-    #   # ├╌╌╌╌╌┤
     #   # │ 1   │
     #   # └─────┘
     def arg_min
@@ -422,7 +404,6 @@ module Polars
     #   # │ u32 │
     #   # ╞═════╡
     #   # │ 1   │
-    #   # ├╌╌╌╌╌┤
     #   # │ 0   │
     #   # └─────┘
     def arg_max
@@ -443,7 +424,7 @@ module Polars
     #   s.arr.diff
     #   # =>
     #   # shape: (2,)
-    #   # Series: 'a' [list]
+    #   # Series: 'a' [list[i64]]
     #   # [
     #   #         [null, 1, ... 1]
     #   #         [null, -8, -1]
@@ -464,7 +445,7 @@ module Polars
     #   s.arr.shift
     #   # =>
     #   # shape: (2,)
-    #   # Series: 'a' [list]
+    #   # Series: 'a' [list[i64]]
     #   # [
     #   #         [null, 1, ... 3]
     #   #         [null, 10, 2]
@@ -488,7 +469,7 @@ module Polars
     #   s.arr.slice(1, 2)
     #   # =>
     #   # shape: (2,)
-    #   # Series: 'a' [list]
+    #   # Series: 'a' [list[i64]]
     #   # [
     #   #         [2, 3]
     #   #         [2, 1]
@@ -511,7 +492,7 @@ module Polars
     #   s.arr.head(2)
     #   # =>
     #   # shape: (2,)
-    #   # Series: 'a' [list]
+    #   # Series: 'a' [list[i64]]
     #   # [
     #   #         [1, 2]
     #   #         [10, 2]
@@ -532,7 +513,7 @@ module Polars
     #   s.arr.tail(2)
     #   # =>
     #   # shape: (2,)
-    #   # Series: 'a' [list]
+    #   # Series: 'a' [list[i64]]
     #   # [
     #   #         [3, 4]
     #   #         [2, 1]
@@ -563,7 +544,6 @@ module Polars
     #   # │ struct[3]  │
     #   # ╞════════════╡
     #   # │ {1,2,3}    │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ {1,2,null} │
     #   # └────────────┘
     def to_struct(n_field_strategy: "first_non_null", name_generator: nil)
@@ -598,9 +578,7 @@ module Polars
     #   # │ i64 ┆ i64 ┆ list[f32]  │
     #   # ╞═════╪═════╪════════════╡
     #   # │ 1   ┆ 4   ┆ [1.0, 2.0] │
-    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 8   ┆ 5   ┆ [2.0, 1.0] │
-    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 3   ┆ 2   ┆ [2.0, 1.0] │
     #   # └─────┴─────┴────────────┘
     def eval(expr, parallel: false)

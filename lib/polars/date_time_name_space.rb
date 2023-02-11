@@ -887,18 +887,18 @@ module Polars
     # @example
     #   start = DateTime.new(2020, 3, 1)
     #   stop = DateTime.new(2020, 5, 1)
-    #   date = Polars.date_range(start, stop, "1mo")
+    #   date = Polars.date_range(start, stop, "1mo", time_zone: "UTC")
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [datetime[μs]]
+    #   # Series: '' [datetime[μs, UTC]]
     #   # [
-    #   #         2020-03-01 00:00:00
-    #   #         2020-04-01 00:00:00
-    #   #         2020-05-01 00:00:00
+    #   #         2020-03-01 00:00:00 UTC
+    #   #         2020-04-01 00:00:00 UTC
+    #   #         2020-05-01 00:00:00 UTC
     #   # ]
     #
     # @example
-    #   date.dt.with_time_zone("Europe/London").alias("London")
+    #   date.dt.convert_time_zone("Europe/London").alias("London")
     #   # =>
     #   # shape: (3,)
     #   # Series: 'London' [datetime[μs, Europe/London]]
@@ -907,7 +907,7 @@ module Polars
     #   #         2020-04-01 01:00:00 BST
     #   #         2020-05-01 01:00:00 BST
     #   # ]
-    def with_time_zone(tz)
+    def convert_time_zone(tz)
       super
     end
 
@@ -924,14 +924,14 @@ module Polars
     # @example
     #   start = DateTime.new(2020, 3, 1)
     #   stop = DateTime.new(2020, 5, 1)
-    #   date = Polars.date_range(start, stop, "1mo")
+    #   date = Polars.date_range(start, stop, "1mo", time_zone: "UTC")
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [datetime[μs]]
+    #   # Series: '' [datetime[μs, UTC]]
     #   # [
-    #   #         2020-03-01 00:00:00
-    #   #         2020-04-01 00:00:00
-    #   #         2020-05-01 00:00:00
+    #   #         2020-03-01 00:00:00 UTC
+    #   #         2020-04-01 00:00:00 UTC
+    #   #         2020-05-01 00:00:00 UTC
     #   # ]
     #
     # @example
@@ -946,7 +946,7 @@ module Polars
     #   # ]
     #
     # @example
-    #   date = date.dt.with_time_zone("Europe/London").alias("London")
+    #   date = date.dt.convert_time_zone("Europe/London").alias("London")
     #   # =>
     #   # shape: (3,)
     #   # Series: 'London' [datetime[μs, Europe/London]]
@@ -956,7 +956,7 @@ module Polars
     #   #         2020-05-01 01:00:00 BST
     #   # ]
     #
-    # @example Timestamps have not changed after with_time_zone
+    # @example Timestamps have not changed after convert_time_zone
     #   date.dt.epoch("s")
     #   # =>
     #   # shape: (3,)
@@ -968,7 +968,7 @@ module Polars
     #   # ]
     #
     # @example
-    #   date = date.dt.cast_time_zone("America/New_York").alias("NYC")
+    #   date = date.dt.replace_time_zone("America/New_York").alias("NYC")
     #   # =>
     #   # shape: (3,)
     #   # Series: 'NYC' [datetime[μs, America/New_York]]
@@ -978,7 +978,7 @@ module Polars
     #   #         2020-05-01 01:00:00 EDT
     #   # ]
     #
-    # @example Timestamps have changed after cast_time_zone
+    # @example Timestamps have changed after replace_time_zone
     #   date.dt.epoch("s")
     #   # =>
     #   # shape: (3,)
@@ -988,7 +988,7 @@ module Polars
     #   #         1585717200
     #   #         1588309200
     #   # ]
-    def cast_time_zone(tz)
+    def replace_time_zone(tz)
       super
     end
 

@@ -183,7 +183,7 @@ module Polars
     #   s.arr.diff
     #   # =>
     #   # shape: (2,)
-    #   # Series: 'a' [list]
+    #   # Series: 'a' [list[i64]]
     #   # [
     #   #         [null, 1, ... 1]
     #   #         [null, -8, -1]
@@ -204,7 +204,7 @@ module Polars
     #   s.arr.shift
     #   # =>
     #   # shape: (2,)
-    #   # Series: 'a' [list]
+    #   # Series: 'a' [list[i64]]
     #   # [
     #   #         [null, 1, ... 3]
     #   #         [null, 10, 2]
@@ -228,7 +228,7 @@ module Polars
     #   s.arr.slice(1, 2)
     #   # =>
     #   # shape: (2,)
-    #   # Series: 'a' [list]
+    #   # Series: 'a' [list[i64]]
     #   # [
     #   #         [2, 3]
     #   #         [2, 1]
@@ -249,7 +249,7 @@ module Polars
     #   s.arr.head(2)
     #   # =>
     #   # shape: (2,)
-    #   # Series: 'a' [list]
+    #   # Series: 'a' [list[i64]]
     #   # [
     #   #         [1, 2]
     #   #         [10, 2]
@@ -270,7 +270,7 @@ module Polars
     #   s.arr.tail(2)
     #   # =>
     #   # shape: (2,)
-    #   # Series: 'a' [list]
+    #   # Series: 'a' [list[i64]]
     #   # [
     #   #         [3, 4]
     #   #         [2, 1]
@@ -300,7 +300,6 @@ module Polars
     #   # │ struct[3]  │
     #   # ╞════════════╡
     #   # │ {1,2,3}    │
-    #   # ├╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ {1,2,null} │
     #   # └────────────┘
     def to_struct(n_field_strategy: "first_non_null", name_generator: nil)
@@ -334,9 +333,7 @@ module Polars
     #   # │ i64 ┆ i64 ┆ list[f32]  │
     #   # ╞═════╪═════╪════════════╡
     #   # │ 1   ┆ 4   ┆ [1.0, 2.0] │
-    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 8   ┆ 5   ┆ [2.0, 1.0] │
-    #   # ├╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤
     #   # │ 3   ┆ 2   ┆ [2.0, 1.0] │
     #   # └─────┴─────┴────────────┘
     def eval(expr, parallel: false)
