@@ -24,7 +24,7 @@ pub fn get_mmap_bytes_reader(rb_f: Value) -> RbResult<Box<dyn MmapBytesReader>> 
         Ok(Box::new(Cursor::new(bytes.to_vec())))
     } else {
         let p = rb_f.try_convert::<PathBuf>()?;
-        let f = File::open(p).map_err(|e| Error::runtime_error(e.to_string()))?;
+        let f = File::open(p).map_err(|e| Error::new(exception::runtime_error(), e.to_string()))?;
         Ok(Box::new(f))
     }
 }
