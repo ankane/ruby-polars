@@ -1,6 +1,6 @@
 use magnus::{
-    class, r_hash::ForEach, Integer, Module, RArray, RFloat, RHash, RString, Symbol, TryConvert,
-    Value, QNIL,
+    class, exception, r_hash::ForEach, Integer, Module, RArray, RFloat, RHash, RString, Symbol,
+    TryConvert, Value, QNIL,
 };
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
@@ -797,7 +797,7 @@ pub fn parse_fill_null_strategy(
         "zero" => FillNullStrategy::Zero,
         "one" => FillNullStrategy::One,
         e => {
-            return Err(magnus::Error::runtime_error(format!(
+            return Err(magnus::Error::new(exception::runtime_error(), format!(
                 "strategy must be one of {{'forward', 'backward', 'min', 'max', 'mean', 'zero', 'one'}}, got {}",
                 e,
             )))

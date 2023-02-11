@@ -1,5 +1,4 @@
-use magnus::exception::arg_error;
-use magnus::{Error, RArray, Value};
+use magnus::{exception, Error, RArray, Value};
 use polars::prelude::*;
 use polars::series::IsSorted;
 use std::cell::RefCell;
@@ -288,7 +287,7 @@ impl RbSeries {
         let mut binding = self.series.borrow_mut();
         let res = binding.append(&other.series.borrow());
         if let Err(e) = res {
-            Err(Error::runtime_error(e.to_string()))
+            Err(Error::new(exception::runtime_error(), e.to_string()))
         } else {
             Ok(())
         }
@@ -304,7 +303,7 @@ impl RbSeries {
 
     pub fn new_from_index(&self, index: usize, length: usize) -> RbResult<Self> {
         if index >= self.series.borrow().len() {
-            Err(Error::new(arg_error(), "index is out of bounds"))
+            Err(Error::new(exception::arg_error(), "index is out of bounds"))
         } else {
             Ok(self.series.borrow().new_from_index(index, length).into())
         }
@@ -316,7 +315,10 @@ impl RbSeries {
             let series = self.series.borrow().filter(ca).unwrap();
             Ok(series.into())
         } else {
-            Err(Error::runtime_error("Expected a boolean mask".to_string()))
+            Err(Error::new(
+                exception::runtime_error(),
+                "Expected a boolean mask".to_string(),
+            ))
         }
     }
 

@@ -1,4 +1,4 @@
-use magnus::{Error, RString, Value};
+use magnus::{exception, Error, RString, Value};
 use polars::io::mmap::MmapBytesReader;
 use std::fs::File;
 use std::io::Cursor;
@@ -9,9 +9,10 @@ use crate::RbResult;
 pub fn get_file_like(f: Value, truncate: bool) -> RbResult<File> {
     let str_slice = f.try_convert::<PathBuf>()?;
     let f = if truncate {
-        File::create(str_slice).map_err(|e| Error::runtime_error(e.to_string()))?
+        File::create(str_slice)
+            .map_err(|e| Error::new(exception::runtime_error(), e.to_string()))?
     } else {
-        File::open(str_slice).map_err(|e| Error::runtime_error(e.to_string()))?
+        File::open(str_slice).map_err(|e| Error::new(exception::runtime_error(), e.to_string()))?
     };
     Ok(f)
 }
