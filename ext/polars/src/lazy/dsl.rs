@@ -726,11 +726,11 @@ impl RbExpr {
             .into()
     }
 
-    pub fn str_hex_decode(&self) -> Self {
+    pub fn str_hex_decode(&self, strict: bool) -> Self {
         self.clone()
             .inner
             .map(
-                move |s| s.utf8()?.hex_decode().map(|s| Some(s.into_series())),
+                move |s| s.utf8()?.hex_decode(strict).map(|s| Some(s.into_series())),
                 GetOutput::same_type(),
             )
             .with_fmt("str.hex_decode")
@@ -748,11 +748,15 @@ impl RbExpr {
             .into()
     }
 
-    pub fn str_base64_decode(&self) -> Self {
+    pub fn str_base64_decode(&self, strict: bool) -> Self {
         self.clone()
             .inner
             .map(
-                move |s| s.utf8()?.base64_decode().map(|s| Some(s.into_series())),
+                move |s| {
+                    s.utf8()?
+                        .base64_decode(strict)
+                        .map(|s| Some(s.into_series()))
+                },
                 GetOutput::same_type(),
             )
             .with_fmt("str.base64_decode")

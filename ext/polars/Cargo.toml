@@ -23,6 +23,7 @@ features = [
     "arg_where",
     "asof_join",
     "avro",
+    "binary_encoding",
     "concat_str",
     "cse",
     "csv-file",

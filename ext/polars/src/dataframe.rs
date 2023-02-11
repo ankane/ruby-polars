@@ -877,6 +877,7 @@ impl RbDataFrame {
         Ok(RbDataFrame::new(df))
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn pivot_expr(
         &self,
         values: Vec<String>,

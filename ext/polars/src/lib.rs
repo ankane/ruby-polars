@@ -303,9 +303,9 @@ fn init() -> RbResult<()> {
     class.define_method("str_ends_with", method!(RbExpr::str_ends_with, 1))?;
     class.define_method("str_starts_with", method!(RbExpr::str_starts_with, 1))?;
     class.define_method("str_hex_encode", method!(RbExpr::str_hex_encode, 0))?;
-    class.define_method("str_hex_decode", method!(RbExpr::str_hex_decode, 0))?;
+    class.define_method("str_hex_decode", method!(RbExpr::str_hex_decode, 1))?;
     class.define_method("str_base64_encode", method!(RbExpr::str_base64_encode, 0))?;
-    class.define_method("str_base64_decode", method!(RbExpr::str_base64_decode, 0))?;
+    class.define_method("str_base64_decode", method!(RbExpr::str_base64_decode, 1))?;
     class.define_method(
         "str_json_path_match",
         method!(RbExpr::str_json_path_match, 1),
