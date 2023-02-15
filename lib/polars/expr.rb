@@ -2793,19 +2793,14 @@ module Polars
     #   Lower bound as primitive type or datetime.
     # @param _end [Object]
     #   Upper bound as primitive type or datetime.
-    # @param include_bounds [Boolean]
-    #   False:           Exclude both start and end (default).
-    #   True:            Include both start and end.
-    #   (False, False):  Exclude start and exclude end.
-    #   (True, True):    Include start and include end.
-    #   (False, True):   Exclude start and include end.
-    #   (True, False):   Include start and exclude end.
+    # @param closed ["both", "left", "right", "none"]
+    #   Define which sides of the interval are closed (inclusive).
     #
     # @return [Expr]
     #
     # @example
     #   df = Polars::DataFrame.new({"num" => [1, 2, 3, 4, 5]})
-    #   df.with_column(Polars.col("num").is_between(2, 4))
+    #   df.with_columns(Polars.col("num").is_between(2, 4).alias("is_between"))
     #   # =>
     #   # shape: (5, 2)
     #   # ┌─────┬────────────┐
@@ -2814,22 +2809,65 @@ module Polars
     #   # │ i64 ┆ bool       │
     #   # ╞═════╪════════════╡
     #   # │ 1   ┆ false      │
-    #   # │ 2   ┆ false      │
+    #   # │ 2   ┆ true       │
+    #   # │ 3   ┆ true       │
+    #   # │ 4   ┆ true       │
+    #   # │ 5   ┆ false      │
+    #   # └─────┴────────────┘
+    #
+    # @example Use the `closed` argument to include or exclude the values at the bounds:
+    #   df.with_columns(
+    #     Polars.col("num").is_between(2, 4, closed: "left").alias("is_between")
+    #   )
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────┬────────────┐
+    #   # │ num ┆ is_between │
+    #   # │ --- ┆ ---        │
+    #   # │ i64 ┆ bool       │
+    #   # ╞═════╪════════════╡
+    #   # │ 1   ┆ false      │
+    #   # │ 2   ┆ true       │
     #   # │ 3   ┆ true       │
     #   # │ 4   ┆ false      │
     #   # │ 5   ┆ false      │
     #   # └─────┴────────────┘
-    def is_between(start, _end, include_bounds: false)
-      if include_bounds == false || include_bounds == [false, false]
-        ((self > start) & (self < _end)).alias("is_between")
-      elsif include_bounds == true || include_bounds == [true, true]
-        ((self >= start) & (self <= _end)).alias("is_between")
-      elsif include_bounds == [false, true]
-        ((self > start) & (self <= _end)).alias("is_between")
-      elsif include_bounds == [true, false]
-        ((self >= start) & (self < _end)).alias("is_between")
+    #
+    # @example You can also use strings as well as numeric/temporal values:
+    #   df = Polars::DataFrame.new({"a" => ["a", "b", "c", "d", "e"]})
+    #   df.with_columns(
+    #     Polars.col("a")
+    #       .is_between(Polars.lit("a"), Polars.lit("c"), closed: "both")
+    #       .alias("is_between")
+    #   )
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────┬────────────┐
+    #   # │ a   ┆ is_between │
+    #   # │ --- ┆ ---        │
+    #   # │ str ┆ bool       │
+    #   # ╞═════╪════════════╡
+    #   # │ a   ┆ true       │
+    #   # │ b   ┆ true       │
+    #   # │ c   ┆ true       │
+    #   # │ d   ┆ false      │
+    #   # │ e   ┆ false      │
+    #   # └─────┴────────────┘
+    def is_between(start, _end, closed: "both")
+      start = Utils.expr_to_lit_or_expr(start, str_to_lit: false)
+      _end = Utils.expr_to_lit_or_expr(_end, str_to_lit: false)
+
+      case closed
+      when "none"
+        (self > start) & (self < _end)
+      when "both"
+        (self >= start) & (self <= _end)
+      when "right"
+        (self > start) & (self <= _end)
+      when "left"
+        (self >= start) & (self < _end)
       else
-        raise ArgumentError, "include_bounds should be a bool or [bool, bool]."
+        raise ArgumentError, "closed must be one of 'left', 'right', 'both', or 'none'"
       end
     end
 
