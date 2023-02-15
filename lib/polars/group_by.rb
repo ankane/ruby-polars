@@ -1,6 +1,8 @@
 module Polars
   # Starts a new GroupBy operation.
   class GroupBy
+    include Enumerable
+
     # @private
     attr_accessor :_df, :_dataframe_class, :by, :maintain_order
 
@@ -12,8 +14,65 @@ module Polars
       self.maintain_order = maintain_order
     end
 
-    # def each
-    # end
+    # Allows iteration over the groups of the groupby operation.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => ["a", "a", "b"], "bar" => [1, 2, 3]})
+    #   df.groupby("foo").to_h
+    #   # =>
+    #   # {"a"=>shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ bar │
+    #   # │ --- ┆ --- │
+    #   # │ str ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ a   ┆ 1   │
+    #   # │ a   ┆ 2   │
+    #   # └─────┴─────┘, "b"=>shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ bar │
+    #   # │ --- ┆ --- │
+    #   # │ str ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ b   ┆ 3   │
+    #   # └─────┴─────┘}
+    def each
+      return to_enum(:each) unless block_given?
+
+      temp_col = "__POLARS_GB_GROUP_INDICES"
+      groups_df =
+        Utils.wrap_df(_df)
+          .lazy
+          .with_row_count(name: temp_col)
+          .groupby(by, maintain_order: maintain_order)
+          .agg(Polars.col(temp_col))
+          .collect(no_optimization: true)
+
+      group_names = groups_df.select(Polars.all.exclude(temp_col))
+
+      # When grouping by a single column, group name is a single value
+      # When grouping by multiple columns, group name is a tuple of values
+      if by.is_a?(String) || by.is_a?(Expr)
+        _group_names = group_names.to_series.each
+      else
+        _group_names = group_names.iter_rows
+      end
+
+      _group_indices = groups_df.select(temp_col).to_series
+      _current_index = 0
+
+      while _current_index < _group_indices.length
+        df = _dataframe_class._from_rbdf(_df)
+
+        group_name = _group_names.next
+        group_data = df[_group_indices[_current_index]]
+        _current_index += 1
+
+        yield group_name, group_data
+      end
+    end
 
     # Apply a custom/user-defined function (UDF) over the groups as a sub-DataFrame.
     #

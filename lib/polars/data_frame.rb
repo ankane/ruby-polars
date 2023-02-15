@@ -1742,9 +1742,6 @@ module Polars
       if !Utils.bool?(maintain_order)
         raise TypeError, "invalid input for groupby arg `maintain_order`: #{maintain_order}."
       end
-      if by.is_a?(String)
-        by = [by]
-      end
       GroupBy.new(
         _df,
         by,

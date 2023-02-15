@@ -114,6 +114,8 @@ impl IntoValue for Wrap<AnyValue<'_>> {
             AnyValue::Null => *QNIL,
             AnyValue::Boolean(v) => Value::from(v),
             AnyValue::Utf8(v) => Value::from(v),
+            AnyValue::Utf8Owned(_v) => todo!(),
+            AnyValue::Categorical(_idx, _rev, _arr) => todo!(),
             AnyValue::Date(v) => class::time()
                 .funcall::<_, _, Value>("at", (v * 86400,))
                 .unwrap()
@@ -140,7 +142,15 @@ impl IntoValue for Wrap<AnyValue<'_>> {
                     t.funcall::<_, _, Value>("utc", ()).unwrap()
                 }
             }
-            _ => todo!(),
+            AnyValue::Duration(_v, _tu) => todo!(),
+            AnyValue::Time(_v) => todo!(),
+            AnyValue::List(v) => RbSeries::new(v).to_a().into_value(),
+            ref _av @ AnyValue::Struct(_, _, _flds) => todo!(),
+            AnyValue::StructOwned(_payload) => todo!(),
+            AnyValue::Object(_v) => todo!(),
+            AnyValue::ObjectOwned(_v) => todo!(),
+            AnyValue::Binary(_v) => todo!(),
+            AnyValue::BinaryOwned(_v) => todo!(),
         }
     }
 }

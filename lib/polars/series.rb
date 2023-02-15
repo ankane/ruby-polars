@@ -259,6 +259,17 @@ module Polars
       0 - self
     end
 
+    # Returns an enumerator.
+    #
+    # @return [Object]
+    def each
+      return to_enum(:each) unless block_given?
+
+      length.times do |i|
+        yield self[i]
+      end
+    end
+
     # Returns elements of the Series.
     #
     # @return [Object]
