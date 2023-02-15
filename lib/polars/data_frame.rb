@@ -4336,7 +4336,7 @@ module Polars
         if n_rows > 1
           raise TooManyRowsReturned, "Predicate #{by_predicate} returned #{n_rows} rows"
         elsif n_rows == 0
-          raise NoRowsReturned, "Predicate <{by_predicate!s}> returned no rows"
+          raise NoRowsReturned, "Predicate #{by_predicate} returned no rows"
         end
         row = rows[0]
         if named
