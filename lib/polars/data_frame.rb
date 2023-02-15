@@ -4328,6 +4328,11 @@ module Polars
 
     # Convert columnar data to rows as Ruby arrays.
     #
+    # @param named [Boolean]
+    #   Return hashes instead of arrays. The hashes are a mapping of
+    #   column name to row value. This is more expensive than returning an
+    #   array, but allows for accessing values by column name.
+    #
     # @return [Array]
     #
     # @example
@@ -4339,8 +4344,18 @@ module Polars
     #   )
     #   df.rows
     #   # => [[1, 2], [3, 4], [5, 6]]
-    def rows
-      _df.row_tuples
+    # @example
+    #   df.rows(named: true)
+    #   # => [{"a"=>1, "b"=>2}, {"a"=>3, "b"=>4}, {"a"=>5, "b"=>6}]
+    def rows(named: false)
+      if named
+        columns = columns()
+        _df.row_tuples.map do |v|
+          columns.zip(v).to_h
+        end
+      else
+        _df.row_tuples
+      end
     end
 
     # Shrink DataFrame memory usage.
