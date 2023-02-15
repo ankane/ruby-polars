@@ -4327,7 +4327,7 @@ module Polars
         else
           row
         end
-      elsif by_predicate.is_a?(Expr)
+      elsif !by_predicate.nil?
         if !by_predicate.is_a?(Expr)
           raise TypeError, "Expected by_predicate to be an expression; found #{by_predicate.class.name}"
         end
