@@ -201,8 +201,6 @@ module Polars
       _dataframe_class._from_rbdf(df._df)
     end
 
-    # pivot is deprecated
-
     # Aggregate the first values in the group.
     #
     # @return [DataFrame]
