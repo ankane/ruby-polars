@@ -4381,6 +4381,67 @@ module Polars
       end
     end
 
+    # Returns an iterator over the DataFrame of rows of python-native values.
+    #
+    # @param named [Boolean]
+    #   Return hashes instead of arrays. The hashes are a mapping of
+    #   column name to row value. This is more expensive than returning an
+    #   array, but allows for accessing values by column name.
+    # @param buffer_size [Integer]
+    #   Determines the number of rows that are buffered internally while iterating
+    #   over the data; you should only modify this in very specific cases where the
+    #   default value is determined not to be a good fit to your access pattern, as
+    #   the speedup from using the buffer is significant (~2-4x). Setting this
+    #   value to zero disables row buffering.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 3, 5],
+    #       "b" => [2, 4, 6]
+    #     }
+    #   )
+    #   df.iter_rows.map { |row| row[0] }
+    #   # => [1, 3, 5]
+    #
+    # @example
+    #   df.iter_rows(named: true).map { |row| row["b"] }
+    #   # => [2, 4, 6]
+    def iter_rows(named: false, buffer_size: 500, &block)
+      return to_enum(:iter_rows, named: named, buffer_size: buffer_size) unless block_given?
+
+      # load into the local namespace for a modest performance boost in the hot loops
+      columns = columns()
+
+      # note: buffering rows results in a 2-4x speedup over individual calls
+      # to ".row(i)", so it should only be disabled in extremely specific cases.
+      if buffer_size
+        offset = 0
+        while offset < height
+          zerocopy_slice = slice(offset, buffer_size)
+          rows_chunk = zerocopy_slice.rows(named: false)
+          if named
+            rows_chunk.each do |row|
+              yield columns.zip(row).to_h
+            end
+          else
+            rows_chunk.each(&block)
+          end
+          offset += buffer_size
+        end
+      elsif named
+        height.times do |i|
+          yield columns.zip(row(i)).to_h
+        end
+      else
+        height.times do |i|
+          yield row(i)
+        end
+      end
+    end
+
     # Shrink DataFrame memory usage.
     #
     # Shrinks to fit the exact capacity needed to hold the data.
