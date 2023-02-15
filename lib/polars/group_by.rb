@@ -12,6 +12,9 @@ module Polars
       self.maintain_order = maintain_order
     end
 
+    # def each
+    # end
+
     # Apply a custom/user-defined function (UDF) over the groups as a sub-DataFrame.
     #
     # Implementing logic using a Ruby function is almost always _significantly_
