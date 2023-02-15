@@ -20,7 +20,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => ["a", "a", "b"], "bar" => [1, 2, 3]})
-    #   df.groupby("foo").to_h
+    #   df.groupby("foo", maintain_order: true).to_h
     #   # =>
     #   # {"a"=>shape: (2, 2)
     #   # ┌─────┬─────┐
