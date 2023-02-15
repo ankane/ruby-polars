@@ -4280,6 +4280,10 @@ module Polars
     #   Row index.
     # @param by_predicate [Object]
     #   Select the row according to a given expression/predicate.
+    # @param named [Boolean]
+    #   Return a hash instead of an array. The hash is a mapping of
+    #   column name to row value. This is more expensive than returning an
+    #   array, but allows for accessing values by column name.
     #
     # @return [Object]
     #
@@ -4302,17 +4306,31 @@ module Polars
     #   df.row(2)
     #   # => [3, 8, "c"]
     #
+    # @example Get a hash instead with a mapping of column names to row values
+    #   df.row(2, named: true)
+    #   # => {"foo"=>3, "bar"=>8, "ham"=>"c"}
+    #
     # @example Return the row that matches the given predicate
     #   df.row(by_predicate: Polars.col("ham") == "b")
     #   # => [2, 7, "b"]
-    def row(index = nil, by_predicate: nil)
+    def row(index = nil, by_predicate: nil, named: false)
       if !index.nil? && !by_predicate.nil?
         raise ArgumentError, "Cannot set both 'index' and 'by_predicate'; mutually exclusive"
       elsif index.is_a?(Expr)
         raise TypeError, "Expressions should be passed to the 'by_predicate' param"
-      elsif index.is_a?(Integer)
-        _df.row_tuple(index)
+      end
+
+      if !index.nil?
+        row = _df.row_tuple(index)
+        if named
+          columns.zip(row).to_h
+        else
+          row
+        end
       elsif by_predicate.is_a?(Expr)
+        if !by_predicate.is_a?(Expr)
+          raise TypeError, "Expected by_predicate to be an expression; found #{by_predicate.class.name}"
+        end
         rows = filter(by_predicate).rows
         n_rows = rows.length
         if n_rows > 1
@@ -4320,7 +4338,12 @@ module Polars
         elsif n_rows == 0
           raise NoRowsReturned, "Predicate <{by_predicate!s}> returned no rows"
         end
-        rows[0]
+        row = rows[0]
+        if named
+          columns.zip(row).to_h
+        else
+          row
+        end
       else
         raise ArgumentError, "One of 'index' or 'by_predicate' must be set"
       end

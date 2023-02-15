@@ -1,7 +1,7 @@
 ## 0.3.0 (unreleased)
 
 - Updated Polars to 0.27.1
-- Added `named` option to `rows` method
+- Added `named` option to `row` and `rows` methods
 - Replaced `include_bounds` option with `closed` for `is_between` method
 
 ## 0.2.5 (2023-02-01)
