@@ -1,7 +1,7 @@
 ## 0.3.0 (unreleased)
 
 - Updated Polars to 0.27.1
-- Added `each` method to `Series` and `GroupBy`
+- Added `each` method to `Series`, `DataFrame`, and `GroupBy`
 - Added `iter_rows` method to `DataFrame`
 - Added `named` option to `row` and `rows` methods
 - Replaced `include_bounds` option with `closed` for `is_between` method

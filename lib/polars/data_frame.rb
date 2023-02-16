@@ -527,8 +527,12 @@ module Polars
       columns.include?(name)
     end
 
-    # def each
-    # end
+    # Returns an enumerator.
+    #
+    # @return [Object]
+    def each(&block)
+      get_columns.each(&block)
+    end
 
     # Returns subset of the DataFrame.
     #
