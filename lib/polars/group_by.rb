@@ -1,8 +1,6 @@
 module Polars
   # Starts a new GroupBy operation.
   class GroupBy
-    include Enumerable
-
     # @private
     attr_accessor :_df, :_dataframe_class, :by, :maintain_order
 
@@ -20,7 +18,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => ["a", "a", "b"], "bar" => [1, 2, 3]})
-    #   df.groupby("foo", maintain_order: true).to_h
+    #   df.groupby("foo", maintain_order: true).each.to_h
     #   # =>
     #   # {"a"=>shape: (2, 2)
     #   # ┌─────┬─────┐
