@@ -1,4 +1,4 @@
-## 0.3.0 (unreleased)
+## 0.3.0 (2023-02-15)
 
 - Updated Polars to 0.27.1
 - Added `each` method to `Series`, `DataFrame`, and `GroupBy`
