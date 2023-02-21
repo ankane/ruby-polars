@@ -1851,6 +1851,8 @@ module Polars
             Float32 => Numo::SFloat,
             Float64 => Numo::DFloat
           }.fetch(dtype).cast(to_a)
+        elsif is_boolean
+          Numo::Bit.cast(to_a)
         else
           _s.to_numo
         end

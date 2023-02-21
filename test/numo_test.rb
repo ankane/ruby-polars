@@ -19,6 +19,12 @@ class NumoTest < Minitest::Test
     assert_equal s.to_a, s.to_numo.to_a
   end
 
+  def test_series_bool
+    s = Polars::Series.new([true, false, true])
+    assert_kind_of Numo::Bit, s.to_numo
+    assert_equal [1, 0, 1], s.to_numo.to_a
+  end
+
   def test_series_str
     s = Polars::Series.new(["one", "two", "three"])
     assert_kind_of Numo::RObject, s.to_numo
