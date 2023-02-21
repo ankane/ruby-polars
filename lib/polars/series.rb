@@ -1834,20 +1834,26 @@ module Polars
     #   # Numo::Int64#shape=[3]
     #   # [1, 2, 3]
     def to_numo
-      if !has_validity && is_numeric
-        # TODO make more efficient
-        {
-          UInt8 => Numo::UInt8,
-          UInt16 => Numo::UInt16,
-          UInt32 => Numo::UInt32,
-          UInt64 => Numo::UInt64,
-          Int8 => Numo::Int8,
-          Int16 => Numo::Int16,
-          Int32 => Numo::Int32,
-          Int64 => Numo::Int64,
-          Float32 => Numo::SFloat,
-          Float64 => Numo::DFloat
-        }.fetch(dtype).cast(to_a)
+      if !has_validity
+        if is_numeric
+          # TODO make more efficient
+          {
+            UInt8 => Numo::UInt8,
+            UInt16 => Numo::UInt16,
+            UInt32 => Numo::UInt32,
+            UInt64 => Numo::UInt64,
+            Int8 => Numo::Int8,
+            Int16 => Numo::Int16,
+            Int32 => Numo::Int32,
+            Int64 => Numo::Int64,
+            Float32 => Numo::SFloat,
+            Float64 => Numo::DFloat
+          }.fetch(dtype).cast(to_a)
+        else
+          raise Todo
+        end
+      elsif is_numeric
+        _s.to_numo
       else
         raise Todo
       end

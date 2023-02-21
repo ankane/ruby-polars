@@ -6,6 +6,7 @@ mod error;
 mod file;
 mod lazy;
 mod list_construction;
+mod numo;
 mod object;
 mod prelude;
 pub(crate) mod rb_modules;
@@ -782,6 +783,9 @@ fn init() -> RbResult<()> {
     class.define_method("lt_eq_f32", method!(RbSeries::lt_eq_f32, 1))?;
     class.define_method("lt_eq_f64", method!(RbSeries::lt_eq_f64, 1))?;
     // class.define_method("lt_eq_str", method!(RbSeries::lt_eq_str, 1))?;
+
+    // npy
+    class.define_method("to_numo", method!(RbSeries::to_numo, 0))?;
 
     let class = module.define_class("RbWhen", Default::default())?;
     class.define_method("_then", method!(RbWhen::then, 1))?;

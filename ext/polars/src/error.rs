@@ -43,3 +43,11 @@ impl ComputeError {
         Error::new(exception::runtime_error(), message)
     }
 }
+
+#[macro_export]
+macro_rules! raise_err(
+    ($msg:expr, $err:ident) => {{
+        Err(PolarsError::$err($msg.into())).map_err(RbPolarsErr::from)?;
+        unreachable!()
+    }}
+);
