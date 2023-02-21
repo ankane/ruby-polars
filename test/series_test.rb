@@ -674,4 +674,9 @@ class SeriesTest < Minitest::Test
     s = Polars::Series.new([1, 2, 3])
     assert_series [1, 2, 3], s.shrink_dtype, dtype: Polars::Int8
   end
+
+  def test_apply
+    s = Polars::Series.new([1, 2, 3])
+    assert_series [1, 4, 9], s.apply { |v| v**2 }
+  end
 end
