@@ -308,6 +308,12 @@ Parquet
 df.write_parquet("file.parquet")
 ```
 
+Numo array [unreleased]
+
+```ruby
+df.to_numo
+```
+
 ## Types
 
 You can specify column types when creating a data frame
