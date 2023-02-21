@@ -2,8 +2,6 @@
 
 :fire: Blazingly fast DataFrames for Ruby, powered by [Polars](https://github.com/pola-rs/polars)
 
-Uses [Vega](https://github.com/ankane/vega-ruby) for visualization
-
 [![Build Status](https://github.com/ankane/polars-ruby/workflows/build/badge.svg?branch=master)](https://github.com/ankane/polars-ruby/actions)
 
 ## Installation
