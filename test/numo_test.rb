@@ -9,7 +9,7 @@ class NumoTest < Minitest::Test
 
   def test_series_int_nil
     s = Polars::Series.new([1, nil, 3])
-    assert_kind_of Numo::Float64, s.to_numo
+    assert_kind_of Numo::DFloat, s.to_numo
     assert s.to_numo[1].nan?
   end
 
