@@ -6,6 +6,7 @@ use polars::io::mmap::ReaderBytes;
 use polars::io::RowCount;
 use polars::prelude::pivot::{pivot, pivot_stable};
 use polars::prelude::*;
+use polars_core::utils::try_get_supertype;
 use std::cell::RefCell;
 use std::io::{BufWriter, Cursor};
 use std::ops::Deref;
@@ -491,6 +492,25 @@ impl RbDataFrame {
             )
         }))
         .into()
+    }
+
+    pub fn to_numo(&self) -> Option<Value> {
+        let mut st = None;
+        for s in self.df.borrow().iter() {
+            let dt_i = s.dtype();
+            match st {
+                None => st = Some(dt_i.clone()),
+                Some(ref mut st) => {
+                    *st = try_get_supertype(st, dt_i).ok()?;
+                }
+            }
+        }
+        let st = st?;
+
+        match st {
+            // TODO
+            _ => None,
+        }
     }
 
     pub fn write_parquet(

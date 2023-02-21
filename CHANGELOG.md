@@ -1,6 +1,6 @@
 ## 0.3.1 (unreleased)
 
-- Added `to_numo` method to `Series`
+- Added `to_numo` method to `Series` and `DataFrame`
 
 ## 0.3.0 (2023-02-15)
 

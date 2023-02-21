@@ -699,8 +699,26 @@ module Polars
       end
     end
 
-    # def to_numo
-    # end
+    # Convert DataFrame to a 2D Numo array.
+    #
+    # This operation clones data.
+    #
+    # @return [Numo::NArray]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"foo" => [1, 2, 3], "bar" => [6, 7, 8], "ham" => ["a", "b", "c"]}
+    #   )
+    #   df.to_numo.class
+    #   # => Numo::RObject
+    def to_numo
+      out = _df.to_numo
+      if out.nil?
+        Numo::NArray.vstack(width.times.map { |i| to_series(i).to_numo }).transpose
+      else
+        out
+      end
+    end
 
     # no to_pandas
 
