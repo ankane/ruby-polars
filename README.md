@@ -2,6 +2,8 @@
 
 :fire: Blazingly fast DataFrames for Ruby, powered by [Polars](https://github.com/pola-rs/polars)
 
+Uses [Vega](https://github.com/ankane/vega-ruby) for visualization
+
 [![Build Status](https://github.com/ankane/polars-ruby/workflows/build/badge.svg?branch=master)](https://github.com/ankane/polars-ruby/actions)
 
 ## Installation
@@ -244,6 +246,38 @@ Multiple groups
 
 ```ruby
 df.groupby(["a", "b"]).count
+```
+
+## Visualization [unreleased]
+
+Add [Vega](https://github.com/ankane/vega-ruby) to your application’s Gemfile:
+
+```ruby
+gem "vega"
+```
+
+And use:
+
+```ruby
+df.plot("a", "b")
+```
+
+Specify the chart type (`line`, `pie`, `column`, `bar`, `area`, or `scatter`)
+
+```ruby
+df.plot("a", "b", type: "pie")
+```
+
+Group data
+
+```ruby
+df.groupby("c").plot("a", "b")
+```
+
+Stacked columns or bars
+
+```ruby
+df.groupby("c").plot("a", "b", stacked: true)
 ```
 
 ## Combining Data Frames

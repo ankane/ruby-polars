@@ -1778,6 +1778,7 @@ module Polars
     def is_datelike
       [Date, Datetime, Duration, Time].include?(dtype)
     end
+    alias_method :datelike?, :is_datelike
 
     # Check if this Series has floating point numbers.
     #

@@ -1,6 +1,8 @@
 module Polars
   # Two-dimensional data structure representing data as a table with rows and columns.
   class DataFrame
+    include Plot
+
     # @private
     attr_accessor :_df
 
@@ -604,10 +606,10 @@ module Polars
           return Slice.new(self).apply(item)
         end
 
-        if Utils.is_str_sequence(item, allow_str: false)
+        if item.is_a?(Array) && item.all? { |v| Utils.strlike?(v) }
           # select multiple columns
           # df[["foo", "bar"]]
-          return _from_rbdf(_df.select(item))
+          return _from_rbdf(_df.select(item.map(&:to_s)))
         end
 
         if Utils.is_int_sequence(item)
@@ -689,7 +691,8 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new({"foo" => [1, 2, 3], "bar" => [4, 5, 6]})
     #   df.to_hashes
-    #   [{'foo': 1, 'bar': 4}, {'foo': 2, 'bar': 5}, {'foo': 3, 'bar': 6}]
+    #   # =>
+    #   # [{"foo"=>1, "bar"=>4}, {"foo"=>2, "bar"=>5}, {"foo"=>3, "bar"=>6}]
     def to_hashes
       rbdf = _df
       names = columns

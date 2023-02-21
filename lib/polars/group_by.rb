@@ -571,5 +571,16 @@ module Polars
     def agg_list
       agg(Polars.all.list)
     end
+
+    # Plot data.
+    #
+    # @return [Vega::LiteChart]
+    def plot(*args, **options)
+      raise ArgumentError, "Multiple groups not supported" if by.is_a?(Array) && by.size > 1
+      # same message as Ruby
+      raise ArgumentError, "unknown keyword: :group" if options.key?(:group)
+
+      Utils.wrap_df(_df).plot(*args, **options, group: by)
+    end
   end
 end
