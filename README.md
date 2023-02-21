@@ -246,38 +246,6 @@ Multiple groups
 df.groupby(["a", "b"]).count
 ```
 
-## Visualization [unreleased]
-
-Add [Vega](https://github.com/ankane/vega-ruby) to your application’s Gemfile:
-
-```ruby
-gem "vega"
-```
-
-And use:
-
-```ruby
-df.plot("a", "b")
-```
-
-Specify the chart type (`line`, `pie`, `column`, `bar`, `area`, or `scatter`)
-
-```ruby
-df.plot("a", "b", type: "pie")
-```
-
-Group data
-
-```ruby
-df.groupby("c").plot("a", "b")
-```
-
-Stacked columns or bars
-
-```ruby
-df.groupby("c").plot("a", "b", stacked: true)
-```
-
 ## Combining Data Frames
 
 Add rows
@@ -379,6 +347,38 @@ Cast a column
 
 ```ruby
 df["a"].cast(Polars::Int32)
+```
+
+## Visualization [unreleased]
+
+Add [Vega](https://github.com/ankane/vega-ruby) to your application’s Gemfile:
+
+```ruby
+gem "vega"
+```
+
+And use:
+
+```ruby
+df.plot("a", "b")
+```
+
+Specify the chart type (`line`, `pie`, `column`, `bar`, `area`, or `scatter`)
+
+```ruby
+df.plot("a", "b", type: "pie")
+```
+
+Group data
+
+```ruby
+df.groupby("c").plot("a", "b")
+```
+
+Stacked columns or bars
+
+```ruby
+df.groupby("c").plot("a", "b", stacked: true)
 ```
 
 ## History
