@@ -1,12 +1,20 @@
 require_relative "test_helper"
 
 class PlotTest < Minitest::Test
-  def test_defaults
-    today = Date.today
-    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3], "c" => [today - 2, today - 1, today]})
+  def test_default_type_column
+    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
     assert_plot_type "column", df.plot("a", "b")
-    assert_plot_type "scatter", df.plot("b", "b")
-    assert_plot_type "line", df.plot("c", "b")
+  end
+
+  def test_default_type_scatter
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
+    assert_plot_type "scatter", df.plot("a", "b")
+  end
+
+  def test_default_type_line
+    today = Date.today
+    df = Polars::DataFrame.new({"a" => [today - 2, today - 1, today], "b" => [1, 2, 3]})
+    assert_plot_type "line", df.plot("a", "b")
   end
 
   def test_default_columns
