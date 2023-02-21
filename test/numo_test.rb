@@ -9,7 +9,7 @@ class NumoTest < Minitest::Test
 
   def test_series_float
     s = Polars::Series.new([1.5, 2.5, 3.5])
-    assert_kind_of Numo::Float64, s.to_numo
+    assert_kind_of Numo::DFloat, s.to_numo
     assert_equal s.to_a, s.to_numo.to_a
   end
 end
