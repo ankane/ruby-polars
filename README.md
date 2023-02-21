@@ -316,10 +316,10 @@ df.to_dummies
 
 ## Conversion
 
-Array of rows
+Array of hashes
 
 ```ruby
-df.rows
+df.rows(named: true)
 ```
 
 Hash of series
