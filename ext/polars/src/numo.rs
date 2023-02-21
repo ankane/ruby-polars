@@ -10,7 +10,14 @@ impl RbSeries {
         let s = &self.series.borrow();
         match s.dtype() {
             DataType::Utf8 => {
-                todo!()
+                let ca = s.utf8().unwrap();
+
+                // TODO make more efficient
+                let np_arr = RArray::from_iter(ca.into_iter());
+                class::object()
+                    .const_get::<_, RModule>("Numo")?
+                    .const_get::<_, RClass>("RObject")?
+                    .funcall("cast", (np_arr,))
             }
             dt if dt.is_numeric() => {
                 if s.bit_repr_is_large() {

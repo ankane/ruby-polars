@@ -1835,7 +1835,9 @@ module Polars
     #   # [1, 2, 3]
     def to_numo
       if !has_validity
-        if is_numeric
+        if is_datelike
+          raise Todo
+        elsif is_numeric
           # TODO make more efficient
           {
             UInt8 => Numo::UInt8,
@@ -1850,12 +1852,12 @@ module Polars
             Float64 => Numo::DFloat
           }.fetch(dtype).cast(to_a)
         else
-          raise Todo
+          _s.to_numo
         end
-      elsif is_numeric
-        _s.to_numo
-      else
+      elsif is_datelike
         raise Todo
+      else
+        _s.to_numo
       end
     end
 

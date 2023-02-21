@@ -18,4 +18,10 @@ class NumoTest < Minitest::Test
     assert_kind_of Numo::DFloat, s.to_numo
     assert_equal s.to_a, s.to_numo.to_a
   end
+
+  def test_series_str
+    s = Polars::Series.new(["one", "two", "three"])
+    assert_kind_of Numo::RObject, s.to_numo
+    assert_equal s.to_a, s.to_numo.to_a
+  end
 end
