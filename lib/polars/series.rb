@@ -1823,8 +1823,35 @@ module Polars
     # def view
     # end
 
-    # def to_numo
-    # end
+    # Convert this Series to a Numo array. This operation clones data but is completely safe.
+    #
+    # @return [Numo::NArray]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.to_numo
+    #   # =>
+    #   # Numo::Int64#shape=[3]
+    #   # [1, 2, 3]
+    def to_numo
+      if !has_validity && is_numeric
+        # TODO make more efficient
+        {
+          UInt8 => Numo::UInt8,
+          UInt16 => Numo::UInt16,
+          UInt32 => Numo::UInt32,
+          UInt64 => Numo::UInt64,
+          Int8 => Numo::Int8,
+          Int16 => Numo::Int16,
+          Int32 => Numo::Int32,
+          Int64 => Numo::Int64,
+          Float32 => Numo::SFloat,
+          Float64 => Numo::DFloat
+        }.fetch(dtype).cast(to_a)
+      else
+        raise Todo
+      end
+    end
 
     # Set masked values.
     #

@@ -1,3 +1,7 @@
+## 0.3.1 (unreleased)
+
+- Added `to_numo` method to `Series`
+
 ## 0.3.0 (2023-02-15)
 
 - Updated Polars to 0.27.1
