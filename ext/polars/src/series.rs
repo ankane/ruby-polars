@@ -529,7 +529,7 @@ impl RbSeries {
                 DataType::Null | DataType::Unknown => {
                     panic!("to_a not implemented for null/unknown")
                 }
-                _ => todo!()
+                _ => todo!(),
             };
             rblist
         }
