@@ -84,6 +84,8 @@ module Polars
 
   # Calendar date and time type.
   class Datetime < TemporalType
+    attr_reader :tu
+
     def initialize(time_unit = "us", time_zone = nil)
       @tu = time_unit || "us"
       @time_zone = time_zone
@@ -92,6 +94,8 @@ module Polars
 
   # Time duration/delta type.
   class Duration < TemporalType
+    attr_reader :tu
+
     def initialize(time_unit = "us")
       @tu = time_unit
     end

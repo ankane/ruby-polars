@@ -27,17 +27,21 @@ class SeriesTest < Minitest::Test
     assert_series dates, s, dtype: Polars::Date
   end
 
-  # def test_new_datetime
-  #   datetimes = [DateTime.new(2022, 1, 1), DateTime.new(2022, 1, 2), DateTime.new(2022, 1, 3)]
-  #   s = Polars::Series.new(datetimes)
-  #   assert_series datetimes, s, dtype: :datetime
-  # end
+  def test_new_datetime
+    datetimes = [DateTime.new(2022, 1, 1), DateTime.new(2022, 1, 2), DateTime.new(2022, 1, 3)]
+    s = Polars::Series.new(datetimes)
+    assert_series datetimes, s
+    assert_kind_of Polars::Datetime, s.dtype
+    assert_equal "ns", s.dtype.tu
+  end
 
-  # def test_new_time
-  #   times = [Time.new(2022, 1, 1), Time.new(2022, 1, 2), Time.new(2022, 1, 3)]
-  #   s = Polars::Series.new(times)
-  #   assert_series times, s, dtype: :datetime
-  # end
+  def test_new_time
+    times = [Time.new(2022, 1, 1), Time.new(2022, 1, 2), Time.new(2022, 1, 3)]
+    s = Polars::Series.new(times)
+    assert_series times, s
+    assert_kind_of Polars::Datetime, s.dtype
+    assert_equal "ns", s.dtype.tu
+  end
 
   def test_new_nil
     s = Polars::Series.new([1, nil, 3])

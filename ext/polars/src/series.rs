@@ -489,40 +489,52 @@ impl RbSeries {
     }
 
     pub fn to_a(&self) -> RArray {
-        let series = self.series.borrow();
-        if let Ok(s) = series.f32() {
-            s.into_iter().collect()
-        } else if let Ok(s) = series.f64() {
-            s.into_iter().collect()
-        } else if let Ok(s) = series.i8() {
-            s.into_iter().collect()
-        } else if let Ok(s) = series.i16() {
-            s.into_iter().collect()
-        } else if let Ok(s) = series.i32() {
-            s.into_iter().collect()
-        } else if let Ok(s) = series.i64() {
-            s.into_iter().collect()
-        } else if let Ok(s) = series.u8() {
-            s.into_iter().collect()
-        } else if let Ok(s) = series.u16() {
-            s.into_iter().collect()
-        } else if let Ok(s) = series.u32() {
-            s.into_iter().collect()
-        } else if let Ok(s) = series.u64() {
-            s.into_iter().collect()
-        } else if let Ok(s) = series.bool() {
-            s.into_iter().collect()
-        } else if let Ok(s) = series.utf8() {
-            s.into_iter().collect()
-        } else if let Ok(_s) = series.date() {
-            let a = RArray::with_capacity(series.len());
-            for v in series.iter() {
-                a.push::<Value>(Wrap(v).into_value()).unwrap();
-            }
-            a
-        } else {
-            unimplemented!();
+        let series = &self.series.borrow();
+
+        fn to_list_recursive(series: &Series) -> RArray {
+            let rblist = match series.dtype() {
+                DataType::Boolean => RArray::from_iter(series.bool().unwrap()),
+                DataType::UInt8 => RArray::from_iter(series.u8().unwrap()),
+                DataType::UInt16 => RArray::from_iter(series.u16().unwrap()),
+                DataType::UInt32 => RArray::from_iter(series.u32().unwrap()),
+                DataType::UInt64 => RArray::from_iter(series.u64().unwrap()),
+                DataType::Int8 => RArray::from_iter(series.i8().unwrap()),
+                DataType::Int16 => RArray::from_iter(series.i16().unwrap()),
+                DataType::Int32 => RArray::from_iter(series.i32().unwrap()),
+                DataType::Int64 => RArray::from_iter(series.i64().unwrap()),
+                DataType::Float32 => RArray::from_iter(series.f32().unwrap()),
+                DataType::Float64 => RArray::from_iter(series.f64().unwrap()),
+                DataType::Decimal128(_) => todo!(),
+                DataType::Categorical(_) => {
+                    RArray::from_iter(series.categorical().unwrap().iter_str())
+                }
+                DataType::Date => {
+                    let a = RArray::with_capacity(series.len());
+                    for v in series.iter() {
+                        a.push::<Value>(Wrap(v).into_value()).unwrap();
+                    }
+                    return a;
+                }
+                DataType::Datetime(_, _) => {
+                    let a = RArray::with_capacity(series.len());
+                    for v in series.iter() {
+                        a.push::<Value>(Wrap(v).into_value()).unwrap();
+                    }
+                    return a;
+                }
+                DataType::Utf8 => {
+                    let ca = series.utf8().unwrap();
+                    return RArray::from_iter(ca);
+                }
+                DataType::Null | DataType::Unknown => {
+                    panic!("to_a not implemented for null/unknown")
+                }
+                _ => todo!()
+            };
+            rblist
         }
+
+        to_list_recursive(series)
     }
 
     pub fn median(&self) -> Option<f64> {

@@ -125,7 +125,13 @@ impl IntoValue for Wrap<AnyValue<'_>> {
                 .unwrap(),
             AnyValue::Datetime(v, tu, tz) => {
                 let t = match tu {
-                    TimeUnit::Nanoseconds => todo!(),
+                    TimeUnit::Nanoseconds => {
+                        let sec = v / 1000000000;
+                        let subsec = v % 1000000000;
+                        class::time()
+                            .funcall::<_, _, Value>("at", (sec, subsec, Symbol::new("nsec")))
+                            .unwrap()
+                    }
                     TimeUnit::Microseconds => {
                         let sec = v / 1000000;
                         let subsec = v % 1000000;
@@ -133,7 +139,13 @@ impl IntoValue for Wrap<AnyValue<'_>> {
                             .funcall::<_, _, Value>("at", (sec, subsec, Symbol::new("usec")))
                             .unwrap()
                     }
-                    TimeUnit::Milliseconds => todo!(),
+                    TimeUnit::Milliseconds => {
+                        let sec = v / 1000;
+                        let subsec = v % 1000;
+                        class::time()
+                            .funcall::<_, _, Value>("at", (sec, subsec, Symbol::new("millisecond")))
+                            .unwrap()
+                    }
                 };
 
                 if tz.is_some() {
@@ -175,7 +187,7 @@ impl IntoValue for Wrap<DataType> {
             DataType::Utf8 => pl.const_get::<_, Value>("Utf8").unwrap(),
             DataType::Binary => pl.const_get::<_, Value>("Binary").unwrap(),
             DataType::List(inner) => {
-                let inner = Wrap(*inner.clone());
+                let inner = Wrap(*inner);
                 let list_class = pl.const_get::<_, Value>("List").unwrap();
                 list_class.funcall::<_, _, Value>("new", (inner,)).unwrap()
             }
@@ -183,7 +195,7 @@ impl IntoValue for Wrap<DataType> {
             DataType::Datetime(tu, tz) => {
                 let datetime_class = pl.const_get::<_, Value>("Datetime").unwrap();
                 datetime_class
-                    .funcall::<_, _, Value>("new", (tu.to_ascii(), tz.clone()))
+                    .funcall::<_, _, Value>("new", (tu.to_ascii(), tz))
                     .unwrap()
             }
             DataType::Duration(tu) => {
