@@ -547,6 +547,12 @@ class SeriesTest < Minitest::Test
     refute Polars::Series.new(["one"]).numeric?
   end
 
+  def test_is_datelike
+    assert Polars::Series.new([Date.today]).is_datelike
+    assert Polars.date_range(DateTime.new(2020), DateTime.new(2023), "1y").is_datelike
+    refute Polars::Series.new([1]).is_datelike
+  end
+
   def test_is_float
     assert Polars::Series.new([1.5]).is_float
     refute Polars::Series.new([1]).is_float

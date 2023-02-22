@@ -2,6 +2,7 @@
 
 - Added `to_numo` method to `Series` and `DataFrame`
 - Added `plot` method to `DataFrame`
+- Fixed `is_datelike` method for `Datetime`
 
 ## 0.3.0 (2023-02-15)
 
