@@ -1776,7 +1776,7 @@ module Polars
     #   s.is_datelike
     #   # => true
     def is_datelike
-      [Date, Duration, Time].include?(dtype) || dtype.is_a?(Datetime)
+      [Date, Time].include?(dtype) || dtype.is_a?(Datetime) || dtype.is_a?(Duration)
     end
     alias_method :datelike?, :is_datelike
 
