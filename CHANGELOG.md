@@ -1,7 +1,8 @@
 ## 0.3.1 (2023-02-21)
 
+- Added `plot` method to `DataFrame` and `GroupBy`
 - Added `to_numo` method to `Series` and `DataFrame`
-- Added `plot` method to `DataFrame`
+- Added support for `Datetime` to `to_a` method
 - Fixed `is_datelike` method for `Datetime` and `Duration`
 
 ## 0.3.0 (2023-02-15)
