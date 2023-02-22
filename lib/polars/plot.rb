@@ -14,7 +14,7 @@ module Polars
           "scatter"
         elsif self[x].utf8? && self[y].numeric?
           "column"
-        elsif self[x].datelike? && self[y].numeric?
+        elsif (self[x].dtype == Date || self[x].dtype.is_a?(Datetime)) && self[y].numeric?
           "line"
         else
           raise "Cannot determine type. Use the type option."
