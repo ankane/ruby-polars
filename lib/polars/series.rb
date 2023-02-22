@@ -1837,7 +1837,7 @@ module Polars
     def to_numo
       if !has_validity
         if is_datelike
-          raise Todo
+          Numo::RObject.cast(to_a)
         elsif is_numeric
           # TODO make more efficient
           {
@@ -1858,7 +1858,7 @@ module Polars
           _s.to_numo
         end
       elsif is_datelike
-        raise Todo
+        Numo::RObject.cast(to_a)
       else
         _s.to_numo
       end
