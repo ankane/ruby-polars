@@ -1,4 +1,4 @@
-## 0.3.1 (unreleased)
+## 0.3.1 (2023-02-21)
 
 - Added `to_numo` method to `Series` and `DataFrame`
 - Added `plot` method to `DataFrame`

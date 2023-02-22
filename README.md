@@ -308,7 +308,7 @@ Parquet
 df.write_parquet("file.parquet")
 ```
 
-Numo array [unreleased]
+Numo array
 
 ```ruby
 df.to_numo
@@ -349,7 +349,7 @@ Cast a column
 df["a"].cast(Polars::Int32)
 ```
 
-## Visualization [unreleased]
+## Visualization
 
 Add [Vega](https://github.com/ankane/vega-ruby) to your application’s Gemfile:
 
