@@ -532,6 +532,13 @@ impl RbSeries {
                     let ca = series.utf8().unwrap();
                     return RArray::from_iter(ca);
                 }
+                DataType::Binary => {
+                    let a = RArray::with_capacity(series.len());
+                    for v in series.iter() {
+                        a.push::<Value>(Wrap(v).into_value()).unwrap();
+                    }
+                    return a;
+                }
                 DataType::Null | DataType::Unknown => {
                     panic!("to_a not implemented for null/unknown")
                 }

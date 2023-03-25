@@ -1,6 +1,7 @@
 ## 0.3.2 (unreleased)
 
 - Added support for creating `Binary` series
+- Added support for `Binary` to `to_a` method
 
 ## 0.3.1 (2023-02-21)
 

@@ -130,7 +130,7 @@ impl IntoValue for Wrap<AnyValue<'_>> {
             AnyValue::Null => *QNIL,
             AnyValue::Boolean(v) => Value::from(v),
             AnyValue::Utf8(v) => Value::from(v),
-            AnyValue::Utf8Owned(_v) => todo!(),
+            AnyValue::Utf8Owned(v) => todo!(),
             AnyValue::Categorical(_idx, _rev, _arr) => todo!(),
             AnyValue::Date(v) => class::time()
                 .funcall::<_, _, Value>("at", (v * 86400,))
@@ -177,8 +177,8 @@ impl IntoValue for Wrap<AnyValue<'_>> {
             AnyValue::StructOwned(_payload) => todo!(),
             AnyValue::Object(_v) => todo!(),
             AnyValue::ObjectOwned(_v) => todo!(),
-            AnyValue::Binary(_v) => todo!(),
-            AnyValue::BinaryOwned(_v) => todo!(),
+            AnyValue::Binary(v) => RString::from_slice(v).into_value(),
+            AnyValue::BinaryOwned(v) => RString::from_slice(&v).into_value(),
         }
     }
 }
