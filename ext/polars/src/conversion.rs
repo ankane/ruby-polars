@@ -82,6 +82,22 @@ impl TryConvert for Wrap<Utf8Chunked> {
     }
 }
 
+impl TryConvert for Wrap<BinaryChunked> {
+    fn try_convert(obj: Value) -> RbResult<Self> {
+        let (seq, len) = get_rbseq(obj)?;
+        let mut builder = BinaryChunkedBuilder::new("", len, len * 25);
+
+        for res in seq.each() {
+            let item = res?;
+            match item.try_convert::<RString>() {
+                Ok(val) => builder.append_value(unsafe { val.as_slice() }),
+                Err(_) => builder.append_null(),
+            }
+        }
+        Ok(Wrap(builder.finish()))
+    }
+}
+
 impl TryConvert for Wrap<NullValues> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         if let Ok(s) = ob.try_convert::<String>() {

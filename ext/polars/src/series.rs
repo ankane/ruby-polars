@@ -125,6 +125,12 @@ impl RbSeries {
         RbSeries::new(s)
     }
 
+    pub fn new_binary(name: String, val: Wrap<BinaryChunked>, _strict: bool) -> Self {
+        let mut s = val.0.into_series();
+        s.rename(&name);
+        RbSeries::new(s)
+    }
+
     pub fn new_object(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
         let val = val
             .each()

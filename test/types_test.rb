@@ -61,4 +61,11 @@ class TypesTest < Minitest::Test
     s = Polars::Series.new(["a", nil, "c"], dtype: Polars::Utf8)
     assert_series ["a", nil, "c"], s, dtype: Polars::Utf8
   end
+
+  def test_series_dtype_binary
+    s = Polars::Series.new(["a", nil, "c"], dtype: Polars::Binary)
+    # TODO support to_a for binary
+    assert_equal Polars::Binary, s.dtype
+    assert_series ["a", nil, "c"], s.cast(Polars::Utf8)
+  end
 end

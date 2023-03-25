@@ -1,3 +1,7 @@
+## 0.3.2 (unreleased)
+
+- Added support for creating `Binary` series
+
 ## 0.3.1 (2023-02-21)
 
 - Added `plot` method to `DataFrame` and `GroupBy`

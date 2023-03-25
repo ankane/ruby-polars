@@ -3795,7 +3795,8 @@ module Polars
       UInt32 => RbSeries.method(:new_opt_u32),
       UInt64 => RbSeries.method(:new_opt_u64),
       Boolean => RbSeries.method(:new_opt_bool),
-      Utf8 => RbSeries.method(:new_str)
+      Utf8 => RbSeries.method(:new_str),
+      Binary => RbSeries.method(:new_binary)
     }
 
     SYM_TYPE_TO_CONSTRUCTOR = {
