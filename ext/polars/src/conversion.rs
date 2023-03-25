@@ -114,6 +114,14 @@ impl TryConvert for Wrap<NullValues> {
     }
 }
 
+fn struct_dict<'a>(vals: impl Iterator<Item = AnyValue<'a>>, flds: &[Field]) -> Value {
+    let dict = RHash::new();
+    for (fld, val) in flds.iter().zip(vals) {
+        dict.aset(fld.name().clone(), Wrap(val)).unwrap()
+    }
+    dict.into_value()
+}
+
 impl IntoValue for Wrap<AnyValue<'_>> {
     fn into_value_with(self, _: &RubyHandle) -> Value {
         match self.0 {
@@ -173,10 +181,16 @@ impl IntoValue for Wrap<AnyValue<'_>> {
             AnyValue::Duration(_v, _tu) => todo!(),
             AnyValue::Time(_v) => todo!(),
             AnyValue::List(v) => RbSeries::new(v).to_a().into_value(),
-            ref _av @ AnyValue::Struct(_, _, _flds) => todo!(),
-            AnyValue::StructOwned(_payload) => todo!(),
-            AnyValue::Object(_v) => todo!(),
-            AnyValue::ObjectOwned(_v) => todo!(),
+            ref av @ AnyValue::Struct(_, _, flds) => struct_dict(av._iter_struct_av(), flds),
+            AnyValue::StructOwned(payload) => struct_dict(payload.0.into_iter(), &payload.1),
+            AnyValue::Object(v) => {
+                let object = v.as_any().downcast_ref::<ObjectValue>().unwrap();
+                object.inner.clone()
+            }
+            AnyValue::ObjectOwned(v) => {
+                let object = v.0.as_any().downcast_ref::<ObjectValue>().unwrap();
+                object.inner.clone()
+            }
             AnyValue::Binary(v) => RString::from_slice(v).into_value(),
             AnyValue::BinaryOwned(v) => RString::from_slice(&v).into_value(),
         }
