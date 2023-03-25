@@ -130,7 +130,7 @@ impl IntoValue for Wrap<AnyValue<'_>> {
             AnyValue::Null => *QNIL,
             AnyValue::Boolean(v) => Value::from(v),
             AnyValue::Utf8(v) => Value::from(v),
-            AnyValue::Utf8Owned(v) => todo!(),
+            AnyValue::Utf8Owned(v) => Value::from(v.as_str()),
             AnyValue::Categorical(_idx, _rev, _arr) => todo!(),
             AnyValue::Date(v) => class::time()
                 .funcall::<_, _, Value>("at", (v * 86400,))
