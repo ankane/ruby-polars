@@ -1,4 +1,4 @@
-## 0.3.2 (unreleased)
+## 0.4.0 (unreleased)
 
 - Updated Polars to 0.28.0
 - Added support for creating `Binary` series
