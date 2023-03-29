@@ -115,7 +115,7 @@ impl RbDataFrame {
         let comment_char: Option<String> = arguments[17].try_convert()?;
         let quote_char: Option<String> = arguments[18].try_convert()?;
         let null_values: Option<Wrap<NullValues>> = arguments[19].try_convert()?;
-        let parse_dates: bool = arguments[20].try_convert()?;
+        let try_parse_dates: bool = arguments[20].try_convert()?;
         let skip_rows_after_header: usize = arguments[21].try_convert()?;
         let row_count: Option<(String, IdxSize)> = arguments[22].try_convert()?;
         let sample_size: usize = arguments[23].try_convert()?;
@@ -168,12 +168,12 @@ impl RbDataFrame {
             .with_columns(columns)
             .with_n_threads(n_threads)
             .with_path(path)
-            .with_dtypes(overwrite_dtype.as_ref())
+            .with_dtypes(overwrite_dtype.map(Arc::new))
             .with_dtypes_slice(overwrite_dtype_slice.as_deref())
             .low_memory(low_memory)
             .with_comment_char(comment_char)
             .with_null_values(null_values)
-            .with_parse_dates(parse_dates)
+            .with_try_parse_dates(try_parse_dates)
             .with_quote_char(quote_char)
             .with_end_of_line_char(eol_char)
             .with_skip_rows_after_header(skip_rows_after_header)
@@ -184,6 +184,7 @@ impl RbDataFrame {
         Ok(df.into())
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn read_parquet(
         rb_f: Value,
         columns: Option<Vec<String>>,
@@ -192,6 +193,8 @@ impl RbDataFrame {
         parallel: Wrap<ParallelStrategy>,
         row_count: Option<(String, IdxSize)>,
         low_memory: bool,
+        use_statistics: bool,
+        rechunk: bool,
     ) -> RbResult<Self> {
         let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
         let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
@@ -202,6 +205,8 @@ impl RbDataFrame {
             .with_n_rows(n_rows)
             .with_row_count(row_count)
             .set_low_memory(low_memory)
+            .use_statistics(use_statistics)
+            .set_rechunk(rechunk)
             .finish()
             .map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
@@ -254,7 +259,7 @@ impl RbDataFrame {
         use polars::io::avro::AvroWriter;
 
         if let Ok(s) = rb_f.try_convert::<String>() {
-            let f = std::fs::File::create(&s).unwrap();
+            let f = std::fs::File::create(s).unwrap();
             AvroWriter::new(f)
                 .with_compression(compression.0)
                 .finish(&mut self.df.borrow_mut())
@@ -339,7 +344,7 @@ impl RbDataFrame {
         // ensure the new names are used
         if let Some(schema) = &schema_overwrite {
             for (new_name, name) in schema.0.iter_names().zip(names.iter_mut()) {
-                *name = new_name.clone();
+                *name = new_name.to_string();
             }
         }
         let rbdf = Self::finish_from_rows(
@@ -348,17 +353,19 @@ impl RbDataFrame {
             schema_overwrite.map(|wrap| wrap.0),
         )?;
 
-        rbdf.df
-            .borrow_mut()
-            .get_columns_mut()
-            .iter_mut()
-            .zip(&names)
-            .for_each(|(s, name)| {
-                s.rename(name);
-            });
+        unsafe {
+            rbdf.df
+                .borrow_mut()
+                .get_columns_mut()
+                .iter_mut()
+                .zip(&names)
+                .for_each(|(s, name)| {
+                    s.rename(name);
+                });
+        }
         let length = names.len();
         if names.into_iter().collect::<PlHashSet<_>>().len() != length {
-            let err = PolarsError::SchemaMisMatch("duplicate column names found".into());
+            let err = PolarsError::SchemaMismatch("duplicate column names found".into());
             Err(RbPolarsErr::from(err))?;
         }
 
@@ -394,7 +401,7 @@ impl RbDataFrame {
         let null = null_value.unwrap_or_default();
 
         if let Ok(s) = rb_f.try_convert::<String>() {
-            let f = std::fs::File::create(&s).unwrap();
+            let f = std::fs::File::create(s).unwrap();
             // no need for a buffered writer, because the csv writer does internal buffering
             CsvWriter::new(f)
                 .has_header(has_header)
@@ -436,7 +443,7 @@ impl RbDataFrame {
         compression: Wrap<Option<IpcCompression>>,
     ) -> RbResult<()> {
         if let Ok(s) = rb_f.try_convert::<String>() {
-            let f = std::fs::File::create(&s).unwrap();
+            let f = std::fs::File::create(s).unwrap();
             IpcWriter::new(f)
                 .with_compression(compression.0)
                 .finish(&mut self.df.borrow_mut())
@@ -524,7 +531,7 @@ impl RbDataFrame {
         let compression = parse_parquet_compression(&compression, compression_level)?;
 
         if let Ok(s) = rb_f.try_convert::<String>() {
-            let f = std::fs::File::create(&s).unwrap();
+            let f = std::fs::File::create(s).unwrap();
             ParquetWriter::new(f)
                 .with_compression(compression)
                 .with_statistics(statistics)
@@ -627,7 +634,7 @@ impl RbDataFrame {
     }
 
     pub fn get_columns(&self) -> RArray {
-        let cols = self.df.borrow().get_columns().clone();
+        let cols = self.df.borrow().get_columns().to_vec();
         to_rbseries_collection(cols)
     }
 
@@ -881,10 +888,11 @@ impl RbDataFrame {
         variable_name: Option<String>,
     ) -> RbResult<Self> {
         let args = MeltArgs {
-            id_vars,
-            value_vars,
-            value_name,
-            variable_name,
+            id_vars: strings_to_smartstrings(id_vars),
+            value_vars: strings_to_smartstrings(value_vars),
+            value_name: value_name.map(|s| s.into()),
+            variable_name: variable_name.map(|s| s.into()),
+            streamable: false,
         };
 
         let df = self.df.borrow().melt2(args).map_err(RbPolarsErr::from)?;
@@ -897,22 +905,26 @@ impl RbDataFrame {
         values: Vec<String>,
         index: Vec<String>,
         columns: Vec<String>,
-        aggregate_expr: &RbExpr,
         maintain_order: bool,
         sort_columns: bool,
+        aggregate_expr: Option<&RbExpr>,
         separator: Option<String>,
     ) -> RbResult<Self> {
         let fun = match maintain_order {
             true => pivot_stable,
             false => pivot,
         };
+        let agg_expr = match aggregate_expr {
+            Some(aggregate_expr) => Some(aggregate_expr.inner.clone()),
+            None => None,
+        };
         let df = fun(
             &self.df.borrow(),
             values,
             index,
             columns,
-            aggregate_expr.inner.clone(),
             sort_columns,
+            agg_expr,
             separator.as_deref(),
         )
         .map_err(RbPolarsErr::from)?;
@@ -931,21 +943,6 @@ impl RbDataFrame {
 
     pub fn shift(&self, periods: i64) -> Self {
         self.df.borrow().shift(periods).into()
-    }
-
-    pub fn unique(
-        &self,
-        maintain_order: bool,
-        subset: Option<Vec<String>>,
-        keep: Wrap<UniqueKeepStrategy>,
-    ) -> RbResult<Self> {
-        let subset = subset.as_ref().map(|v| v.as_ref());
-        let df = match maintain_order {
-            true => self.df.borrow().unique_stable(subset, keep.0),
-            false => self.df.borrow().unique(subset, keep.0),
-        }
-        .map_err(RbPolarsErr::from)?;
-        Ok(df.into())
     }
 
     pub fn lazy(&self) -> RbLazyFrame {

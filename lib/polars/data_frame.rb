@@ -202,7 +202,9 @@ module Polars
       parallel: "auto",
       row_count_name: nil,
       row_count_offset: 0,
-      low_memory: false
+      low_memory: false,
+      use_statistics: true,
+      rechunk: true
     )
       if Utils.pathlike?(file)
         file = Utils.format_path(file)
@@ -221,7 +223,9 @@ module Polars
           n_rows,
           parallel,
           Utils._prepare_row_count_args(row_count_name, row_count_offset),
-          low_memory
+          low_memory,
+          use_statistics,
+          rechunk
         )
       )
     end
@@ -3042,24 +3046,28 @@ module Polars
       if aggregate_fn.is_a?(String)
         case aggregate_fn
         when "first"
-          aggregate_fn = Polars.element.first
+          aggregate_expr = Polars.element.first._rbexpr
         when "sum"
-          aggregate_fn = Polars.element.sum
+          aggregate_expr = Polars.element.sum._rbexpr
         when "max"
-          aggregate_fn = Polars.element.max
+          aggregate_expr = Polars.element.max._rbexpr
         when "min"
-          aggregate_fn = Polars.element.min
+          aggregate_expr = Polars.element.min._rbexpr
         when "mean"
-          aggregate_fn = Polars.element.mean
+          aggregate_expr = Polars.element.mean._rbexpr
         when "median"
-          aggregate_fn = Polars.element.median
+          aggregate_expr = Polars.element.median._rbexpr
         when "last"
-          aggregate_fn = Polars.element.last
+          aggregate_expr = Polars.element.last._rbexpr
         when "count"
-          aggregate_fn = Polars.count
+          aggregate_expr = Polars.count._rbexpr
         else
           raise ArgumentError, "Argument aggregate fn: '#{aggregate_fn}' was not expected."
         end
+      elsif aggregate_fn.nil?
+        aggregate_expr = nil
+      else
+        aggregate_expr = aggregate_function._rbexpr
       end
 
       _from_rbdf(
@@ -3067,9 +3075,9 @@ module Polars
           values,
           index,
           columns,
-          aggregate_fn._rbexpr,
           maintain_order,
           sort_columns,
+          aggregate_expr,
           separator
         )
       )
@@ -3174,7 +3182,7 @@ module Polars
     #   # │ B    ┆ 1    │
     #   # │ C    ┆ 2    │
     #   # │ D    ┆ 3    │
-    #   # │ ...  ┆ ...  │
+    #   # │ …    ┆ …    │
     #   # │ F    ┆ 5    │
     #   # │ G    ┆ 6    │
     #   # │ H    ┆ 7    │
@@ -4053,15 +4061,12 @@ module Polars
     #   # │ 5   ┆ 3.0 ┆ true  │
     #   # └─────┴─────┴───────┘
     def unique(maintain_order: true, subset: nil, keep: "first")
-      if !subset.nil?
-        if subset.is_a?(String)
-          subset = [subset]
-        elsif !subset.is_a?(Array)
-          subset = subset.to_a
-        end
-      end
-
-      _from_rbdf(_df.unique(maintain_order, subset, keep))
+      self._from_rbdf(
+        lazy
+          .unique(maintain_order: maintain_order, subset: subset, keep: keep)
+          .collect(no_optimization: true)
+          ._df
+      )
     end
 
     # Return the number of unique rows, or the number of unique row-subsets.

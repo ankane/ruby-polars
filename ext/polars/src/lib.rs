@@ -73,7 +73,7 @@ fn init() -> RbResult<()> {
     let class = module.define_class("RbDataFrame", Default::default())?;
     class.define_singleton_method("new", function!(RbDataFrame::init, 1))?;
     class.define_singleton_method("read_csv", function!(RbDataFrame::read_csv, -1))?;
-    class.define_singleton_method("read_parquet", function!(RbDataFrame::read_parquet, 7))?;
+    class.define_singleton_method("read_parquet", function!(RbDataFrame::read_parquet, 9))?;
     class.define_singleton_method("read_ipc", function!(RbDataFrame::read_ipc, 6))?;
     class.define_singleton_method("read_avro", function!(RbDataFrame::read_avro, 4))?;
     class.define_singleton_method("read_hashes", function!(RbDataFrame::read_hashes, 3))?;
@@ -151,7 +151,6 @@ fn init() -> RbResult<()> {
     class.define_method("pivot_expr", method!(RbDataFrame::pivot_expr, 7))?;
     class.define_method("partition_by", method!(RbDataFrame::partition_by, 2))?;
     class.define_method("shift", method!(RbDataFrame::shift, 1))?;
-    class.define_method("unique", method!(RbDataFrame::unique, 3))?;
     class.define_method("lazy", method!(RbDataFrame::lazy, 0))?;
     class.define_method("max", method!(RbDataFrame::max, 0))?;
     class.define_method("min", method!(RbDataFrame::min, 0))?;
@@ -473,7 +472,7 @@ fn init() -> RbResult<()> {
         function!(crate::lazy::dsl::spearman_rank_corr, 4),
     )?;
     class.define_singleton_method("cov", function!(crate::lazy::dsl::cov, 2))?;
-    class.define_singleton_method("argsort_by", function!(crate::lazy::dsl::argsort_by, 2))?;
+    class.define_singleton_method("arg_sort_by", function!(crate::lazy::dsl::arg_sort_by, 2))?;
     class.define_singleton_method("when", function!(crate::lazy::dsl::when, 1))?;
     class.define_singleton_method("concat_str", function!(crate::lazy::dsl::concat_str, 2))?;
     class.define_singleton_method("concat_lst", function!(crate::lazy::dsl::concat_lst, 1))?;
@@ -487,7 +486,7 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("new_from_csv", function!(RbLazyFrame::new_from_csv, -1))?;
     class.define_singleton_method(
         "new_from_parquet",
-        function!(RbLazyFrame::new_from_parquet, 7),
+        function!(RbLazyFrame::new_from_parquet, 8),
     )?;
     class.define_singleton_method("new_from_ipc", function!(RbLazyFrame::new_from_ipc, 6))?;
     class.define_method("write_json", method!(RbLazyFrame::write_json, 1))?;
@@ -532,7 +531,7 @@ fn init() -> RbResult<()> {
     class.define_method("drop_nulls", method!(RbLazyFrame::drop_nulls, 1))?;
     class.define_method("slice", method!(RbLazyFrame::slice, 2))?;
     class.define_method("tail", method!(RbLazyFrame::tail, 1))?;
-    class.define_method("melt", method!(RbLazyFrame::melt, 4))?;
+    class.define_method("melt", method!(RbLazyFrame::melt, 5))?;
     class.define_method("with_row_count", method!(RbLazyFrame::with_row_count, 2))?;
     class.define_method("drop_columns", method!(RbLazyFrame::drop_columns, 1))?;
     class.define_method("_clone", method!(RbLazyFrame::clone, 0))?;

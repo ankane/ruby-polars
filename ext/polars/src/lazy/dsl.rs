@@ -10,7 +10,7 @@ use crate::conversion::*;
 use crate::lazy::apply::*;
 use crate::lazy::utils::rb_exprs_to_exprs;
 use crate::utils::reinterpret;
-use crate::{RbResult, RbSeries};
+use crate::{RbPolarsErr, RbResult, RbSeries};
 
 #[magnus::wrap(class = "Polars::RbExpr")]
 #[derive(Clone)]
@@ -1654,9 +1654,9 @@ pub fn cov(a: &RbExpr, b: &RbExpr) -> RbExpr {
     polars::lazy::dsl::cov(a.inner.clone(), b.inner.clone()).into()
 }
 
-pub fn argsort_by(by: RArray, reverse: Vec<bool>) -> RbResult<RbExpr> {
+pub fn arg_sort_by(by: RArray, reverse: Vec<bool>) -> RbResult<RbExpr> {
     let by = rb_exprs_to_exprs(by)?;
-    Ok(polars::lazy::dsl::argsort_by(by, &reverse).into())
+    Ok(polars::lazy::dsl::arg_sort_by(by, &reverse).into())
 }
 
 #[magnus::wrap(class = "Polars::RbWhen")]
@@ -1706,5 +1706,6 @@ pub fn concat_str(s: RArray, sep: String) -> RbResult<RbExpr> {
 
 pub fn concat_lst(s: RArray) -> RbResult<RbExpr> {
     let s = rb_exprs_to_exprs(s)?;
-    Ok(dsl::concat_lst(s).into())
+    let expr = dsl::concat_lst(s).map_err(RbPolarsErr::from)?;
+    Ok(expr.into())
 }

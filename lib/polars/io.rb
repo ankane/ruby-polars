@@ -539,6 +539,12 @@ module Polars
     #   Offset to start the row_count column (only use if the name is set).
     # @param low_memory [Boolean]
     #   Reduce memory pressure at the expense of performance.
+    # @param use_statistics [Boolean]
+    #   Use statistics in the parquet to determine if pages
+    #   can be skipped from reading.
+    # @param rechunk [Boolean]
+    #   Make sure that all columns are contiguous in memory by
+    #   aggregating the chunks into a single array.
     #
     # @return [DataFrame]
     #
@@ -555,7 +561,9 @@ module Polars
       parallel: "auto",
       row_count_name: nil,
       row_count_offset: 0,
-      low_memory: false
+      low_memory: false,
+      use_statistics: true,
+      rechunk: true
     )
       _prepare_file_arg(file) do |data|
         DataFrame._read_parquet(
@@ -565,7 +573,9 @@ module Polars
           parallel: parallel,
           row_count_name: row_count_name,
           row_count_offset: row_count_offset,
-          low_memory: low_memory
+          low_memory: low_memory,
+          use_statistics: use_statistics,
+          rechunk: rechunk
         )
       end
     end

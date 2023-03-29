@@ -657,7 +657,7 @@ module Polars
     #   Default is ascending.
     #
     # @return [Expr]
-    def argsort_by(exprs, reverse: false)
+    def arg_sort_by(exprs, reverse: false)
       if !exprs.is_a?(Array)
         exprs = [exprs]
       end
@@ -665,8 +665,9 @@ module Polars
         reverse = [reverse] * exprs.length
       end
       exprs = Utils.selection_to_rbexpr_list(exprs)
-      Utils.wrap_expr(RbExpr.argsort_by(exprs, reverse))
+      Utils.wrap_expr(RbExpr.arg_sort_by(exprs, reverse))
     end
+    alias_method :argsort_by, :arg_sort_by
 
     # Create polars `Duration` from distinct time components.
     #

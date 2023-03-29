@@ -1,3 +1,6 @@
+use std::fmt::{Display, Formatter};
+use std::hash::{Hash, Hasher};
+
 use magnus::{
     class, exception, r_hash::ForEach, ruby_handle::RubyHandle, Integer, IntoValue, Module, RArray,
     RFloat, RHash, RString, Symbol, TryConvert, Value, QNIL,
@@ -10,8 +13,7 @@ use polars::frame::NullStrategy;
 use polars::io::avro::AvroCompression;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
-use std::fmt::{Display, Formatter};
-use std::hash::{Hash, Hasher};
+use smartstring::alias::String as SmartString;
 
 use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
 
@@ -117,7 +119,7 @@ impl TryConvert for Wrap<NullValues> {
 fn struct_dict<'a>(vals: impl Iterator<Item = AnyValue<'a>>, flds: &[Field]) -> Value {
     let dict = RHash::new();
     for (fld, val) in flds.iter().zip(vals) {
-        dict.aset(fld.name().clone(), Wrap(val)).unwrap()
+        dict.aset(fld.name().as_str(), Wrap(val)).unwrap()
     }
     dict.into_value()
 }
@@ -185,14 +187,15 @@ impl IntoValue for Wrap<AnyValue<'_>> {
             AnyValue::StructOwned(payload) => struct_dict(payload.0.into_iter(), &payload.1),
             AnyValue::Object(v) => {
                 let object = v.as_any().downcast_ref::<ObjectValue>().unwrap();
-                object.inner.clone()
+                object.inner
             }
             AnyValue::ObjectOwned(v) => {
                 let object = v.0.as_any().downcast_ref::<ObjectValue>().unwrap();
-                object.inner.clone()
+                object.inner
             }
             AnyValue::Binary(v) => RString::from_slice(v).into_value(),
             AnyValue::BinaryOwned(v) => RString::from_slice(&v).into_value(),
+            AnyValue::Decimal(_v, _scale) => todo!(),
         }
     }
 }
@@ -212,7 +215,7 @@ impl IntoValue for Wrap<DataType> {
             DataType::UInt64 => pl.const_get::<_, Value>("UInt64").unwrap(),
             DataType::Float32 => pl.const_get::<_, Value>("Float32").unwrap(),
             DataType::Float64 => pl.const_get::<_, Value>("Float64").unwrap(),
-            DataType::Decimal128(_) => todo!(),
+            DataType::Decimal(_precision, _scale) => todo!(),
             DataType::Boolean => pl.const_get::<_, Value>("Boolean").unwrap(),
             DataType::Utf8 => pl.const_get::<_, Value>("Utf8").unwrap(),
             DataType::Binary => pl.const_get::<_, Value>("Binary").unwrap(),
@@ -240,7 +243,7 @@ impl IntoValue for Wrap<DataType> {
             DataType::Struct(fields) => {
                 let field_class = pl.const_get::<_, Value>("Field").unwrap();
                 let iter = fields.iter().map(|fld| {
-                    let name = fld.name().clone();
+                    let name = fld.name().as_str();
                     let dtype = Wrap(fld.data_type().clone());
                     field_class
                         .funcall::<_, _, Value>("new", (name, dtype))
@@ -370,7 +373,7 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
                 let n = 25;
                 let dtype = any_values_to_dtype(&avs[..std::cmp::min(avs.len(), n)])
                     .map_err(RbPolarsErr::from)?;
-                let s = Series::from_any_values_and_dtype("", &avs, &dtype)
+                let s = Series::from_any_values_and_dtype("", &avs, &dtype, true)
                     .map_err(RbPolarsErr::from)?;
                 Ok(Wrap(AnyValue::List(s)))
             }
@@ -899,4 +902,12 @@ pub fn parse_parquet_compression(
         }
     };
     Ok(parsed)
+}
+
+pub(crate) fn strings_to_smartstrings<I, S>(container: I) -> Vec<SmartString>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<str>,
+{
+    container.into_iter().map(|s| s.as_ref().into()).collect()
 }

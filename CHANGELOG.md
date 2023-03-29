@@ -1,5 +1,6 @@
 ## 0.3.2 (unreleased)
 
+- Updated Polars to 0.28.0
 - Added support for creating `Binary` series
 - Added support for `Binary` to `to_a` method
 

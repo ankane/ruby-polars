@@ -7,11 +7,17 @@ use std::cell::RefCell;
 use std::path::PathBuf;
 
 use crate::conversion::*;
+use crate::prelude::read_impl::OwnedBatchedCsvReaderMmap;
 use crate::{RbDataFrame, RbPolarsErr, RbResult};
+
+pub enum BatchedReader {
+    MMap(OwnedBatchedCsvReaderMmap),
+    Read(OwnedBatchedCsvReader),
+}
 
 #[magnus::wrap(class = "Polars::RbBatchedCsv")]
 pub struct RbBatchedCsv {
-    pub reader: RefCell<OwnedBatchedCsvReader>,
+    pub reader: RefCell<BatchedReader>,
 }
 
 impl RbBatchedCsv {
@@ -38,7 +44,7 @@ impl RbBatchedCsv {
         let comment_char: Option<String> = arguments[16].try_convert()?;
         let quote_char: Option<String> = arguments[17].try_convert()?;
         let null_values: Option<Wrap<NullValues>> = arguments[18].try_convert()?;
-        let parse_dates: bool = arguments[19].try_convert()?;
+        let try_parse_dates: bool = arguments[19].try_convert()?;
         let skip_rows_after_header: usize = arguments[20].try_convert()?;
         let row_count: Option<(String, IdxSize)> = arguments[21].try_convert()?;
         let sample_size: usize = arguments[22].try_convert()?;
@@ -95,14 +101,24 @@ impl RbBatchedCsv {
             .low_memory(low_memory)
             .with_comment_char(comment_char)
             .with_null_values(null_values)
-            .with_parse_dates(parse_dates)
+            .with_try_parse_dates(try_parse_dates)
             .with_quote_char(quote_char)
             .with_end_of_line_char(eol_char)
             .with_skip_rows_after_header(skip_rows_after_header)
             .with_row_count(row_count)
-            .sample_size(sample_size)
-            .batched(overwrite_dtype.map(Arc::new))
-            .map_err(RbPolarsErr::from)?;
+            .sample_size(sample_size);
+
+        let reader = if low_memory {
+            let reader = reader
+                .batched_read(overwrite_dtype.map(Arc::new))
+                .map_err(RbPolarsErr::from)?;
+            BatchedReader::Read(reader)
+        } else {
+            let reader = reader
+                .batched_mmap(overwrite_dtype.map(Arc::new))
+                .map_err(RbPolarsErr::from)?;
+            BatchedReader::MMap(reader)
+        };
 
         Ok(RbBatchedCsv {
             reader: RefCell::new(reader),
@@ -110,13 +126,12 @@ impl RbBatchedCsv {
     }
 
     pub fn next_batches(&self, n: usize) -> RbResult<Option<RArray>> {
-        let batches = self
-            .reader
-            .borrow_mut()
-            .next_batches(n)
-            .map_err(RbPolarsErr::from)?;
-        Ok(batches.map(|batches| {
-            RArray::from_iter(batches.into_iter().map(|out| RbDataFrame::from(out.1)))
-        }))
+        let batches = match &mut *self.reader.borrow_mut() {
+            BatchedReader::MMap(reader) => reader.next_batches(n),
+            BatchedReader::Read(reader) => reader.next_batches(n),
+        }
+        .map_err(RbPolarsErr::from)?;
+
+        Ok(batches.map(|batches| RArray::from_iter(batches.into_iter().map(RbDataFrame::from))))
     }
 }

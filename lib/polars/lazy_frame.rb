@@ -80,7 +80,8 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0,
       storage_options: nil,
-      low_memory: false
+      low_memory: false,
+      use_statistics: true
     )
       _from_rbldf(
         RbLazyFrame.new_from_parquet(
@@ -90,7 +91,8 @@ module Polars
           parallel,
           rechunk,
           Utils._prepare_row_count_args(row_count_name, row_count_offset),
-          low_memory
+          low_memory,
+          use_statistics
         )
       )
     end
@@ -2192,6 +2194,10 @@ module Polars
     #   Name to give to the `value` column. Defaults to "variable"
     # @param value_name [String]
     #   Name to give to the `value` column. Defaults to "value"
+    # @param streamable [Boolean]
+    #   Allow this node to run in the streaming engine.
+    #   If this runs in streaming, the output of the melt operation
+    #   will not have a stable ordering.
     #
     # @return [LazyFrame]
     #
@@ -2218,7 +2224,7 @@ module Polars
     #   # │ y   ┆ c        ┆ 4     │
     #   # │ z   ┆ c        ┆ 6     │
     #   # └─────┴──────────┴───────┘
-    def melt(id_vars: nil, value_vars: nil, variable_name: nil, value_name: nil)
+    def melt(id_vars: nil, value_vars: nil, variable_name: nil, value_name: nil, streamable: true)
       if value_vars.is_a?(String)
         value_vars = [value_vars]
       end
@@ -2232,7 +2238,7 @@ module Polars
         id_vars = []
       end
       _from_rbldf(
-        _ldf.melt(id_vars, value_vars, value_name, variable_name)
+        _ldf.melt(id_vars, value_vars, value_name, variable_name, streamable)
       )
     end
 

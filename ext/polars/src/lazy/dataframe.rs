@@ -118,7 +118,7 @@ impl RbLazyFrame {
         let skip_rows_after_header: usize = arguments[15].try_convert()?;
         let encoding: Wrap<CsvEncoding> = arguments[16].try_convert()?;
         let row_count: Option<(String, IdxSize)> = arguments[17].try_convert()?;
-        let parse_dates: bool = arguments[18].try_convert()?;
+        let try_parse_dates: bool = arguments[18].try_convert()?;
         let eol_char: String = arguments[19].try_convert()?;
         // end arguments
 
@@ -153,7 +153,7 @@ impl RbLazyFrame {
             .with_skip_rows_after_header(skip_rows_after_header)
             .with_encoding(encoding.0)
             .with_row_count(row_count)
-            .with_parse_dates(parse_dates)
+            .with_try_parse_dates(try_parse_dates)
             .with_null_values(null_values);
 
         if let Some(_lambda) = with_schema_modify {
@@ -163,6 +163,7 @@ impl RbLazyFrame {
         Ok(r.finish().map_err(RbPolarsErr::from)?.into())
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn new_from_parquet(
         path: String,
         n_rows: Option<usize>,
@@ -171,6 +172,7 @@ impl RbLazyFrame {
         rechunk: bool,
         row_count: Option<(String, IdxSize)>,
         low_memory: bool,
+        use_statistics: bool,
     ) -> RbResult<Self> {
         let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
         let args = ScanArgsParquet {
@@ -182,6 +184,7 @@ impl RbLazyFrame {
             low_memory,
             // TODO support cloud options
             cloud_options: None,
+            use_statistics,
         };
         let lf = LazyFrame::scan_parquet(path, args).map_err(RbPolarsErr::from)?;
         Ok(lf.into())
@@ -328,7 +331,7 @@ impl RbLazyFrame {
         let lazy_gb = ldf.groupby_rolling(
             by,
             RollingGroupOptions {
-                index_column,
+                index_column: index_column.into(),
                 period: Duration::parse(&period),
                 offset: Duration::parse(&offset),
                 closed_window,
@@ -359,7 +362,7 @@ impl RbLazyFrame {
         let lazy_gb = ldf.groupby_dynamic(
             by,
             DynamicGroupOptions {
-                index_column,
+                index_column: index_column.into(),
                 every: Duration::parse(&every),
                 period: Duration::parse(&period),
                 offset: Duration::parse(&offset),
@@ -415,10 +418,10 @@ impl RbLazyFrame {
             .force_parallel(force_parallel)
             .how(JoinType::AsOf(AsOfOptions {
                 strategy: strategy.0,
-                left_by,
-                right_by,
+                left_by: left_by.map(strings_to_smartstrings),
+                right_by: right_by.map(strings_to_smartstrings),
                 tolerance: tolerance.map(|t| t.0.into_static().unwrap()),
-                tolerance_str,
+                tolerance_str: tolerance_str.map(|s| s.into()),
             }))
             .suffix(suffix)
             .finish()
@@ -570,12 +573,14 @@ impl RbLazyFrame {
         value_vars: Vec<String>,
         value_name: Option<String>,
         variable_name: Option<String>,
+        streamable: bool,
     ) -> Self {
         let args = MeltArgs {
-            id_vars,
-            value_vars,
-            value_name,
-            variable_name,
+            id_vars: strings_to_smartstrings(id_vars),
+            value_vars: strings_to_smartstrings(value_vars),
+            value_name: value_name.map(|s| s.into()),
+            variable_name: variable_name.map(|s| s.into()),
+            streamable,
         };
 
         let ldf = self.ldf.clone();
@@ -596,8 +601,10 @@ impl RbLazyFrame {
         self.ldf.clone().into()
     }
 
-    pub fn columns(&self) -> RbResult<Vec<String>> {
-        Ok(self.get_schema()?.iter_names().cloned().collect())
+    pub fn columns(&self) -> RbResult<RArray> {
+        let schema = self.get_schema()?;
+        let iter = schema.iter_names().map(|s| s.as_str());
+        Ok(RArray::from_iter(iter))
     }
 
     pub fn dtypes(&self) -> RbResult<RArray> {
@@ -614,7 +621,7 @@ impl RbLazyFrame {
             // TODO remove unwrap
             schema_dict
                 .aset::<String, Value>(
-                    fld.name().clone(),
+                    fld.name().to_string(),
                     Wrap(fld.data_type().clone()).into_value(),
                 )
                 .unwrap();

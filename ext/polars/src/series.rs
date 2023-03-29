@@ -510,7 +510,6 @@ impl RbSeries {
                 DataType::Int64 => RArray::from_iter(series.i64().unwrap()),
                 DataType::Float32 => RArray::from_iter(series.f32().unwrap()),
                 DataType::Float64 => RArray::from_iter(series.f64().unwrap()),
-                DataType::Decimal128(_) => todo!(),
                 DataType::Categorical(_) => {
                     RArray::from_iter(series.categorical().unwrap().iter_str())
                 }

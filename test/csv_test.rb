@@ -63,7 +63,7 @@ class CsvTest < Minitest::Test
     error = assert_raises(RuntimeError) do
       Polars.read_csv("test/support/*.csv")
     end
-    assert_match "Could not vertically stack DataFrame", error.message
+    assert_match "lengths don't match", error.message
   end
 
   def test_read_csv_batched

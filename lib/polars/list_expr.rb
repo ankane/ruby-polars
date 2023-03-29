@@ -426,7 +426,7 @@ module Polars
     #   # shape: (2,)
     #   # Series: 'a' [list[i64]]
     #   # [
-    #   #         [null, 1, ... 1]
+    #   #         [null, 1, … 1]
     #   #         [null, -8, -1]
     #   # ]
     def diff(n: 1, null_behavior: "ignore")
@@ -447,7 +447,7 @@ module Polars
     #   # shape: (2,)
     #   # Series: 'a' [list[i64]]
     #   # [
-    #   #         [null, 1, ... 3]
+    #   #         [null, 1, … 3]
     #   #         [null, 10, 2]
     #   # ]
     def shift(periods = 1)
