@@ -100,9 +100,6 @@ module Polars
       end
       path
     end
-    class << self
-      alias_method :format_path, :normalise_filepath
-    end
 
     # TODO fix
     def self.is_polars_dtype(data_type)

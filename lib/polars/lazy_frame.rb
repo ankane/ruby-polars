@@ -109,7 +109,7 @@ module Polars
       memory_map: true
     )
       if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+        file = Utils.normalise_filepath(file)
       end
 
       _from_rbldf(
@@ -159,7 +159,7 @@ module Polars
     # @return [LazyFrame]
     def self.read_json(file)
       if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+        file = Utils.normalise_filepath(file)
       end
 
       Utils.wrap_ldf(RbLazyFrame.read_json(file))
@@ -266,7 +266,7 @@ module Polars
     # @return [nil]
     def write_json(file)
       if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+        file = Utils.normalise_filepath(file)
       end
       _ldf.write_json(file)
       nil

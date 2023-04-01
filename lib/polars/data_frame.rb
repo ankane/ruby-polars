@@ -97,7 +97,7 @@ module Polars
       eol_char: "\n"
     )
       if Utils.pathlike?(file)
-        path = Utils.format_path(file)
+        path = Utils.normalise_filepath(file)
       else
         path = nil
         # if defined?(StringIO) && file.is_a?(StringIO)
@@ -207,7 +207,7 @@ module Polars
       rechunk: true
     )
       if Utils.pathlike?(source)
-        source = Utils.format_path(source)
+        source = Utils.normalise_filepath(source)
       end
       if columns.is_a?(String)
         columns = [columns]
@@ -253,7 +253,7 @@ module Polars
     # @private
     def self._read_avro(file, columns: nil, n_rows: nil)
       if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+        file = Utils.normalise_filepath(file)
       end
       projection, columns = Utils.handle_projection_columns(columns)
       _from_rbdf(RbDataFrame.read_avro(file, columns, projection, n_rows))
@@ -270,7 +270,7 @@ module Polars
       memory_map: true
     )
       if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+        file = Utils.normalise_filepath(file)
       end
       if columns.is_a?(String)
         columns = [columns]
@@ -296,7 +296,7 @@ module Polars
     # @private
     def self._read_json(file)
       if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+        file = Utils.normalise_filepath(file)
       end
 
       _from_rbdf(RbDataFrame.read_json(file))
@@ -305,7 +305,7 @@ module Polars
     # @private
     def self._read_ndjson(file)
       if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+        file = Utils.normalise_filepath(file)
       end
 
       _from_rbdf(RbDataFrame.read_ndjson(file))
@@ -798,7 +798,7 @@ module Polars
       row_oriented: false
     )
       if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+        file = Utils.normalise_filepath(file)
       end
 
       _df.write_json(file, pretty, row_oriented)
@@ -813,7 +813,7 @@ module Polars
     # @return [nil]
     def write_ndjson(file)
       if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+        file = Utils.normalise_filepath(file)
       end
 
       _df.write_ndjson(file)
@@ -903,7 +903,7 @@ module Polars
       end
 
       if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+        file = Utils.normalise_filepath(file)
       end
 
       _df.write_csv(
@@ -941,7 +941,7 @@ module Polars
         compression = "uncompressed"
       end
       if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+        file = Utils.normalise_filepath(file)
       end
 
       _df.write_avro(file, compression)
@@ -960,7 +960,7 @@ module Polars
         compression = "uncompressed"
       end
       if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+        file = Utils.normalise_filepath(file)
       end
 
       _df.write_ipc(file, compression)
@@ -1002,7 +1002,7 @@ module Polars
         compression = "uncompressed"
       end
       if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+        file = Utils.normalise_filepath(file)
       end
 
       _df.write_parquet(

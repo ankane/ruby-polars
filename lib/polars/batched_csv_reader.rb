@@ -30,7 +30,7 @@ module Polars
       new_columns: nil
     )
       if Utils.pathlike?(file)
-        path = Utils.format_path(file)
+        path = Utils.normalise_filepath(file)
       end
 
       dtype_list = nil
