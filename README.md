@@ -50,6 +50,9 @@ From Parquet
 
 ```ruby
 Polars.read_parquet("file.parquet")
+
+# or lazily with
+Polars.scan_parquet("file.parquet")
 ```
 
 From Active Record
