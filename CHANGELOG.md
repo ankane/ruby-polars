@@ -6,6 +6,7 @@
 - Added support for glob patterns to `read_parquet` method
 - Added `sink_parquet` method to `LazyFrame`
 - Added `BinaryExpr` and `BinaryNameSpace`
+- Prefer `read_database` over `read_sql`
 
 ## 0.3.1 (2023-02-21)
 

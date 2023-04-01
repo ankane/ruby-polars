@@ -602,22 +602,22 @@ module Polars
 
     # Read a SQL query into a DataFrame.
     #
-    # @param sql [Object]
+    # @param query [Object]
     #   ActiveRecord::Relation or ActiveRecord::Result.
     #
     # @return [DataFrame]
-    def read_sql(sql)
+    def read_database(query)
       if !defined?(ActiveRecord)
         raise Error, "Active Record not available"
       end
 
       result =
-        if sql.is_a?(ActiveRecord::Result)
-          sql
-        elsif sql.is_a?(ActiveRecord::Relation)
-          sql.connection.select_all(sql.to_sql)
-        elsif sql.is_a?(String)
-          ActiveRecord::Base.connection.select_all(sql)
+        if query.is_a?(ActiveRecord::Result)
+          query
+        elsif query.is_a?(ActiveRecord::Relation)
+          query.connection.select_all(query.to_sql)
+        elsif query.is_a?(String)
+          ActiveRecord::Base.connection.select_all(query)
         else
           raise ArgumentError, "Expected ActiveRecord::Relation, ActiveRecord::Result, or String"
         end
@@ -627,6 +627,7 @@ module Polars
       end
       DataFrame.new(data)
     end
+    alias_method :read_sql, :read_database
 
     # def read_excel
     # end
