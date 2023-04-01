@@ -93,8 +93,15 @@ module Polars
       Polars.lit(value)
     end
 
-    def self.format_path(path)
-      File.expand_path(path)
+    def self.normalise_filepath(path, check_not_directory: true)
+      path = File.expand_path(path)
+      if check_not_directory && File.exist?(path) && Dir.exist?(path)
+        raise ArgumentError, "Expected a file path; #{path} is a directory"
+      end
+      path
+    end
+    class << self
+      alias_method :format_path, :normalise_filepath
     end
 
     # TODO fix

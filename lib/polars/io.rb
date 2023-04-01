@@ -2,7 +2,7 @@ module Polars
   module IO
     # Read a CSV file into a DataFrame.
     #
-    # @param file [Object]
+    # @param source [Object]
     #   Path to a file or a file-like object.
     # @param has_header [Boolean]
     #   Indicate if the first row of dataset is a header or not.
@@ -89,7 +89,7 @@ module Polars
     #   Set `rechunk: false` if you are benchmarking the csv-reader. A `rechunk` is
     #   an expensive operation.
     def read_csv(
-      file,
+      source,
       has_header: true,
       columns: nil,
       new_columns: nil,
@@ -137,7 +137,7 @@ module Polars
       end
 
       df = nil
-      _prepare_file_arg(file) do |data|
+      _prepare_file_arg(source) do |data|
         df = DataFrame._read_csv(
           data,
           has_header: has_header,
@@ -178,7 +178,7 @@ module Polars
     # projections to the scan level, thereby potentially reducing
     # memory overhead.
     #
-    # @param file [Object]
+    # @param source [Object]
     #   Path to a file.
     # @param has_header [Boolean]
     #   Indicate if the first row of dataset is a header or not.
@@ -242,7 +242,7 @@ module Polars
     #
     # @return [LazyFrame]
     def scan_csv(
-      file,
+      source,
       has_header: true,
       sep: ",",
       comment_char: nil,
@@ -268,12 +268,12 @@ module Polars
       _check_arg_is_1byte("comment_char", comment_char, false)
       _check_arg_is_1byte("quote_char", quote_char, true)
 
-      if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+      if Utils.pathlike?(source)
+        source = Utils.normalise_filepath(source)
       end
 
       LazyFrame._scan_csv(
-        file,
+        source,
         has_header: has_header,
         sep: sep,
         comment_char: comment_char,
@@ -302,7 +302,7 @@ module Polars
     # This allows the query optimizer to push down predicates and projections to the scan
     # level, thereby potentially reducing memory overhead.
     #
-    # @param file [String]
+    # @param source [String]
     #   Path to a IPC file.
     # @param n_rows [Integer]
     #   Stop reading from IPC file after reading `n_rows`.
@@ -324,7 +324,7 @@ module Polars
     #
     # @return [LazyFrame]
     def scan_ipc(
-      file,
+      source,
       n_rows: nil,
       cache: true,
       rechunk: true,
@@ -334,7 +334,7 @@ module Polars
       memory_map: true
     )
       LazyFrame._scan_ipc(
-        file,
+        source,
         n_rows: n_rows,
         cache: cache,
         rechunk: rechunk,
@@ -350,7 +350,7 @@ module Polars
     # This allows the query optimizer to push down predicates and projections to the scan
     # level, thereby potentially reducing memory overhead.
     #
-    # @param file [String]
+    # @param source [String]
     #   Path to a file.
     # @param n_rows [Integer]
     #   Stop reading from parquet file after reading `n_rows`.
@@ -374,7 +374,7 @@ module Polars
     #
     # @return [LazyFrame]
     def scan_parquet(
-      file,
+      source,
       n_rows: nil,
       cache: true,
       parallel: "auto",
@@ -384,12 +384,12 @@ module Polars
       storage_options: nil,
       low_memory: false
     )
-      if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+      if Utils.pathlike?(source)
+        source = Utils.normalise_filepath(source)
       end
 
       LazyFrame._scan_parquet(
-        file,
+        source,
         n_rows:n_rows,
         cache: cache,
         parallel: parallel,
@@ -406,7 +406,7 @@ module Polars
     # This allows the query optimizer to push down predicates and projections to the scan
     # level, thereby potentially reducing memory overhead.
     #
-    # @param file [String]
+    # @param source [String]
     #   Path to a file.
     # @param infer_schema_length [Integer]
     #   Infer the schema length from the first `infer_schema_length` rows.
@@ -426,7 +426,7 @@ module Polars
     #
     # @return [LazyFrame]
     def scan_ndjson(
-      file,
+      source,
       infer_schema_length: 100,
       batch_size: 1024,
       n_rows: nil,
@@ -435,12 +435,12 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0
     )
-      if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+      if Utils.pathlike?(source)
+        source = Utils.normalise_filepath(source)
       end
 
       LazyFrame._scan_ndjson(
-        file,
+        source,
         infer_schema_length: infer_schema_length,
         batch_size: batch_size,
         n_rows: n_rows,
@@ -453,7 +453,7 @@ module Polars
 
     # Read into a DataFrame from Apache Avro format.
     #
-    # @param file [Object]
+    # @param source [Object]
     #   Path to a file or a file-like object.
     # @param columns [Object]
     #   Columns to select. Accepts a list of column indices (starting at zero) or a list
@@ -462,17 +462,17 @@ module Polars
     #   Stop reading from Apache Avro file after reading ``n_rows``.
     #
     # @return [DataFrame]
-    def read_avro(file, columns: nil, n_rows: nil)
-      if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+    def read_avro(source, columns: nil, n_rows: nil)
+      if Utils.pathlike?(source)
+        source = Utils.normalise_filepath(source)
       end
 
-      DataFrame._read_avro(file, n_rows: n_rows, columns: columns)
+      DataFrame._read_avro(source, n_rows: n_rows, columns: columns)
     end
 
     # Read into a DataFrame from Arrow IPC (Feather v2) file.
     #
-    # @param file [Object]
+    # @param source [Object]
     #   Path to a file or a file-like object.
     # @param columns [Object]
     #   Columns to select. Accepts a list of column indices (starting at zero) or a list
@@ -495,7 +495,7 @@ module Polars
     #
     # @return [DataFrame]
     def read_ipc(
-      file,
+      source,
       columns: nil,
       n_rows: nil,
       memory_map: true,
@@ -505,7 +505,7 @@ module Polars
       rechunk: true
     )
       storage_options ||= {}
-      _prepare_file_arg(file, **storage_options) do |data|
+      _prepare_file_arg(source, **storage_options) do |data|
         DataFrame._read_ipc(
           data,
           columns: columns,
@@ -520,8 +520,8 @@ module Polars
 
     # Read into a DataFrame from a parquet file.
     #
-    # @param file [Object]
-    #   Path to a file, or a file-like object.
+    # @param source [Object]
+    #   Path to a file or a file-like object.
     # @param columns [Object]
     #   Columns to select. Accepts a list of column indices (starting at zero) or a list
     #   of column names.
@@ -554,7 +554,7 @@ module Polars
     #   Set `rechunk: false` if you are benchmarking the parquet-reader. A `rechunk` is
     #   an expensive operation.
     def read_parquet(
-      file,
+      source,
       columns: nil,
       n_rows: nil,
       storage_options: nil,
@@ -565,7 +565,7 @@ module Polars
       use_statistics: true,
       rechunk: true
     )
-      _prepare_file_arg(file) do |data|
+      _prepare_file_arg(source) do |data|
         DataFrame._read_parquet(
           data,
           columns: columns,
@@ -582,22 +582,22 @@ module Polars
 
     # Read into a DataFrame from a JSON file.
     #
-    # @param file [Object]
+    # @param source [Object]
     #   Path to a file or a file-like object.
     #
     # @return [DataFrame]
-    def read_json(file)
-      DataFrame._read_json(file)
+    def read_json(source)
+      DataFrame._read_json(source)
     end
 
     # Read into a DataFrame from a newline delimited JSON file.
     #
-    # @param file [Object]
+    # @param source [Object]
     #   Path to a file or a file-like object.
     #
     # @return [DataFrame]
-    def read_ndjson(file)
-      DataFrame._read_ndjson(file)
+    def read_ndjson(source)
+      DataFrame._read_ndjson(source)
     end
 
     # Read a SQL query into a DataFrame.
@@ -638,7 +638,7 @@ module Polars
     # file chunks. After that work will only be done
     # if `next_batches` is called.
     #
-    # @param file [Object]
+    # @param source [Object]
     #   Path to a file or a file-like object.
     # @param has_header [Boolean]
     #   Indicate if the first row of dataset is a header or not.
@@ -722,7 +722,7 @@ module Polars
     #   )
     #   reader.next_batches(5)
     def read_csv_batched(
-      file,
+      source,
       has_header: true,
       columns: nil,
       new_columns: nil,
@@ -762,7 +762,7 @@ module Polars
       end
 
       BatchedCsvReader.new(
-        file,
+        source,
         has_header: has_header,
         columns: columns || projection,
         sep: sep,
@@ -791,30 +791,30 @@ module Polars
 
     # Get a schema of the IPC file without reading data.
     #
-    # @param file [Object]
+    # @param source [Object]
     #   Path to a file or a file-like object.
     #
     # @return [Hash]
-    def read_ipc_schema(file)
-      if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+    def read_ipc_schema(source)
+      if Utils.pathlike?(source)
+        source = Utils.normalise_filepath(source)
       end
 
-      _ipc_schema(file)
+      _ipc_schema(source)
     end
 
     # Get a schema of the Parquet file without reading data.
     #
-    # @param file [Object]
+    # @param source [Object]
     #   Path to a file or a file-like object.
     #
     # @return [Hash]
-    def read_parquet_schema(file)
-      if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+    def read_parquet_schema(source)
+      if Utils.pathlike?(source)
+        source = Utils.normalise_filepath(source)
       end
 
-      _parquet_schema(file)
+      _parquet_schema(source)
     end
 
     private
