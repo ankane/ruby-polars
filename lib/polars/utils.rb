@@ -216,5 +216,9 @@ module Polars
         val.is_a?(Array) && _is_iterable_of(val, String)
       end
     end
+
+    def self.local_file?(file)
+      Dir.glob(file).any?
+    end
   end
 end

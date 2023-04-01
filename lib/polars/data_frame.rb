@@ -196,7 +196,7 @@ module Polars
 
     # @private
     def self._read_parquet(
-      file,
+      source,
       columns: nil,
       n_rows: nil,
       parallel: "auto",
@@ -206,18 +206,38 @@ module Polars
       use_statistics: true,
       rechunk: true
     )
-      if Utils.pathlike?(file)
-        file = Utils.format_path(file)
+      if Utils.pathlike?(source)
+        source = Utils.format_path(source)
+      end
+      if columns.is_a?(String)
+        columns = [columns]
       end
 
-      if file.is_a?(String) && file.include?("*")
-        raise Todo
+      if source.is_a?(String) && source.include?("*") && Utils.local_file?(source)
+        scan =
+          Polars.scan_parquet(
+            source,
+            n_rows: n_rows,
+            rechunk: true,
+            parallel: parallel,
+            row_count_name: row_count_name,
+            row_count_offset: row_count_offset,
+            low_memory: low_memory
+          )
+
+        if columns.nil?
+          return self._from_rbdf(scan.collect._df)
+        elsif Utils.is_str_sequence(columns, allow_str: false)
+          return self._from_rbdf(scan.select(columns).collect._df)
+        else
+          raise ArgumentError, "cannot use glob patterns and integer based projection as `columns` argument; Use columns: Array[String]"
+        end
       end
 
       projection, columns = Utils.handle_projection_columns(columns)
       _from_rbdf(
         RbDataFrame.read_parquet(
-          file,
+          source,
           columns,
           projection,
           n_rows,
