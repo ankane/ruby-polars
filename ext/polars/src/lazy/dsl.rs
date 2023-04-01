@@ -715,6 +715,18 @@ impl RbExpr {
             .into()
     }
 
+    pub fn binary_contains(&self, lit: Vec<u8>) -> Self {
+        self.inner.clone().binary().contains_literal(lit).into()
+    }
+
+    pub fn binary_ends_with(&self, sub: Vec<u8>) -> Self {
+        self.inner.clone().binary().ends_with(sub).into()
+    }
+
+    pub fn binary_starts_with(&self, sub: Vec<u8>) -> Self {
+        self.inner.clone().binary().starts_with(sub).into()
+    }
+
     pub fn str_hex_encode(&self) -> Self {
         self.clone()
             .inner
@@ -760,6 +772,58 @@ impl RbExpr {
                 GetOutput::same_type(),
             )
             .with_fmt("str.base64_decode")
+            .into()
+    }
+
+    pub fn binary_hex_encode(&self) -> Self {
+        self.clone()
+            .inner
+            .map(
+                move |s| s.binary().map(|s| Some(s.hex_encode().into_series())),
+                GetOutput::same_type(),
+            )
+            .with_fmt("binary.hex_encode")
+            .into()
+    }
+
+    pub fn binary_hex_decode(&self, strict: bool) -> Self {
+        self.clone()
+            .inner
+            .map(
+                move |s| {
+                    s.binary()?
+                        .hex_decode(strict)
+                        .map(|s| Some(s.into_series()))
+                },
+                GetOutput::same_type(),
+            )
+            .with_fmt("binary.hex_decode")
+            .into()
+    }
+
+    pub fn binary_base64_encode(&self) -> Self {
+        self.clone()
+            .inner
+            .map(
+                move |s| s.binary().map(|s| Some(s.base64_encode().into_series())),
+                GetOutput::same_type(),
+            )
+            .with_fmt("binary.base64_encode")
+            .into()
+    }
+
+    pub fn binary_base64_decode(&self, strict: bool) -> Self {
+        self.clone()
+            .inner
+            .map(
+                move |s| {
+                    s.binary()?
+                        .base64_decode(strict)
+                        .map(|s| Some(s.into_series()))
+                },
+                GetOutput::same_type(),
+            )
+            .with_fmt("binary.base64_decode")
             .into()
     }
 

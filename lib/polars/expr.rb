@@ -4962,6 +4962,13 @@ module Polars
       ListExpr.new(self)
     end
 
+    # Create an object namespace of all binary related methods.
+    #
+    # @return [BinaryExpr]
+    def bin
+      BinaryExpr.new(self)
+    end
+
     # Create an object namespace of all categorical related methods.
     #
     # @return [CatExpr]

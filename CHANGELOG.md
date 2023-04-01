@@ -5,6 +5,7 @@
 - Added support for `Binary` to `to_a` method
 - Added support for glob patterns to `read_parquet` method
 - Added `sink_parquet` method to `LazyFrame`
+- Added `BinaryExpr` and `BinaryNameSpace`
 
 ## 0.3.1 (2023-02-21)
 

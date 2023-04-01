@@ -3531,6 +3531,13 @@ module Polars
       ListNameSpace.new(self)
     end
 
+    # Create an object namespace of all binary related methods.
+    #
+    # @return [BinaryNameSpace]
+    def bin
+      BinaryNameSpace.new(self)
+    end
+
     # Create an object namespace of all categorical related methods.
     #
     # @return [CatNameSpace]
