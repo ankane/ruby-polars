@@ -12,6 +12,8 @@ require "stringio"
 # modules
 require_relative "polars/expr_dispatch"
 require_relative "polars/batched_csv_reader"
+require_relative "polars/binary_expr"
+require_relative "polars/binary_name_space"
 require_relative "polars/cat_expr"
 require_relative "polars/cat_name_space"
 require_relative "polars/convert"

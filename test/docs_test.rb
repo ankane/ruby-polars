@@ -1,6 +1,14 @@
 require_relative "test_helper"
 
 class DocsTest < Minitest::Test
+  def test_binary_expr
+    assert_docs Polars::BinaryExpr
+  end
+
+  def test_binary_name_space
+    assert_docs Polars::BinaryNameSpace
+  end
+
   def test_cat_expr
     assert_docs Polars::CatExpr
   end
