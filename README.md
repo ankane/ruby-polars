@@ -41,6 +41,7 @@ From a CSV
 
 ```ruby
 Polars.read_csv("file.csv")
+
 # or lazily with
 Polars.scan_csv("file.csv")
 ```
@@ -49,6 +50,7 @@ From Parquet
 
 ```ruby
 Polars.read_parquet("file.parquet")
+
 # or lazily with
 Polars.scan_parquet("file.parquet")
 ```
@@ -67,7 +69,8 @@ From JSON
 Polars.read_json("file.json")
 # or
 Polars.read_ndjson("file.ndjson")
-# or
+
+# or lazily with
 Polars.scan_ndjson("file.ndjson")
 ```
 
@@ -75,6 +78,7 @@ From Feather / Arrow IPC
 
 ```ruby
 Polars.read_ipc("file.arrow")
+
 # or lazily with
 Polars.scan_ipc("file.arrow")
 ```
