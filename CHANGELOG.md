@@ -3,7 +3,7 @@
 - Updated Polars to 0.28.0
 - Added support for creating `Binary` series
 - Added support for `Binary` to `to_a` method
-- Added `sink_parquet` method
+- Added `sink_parquet` method to `LazyFrame`
 
 ## 0.3.1 (2023-02-21)
 
