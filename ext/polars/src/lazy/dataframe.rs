@@ -4,6 +4,7 @@ use polars::lazy::frame::{LazyFrame, LazyGroupBy};
 use polars::prelude::*;
 use std::cell::RefCell;
 use std::io::{BufWriter, Read};
+use std::path::PathBuf;
 
 use crate::conversion::*;
 use crate::file::get_file_like;
@@ -285,6 +286,32 @@ impl RbLazyFrame {
         let ldf = self.ldf.clone();
         let df = ldf.collect().map_err(RbPolarsErr::from)?;
         Ok(df.into())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn sink_parquet(
+        &self,
+        path: PathBuf,
+        compression: String,
+        compression_level: Option<i32>,
+        statistics: bool,
+        row_group_size: Option<usize>,
+        data_pagesize_limit: Option<usize>,
+        maintain_order: bool,
+    ) -> RbResult<()> {
+        let compression = parse_parquet_compression(&compression, compression_level)?;
+
+        let options = ParquetWriteOptions {
+            compression,
+            statistics,
+            row_group_size,
+            data_pagesize_limit,
+            maintain_order,
+        };
+
+        let ldf = self.ldf.clone();
+        ldf.sink_parquet(path, options).map_err(RbPolarsErr::from)?;
+        Ok(())
     }
 
     pub fn fetch(&self, n_rows: usize) -> RbResult<RbDataFrame> {

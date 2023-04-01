@@ -475,6 +475,96 @@ module Polars
       Utils.wrap_df(ldf.collect)
     end
 
+    # Persists a LazyFrame at the provided path.
+    #
+    # This allows streaming results that are larger than RAM to be written to disk.
+    #
+    # @param path [String]
+    #   File path to which the file should be written.
+    # @param compression ["lz4", "uncompressed", "snappy", "gzip", "lzo", "brotli", "zstd"]
+    #   Choose "zstd" for good compression performance.
+    #   Choose "lz4" for fast compression/decompression.
+    #   Choose "snappy" for more backwards compatibility guarantees
+    #   when you deal with older parquet readers.
+    # @param compression_level [Integer]
+    #   The level of compression to use. Higher compression means smaller files on
+    #   disk.
+    #
+    #   - "gzip" : min-level: 0, max-level: 10.
+    #   - "brotli" : min-level: 0, max-level: 11.
+    #   - "zstd" : min-level: 1, max-level: 22.
+    # @param statistics [Boolean]
+    #   Write statistics to the parquet headers. This requires extra compute.
+    # @param row_group_size [Integer]
+    #   Size of the row groups in number of rows.
+    #   If `nil` (default), the chunks of the `DataFrame` are
+    #   used. Writing in smaller chunks may reduce memory pressure and improve
+    #   writing speeds.
+    # @param data_pagesize_limit [Integer]
+    #   Size limit of individual data pages.
+    #   If not set defaults to 1024 * 1024 bytes
+    # @param maintain_order [Boolean]
+    #   Maintain the order in which data is processed.
+    #   Setting this to `false` will  be slightly faster.
+    # @param type_coercion [Boolean]
+    #   Do type coercion optimization.
+    # @param predicate_pushdown [Boolean]
+    #   Do predicate pushdown optimization.
+    # @param projection_pushdown [Boolean]
+    #   Do projection pushdown optimization.
+    # @param simplify_expression [Boolean]
+    #   Run simplify expressions optimization.
+    # @param no_optimization [Boolean]
+    #   Turn off (certain) optimizations.
+    # @param slice_pushdown [Boolean]
+    #   Slice pushdown optimization.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   lf = Polars.scan_csv("/path/to/my_larger_than_ram_file.csv")
+    #   lf.sink_parquet("out.parquet")
+    def sink_parquet(
+      path,
+      compression: "zstd",
+      compression_level: nil,
+      statistics: false,
+      row_group_size: nil,
+      data_pagesize_limit: nil,
+      maintain_order: true,
+      type_coercion: true,
+      predicate_pushdown: true,
+      projection_pushdown: true,
+      simplify_expression: true,
+      no_optimization: false,
+      slice_pushdown: true
+    )
+      if no_optimization
+        predicate_pushdown = false
+        projection_pushdown = false
+        slice_pushdown = false
+      end
+
+      lf = _ldf.optimization_toggle(
+        type_coercion,
+        predicate_pushdown,
+        projection_pushdown,
+        simplify_expression,
+        slice_pushdown,
+        false,
+        true
+      )
+      lf.sink_parquet(
+        path,
+        compression,
+        compression_level,
+        statistics,
+        row_group_size,
+        data_pagesize_limit,
+        maintain_order
+      )
+    end
+
     # Collect a small number of rows for debugging purposes.
     #
     # Fetch is like a {#collect} operation, but it overwrites the number of rows
