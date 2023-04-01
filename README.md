@@ -63,6 +63,14 @@ Polars.read_sql(User.all)
 Polars.read_sql("SELECT * FROM users")
 ```
 
+From JSON
+
+```ruby
+Polars.read_json("file.json")
+# or
+Polars.read_ndjson("file.ndjson")
+```
+
 From a hash
 
 ```ruby
