@@ -336,6 +336,7 @@ module Polars
     end
     alias_method :count, :height
     alias_method :length, :height
+    alias_method :size, :height
 
     # Get the width of the DataFrame.
     #
