@@ -666,15 +666,18 @@ module Polars
     # Set item.
     #
     # @return [Object]
-    #
-    # def []=(key, value)
-    #   if key.is_a?(String)
-    #     raise TypeError, "'DataFrame' object does not support 'Series' assignment by index. Use 'DataFrame.with_columns'"
-    #   end
-
-    #   raise Todo
-    # end
-
+    def []=(key, value)
+      if Utils.strlike?(key)
+        if value.is_a?(Array)
+          value = Series.new(value)
+        elsif !value.is_a?(Series)
+          value = Polars.lit(value)
+        end
+        self._df = with_column(value.alias(key.to_s))._df
+      else
+        raise Todo
+      end
+    end
 
     # Return the dataframe as a scalar.
     #

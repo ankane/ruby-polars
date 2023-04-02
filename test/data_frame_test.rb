@@ -151,6 +151,26 @@ class DataFrameTest < Minitest::Test
     assert_frame({"a" => [2]}, df[1...2])
   end
 
+  def test_set
+    a = [1, 2, 3]
+    b = ["one", "two", "three"]
+    df = Polars::DataFrame.new({"a" => a})
+
+    df["a"] = Polars::Series.new(b)
+    assert_series b, df["a"]
+
+    df["b"] = b
+    assert_series b, df["b"]
+
+    df[:c] = 1
+    assert_series [1, 1, 1], df["c"]
+
+    error = assert_raises do
+      df["d"] = [1, 2]
+    end
+    assert_match "lengths don't match", error.message
+  end
+
   def test_to_h
     data = {"a" => [1, 2, 3], "b" => ["one", "two", "three"]}
     df = Polars::DataFrame.new(data)

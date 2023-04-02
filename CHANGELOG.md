@@ -1,5 +1,6 @@
 ## 0.4.1 (unreleased)
 
+- Added column assignment to `DataFrame`
 - Aliased `len` to `size` for `Series` and `DataFrame`
 - Aliased `apply` to `map` for `Series`
 - Improved `any` and `all` for `Series`
