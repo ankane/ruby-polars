@@ -668,7 +668,7 @@ module Polars
     # @return [Object]
     def []=(key, value)
       if Utils.strlike?(key)
-        if value.is_a?(Array)
+        if value.is_a?(Array) || (defined?(Numo::NArray) && value.is_a?(Numo::NArray))
           value = Series.new(value)
         elsif !value.is_a?(Series)
           value = Polars.lit(value)
