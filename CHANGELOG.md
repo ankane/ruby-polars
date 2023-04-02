@@ -3,7 +3,7 @@
 - Added support for creating series from Numo arrays
 - Added column assignment to `DataFrame`
 - Aliased `len` to `size` for `Series` and `DataFrame`
-- Aliased `apply` to `map` for `Series`
+- Aliased `apply` to `map` and `unique` to `uniq` for `Series`
 - Improved `any` and `all` for `Series`
 
 ## 0.4.0 (2023-04-01)

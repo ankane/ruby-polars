@@ -622,6 +622,11 @@ class SeriesTest < Minitest::Test
     assert_equal 3, Polars::Series.new([1, 1, 2, 2, 5]).n_unique
   end
 
+  def test_unique
+    assert_series [1, 2, 5], Polars::Series.new([1, 1, 2, 2, 5]).unique.sort
+    assert_series [1, 2, 5], Polars::Series.new([1, 1, 2, 2, 5]).uniq.sort
+  end
+
   def test_reinterpret
     s = Polars::Series.new("a", [2**64 - 1, 0, 1], dtype: Polars::UInt64)
     assert_series [-1, 0, 1], s.reinterpret

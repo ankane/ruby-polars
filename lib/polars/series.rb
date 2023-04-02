@@ -1330,6 +1330,7 @@ module Polars
     def unique(maintain_order: false)
       super
     end
+    alias_method :uniq, :unique
 
     # Take values by index.
     #
