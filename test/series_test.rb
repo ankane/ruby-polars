@@ -697,6 +697,8 @@ class SeriesTest < Minitest::Test
 
   def test_apply
     s = Polars::Series.new([1, 2, 3])
-    assert_series [1, 4, 9], s.apply { |v| v**2 }
+    assert_series [1, 4, 9], s.apply { |v| v**2 }, dtype: Polars::Int64
+    assert_series [1, 2, 3], s.map(&:to_f), dtype: Polars::Float64
+    assert_series [false, true, false], s.map(&:even?), dtype: Polars::Boolean
   end
 end

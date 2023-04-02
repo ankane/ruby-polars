@@ -2442,6 +2442,7 @@ module Polars
       end
       Utils.wrap_s(_s.apply_lambda(func, pl_return_dtype, skip_nulls))
     end
+    alias_method :map, :apply
 
     # Shift the values by a given period.
     #
