@@ -3719,10 +3719,14 @@ module Polars
 
       if values.shape.length == 1
         values, dtype = numo_values_and_dtype(values)
-        constructor = numo_type_to_constructor(dtype)
-        strict = nan_to_null if values.is_a?(Numo::SFloat) || values.is_a?(Numo::DFloat)
-        # TODO improve performance
-        constructor.call(name, values.to_a, strict)
+        strict = nan_to_null if [Numo::SFloat, Numo::DFloat].include?(dtype)
+        if dtype == Numo::RObject
+          sequence_to_rbseries(name, values.to_a, strict: strict)
+        else
+          constructor = numo_type_to_constructor(dtype)
+          # TODO improve performance
+          constructor.call(name, values.to_a, strict)
+        end
       elsif values.shape.length == 2
         raise Todo
       else
