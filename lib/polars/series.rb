@@ -3655,11 +3655,9 @@ module Polars
         return Utils.wrap_s(_s.send(op, other._s))
       end
 
-      if other.is_a?(::Date) || other.is_a?(::DateTime) || other.is_a?(::Time) || other.is_a?(String)
-        raise Todo
-      end
-      if other.is_a?(Float) && !is_float
-        raise Todo
+      if (other.is_a?(Float) || other.is_a?(::Date) || other.is_a?(::DateTime) || other.is_a?(::Time) || other.is_a?(String)) && !is_float
+        _s2 = sequence_to_rbseries(name, [other])
+        return Utils.wrap_s(_s.send(op, _s2))
       end
 
       Utils.wrap_s(_s.send("#{op}_#{DTYPE_TO_FFINAME.fetch(dtype)}", other))
