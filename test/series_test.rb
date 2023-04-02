@@ -278,13 +278,17 @@ class SeriesTest < Minitest::Test
   end
 
   def test_any
-    assert Polars::Series.new([false, false, true]).any
-    refute Polars::Series.new([false, false, false]).any
+    assert Polars::Series.new([false, false, true]).any?
+    refute Polars::Series.new([false, false, false]).any?
+    assert Polars::Series.new([1, 2, 3]).any?(&:even?)
+    refute Polars::Series.new([1, 3, 5]).any?(&:even?)
   end
 
   def test_all
-    assert Polars::Series.new([true, true, true]).all
-    refute Polars::Series.new([true, true, false]).all
+    assert Polars::Series.new([true, true, true]).all?
+    refute Polars::Series.new([true, true, false]).all?
+    refute Polars::Series.new([1, 2, 3]).all?(&:even?)
+    assert Polars::Series.new([2, 4, 6]).all?(&:even?)
   end
 
   def test_log

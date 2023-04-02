@@ -1,3 +1,7 @@
+## 0.4.1 (unreleased)
+
+- Improved `any` and `all` for `Series`
+
 ## 0.4.0 (2023-04-01)
 
 - Updated Polars to 0.28.0

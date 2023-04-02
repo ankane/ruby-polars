@@ -369,16 +369,26 @@ module Polars
     # Check if any boolean value in the column is `true`.
     #
     # @return [Boolean]
-    def any
-      to_frame.select(Polars.col(name).any).to_series[0]
+    def any?(&block)
+      if block_given?
+        apply(&block).any?
+      else
+        to_frame.select(Polars.col(name).any).to_series[0]
+      end
     end
+    alias_method :any, :any?
 
     # Check if all boolean values in the column are `true`.
     #
     # @return [Boolean]
-    def all
-      to_frame.select(Polars.col(name).all).to_series[0]
+    def all?(&block)
+      if block_given?
+        apply(&block).all?
+      else
+        to_frame.select(Polars.col(name).all).to_series[0]
+      end
     end
+    alias_method :all, :all?
 
     # Compute the logarithm to a given base.
     #
