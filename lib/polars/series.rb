@@ -67,6 +67,12 @@ module Polars
           ._s
       elsif values.is_a?(Array)
         self._s = sequence_to_rbseries(name, values, dtype: dtype, strict: strict, dtype_if_empty: dtype_if_empty)
+      elsif defined?(Numo::NArray) && values.is_a?(Numo::NArray)
+        self._s = numo_to_rbseries(name, values, strict: strict, nan_to_null: nan_to_null)
+
+        if !dtype.nil?
+          self._s = self.cast(dtype, strict: true)._s
+        end
       else
         raise ArgumentError, "Series constructor called with unsupported type; got #{values.class.name}"
       end
@@ -3703,6 +3709,45 @@ module Polars
       # should not be in-place?
       values.rename(name, in_place: true)
       values._s
+    end
+
+    def numo_to_rbseries(name, values, strict: true, nan_to_null: false)
+      # not needed yet
+      # if !values.contiguous?
+      # end
+
+      if values.shape.length == 1
+        values, dtype = numo_values_and_dtype(values)
+        constructor = numo_type_to_constructor(dtype)
+        strict = nan_to_null if values.is_a?(Numo::SFloat) || values.is_a?(Numo::DFloat)
+        # TODO improve performance
+        constructor.call(name, values.to_a, strict)
+      elsif values.shape.length == 2
+        raise Todo
+      else
+        raise Todo
+      end
+    end
+
+    def numo_values_and_dtype(values)
+      [values, values.class]
+    end
+
+    def numo_type_to_constructor(dtype)
+      {
+        Numo::Float32 => RbSeries.method(:new_opt_f32),
+        Numo::Float64 => RbSeries.method(:new_opt_f64),
+        Numo::Int8 => RbSeries.method(:new_opt_i8),
+        Numo::Int16 => RbSeries.method(:new_opt_i16),
+        Numo::Int32 => RbSeries.method(:new_opt_i32),
+        Numo::Int64 => RbSeries.method(:new_opt_i64),
+        Numo::UInt8 => RbSeries.method(:new_opt_u8),
+        Numo::UInt16 => RbSeries.method(:new_opt_u16),
+        Numo::UInt32 => RbSeries.method(:new_opt_u32),
+        Numo::UInt64 => RbSeries.method(:new_opt_u64)
+      }.fetch(dtype)
+    rescue KeyError
+      RbSeries.method(:new_object)
     end
 
     def sequence_to_rbseries(name, values, dtype: nil, strict: true, dtype_if_empty: nil)
