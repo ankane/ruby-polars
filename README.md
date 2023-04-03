@@ -58,9 +58,9 @@ Polars.scan_parquet("file.parquet")
 From Active Record
 
 ```ruby
-Polars.read_sql(User.all)
+Polars.read_database(User.all)
 # or
-Polars.read_sql("SELECT * FROM users")
+Polars.read_database("SELECT * FROM users")
 ```
 
 From JSON
