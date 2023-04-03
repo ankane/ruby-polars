@@ -40,10 +40,31 @@ class DataFrameTest < Minitest::Test
     assert_equal ["a", "b"], df.columns
   end
 
+  def test_new_hash_unsupported_key
+    error = assert_raises(TypeError) do
+      Polars::DataFrame.new({Object.new => 1..3})
+    end
+    assert_equal "no implicit conversion of Object into String", error.message
+  end
+
+  def test_new_hash_different_sizes
+    error = assert_raises do
+      Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [1, 2]})
+    end
+    assert_match "lengths don't match", error.message
+  end
+
   def test_new_series
     df = Polars::DataFrame.new(Polars::Series.new("a", [1, 2, 3]))
     expected = Polars::DataFrame.new({"a" => [1, 2, 3]})
     assert_frame expected, df
+  end
+
+  def test_new_unsupported
+    error = assert_raises(ArgumentError) do
+      Polars::DataFrame.new(Object.new)
+    end
+    assert_equal "DataFrame constructor called with unsupported type; got Object", error.message
   end
 
   def test_shape
