@@ -1,5 +1,5 @@
 module Polars
-  # Representation of a Lazy computation graph/query againat a DataFrame.
+  # Representation of a Lazy computation graph/query against a DataFrame.
   class LazyFrame
     # @private
     attr_accessor :_ldf
