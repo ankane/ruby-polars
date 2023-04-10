@@ -23,6 +23,19 @@ module Polars
       Polars.col(name)
     end
 
+    def self.arrlen(obj)
+      if obj.is_a?(Range)
+        # size only works for numeric ranges
+        obj.to_a.length
+      elsif obj.is_a?(String)
+        nil
+      else
+        obj.length
+      end
+    rescue
+      nil
+    end
+
     def self._timedelta_to_pl_duration(td)
       td
     end

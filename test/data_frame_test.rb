@@ -54,6 +54,11 @@ class DataFrameTest < Minitest::Test
     assert_match "lengths don't match", error.message
   end
 
+  def test_new_hash_scalar
+    df = Polars::DataFrame.new({"a" => 1, "b" => [1, 2, 3]})
+    assert_series [1, 1, 1], df["a"]
+  end
+
   def test_new_series
     df = Polars::DataFrame.new(Polars::Series.new("a", [1, 2, 3]))
     expected = Polars::DataFrame.new({"a" => [1, 2, 3]})

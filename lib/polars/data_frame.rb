@@ -4746,20 +4746,42 @@ module Polars
     end
 
     # @private
-    def self.hash_to_rbdf(data, columns: nil)
-      if !columns.nil?
-        columns, dtypes = _unpack_columns(columns, lookup_names: data.keys)
-
-        if data.empty? && dtypes
-          data_series = columns.map { |name| Series.new(name, [], dtype: dtypes[name])._s }
+    def self.expand_hash_scalars(data, schema_overrides: nil)
+      updated_data = {}
+      unless data.empty?
+        dtypes = schema_overrides || {}
+        array_len = data.values.map { |val| Utils.arrlen(val) || 0 }.max
+        if array_len > 0
+          data.each do |name, val|
+            dtype = dtypes[name]
+            if val.is_a?(Hash) && dtype != Struct
+              updated_data[name] = DataFrame.new(val).to_struct(name)
+            elsif !Utils.arrlen(val).nil?
+              updated_data[name] = Series.new(String.new(name), val, dtype: dtype)
+            elsif val.nil? || [Integer, Float, TrueClass, FalseClass, String, ::Date, ::DateTime, ::Time].any? { |cls| val.is_a?(cls) }
+              updated_data[name] = Series.new(String.new(name), [val], dtype: dtype).extend_constant(val, array_len - 1)
+            else
+              raise Todo
+            end
+          end
         else
-          data_series = data.map { |name, values| Series.new(name, values, dtype: dtypes[name])._s }
+          raise Todo
         end
-        data_series = _handle_columns_arg(data_series, columns: columns)
-        return RbDataFrame.new(data_series)
       end
+      updated_data
+    end
 
-      RbDataFrame.read_hash(data)
+    # @private
+    def self.hash_to_rbdf(data, columns: nil)
+      columns, dtypes = _unpack_columns(columns, lookup_names: data.keys)
+
+      if data.empty? && dtypes
+        data_series = columns.map { |name| Series.new(name, [], dtype: dtypes[name])._s }
+      else
+        data_series = expand_hash_scalars(data, schema_overrides: dtypes).values.map(&:_s)
+      end
+      data_series = _handle_columns_arg(data_series, columns: columns)
+      RbDataFrame.new(data_series)
     end
 
     # @private
@@ -4797,7 +4819,7 @@ module Polars
     end
 
     def self._handle_columns_arg(data, columns: nil)
-      if columns.nil?
+      if columns.nil? || columns.empty?
         data
       else
         if data.empty?
