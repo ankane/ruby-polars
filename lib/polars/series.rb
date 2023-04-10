@@ -3656,6 +3656,20 @@ module Polars
     end
 
     def _comp(other, op)
+      if dtype == Boolean && Utils.bool?(other) && [:eq, :neq].include?(op)
+        if (other == true && op == :eq) || (other == false && op == :neq)
+          return clone
+        elsif (other == false && op == :eq) || (other == true && op == :neq)
+          return !self
+        end
+      end
+
+      # TODO handle datetimes
+
+      if other.is_a?(Date) && dtype == Date
+        raise Todo
+      end
+
       if other.is_a?(Series)
         return Utils.wrap_s(_s.send(op, other._s))
       end
@@ -3663,7 +3677,13 @@ module Polars
       if dtype == Utf8
         raise Todo
       end
-      Utils.wrap_s(_s.send("#{op}_#{DTYPE_TO_FFINAME.fetch(dtype)}", other))
+
+      f = ffi_func("#{op}_%s", dtype, _s)
+      Utils.wrap_s(f.call(other))
+    end
+
+    def ffi_func(name, dtype, _s)
+      _s.method(name % DTYPE_TO_FFINAME.fetch(dtype))
     end
 
     def _arithmetic(other, op)

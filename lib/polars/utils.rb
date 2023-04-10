@@ -191,7 +191,7 @@ module Polars
     end
 
     def self.bool?(value)
-      value == true || value == false
+      value.is_a?(TrueClass) || value.is_a?(FalseClass)
     end
 
     def self.strlike?(value)
