@@ -54,6 +54,11 @@ module Polars
       end
     end
 
+    def self._date_to_pl_date(d)
+      dt = d.to_datetime.to_time
+      dt.to_i / (3600 * 24)
+    end
+
     def self._to_ruby_datetime(value, dtype, tu: "ns", tz: nil)
       if dtype == :date || dtype == Date
         # days to seconds

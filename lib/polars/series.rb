@@ -3666,8 +3666,10 @@ module Polars
 
       # TODO handle datetimes
 
-      if other.is_a?(Date) && dtype == Date
-        raise Todo
+      if other.is_a?(::Date) && dtype == Date
+        d = Utils._date_to_pl_date(other)
+        f = ffi_func("#{op}_%s", Int32, _s)
+        return Utils.wrap_s(f.call(d))
       end
 
       if other.is_a?(Series)
