@@ -258,7 +258,11 @@ module Polars
       to_frame.select(Polars.col(name).pow(power)).to_series
     end
 
+    # Performs boolean not.
+    #
     # TODO use !@ in 0.5.0
+    #
+    # @return [Series]
     def _not
       if dtype == Boolean
         return Utils.wrap_s(_s.not)

@@ -548,6 +548,8 @@ module Polars
     alias_method :inspect, :to_s
 
     # Returns an array representing the DataFrame
+    #
+    # @return [Array]
     def to_a
       rows(named: true)
     end
