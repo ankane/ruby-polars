@@ -547,6 +547,11 @@ module Polars
     end
     alias_method :inspect, :to_s
 
+    # Returns an array representing the DataFrame
+    def to_a
+      rows(named: true)
+    end
+
     # Check if DataFrame includes column.
     #
     # @return [Boolean]

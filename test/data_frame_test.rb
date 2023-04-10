@@ -203,6 +203,16 @@ class DataFrameTest < Minitest::Test
     assert_equal data, df.to_h(as_series: false)
   end
 
+  def test_to_a
+    data = [
+      {"a" => 1, "b" => "one"},
+      {"a" => 2, "b" => "two"},
+      {"a" => 3, "b" => "three"}
+    ]
+    df = Polars::DataFrame.new(data)
+    assert_equal data, df.to_a
+  end
+
   def test_to_series
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_series df["a"], df.to_series
