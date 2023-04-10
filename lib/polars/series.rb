@@ -3668,7 +3668,7 @@ module Polars
 
       if other.is_a?(::Date) && dtype == Date
         d = Utils._date_to_pl_date(other)
-        f = ffi_func("#{op}_%s", Int32, _s)
+        f = ffi_func("#{op}_<>", Int32, _s)
         return Utils.wrap_s(f.call(d))
       end
 
@@ -3680,12 +3680,12 @@ module Polars
         raise Todo
       end
 
-      f = ffi_func("#{op}_%s", dtype, _s)
+      f = ffi_func("#{op}_<>", dtype, _s)
       Utils.wrap_s(f.call(other))
     end
 
     def ffi_func(name, dtype, _s)
-      _s.method(name % DTYPE_TO_FFINAME.fetch(dtype))
+      _s.method(name.sub("<>", DTYPE_TO_FFINAME.fetch(dtype)))
     end
 
     def _arithmetic(other, op)
