@@ -42,13 +42,13 @@ module Polars
 
     def self._datetime_to_pl_timestamp(dt, tu)
       if tu == "ns"
-        (dt.to_datetime.utc.to_f * 1e9).to_i
+        (dt.to_datetime.to_time.to_f * 1e9).to_i
       elsif tu == "us"
-        (dt.to_datetime.utc.to_f * 1e6).to_i
+        (dt.to_datetime.to_time.to_f * 1e6).to_i
       elsif tu == "ms"
-        (dt.to_datetime.utc.to_f * 1e3).to_i
+        (dt.to_datetime.to_time.to_f * 1e3).to_i
       elsif tu.nil?
-        (dt.to_datetime.utc.to_f * 1e6).to_i
+        (dt.to_datetime.to_time.to_f * 1e6).to_i
       else
         raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms'}}, got #{tu}"
       end
