@@ -732,7 +732,6 @@ fn init() -> RbResult<()> {
     class.define_method("eq_i64", method!(RbSeries::eq_i64, 1))?;
     class.define_method("eq_f32", method!(RbSeries::eq_f32, 1))?;
     class.define_method("eq_f64", method!(RbSeries::eq_f64, 1))?;
-    // class.define_method("eq_str", method!(RbSeries::eq_str, 1))?;
 
     // neq
     class.define_method("neq_u8", method!(RbSeries::neq_u8, 1))?;
@@ -745,7 +744,6 @@ fn init() -> RbResult<()> {
     class.define_method("neq_i64", method!(RbSeries::neq_i64, 1))?;
     class.define_method("neq_f32", method!(RbSeries::neq_f32, 1))?;
     class.define_method("neq_f64", method!(RbSeries::neq_f64, 1))?;
-    // class.define_method("neq_str", method!(RbSeries::neq_str, 1))?;
 
     // gt
     class.define_method("gt_u8", method!(RbSeries::gt_u8, 1))?;
@@ -758,7 +756,6 @@ fn init() -> RbResult<()> {
     class.define_method("gt_i64", method!(RbSeries::gt_i64, 1))?;
     class.define_method("gt_f32", method!(RbSeries::gt_f32, 1))?;
     class.define_method("gt_f64", method!(RbSeries::gt_f64, 1))?;
-    // class.define_method("gt_str", method!(RbSeries::gt_str, 1))?;
 
     // gt_eq
     class.define_method("gt_eq_u8", method!(RbSeries::gt_eq_u8, 1))?;
@@ -771,7 +768,6 @@ fn init() -> RbResult<()> {
     class.define_method("gt_eq_i64", method!(RbSeries::gt_eq_i64, 1))?;
     class.define_method("gt_eq_f32", method!(RbSeries::gt_eq_f32, 1))?;
     class.define_method("gt_eq_f64", method!(RbSeries::gt_eq_f64, 1))?;
-    // class.define_method("gt_eq_str", method!(RbSeries::gt_eq_str, 1))?;
 
     // lt
     class.define_method("lt_u8", method!(RbSeries::lt_u8, 1))?;
@@ -784,7 +780,6 @@ fn init() -> RbResult<()> {
     class.define_method("lt_i64", method!(RbSeries::lt_i64, 1))?;
     class.define_method("lt_f32", method!(RbSeries::lt_f32, 1))?;
     class.define_method("lt_f64", method!(RbSeries::lt_f64, 1))?;
-    // class.define_method("lt_str", method!(RbSeries::lt_str, 1))?;
 
     // lt_eq
     class.define_method("lt_eq_u8", method!(RbSeries::lt_eq_u8, 1))?;
@@ -797,7 +792,14 @@ fn init() -> RbResult<()> {
     class.define_method("lt_eq_i64", method!(RbSeries::lt_eq_i64, 1))?;
     class.define_method("lt_eq_f32", method!(RbSeries::lt_eq_f32, 1))?;
     class.define_method("lt_eq_f64", method!(RbSeries::lt_eq_f64, 1))?;
-    // class.define_method("lt_eq_str", method!(RbSeries::lt_eq_str, 1))?;
+
+    // str comp
+    class.define_method("eq_str", method!(RbSeries::eq_str, 1))?;
+    class.define_method("neq_str", method!(RbSeries::neq_str, 1))?;
+    class.define_method("gt_str", method!(RbSeries::gt_str, 1))?;
+    class.define_method("gt_eq_str", method!(RbSeries::gt_eq_str, 1))?;
+    class.define_method("lt_str", method!(RbSeries::lt_str, 1))?;
+    class.define_method("lt_eq_str", method!(RbSeries::lt_eq_str, 1))?;
 
     // npy
     class.define_method("to_numo", method!(RbSeries::to_numo, 0))?;

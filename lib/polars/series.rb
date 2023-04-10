@@ -3676,10 +3676,6 @@ module Polars
         return Utils.wrap_s(_s.send(op, other._s))
       end
 
-      if dtype == Utf8
-        raise Todo
-      end
-
       f = ffi_func("#{op}_<>", dtype, _s)
       Utils.wrap_s(f.call(other))
     end

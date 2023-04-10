@@ -992,7 +992,6 @@ impl_eq_num!(eq_i32, i32);
 impl_eq_num!(eq_i64, i64);
 impl_eq_num!(eq_f32, f32);
 impl_eq_num!(eq_f64, f64);
-// impl_eq_num!(eq_str, &str);
 
 macro_rules! impl_neq_num {
     ($name:ident, $type:ty) => {
@@ -1019,7 +1018,6 @@ impl_neq_num!(neq_i32, i32);
 impl_neq_num!(neq_i64, i64);
 impl_neq_num!(neq_f32, f32);
 impl_neq_num!(neq_f64, f64);
-// impl_neq_num!(neq_str, &str);
 
 macro_rules! impl_gt_num {
     ($name:ident, $type:ty) => {
@@ -1042,7 +1040,6 @@ impl_gt_num!(gt_i32, i32);
 impl_gt_num!(gt_i64, i64);
 impl_gt_num!(gt_f32, f32);
 impl_gt_num!(gt_f64, f64);
-// impl_gt_num!(gt_str, &str);
 
 macro_rules! impl_gt_eq_num {
     ($name:ident, $type:ty) => {
@@ -1065,7 +1062,6 @@ impl_gt_eq_num!(gt_eq_i32, i32);
 impl_gt_eq_num!(gt_eq_i64, i64);
 impl_gt_eq_num!(gt_eq_f32, f32);
 impl_gt_eq_num!(gt_eq_f64, f64);
-// impl_gt_eq_num!(gt_eq_str, &str);
 
 macro_rules! impl_lt_num {
     ($name:ident, $type:ty) => {
@@ -1088,7 +1084,6 @@ impl_lt_num!(lt_i32, i32);
 impl_lt_num!(lt_i64, i64);
 impl_lt_num!(lt_f32, f32);
 impl_lt_num!(lt_f64, f64);
-// impl_lt_num!(lt_str, &str);
 
 macro_rules! impl_lt_eq_num {
     ($name:ident, $type:ty) => {
@@ -1111,7 +1106,62 @@ impl_lt_eq_num!(lt_eq_i32, i32);
 impl_lt_eq_num!(lt_eq_i64, i64);
 impl_lt_eq_num!(lt_eq_f32, f32);
 impl_lt_eq_num!(lt_eq_f64, f64);
-// impl_lt_eq_num!(lt_eq_str, &str);
+
+impl RbSeries {
+    pub fn eq_str(&self, rhs: String) -> RbResult<Self> {
+        let s = self
+            .series
+            .borrow()
+            .equal(rhs.as_str())
+            .map_err(RbPolarsErr::from)?;
+        Ok(RbSeries::new(s.into_series()))
+    }
+
+    pub fn neq_str(&self, rhs: String) -> RbResult<Self> {
+        let s = self
+            .series
+            .borrow()
+            .not_equal(rhs.as_str())
+            .map_err(RbPolarsErr::from)?;
+        Ok(RbSeries::new(s.into_series()))
+    }
+
+    pub fn gt_str(&self, rhs: String) -> RbResult<Self> {
+        let s = self
+            .series
+            .borrow()
+            .gt(rhs.as_str())
+            .map_err(RbPolarsErr::from)?;
+        Ok(RbSeries::new(s.into_series()))
+    }
+
+    pub fn gt_eq_str(&self, rhs: String) -> RbResult<Self> {
+        let s = self
+            .series
+            .borrow()
+            .gt_eq(rhs.as_str())
+            .map_err(RbPolarsErr::from)?;
+        Ok(RbSeries::new(s.into_series()))
+    }
+
+    pub fn lt_str(&self, rhs: String) -> RbResult<Self> {
+        let s = self
+            .series
+            .borrow()
+            .lt(rhs.as_str())
+            .map_err(RbPolarsErr::from)?;
+        Ok(RbSeries::new(s.into_series()))
+    }
+
+    pub fn lt_eq_str(&self, rhs: String) -> RbResult<Self> {
+        let s = self
+            .series
+            .borrow()
+            .lt_eq(rhs.as_str())
+            .map_err(RbPolarsErr::from)?;
+        Ok(RbSeries::new(s.into_series()))
+    }
+}
 
 pub fn to_series_collection(rs: RArray) -> RbResult<Vec<Series>> {
     let mut series = Vec::new();
