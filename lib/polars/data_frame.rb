@@ -4764,8 +4764,14 @@ module Polars
               raise Todo
             end
           end
-        else
-          raise Todo
+        elsif data.values.all? { |val| Utils.arrlen(val) == 0 }
+          data.each do |name, val|
+            updated_data[name] = Series.new(name, val, dtype: dtypes[name])
+          end
+        elsif data.values.all? { |val| Utils.arrlen(val).nil? }
+          data.each do |name, val|
+            updated_data[name] = Series.new(name, [val], dtype: dtypes[name])
+          end
         end
       end
       updated_data
