@@ -3,6 +3,7 @@
 - Added support for creating series from Numo arrays
 - Added column assignment to `DataFrame`
 - Added `to_a` method to `DataFrame`
+- Added support for `Object` to `to_a` method
 - Aliased `len` to `size` for `Series` and `DataFrame`
 - Aliased `apply` to `map` and `unique` to `uniq` for `Series`
 - Improved `any` and `all` for `Series`

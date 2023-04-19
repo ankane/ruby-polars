@@ -81,6 +81,11 @@ class SeriesTest < Minitest::Test
     assert_series [1, nil, 3], s, dtype: Polars::Int64
   end
 
+  def test_new_object
+    s = Polars::Series.new([BigDecimal("1"), nil, BigDecimal("3")])
+    assert_series [1, nil, 3], s, dtype: Polars::Object
+  end
+
   def test_new_unsupported
     error = assert_raises(ArgumentError) do
       Polars::Series.new("a", Object.new)

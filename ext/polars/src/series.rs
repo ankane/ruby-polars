@@ -1,4 +1,4 @@
-use magnus::{exception, Error, IntoValue, RArray, Value};
+use magnus::{exception, Error, IntoValue, RArray, Value, QNIL};
 use polars::prelude::*;
 use polars::series::IsSorted;
 use std::cell::RefCell;
@@ -512,6 +512,17 @@ impl RbSeries {
                 DataType::Float64 => RArray::from_iter(series.f64().unwrap()),
                 DataType::Categorical(_) => {
                     RArray::from_iter(series.categorical().unwrap().iter_str())
+                }
+                DataType::Object(_) => {
+                    let v = RArray::with_capacity(series.len());
+                    for i in 0..series.len() {
+                        let obj: Option<&ObjectValue> = series.get_object(i).map(|any| any.into());
+                        match obj {
+                            Some(val) => v.push(val.to_object()).unwrap(),
+                            None => v.push(QNIL).unwrap(),
+                        };
+                    }
+                    v
                 }
                 DataType::Date => {
                     let a = RArray::with_capacity(series.len());
