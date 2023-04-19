@@ -191,6 +191,22 @@ class DataFrameTest < Minitest::Test
     df[:c] = 1
     assert_series [1, 1, 1], df["c"]
 
+    df[1, "c"] = 2
+    df[2, :c] = 3
+    assert_series [1, 2, 3], df["c"]
+    assert_equal 1, df[0, "c"]
+    assert_equal 2, df[1, :c]
+    assert_equal 3, df[2, "c"]
+    error = assert_raises do
+      df[3, "c"]
+    end
+    assert_equal "index 3 is out of bounds for sequence of size 3", error.message
+
+    error = assert_raises(ArgumentError) do
+      df[] = 1
+    end
+    assert_equal "wrong number of arguments (given 1, expected 2..3)", error.message
+
     error = assert_raises do
       df["d"] = [1, 2]
     end

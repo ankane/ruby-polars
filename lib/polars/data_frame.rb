@@ -673,7 +673,13 @@ module Polars
     # Set item.
     #
     # @return [Object]
-    def []=(key, value)
+    def []=(*key, value)
+      if key.length == 1
+        key = key.first
+      elsif key.length != 2
+        raise ArgumentError, "wrong number of arguments (given #{key.length + 1}, expected 2..3)"
+      end
+
       if Utils.strlike?(key)
         if value.is_a?(Array) || (defined?(Numo::NArray) && value.is_a?(Numo::NArray))
           value = Series.new(value)
@@ -681,6 +687,24 @@ module Polars
           value = Polars.lit(value)
         end
         self._df = with_column(value.alias(key.to_s))._df
+      elsif key.is_a?(Array)
+        row_selection, col_selection = key
+
+        if Utils.strlike?(col_selection)
+          s = self[col_selection]
+        elsif col_selection.is_a?(Integer)
+          raise Todo
+        else
+          raise ArgumentError, "column selection not understood: #{col_selection}"
+        end
+
+        s[row_selection] = value
+
+        if col_selection.is_a?(Integer)
+          replace_at_idx(col_selection, s)
+        elsif Utils.strlike?(col_selection)
+          replace(col_selection, s)
+        end
       else
         raise Todo
       end
@@ -1530,7 +1554,7 @@ module Polars
     #   # │ 30  ┆ 6   │
     #   # └─────┴─────┘
     def replace(column, new_col)
-      _df.replace(column, new_col._s)
+      _df.replace(column.to_s, new_col._s)
       self
     end
 
