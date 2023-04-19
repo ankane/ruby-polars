@@ -689,6 +689,11 @@ class SeriesTest < Minitest::Test
     assert_series [1, 2, 3, 99, 99], s.extend_constant(99, 2)
   end
 
+  def test_extend_constant_nil
+    s = Polars::Series.new("a", [1, 2, 3])
+    assert_series [1, 2, 3, nil, nil], s.extend_constant(nil, 2)
+  end
+
   def test_set_sorted
     s = Polars::Series.new([1, 2, 3])
     refute s.flags["SORTED_ASC"]

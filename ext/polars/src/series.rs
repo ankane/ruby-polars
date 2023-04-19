@@ -1230,3 +1230,15 @@ impl RbSeries {
             .into())
     }
 }
+
+impl RbSeries {
+    pub fn extend_constant(&self, value: Wrap<AnyValue>, n: usize) -> RbResult<Self> {
+        Ok(self
+            .series
+            .borrow()
+            .clone()
+            .extend_constant(value.0, n)
+            .map_err(RbPolarsErr::from)?
+            .into())
+    }
+}

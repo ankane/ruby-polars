@@ -804,6 +804,9 @@ fn init() -> RbResult<()> {
     // npy
     class.define_method("to_numo", method!(RbSeries::to_numo, 0))?;
 
+    // extra
+    class.define_method("extend_constant", method!(RbSeries::extend_constant, 2))?;
+
     let class = module.define_class("RbWhen", Default::default())?;
     class.define_method("_then", method!(RbWhen::then, 1))?;
 

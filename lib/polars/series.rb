@@ -3514,7 +3514,7 @@ module Polars
     #   #         99
     #   # ]
     def extend_constant(value, n)
-      super
+      Utils.wrap_s(_s.extend_constant(value, n))
     end
 
     # Flags the Series as sorted.
