@@ -4790,6 +4790,7 @@ module Polars
             elsif !Utils.arrlen(val).nil?
               updated_data[name] = Series.new(String.new(name), val, dtype: dtype)
             elsif val.nil? || [Integer, Float, TrueClass, FalseClass, String, ::Date, ::DateTime, ::Time].any? { |cls| val.is_a?(cls) }
+              dtype = Polars::Float64 if val.nil? && dtype.nil?
               updated_data[name] = Series.new(String.new(name), [val], dtype: dtype).extend_constant(val, array_len - 1)
             else
               raise Todo
