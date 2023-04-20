@@ -663,7 +663,7 @@ module Polars
       end
 
       # Ruby-specific
-      if item.is_a?(Expr)
+      if item.is_a?(Expr) || item.is_a?(Series)
         return filter(item)
       end
 
