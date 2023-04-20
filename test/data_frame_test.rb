@@ -172,6 +172,7 @@ class DataFrameTest < Minitest::Test
     assert_equal a, df["a"]
     assert_equal a, df[:a]
     assert_frame({"a" => [2, 3]}, df[Polars.col("a") > 1])
+    assert_frame({"a" => [2, 3]}, df[df["a"] > 1])
     assert_frame({"a" => [2, 3]}, df[[1, 2]])
     assert_frame({"a" => [2, 3]}, df[1..2])
     assert_frame({"a" => [2]}, df[1...2])
