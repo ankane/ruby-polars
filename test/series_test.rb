@@ -18,7 +18,7 @@ class SeriesTest < Minitest::Test
 
   def test_new_binary
     s = Polars::Series.new(["a".b, "b".b, "c".b])
-    # TODO change to Polars::Binary in 0.3.0
+    # TODO change to Polars::Binary in 0.5.0
     assert_series ["a", "b", "c"], s, dtype: Polars::Utf8
   end
 
@@ -93,6 +93,7 @@ class SeriesTest < Minitest::Test
     assert_equal "Series constructor called with unsupported type; got Object", error.message
   end
 
+  # TODO fix in 0.5.0
   def test_new_int_float
     skip
     s = Polars::Series.new([1, 2.5])
