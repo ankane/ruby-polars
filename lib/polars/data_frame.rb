@@ -2839,7 +2839,16 @@ module Polars
     def drop_in_place(name)
       Utils.wrap_s(_df.drop_in_place(name))
     end
-    alias_method :delete, :drop_in_place
+
+    # Drop in place if exists.
+    #
+    # @param name [Object]
+    #   Column to drop.
+    #
+    # @return [Series]
+    def delete(name)
+      drop_in_place(name) if include?(name)
+    end
 
     # Create an empty copy of the current DataFrame.
     #

@@ -439,6 +439,7 @@ class DataFrameTest < Minitest::Test
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_series [1, 2, 3], df.drop_in_place("a")
     assert_frame ({"b" => ["one", "two", "three"]}), df
+    assert_nil df.delete("c")
   end
 
   def test_rechunk
