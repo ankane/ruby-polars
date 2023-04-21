@@ -1568,6 +1568,7 @@ module Polars
     def is_in(other)
       super
     end
+    alias_method :in?, :is_in
 
     # Get index values where Boolean Series evaluate `true`.
     #

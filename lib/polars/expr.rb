@@ -2751,6 +2751,7 @@ module Polars
       end
       wrap_expr(_rbexpr.is_in(other._rbexpr))
     end
+    alias_method :in?, :is_in
 
     # Repeat the elements in this Series as specified in the given expression.
     #
