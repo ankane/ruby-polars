@@ -1497,6 +1497,20 @@ module Polars
       end
     end
 
+    # Sort the DataFrame by column in-place.
+    #
+    # @param by [String]
+    #   By which column to sort.
+    # @param reverse [Boolean]
+    #   Reverse/descending sort.
+    # @param nulls_last [Boolean]
+    #   Place null values last. Can only be used if sorted by a single column.
+    #
+    # @return [DataFrame]
+    def sort!(by, reverse: false, nulls_last: false)
+      self._df = sort(by, reverse: reverse, nulls_last: nulls_last)._df
+    end
+
     # Check if DataFrame is equal to other.
     #
     # @param other [DataFrame]

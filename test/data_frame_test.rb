@@ -281,6 +281,11 @@ class DataFrameTest < Minitest::Test
   end
 
   def test_sort
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_frame ({"a" => [1, 3, 2], "b" => ["one", "three", "two"]}), df.sort("b")
+    assert_frame ({"a" => [1, 2, 3], "b" => ["one", "two", "three"]}), df
+    df.sort!("b")
+    assert_frame ({"a" => [1, 3, 2], "b" => ["one", "three", "two"]}), df
   end
 
   def test_frame_equal
