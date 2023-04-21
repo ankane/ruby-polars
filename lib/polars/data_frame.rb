@@ -4487,7 +4487,7 @@ module Polars
       end
     end
 
-    # Returns an iterator over the DataFrame of rows of python-native values.
+    # Returns an iterator over the DataFrame of rows of Ruby-native values.
     #
     # @param named [Boolean]
     #   Return hashes instead of arrays. The hashes are a mapping of
@@ -4546,6 +4546,24 @@ module Polars
           yield row(i)
         end
       end
+    end
+
+    # Returns an iterator over the DataFrame of rows of Ruby-native values.
+    #
+    # @param named [Boolean]
+    #   Return hashes instead of arrays. The hashes are a mapping of
+    #   column name to row value. This is more expensive than returning an
+    #   array, but allows for accessing values by column name.
+    # @param buffer_size [Integer]
+    #   Determines the number of rows that are buffered internally while iterating
+    #   over the data; you should only modify this in very specific cases where the
+    #   default value is determined not to be a good fit to your access pattern, as
+    #   the speedup from using the buffer is significant (~2-4x). Setting this
+    #   value to zero disables row buffering.
+    #
+    # @return [Object]
+    def each_row(named: true, buffer_size: 500, &block)
+      iter_rows(named: named, buffer_size: buffer_size, &block)
     end
 
     # Shrink DataFrame memory usage.
