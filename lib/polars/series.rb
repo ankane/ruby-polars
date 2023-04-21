@@ -263,7 +263,7 @@ module Polars
     # TODO use !@ in 0.5.0
     #
     # @return [Series]
-    def _not
+    def is_not
       if dtype == Boolean
         return Utils.wrap_s(_s.not)
       end
