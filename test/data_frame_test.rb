@@ -430,6 +430,12 @@ class DataFrameTest < Minitest::Test
     assert_frame ({"a" => [2], "b" => [nil]}), df.median
   end
 
+  def test_drop_in_place
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_series [1, 2, 3], df.drop_in_place("a")
+    assert_frame ({"b" => ["one", "two", "three"]}), df
+  end
+
   def test_rechunk
   end
 

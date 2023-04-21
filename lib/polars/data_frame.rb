@@ -2825,6 +2825,7 @@ module Polars
     def drop_in_place(name)
       Utils.wrap_s(_df.drop_in_place(name))
     end
+    alias_method :delete, :drop_in_place
 
     # Create an empty copy of the current DataFrame.
     #
