@@ -494,24 +494,24 @@ impl RbSeries {
         self.series.borrow().len()
     }
 
-    pub fn to_a(&self) -> RArray {
+    pub fn to_a(&self) -> Value {
         let series = &self.series.borrow();
 
-        fn to_list_recursive(series: &Series) -> RArray {
+        fn to_list_recursive(series: &Series) -> Value {
             let rblist = match series.dtype() {
-                DataType::Boolean => RArray::from_iter(series.bool().unwrap()),
-                DataType::UInt8 => RArray::from_iter(series.u8().unwrap()),
-                DataType::UInt16 => RArray::from_iter(series.u16().unwrap()),
-                DataType::UInt32 => RArray::from_iter(series.u32().unwrap()),
-                DataType::UInt64 => RArray::from_iter(series.u64().unwrap()),
-                DataType::Int8 => RArray::from_iter(series.i8().unwrap()),
-                DataType::Int16 => RArray::from_iter(series.i16().unwrap()),
-                DataType::Int32 => RArray::from_iter(series.i32().unwrap()),
-                DataType::Int64 => RArray::from_iter(series.i64().unwrap()),
-                DataType::Float32 => RArray::from_iter(series.f32().unwrap()),
-                DataType::Float64 => RArray::from_iter(series.f64().unwrap()),
+                DataType::Boolean => RArray::from_iter(series.bool().unwrap()).into_value(),
+                DataType::UInt8 => RArray::from_iter(series.u8().unwrap()).into_value(),
+                DataType::UInt16 => RArray::from_iter(series.u16().unwrap()).into_value(),
+                DataType::UInt32 => RArray::from_iter(series.u32().unwrap()).into_value(),
+                DataType::UInt64 => RArray::from_iter(series.u64().unwrap()).into_value(),
+                DataType::Int8 => RArray::from_iter(series.i8().unwrap()).into_value(),
+                DataType::Int16 => RArray::from_iter(series.i16().unwrap()).into_value(),
+                DataType::Int32 => RArray::from_iter(series.i32().unwrap()).into_value(),
+                DataType::Int64 => RArray::from_iter(series.i64().unwrap()).into_value(),
+                DataType::Float32 => RArray::from_iter(series.f32().unwrap()).into_value(),
+                DataType::Float64 => RArray::from_iter(series.f64().unwrap()).into_value(),
                 DataType::Categorical(_) => {
-                    RArray::from_iter(series.categorical().unwrap().iter_str())
+                    RArray::from_iter(series.categorical().unwrap().iter_str()).into_value()
                 }
                 DataType::Object(_) => {
                     let v = RArray::with_capacity(series.len());
@@ -522,32 +522,36 @@ impl RbSeries {
                             None => v.push(QNIL).unwrap(),
                         };
                     }
-                    v
+                    v.into_value()
                 }
                 DataType::Date => {
                     let a = RArray::with_capacity(series.len());
                     for v in series.iter() {
                         a.push::<Value>(Wrap(v).into_value()).unwrap();
                     }
-                    return a;
+                    return a.into_value();
                 }
                 DataType::Datetime(_, _) => {
                     let a = RArray::with_capacity(series.len());
                     for v in series.iter() {
                         a.push::<Value>(Wrap(v).into_value()).unwrap();
                     }
-                    return a;
+                    return a.into_value();
                 }
                 DataType::Utf8 => {
                     let ca = series.utf8().unwrap();
-                    return RArray::from_iter(ca);
+                    return RArray::from_iter(ca).into_value();
+                }
+                DataType::Duration(_) => {
+                    let ca = series.duration().unwrap();
+                    return Wrap(ca).into_value();
                 }
                 DataType::Binary => {
                     let a = RArray::with_capacity(series.len());
                     for v in series.iter() {
                         a.push::<Value>(Wrap(v).into_value()).unwrap();
                     }
-                    return a;
+                    return a.into_value();
                 }
                 DataType::Null | DataType::Unknown => {
                     panic!("to_a not implemented for null/unknown")

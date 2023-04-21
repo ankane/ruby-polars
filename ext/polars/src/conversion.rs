@@ -15,8 +15,8 @@ use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 use smartstring::alias::String as SmartString;
 
-use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
 use crate::rb_modules::utils;
+use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
 
 pub(crate) fn slice_to_wrapped<T>(slice: &[T]) -> &[Wrap<T>] {
     // Safety:
@@ -184,7 +184,7 @@ impl IntoValue for Wrap<AnyValue<'_>> {
             AnyValue::Duration(v, tu) => {
                 let tu = tu.to_ascii();
                 utils().funcall("_to_ruby_duration", (v, tu)).unwrap()
-            },
+            }
             AnyValue::Time(_v) => todo!(),
             AnyValue::List(v) => RbSeries::new(v).to_a().into_value(),
             ref av @ AnyValue::Struct(_, _, flds) => struct_dict(av._iter_struct_av(), flds),
@@ -262,6 +262,32 @@ impl IntoValue for Wrap<DataType> {
             DataType::Null => pl.const_get::<_, Value>("Null").unwrap(),
             DataType::Unknown => pl.const_get::<_, Value>("Unknown").unwrap(),
         }
+    }
+}
+
+impl IntoValue for Wrap<TimeUnit> {
+    fn into_value_with(self, _: &RubyHandle) -> Value {
+        let tu = match self.0 {
+            TimeUnit::Nanoseconds => "ns",
+            TimeUnit::Microseconds => "us",
+            TimeUnit::Milliseconds => "ms",
+        };
+        tu.into_value()
+    }
+}
+
+impl IntoValue for Wrap<&DurationChunked> {
+    fn into_value_with(self, _: &RubyHandle) -> Value {
+        let utils = utils();
+        let tu = Wrap(self.0.time_unit()).into_value();
+        let iter = self.0.into_iter().map(|opt_v| {
+            opt_v.map(|v| {
+                utils
+                    .funcall::<_, _, Value>("_to_ruby_duration", (v, tu))
+                    .unwrap()
+            })
+        });
+        RArray::from_iter(iter).into_value()
     }
 }
 
