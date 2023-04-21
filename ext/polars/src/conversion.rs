@@ -16,6 +16,7 @@ use polars::series::ops::NullBehavior;
 use smartstring::alias::String as SmartString;
 
 use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
+use crate::rb_modules::utils;
 
 pub(crate) fn slice_to_wrapped<T>(slice: &[T]) -> &[Wrap<T>] {
     // Safety:
@@ -180,7 +181,10 @@ impl IntoValue for Wrap<AnyValue<'_>> {
                     t.funcall::<_, _, Value>("utc", ()).unwrap()
                 }
             }
-            AnyValue::Duration(_v, _tu) => todo!(),
+            AnyValue::Duration(v, tu) => {
+                let tu = tu.to_ascii();
+                utils().funcall("_to_ruby_duration", (v, tu)).unwrap()
+            },
             AnyValue::Time(_v) => todo!(),
             AnyValue::List(v) => RbSeries::new(v).to_a().into_value(),
             ref av @ AnyValue::Struct(_, _, flds) => struct_dict(av._iter_struct_av(), flds),

@@ -87,6 +87,18 @@ module Polars
       end
     end
 
+    def self._to_ruby_duration(value, tu = "ns")
+      if tu == "ns"
+        value / 1e9
+      elsif tu == "us"
+        value / 1e6
+      elsif tu == "ms"
+        value / 1e3
+      else
+        raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms'}}, got #{tu}"
+      end
+    end
+
     def self.selection_to_rbexpr_list(exprs)
       if exprs.is_a?(String) || exprs.is_a?(Symbol) || exprs.is_a?(Expr) || exprs.is_a?(Series)
         exprs = [exprs]
