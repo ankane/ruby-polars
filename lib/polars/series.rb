@@ -296,6 +296,10 @@ module Polars
         return Utils.wrap_s(_s.take_with_series(_pos_idxs(item)._s))
       end
 
+      if item.is_a?(Series) && item.bool?
+        return filter(item)
+      end
+
       if item.is_a?(Integer)
         return _s.get_idx(item)
       end
