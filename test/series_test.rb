@@ -134,6 +134,7 @@ class SeriesTest < Minitest::Test
     s = Polars::Series.new([today - 2, today - 1, today]) - (today - 3)
     sec = 86400
     assert_equal [sec, 2 * sec, 3 * sec], s.to_a
+    # assert_equal [1, 2, 3], (s / sec.to_f).to_a
   end
 
   def test_dtype

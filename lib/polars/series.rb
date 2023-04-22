@@ -3684,10 +3684,12 @@ module Polars
       if other.is_a?(::Time) && dtype.is_a?(Datetime)
         ts = Utils._datetime_to_pl_timestamp(other, time_unit)
         f = ffi_func("#{op}_<>", Int64, _s)
+        fail if f.nil?
         return Utils.wrap_s(f.call(ts))
       elsif other.is_a?(::Date) && dtype == Date
         d = Utils._date_to_pl_date(other)
         f = ffi_func("#{op}_<>", Int32, _s)
+        fail if f.nil?
         return Utils.wrap_s(f.call(d))
       end
 
@@ -3696,11 +3698,14 @@ module Polars
       end
 
       f = ffi_func("#{op}_<>", dtype, _s)
+      if f.nil?
+        raise NotImplementedError
+      end
       Utils.wrap_s(f.call(other))
     end
 
     def ffi_func(name, dtype, _s)
-      _s.method(name.sub("<>", DTYPE_TO_FFINAME.fetch(dtype)))
+      _s.method(name.sub("<>", DTYPE_TO_FFINAME.fetch(dtype))) if DTYPE_TO_FFINAME.key?(dtype)
     end
 
     def _arithmetic(other, op)
@@ -3716,7 +3721,11 @@ module Polars
         return Utils.wrap_s(_s.send(op, _s2))
       end
 
-      Utils.wrap_s(_s.send("#{op}_#{DTYPE_TO_FFINAME.fetch(dtype)}", other))
+      f = ffi_func("#{op}_<>", dtype, _s)
+      if f.nil?
+        raise ArgumentError, "cannot do arithmetic with series of dtype: #{dtype} and argument of type: #{other.class.name}"
+      end
+      Utils.wrap_s(f.call(other))
     end
 
     DTYPE_TO_FFINAME = {
