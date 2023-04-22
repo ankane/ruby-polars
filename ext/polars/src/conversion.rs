@@ -276,6 +276,23 @@ impl IntoValue for Wrap<TimeUnit> {
     }
 }
 
+impl IntoValue for Wrap<&Utf8Chunked> {
+    fn into_value_with(self, _: &RubyHandle) -> Value {
+        let iter = self.0.into_iter();
+        RArray::from_iter(iter).into_value()
+    }
+}
+
+impl IntoValue for Wrap<&BinaryChunked> {
+    fn into_value_with(self, _: &RubyHandle) -> Value {
+        let iter = self
+            .0
+            .into_iter()
+            .map(|opt_bytes| opt_bytes.map(|bytes| RString::from_slice(bytes)));
+        RArray::from_iter(iter).into_value()
+    }
+}
+
 impl IntoValue for Wrap<&DurationChunked> {
     fn into_value_with(self, _: &RubyHandle) -> Value {
         let utils = utils();
