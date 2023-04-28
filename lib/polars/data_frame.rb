@@ -18,7 +18,10 @@ module Polars
     #   Whether to interpret two-dimensional data as columns or as rows. If `nil`,
     #   the orientation is inferred by matching the columns and data dimensions. If
     #   this does not yield conclusive results, column orientation is used.
-    def initialize(data = nil, columns: nil, orient: nil)
+    def initialize(data = nil, schema: nil, columns: nil, schema_overrides: nil, orient: nil, infer_schema_length: 100, nan_to_null: false)
+      schema ||= columns
+      raise Todo if schema_overrides
+
       # TODO deprecate in favor of read_sql
       if defined?(ActiveRecord) && (data.is_a?(ActiveRecord::Relation) || data.is_a?(ActiveRecord::Result))
         result = data.is_a?(ActiveRecord::Result) ? data : data.connection.select_all(data.to_sql)
@@ -29,14 +32,14 @@ module Polars
       end
 
       if data.nil?
-        self._df = self.class.hash_to_rbdf({}, columns: columns)
+        self._df = self.class.hash_to_rbdf({}, schema: schema, schema_overrides: schema_overrides)
       elsif data.is_a?(Hash)
         data = data.transform_keys { |v| v.is_a?(Symbol) ? v.to_s : v }
-        self._df = self.class.hash_to_rbdf(data, columns: columns)
+        self._df = self.class.hash_to_rbdf(data, schema: schema, schema_overrides: schema_overrides, nan_to_null: nan_to_null)
       elsif data.is_a?(Array)
-        self._df = self.class.sequence_to_rbdf(data, columns: columns, orient: orient)
+        self._df = self.class.sequence_to_rbdf(data, schema: schema, schema_overrides: schema_overrides, orient: orient, infer_schema_length: infer_schema_length)
       elsif data.is_a?(Series)
-        self._df = self.class.series_to_rbdf(data, columns: columns)
+        self._df = self.class.series_to_rbdf(data, schema: schema, schema_overrides: schema_overrides)
       else
         raise ArgumentError, "DataFrame constructor called with unsupported type; got #{data.class.name}"
       end
@@ -56,8 +59,8 @@ module Polars
     end
 
     # @private
-    def self._from_hash(data, columns: nil)
-      _from_rbdf(hash_to_rbdf(data, columns: columns))
+    def self._from_hash(data, schema: nil, schema_overrides: nil)
+      _from_rbdf(hash_to_rbdf(data, schema: schema, schema_overrides: schema_overrides))
     end
 
     # def self._from_records
@@ -4819,7 +4822,7 @@ module Polars
     end
 
     # @private
-    def self.expand_hash_scalars(data, schema_overrides: nil)
+    def self.expand_hash_scalars(data, schema_overrides: nil, order: nil, nan_to_null: false)
       updated_data = {}
       unless data.empty?
         dtypes = schema_overrides || {}
@@ -4852,15 +4855,29 @@ module Polars
     end
 
     # @private
-    def self.hash_to_rbdf(data, columns: nil)
-      columns, dtypes = _unpack_columns(columns, lookup_names: data.keys)
+    def self.hash_to_rbdf(data, schema: nil, schema_overrides: nil, nan_to_null: nil)
+      if schema.is_a?(Hash) && !data.empty?
+        if !data.all? { |col| schema[col] }
+          raise ArgumentError, "The given column-schema names do not match the data dictionary"
+        end
 
-      if data.empty? && dtypes
-        data_series = columns.map { |name| Series.new(name, [], dtype: dtypes[name])._s }
-      else
-        data_series = expand_hash_scalars(data, schema_overrides: dtypes).values.map(&:_s)
+        data = schema.to_h { |col| [col, data[col]] }
       end
-      data_series = _handle_columns_arg(data_series, columns: columns)
+
+      column_names, schema_overrides = _unpack_schema(
+        schema, lookup_names: data.keys, schema_overrides: schema_overrides
+      )
+      if !column_names
+        column_names = data.to_a
+      end
+
+      if data.empty? && schema_overrides
+        data_series = column_names.map { |name| Series.new(name, [], dtype: schema_overrides[name], nan_to_null: nan_to_null)._s }
+      else
+        data_series = expand_hash_scalars(data, schema_overrides: schema_overrides, nan_to_null: nan_to_null).values.map(&:_s)
+      end
+
+      data_series = _handle_columns_arg(data_series, columns: column_names, from_hash: true)
       RbDataFrame.new(data_series)
     end
 
@@ -4870,14 +4887,12 @@ module Polars
     end
 
     # @private
-    def self._unpack_columns(columns, schema_overrides: nil, lookup_names: nil, n_expected: nil)
-      raise Todo if schema_overrides
-
-      if columns.is_a?(Hash)
-        columns = columns.to_a
+    def self._unpack_schema(schema, schema_overrides: nil, n_expected: nil, lookup_names: nil, include_overrides_in_columns: false)
+      if schema.is_a?(Hash)
+        schema = schema.to_a
       end
       column_names =
-        (columns || []).map.with_index do |col, i|
+        (schema || []).map.with_index do |col, i|
           if col.is_a?(String)
             col || "column_#{i}"
           else
@@ -4890,21 +4905,38 @@ module Polars
       # TODO zip_longest
       lookup = column_names.zip(lookup_names || []).to_h
 
-      [
-        column_names,
-        (columns || []).select { |col| !col.is_a?(String) && col[1] }.to_h do |col|
+      column_dtypes =
+        (schema || []).select { |col| !col.is_a?(String) && col[1] }.to_h do |col|
           [lookup[col[0]] || col[0], col[1]]
         end
-      ]
+
+      if schema_overrides
+        raise Todo
+      end
+
+      column_dtypes.each do |col, dtype|
+        if !Utils.is_polars_dtype(dtype, include_unknown: true) && !dtype.nil?
+          column_dtypes[col] = Utils.rb_type_to_dtype(dtype)
+        end
+      end
+
+      [column_names, column_dtypes]
     end
 
-    def self._handle_columns_arg(data, columns: nil)
+    def self._handle_columns_arg(data, columns: nil, from_hash: false)
       if columns.nil? || columns.empty?
         data
       else
         if data.empty?
           columns.map { |c| Series.new(c, nil)._s }
         elsif data.length == columns.length
+          if from_hash
+            series_map = data.to_h { |s| [s.name, s] }
+            if columns.all? { |col| series_map.key?(col) }
+              return columns.map { |col| series_map[col] }
+            end
+          end
+
           columns.each_with_index do |c, i|
             # not in-place?
             data[i].rename(c)
@@ -4919,7 +4951,7 @@ module Polars
     def self._post_apply_columns(rbdf, columns, structs: nil, schema_overrides: nil)
       rbdf_columns = rbdf.columns
       rbdf_dtypes = rbdf.dtypes
-      columns, dtypes = _unpack_columns(
+      columns, dtypes = _unpack_schema(
         (columns || rbdf_columns), schema_overrides: schema_overrides
       )
       column_subset = []
@@ -4957,20 +4989,23 @@ module Polars
     end
 
     # @private
-    def self.sequence_to_rbdf(data, columns: nil, orient: nil, infer_schema_length: 50)
+    def self.sequence_to_rbdf(data, schema: nil, schema_overrides: nil, orient: nil, infer_schema_length: 50)
+      raise Todo if schema_overrides
+      columns = schema
+
       if data.length == 0
-        return hash_to_rbdf({}, columns: columns)
+        return hash_to_rbdf({}, schema: schema, schema_overrides: schema_overrides)
       end
 
       if data[0].is_a?(Series)
         # series_names = data.map(&:name)
-        # columns, dtypes = _unpack_columns(columns || series_names, n_expected: data.length)
+        # columns, dtypes = _unpack_schema(columns || series_names, n_expected: data.length)
         data_series = []
         data.each do |s|
           data_series << s._s
         end
       elsif data[0].is_a?(Hash)
-        column_names, dtypes = _unpack_columns(columns)
+        column_names, dtypes = _unpack_schema(columns)
         schema_overrides = dtypes ? include_unknowns(dtypes, column_names) : nil
         rbdf = RbDataFrame.read_hashes(data, infer_schema_length, schema_overrides)
         if column_names
@@ -4996,11 +5031,21 @@ module Polars
     end
 
     # @private
-    def self.series_to_rbdf(data, columns: nil)
-      if columns
-        raise Todo
+    def self.series_to_rbdf(data, schema: nil, schema_overrides: nil)
+      data_series = [data._s]
+      series_name = data_series.map(&:name)
+      column_names, schema_overrides = _unpack_schema(
+        schema || series_name, schema_overrides: schema_overrides, n_expected: 1
+      )
+      if schema_overrides.any?
+        new_dtype = schema_overrides.values[0]
+        if new_dtype != data.dtype
+          data_series[0] = data_series[0].cast(new_dtype, true)
+        end
       end
-      RbDataFrame.new([data._s])
+
+      data_series = _handle_columns_arg(data_series, columns: column_names)
+      RbDataFrame.new(data_series)
     end
 
     def wrap_ldf(ldf)
