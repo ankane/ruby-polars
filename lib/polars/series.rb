@@ -228,7 +228,13 @@ module Polars
     #
     # @return [Series]
     def *(other)
-      _arithmetic(other, :mul)
+      if is_temporal
+        raise ArgumentError, "first cast to integer before multiplying datelike dtypes"
+      elsif other.is_a?(DataFrame)
+        other * self
+      else
+        _arithmetic(other, :mul)
+      end
     end
 
     # Performs division.
