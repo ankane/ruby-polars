@@ -235,7 +235,15 @@ module Polars
     #
     # @return [Series]
     def /(other)
-      _arithmetic(other, :div)
+      if is_temporal
+        raise ArgumentError, "first cast to integer before dividing datelike dtypes"
+      end
+
+      if is_float
+        return _arithmetic(other, :div)
+      end
+
+      cast(Float64) / other
     end
 
     # Returns the modulo.
@@ -1814,6 +1822,8 @@ module Polars
       [Date, Time].include?(dtype) || dtype.is_a?(Datetime) || dtype.is_a?(Duration)
     end
     alias_method :datelike?, :is_datelike
+    alias_method :is_temporal, :is_datelike
+    alias_method :temporal?, :is_datelike
 
     # Check if this Series has floating point numbers.
     #
