@@ -288,7 +288,7 @@ impl IntoValue for Wrap<&BinaryChunked> {
         let iter = self
             .0
             .into_iter()
-            .map(|opt_bytes| opt_bytes.map(|bytes| RString::from_slice(bytes)));
+            .map(|opt_bytes| opt_bytes.map(RString::from_slice));
         RArray::from_iter(iter).into_value()
     }
 }

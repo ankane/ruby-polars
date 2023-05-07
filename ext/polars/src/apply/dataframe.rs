@@ -202,8 +202,8 @@ pub fn apply_lambda_with_utf8_out_type(
 }
 
 /// Apply a lambda with list output type
-pub fn apply_lambda_with_list_out_type<'a>(
-    df: &'a DataFrame,
+pub fn apply_lambda_with_list_out_type(
+    df: &DataFrame,
     lambda: Value,
     init_null_count: usize,
     first_value: Option<&Series>,

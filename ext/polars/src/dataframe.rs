@@ -512,12 +512,10 @@ impl RbDataFrame {
                 }
             }
         }
-        let st = st?;
+        let _st = st?;
 
-        match st {
-            // TODO
-            _ => None,
-        }
+        // TODO
+        None
     }
 
     pub fn write_parquet(
@@ -914,10 +912,7 @@ impl RbDataFrame {
             true => pivot_stable,
             false => pivot,
         };
-        let agg_expr = match aggregate_expr {
-            Some(aggregate_expr) => Some(aggregate_expr.inner.clone()),
-            None => None,
-        };
+        let agg_expr = aggregate_expr.map(|aggregate_expr| aggregate_expr.inner.clone());
         let df = fun(
             &self.df.borrow(),
             values,
