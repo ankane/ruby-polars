@@ -468,9 +468,11 @@ fn init() -> RbResult<()> {
     // meta
     class.define_method("meta_pop", method!(RbExpr::meta_pop, 0))?;
     class.define_method("meta_eq", method!(RbExpr::meta_eq, 1))?;
-    class.define_method("meta_roots", method!(RbExpr::meta_roots, 0))?;
+    class.define_method("meta_roots", method!(RbExpr::meta_root_names, 0))?;
     class.define_method("meta_output_name", method!(RbExpr::meta_output_name, 0))?;
     class.define_method("meta_undo_aliases", method!(RbExpr::meta_undo_aliases, 0))?;
+    class.define_method("meta_has_multiple_outputs", method!(RbExpr::meta_has_multiple_outputs, 0))?;
+    class.define_method("meta_is_regex_projection", method!(RbExpr::meta_is_regex_projection, 0))?;
 
     // maybe add to different class
     class.define_singleton_method("col", function!(crate::lazy::dsl::col, 1))?;
