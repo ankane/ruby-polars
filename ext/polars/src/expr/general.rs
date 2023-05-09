@@ -3,7 +3,7 @@ use polars::lazy::dsl;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 
-use crate::lazy::apply::map_single;
+use crate::apply::lazy::map_single;
 use crate::conversion::{parse_fill_null_strategy, Wrap};
 use crate::rb_exprs_to_exprs;
 use crate::utils::reinterpret;
