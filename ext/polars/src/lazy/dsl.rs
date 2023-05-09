@@ -6,10 +6,6 @@ use crate::apply::lazy::*;
 use crate::lazy::utils::rb_exprs_to_exprs;
 use crate::{RbExpr, RbPolarsErr, RbResult, RbSeries};
 
-pub fn col(name: String) -> RbExpr {
-    dsl::col(&name).into()
-}
-
 pub fn count() -> RbExpr {
     dsl::count().into()
 }
@@ -20,10 +16,6 @@ pub fn first() -> RbExpr {
 
 pub fn last() -> RbExpr {
     dsl::last().into()
-}
-
-pub fn cols(names: Vec<String>) -> RbExpr {
-    dsl::cols(names).into()
 }
 
 pub fn dtype_cols(dtypes: Vec<DataType>) -> RbExpr {

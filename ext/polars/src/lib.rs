@@ -55,13 +55,13 @@ fn init() -> RbResult<()> {
     module.define_singleton_method("_dtype_cols", function!(dtype_cols, 1))?;
     module.define_singleton_method("_rb_duration", function!(crate::functions::lazy::duration, 8))?;
     module.define_singleton_method("_concat_df", function!(concat_df, 1))?;
-    module.define_singleton_method("_concat_lf", function!(concat_lf, 3))?;
+    module.define_singleton_method("_concat_lf", function!(crate::functions::lazy::concat_lf, 3))?;
     module.define_singleton_method("_diag_concat_df", function!(rb_diag_concat_df, 1))?;
     module.define_singleton_method("_hor_concat_df", function!(rb_hor_concat_df, 1))?;
     module.define_singleton_method("_concat_series", function!(concat_series, 1))?;
     module.define_singleton_method("_ipc_schema", function!(ipc_schema, 1))?;
     module.define_singleton_method("_parquet_schema", function!(parquet_schema, 1))?;
-    module.define_singleton_method("_collect_all", function!(collect_all, 1))?;
+    module.define_singleton_method("_collect_all", function!(crate::functions::lazy::collect_all, 1))?;
     module.define_singleton_method("_rb_date_range", function!(rb_date_range, 7))?;
     module.define_singleton_method("_coalesce_exprs", function!(coalesce_exprs, 1))?;
     module.define_singleton_method("_sum_exprs", function!(sum_exprs, 1))?;
@@ -475,11 +475,11 @@ fn init() -> RbResult<()> {
     class.define_method("meta_is_regex_projection", method!(RbExpr::meta_is_regex_projection, 0))?;
 
     // maybe add to different class
-    class.define_singleton_method("col", function!(crate::lazy::dsl::col, 1))?;
+    class.define_singleton_method("col", function!(crate::functions::lazy::col, 1))?;
     class.define_singleton_method("count", function!(crate::lazy::dsl::count, 0))?;
     class.define_singleton_method("first", function!(crate::lazy::dsl::first, 0))?;
     class.define_singleton_method("last", function!(crate::lazy::dsl::last, 0))?;
-    class.define_singleton_method("cols", function!(crate::lazy::dsl::cols, 1))?;
+    class.define_singleton_method("cols", function!(crate::functions::lazy::cols, 1))?;
     class.define_singleton_method("fold", function!(crate::lazy::dsl::fold, 3))?;
     class.define_singleton_method("cumfold", function!(crate::lazy::dsl::cumfold, 4))?;
     class.define_singleton_method("lit", function!(crate::lazy::dsl::lit, 1))?;
@@ -859,20 +859,6 @@ fn concat_df(seq: RArray) -> RbResult<RbDataFrame> {
     Ok(df.into())
 }
 
-fn concat_lf(lfs: Value, rechunk: bool, parallel: bool) -> RbResult<RbLazyFrame> {
-    let (seq, len) = get_rbseq(lfs)?;
-    let mut lfs = Vec::with_capacity(len);
-
-    for res in seq.each() {
-        let item = res?;
-        let lf = get_lf(item)?;
-        lfs.push(lf);
-    }
-
-    let lf = polars::lazy::dsl::concat(lfs, rechunk, parallel).map_err(RbPolarsErr::from)?;
-    Ok(lf.into())
-}
-
 fn rb_diag_concat_df(seq: RArray) -> RbResult<RbDataFrame> {
     let mut dfs = Vec::new();
     for item in seq.each() {
@@ -931,18 +917,6 @@ fn parquet_schema(rb_f: Value) -> RbResult<Value> {
         dict.aset(field.name, dt)?;
     }
     Ok(dict.into())
-}
-
-fn collect_all(lfs: RArray) -> RbResult<RArray> {
-    let lfs = lfs
-        .each()
-        .map(|v| v?.try_convert::<&RbLazyFrame>())
-        .collect::<RbResult<Vec<&RbLazyFrame>>>()?;
-
-    Ok(RArray::from_iter(lfs.iter().map(|lf| {
-        let df = lf.ldf.clone().collect().unwrap();
-        RbDataFrame::new(df)
-    })))
 }
 
 fn rb_date_range(
