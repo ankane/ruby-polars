@@ -621,7 +621,7 @@ fn init() -> RbResult<()> {
     class.define_method("rename", method!(RbSeries::rename, 1))?;
     class.define_method("dtype", method!(RbSeries::dtype, 0))?;
     class.define_method("inner_dtype", method!(RbSeries::inner_dtype, 0))?;
-    class.define_method("set_sorted", method!(RbSeries::set_sorted, 1))?;
+    class.define_method("set_sorted", method!(RbSeries::set_sorted_flag, 1))?;
     class.define_method("mean", method!(RbSeries::mean, 0))?;
     class.define_method("max", method!(RbSeries::max, 0))?;
     class.define_method("min", method!(RbSeries::min, 0))?;
