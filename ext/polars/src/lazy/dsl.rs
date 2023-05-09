@@ -1435,10 +1435,6 @@ impl RbExpr {
         self.inner.clone().kurtosis(fisher, bias).into()
     }
 
-    pub fn str_concat(&self, delimiter: String) -> Self {
-        self.inner.clone().str().concat(&delimiter).into()
-    }
-
     pub fn cat_set_ordering(&self, ordering: Wrap<CategoricalOrdering>) -> Self {
         self.inner.clone().cat().set_ordering(ordering.0).into()
     }

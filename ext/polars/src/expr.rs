@@ -1,3 +1,4 @@
+mod string;
 mod r#struct;
 
 use polars::lazy::dsl::Expr;
