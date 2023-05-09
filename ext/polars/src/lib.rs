@@ -288,9 +288,9 @@ fn init() -> RbResult<()> {
     class.define_method("cumprod", method!(RbExpr::cumprod, 1))?;
     class.define_method("product", method!(RbExpr::product, 0))?;
     class.define_method("shrink_dtype", method!(RbExpr::shrink_dtype, 0))?;
-    class.define_method("str_parse_date", method!(RbExpr::str_parse_date, 4))?;
-    class.define_method("str_parse_datetime", method!(RbExpr::str_parse_datetime, 8))?;
-    class.define_method("str_parse_time", method!(RbExpr::str_parse_time, 3))?;
+    class.define_method("str_parse_date", method!(RbExpr::str_to_date, 4))?;
+    class.define_method("str_parse_datetime", method!(RbExpr::str_to_datetime, 8))?;
+    class.define_method("str_parse_time", method!(RbExpr::str_to_time, 3))?;
     class.define_method("str_strip", method!(RbExpr::str_strip, 1))?;
     class.define_method("str_rstrip", method!(RbExpr::str_rstrip, 1))?;
     class.define_method("str_lstrip", method!(RbExpr::str_lstrip, 1))?;

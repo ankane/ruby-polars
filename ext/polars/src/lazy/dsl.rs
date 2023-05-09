@@ -511,66 +511,6 @@ impl RbExpr {
         self.inner.clone().shrink_dtype().into()
     }
 
-    pub fn str_parse_date(
-        &self,
-        format: Option<String>,
-        strict: bool,
-        exact: bool,
-        cache: bool,
-    ) -> Self {
-        let options = StrptimeOptions {
-            format,
-            strict,
-            exact,
-            cache,
-            ..Default::default()
-        };
-        self.inner.clone().str().to_date(options).into()
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    pub fn str_parse_datetime(
-        &self,
-        format: Option<String>,
-        time_unit: Option<Wrap<TimeUnit>>,
-        time_zone: Option<TimeZone>,
-        strict: bool,
-        exact: bool,
-        cache: bool,
-        utc: bool,
-        tz_aware: bool,
-    ) -> Self {
-        let options = StrptimeOptions {
-            format,
-            strict,
-            exact,
-            cache,
-            tz_aware,
-            utc,
-        };
-        self.inner
-            .clone()
-            .str()
-            .to_datetime(time_unit.map(|tu| tu.0), time_zone, options)
-            .into()
-    }
-
-    pub fn str_parse_time(
-        &self,
-        format: Option<String>,
-        strict: bool,
-        cache: bool,
-    ) -> Self {
-        let options = StrptimeOptions {
-            format,
-            strict,
-            cache,
-            exact: true,
-            ..Default::default()
-        };
-        self.inner.clone().str().to_time(options).into()
-    }
-
     pub fn str_strip(&self, matches: Option<String>) -> Self {
         self.inner.clone().str().strip(matches).into()
     }
