@@ -1912,7 +1912,7 @@ module Polars
     #     "2020-01-08 23:16:43"
     #   ]
     #   df = Polars::DataFrame.new({"dt" => dates, "a" => [3, 7, 5, 9, 2, 1]}).with_column(
-    #     Polars.col("dt").str.strptime(:datetime)
+    #     Polars.col("dt").str.strptime(Polars::Datetime)
     #   )
     #   df.groupby_rolling(index_column: "dt", period: "2d").agg(
     #     [
@@ -3264,7 +3264,7 @@ module Polars
     #   # │ B    ┆ 1    │
     #   # │ C    ┆ 2    │
     #   # │ D    ┆ 3    │
-    #   # │ …    ┆ …    │
+    #   # │ E    ┆ 4    │
     #   # │ F    ┆ 5    │
     #   # │ G    ┆ 6    │
     #   # │ H    ┆ 7    │
@@ -4857,7 +4857,7 @@ module Polars
     # @private
     def self.hash_to_rbdf(data, schema: nil, schema_overrides: nil, nan_to_null: nil)
       if schema.is_a?(Hash) && !data.empty?
-        if !data.all? { |col| schema[col] }
+        if !data.all? { |col, _| schema[col] }
           raise ArgumentError, "The given column-schema names do not match the data dictionary"
         end
 

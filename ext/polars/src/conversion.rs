@@ -457,12 +457,12 @@ impl TryConvert for Wrap<Schema> {
 
         let mut schema = Vec::new();
         dict.foreach(|key: String, val: Wrap<DataType>| {
-            schema.push(Field::new(&key, val.0));
+            schema.push(Ok(Field::new(&key, val.0)));
             Ok(ForEach::Continue)
         })
         .unwrap();
 
-        Ok(Wrap(schema.into_iter().into()))
+        Ok(Wrap(schema.into_iter().collect::<RbResult<Schema>>()?))
     }
 }
 

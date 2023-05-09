@@ -11,8 +11,8 @@ module Polars
 
     # Parse a Utf8 expression to a Date/Datetime/Time type.
     #
-    # @param datatype [Symbol]
-    #   `:date`, `:dateime`, or `:time`.
+    # @param dtype [Object]
+    #   The data type to convert into. Can be either Date, Datetime, or Time.
     # @param fmt [String]
     #   Format to use, refer to the
     #   [chrono strftime documentation](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
@@ -33,57 +33,56 @@ module Polars
     #   the format string, if given, eg: "%F %T%.3f" => Datetime("ms"). If
     #   no fractional second component is found then the default is "us".
     #
-    # @example
+    # @example Dealing with a consistent format:
+    #   s = Polars::Series.new(["2020-01-01 01:00Z", "2020-01-01 02:00Z"])
+    #   s.str.strptime(Polars::Datetime, "%Y-%m-%d %H:%M%#z")
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [datetime[μs, +00:00]]
+    #   # [
+    #   #         2020-01-01 01:00:00 +00:00
+    #   #         2020-01-01 02:00:00 +00:00
+    #   # ]
+    #
+    # @example Dealing with different formats.
     #   s = Polars::Series.new(
     #     "date",
     #     [
     #       "2021-04-22",
     #       "2022-01-04 00:00:00",
     #       "01/31/22",
-    #       "Sun Jul  8 00:34:60 2001"
+    #       "Sun Jul  8 00:34:60 2001",
     #     ]
     #   )
-    #   s.to_frame.with_column(
-    #     Polars.col("date")
-    #       .str.strptime(:date, "%F", strict: false)
-    #       .fill_null(
-    #         Polars.col("date").str.strptime(:date, "%F %T", strict: false)
-    #       )
-    #       .fill_null(Polars.col("date").str.strptime(:date, "%D", strict: false))
-    #       .fill_null(Polars.col("date").str.strptime(:date, "%c", strict: false))
-    #   )
+    #   s.to_frame.select(
+    #     Polars.coalesce(
+    #       Polars.col("date").str.strptime(Polars::Date, "%F", strict: false),
+    #       Polars.col("date").str.strptime(Polars::Date, "%F %T", strict: false),
+    #       Polars.col("date").str.strptime(Polars::Date, "%D", strict: false),
+    #       Polars.col("date").str.strptime(Polars::Date, "%c", strict: false)
+    #     )
+    #   ).to_series
     #   # =>
-    #   # shape: (4, 1)
-    #   # ┌────────────┐
-    #   # │ date       │
-    #   # │ ---        │
-    #   # │ date       │
-    #   # ╞════════════╡
-    #   # │ 2021-04-22 │
-    #   # │ 2022-01-04 │
-    #   # │ 2022-01-31 │
-    #   # │ 2001-07-08 │
-    #   # └────────────┘
-    def strptime(datatype, fmt = nil, strict: true, exact: true, cache: true, tz_aware: false, utc: false)
-      if !Utils.is_polars_dtype(datatype)
-        raise ArgumentError, "expected: {DataType} got: #{datatype}"
-      end
-
-      if datatype == :date
+    #   # shape: (4,)
+    #   # Series: 'date' [date]
+    #   # [
+    #   #         2021-04-22
+    #   #         2022-01-04
+    #   #         2022-01-31
+    #   #         2001-07-08
+    #   # ]
+    def strptime(dtype, fmt = nil, strict: true, exact: true, cache: true, tz_aware: false, utc: false)
+      if dtype == Date
         Utils.wrap_expr(_rbexpr.str_parse_date(fmt, strict, exact, cache))
-      elsif datatype == :datetime
-        # TODO fix
-        tu = nil # datatype.tu
-        dtcol = Utils.wrap_expr(_rbexpr.str_parse_datetime(fmt, strict, exact, cache, tz_aware, utc))
-        if tu.nil?
-          dtcol
-        else
-          dtcol.dt.cast_time_unit(tu)
-        end
-      elsif datatype == :time
+      elsif dtype == Datetime || dtype.is_a?(Datetime)
+        dtype = Datetime.new if dtype == Datetime
+        time_unit = dtype.time_unit
+        time_zone = dtype.time_zone
+        Utils.wrap_expr(_rbexpr.str_parse_datetime(fmt, time_unit, time_zone, strict, exact, cache, tz_aware, utc))
+      elsif dtype == Time
         Utils.wrap_expr(_rbexpr.str_parse_time(fmt, strict, exact, cache))
       else
-        raise ArgumentError, "dtype should be of type :date, :datetime, or :time"
+        raise ArgumentError, "dtype should be of type {Date, Datetime, Time}"
       end
     end
 

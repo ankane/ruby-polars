@@ -1308,8 +1308,6 @@ module Polars
     #
     # @param k [Integer]
     #   Number of elements to return.
-    # @param reverse [Boolean]
-    #   Return the smallest elements.
     #
     # @return [Expr]
     #
@@ -1322,7 +1320,7 @@ module Polars
     #   df.select(
     #     [
     #       Polars.col("value").top_k.alias("top_k"),
-    #       Polars.col("value").top_k(reverse: true).alias("bottom_k")
+    #       Polars.col("value").bottom_k.alias("bottom_k")
     #     ]
     #   )
     #   # =>
@@ -1338,8 +1336,46 @@ module Polars
     #   # │ 3     ┆ 4        │
     #   # │ 2     ┆ 98       │
     #   # └───────┴──────────┘
-    def top_k(k: 5, reverse: false)
-      wrap_expr(_rbexpr.top_k(k, reverse))
+    def top_k(k: 5)
+      wrap_expr(_rbexpr.top_k(k))
+    end
+
+    # Return the `k` smallest elements.
+    #
+    # If 'reverse: true` the smallest elements will be given.
+    #
+    # @param k [Integer]
+    #   Number of elements to return.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "value" => [1, 98, 2, 3, 99, 4]
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("value").top_k.alias("top_k"),
+    #       Polars.col("value").bottom_k.alias("bottom_k")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌───────┬──────────┐
+    #   # │ top_k ┆ bottom_k │
+    #   # │ ---   ┆ ---      │
+    #   # │ i64   ┆ i64      │
+    #   # ╞═══════╪══════════╡
+    #   # │ 99    ┆ 1        │
+    #   # │ 98    ┆ 2        │
+    #   # │ 4     ┆ 3        │
+    #   # │ 3     ┆ 4        │
+    #   # │ 2     ┆ 98       │
+    #   # └───────┴──────────┘
+    def bottom_k(k: 5)
+      wrap_expr(_rbexpr.bottom_k(k))
     end
 
     # Get the index values that would sort this column.
@@ -2194,7 +2230,7 @@ module Polars
     #   # │ 4      │
     #   # │ 6      │
     #   # │ 6      │
-    #   # │ …      │
+    #   # │ 4      │
     #   # │ 6      │
     #   # │ 6      │
     #   # │ 6      │
@@ -3915,8 +3951,8 @@ module Polars
     #   # │ 2   │
     #   # │ 5   │
     #   # └─────┘
-    def rank(method: "average", reverse: false)
-      wrap_expr(_rbexpr.rank(method, reverse))
+    def rank(method: "average", reverse: false, seed: nil)
+      wrap_expr(_rbexpr.rank(method, reverse, seed))
     end
 
     # Calculate the n-th discrete difference.
@@ -4917,9 +4953,10 @@ module Polars
     #   # ╞═══════════╪═══════════╡
     #   # │ [1, 2, 3] ┆ [4, 5, 6] │
     #   # └───────────┴───────────┘
-    def list
-      wrap_expr(_rbexpr.list)
+    def implode
+      wrap_expr(_rbexpr.implode)
     end
+    alias_method :list, :implode
 
     # Shrink numeric columns to the minimal required datatype.
     #

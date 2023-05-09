@@ -26,8 +26,8 @@ module Polars
     #   # │ 1   ┆ 3   │
     #   # │ 2   ┆ 4   │
     #   # └─────┴─────┘
-    def from_hash(data, columns: nil)
-      DataFrame._from_hash(data, columns: columns)
+    def from_hash(data, schema: nil, columns: nil)
+      DataFrame._from_hash(data, schema: schema || columns)
     end
 
     # Construct a DataFrame from a sequence of dictionaries. This operation clones data.

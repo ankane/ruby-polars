@@ -209,7 +209,7 @@ fn init() -> RbResult<()> {
     class.define_method("unique_stable", method!(RbExpr::unique_stable, 0))?;
     class.define_method("first", method!(RbExpr::first, 0))?;
     class.define_method("last", method!(RbExpr::last, 0))?;
-    class.define_method("list", method!(RbExpr::list, 0))?;
+    class.define_method("implode", method!(RbExpr::implode, 0))?;
     class.define_method("quantile", method!(RbExpr::quantile, 2))?;
     class.define_method("agg_groups", method!(RbExpr::agg_groups, 0))?;
     class.define_method("count", method!(RbExpr::count, 0))?;
@@ -219,7 +219,8 @@ fn init() -> RbResult<()> {
     class.define_method("cast", method!(RbExpr::cast, 2))?;
     class.define_method("sort_with", method!(RbExpr::sort_with, 2))?;
     class.define_method("arg_sort", method!(RbExpr::arg_sort, 2))?;
-    class.define_method("top_k", method!(RbExpr::top_k, 2))?;
+    class.define_method("top_k", method!(RbExpr::top_k, 1))?;
+    class.define_method("bottom_k", method!(RbExpr::bottom_k, 1))?;
     class.define_method("arg_max", method!(RbExpr::arg_max, 0))?;
     class.define_method("arg_min", method!(RbExpr::arg_min, 0))?;
     class.define_method("search_sorted", method!(RbExpr::search_sorted, 2))?;
@@ -285,8 +286,8 @@ fn init() -> RbResult<()> {
     class.define_method("product", method!(RbExpr::product, 0))?;
     class.define_method("shrink_dtype", method!(RbExpr::shrink_dtype, 0))?;
     class.define_method("str_parse_date", method!(RbExpr::str_parse_date, 4))?;
-    class.define_method("str_parse_datetime", method!(RbExpr::str_parse_datetime, 6))?;
-    class.define_method("str_parse_time", method!(RbExpr::str_parse_time, 4))?;
+    class.define_method("str_parse_datetime", method!(RbExpr::str_parse_datetime, 8))?;
+    class.define_method("str_parse_time", method!(RbExpr::str_parse_time, 3))?;
     class.define_method("str_strip", method!(RbExpr::str_strip, 1))?;
     class.define_method("str_rstrip", method!(RbExpr::str_rstrip, 1))?;
     class.define_method("str_lstrip", method!(RbExpr::str_lstrip, 1))?;
@@ -382,7 +383,7 @@ fn init() -> RbResult<()> {
     class.define_method("dt_cast_time_unit", method!(RbExpr::dt_cast_time_unit, 1))?;
     class.define_method(
         "dt_replace_time_zone",
-        method!(RbExpr::dt_replace_time_zone, 1),
+        method!(RbExpr::dt_replace_time_zone, 2),
     )?;
     class.define_method("dt_tz_localize", method!(RbExpr::dt_tz_localize, 1))?;
     class.define_method("dt_truncate", method!(RbExpr::dt_truncate, 2))?;
@@ -425,7 +426,7 @@ fn init() -> RbResult<()> {
     class.define_method("lst_eval", method!(RbExpr::lst_eval, 2))?;
     class.define_method("cumulative_eval", method!(RbExpr::cumulative_eval, 3))?;
     class.define_method("lst_to_struct", method!(RbExpr::lst_to_struct, 3))?;
-    class.define_method("rank", method!(RbExpr::rank, 2))?;
+    class.define_method("rank", method!(RbExpr::rank, 3))?;
     class.define_method("diff", method!(RbExpr::diff, 2))?;
     class.define_method("pct_change", method!(RbExpr::pct_change, 1))?;
     class.define_method("skew", method!(RbExpr::skew, 1))?;
@@ -825,6 +826,12 @@ fn dtype_cols(dtypes: RArray) -> RbResult<RbExpr> {
     Ok(crate::lazy::dsl::dtype_cols(dtypes))
 }
 
+macro_rules! set_unwrapped_or_0 {
+    ($($var:ident),+ $(,)?) => {
+        $(let $var = $var.map(|e| e.inner.clone()).unwrap_or(polars::lazy::dsl::lit(0));)+
+    };
+}
+
 #[allow(clippy::too_many_arguments)]
 fn rb_duration(
     days: Option<&RbExpr>,
@@ -836,17 +843,26 @@ fn rb_duration(
     hours: Option<&RbExpr>,
     weeks: Option<&RbExpr>,
 ) -> RbExpr {
+    set_unwrapped_or_0!(
+        days,
+        seconds,
+        nanoseconds,
+        microseconds,
+        milliseconds,
+        minutes,
+        hours,
+        weeks,
+    );
     let args = DurationArgs {
-        days: days.map(|e| e.inner.clone()),
-        seconds: seconds.map(|e| e.inner.clone()),
-        nanoseconds: nanoseconds.map(|e| e.inner.clone()),
-        microseconds: microseconds.map(|e| e.inner.clone()),
-        milliseconds: milliseconds.map(|e| e.inner.clone()),
-        minutes: minutes.map(|e| e.inner.clone()),
-        hours: hours.map(|e| e.inner.clone()),
-        weeks: weeks.map(|e| e.inner.clone()),
+        days,
+        seconds,
+        nanoseconds,
+        microseconds,
+        milliseconds,
+        minutes,
+        hours,
+        weeks,
     };
-
     polars::lazy::dsl::duration(args).into()
 }
 

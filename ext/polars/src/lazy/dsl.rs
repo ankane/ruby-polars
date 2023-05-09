@@ -156,12 +156,13 @@ impl RbExpr {
     pub fn first(&self) -> Self {
         self.clone().inner.first().into()
     }
+
     pub fn last(&self) -> Self {
         self.clone().inner.last().into()
     }
 
-    pub fn list(&self) -> Self {
-        self.clone().inner.list().into()
+    pub fn implode(&self) -> Self {
+        self.clone().inner.implode().into()
     }
 
     pub fn quantile(
@@ -230,8 +231,12 @@ impl RbExpr {
             .into()
     }
 
-    pub fn top_k(&self, k: usize, reverse: bool) -> Self {
-        self.inner.clone().top_k(k, reverse).into()
+    pub fn top_k(&self, k: usize) -> Self {
+        self.inner.clone().top_k(k).into()
+    }
+
+    pub fn bottom_k(&self, k: usize) -> Self {
+        self.inner.clone().bottom_k(k).into()
     }
 
     pub fn arg_max(&self) -> Self {
@@ -520,86 +525,62 @@ impl RbExpr {
 
     pub fn str_parse_date(
         &self,
-        fmt: Option<String>,
+        format: Option<String>,
         strict: bool,
         exact: bool,
         cache: bool,
     ) -> Self {
-        self.inner
-            .clone()
-            .str()
-            .strptime(StrpTimeOptions {
-                date_dtype: DataType::Date,
-                fmt,
-                strict,
-                exact,
-                cache,
-                tz_aware: false,
-                utc: false,
-            })
-            .into()
+        let options = StrptimeOptions {
+            format,
+            strict,
+            exact,
+            cache,
+            ..Default::default()
+        };
+        self.inner.clone().str().to_date(options).into()
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn str_parse_datetime(
         &self,
-        fmt: Option<String>,
+        format: Option<String>,
+        time_unit: Option<Wrap<TimeUnit>>,
+        time_zone: Option<TimeZone>,
         strict: bool,
         exact: bool,
         cache: bool,
-        tz_aware: bool,
         utc: bool,
+        tz_aware: bool,
     ) -> Self {
-        let tu = match fmt {
-            Some(ref fmt) => {
-                if fmt.contains("%.9f")
-                    || fmt.contains("%9f")
-                    || fmt.contains("%f")
-                    || fmt.contains("%.f")
-                {
-                    TimeUnit::Nanoseconds
-                } else if fmt.contains("%.3f") || fmt.contains("%3f") {
-                    TimeUnit::Milliseconds
-                } else {
-                    TimeUnit::Microseconds
-                }
-            }
-            None => TimeUnit::Microseconds,
+        let options = StrptimeOptions {
+            format,
+            strict,
+            exact,
+            cache,
+            tz_aware,
+            utc,
         };
         self.inner
             .clone()
             .str()
-            .strptime(StrpTimeOptions {
-                date_dtype: DataType::Datetime(tu, None),
-                fmt,
-                strict,
-                exact,
-                cache,
-                tz_aware,
-                utc,
-            })
+            .to_datetime(time_unit.map(|tu| tu.0), time_zone, options)
             .into()
     }
 
     pub fn str_parse_time(
         &self,
-        fmt: Option<String>,
+        format: Option<String>,
         strict: bool,
-        exact: bool,
         cache: bool,
     ) -> Self {
-        self.inner
-            .clone()
-            .str()
-            .strptime(StrpTimeOptions {
-                date_dtype: DataType::Time,
-                fmt,
-                strict,
-                exact,
-                cache,
-                tz_aware: false,
-                utc: false,
-            })
-            .into()
+        let options = StrptimeOptions {
+            format,
+            strict,
+            cache,
+            exact: true,
+            ..Default::default()
+        };
+        self.inner.clone().str().to_time(options).into()
     }
 
     pub fn str_strip(&self, matches: Option<String>) -> Self {
@@ -1058,8 +1039,8 @@ impl RbExpr {
         self.inner.clone().dt().cast_time_unit(tu.0).into()
     }
 
-    pub fn dt_replace_time_zone(&self, tz: Option<String>) -> Self {
-        self.inner.clone().dt().replace_time_zone(tz).into()
+    pub fn dt_replace_time_zone(&self, tz: Option<String>, use_earliest: Option<bool>) -> Self {
+        self.inner.clone().dt().replace_time_zone(tz, use_earliest).into()
     }
 
     #[allow(deprecated)]
@@ -1384,7 +1365,7 @@ impl RbExpr {
         self.inner.clone().arr().arg_max().into()
     }
 
-    pub fn lst_diff(&self, n: usize, null_behavior: Wrap<NullBehavior>) -> RbResult<Self> {
+    pub fn lst_diff(&self, n: i64, null_behavior: Wrap<NullBehavior>) -> RbResult<Self> {
         Ok(self.inner.clone().arr().diff(n, null_behavior.0).into())
     }
 
@@ -1442,19 +1423,19 @@ impl RbExpr {
             .into())
     }
 
-    pub fn rank(&self, method: Wrap<RankMethod>, reverse: bool) -> Self {
+    pub fn rank(&self, method: Wrap<RankMethod>, reverse: bool, seed: Option<u64>) -> Self {
         let options = RankOptions {
             method: method.0,
             descending: reverse,
         };
-        self.inner.clone().rank(options).into()
+        self.inner.clone().rank(options, seed).into()
     }
 
-    pub fn diff(&self, n: usize, null_behavior: Wrap<NullBehavior>) -> Self {
+    pub fn diff(&self, n: i64, null_behavior: Wrap<NullBehavior>) -> Self {
         self.inner.clone().diff(n, null_behavior.0).into()
     }
 
-    pub fn pct_change(&self, n: usize) -> Self {
+    pub fn pct_change(&self, n: i64) -> Self {
         self.inner.clone().pct_change(n).into()
     }
 
@@ -1693,7 +1674,7 @@ pub fn lit(value: Value) -> RbResult<RbExpr> {
     }
 }
 
-pub fn arange(low: &RbExpr, high: &RbExpr, step: usize) -> RbExpr {
+pub fn arange(low: &RbExpr, high: &RbExpr, step: i64) -> RbExpr {
     polars::lazy::dsl::arange(low.inner.clone(), high.inner.clone(), step).into()
 }
 
@@ -1770,6 +1751,6 @@ pub fn concat_str(s: RArray, sep: String) -> RbResult<RbExpr> {
 
 pub fn concat_lst(s: RArray) -> RbResult<RbExpr> {
     let s = rb_exprs_to_exprs(s)?;
-    let expr = dsl::concat_lst(s).map_err(RbPolarsErr::from)?;
+    let expr = dsl::concat_list(s).map_err(RbPolarsErr::from)?;
     Ok(expr.into())
 }

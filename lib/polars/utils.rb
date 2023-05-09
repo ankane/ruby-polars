@@ -132,7 +132,10 @@ module Polars
     end
 
     # TODO fix
-    def self.is_polars_dtype(data_type)
+    def self.is_polars_dtype(data_type, include_unknown: false)
+      if data_type == Unknown
+        return include_unknown
+      end
       data_type.is_a?(Symbol) || data_type.is_a?(String) || data_type.is_a?(DataType) || (data_type.is_a?(Class) && data_type < DataType)
     end
 

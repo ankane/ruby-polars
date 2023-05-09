@@ -958,8 +958,8 @@ module Polars
     #   Time zone for the `Datetime` Series.
     #
     # @return [Expr]
-    def replace_time_zone(tz)
-      Utils.wrap_expr(_rbexpr.dt_replace_time_zone(tz))
+    def replace_time_zone(tz, use_earliest: nil)
+      Utils.wrap_expr(_rbexpr.dt_replace_time_zone(tz, use_earliest))
     end
 
     # Localize tz-naive Datetime Series to tz-aware Datetime Series.

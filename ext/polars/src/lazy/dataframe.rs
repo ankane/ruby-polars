@@ -132,10 +132,10 @@ impl RbLazyFrame {
         let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
 
         let overwrite_dtype = overwrite_dtype.map(|overwrite_dtype| {
-            let fields = overwrite_dtype
+            overwrite_dtype
                 .into_iter()
-                .map(|(name, dtype)| Field::new(&name, dtype.0));
-            Schema::from(fields)
+                .map(|(name, dtype)| Field::new(&name, dtype.0))
+                .collect::<Schema>()
         });
         let r = LazyCsvReader::new(path)
             .with_infer_schema_length(infer_schema_length)
@@ -346,7 +346,7 @@ impl RbLazyFrame {
 
     pub fn groupby_rolling(
         &self,
-        index_column: String,
+        index_column: &RbExpr,
         period: String,
         offset: String,
         closed: Wrap<ClosedWindow>,
@@ -356,9 +356,10 @@ impl RbLazyFrame {
         let ldf = self.ldf.clone();
         let by = rb_exprs_to_exprs(by)?;
         let lazy_gb = ldf.groupby_rolling(
+            index_column.inner.clone(),
             by,
             RollingGroupOptions {
-                index_column: index_column.into(),
+                index_column: "".into(),
                 period: Duration::parse(&period),
                 offset: Duration::parse(&offset),
                 closed_window,
@@ -373,7 +374,7 @@ impl RbLazyFrame {
     #[allow(clippy::too_many_arguments)]
     pub fn groupby_dynamic(
         &self,
-        index_column: String,
+        index_column: &RbExpr,
         every: String,
         period: String,
         offset: String,
@@ -387,9 +388,9 @@ impl RbLazyFrame {
         let by = rb_exprs_to_exprs(by)?;
         let ldf = self.ldf.clone();
         let lazy_gb = ldf.groupby_dynamic(
+            index_column.inner.clone(),
             by,
             DynamicGroupOptions {
-                index_column: index_column.into(),
                 every: Duration::parse(&every),
                 period: Duration::parse(&period),
                 offset: Duration::parse(&offset),
@@ -397,6 +398,7 @@ impl RbLazyFrame {
                 include_boundaries,
                 closed_window,
                 start_by: start_by.0,
+                ..Default::default()
             },
         );
 

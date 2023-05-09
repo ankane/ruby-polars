@@ -158,6 +158,7 @@ class DocsTest < Minitest::Test
           assert_equal expected, output, "Example output (#{method.name})"
         end
       rescue => e
+        raise e if ENV["DEBUG"]
         raise "Example failed (#{method.name}): #{e.message}"
       end
     end

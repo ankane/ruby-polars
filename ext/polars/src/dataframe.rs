@@ -48,20 +48,25 @@ impl RbDataFrame {
         crate::object::register_object_builder();
 
         let schema =
-            rows_to_schema_supertypes(&rows, infer_schema_length).map_err(RbPolarsErr::from)?;
+            rows_to_schema_supertypes(&rows, infer_schema_length.map(|n| std::cmp::max(1, n)))
+                .map_err(RbPolarsErr::from)?;
         // replace inferred nulls with boolean
         let fields = schema.iter_fields().map(|mut fld| match fld.data_type() {
             DataType::Null => {
                 fld.coerce(DataType::Boolean);
                 fld
             }
+            DataType::Decimal(_, _) => {
+                fld.coerce(DataType::Decimal(None, None));
+                fld
+            }
             _ => fld,
         });
-        let mut schema = Schema::from(fields);
+        let mut schema = Schema::from_iter(fields);
 
         if let Some(schema_overwrite) = schema_overwrite {
             for (i, (name, dtype)) in schema_overwrite.into_iter().enumerate() {
-                if let Some((name_, dtype_)) = schema.get_index_mut(i) {
+                if let Some((name_, dtype_)) = schema.get_at_index_mut(i) {
                     *name_ = name;
 
                     // if user sets dtype unknown, we use the inferred datatype
@@ -139,11 +144,13 @@ impl RbDataFrame {
         };
 
         let overwrite_dtype = overwrite_dtype.map(|overwrite_dtype| {
-            let fields = overwrite_dtype.iter().map(|(name, dtype)| {
-                let dtype = dtype.0.clone();
-                Field::new(name, dtype)
-            });
-            Schema::from(fields)
+            overwrite_dtype
+                .iter()
+                .map(|(name, dtype)| {
+                    let dtype = dtype.0.clone();
+                    Field::new(name, dtype)
+                })
+                .collect::<Schema>()
         });
 
         let overwrite_dtype_slice = overwrite_dtype_slice.map(|overwrite_dtype| {

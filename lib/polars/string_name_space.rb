@@ -38,12 +38,12 @@ module Polars
     #   )
     #   s.to_frame.with_column(
     #     Polars.col("date")
-    #       .str.strptime(:date, "%F", strict: false)
+    #       .str.strptime(Polars::Date, "%F", strict: false)
     #       .fill_null(
-    #         Polars.col("date").str.strptime(:date, "%F %T", strict: false)
+    #         Polars.col("date").str.strptime(Polars::Date, "%F %T", strict: false)
     #       )
-    #       .fill_null(Polars.col("date").str.strptime(:date, "%D", strict: false))
-    #       .fill_null(Polars.col("date").str.strptime(:date, "%c", strict: false))
+    #       .fill_null(Polars.col("date").str.strptime(Polars::Date, "%D", strict: false))
+    #       .fill_null(Polars.col("date").str.strptime(Polars::Date, "%c", strict: false))
     #   )
     #   # =>
     #   # shape: (4, 1)

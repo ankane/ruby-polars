@@ -934,7 +934,7 @@ module Polars
     #     "2020-01-08 23:16:43"
     #   ]
     #   df = Polars::DataFrame.new({"dt" => dates, "a" => [3, 7, 5, 9, 2, 1]}).with_column(
-    #     Polars.col("dt").str.strptime(:datetime)
+    #     Polars.col("dt").str.strptime(Polars::Datetime)
     #   )
     #   df.groupby_rolling(index_column: "dt", period: "2d").agg(
     #     [
@@ -964,6 +964,7 @@ module Polars
       closed: "right",
       by: nil
     )
+      index_column = Utils.expr_to_lit_or_expr(index_column, str_to_lit: false)
       if offset.nil?
         offset = "-#{period}"
       end
@@ -973,7 +974,7 @@ module Polars
       offset = Utils._timedelta_to_pl_duration(offset)
 
       lgb = _ldf.groupby_rolling(
-        index_column, period, offset, closed, rbexprs_by
+        index_column._rbexpr, period, offset, closed, rbexprs_by
       )
       LazyGroupBy.new(lgb, self.class)
     end

@@ -1077,8 +1077,11 @@ module Polars
     #   # │ null ┆ null ┆ 3.0  ┆ 3.0  │
     #   # │ null ┆ null ┆ null ┆ 99.9 │
     #   # └──────┴──────┴──────┴──────┘
-    def coalesce(exprs)
+    def coalesce(exprs, *more_exprs)
       exprs = Utils.selection_to_rbexpr_list(exprs)
+      if more_exprs.any?
+        exprs.concat(Utils.selection_to_rbexpr_list(more_exprs))
+      end
       Utils.wrap_expr(_coalesce_exprs(exprs))
     end
 

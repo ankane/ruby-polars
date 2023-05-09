@@ -1,5 +1,6 @@
 ## 0.4.1 (unreleased)
 
+- Updated Polars to 0.29.0
 - Added support for creating series from Numo arrays
 - Added column assignment to `DataFrame`
 - Added `sort!` and `to_a` methods to `DataFrame`
