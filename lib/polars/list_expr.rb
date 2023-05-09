@@ -184,8 +184,8 @@ module Polars
     #   # ╞═══════════╡
     #   # │ [1, 2]    │
     #   # └───────────┘
-    def unique
-      Utils.wrap_expr(_rbexpr.lst_unique)
+    def unique(maintain_order: false)
+      Utils.wrap_expr(_rbexpr.lst_unique(maintain_order))
     end
 
     # Concat the arrays in a Series dtype List in linear time.

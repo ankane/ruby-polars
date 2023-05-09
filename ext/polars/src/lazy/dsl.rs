@@ -791,18 +791,6 @@ impl RbExpr {
         self.inner.clone().str().splitn(&by, n).into()
     }
 
-    pub fn arr_lengths(&self) -> Self {
-        self.inner.clone().arr().lengths().into()
-    }
-
-    pub fn arr_contains(&self, other: &RbExpr) -> Self {
-        self.inner
-            .clone()
-            .arr()
-            .contains(other.inner.clone())
-            .into()
-    }
-
     pub fn year(&self) -> Self {
         self.clone().inner.dt().year().into()
     }
@@ -1227,124 +1215,11 @@ impl RbExpr {
         self.inner.clone().upper_bound().into()
     }
 
-    pub fn lst_max(&self) -> Self {
-        self.inner.clone().arr().max().into()
-    }
-
-    pub fn lst_min(&self) -> Self {
-        self.inner.clone().arr().min().into()
-    }
-
-    pub fn lst_sum(&self) -> Self {
-        self.inner.clone().arr().sum().with_fmt("arr.sum").into()
-    }
-
-    pub fn lst_mean(&self) -> Self {
-        self.inner.clone().arr().mean().with_fmt("arr.mean").into()
-    }
-
-    pub fn lst_sort(&self, reverse: bool) -> Self {
-        self.inner
-            .clone()
-            .arr()
-            .sort(SortOptions {
-                descending: reverse,
-                ..Default::default()
-            })
-            .with_fmt("arr.sort")
-            .into()
-    }
-
-    pub fn lst_reverse(&self) -> Self {
-        self.inner
-            .clone()
-            .arr()
-            .reverse()
-            .with_fmt("arr.reverse")
-            .into()
-    }
-
-    pub fn lst_unique(&self) -> Self {
-        self.inner
-            .clone()
-            .arr()
-            .unique()
-            .with_fmt("arr.unique")
-            .into()
-    }
-
-    pub fn lst_get(&self, index: &RbExpr) -> Self {
-        self.inner.clone().arr().get(index.inner.clone()).into()
-    }
-
-    pub fn lst_join(&self, separator: String) -> Self {
-        self.inner.clone().arr().join(&separator).into()
-    }
-
-    pub fn lst_arg_min(&self) -> Self {
-        self.inner.clone().arr().arg_min().into()
-    }
-
-    pub fn lst_arg_max(&self) -> Self {
-        self.inner.clone().arr().arg_max().into()
-    }
-
-    pub fn lst_diff(&self, n: i64, null_behavior: Wrap<NullBehavior>) -> RbResult<Self> {
-        Ok(self.inner.clone().arr().diff(n, null_behavior.0).into())
-    }
-
-    pub fn lst_shift(&self, periods: i64) -> Self {
-        self.inner.clone().arr().shift(periods).into()
-    }
-
-    pub fn lst_slice(&self, offset: &RbExpr, length: Option<&RbExpr>) -> Self {
-        let length = match length {
-            Some(i) => i.inner.clone(),
-            None => dsl::lit(i64::MAX),
-        };
-        self.inner
-            .clone()
-            .arr()
-            .slice(offset.inner.clone(), length)
-            .into()
-    }
-
-    pub fn lst_eval(&self, expr: &RbExpr, parallel: bool) -> Self {
-        self.inner
-            .clone()
-            .arr()
-            .eval(expr.inner.clone(), parallel)
-            .into()
-    }
-
     pub fn cumulative_eval(&self, expr: &RbExpr, min_periods: usize, parallel: bool) -> Self {
         self.inner
             .clone()
             .cumulative_eval(expr.inner.clone(), min_periods, parallel)
             .into()
-    }
-
-    pub fn lst_to_struct(
-        &self,
-        width_strat: Wrap<ListToStructWidthStrategy>,
-        _name_gen: Option<Value>,
-        upper_bound: usize,
-    ) -> RbResult<Self> {
-        // TODO fix
-        let name_gen = None;
-        // let name_gen = name_gen.map(|lambda| {
-        //     Arc::new(move |idx: usize| {
-        //         let out: Value = lambda.funcall("call", (idx,)).unwrap();
-        //         out.try_convert::<String>().unwrap()
-        //     }) as NameGenerator
-        // });
-
-        Ok(self
-            .inner
-            .clone()
-            .arr()
-            .to_struct(width_strat.0, name_gen, upper_bound)
-            .into())
     }
 
     pub fn rank(&self, method: Wrap<RankMethod>, reverse: bool, seed: Option<u64>) -> Self {
