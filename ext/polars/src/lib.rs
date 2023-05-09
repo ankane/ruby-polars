@@ -299,7 +299,7 @@ fn init() -> RbResult<()> {
     class.define_method("str_to_lowercase", method!(RbExpr::str_to_lowercase, 0))?;
     class.define_method("str_lengths", method!(RbExpr::str_lengths, 0))?;
     class.define_method("str_n_chars", method!(RbExpr::str_n_chars, 0))?;
-    class.define_method("str_replace", method!(RbExpr::str_replace, 3))?;
+    class.define_method("str_replace_n", method!(RbExpr::str_replace_n, 4))?;
     class.define_method("str_replace_all", method!(RbExpr::str_replace_all, 3))?;
     class.define_method("str_zfill", method!(RbExpr::str_zfill, 1))?;
     class.define_method("str_ljust", method!(RbExpr::str_ljust, 2))?;
@@ -330,7 +330,7 @@ fn init() -> RbResult<()> {
     )?;
     class.define_method("str_extract", method!(RbExpr::str_extract, 2))?;
     class.define_method("str_extract_all", method!(RbExpr::str_extract_all, 1))?;
-    class.define_method("count_match", method!(RbExpr::count_match, 1))?;
+    class.define_method("count_match", method!(RbExpr::str_count_match, 1))?;
     class.define_method("strftime", method!(RbExpr::strftime, 1))?;
     class.define_method("str_split", method!(RbExpr::str_split, 1))?;
     class.define_method(

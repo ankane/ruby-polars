@@ -845,10 +845,10 @@ module Polars
     #   # │ 1   ┆ 123ABC │
     #   # │ 2   ┆ abc456 │
     #   # └─────┴────────┘
-    def replace(pattern, value, literal: false)
+    def replace(pattern, value, literal: false, n: 1)
       pattern = Utils.expr_to_lit_or_expr(pattern, str_to_lit: true)
       value = Utils.expr_to_lit_or_expr(value, str_to_lit: true)
-      Utils.wrap_expr(_rbexpr.str_replace(pattern._rbexpr, value._rbexpr, literal))
+      Utils.wrap_expr(_rbexpr.str_replace_n(pattern._rbexpr, value._rbexpr, literal, n))
     end
 
     # Replace all matching regex/literal substrings with a new string value.
