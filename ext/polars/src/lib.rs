@@ -6,7 +6,6 @@ mod error;
 mod expr;
 mod file;
 mod functions;
-mod lazy;
 mod lazyframe;
 mod lazygroupby;
 mod object;
@@ -23,7 +22,7 @@ use expr::RbExpr;
 use file::get_file_like;
 use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
-use lazy::dsl::{RbWhen, RbWhenThen};
+use functions::lazy::{RbWhen, RbWhenThen};
 use expr::rb_exprs_to_exprs;
 use magnus::{define_module, function, method, prelude::*, Error, IntoValue, RArray, RHash, Value};
 use polars::datatypes::{DataType, TimeUnit, IDX_DTYPE};
@@ -476,25 +475,25 @@ fn init() -> RbResult<()> {
 
     // maybe add to different class
     class.define_singleton_method("col", function!(crate::functions::lazy::col, 1))?;
-    class.define_singleton_method("count", function!(crate::lazy::dsl::count, 0))?;
-    class.define_singleton_method("first", function!(crate::lazy::dsl::first, 0))?;
-    class.define_singleton_method("last", function!(crate::lazy::dsl::last, 0))?;
+    class.define_singleton_method("count", function!(crate::functions::lazy::count, 0))?;
+    class.define_singleton_method("first", function!(crate::functions::lazy::first, 0))?;
+    class.define_singleton_method("last", function!(crate::functions::lazy::last, 0))?;
     class.define_singleton_method("cols", function!(crate::functions::lazy::cols, 1))?;
-    class.define_singleton_method("fold", function!(crate::lazy::dsl::fold, 3))?;
-    class.define_singleton_method("cumfold", function!(crate::lazy::dsl::cumfold, 4))?;
-    class.define_singleton_method("lit", function!(crate::lazy::dsl::lit, 1))?;
+    class.define_singleton_method("fold", function!(crate::functions::lazy::fold, 3))?;
+    class.define_singleton_method("cumfold", function!(crate::functions::lazy::cumfold, 4))?;
+    class.define_singleton_method("lit", function!(crate::functions::lazy::lit, 1))?;
     class.define_singleton_method("arange", function!(crate::functions::lazy::arange, 3))?;
-    class.define_singleton_method("repeat", function!(crate::lazy::dsl::repeat, 2))?;
-    class.define_singleton_method("pearson_corr", function!(crate::lazy::dsl::pearson_corr, 3))?;
+    class.define_singleton_method("repeat", function!(crate::functions::lazy::repeat, 2))?;
+    class.define_singleton_method("pearson_corr", function!(crate::functions::lazy::pearson_corr, 3))?;
     class.define_singleton_method(
         "spearman_rank_corr",
-        function!(crate::lazy::dsl::spearman_rank_corr, 4),
+        function!(crate::functions::lazy::spearman_rank_corr, 4),
     )?;
-    class.define_singleton_method("cov", function!(crate::lazy::dsl::cov, 2))?;
+    class.define_singleton_method("cov", function!(crate::functions::lazy::cov, 2))?;
     class.define_singleton_method("arg_sort_by", function!(crate::functions::lazy::arg_sort_by, 2))?;
-    class.define_singleton_method("when", function!(crate::lazy::dsl::when, 1))?;
-    class.define_singleton_method("concat_str", function!(crate::lazy::dsl::concat_str, 2))?;
-    class.define_singleton_method("concat_lst", function!(crate::lazy::dsl::concat_lst, 1))?;
+    class.define_singleton_method("when", function!(crate::functions::lazy::when, 1))?;
+    class.define_singleton_method("concat_str", function!(crate::functions::lazy::concat_str, 2))?;
+    class.define_singleton_method("concat_lst", function!(crate::functions::lazy::concat_lst, 1))?;
 
     let class = module.define_class("RbLazyFrame", Default::default())?;
     class.define_singleton_method("read_json", function!(RbLazyFrame::read_json, 1))?;
@@ -828,7 +827,7 @@ fn dtype_cols(dtypes: RArray) -> RbResult<RbExpr> {
         .map(|v| v?.try_convert::<Wrap<DataType>>())
         .collect::<RbResult<Vec<Wrap<DataType>>>>()?;
     let dtypes = vec_extract_wrapped(dtypes);
-    Ok(crate::lazy::dsl::dtype_cols(dtypes))
+    Ok(crate::functions::lazy::dtype_cols(dtypes))
 }
 
 fn concat_df(seq: RArray) -> RbResult<RbDataFrame> {
