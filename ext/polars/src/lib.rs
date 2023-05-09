@@ -5,6 +5,7 @@ mod dataframe;
 mod error;
 mod expr;
 mod file;
+mod functions;
 mod lazy;
 mod lazyframe;
 mod lazygroupby;
@@ -29,7 +30,7 @@ use polars::datatypes::{DataType, TimeUnit, IDX_DTYPE};
 use polars::error::PolarsResult;
 use polars::frame::DataFrame;
 use polars::functions::{diag_concat_df, hor_concat_df};
-use polars::prelude::{ClosedWindow, Duration, DurationArgs, IntoSeries, TimeZone};
+use polars::prelude::{ClosedWindow, Duration, IntoSeries, TimeZone};
 use series::RbSeries;
 
 #[cfg(target_os = "linux")]
@@ -52,7 +53,7 @@ type RbResult<T> = Result<T, Error>;
 fn init() -> RbResult<()> {
     let module = define_module("Polars")?;
     module.define_singleton_method("_dtype_cols", function!(dtype_cols, 1))?;
-    module.define_singleton_method("_rb_duration", function!(rb_duration, 8))?;
+    module.define_singleton_method("_rb_duration", function!(crate::functions::lazy::duration, 8))?;
     module.define_singleton_method("_concat_df", function!(concat_df, 1))?;
     module.define_singleton_method("_concat_lf", function!(concat_lf, 3))?;
     module.define_singleton_method("_diag_concat_df", function!(rb_diag_concat_df, 1))?;
@@ -826,46 +827,6 @@ fn dtype_cols(dtypes: RArray) -> RbResult<RbExpr> {
         .collect::<RbResult<Vec<Wrap<DataType>>>>()?;
     let dtypes = vec_extract_wrapped(dtypes);
     Ok(crate::lazy::dsl::dtype_cols(dtypes))
-}
-
-macro_rules! set_unwrapped_or_0 {
-    ($($var:ident),+ $(,)?) => {
-        $(let $var = $var.map(|e| e.inner.clone()).unwrap_or(polars::lazy::dsl::lit(0));)+
-    };
-}
-
-#[allow(clippy::too_many_arguments)]
-fn rb_duration(
-    days: Option<&RbExpr>,
-    seconds: Option<&RbExpr>,
-    nanoseconds: Option<&RbExpr>,
-    microseconds: Option<&RbExpr>,
-    milliseconds: Option<&RbExpr>,
-    minutes: Option<&RbExpr>,
-    hours: Option<&RbExpr>,
-    weeks: Option<&RbExpr>,
-) -> RbExpr {
-    set_unwrapped_or_0!(
-        days,
-        seconds,
-        nanoseconds,
-        microseconds,
-        milliseconds,
-        minutes,
-        hours,
-        weeks,
-    );
-    let args = DurationArgs {
-        days,
-        seconds,
-        nanoseconds,
-        microseconds,
-        milliseconds,
-        minutes,
-        hours,
-        weeks,
-    };
-    polars::lazy::dsl::duration(args).into()
 }
 
 fn concat_df(seq: RArray) -> RbResult<RbDataFrame> {
