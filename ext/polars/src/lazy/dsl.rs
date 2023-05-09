@@ -1683,11 +1683,6 @@ pub fn cov(a: &RbExpr, b: &RbExpr) -> RbExpr {
     polars::lazy::dsl::cov(a.inner.clone(), b.inner.clone()).into()
 }
 
-pub fn arg_sort_by(by: RArray, reverse: Vec<bool>) -> RbResult<RbExpr> {
-    let by = rb_exprs_to_exprs(by)?;
-    Ok(polars::lazy::dsl::arg_sort_by(by, &reverse).into())
-}
-
 #[magnus::wrap(class = "Polars::RbWhen")]
 #[derive(Clone)]
 pub struct RbWhen {
