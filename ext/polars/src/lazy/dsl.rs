@@ -10,19 +10,7 @@ use crate::conversion::*;
 use crate::lazy::apply::*;
 use crate::lazy::utils::rb_exprs_to_exprs;
 use crate::utils::reinterpret;
-use crate::{RbPolarsErr, RbResult, RbSeries};
-
-#[magnus::wrap(class = "Polars::RbExpr")]
-#[derive(Clone)]
-pub struct RbExpr {
-    pub inner: dsl::Expr,
-}
-
-impl From<dsl::Expr> for RbExpr {
-    fn from(inner: dsl::Expr) -> Self {
-        RbExpr { inner }
-    }
-}
+use crate::{RbExpr, RbPolarsErr, RbResult, RbSeries};
 
 impl RbExpr {
     pub fn add(&self, rhs: &RbExpr) -> RbResult<Self> {

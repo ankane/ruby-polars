@@ -1,8 +1,7 @@
 use magnus::Value;
 use polars::prelude::*;
 
-use crate::lazy::dsl::RbExpr;
-use crate::Wrap;
+use crate::{RbExpr, Wrap};
 
 pub fn binary_lambda(_lambda: Value, _a: Series, _b: Series) -> PolarsResult<Option<Series>> {
     todo!();
