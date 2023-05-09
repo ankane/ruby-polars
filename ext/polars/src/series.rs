@@ -1,3 +1,4 @@
+mod construction;
 mod export;
 mod set_at_idx;
 
@@ -9,7 +10,7 @@ use std::cell::RefCell;
 use crate::apply::series::{call_lambda_and_extract, ApplyLambda};
 use crate::apply_method_all_arrow_series2;
 use crate::conversion::*;
-use crate::list_construction::rb_seq_to_list;
+use crate::series::construction::rb_seq_to_list;
 use crate::series::set_at_idx::set_at_idx;
 use crate::{RbDataFrame, RbPolarsErr, RbResult, RbValueError};
 
