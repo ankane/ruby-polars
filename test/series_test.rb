@@ -200,6 +200,11 @@ class SeriesTest < Minitest::Test
     assert_series [false, true, true, false], a ^ b
   end
 
+  def test_not
+    a = Polars::Series.new([true, false])
+    assert_series [false, true], !a
+  end
+
   def test_comp_series
     a = Polars::Series.new([1, 2, 3, 4])
     b = Polars::Series.new([0, 2, 3, 5])

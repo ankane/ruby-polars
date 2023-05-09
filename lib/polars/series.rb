@@ -274,10 +274,8 @@ module Polars
 
     # Performs boolean not.
     #
-    # TODO use !@ in 0.5.0
-    #
     # @return [Series]
-    def is_not
+    def !
       if dtype == Boolean
         return Utils.wrap_s(_s.not)
       end
