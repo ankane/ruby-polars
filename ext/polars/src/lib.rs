@@ -22,7 +22,7 @@ use expr::RbExpr;
 use file::get_file_like;
 use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
-use functions::lazy::{RbWhen, RbWhenThen};
+use functions::whenthen::{RbWhen, RbWhenThen};
 use expr::rb_exprs_to_exprs;
 use magnus::{define_module, function, method, prelude::*, Error, IntoValue, RArray, RHash, Value};
 use polars::datatypes::{DataType, TimeUnit, IDX_DTYPE};
@@ -491,7 +491,7 @@ fn init() -> RbResult<()> {
     )?;
     class.define_singleton_method("cov", function!(crate::functions::lazy::cov, 2))?;
     class.define_singleton_method("arg_sort_by", function!(crate::functions::lazy::arg_sort_by, 2))?;
-    class.define_singleton_method("when", function!(crate::functions::lazy::when, 1))?;
+    class.define_singleton_method("when", function!(crate::functions::whenthen::when, 1))?;
     class.define_singleton_method("concat_str", function!(crate::functions::lazy::concat_str, 2))?;
     class.define_singleton_method("concat_lst", function!(crate::functions::lazy::concat_lst, 1))?;
 
