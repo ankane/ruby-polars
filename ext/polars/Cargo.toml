@@ -20,6 +20,7 @@ smartstring = "1"
 version = "0.29.0"
 features = [
     "abs",
+    "approx_unique",
     "arange",
     "arg_where",
     "asof_join",
