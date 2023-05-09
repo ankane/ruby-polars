@@ -604,10 +604,10 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("new_list", function!(RbSeries::new_list, 3))?;
     class.define_singleton_method("new_opt_date", function!(RbSeries::new_opt_date, 3))?;
     class.define_singleton_method("new_opt_datetime", function!(RbSeries::new_opt_datetime, 3))?;
-    class.define_method("is_sorted_flag", method!(RbSeries::is_sorted_flag, 0))?;
+    class.define_method("is_sorted_flag", method!(RbSeries::is_sorted_ascending_flag, 0))?;
     class.define_method(
         "is_sorted_reverse_flag",
-        method!(RbSeries::is_sorted_reverse_flag, 0),
+        method!(RbSeries::is_sorted_descending_flag, 0),
     )?;
     class.define_method("estimated_size", method!(RbSeries::estimated_size, 0))?;
     class.define_method("get_fmt", method!(RbSeries::get_fmt, 2))?;

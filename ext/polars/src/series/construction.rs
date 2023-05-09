@@ -1,9 +1,120 @@
-use magnus::Value;
-use polars::prelude::*;
+use magnus::{RArray, Value};
+use polars_core::prelude::*;
 use polars_core::utils::CustomIterTools;
 
-use crate::conversion::get_rbseq;
-use crate::{RbPolarsErr, RbResult};
+use crate::conversion::{get_rbseq, Wrap};
+use crate::prelude::ObjectValue;
+use crate::{RbPolarsErr, RbResult, RbSeries};
+
+impl RbSeries {
+    pub fn new_opt_bool(name: String, obj: RArray, strict: bool) -> RbResult<RbSeries> {
+        let len = obj.len();
+        let mut builder = BooleanChunkedBuilder::new(&name, len);
+
+        unsafe {
+            for item in obj.as_slice().iter() {
+                if item.is_nil() {
+                    builder.append_null()
+                } else {
+                    match item.try_convert::<bool>() {
+                        Ok(val) => builder.append_value(val),
+                        Err(e) => {
+                            if strict {
+                                return Err(e);
+                            }
+                            builder.append_null()
+                        }
+                    }
+                }
+            }
+        }
+        let ca = builder.finish();
+
+        let s = ca.into_series();
+        Ok(RbSeries::new(s))
+    }
+}
+
+fn new_primitive<T>(name: &str, obj: RArray, strict: bool) -> RbResult<RbSeries>
+where
+    T: PolarsNumericType,
+    ChunkedArray<T>: IntoSeries,
+    T::Native: magnus::TryConvert,
+{
+    let len = obj.len();
+    let mut builder = PrimitiveChunkedBuilder::<T>::new(name, len);
+
+    unsafe {
+        for item in obj.as_slice().iter() {
+            if item.is_nil() {
+                builder.append_null()
+            } else {
+                match item.try_convert::<T::Native>() {
+                    Ok(val) => builder.append_value(val),
+                    Err(e) => {
+                        if strict {
+                            return Err(e);
+                        }
+                        builder.append_null()
+                    }
+                }
+            }
+        }
+    }
+    let ca = builder.finish();
+
+    let s = ca.into_series();
+    Ok(RbSeries::new(s))
+}
+
+// Init with lists that can contain Nones
+macro_rules! init_method_opt {
+    ($name:ident, $type:ty, $native: ty) => {
+        impl RbSeries {
+            pub fn $name(name: String, obj: RArray, strict: bool) -> RbResult<Self> {
+                new_primitive::<$type>(&name, obj, strict)
+            }
+        }
+    };
+}
+
+init_method_opt!(new_opt_u8, UInt8Type, u8);
+init_method_opt!(new_opt_u16, UInt16Type, u16);
+init_method_opt!(new_opt_u32, UInt32Type, u32);
+init_method_opt!(new_opt_u64, UInt64Type, u64);
+init_method_opt!(new_opt_i8, Int8Type, i8);
+init_method_opt!(new_opt_i16, Int16Type, i16);
+init_method_opt!(new_opt_i32, Int32Type, i32);
+init_method_opt!(new_opt_i64, Int64Type, i64);
+init_method_opt!(new_opt_f32, Float32Type, f32);
+init_method_opt!(new_opt_f64, Float64Type, f64);
+
+impl RbSeries {
+    pub fn new_str(name: String, val: Wrap<Utf8Chunked>, _strict: bool) -> Self {
+        let mut s = val.0.into_series();
+        s.rename(&name);
+        RbSeries::new(s)
+    }
+
+    pub fn new_binary(name: String, val: Wrap<BinaryChunked>, _strict: bool) -> Self {
+        let mut s = val.0.into_series();
+        s.rename(&name);
+        RbSeries::new(s)
+    }
+
+    pub fn new_object(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
+        let val = val
+            .each()
+            .map(|v| v.map(ObjectValue::from))
+            .collect::<RbResult<Vec<ObjectValue>>>()?;
+        let s = ObjectChunked::<ObjectValue>::new_from_vec(&name, val).into_series();
+        Ok(s.into())
+    }
+
+    pub fn new_list(name: String, seq: Value, dtype: Wrap<DataType>) -> RbResult<Self> {
+        rb_seq_to_list(&name, seq, &dtype.0).map(|s| s.into())
+    }
+}
 
 pub fn rb_seq_to_list(name: &str, seq: Value, dtype: &DataType) -> RbResult<Series> {
     let (seq, len) = get_rbseq(seq)?;

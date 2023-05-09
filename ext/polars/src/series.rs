@@ -13,7 +13,6 @@ use std::cell::RefCell;
 use crate::apply::series::{call_lambda_and_extract, ApplyLambda};
 use crate::apply_method_all_arrow_series2;
 use crate::conversion::*;
-use crate::series::construction::rb_seq_to_list;
 use crate::series::set_at_idx::set_at_idx;
 use crate::{RbDataFrame, RbPolarsErr, RbResult};
 
@@ -34,121 +33,27 @@ impl RbSeries {
             series: RefCell::new(series),
         }
     }
+}
 
-    pub fn is_sorted_flag(&self) -> bool {
+pub fn to_series_collection(rs: RArray) -> RbResult<Vec<Series>> {
+    let mut series = Vec::new();
+    for item in rs.each() {
+        series.push(item?.try_convert::<&RbSeries>()?.series.borrow().clone());
+    }
+    Ok(series)
+}
+
+pub fn to_rbseries_collection(s: Vec<Series>) -> RArray {
+    RArray::from_iter(s.into_iter().map(RbSeries::new))
+}
+
+impl RbSeries {
+    pub fn is_sorted_ascending_flag(&self) -> bool {
         matches!(self.series.borrow().is_sorted_flag(), IsSorted::Ascending)
     }
 
-    pub fn is_sorted_reverse_flag(&self) -> bool {
+    pub fn is_sorted_descending_flag(&self) -> bool {
         matches!(self.series.borrow().is_sorted_flag(), IsSorted::Descending)
-    }
-
-    pub fn new_opt_bool(name: String, obj: RArray, strict: bool) -> RbResult<RbSeries> {
-        let len = obj.len();
-        let mut builder = BooleanChunkedBuilder::new(&name, len);
-
-        unsafe {
-            for item in obj.as_slice().iter() {
-                if item.is_nil() {
-                    builder.append_null()
-                } else {
-                    match item.try_convert::<bool>() {
-                        Ok(val) => builder.append_value(val),
-                        Err(e) => {
-                            if strict {
-                                return Err(e);
-                            }
-                            builder.append_null()
-                        }
-                    }
-                }
-            }
-        }
-        let ca = builder.finish();
-
-        let s = ca.into_series();
-        Ok(RbSeries::new(s))
-    }
-}
-
-fn new_primitive<T>(name: &str, obj: RArray, strict: bool) -> RbResult<RbSeries>
-where
-    T: PolarsNumericType,
-    ChunkedArray<T>: IntoSeries,
-    T::Native: magnus::TryConvert,
-{
-    let len = obj.len();
-    let mut builder = PrimitiveChunkedBuilder::<T>::new(name, len);
-
-    unsafe {
-        for item in obj.as_slice().iter() {
-            if item.is_nil() {
-                builder.append_null()
-            } else {
-                match item.try_convert::<T::Native>() {
-                    Ok(val) => builder.append_value(val),
-                    Err(e) => {
-                        if strict {
-                            return Err(e);
-                        }
-                        builder.append_null()
-                    }
-                }
-            }
-        }
-    }
-    let ca = builder.finish();
-
-    let s = ca.into_series();
-    Ok(RbSeries::new(s))
-}
-
-// Init with lists that can contain Nones
-macro_rules! init_method_opt {
-    ($name:ident, $type:ty, $native: ty) => {
-        impl RbSeries {
-            pub fn $name(name: String, obj: RArray, strict: bool) -> RbResult<Self> {
-                new_primitive::<$type>(&name, obj, strict)
-            }
-        }
-    };
-}
-
-init_method_opt!(new_opt_u8, UInt8Type, u8);
-init_method_opt!(new_opt_u16, UInt16Type, u16);
-init_method_opt!(new_opt_u32, UInt32Type, u32);
-init_method_opt!(new_opt_u64, UInt64Type, u64);
-init_method_opt!(new_opt_i8, Int8Type, i8);
-init_method_opt!(new_opt_i16, Int16Type, i16);
-init_method_opt!(new_opt_i32, Int32Type, i32);
-init_method_opt!(new_opt_i64, Int64Type, i64);
-init_method_opt!(new_opt_f32, Float32Type, f32);
-init_method_opt!(new_opt_f64, Float64Type, f64);
-
-impl RbSeries {
-    pub fn new_str(name: String, val: Wrap<Utf8Chunked>, _strict: bool) -> Self {
-        let mut s = val.0.into_series();
-        s.rename(&name);
-        RbSeries::new(s)
-    }
-
-    pub fn new_binary(name: String, val: Wrap<BinaryChunked>, _strict: bool) -> Self {
-        let mut s = val.0.into_series();
-        s.rename(&name);
-        RbSeries::new(s)
-    }
-
-    pub fn new_object(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
-        let val = val
-            .each()
-            .map(|v| v.map(ObjectValue::from))
-            .collect::<RbResult<Vec<ObjectValue>>>()?;
-        let s = ObjectChunked::<ObjectValue>::new_from_vec(&name, val).into_series();
-        Ok(s.into())
-    }
-
-    pub fn new_list(name: String, seq: Value, dtype: Wrap<DataType>) -> RbResult<Self> {
-        rb_seq_to_list(&name, seq, &dtype.0).map(|s| s.into())
     }
 
     pub fn estimated_size(&self) -> usize {
@@ -773,18 +678,6 @@ impl_set_with_mask!(set_with_mask_i16, i16, i16, Int16);
 impl_set_with_mask!(set_with_mask_i32, i32, i32, Int32);
 impl_set_with_mask!(set_with_mask_i64, i64, i64, Int64);
 impl_set_with_mask!(set_with_mask_bool, bool, bool, Boolean);
-
-pub fn to_series_collection(rs: RArray) -> RbResult<Vec<Series>> {
-    let mut series = Vec::new();
-    for item in rs.each() {
-        series.push(item?.try_convert::<&RbSeries>()?.series.borrow().clone());
-    }
-    Ok(series)
-}
-
-pub fn to_rbseries_collection(s: Vec<Series>) -> RArray {
-    RArray::from_iter(s.into_iter().map(RbSeries::new))
-}
 
 impl RbSeries {
     pub fn new_opt_date(name: String, values: RArray, _strict: Option<bool>) -> RbResult<Self> {
