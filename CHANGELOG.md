@@ -1,4 +1,4 @@
-## 0.4.1 (unreleased)
+## 0.5.0 (unreleased)
 
 - Updated Polars to 0.29.0
 - Added support for creating series from Numo arrays
