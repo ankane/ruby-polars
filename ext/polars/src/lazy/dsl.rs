@@ -732,58 +732,6 @@ impl RbExpr {
             .into()
     }
 
-    pub fn binary_hex_encode(&self) -> Self {
-        self.clone()
-            .inner
-            .map(
-                move |s| s.binary().map(|s| Some(s.hex_encode().into_series())),
-                GetOutput::same_type(),
-            )
-            .with_fmt("binary.hex_encode")
-            .into()
-    }
-
-    pub fn binary_hex_decode(&self, strict: bool) -> Self {
-        self.clone()
-            .inner
-            .map(
-                move |s| {
-                    s.binary()?
-                        .hex_decode(strict)
-                        .map(|s| Some(s.into_series()))
-                },
-                GetOutput::same_type(),
-            )
-            .with_fmt("binary.hex_decode")
-            .into()
-    }
-
-    pub fn binary_base64_encode(&self) -> Self {
-        self.clone()
-            .inner
-            .map(
-                move |s| s.binary().map(|s| Some(s.base64_encode().into_series())),
-                GetOutput::same_type(),
-            )
-            .with_fmt("binary.base64_encode")
-            .into()
-    }
-
-    pub fn binary_base64_decode(&self, strict: bool) -> Self {
-        self.clone()
-            .inner
-            .map(
-                move |s| {
-                    s.binary()?
-                        .base64_decode(strict)
-                        .map(|s| Some(s.into_series()))
-                },
-                GetOutput::same_type(),
-            )
-            .with_fmt("binary.base64_decode")
-            .into()
-    }
-
     pub fn str_json_path_match(&self, pat: String) -> Self {
         let function = move |s: Series| {
             let ca = s.utf8()?;
@@ -1421,10 +1369,6 @@ impl RbExpr {
 
     pub fn kurtosis(&self, fisher: bool, bias: bool) -> Self {
         self.inner.clone().kurtosis(fisher, bias).into()
-    }
-
-    pub fn cat_set_ordering(&self, ordering: Wrap<CategoricalOrdering>) -> Self {
-        self.inner.clone().cat().set_ordering(ordering.0).into()
     }
 
     pub fn reshape(&self, dims: Vec<i64>) -> Self {

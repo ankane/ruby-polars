@@ -314,15 +314,15 @@ fn init() -> RbResult<()> {
     class.define_method("str_hex_decode", method!(RbExpr::str_hex_decode, 1))?;
     class.define_method("str_base64_encode", method!(RbExpr::str_base64_encode, 0))?;
     class.define_method("str_base64_decode", method!(RbExpr::str_base64_decode, 1))?;
-    class.define_method("binary_hex_encode", method!(RbExpr::binary_hex_encode, 0))?;
-    class.define_method("binary_hex_decode", method!(RbExpr::binary_hex_decode, 1))?;
+    class.define_method("binary_hex_encode", method!(RbExpr::bin_hex_encode, 0))?;
+    class.define_method("binary_hex_decode", method!(RbExpr::bin_hex_decode, 1))?;
     class.define_method(
         "binary_base64_encode",
-        method!(RbExpr::binary_base64_encode, 0),
+        method!(RbExpr::bin_base64_encode, 0),
     )?;
     class.define_method(
         "binary_base64_decode",
-        method!(RbExpr::binary_base64_decode, 1),
+        method!(RbExpr::bin_base64_decode, 1),
     )?;
     class.define_method(
         "str_json_path_match",
