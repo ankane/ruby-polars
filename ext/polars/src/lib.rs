@@ -20,11 +20,10 @@ use dataframe::RbDataFrame;
 use error::{RbPolarsErr, RbValueError};
 use expr::rb_exprs_to_exprs;
 use expr::RbExpr;
-use file::get_file_like;
 use functions::whenthen::{RbWhen, RbWhenThen};
 use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
-use magnus::{define_module, function, method, prelude::*, Error, IntoValue, RArray, RHash, Value};
+use magnus::{define_module, function, method, prelude::*, Error, IntoValue, RArray, Value};
 use polars::datatypes::{DataType, IDX_DTYPE};
 use series::RbSeries;
 
@@ -60,8 +59,8 @@ fn init() -> RbResult<()> {
     module.define_singleton_method("_diag_concat_df", function!(crate::functions::eager::diag_concat_df, 1))?;
     module.define_singleton_method("_hor_concat_df", function!(crate::functions::eager::hor_concat_df, 1))?;
     module.define_singleton_method("_concat_series", function!(crate::functions::eager::concat_series, 1))?;
-    module.define_singleton_method("_ipc_schema", function!(ipc_schema, 1))?;
-    module.define_singleton_method("_parquet_schema", function!(parquet_schema, 1))?;
+    module.define_singleton_method("_ipc_schema", function!(crate::functions::io::read_ipc_schema, 1))?;
+    module.define_singleton_method("_parquet_schema", function!(crate::functions::io::read_parquet_schema, 1))?;
     module.define_singleton_method(
         "_collect_all",
         function!(crate::functions::lazy::collect_all, 1),
@@ -851,36 +850,6 @@ fn dtype_cols(dtypes: RArray) -> RbResult<RbExpr> {
         .collect::<RbResult<Vec<Wrap<DataType>>>>()?;
     let dtypes = vec_extract_wrapped(dtypes);
     Ok(crate::functions::lazy::dtype_cols(dtypes))
-}
-
-
-
-fn ipc_schema(rb_f: Value) -> RbResult<Value> {
-    use polars::export::arrow::io::ipc::read::read_file_metadata;
-    let mut r = get_file_like(rb_f, false)?;
-    let metadata = read_file_metadata(&mut r).map_err(RbPolarsErr::arrow)?;
-
-    let dict = RHash::new();
-    for field in metadata.schema.fields {
-        let dt: Wrap<DataType> = Wrap((&field.data_type).into());
-        dict.aset(field.name, dt)?;
-    }
-    Ok(dict.into())
-}
-
-fn parquet_schema(rb_f: Value) -> RbResult<Value> {
-    use polars::export::arrow::io::parquet::read::{infer_schema, read_metadata};
-
-    let mut r = get_file_like(rb_f, false)?;
-    let metadata = read_metadata(&mut r).map_err(RbPolarsErr::arrow)?;
-    let arrow_schema = infer_schema(&metadata).map_err(RbPolarsErr::arrow)?;
-
-    let dict = RHash::new();
-    for field in arrow_schema.fields {
-        let dt: Wrap<DataType> = Wrap((&field.data_type).into());
-        dict.aset(field.name, dt)?;
-    }
-    Ok(dict.into())
 }
 
 fn coalesce_exprs(exprs: RArray) -> RbResult<RbExpr> {
