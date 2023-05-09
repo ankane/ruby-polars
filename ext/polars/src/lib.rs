@@ -25,11 +25,7 @@ use functions::whenthen::{RbWhen, RbWhenThen};
 use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
 use magnus::{define_module, function, method, prelude::*, Error, IntoValue, RArray, RHash, Value};
-use polars::datatypes::{DataType, TimeUnit, IDX_DTYPE};
-use polars::error::PolarsResult;
-use polars::frame::DataFrame;
-use polars::functions::{diag_concat_df, hor_concat_df};
-use polars::prelude::{ClosedWindow, Duration, IntoSeries, TimeZone};
+use polars::datatypes::{DataType, IDX_DTYPE};
 use series::RbSeries;
 
 #[cfg(target_os = "linux")]
@@ -56,21 +52,21 @@ fn init() -> RbResult<()> {
         "_rb_duration",
         function!(crate::functions::lazy::duration, 8),
     )?;
-    module.define_singleton_method("_concat_df", function!(concat_df, 1))?;
+    module.define_singleton_method("_concat_df", function!(crate::functions::eager::concat_df, 1))?;
     module.define_singleton_method(
         "_concat_lf",
         function!(crate::functions::lazy::concat_lf, 3),
     )?;
-    module.define_singleton_method("_diag_concat_df", function!(rb_diag_concat_df, 1))?;
-    module.define_singleton_method("_hor_concat_df", function!(rb_hor_concat_df, 1))?;
-    module.define_singleton_method("_concat_series", function!(concat_series, 1))?;
+    module.define_singleton_method("_diag_concat_df", function!(crate::functions::eager::diag_concat_df, 1))?;
+    module.define_singleton_method("_hor_concat_df", function!(crate::functions::eager::hor_concat_df, 1))?;
+    module.define_singleton_method("_concat_series", function!(crate::functions::eager::concat_series, 1))?;
     module.define_singleton_method("_ipc_schema", function!(ipc_schema, 1))?;
     module.define_singleton_method("_parquet_schema", function!(parquet_schema, 1))?;
     module.define_singleton_method(
         "_collect_all",
         function!(crate::functions::lazy::collect_all, 1),
     )?;
-    module.define_singleton_method("_rb_date_range", function!(rb_date_range, 7))?;
+    module.define_singleton_method("_rb_date_range", function!(crate::functions::eager::date_range, 7))?;
     module.define_singleton_method("_coalesce_exprs", function!(coalesce_exprs, 1))?;
     module.define_singleton_method("_sum_exprs", function!(sum_exprs, 1))?;
     module.define_singleton_method("_as_struct", function!(as_struct, 1))?;
@@ -857,65 +853,7 @@ fn dtype_cols(dtypes: RArray) -> RbResult<RbExpr> {
     Ok(crate::functions::lazy::dtype_cols(dtypes))
 }
 
-fn concat_df(seq: RArray) -> RbResult<RbDataFrame> {
-    let mut iter = seq.each();
-    let first = iter.next().unwrap()?;
 
-    let first_rdf = get_df(first)?;
-    let identity_df = first_rdf.slice(0, 0);
-
-    let mut rdfs: Vec<PolarsResult<DataFrame>> = vec![Ok(first_rdf)];
-
-    for item in iter {
-        let rdf = get_df(item?)?;
-        rdfs.push(Ok(rdf));
-    }
-
-    let identity = Ok(identity_df);
-
-    let df = rdfs
-        .into_iter()
-        .fold(identity, |acc: PolarsResult<DataFrame>, df| {
-            let mut acc = acc?;
-            acc.vstack_mut(&df?)?;
-            Ok(acc)
-        })
-        .map_err(RbPolarsErr::from)?;
-
-    Ok(df.into())
-}
-
-fn rb_diag_concat_df(seq: RArray) -> RbResult<RbDataFrame> {
-    let mut dfs = Vec::new();
-    for item in seq.each() {
-        dfs.push(get_df(item?)?);
-    }
-    let df = diag_concat_df(&dfs).map_err(RbPolarsErr::from)?;
-    Ok(df.into())
-}
-
-fn rb_hor_concat_df(seq: RArray) -> RbResult<RbDataFrame> {
-    let mut dfs = Vec::new();
-    for item in seq.each() {
-        dfs.push(get_df(item?)?);
-    }
-    let df = hor_concat_df(&dfs).map_err(RbPolarsErr::from)?;
-    Ok(df.into())
-}
-
-fn concat_series(seq: RArray) -> RbResult<RbSeries> {
-    let mut iter = seq.each();
-    let first = iter.next().unwrap()?;
-
-    let mut s = get_series(first)?;
-
-    for res in iter {
-        let item = res?;
-        let item = get_series(item)?;
-        s.append(&item).map_err(RbPolarsErr::from)?;
-    }
-    Ok(s.into())
-}
 
 fn ipc_schema(rb_f: Value) -> RbResult<Value> {
     use polars::export::arrow::io::ipc::read::read_file_metadata;
@@ -943,28 +881,6 @@ fn parquet_schema(rb_f: Value) -> RbResult<Value> {
         dict.aset(field.name, dt)?;
     }
     Ok(dict.into())
-}
-
-fn rb_date_range(
-    start: i64,
-    stop: i64,
-    every: String,
-    closed: Wrap<ClosedWindow>,
-    name: String,
-    tu: Wrap<TimeUnit>,
-    tz: Option<TimeZone>,
-) -> RbResult<RbSeries> {
-    let date_range = polars::time::date_range_impl(
-        &name,
-        start,
-        stop,
-        Duration::parse(&every),
-        closed.0,
-        tu.0,
-        tz.as_ref(),
-    )
-    .map_err(RbPolarsErr::from)?;
-    Ok(date_range.into_series().into())
 }
 
 fn coalesce_exprs(exprs: RArray) -> RbResult<RbExpr> {
