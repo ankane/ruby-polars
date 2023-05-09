@@ -1,3 +1,4 @@
+mod export;
 mod set_at_idx;
 
 use magnus::{exception, Error, IntoValue, RArray, Value, QNIL};

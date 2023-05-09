@@ -8,7 +8,6 @@ mod lazy;
 mod lazyframe;
 mod lazygroupby;
 mod list_construction;
-mod numo;
 mod object;
 mod prelude;
 pub(crate) mod rb_modules;
