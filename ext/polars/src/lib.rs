@@ -23,8 +23,7 @@ use expr::RbExpr;
 use functions::whenthen::{RbWhen, RbWhenThen};
 use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
-use magnus::{define_module, function, method, prelude::*, Error, IntoValue, RArray, Value};
-use polars::datatypes::{DataType, IDX_DTYPE};
+use magnus::{define_module, function, method, prelude::*, Error};
 use series::RbSeries;
 
 #[cfg(target_os = "linux")]
@@ -46,7 +45,7 @@ type RbResult<T> = Result<T, Error>;
 #[magnus::init]
 fn init() -> RbResult<()> {
     let module = define_module("Polars")?;
-    module.define_singleton_method("_dtype_cols", function!(dtype_cols, 1))?;
+    module.define_singleton_method("_dtype_cols", function!(crate::functions::lazy::dtype_cols2, 1))?;
     module.define_singleton_method(
         "_rb_duration",
         function!(crate::functions::lazy::duration, 8),
@@ -66,11 +65,11 @@ fn init() -> RbResult<()> {
         function!(crate::functions::lazy::collect_all, 1),
     )?;
     module.define_singleton_method("_rb_date_range", function!(crate::functions::eager::date_range, 7))?;
-    module.define_singleton_method("_coalesce_exprs", function!(coalesce_exprs, 1))?;
-    module.define_singleton_method("_sum_exprs", function!(sum_exprs, 1))?;
-    module.define_singleton_method("_as_struct", function!(as_struct, 1))?;
-    module.define_singleton_method("_arg_where", function!(arg_where, 1))?;
-    module.define_singleton_method("_get_idx_type", function!(get_idx_type, 0))?;
+    module.define_singleton_method("_coalesce_exprs", function!(crate::functions::lazy::coalesce, 1))?;
+    module.define_singleton_method("_sum_exprs", function!(crate::functions::lazy::sum_exprs, 1))?;
+    module.define_singleton_method("_as_struct", function!(crate::functions::lazy::as_struct, 1))?;
+    module.define_singleton_method("_arg_where", function!(crate::functions::lazy::arg_where, 1))?;
+    module.define_singleton_method("_get_idx_type", function!(crate::functions::meta::get_idx_type, 0))?;
 
     let class = module.define_class("RbBatchedCsv", Default::default())?;
     class.define_singleton_method("new", function!(RbBatchedCsv::new, -1))?;
@@ -841,36 +840,4 @@ fn init() -> RbResult<()> {
     class.define_method("otherwise", method!(RbWhenThen::overwise, 1))?;
 
     Ok(())
-}
-
-fn dtype_cols(dtypes: RArray) -> RbResult<RbExpr> {
-    let dtypes = dtypes
-        .each()
-        .map(|v| v?.try_convert::<Wrap<DataType>>())
-        .collect::<RbResult<Vec<Wrap<DataType>>>>()?;
-    let dtypes = vec_extract_wrapped(dtypes);
-    Ok(crate::functions::lazy::dtype_cols(dtypes))
-}
-
-fn coalesce_exprs(exprs: RArray) -> RbResult<RbExpr> {
-    let exprs = rb_exprs_to_exprs(exprs)?;
-    Ok(polars::lazy::dsl::coalesce(&exprs).into())
-}
-
-fn sum_exprs(exprs: RArray) -> RbResult<RbExpr> {
-    let exprs = rb_exprs_to_exprs(exprs)?;
-    Ok(polars::lazy::dsl::sum_exprs(exprs).into())
-}
-
-fn as_struct(exprs: RArray) -> RbResult<RbExpr> {
-    let exprs = rb_exprs_to_exprs(exprs)?;
-    Ok(polars::lazy::dsl::as_struct(&exprs).into())
-}
-
-fn arg_where(condition: &RbExpr) -> RbExpr {
-    polars::lazy::dsl::arg_where(condition.inner.clone()).into()
-}
-
-fn get_idx_type() -> Value {
-    Wrap(IDX_DTYPE).into_value()
 }

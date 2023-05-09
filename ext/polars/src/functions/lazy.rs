@@ -3,8 +3,9 @@ use polars::lazy::dsl;
 use polars::prelude::*;
 
 use crate::apply::lazy::binary_lambda;
-use crate::conversion::{get_lf, get_rbseq};
+use crate::conversion::{get_lf, get_rbseq, Wrap};
 use crate::rb_exprs_to_exprs;
+use crate::prelude::vec_extract_wrapped;
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 
 macro_rules! set_unwrapped_or_0 {
@@ -20,6 +21,20 @@ pub fn arange(low: &RbExpr, high: &RbExpr, step: i64) -> RbExpr {
 pub fn arg_sort_by(by: RArray, descending: Vec<bool>) -> RbResult<RbExpr> {
     let by = rb_exprs_to_exprs(by)?;
     Ok(dsl::arg_sort_by(by, &descending).into())
+}
+
+pub fn arg_where(condition: &RbExpr) -> RbExpr {
+    dsl::arg_where(condition.inner.clone()).into()
+}
+
+pub fn as_struct(exprs: RArray) -> RbResult<RbExpr> {
+    let exprs = rb_exprs_to_exprs(exprs)?;
+    Ok(dsl::as_struct(&exprs).into())
+}
+
+pub fn coalesce(exprs: RArray) -> RbResult<RbExpr> {
+    let exprs = rb_exprs_to_exprs(exprs)?;
+    Ok(dsl::coalesce(&exprs).into())
 }
 
 pub fn col(name: String) -> RbExpr {
@@ -177,4 +192,18 @@ pub fn concat_lst(s: RArray) -> RbResult<RbExpr> {
     let s = rb_exprs_to_exprs(s)?;
     let expr = dsl::concat_list(s).map_err(RbPolarsErr::from)?;
     Ok(expr.into())
+}
+
+pub fn dtype_cols2(dtypes: RArray) -> RbResult<RbExpr> {
+    let dtypes = dtypes
+        .each()
+        .map(|v| v?.try_convert::<Wrap<DataType>>())
+        .collect::<RbResult<Vec<Wrap<DataType>>>>()?;
+    let dtypes = vec_extract_wrapped(dtypes);
+    Ok(crate::functions::lazy::dtype_cols(dtypes))
+}
+
+pub fn sum_exprs(exprs: RArray) -> RbResult<RbExpr> {
+    let exprs = rb_exprs_to_exprs(exprs)?;
+    Ok(polars::lazy::dsl::sum_exprs(exprs).into())
 }
