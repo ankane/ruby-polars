@@ -1,3 +1,9 @@
+mod binary;
+mod categorical;
+mod datetime;
+mod general;
+mod list;
+mod meta;
 mod string;
 mod r#struct;
 

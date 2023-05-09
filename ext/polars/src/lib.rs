@@ -307,9 +307,9 @@ fn init() -> RbResult<()> {
     class.define_method("str_contains", method!(RbExpr::str_contains, 3))?;
     class.define_method("str_ends_with", method!(RbExpr::str_ends_with, 1))?;
     class.define_method("str_starts_with", method!(RbExpr::str_starts_with, 1))?;
-    class.define_method("binary_contains", method!(RbExpr::binary_contains, 1))?;
-    class.define_method("binary_ends_with", method!(RbExpr::binary_ends_with, 1))?;
-    class.define_method("binary_starts_with", method!(RbExpr::binary_starts_with, 1))?;
+    class.define_method("binary_contains", method!(RbExpr::bin_contains, 1))?;
+    class.define_method("binary_ends_with", method!(RbExpr::bin_ends_with, 1))?;
+    class.define_method("binary_starts_with", method!(RbExpr::bin_starts_with, 1))?;
     class.define_method("str_hex_encode", method!(RbExpr::str_hex_encode, 0))?;
     class.define_method("str_hex_decode", method!(RbExpr::str_hex_decode, 1))?;
     class.define_method("str_base64_encode", method!(RbExpr::str_base64_encode, 0))?;
