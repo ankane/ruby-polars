@@ -1,6 +1,6 @@
 use magnus::{IntoValue, RArray, RHash, Value};
 use polars::io::RowCount;
-use polars::lazy::frame::{LazyFrame, LazyGroupBy};
+use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
 use std::cell::RefCell;
 use std::io::{BufWriter, Read};
@@ -9,30 +9,7 @@ use std::path::PathBuf;
 use crate::conversion::*;
 use crate::file::get_file_like;
 use crate::lazy::utils::rb_exprs_to_exprs;
-use crate::{RbDataFrame, RbExpr, RbPolarsErr, RbResult, RbValueError};
-
-#[magnus::wrap(class = "Polars::RbLazyGroupBy")]
-pub struct RbLazyGroupBy {
-    lgb: RefCell<Option<LazyGroupBy>>,
-}
-
-impl RbLazyGroupBy {
-    pub fn agg(&self, aggs: RArray) -> RbResult<RbLazyFrame> {
-        let lgb = self.lgb.borrow_mut().take().unwrap();
-        let aggs = rb_exprs_to_exprs(aggs)?;
-        Ok(lgb.agg(aggs).into())
-    }
-
-    pub fn head(&self, n: usize) -> RbLazyFrame {
-        let lgb = self.lgb.take().unwrap();
-        lgb.head(Some(n)).into()
-    }
-
-    pub fn tail(&self, n: usize) -> RbLazyFrame {
-        let lgb = self.lgb.take().unwrap();
-        lgb.tail(Some(n)).into()
-    }
-}
+use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
 
 #[magnus::wrap(class = "Polars::RbLazyFrame")]
 #[derive(Clone)]
