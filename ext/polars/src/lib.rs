@@ -13,7 +13,6 @@ mod object;
 mod prelude;
 pub(crate) mod rb_modules;
 mod series;
-mod set;
 mod utils;
 
 use batched_csv::RbBatchedCsv;
