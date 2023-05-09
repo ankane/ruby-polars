@@ -3,7 +3,7 @@ use polars::lazy::dsl;
 use polars::prelude::*;
 
 use crate::apply::lazy::*;
-use crate::lazy::utils::rb_exprs_to_exprs;
+use crate::expr::rb_exprs_to_exprs;
 use crate::{RbExpr, RbPolarsErr, RbResult, RbSeries};
 
 pub fn count() -> RbExpr {

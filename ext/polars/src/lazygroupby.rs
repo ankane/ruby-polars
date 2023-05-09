@@ -2,7 +2,7 @@ use magnus::RArray;
 use polars::lazy::frame::LazyGroupBy;
 use std::cell::RefCell;
 
-use crate::lazy::utils::rb_exprs_to_exprs;
+use crate::expr::rb_exprs_to_exprs;
 use crate::{RbLazyFrame, RbResult};
 
 #[magnus::wrap(class = "Polars::RbLazyGroupBy")]

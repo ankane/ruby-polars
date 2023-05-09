@@ -24,7 +24,7 @@ use file::get_file_like;
 use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
 use lazy::dsl::{RbWhen, RbWhenThen};
-use lazy::utils::rb_exprs_to_exprs;
+use expr::rb_exprs_to_exprs;
 use magnus::{define_module, function, method, prelude::*, Error, IntoValue, RArray, RHash, Value};
 use polars::datatypes::{DataType, TimeUnit, IDX_DTYPE};
 use polars::error::PolarsResult;

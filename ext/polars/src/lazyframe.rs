@@ -8,7 +8,7 @@ use std::path::PathBuf;
 
 use crate::conversion::*;
 use crate::file::get_file_like;
-use crate::lazy::utils::rb_exprs_to_exprs;
+use crate::expr::rb_exprs_to_exprs;
 use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
 
 #[magnus::wrap(class = "Polars::RbLazyFrame")]
