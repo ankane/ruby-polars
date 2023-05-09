@@ -1,3 +1,4 @@
+use polars::lazy::dsl;
 use polars::prelude::*;
 
 use crate::{RbExpr};
@@ -6,6 +7,10 @@ macro_rules! set_unwrapped_or_0 {
     ($($var:ident),+ $(,)?) => {
         $(let $var = $var.map(|e| e.inner.clone()).unwrap_or(polars::lazy::dsl::lit(0));)+
     };
+}
+
+pub fn arange(low: &RbExpr, high: &RbExpr, step: i64) -> RbExpr {
+    dsl::arange(low.inner.clone(), high.inner.clone(), step).into()
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -39,5 +44,5 @@ pub fn duration(
         hours,
         weeks,
     };
-    polars::lazy::dsl::duration(args).into()
+    dsl::duration(args).into()
 }

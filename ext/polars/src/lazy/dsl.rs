@@ -1662,10 +1662,6 @@ pub fn lit(value: Value) -> RbResult<RbExpr> {
     }
 }
 
-pub fn arange(low: &RbExpr, high: &RbExpr, step: i64) -> RbExpr {
-    polars::lazy::dsl::arange(low.inner.clone(), high.inner.clone(), step).into()
-}
-
 pub fn repeat(value: Value, n_times: &RbExpr) -> RbResult<RbExpr> {
     if value.is_nil() {
         Ok(polars::lazy::dsl::repeat(Null {}, n_times.inner.clone()).into())
