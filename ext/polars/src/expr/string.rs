@@ -238,7 +238,7 @@ impl RbExpr {
             .into()
     }
 
-    fn str_json_extract(&self, dtype: Option<Wrap<DataType>>) -> Self {
+    pub fn str_json_extract(&self, dtype: Option<Wrap<DataType>>) -> Self {
         let dtype = dtype.map(|wrap| wrap.0);
 
         let output_type = match dtype.clone() {

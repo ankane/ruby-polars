@@ -331,7 +331,7 @@ fn init() -> RbResult<()> {
     class.define_method("str_extract", method!(RbExpr::str_extract, 2))?;
     class.define_method("str_extract_all", method!(RbExpr::str_extract_all, 1))?;
     class.define_method("count_match", method!(RbExpr::str_count_match, 1))?;
-    class.define_method("strftime", method!(RbExpr::strftime, 1))?;
+    class.define_method("strftime", method!(RbExpr::dt_to_string, 1))?;
     class.define_method("str_split", method!(RbExpr::str_split, 1))?;
     class.define_method(
         "str_split_inclusive",
@@ -345,20 +345,20 @@ fn init() -> RbResult<()> {
     class.define_method("str_splitn", method!(RbExpr::str_splitn, 2))?;
     class.define_method("arr_lengths", method!(RbExpr::list_lengths, 0))?;
     class.define_method("arr_contains", method!(RbExpr::list_contains, 1))?;
-    class.define_method("year", method!(RbExpr::year, 0))?;
-    class.define_method("iso_year", method!(RbExpr::iso_year, 0))?;
-    class.define_method("quarter", method!(RbExpr::quarter, 0))?;
-    class.define_method("month", method!(RbExpr::month, 0))?;
-    class.define_method("week", method!(RbExpr::week, 0))?;
-    class.define_method("weekday", method!(RbExpr::weekday, 0))?;
-    class.define_method("day", method!(RbExpr::day, 0))?;
-    class.define_method("ordinal_day", method!(RbExpr::ordinal_day, 0))?;
-    class.define_method("hour", method!(RbExpr::hour, 0))?;
-    class.define_method("minute", method!(RbExpr::minute, 0))?;
-    class.define_method("second", method!(RbExpr::second, 0))?;
-    class.define_method("millisecond", method!(RbExpr::millisecond, 0))?;
-    class.define_method("microsecond", method!(RbExpr::microsecond, 0))?;
-    class.define_method("nanosecond", method!(RbExpr::nanosecond, 0))?;
+    class.define_method("year", method!(RbExpr::dt_year, 0))?;
+    class.define_method("iso_year", method!(RbExpr::dt_iso_year, 0))?;
+    class.define_method("quarter", method!(RbExpr::dt_quarter, 0))?;
+    class.define_method("month", method!(RbExpr::dt_month, 0))?;
+    class.define_method("week", method!(RbExpr::dt_week, 0))?;
+    class.define_method("weekday", method!(RbExpr::dt_weekday, 0))?;
+    class.define_method("day", method!(RbExpr::dt_day, 0))?;
+    class.define_method("ordinal_day", method!(RbExpr::dt_ordinal_day, 0))?;
+    class.define_method("hour", method!(RbExpr::dt_hour, 0))?;
+    class.define_method("minute", method!(RbExpr::dt_minute, 0))?;
+    class.define_method("second", method!(RbExpr::dt_second, 0))?;
+    class.define_method("millisecond", method!(RbExpr::dt_millisecond, 0))?;
+    class.define_method("microsecond", method!(RbExpr::dt_microsecond, 0))?;
+    class.define_method("nanosecond", method!(RbExpr::dt_nanosecond, 0))?;
     class.define_method("duration_days", method!(RbExpr::duration_days, 0))?;
     class.define_method("duration_hours", method!(RbExpr::duration_hours, 0))?;
     class.define_method("duration_minutes", method!(RbExpr::duration_minutes, 0))?;
@@ -375,7 +375,7 @@ fn init() -> RbResult<()> {
         "duration_milliseconds",
         method!(RbExpr::duration_milliseconds, 0),
     )?;
-    class.define_method("timestamp", method!(RbExpr::timestamp, 1))?;
+    class.define_method("timestamp", method!(RbExpr::dt_timestamp, 1))?;
     class.define_method("dt_offset_by", method!(RbExpr::dt_offset_by, 1))?;
     class.define_method("dt_epoch_seconds", method!(RbExpr::dt_epoch_seconds, 0))?;
     class.define_method("dt_with_time_unit", method!(RbExpr::dt_with_time_unit, 1))?;
