@@ -1,3 +1,5 @@
+mod aggregation;
+mod comparison;
 mod construction;
 mod export;
 mod set_at_idx;
@@ -12,7 +14,7 @@ use crate::apply_method_all_arrow_series2;
 use crate::conversion::*;
 use crate::series::construction::rb_seq_to_list;
 use crate::series::set_at_idx::set_at_idx;
-use crate::{RbDataFrame, RbPolarsErr, RbResult, RbValueError};
+use crate::{RbDataFrame, RbPolarsErr, RbResult};
 
 #[magnus::wrap(class = "Polars::RbSeries")]
 pub struct RbSeries {
@@ -246,49 +248,6 @@ impl RbSeries {
         out.into()
     }
 
-    pub fn mean(&self) -> Option<f64> {
-        match self.series.borrow().dtype() {
-            DataType::Boolean => {
-                let s = self.series.borrow().cast(&DataType::UInt8).unwrap();
-                s.mean()
-            }
-            _ => self.series.borrow().mean(),
-        }
-    }
-
-    pub fn max(&self) -> RbResult<Value> {
-        Ok(Wrap(
-            self.series
-                .borrow()
-                .max_as_series()
-                .get(0)
-                .map_err(RbPolarsErr::from)?,
-        )
-        .into_value())
-    }
-
-    pub fn min(&self) -> RbResult<Value> {
-        Ok(Wrap(
-            self.series
-                .borrow()
-                .min_as_series()
-                .get(0)
-                .map_err(RbPolarsErr::from)?,
-        )
-        .into_value())
-    }
-
-    pub fn sum(&self) -> RbResult<Value> {
-        Ok(Wrap(
-            self.series
-                .borrow()
-                .sum_as_series()
-                .get(0)
-                .map_err(RbPolarsErr::from)?,
-        )
-        .into_value())
-    }
-
     pub fn n_chunks(&self) -> usize {
         self.series.borrow().n_chunks()
     }
@@ -365,14 +324,6 @@ impl RbSeries {
         Ok(df.into())
     }
 
-    pub fn arg_min(&self) -> Option<usize> {
-        self.series.borrow().arg_min()
-    }
-
-    pub fn arg_max(&self) -> Option<usize> {
-        self.series.borrow().arg_max()
-    }
-
     pub fn take_with_series(&self, indices: &RbSeries) -> RbResult<Self> {
         let binding = indices.series.borrow();
         let idx = binding.idx().map_err(RbPolarsErr::from)?;
@@ -428,60 +379,6 @@ impl RbSeries {
         } else {
             self.series.borrow().series_equal(&other.series.borrow())
         }
-    }
-
-    pub fn eq(&self, rhs: &RbSeries) -> RbResult<Self> {
-        let s = self
-            .series
-            .borrow()
-            .equal(&*rhs.series.borrow())
-            .map_err(RbPolarsErr::from)?;
-        Ok(Self::new(s.into_series()))
-    }
-
-    pub fn neq(&self, rhs: &RbSeries) -> RbResult<Self> {
-        let s = self
-            .series
-            .borrow()
-            .not_equal(&*rhs.series.borrow())
-            .map_err(RbPolarsErr::from)?;
-        Ok(Self::new(s.into_series()))
-    }
-
-    pub fn gt(&self, rhs: &RbSeries) -> RbResult<Self> {
-        let s = self
-            .series
-            .borrow()
-            .gt(&*rhs.series.borrow())
-            .map_err(RbPolarsErr::from)?;
-        Ok(Self::new(s.into_series()))
-    }
-
-    pub fn gt_eq(&self, rhs: &RbSeries) -> RbResult<Self> {
-        let s = self
-            .series
-            .borrow()
-            .gt_eq(&*rhs.series.borrow())
-            .map_err(RbPolarsErr::from)?;
-        Ok(Self::new(s.into_series()))
-    }
-
-    pub fn lt(&self, rhs: &RbSeries) -> RbResult<Self> {
-        let s = self
-            .series
-            .borrow()
-            .lt(&*rhs.series.borrow())
-            .map_err(RbPolarsErr::from)?;
-        Ok(Self::new(s.into_series()))
-    }
-
-    pub fn lt_eq(&self, rhs: &RbSeries) -> RbResult<Self> {
-        let s = self
-            .series
-            .borrow()
-            .lt_eq(&*rhs.series.borrow())
-            .map_err(RbPolarsErr::from)?;
-        Ok(Self::new(s.into_series()))
     }
 
     pub fn not(&self) -> RbResult<Self> {
@@ -563,32 +460,6 @@ impl RbSeries {
         }
 
         to_list_recursive(series)
-    }
-
-    pub fn median(&self) -> Option<f64> {
-        match self.series.borrow().dtype() {
-            DataType::Boolean => {
-                let s = self.series.borrow().cast(&DataType::UInt8).unwrap();
-                s.median()
-            }
-            _ => self.series.borrow().median(),
-        }
-    }
-
-    pub fn quantile(
-        &self,
-        quantile: f64,
-        interpolation: Wrap<QuantileInterpolOptions>,
-    ) -> RbResult<Value> {
-        Ok(Wrap(
-            self.series
-                .borrow()
-                .quantile_as_series(quantile, interpolation.0)
-                .map_err(|_| RbValueError::new_err("invalid quantile".into()))?
-                .get(0)
-                .unwrap_or(AnyValue::Null),
-        )
-        .into_value())
     }
 
     pub fn clone(&self) -> Self {
@@ -986,198 +857,6 @@ impl_arithmetic!(rem_i32, i32, %);
 impl_arithmetic!(rem_i64, i64, %);
 impl_arithmetic!(rem_f32, f32, %);
 impl_arithmetic!(rem_f64, f64, %);
-
-macro_rules! impl_eq_num {
-    ($name:ident, $type:ty) => {
-        impl RbSeries {
-            pub fn $name(&self, rhs: $type) -> RbResult<Self> {
-                let s = self.series.borrow().equal(rhs).map_err(RbPolarsErr::from)?;
-                Ok(RbSeries::new(s.into_series()))
-            }
-        }
-    };
-}
-
-impl_eq_num!(eq_u8, u8);
-impl_eq_num!(eq_u16, u16);
-impl_eq_num!(eq_u32, u32);
-impl_eq_num!(eq_u64, u64);
-impl_eq_num!(eq_i8, i8);
-impl_eq_num!(eq_i16, i16);
-impl_eq_num!(eq_i32, i32);
-impl_eq_num!(eq_i64, i64);
-impl_eq_num!(eq_f32, f32);
-impl_eq_num!(eq_f64, f64);
-
-macro_rules! impl_neq_num {
-    ($name:ident, $type:ty) => {
-        impl RbSeries {
-            pub fn $name(&self, rhs: $type) -> RbResult<Self> {
-                let s = self
-                    .series
-                    .borrow()
-                    .not_equal(rhs)
-                    .map_err(RbPolarsErr::from)?;
-                Ok(RbSeries::new(s.into_series()))
-            }
-        }
-    };
-}
-
-impl_neq_num!(neq_u8, u8);
-impl_neq_num!(neq_u16, u16);
-impl_neq_num!(neq_u32, u32);
-impl_neq_num!(neq_u64, u64);
-impl_neq_num!(neq_i8, i8);
-impl_neq_num!(neq_i16, i16);
-impl_neq_num!(neq_i32, i32);
-impl_neq_num!(neq_i64, i64);
-impl_neq_num!(neq_f32, f32);
-impl_neq_num!(neq_f64, f64);
-
-macro_rules! impl_gt_num {
-    ($name:ident, $type:ty) => {
-        impl RbSeries {
-            pub fn $name(&self, rhs: $type) -> RbResult<Self> {
-                let s = self.series.borrow().gt(rhs).map_err(RbPolarsErr::from)?;
-                Ok(RbSeries::new(s.into_series()))
-            }
-        }
-    };
-}
-
-impl_gt_num!(gt_u8, u8);
-impl_gt_num!(gt_u16, u16);
-impl_gt_num!(gt_u32, u32);
-impl_gt_num!(gt_u64, u64);
-impl_gt_num!(gt_i8, i8);
-impl_gt_num!(gt_i16, i16);
-impl_gt_num!(gt_i32, i32);
-impl_gt_num!(gt_i64, i64);
-impl_gt_num!(gt_f32, f32);
-impl_gt_num!(gt_f64, f64);
-
-macro_rules! impl_gt_eq_num {
-    ($name:ident, $type:ty) => {
-        impl RbSeries {
-            pub fn $name(&self, rhs: $type) -> RbResult<Self> {
-                let s = self.series.borrow().gt_eq(rhs).map_err(RbPolarsErr::from)?;
-                Ok(RbSeries::new(s.into_series()))
-            }
-        }
-    };
-}
-
-impl_gt_eq_num!(gt_eq_u8, u8);
-impl_gt_eq_num!(gt_eq_u16, u16);
-impl_gt_eq_num!(gt_eq_u32, u32);
-impl_gt_eq_num!(gt_eq_u64, u64);
-impl_gt_eq_num!(gt_eq_i8, i8);
-impl_gt_eq_num!(gt_eq_i16, i16);
-impl_gt_eq_num!(gt_eq_i32, i32);
-impl_gt_eq_num!(gt_eq_i64, i64);
-impl_gt_eq_num!(gt_eq_f32, f32);
-impl_gt_eq_num!(gt_eq_f64, f64);
-
-macro_rules! impl_lt_num {
-    ($name:ident, $type:ty) => {
-        impl RbSeries {
-            pub fn $name(&self, rhs: $type) -> RbResult<RbSeries> {
-                let s = self.series.borrow().lt(rhs).map_err(RbPolarsErr::from)?;
-                Ok(RbSeries::new(s.into_series()))
-            }
-        }
-    };
-}
-
-impl_lt_num!(lt_u8, u8);
-impl_lt_num!(lt_u16, u16);
-impl_lt_num!(lt_u32, u32);
-impl_lt_num!(lt_u64, u64);
-impl_lt_num!(lt_i8, i8);
-impl_lt_num!(lt_i16, i16);
-impl_lt_num!(lt_i32, i32);
-impl_lt_num!(lt_i64, i64);
-impl_lt_num!(lt_f32, f32);
-impl_lt_num!(lt_f64, f64);
-
-macro_rules! impl_lt_eq_num {
-    ($name:ident, $type:ty) => {
-        impl RbSeries {
-            pub fn $name(&self, rhs: $type) -> RbResult<Self> {
-                let s = self.series.borrow().lt_eq(rhs).map_err(RbPolarsErr::from)?;
-                Ok(RbSeries::new(s.into_series()))
-            }
-        }
-    };
-}
-
-impl_lt_eq_num!(lt_eq_u8, u8);
-impl_lt_eq_num!(lt_eq_u16, u16);
-impl_lt_eq_num!(lt_eq_u32, u32);
-impl_lt_eq_num!(lt_eq_u64, u64);
-impl_lt_eq_num!(lt_eq_i8, i8);
-impl_lt_eq_num!(lt_eq_i16, i16);
-impl_lt_eq_num!(lt_eq_i32, i32);
-impl_lt_eq_num!(lt_eq_i64, i64);
-impl_lt_eq_num!(lt_eq_f32, f32);
-impl_lt_eq_num!(lt_eq_f64, f64);
-
-impl RbSeries {
-    pub fn eq_str(&self, rhs: String) -> RbResult<Self> {
-        let s = self
-            .series
-            .borrow()
-            .equal(rhs.as_str())
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbSeries::new(s.into_series()))
-    }
-
-    pub fn neq_str(&self, rhs: String) -> RbResult<Self> {
-        let s = self
-            .series
-            .borrow()
-            .not_equal(rhs.as_str())
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbSeries::new(s.into_series()))
-    }
-
-    pub fn gt_str(&self, rhs: String) -> RbResult<Self> {
-        let s = self
-            .series
-            .borrow()
-            .gt(rhs.as_str())
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbSeries::new(s.into_series()))
-    }
-
-    pub fn gt_eq_str(&self, rhs: String) -> RbResult<Self> {
-        let s = self
-            .series
-            .borrow()
-            .gt_eq(rhs.as_str())
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbSeries::new(s.into_series()))
-    }
-
-    pub fn lt_str(&self, rhs: String) -> RbResult<Self> {
-        let s = self
-            .series
-            .borrow()
-            .lt(rhs.as_str())
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbSeries::new(s.into_series()))
-    }
-
-    pub fn lt_eq_str(&self, rhs: String) -> RbResult<Self> {
-        let s = self
-            .series
-            .borrow()
-            .lt_eq(rhs.as_str())
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbSeries::new(s.into_series()))
-    }
-}
 
 pub fn to_series_collection(rs: RArray) -> RbResult<Vec<Series>> {
     let mut series = Vec::new();
