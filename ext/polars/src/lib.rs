@@ -18,12 +18,12 @@ use batched_csv::RbBatchedCsv;
 use conversion::*;
 use dataframe::RbDataFrame;
 use error::{RbPolarsErr, RbValueError};
+use expr::rb_exprs_to_exprs;
 use expr::RbExpr;
 use file::get_file_like;
+use functions::whenthen::{RbWhen, RbWhenThen};
 use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
-use functions::whenthen::{RbWhen, RbWhenThen};
-use expr::rb_exprs_to_exprs;
 use magnus::{define_module, function, method, prelude::*, Error, IntoValue, RArray, RHash, Value};
 use polars::datatypes::{DataType, TimeUnit, IDX_DTYPE};
 use polars::error::PolarsResult;
@@ -52,15 +52,24 @@ type RbResult<T> = Result<T, Error>;
 fn init() -> RbResult<()> {
     let module = define_module("Polars")?;
     module.define_singleton_method("_dtype_cols", function!(dtype_cols, 1))?;
-    module.define_singleton_method("_rb_duration", function!(crate::functions::lazy::duration, 8))?;
+    module.define_singleton_method(
+        "_rb_duration",
+        function!(crate::functions::lazy::duration, 8),
+    )?;
     module.define_singleton_method("_concat_df", function!(concat_df, 1))?;
-    module.define_singleton_method("_concat_lf", function!(crate::functions::lazy::concat_lf, 3))?;
+    module.define_singleton_method(
+        "_concat_lf",
+        function!(crate::functions::lazy::concat_lf, 3),
+    )?;
     module.define_singleton_method("_diag_concat_df", function!(rb_diag_concat_df, 1))?;
     module.define_singleton_method("_hor_concat_df", function!(rb_hor_concat_df, 1))?;
     module.define_singleton_method("_concat_series", function!(concat_series, 1))?;
     module.define_singleton_method("_ipc_schema", function!(ipc_schema, 1))?;
     module.define_singleton_method("_parquet_schema", function!(parquet_schema, 1))?;
-    module.define_singleton_method("_collect_all", function!(crate::functions::lazy::collect_all, 1))?;
+    module.define_singleton_method(
+        "_collect_all",
+        function!(crate::functions::lazy::collect_all, 1),
+    )?;
     module.define_singleton_method("_rb_date_range", function!(rb_date_range, 7))?;
     module.define_singleton_method("_coalesce_exprs", function!(coalesce_exprs, 1))?;
     module.define_singleton_method("_sum_exprs", function!(sum_exprs, 1))?;
@@ -470,8 +479,14 @@ fn init() -> RbResult<()> {
     class.define_method("meta_roots", method!(RbExpr::meta_root_names, 0))?;
     class.define_method("meta_output_name", method!(RbExpr::meta_output_name, 0))?;
     class.define_method("meta_undo_aliases", method!(RbExpr::meta_undo_aliases, 0))?;
-    class.define_method("meta_has_multiple_outputs", method!(RbExpr::meta_has_multiple_outputs, 0))?;
-    class.define_method("meta_is_regex_projection", method!(RbExpr::meta_is_regex_projection, 0))?;
+    class.define_method(
+        "meta_has_multiple_outputs",
+        method!(RbExpr::meta_has_multiple_outputs, 0),
+    )?;
+    class.define_method(
+        "meta_is_regex_projection",
+        method!(RbExpr::meta_is_regex_projection, 0),
+    )?;
 
     // maybe add to different class
     class.define_singleton_method("col", function!(crate::functions::lazy::col, 1))?;
@@ -484,16 +499,28 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("lit", function!(crate::functions::lazy::lit, 1))?;
     class.define_singleton_method("arange", function!(crate::functions::lazy::arange, 3))?;
     class.define_singleton_method("repeat", function!(crate::functions::lazy::repeat, 2))?;
-    class.define_singleton_method("pearson_corr", function!(crate::functions::lazy::pearson_corr, 3))?;
+    class.define_singleton_method(
+        "pearson_corr",
+        function!(crate::functions::lazy::pearson_corr, 3),
+    )?;
     class.define_singleton_method(
         "spearman_rank_corr",
         function!(crate::functions::lazy::spearman_rank_corr, 4),
     )?;
     class.define_singleton_method("cov", function!(crate::functions::lazy::cov, 2))?;
-    class.define_singleton_method("arg_sort_by", function!(crate::functions::lazy::arg_sort_by, 2))?;
+    class.define_singleton_method(
+        "arg_sort_by",
+        function!(crate::functions::lazy::arg_sort_by, 2),
+    )?;
     class.define_singleton_method("when", function!(crate::functions::whenthen::when, 1))?;
-    class.define_singleton_method("concat_str", function!(crate::functions::lazy::concat_str, 2))?;
-    class.define_singleton_method("concat_lst", function!(crate::functions::lazy::concat_lst, 1))?;
+    class.define_singleton_method(
+        "concat_str",
+        function!(crate::functions::lazy::concat_str, 2),
+    )?;
+    class.define_singleton_method(
+        "concat_lst",
+        function!(crate::functions::lazy::concat_lst, 1),
+    )?;
 
     let class = module.define_class("RbLazyFrame", Default::default())?;
     class.define_singleton_method("read_json", function!(RbLazyFrame::read_json, 1))?;

@@ -52,12 +52,7 @@ impl RbExpr {
             .into()
     }
 
-    pub fn str_to_time(
-        &self,
-        format: Option<String>,
-        strict: bool,
-        cache: bool,
-    ) -> Self {
+    pub fn str_to_time(&self, format: Option<String>, strict: bool, cache: bool) -> Self {
         let options = StrptimeOptions {
             format,
             strict,

@@ -24,7 +24,11 @@ impl RbExpr {
     }
 
     pub fn list_count_match(&self, expr: &RbExpr) -> Self {
-        self.inner.clone().arr().count_match(expr.inner.clone()).into()
+        self.inner
+            .clone()
+            .arr()
+            .count_match(expr.inner.clone())
+            .into()
     }
 
     pub fn list_diff(&self, n: i64, null_behavior: Wrap<NullBehavior>) -> RbResult<Self> {

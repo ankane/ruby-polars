@@ -39,7 +39,11 @@ impl RbExpr {
     }
 
     pub fn dt_replace_time_zone(&self, tz: Option<String>, use_earliest: Option<bool>) -> Self {
-        self.inner.clone().dt().replace_time_zone(tz, use_earliest).into()
+        self.inner
+            .clone()
+            .dt()
+            .replace_time_zone(tz, use_earliest)
+            .into()
     }
 
     #[allow(deprecated)]
