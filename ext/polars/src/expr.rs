@@ -1,3 +1,5 @@
+mod r#struct;
+
 use polars::lazy::dsl::Expr;
 
 #[magnus::wrap(class = "Polars::RbExpr")]
