@@ -293,6 +293,24 @@ impl IntoValue for Wrap<&BinaryChunked> {
     }
 }
 
+impl IntoValue for Wrap<&StructChunked> {
+    fn into_value_with(self, _: &RubyHandle) -> Value {
+        let s = self.0.clone().into_series();
+        // todo! iterate its chunks and flatten.
+        // make series::iter() accept a chunk index.
+        let s = s.rechunk();
+        let iter = s.iter().map(|av| {
+            if let AnyValue::Struct(_, _, flds) = av {
+                struct_dict(av._iter_struct_av(), flds)
+            } else {
+                unreachable!()
+            }
+        });
+
+        RArray::from_iter(iter).into_value()
+    }
+}
+
 impl IntoValue for Wrap<&DurationChunked> {
     fn into_value_with(self, _: &RubyHandle) -> Value {
         let utils = utils();

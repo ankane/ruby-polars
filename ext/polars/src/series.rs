@@ -330,6 +330,22 @@ impl RbSeries {
                     }
                     v.into_value()
                 }
+                DataType::List(_) => {
+                    let v = RArray::new();
+                    let ca = series.list().unwrap();
+                    for opt_s in ca.amortized_iter() {
+                        match opt_s {
+                            None => {
+                                v.push(QNIL).unwrap();
+                            }
+                            Some(s) => {
+                                let rblst = to_list_recursive(s.as_ref());
+                                v.push(rblst).unwrap();
+                            }
+                        }
+                    }
+                    v.into_value()
+                }
                 DataType::Date => {
                     let a = RArray::with_capacity(series.len());
                     for v in series.iter() {
@@ -346,6 +362,10 @@ impl RbSeries {
                 }
                 DataType::Utf8 => {
                     let ca = series.utf8().unwrap();
+                    return Wrap(ca).into_value();
+                }
+                DataType::Struct(_) => {
+                    let ca = series.struct_().unwrap();
                     return Wrap(ca).into_value();
                 }
                 DataType::Duration(_) => {

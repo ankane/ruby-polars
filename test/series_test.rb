@@ -59,6 +59,7 @@ class SeriesTest < Minitest::Test
     assert_kind_of Polars::Struct, s.dtype
     assert_equal "Polars::Struct([Polars::Field(f1: Polars::Int64)])", s.dtype.inspect
     assert_equal({"f1" => Polars::Int64}, s.dtype.to_schema)
+    assert_series [{"f1" => 1}, {"f1" => 2}], s
     assert_series [1, 2], s.struct["f1"]
   end
 
@@ -70,6 +71,12 @@ class SeriesTest < Minitest::Test
     s = Polars::Series.new(data)
     assert_kind_of Polars::Struct, s.dtype
     assert_series [1, 2], s.struct["a"].struct["b"].struct["c"]
+  end
+
+  def test_new_list
+    s = Polars::Series.new([[1, 2, 3], [5]])
+    assert_series [[1, 2, 3], [5]], s
+    assert_kind_of Polars::List, s.dtype
   end
 
   def test_new_strict
