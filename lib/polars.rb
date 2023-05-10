@@ -1,8 +1,8 @@
 # ext
 begin
-  require_relative "polars/#{RUBY_VERSION.to_f}/polars"
+  require "polars/#{RUBY_VERSION.to_f}/polars"
 rescue LoadError
-  require_relative "polars/polars"
+  require "polars/polars"
 end
 
 # stdlib
