@@ -384,7 +384,7 @@ impl TryConvert for Wrap<DataType> {
                         fields.push(v?.try_convert::<Wrap<Field>>()?.0);
                     }
                     DataType::Struct(fields)
-                },
+                }
                 _ => todo!(),
             }
         } else {

@@ -4,8 +4,8 @@ use polars::prelude::*;
 
 use crate::apply::lazy::binary_lambda;
 use crate::conversion::{get_lf, get_rbseq, Wrap};
-use crate::rb_exprs_to_exprs;
 use crate::prelude::vec_extract_wrapped;
+use crate::rb_exprs_to_exprs;
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 
 macro_rules! set_unwrapped_or_0 {

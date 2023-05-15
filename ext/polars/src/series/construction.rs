@@ -98,11 +98,7 @@ fn vec_wrap_any_value<'s>(arr: RArray) -> RbResult<Vec<Wrap<AnyValue<'s>>>> {
 }
 
 impl RbSeries {
-    pub fn new_from_anyvalues(
-        name: String,
-        val: RArray,
-        strict: bool,
-    ) -> RbResult<Self> {
+    pub fn new_from_anyvalues(name: String, val: RArray, strict: bool) -> RbResult<Self> {
         let val = vec_wrap_any_value(val)?;
         let avs = slice_extract_wrapped(&val);
         // from anyvalues is fallible
@@ -152,7 +148,12 @@ impl RbSeries {
         Ok(s.into())
     }
 
-    pub fn repeat(name: String, val: Wrap<AnyValue>, n: usize, dtype: Wrap<DataType>) -> RbResult<Self> {
+    pub fn repeat(
+        name: String,
+        val: Wrap<AnyValue>,
+        n: usize,
+        dtype: Wrap<DataType>,
+    ) -> RbResult<Self> {
         let av = val.0;
         Ok(Series::new(&name, &[av])
             .cast(&dtype.0)

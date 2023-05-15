@@ -1,7 +1,7 @@
-use magnus::{IntoValue, Value};
 use crate::error::RbPolarsErr;
 use crate::prelude::*;
 use crate::{RbResult, RbSeries, RbValueError};
+use magnus::{IntoValue, Value};
 
 impl RbSeries {
     pub fn arg_max(&self) -> Option<usize> {

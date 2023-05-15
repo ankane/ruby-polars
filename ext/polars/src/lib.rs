@@ -45,31 +45,70 @@ type RbResult<T> = Result<T, Error>;
 #[magnus::init]
 fn init() -> RbResult<()> {
     let module = define_module("Polars")?;
-    module.define_singleton_method("_dtype_cols", function!(crate::functions::lazy::dtype_cols2, 1))?;
+    module.define_singleton_method(
+        "_dtype_cols",
+        function!(crate::functions::lazy::dtype_cols2, 1),
+    )?;
     module.define_singleton_method(
         "_rb_duration",
         function!(crate::functions::lazy::duration, 8),
     )?;
-    module.define_singleton_method("_concat_df", function!(crate::functions::eager::concat_df, 1))?;
+    module.define_singleton_method(
+        "_concat_df",
+        function!(crate::functions::eager::concat_df, 1),
+    )?;
     module.define_singleton_method(
         "_concat_lf",
         function!(crate::functions::lazy::concat_lf, 3),
     )?;
-    module.define_singleton_method("_diag_concat_df", function!(crate::functions::eager::diag_concat_df, 1))?;
-    module.define_singleton_method("_hor_concat_df", function!(crate::functions::eager::hor_concat_df, 1))?;
-    module.define_singleton_method("_concat_series", function!(crate::functions::eager::concat_series, 1))?;
-    module.define_singleton_method("_ipc_schema", function!(crate::functions::io::read_ipc_schema, 1))?;
-    module.define_singleton_method("_parquet_schema", function!(crate::functions::io::read_parquet_schema, 1))?;
+    module.define_singleton_method(
+        "_diag_concat_df",
+        function!(crate::functions::eager::diag_concat_df, 1),
+    )?;
+    module.define_singleton_method(
+        "_hor_concat_df",
+        function!(crate::functions::eager::hor_concat_df, 1),
+    )?;
+    module.define_singleton_method(
+        "_concat_series",
+        function!(crate::functions::eager::concat_series, 1),
+    )?;
+    module.define_singleton_method(
+        "_ipc_schema",
+        function!(crate::functions::io::read_ipc_schema, 1),
+    )?;
+    module.define_singleton_method(
+        "_parquet_schema",
+        function!(crate::functions::io::read_parquet_schema, 1),
+    )?;
     module.define_singleton_method(
         "_collect_all",
         function!(crate::functions::lazy::collect_all, 1),
     )?;
-    module.define_singleton_method("_rb_date_range", function!(crate::functions::eager::date_range, 7))?;
-    module.define_singleton_method("_coalesce_exprs", function!(crate::functions::lazy::coalesce, 1))?;
-    module.define_singleton_method("_sum_exprs", function!(crate::functions::lazy::sum_exprs, 1))?;
-    module.define_singleton_method("_as_struct", function!(crate::functions::lazy::as_struct, 1))?;
-    module.define_singleton_method("_arg_where", function!(crate::functions::lazy::arg_where, 1))?;
-    module.define_singleton_method("_get_idx_type", function!(crate::functions::meta::get_idx_type, 0))?;
+    module.define_singleton_method(
+        "_rb_date_range",
+        function!(crate::functions::eager::date_range, 7),
+    )?;
+    module.define_singleton_method(
+        "_coalesce_exprs",
+        function!(crate::functions::lazy::coalesce, 1),
+    )?;
+    module.define_singleton_method(
+        "_sum_exprs",
+        function!(crate::functions::lazy::sum_exprs, 1),
+    )?;
+    module.define_singleton_method(
+        "_as_struct",
+        function!(crate::functions::lazy::as_struct, 1),
+    )?;
+    module.define_singleton_method(
+        "_arg_where",
+        function!(crate::functions::lazy::arg_where, 1),
+    )?;
+    module.define_singleton_method(
+        "_get_idx_type",
+        function!(crate::functions::meta::get_idx_type, 0),
+    )?;
 
     let class = module.define_class("RbBatchedCsv", Default::default())?;
     class.define_singleton_method("new", function!(RbBatchedCsv::new, -1))?;
@@ -610,7 +649,10 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("new_opt_i64", function!(RbSeries::new_opt_i64, 3))?;
     class.define_singleton_method("new_opt_f32", function!(RbSeries::new_opt_f32, 3))?;
     class.define_singleton_method("new_opt_f64", function!(RbSeries::new_opt_f64, 3))?;
-    class.define_singleton_method("new_from_anyvalues", function!(RbSeries::new_from_anyvalues, 3))?;
+    class.define_singleton_method(
+        "new_from_anyvalues",
+        function!(RbSeries::new_from_anyvalues, 3),
+    )?;
     class.define_singleton_method("new_str", function!(RbSeries::new_str, 3))?;
     class.define_singleton_method("new_binary", function!(RbSeries::new_binary, 3))?;
     class.define_singleton_method("new_null", function!(RbSeries::new_null, 3))?;
@@ -621,12 +663,18 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("new_opt_date", function!(RbSeries::new_opt_date, 3))?;
     class.define_singleton_method("new_opt_datetime", function!(RbSeries::new_opt_datetime, 3))?;
     class.define_method("struct_unnest", method!(RbSeries::struct_unnest, 0))?;
-    class.define_method("is_sorted_flag", method!(RbSeries::is_sorted_ascending_flag, 0))?;
+    class.define_method(
+        "is_sorted_flag",
+        method!(RbSeries::is_sorted_ascending_flag, 0),
+    )?;
     class.define_method(
         "is_sorted_reverse_flag",
         method!(RbSeries::is_sorted_descending_flag, 0),
     )?;
-    class.define_method("can_fast_explode_flag", method!(RbSeries::can_fast_explode_flag, 0))?;
+    class.define_method(
+        "can_fast_explode_flag",
+        method!(RbSeries::can_fast_explode_flag, 0),
+    )?;
     class.define_method("estimated_size", method!(RbSeries::estimated_size, 0))?;
     class.define_method("get_fmt", method!(RbSeries::get_fmt, 2))?;
     class.define_method("rechunk", method!(RbSeries::rechunk, 1))?;
