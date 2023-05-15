@@ -4871,7 +4871,7 @@ module Polars
         column_names = data.keys
       end
 
-      if data.empty? && schema_overrides
+      if data.empty? && !schema_overrides.empty?
         data_series = column_names.map { |name| Series.new(name, [], dtype: schema_overrides[name], nan_to_null: nan_to_null)._s }
       else
         data_series = expand_hash_scalars(data, schema_overrides: schema_overrides, nan_to_null: nan_to_null).values.map(&:_s)
