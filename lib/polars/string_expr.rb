@@ -520,6 +520,40 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_starts_with(sub))
     end
 
+    # Parse string values as JSON.
+    #
+    # Throw errors if encounter invalid JSON strings.
+    #
+    # @param dtype [Object]
+    #   The dtype to cast the extracted value to. If nil, the dtype will be
+    #   inferred from the JSON value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"json" => ['{"a":1, "b": true}', nil, '{"a":2, "b": false}']}
+    #   )
+    #   dtype = Polars::Struct.new([Polars::Field.new("a", Polars::Int64), Polars::Field.new("b", Polars::Boolean)])
+    #   df.select(Polars.col("json").str.json_extract(dtype))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────────┐
+    #   # │ json        │
+    #   # │ ---         │
+    #   # │ struct[2]   │
+    #   # ╞═════════════╡
+    #   # │ {1,true}    │
+    #   # │ {null,null} │
+    #   # │ {2,false}   │
+    #   # └─────────────┘
+    def json_extract(dtype = nil)
+      if !dtype.nil?
+        dtype = Utils.rb_type_to_dtype(dtype)
+      end
+      Utils.wrap_expr(_rbexpr.str_json_extract(dtype))
+    end
+
     # Extract the first match of json string with provided JSONPath expression.
     #
     # Throw errors if encounter invalid json strings.

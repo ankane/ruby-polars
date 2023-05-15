@@ -332,6 +332,14 @@ impl IntoValue for Wrap<&DurationChunked> {
     }
 }
 
+impl TryConvert for Wrap<Field> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let name: String = ob.funcall("name", ())?;
+        let dtype: Wrap<DataType> = ob.funcall("dtype", ())?;
+        Ok(Wrap(Field::new(&name, dtype.0)))
+    }
+}
+
 impl TryConvert for Wrap<DataType> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let dtype = if ob.is_kind_of(class::class()) {
@@ -364,6 +372,20 @@ impl TryConvert for Wrap<DataType> {
                         "{dt} is not a correct polars DataType.",
                     )))
                 }
+            }
+        // TODO improve
+        } else if ob.try_convert::<String>().is_err() {
+            let name = unsafe { ob.class().name() }.into_owned();
+            match name.as_str() {
+                "Polars::Struct" => {
+                    let arr: RArray = ob.funcall("fields", ())?;
+                    let mut fields = Vec::with_capacity(arr.len());
+                    for v in arr.each() {
+                        fields.push(v?.try_convert::<Wrap<Field>>()?.0);
+                    }
+                    DataType::Struct(fields)
+                },
+                _ => todo!(),
             }
         } else {
             match ob.try_convert::<String>()?.as_str() {
