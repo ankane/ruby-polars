@@ -3868,6 +3868,10 @@ module Polars
           end
         elsif ruby_dtype == Array
           return sequence_from_anyvalue_or_object(name, values)
+        elsif ruby_dtype == Series
+          return RbSeries.new_series_list(name, values.map(&:_s), strict)
+        elsif ruby_dtype == RbSeries
+          return RbSeries.new_series_list(name, values, strict)
         else
           constructor =
             if value.is_a?(String)
