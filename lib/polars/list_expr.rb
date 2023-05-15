@@ -265,6 +265,28 @@ module Polars
       get(item)
     end
 
+    # Take sublists by multiple indices.
+    #
+    # The indices may be defined in a single column, or by sublists in another
+    # column of dtype `List`.
+    #
+    # @param index [Object]
+    #   Indices to return per sublist
+    # @param null_on_oob [Boolean]
+    #   Behavior if an index is out of bounds:
+    #   True -> set as null
+    #   False -> raise an error
+    #   Note that defaulting to raising an error is much cheaper
+    #
+    # @return [Expr]
+    def take(index, null_on_oob: false)
+      if index.is_a?(Array)
+        index = Series.new(index)
+      end
+      index = Utils.expr_to_lit_or_expr(index, str_to_lit: false)._rbexpr
+      Utils.wrap_expr(_rbexpr.list_take(index, null_on_oob))
+    end
+
     # Get the first value of the sublists.
     #
     # @return [Expr]

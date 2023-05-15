@@ -425,6 +425,7 @@ fn init() -> RbResult<()> {
     class.define_method("lst_max", method!(RbExpr::list_max, 0))?;
     class.define_method("lst_min", method!(RbExpr::list_min, 0))?;
     class.define_method("lst_sum", method!(RbExpr::list_sum, 0))?;
+    class.define_method("list_take", method!(RbExpr::list_take, 2))?;
     class.define_method("lst_mean", method!(RbExpr::list_mean, 0))?;
     class.define_method("lst_sort", method!(RbExpr::list_sort, 1))?;
     class.define_method("lst_reverse", method!(RbExpr::list_reverse, 0))?;
