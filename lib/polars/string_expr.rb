@@ -911,5 +911,78 @@ module Polars
     def slice(offset, length = nil)
       Utils.wrap_expr(_rbexpr.str_slice(offset, length))
     end
+
+    # Returns a column with a separate row for every string character.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a": ["foo", "bar"]})
+    #   df.select(Polars.col("a").str.explode)
+    #   # =>
+    #   # shape: (6, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ f   │
+    #   # │ o   │
+    #   # │ o   │
+    #   # │ b   │
+    #   # │ a   │
+    #   # │ r   │
+    #   # └─────┘
+    def explode
+      Utils.wrap_expr(_rbexpr.explode)
+    end
+
+    # Parse integers with base radix from strings.
+    #
+    # By default base 2. ParseError/Overflows become Nulls.
+    #
+    # @param radix [Integer]
+    #   Positive integer which is the base of the string we are parsing.
+    #   Default: 2.
+    # @param strict [Boolean]
+    #   Bool, Default=true will raise any ParseError or overflow as ComputeError.
+    #   False silently convert to Null.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"bin" => ["110", "101", "010", "invalid"]})
+    #   df.select(Polars.col("bin").str.parse_int(2, strict: false))
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌──────┐
+    #   # │ bin  │
+    #   # │ ---  │
+    #   # │ i32  │
+    #   # ╞══════╡
+    #   # │ 6    │
+    #   # │ 5    │
+    #   # │ 2    │
+    #   # │ null │
+    #   # └──────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"hex" => ["fa1e", "ff00", "cafe", nil]})
+    #   df.select(Polars.col("hex").str.parse_int(16, strict: true))
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌───────┐
+    #   # │ hex   │
+    #   # │ ---   │
+    #   # │ i32   │
+    #   # ╞═══════╡
+    #   # │ 64030 │
+    #   # │ 65280 │
+    #   # │ 51966 │
+    #   # │ null  │
+    #   # └───────┘
+    def parse_int(radix = 2, strict: true)
+      Utils.wrap_expr(_rbexpr.str_parse_int(radix, strict))
+    end
   end
 end
