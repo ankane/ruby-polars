@@ -387,8 +387,8 @@ fn init() -> RbResult<()> {
         method!(RbExpr::str_split_exact_inclusive, 2),
     )?;
     class.define_method("str_splitn", method!(RbExpr::str_splitn, 2))?;
-    class.define_method("arr_lengths", method!(RbExpr::list_lengths, 0))?;
-    class.define_method("arr_contains", method!(RbExpr::list_contains, 1))?;
+    class.define_method("list_lengths", method!(RbExpr::list_lengths, 0))?;
+    class.define_method("list_contains", method!(RbExpr::list_contains, 1))?;
     class.define_method("list_count_match", method!(RbExpr::list_count_match, 1))?;
     class.define_method("year", method!(RbExpr::dt_year, 0))?;
     class.define_method("dt_is_leap_year", method!(RbExpr::dt_is_leap_year, 0))?;

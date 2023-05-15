@@ -27,7 +27,7 @@ module Polars
     #   # │ 1   │
     #   # └─────┘
     def lengths
-      Utils.wrap_expr(_rbexpr.arr_lengths)
+      Utils.wrap_expr(_rbexpr.list_lengths)
     end
 
     # Sum all the lists in the array.
@@ -353,7 +353,7 @@ module Polars
     #   # │ true  │
     #   # └───────┘
     def contains(item)
-      Utils.wrap_expr(_rbexpr.arr_contains(Utils.expr_to_lit_or_expr(item)._rbexpr))
+      Utils.wrap_expr(_rbexpr.list_contains(Utils.expr_to_lit_or_expr(item)._rbexpr))
     end
 
     # Join all string items in a sublist and place a separator between them.
