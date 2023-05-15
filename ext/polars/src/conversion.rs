@@ -475,6 +475,10 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
                     .map_err(RbPolarsErr::from)?;
                 Ok(Wrap(AnyValue::List(s)))
             }
+        } else if ob.is_kind_of(crate::rb_modules::datetime()) {
+            let sec: i64 = ob.funcall("to_i", ())?;
+            let nsec: i64 = ob.funcall("nsec", ())?;
+            Ok(Wrap(AnyValue::Datetime(sec * 1_000_000_000 + nsec, TimeUnit::Nanoseconds, &None)))
         } else if ob.is_kind_of(crate::rb_modules::date()) {
             // convert to DateTime for UTC
             let v = ob

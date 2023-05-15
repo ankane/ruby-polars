@@ -3851,21 +3851,21 @@ module Polars
 
         # temporal branch
         if rb_temporal_types.include?(ruby_dtype)
-          # if dtype.nil?
-          #   dtype = rb_type_to_dtype(ruby_dtype)
-          # elsif rb_temporal_types.include?(dtype)
-          #   dtype = rb_type_to_dtype(dtype)
-          # end
-
-          if ruby_dtype == ::Date
-            RbSeries.new_opt_date(name, values, strict)
-          elsif ruby_dtype == ::Time
-            RbSeries.new_opt_datetime(name, values, strict)
-          elsif ruby_dtype == ::DateTime
-            RbSeries.new_opt_datetime(name, values.map(&:to_time), strict)
-          else
-            raise Todo
+          if dtype.nil?
+            dtype = Utils.rb_type_to_dtype(ruby_dtype)
+          elsif rb_temporal_types.include?(dtype)
+            dtype = Utils.rb_type_to_dtype(dtype)
           end
+          # TODO
+          time_unit = nil
+
+          rb_series = RbSeries.new_from_anyvalues(name, values, strict)
+          if time_unit.nil?
+            s = Utils.wrap_s(rb_series)
+          else
+            s = Utils.wrap_s(rb_series).dt.cast_time_unit(time_unit)
+          end
+          return s._s
         elsif defined?(Numo::NArray) && value.is_a?(Numo::NArray) && value.shape.length == 1
           raise Todo
         elsif ruby_dtype == Array

@@ -1,4 +1,4 @@
-use magnus::{RArray, Value};
+use magnus::RArray;
 use polars_core::prelude::*;
 
 use crate::conversion::{slice_extract_wrapped, Wrap};
@@ -159,49 +159,6 @@ impl RbSeries {
             .cast(&dtype.0)
             .map_err(RbPolarsErr::from)?
             .new_from_index(0, n)
-            .into())
-    }
-
-    pub fn new_opt_date(name: String, values: RArray, _strict: Option<bool>) -> RbResult<Self> {
-        let len = values.len();
-        let mut builder = PrimitiveChunkedBuilder::<Int32Type>::new(&name, len);
-        for item in values.each() {
-            let v = item?;
-            if v.is_nil() {
-                builder.append_null();
-            } else {
-                // convert to DateTime for UTC
-                let v = v
-                    .funcall::<_, _, Value>("to_datetime", ())?
-                    .funcall::<_, _, Value>("to_time", ())?
-                    .funcall::<_, _, i64>("to_i", ())?;
-
-                // TODO use strict
-                builder.append_value((v / 86400) as i32);
-            }
-        }
-        let ca: ChunkedArray<Int32Type> = builder.finish();
-        Ok(ca.into_date().into_series().into())
-    }
-
-    pub fn new_opt_datetime(name: String, values: RArray, _strict: Option<bool>) -> RbResult<Self> {
-        let len = values.len();
-        let mut builder = PrimitiveChunkedBuilder::<Int64Type>::new(&name, len);
-        for item in values.each() {
-            let v = item?;
-            if v.is_nil() {
-                builder.append_null();
-            } else {
-                let sec: i64 = v.funcall("to_i", ())?;
-                let nsec: i64 = v.funcall("nsec", ())?;
-                // TODO use strict
-                builder.append_value(sec * 1_000_000_000 + nsec);
-            }
-        }
-        let ca: ChunkedArray<Int64Type> = builder.finish();
-        Ok(ca
-            .into_datetime(TimeUnit::Nanoseconds, None)
-            .into_series()
             .into())
     }
 }

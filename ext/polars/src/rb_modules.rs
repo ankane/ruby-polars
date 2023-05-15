@@ -15,3 +15,7 @@ pub(crate) fn utils() -> RModule {
 pub(crate) fn date() -> RClass {
     *memoize!(RClass: class::object().const_get("Date").unwrap())
 }
+
+pub(crate) fn datetime() -> RClass {
+    *memoize!(RClass: class::object().const_get("DateTime").unwrap())
+}

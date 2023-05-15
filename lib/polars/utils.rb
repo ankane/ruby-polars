@@ -146,7 +146,8 @@ module Polars
       TrueClass => :bool,
       FalseClass => :bool,
       ::Date => :date,
-      ::DateTime => :datetime
+      ::DateTime => :datetime,
+      ::Time => :datetime
     }
 
     # TODO fix
