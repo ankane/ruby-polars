@@ -60,5 +60,37 @@ module Polars
     def rename_fields(names)
       super
     end
+
+    # Get the struct definition as a name/dtype schema dict.
+    #
+    # @return [Object]
+    def schema
+      if _s.nil?
+        {}
+      else
+        _s.dtype.to_schema
+      end
+    end
+
+    # Convert this struct Series to a DataFrame with a separate column for each field.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   s = Polars::Series.new([{"a" => 1, "b" => 2}, {"a" => 3, "b" => 4}])
+    #   s.struct.unnest
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 2   │
+    #   # │ 3   ┆ 4   │
+    #   # └─────┴─────┘
+    def unnest
+      Utils.wrap_df(_s.struct_unnest)
+    end
   end
 end
