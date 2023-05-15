@@ -18,8 +18,7 @@ class SeriesTest < Minitest::Test
 
   def test_new_binary
     s = Polars::Series.new(["a".b, "b".b, "c".b])
-    # TODO change to Polars::Binary in 0.5.0
-    assert_series ["a", "b", "c"], s, dtype: Polars::Utf8
+    assert_series ["a", "b", "c"], s, dtype: Polars::Binary
   end
 
   def test_new_bool

@@ -3869,7 +3869,12 @@ module Polars
         elsif ruby_dtype == Array
           return sequence_from_anyvalue_or_object(name, values)
         else
-          constructor = rb_type_to_constructor(value.class)
+          constructor =
+            if value.is_a?(String) && value.encoding == Encoding::BINARY
+              RbSeries.method(:new_binary)
+            else
+              rb_type_to_constructor(value.class)
+            end
           constructor.call(name, values, strict)
         end
       end
