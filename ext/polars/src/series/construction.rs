@@ -89,17 +89,22 @@ init_method_opt!(new_opt_i64, Int64Type, i64);
 init_method_opt!(new_opt_f32, Float32Type, f32);
 init_method_opt!(new_opt_f64, Float64Type, f64);
 
+fn vec_wrap_any_value<'s>(arr: RArray) -> RbResult<Vec<Wrap<AnyValue<'s>>>> {
+    let mut val = Vec::with_capacity(arr.len());
+    for v in arr.each() {
+        val.push(v?.try_convert()?);
+    }
+    Ok(val)
+}
+
 impl RbSeries {
     pub fn new_from_anyvalues(
         name: String,
         val: RArray,
         strict: bool,
     ) -> RbResult<Self> {
-        let mut val2 = Vec::new();
-        for v in val.each() {
-            val2.push(v?.try_convert()?);
-        }
-        let avs = slice_extract_wrapped(&val2);
+        let val = vec_wrap_any_value(val)?;
+        let avs = slice_extract_wrapped(&val);
         // from anyvalues is fallible
         let s = Series::from_any_values(&name, avs, strict).map_err(RbPolarsErr::from)?;
         Ok(s.into())
