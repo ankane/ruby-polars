@@ -3817,7 +3817,6 @@ module Polars
 
     def sequence_to_rbseries(name, values, dtype: nil, strict: true, dtype_if_empty: nil)
       ruby_dtype = nil
-      nested_dtype = nil
 
       if (values.nil? || values.empty?) && dtype.nil?
         if dtype_if_empty
@@ -3874,40 +3873,18 @@ module Polars
             raise Todo
           end
         elsif ruby_dtype == Array
-          if nested_dtype.nil?
-            nested_value = _get_first_non_none(value)
-            nested_dtype = nested_value.nil? ? Float : nested_value.class
-          end
-
-          if nested_dtype == Array
-            raise Todo
-          end
-
-          if value.is_a?(Array)
-            count = 0
-            equal_to_inner = true
-            values.each do |lst|
-              lst.each do |vl|
-                equal_to_inner = vl.class == nested_dtype
-                if !equal_to_inner || count > 50
-                  break
-                end
-                count += 1
-              end
-            end
-            if equal_to_inner
-              dtype = Utils.rb_type_to_dtype(nested_dtype)
-              # TODO rescue and fallback to new_object
-              return RbSeries.new_list(name, values, dtype)
-            end
-          end
-
-          RbSeries.new_object(name, values, strict)
+          return sequence_from_anyvalue_or_object(name, values)
         else
           constructor = rb_type_to_constructor(value.class)
           constructor.call(name, values, strict)
         end
       end
+    end
+
+    def sequence_from_anyvalue_or_object(name, values)
+      RbSeries.new_from_anyvalues(name, values, true)
+    rescue
+      RbSeries.new_object(name, values, false)
     end
 
     POLARS_TYPE_TO_CONSTRUCTOR = {

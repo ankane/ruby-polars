@@ -2,7 +2,7 @@ use magnus::{RArray, Value};
 use polars_core::prelude::*;
 use polars_core::utils::CustomIterTools;
 
-use crate::conversion::{get_rbseq, Wrap};
+use crate::conversion::{get_rbseq, slice_extract_wrapped, Wrap};
 use crate::prelude::ObjectValue;
 use crate::{RbPolarsErr, RbResult, RbSeries};
 
@@ -90,6 +90,21 @@ init_method_opt!(new_opt_f32, Float32Type, f32);
 init_method_opt!(new_opt_f64, Float64Type, f64);
 
 impl RbSeries {
+    pub fn new_from_anyvalues(
+        name: String,
+        val: RArray,
+        strict: bool,
+    ) -> RbResult<Self> {
+        let mut val2 = Vec::new();
+        for v in val.each() {
+            val2.push(v?.try_convert()?);
+        }
+        let avs = slice_extract_wrapped(&val2);
+        // from anyvalues is fallible
+        let s = Series::from_any_values(&name, avs, strict).map_err(RbPolarsErr::from)?;
+        Ok(s.into())
+    }
+
     pub fn new_str(name: String, val: Wrap<Utf8Chunked>, _strict: bool) -> Self {
         let mut s = val.0.into_series();
         s.rename(&name);

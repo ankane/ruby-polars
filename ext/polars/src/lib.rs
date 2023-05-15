@@ -598,6 +598,7 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("new_opt_i64", function!(RbSeries::new_opt_i64, 3))?;
     class.define_singleton_method("new_opt_f32", function!(RbSeries::new_opt_f32, 3))?;
     class.define_singleton_method("new_opt_f64", function!(RbSeries::new_opt_f64, 3))?;
+    class.define_singleton_method("new_from_anyvalues", function!(RbSeries::new_from_anyvalues, 3))?;
     class.define_singleton_method("new_str", function!(RbSeries::new_str, 3))?;
     class.define_singleton_method("new_binary", function!(RbSeries::new_binary, 3))?;
     class.define_singleton_method("new_object", function!(RbSeries::new_object, 3))?;
