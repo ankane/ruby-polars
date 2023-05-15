@@ -3819,20 +3819,10 @@ module Polars
       ruby_dtype = nil
 
       if (values.nil? || values.empty?) && dtype.nil?
-        if dtype_if_empty
-          # if dtype for empty sequence could be guessed
-          # (e.g comparisons between self and other)
-          dtype = dtype_if_empty
-        else
-          # default to Float32 type
-          dtype = :f32
-        end
+        dtype = dtype_if_empty || Float32
       end
 
-      rb_temporal_types = []
-      rb_temporal_types << ::Date if defined?(::Date)
-      rb_temporal_types << ::DateTime if defined?(::DateTime)
-      rb_temporal_types << ::Time if defined?(::Time)
+      rb_temporal_types = [::Date, ::DateTime, ::Time]
 
       value = _get_first_non_none(values)
       if !value.nil?
