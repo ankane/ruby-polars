@@ -624,6 +624,7 @@ fn init() -> RbResult<()> {
         "is_sorted_reverse_flag",
         method!(RbSeries::is_sorted_descending_flag, 0),
     )?;
+    class.define_method("can_fast_explode_flag", method!(RbSeries::can_fast_explode_flag, 0))?;
     class.define_method("estimated_size", method!(RbSeries::estimated_size, 0))?;
     class.define_method("get_fmt", method!(RbSeries::get_fmt, 2))?;
     class.define_method("rechunk", method!(RbSeries::rechunk, 1))?;

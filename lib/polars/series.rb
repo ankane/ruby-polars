@@ -96,10 +96,14 @@ module Polars
     #
     # @return [Hash]
     def flags
-      {
+      out = {
         "SORTED_ASC" => _s.is_sorted_flag,
         "SORTED_DESC" => _s.is_sorted_reverse_flag
       }
+      if dtype.is_a?(List)
+        out["FAST_EXPLODE"] = _s.can_fast_explode_flag
+      end
+      out
     end
 
     # Get the inner dtype in of a List typed Series.

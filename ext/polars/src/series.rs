@@ -68,7 +68,7 @@ impl RbSeries {
         matches!(self.series.borrow().is_sorted_flag(), IsSorted::Descending)
     }
 
-    fn can_fast_explode_flag(&self) -> bool {
+    pub fn can_fast_explode_flag(&self) -> bool {
         match self.series.borrow().list() {
             Err(_) => false,
             Ok(list) => list._can_fast_explode(),

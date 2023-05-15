@@ -77,6 +77,7 @@ class SeriesTest < Minitest::Test
     s = Polars::Series.new([[1, 2, 3], [5]])
     assert_series [[1, 2, 3], [5]], s
     assert_kind_of Polars::List, s.dtype
+    assert s.flags.key?("FAST_EXPLODE")
   end
 
   def test_new_list_of_structs
