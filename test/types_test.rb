@@ -12,6 +12,7 @@ class TypesTest < Minitest::Test
       i: 1,
       f: 1.5,
       s: "one",
+      n: "two".b,
       d: Date.today,
       t: Time.now,
       z: Time.now.in_time_zone("Eastern Time (US & Canada)"),
@@ -24,6 +25,7 @@ class TypesTest < Minitest::Test
     assert_equal Polars::Int64, schema["i"]
     assert_equal Polars::Float64, schema["f"]
     assert_equal Polars::Utf8, schema["s"]
+    assert_equal Polars::Binary, schema["n"]
     assert_equal Polars::Date, schema["d"]
     assert_kind_of Polars::Datetime, schema["t"]
     assert_kind_of Polars::Datetime, schema["z"]

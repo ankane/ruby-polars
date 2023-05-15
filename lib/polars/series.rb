@@ -3870,8 +3870,12 @@ module Polars
           return sequence_from_anyvalue_or_object(name, values)
         else
           constructor =
-            if value.is_a?(String) && value.encoding == Encoding::BINARY
-              RbSeries.method(:new_binary)
+            if value.is_a?(String)
+              if value.encoding == Encoding::UTF_8
+                RbSeries.method(:new_str)
+              else
+                RbSeries.method(:new_binary)
+              end
             else
               rb_type_to_constructor(value.class)
             end
@@ -3930,7 +3934,6 @@ module Polars
     RB_TYPE_TO_CONSTRUCTOR = {
       Float => RbSeries.method(:new_opt_f64),
       Integer => RbSeries.method(:new_opt_i64),
-      String => RbSeries.method(:new_str),
       TrueClass => RbSeries.method(:new_opt_bool),
       FalseClass => RbSeries.method(:new_opt_bool)
     }

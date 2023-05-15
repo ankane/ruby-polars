@@ -5,6 +5,7 @@ use magnus::{
     class, exception, r_hash::ForEach, ruby_handle::RubyHandle, Integer, IntoValue, Module, RArray,
     RFloat, RHash, RString, Symbol, TryConvert, Value, QNIL,
 };
+use magnus::encoding::{EncodingCapable, Index};
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
@@ -432,7 +433,11 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
         } else if let Some(v) = RFloat::from_value(ob) {
             Ok(AnyValue::Float64(v.to_f64()).into())
         } else if let Some(v) = RString::from_value(ob) {
-            Ok(AnyValue::Utf8Owned(v.to_string()?.into()).into())
+            if v.enc_get() == Index::utf8() {
+                Ok(AnyValue::Utf8Owned(v.to_string()?.into()).into())
+            } else {
+                Ok(AnyValue::BinaryOwned(unsafe { v.as_slice() }.to_vec()).into())
+            }
         // call is_a? for ActiveSupport::TimeWithZone
         } else if ob.funcall::<_, _, bool>("is_a?", (class::time(),))? {
             let sec = ob.funcall::<_, _, i64>("to_i", ())?;
