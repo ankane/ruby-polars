@@ -631,7 +631,7 @@ module Polars
     #   # │ 3   ┆ 2   ┆ [2.0, 1.0] │
     #   # └─────┴─────┴────────────┘
     def eval(expr, parallel: false)
-       Utils.wrap_expr(_rbexpr.list_eval(expr._rbexpr, parallel))
+      Utils.wrap_expr(_rbexpr.list_eval(expr._rbexpr, parallel))
     end
   end
 end
