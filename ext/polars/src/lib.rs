@@ -356,6 +356,9 @@ fn init() -> RbResult<()> {
     class.define_method("weekday", method!(RbExpr::dt_weekday, 0))?;
     class.define_method("day", method!(RbExpr::dt_day, 0))?;
     class.define_method("ordinal_day", method!(RbExpr::dt_ordinal_day, 0))?;
+    class.define_method("dt_time", method!(RbExpr::dt_time, 0))?;
+    class.define_method("dt_date", method!(RbExpr::dt_date, 0))?;
+    class.define_method("dt_datetime", method!(RbExpr::dt_datetime, 0))?;
     class.define_method("hour", method!(RbExpr::dt_hour, 0))?;
     class.define_method("minute", method!(RbExpr::dt_minute, 0))?;
     class.define_method("second", method!(RbExpr::dt_second, 0))?;

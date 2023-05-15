@@ -597,6 +597,27 @@ module Polars
       Utils.wrap_expr(_rbexpr.ordinal_day)
     end
 
+    # Time
+    #
+    # @return [Expr]
+    def time
+      Utils.wrap_expr(_rbexpr.dt_time)
+    end
+
+    # Date
+    #
+    # @return [Expr]
+    def date
+      Utils.wrap_expr(_rbexpr.dt_date)
+    end
+
+    # Datetime
+    #
+    # @return [Expr]
+    def datetime
+      Utils.wrap_expr(_rbexpr.dt_datetime)
+    end
+
     # Extract hour from underlying DateTime representation.
     #
     # Applies to Datetime columns.
