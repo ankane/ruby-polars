@@ -3866,6 +3866,8 @@ module Polars
           else
             raise Todo
           end
+        elsif defined?(Numo::NArray) && value.is_a?(Numo::NArray) && value.shape.length == 1
+          raise Todo
         elsif ruby_dtype == Array
           return sequence_from_anyvalue_or_object(name, values)
         elsif ruby_dtype == Series
