@@ -4867,8 +4867,8 @@ module Polars
       column_names, schema_overrides = _unpack_schema(
         schema, lookup_names: data.keys, schema_overrides: schema_overrides
       )
-      if !column_names
-        column_names = data.to_a
+      if column_names.empty?
+        column_names = data.keys
       end
 
       if data.empty? && schema_overrides

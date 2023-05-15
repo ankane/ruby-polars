@@ -59,6 +59,12 @@ class DataFrameTest < Minitest::Test
     assert_series [1, 1, 1], df["a"]
   end
 
+  def test_new_hash_scalar_empty_series
+    df = Polars::DataFrame.new({"a" => nil, "b" => Polars::Series.new([], dtype: Polars::Utf8)})
+    assert_equal ["a", "b"], df.columns
+    assert_equal [Polars::Float32, Polars::Float32], df.dtypes
+  end
+
   def test_new_series
     df = Polars::DataFrame.new(Polars::Series.new("a", [1, 2, 3]))
     expected = Polars::DataFrame.new({"a" => [1, 2, 3]})
