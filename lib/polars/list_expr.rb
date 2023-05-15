@@ -523,6 +523,33 @@ module Polars
       slice(offset, n)
     end
 
+    # Count how often the value produced by ``element`` occurs.
+    #
+    # @param element [Expr]
+    #   An expression that produces a single value
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"listcol" => [[0], [1], [1, 2, 3, 2], [1, 2, 1], [4, 4]]})
+    #   df.select(Polars.col("listcol").arr.count_match(2).alias("number_of_twos"))
+    #   # =>
+    #   # shape: (5, 1)
+    #   # ┌────────────────┐
+    #   # │ number_of_twos │
+    #   # │ ---            │
+    #   # │ u32            │
+    #   # ╞════════════════╡
+    #   # │ 0              │
+    #   # │ 0              │
+    #   # │ 2              │
+    #   # │ 1              │
+    #   # │ 0              │
+    #   # └────────────────┘
+    def count_match(element)
+      Utils.wrap_expr(_rbexpr.list_count_match(Utils.expr_to_lit_or_expr(element)._rbexpr))
+    end
+
     # Convert the series of type `List` to a series of type `Struct`.
     #
     # @param n_field_strategy ["first_non_null", "max_width"]
