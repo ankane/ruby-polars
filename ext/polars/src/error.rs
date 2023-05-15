@@ -22,10 +22,6 @@ impl RbPolarsErr {
     pub fn other(message: String) -> Error {
         Error::new(exception::runtime_error(), message)
     }
-
-    pub fn todo() -> Error {
-        Error::new(exception::runtime_error(), "not implemented yet")
-    }
 }
 
 pub struct RbValueError {}

@@ -289,6 +289,34 @@ module Polars
       Utils.wrap_expr(_rbexpr.year)
     end
 
+    # Determine whether the year of the underlying date is a leap year.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   start = DateTime.new(2000, 1, 1)
+    #   stop = DateTime.new(2002, 1, 1)
+    #   df = Polars::DataFrame.new(
+    #     {"date" => Polars.date_range(start, stop, "1y")}
+    #   )
+    #   df.select(Polars.col("date").dt.is_leap_year)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌───────┐
+    #   # │ date  │
+    #   # │ ---   │
+    #   # │ bool  │
+    #   # ╞═══════╡
+    #   # │ true  │
+    #   # │ false │
+    #   # │ false │
+    #   # └───────┘
+    def is_leap_year
+      Utils.wrap_expr(_rbexpr.dt_is_leap_year)
+    end
+
     # Extract ISO year from underlying Date representation.
     #
     # Applies to Date and Datetime columns.

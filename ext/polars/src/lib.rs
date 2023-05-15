@@ -348,6 +348,7 @@ fn init() -> RbResult<()> {
     class.define_method("arr_lengths", method!(RbExpr::list_lengths, 0))?;
     class.define_method("arr_contains", method!(RbExpr::list_contains, 1))?;
     class.define_method("year", method!(RbExpr::dt_year, 0))?;
+    class.define_method("dt_is_leap_year", method!(RbExpr::dt_is_leap_year, 0))?;
     class.define_method("iso_year", method!(RbExpr::dt_iso_year, 0))?;
     class.define_method("quarter", method!(RbExpr::dt_quarter, 0))?;
     class.define_method("month", method!(RbExpr::dt_month, 0))?;
