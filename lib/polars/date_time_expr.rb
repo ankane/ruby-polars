@@ -218,6 +218,25 @@ module Polars
       )
     end
 
+    # Create a naive Datetime from an existing Date/Datetime expression and a Time.
+    #
+    # If the underlying expression is a Datetime then its time component is replaced,
+    # and if it is a Date then a new Datetime is created by combining the two values.
+    #
+    # @param time [Object]
+    #   A Ruby time literal or Polars expression/column that resolves to a time.
+    # @param time_unit ["ns", "us", "ms"]
+    #   Unit of time.
+    #
+    # @return [Expr]
+    def combine(time, time_unit: "us")
+      unless time.is_a?(Time) || time.is_a?(Expr)
+        raise TypeError, "expected 'time' to be a Ruby time or Polars expression, found #{time}"
+      end
+      time = Utils.expr_to_lit_or_expr(time)
+      Utils.wrap_expr(_rbexpr.dt_combine(time._rbexpr, time_unit))
+    end
+
     # Format Date/datetime with a formatting rule.
     #
     # See [chrono strftime/strptime](https://docs.rs/chrono/latest/chrono/format/strftime/index.html).
