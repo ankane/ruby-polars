@@ -1282,5 +1282,77 @@ module Polars
     def offset_by(by)
       Utils.wrap_expr(_rbexpr.dt_offset_by(by))
     end
+
+    # Roll backward to the first day of the month.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "dates" => Polars.date_range(
+    #         DateTime.new(2000, 1, 15, 2),
+    #         DateTime.new(2000, 12, 15, 2),
+    #         "1mo"
+    #       )
+    #     }
+    #   )
+    #   df.select(Polars.col("dates").dt.month_start)
+    #   # =>
+    #   # shape: (12, 1)
+    #   # ┌─────────────────────┐
+    #   # │ dates               │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2000-01-01 02:00:00 │
+    #   # │ 2000-02-01 02:00:00 │
+    #   # │ 2000-03-01 02:00:00 │
+    #   # │ 2000-04-01 02:00:00 │
+    #   # │ …                   │
+    #   # │ 2000-09-01 02:00:00 │
+    #   # │ 2000-10-01 02:00:00 │
+    #   # │ 2000-11-01 02:00:00 │
+    #   # │ 2000-12-01 02:00:00 │
+    #   # └─────────────────────┘
+    def month_start
+      Utils.wrap_expr(_rbexpr.dt_month_start)
+    end
+
+    # Roll forward to the last day of the month.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "dates" => Polars.date_range(
+    #         DateTime.new(2000, 1, 15, 2),
+    #         DateTime.new(2000, 12, 15, 2),
+    #         "1mo"
+    #       )
+    #     }
+    #   )
+    #   df.select(Polars.col("dates").dt.month_end)
+    #   # =>
+    #   # shape: (12, 1)
+    #   # ┌─────────────────────┐
+    #   # │ dates               │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2000-01-31 02:00:00 │
+    #   # │ 2000-02-29 02:00:00 │
+    #   # │ 2000-03-31 02:00:00 │
+    #   # │ 2000-04-30 02:00:00 │
+    #   # │ …                   │
+    #   # │ 2000-09-30 02:00:00 │
+    #   # │ 2000-10-31 02:00:00 │
+    #   # │ 2000-11-30 02:00:00 │
+    #   # │ 2000-12-31 02:00:00 │
+    #   # └─────────────────────┘
+    def month_end
+      Utils.wrap_expr(_rbexpr.dt_month_end)
+    end
   end
 end
