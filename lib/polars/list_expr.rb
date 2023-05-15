@@ -48,7 +48,7 @@ module Polars
     #   # │ 5      │
     #   # └────────┘
     def sum
-      Utils.wrap_expr(_rbexpr.lst_sum)
+      Utils.wrap_expr(_rbexpr.list_sum)
     end
 
     # Compute the max value of the lists in the array.
@@ -69,7 +69,7 @@ module Polars
     #   # │ 3      │
     #   # └────────┘
     def max
-      Utils.wrap_expr(_rbexpr.lst_max)
+      Utils.wrap_expr(_rbexpr.list_max)
     end
 
     # Compute the min value of the lists in the array.
@@ -90,7 +90,7 @@ module Polars
     #   # │ 2      │
     #   # └────────┘
     def min
-      Utils.wrap_expr(_rbexpr.lst_min)
+      Utils.wrap_expr(_rbexpr.list_min)
     end
 
     # Compute the mean value of the lists in the array.
@@ -111,7 +111,7 @@ module Polars
     #   # │ 2.5    │
     #   # └────────┘
     def mean
-      Utils.wrap_expr(_rbexpr.lst_mean)
+      Utils.wrap_expr(_rbexpr.list_mean)
     end
 
     # Sort the arrays in the list.
@@ -136,7 +136,7 @@ module Polars
     #   # │ [1, 2, 9] │
     #   # └───────────┘
     def sort(reverse: false)
-      Utils.wrap_expr(_rbexpr.lst_sort(reverse))
+      Utils.wrap_expr(_rbexpr.list_sort(reverse))
     end
 
     # Reverse the arrays in the list.
@@ -161,7 +161,7 @@ module Polars
     #   # │ [2, 1, 9] │
     #   # └───────────┘
     def reverse
-      Utils.wrap_expr(_rbexpr.lst_reverse)
+      Utils.wrap_expr(_rbexpr.list_reverse)
     end
 
     # Get the unique/distinct values in the list.
@@ -185,7 +185,7 @@ module Polars
     #   # │ [1, 2]    │
     #   # └───────────┘
     def unique(maintain_order: false)
-      Utils.wrap_expr(_rbexpr.lst_unique(maintain_order))
+      Utils.wrap_expr(_rbexpr.list_unique(maintain_order))
     end
 
     # Concat the arrays in a Series dtype List in linear time.
@@ -255,7 +255,7 @@ module Polars
     #   # └──────┘
     def get(index)
       index = Utils.expr_to_lit_or_expr(index, str_to_lit: false)._rbexpr
-      Utils.wrap_expr(_rbexpr.lst_get(index))
+      Utils.wrap_expr(_rbexpr.list_get(index))
     end
 
     # Get the value by index in the sublists.
@@ -379,7 +379,7 @@ module Polars
     #   # │ x y   │
     #   # └───────┘
     def join(separator)
-      Utils.wrap_expr(_rbexpr.lst_join(separator))
+      Utils.wrap_expr(_rbexpr.list_join(separator))
     end
 
     # Retrieve the index of the minimal value in every sublist.
@@ -404,7 +404,7 @@ module Polars
     #   # │ 1   │
     #   # └─────┘
     def arg_min
-      Utils.wrap_expr(_rbexpr.lst_arg_min)
+      Utils.wrap_expr(_rbexpr.list_arg_min)
     end
 
     # Retrieve the index of the maximum value in every sublist.
@@ -429,7 +429,7 @@ module Polars
     #   # │ 0   │
     #   # └─────┘
     def arg_max
-      Utils.wrap_expr(_rbexpr.lst_arg_max)
+      Utils.wrap_expr(_rbexpr.list_arg_max)
     end
 
     # Calculate the n-th discrete difference of every sublist.
@@ -452,7 +452,7 @@ module Polars
     #   #         [null, -8, -1]
     #   # ]
     def diff(n: 1, null_behavior: "ignore")
-      Utils.wrap_expr(_rbexpr.lst_diff(n, null_behavior))
+      Utils.wrap_expr(_rbexpr.list_diff(n, null_behavior))
     end
 
     # Shift values by the given period.
@@ -473,7 +473,7 @@ module Polars
     #   #         [null, 10, 2]
     #   # ]
     def shift(periods = 1)
-      Utils.wrap_expr(_rbexpr.lst_shift(periods))
+      Utils.wrap_expr(_rbexpr.list_shift(periods))
     end
 
     # Slice every sublist.
@@ -499,7 +499,7 @@ module Polars
     def slice(offset, length = nil)
       offset = Utils.expr_to_lit_or_expr(offset, str_to_lit: false)._rbexpr
       length = Utils.expr_to_lit_or_expr(length, str_to_lit: false)._rbexpr
-      Utils.wrap_expr(_rbexpr.lst_slice(offset, length))
+      Utils.wrap_expr(_rbexpr.list_slice(offset, length))
     end
 
     # Slice the first `n` values of every sublist.
@@ -597,7 +597,7 @@ module Polars
     #   # └────────────┘
     def to_struct(n_field_strategy: "first_non_null", name_generator: nil)
       raise Todo if name_generator
-      Utils.wrap_expr(_rbexpr.lst_to_struct(n_field_strategy, name_generator, 0))
+      Utils.wrap_expr(_rbexpr.list_to_struct(n_field_strategy, name_generator, 0))
     end
 
     # Run any polars expression against the lists' elements.
@@ -631,7 +631,7 @@ module Polars
     #   # │ 3   ┆ 2   ┆ [2.0, 1.0] │
     #   # └─────┴─────┴────────────┘
     def eval(expr, parallel: false)
-       Utils.wrap_expr(_rbexpr.lst_eval(expr._rbexpr, parallel))
+       Utils.wrap_expr(_rbexpr.list_eval(expr._rbexpr, parallel))
     end
   end
 end
