@@ -601,7 +601,11 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("new_from_anyvalues", function!(RbSeries::new_from_anyvalues, 3))?;
     class.define_singleton_method("new_str", function!(RbSeries::new_str, 3))?;
     class.define_singleton_method("new_binary", function!(RbSeries::new_binary, 3))?;
+    class.define_singleton_method("new_null", function!(RbSeries::new_null, 3))?;
     class.define_singleton_method("new_object", function!(RbSeries::new_object, 3))?;
+    class.define_singleton_method("new_series_list", function!(RbSeries::new_series_list, 3))?;
+    class.define_singleton_method("new_decimal", function!(RbSeries::new_decimal, 3))?;
+    class.define_singleton_method("repeat", function!(RbSeries::repeat, 4))?;
     class.define_singleton_method("new_opt_date", function!(RbSeries::new_opt_date, 3))?;
     class.define_singleton_method("new_opt_datetime", function!(RbSeries::new_opt_datetime, 3))?;
     class.define_method("is_sorted_flag", method!(RbSeries::is_sorted_ascending_flag, 0))?;

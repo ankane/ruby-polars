@@ -3,6 +3,7 @@ use polars_core::prelude::*;
 
 use crate::conversion::{slice_extract_wrapped, Wrap};
 use crate::prelude::ObjectValue;
+use crate::series::to_series_collection;
 use crate::{RbPolarsErr, RbResult, RbSeries};
 
 impl RbSeries {
@@ -121,6 +122,11 @@ impl RbSeries {
         RbSeries::new(s)
     }
 
+    pub fn new_null(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
+        let s = Series::new_null(&name, val.len());
+        Ok(s.into())
+    }
+
     pub fn new_object(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
         let val = val
             .each()
@@ -128,6 +134,31 @@ impl RbSeries {
             .collect::<RbResult<Vec<ObjectValue>>>()?;
         let s = ObjectChunked::<ObjectValue>::new_from_vec(&name, val).into_series();
         Ok(s.into())
+    }
+
+    pub fn new_series_list(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
+        let series_vec = to_series_collection(val)?;
+        Ok(Series::new(&name, &series_vec).into())
+    }
+
+    pub fn new_decimal(name: String, val: RArray, strict: bool) -> RbResult<Self> {
+        let val = vec_wrap_any_value(val)?;
+        // TODO: do we have to respect 'strict' here? it's possible if we want to
+        let avs = slice_extract_wrapped(&val);
+        // create a fake dtype with a placeholder "none" scale, to be inferred later
+        let dtype = DataType::Decimal(None, None);
+        let s = Series::from_any_values_and_dtype(&name, avs, &dtype, strict)
+            .map_err(RbPolarsErr::from)?;
+        Ok(s.into())
+    }
+
+    pub fn repeat(name: String, val: Wrap<AnyValue>, n: usize, dtype: Wrap<DataType>) -> RbResult<Self> {
+        let av = val.0;
+        Ok(Series::new(&name, &[av])
+            .cast(&dtype.0)
+            .map_err(RbPolarsErr::from)?
+            .new_from_index(0, n)
+            .into())
     }
 
     pub fn new_opt_date(name: String, values: RArray, _strict: Option<bool>) -> RbResult<Self> {
