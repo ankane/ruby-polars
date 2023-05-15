@@ -2044,6 +2044,28 @@ module Polars
       wrap_expr(_rbexpr.n_unique)
     end
 
+    # Approx count unique values.
+    #
+    # This is done using the HyperLogLog++ algorithm for cardinality estimation.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 1, 2]})
+    #   df.select(Polars.col("a").approx_unique)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 2   │
+    #   # └─────┘
+    def approx_unique
+      wrap_expr(_rbexpr.approx_unique)
+    end
+
     # Count null values.
     #
     # @return [Expr]

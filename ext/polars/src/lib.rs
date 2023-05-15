@@ -248,6 +248,7 @@ fn init() -> RbResult<()> {
     class.define_method("std", method!(RbExpr::std, 1))?;
     class.define_method("var", method!(RbExpr::var, 1))?;
     class.define_method("is_unique", method!(RbExpr::is_unique, 0))?;
+    class.define_method("approx_unique", method!(RbExpr::approx_unique, 0))?;
     class.define_method("is_first", method!(RbExpr::is_first, 0))?;
     class.define_method("explode", method!(RbExpr::explode, 0))?;
     class.define_method("take_every", method!(RbExpr::take_every, 1))?;
