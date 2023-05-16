@@ -1,4 +1,4 @@
-## 0.5.0 (unreleased)
+## 0.5.0 (2023-05-15)
 
 - Updated Polars to 0.29.0
 - Added support for `List` and `Struct` to `to_a` method
