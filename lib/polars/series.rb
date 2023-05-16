@@ -3882,6 +3882,9 @@ module Polars
               else
                 RbSeries.method(:new_binary)
               end
+            elsif value.is_a?(Integer) && values.any? { |v| v.is_a?(Float) }
+              # TODO improve performance
+              RbSeries.method(:new_opt_f64)
             else
               rb_type_to_constructor(value.class)
             end

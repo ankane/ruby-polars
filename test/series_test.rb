@@ -90,8 +90,7 @@ class SeriesTest < Minitest::Test
     assert_series [1, nil, 3], s, dtype: Polars::Float64
 
     s = Polars::Series.new([1, "hello", 3.5], strict: false)
-    # assert_series [1, nil, nil], s
-    assert_series [1, nil, 3], s, dtype: Polars::Int64
+    assert_series [1, nil, 3.5], s, dtype: Polars::Float64
   end
 
   def test_new_object
@@ -106,9 +105,7 @@ class SeriesTest < Minitest::Test
     assert_equal "Series constructor called with unsupported type; got Object", error.message
   end
 
-  # TODO fix in 0.5.0
   def test_new_int_float
-    skip
     s = Polars::Series.new([1, 2.5])
     assert_series [1, 2.5], s, dtype: Polars::Float64
   end
