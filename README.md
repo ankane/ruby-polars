@@ -357,7 +357,7 @@ Supported types are:
 - float - `Float64`, `Float32`
 - integer - `Int64`, `Int32`, `Int16`, `Int8`
 - unsigned integer - `UInt64`, `UInt32`, `UInt16`, `UInt8`
-- string - `Utf8`, `Categorical`
+- string - `Utf8`, `Binary`, `Categorical`
 - temporal - `Date`, `Datetime`, `Time`, `Duration`
 
 Get column types
