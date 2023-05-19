@@ -17,7 +17,7 @@ mod utils;
 use batched_csv::RbBatchedCsv;
 use conversion::*;
 use dataframe::RbDataFrame;
-use error::{RbPolarsErr, RbValueError};
+use error::{RbPolarsErr, RbTypeError, RbValueError};
 use expr::rb_exprs_to_exprs;
 use expr::RbExpr;
 use functions::whenthen::{RbWhen, RbWhenThen};

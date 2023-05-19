@@ -24,6 +24,14 @@ impl RbPolarsErr {
     }
 }
 
+pub struct RbTypeError {}
+
+impl RbTypeError {
+    pub fn new_err(message: String) -> Error {
+        Error::new(exception::type_error(), message)
+    }
+}
+
 pub struct RbValueError {}
 
 impl RbValueError {

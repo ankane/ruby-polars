@@ -17,7 +17,7 @@ use polars::series::ops::NullBehavior;
 use smartstring::alias::String as SmartString;
 
 use crate::rb_modules::utils;
-use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
+use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
 
 pub(crate) fn slice_to_wrapped<T>(slice: &[T]) -> &[Wrap<T>] {
     // Safety:
@@ -378,6 +378,28 @@ impl TryConvert for Wrap<DataType> {
         } else if ob.try_convert::<String>().is_err() {
             let name = unsafe { ob.class().name() }.into_owned();
             match name.as_str() {
+                "Polars::Duration" => {
+                    let time_unit: Value = ob.funcall("time_unit", ()).unwrap();
+                    let time_unit = time_unit.try_convert::<Wrap<TimeUnit>>()?.0;
+                    DataType::Duration(time_unit)
+                }
+                "Polars::Datetime" => {
+                    let time_unit: Value = ob.funcall("time_unit", ()).unwrap();
+                    let time_unit = time_unit.try_convert::<Wrap<TimeUnit>>()?.0;
+                    let time_zone: Value = ob.funcall("time_zone", ()).unwrap();
+                    let time_zone = time_zone.try_convert()?;
+                    DataType::Datetime(time_unit, time_zone)
+                }
+                "Polars::Decimal" => {
+                    let precision = ob.funcall::<_, _, Value>("precision", ())?.try_convert()?;
+                    let scale = ob.funcall::<_, _, Value>("scale", ())?.try_convert()?;
+                    DataType::Decimal(precision, Some(scale))
+                }
+                "Polars::List" => {
+                    let inner: Value = ob.funcall("inner", ()).unwrap();
+                    let inner = inner.try_convert::<Wrap<DataType>>()?;
+                    DataType::List(Box::new(inner.0))
+                }
                 "Polars::Struct" => {
                     let arr: RArray = ob.funcall("fields", ())?;
                     let mut fields = Vec::with_capacity(arr.len());
@@ -386,14 +408,12 @@ impl TryConvert for Wrap<DataType> {
                     }
                     DataType::Struct(fields)
                 }
-                "Polars::Datetime" => {
-                    let time_unit: Value = ob.funcall("time_unit", ())?;
-                    let time_unit = time_unit.try_convert::<Wrap<TimeUnit>>()?.0;
-                    let time_zone: Value = ob.funcall("time_zone", ())?;
-                    let time_zone = time_zone.try_convert()?;
-                    DataType::Datetime(time_unit, time_zone)
+                dt => {
+                    return Err(RbTypeError::new_err(format!(
+                        "A {dt} object is not a correct polars DataType. \
+                        Hint: use the class without instantiating it.",
+                    )))
                 }
-                _ => todo!(),
             }
         } else {
             match ob.try_convert::<String>()?.as_str() {
