@@ -4967,7 +4967,7 @@ module Polars
       columns.each do |col, i|
         if dtypes[col] == Categorical # != rbdf_dtypes[i]
           column_casts << Polars.col(col).cast(Categorical)._rbexpr
-        elsif structs.any? && structs.include?(col) && structs[col] != rbdf_dtypes[i]
+        elsif structs&.any? && structs.include?(col) && structs[col] != rbdf_dtypes[i]
           column_casts << Polars.col(col).cast(structs[col])._rbexpr
         elsif dtypes.include?(col) && dtypes[col] != rbdf_dtypes[i]
           column_casts << Polars.col(col).cast(dtypes[col])._rbexpr

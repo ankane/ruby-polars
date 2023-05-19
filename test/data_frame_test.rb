@@ -30,6 +30,18 @@ class DataFrameTest < Minitest::Test
     assert_frame expected, df
   end
 
+  def test_new_array_schema
+    df = Polars::DataFrame.new([{"a" => DateTime.new(2022, 1, 1)}], schema: {"a" => Polars::Datetime})
+    assert_kind_of Polars::Datetime, df["a"].dtype
+    assert_equal "us", df["a"].dtype.time_unit
+  end
+
+  def test_new_array_schema_time_unit
+    df = Polars::DataFrame.new([{"a" => DateTime.new(2022, 1, 1)}], schema: {"a" => Polars::Datetime.new("ns")})
+    assert_kind_of Polars::Datetime, df["a"].dtype
+    assert_equal "ns", df["a"].dtype.time_unit
+  end
+
   def test_new_hash
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_equal ["a", "b"], df.columns
@@ -70,6 +82,18 @@ class DataFrameTest < Minitest::Test
     assert_equal ["a", "b"], df.columns
     # same behavior as Python
     assert_equal [Polars::Float32, Polars::Float32], df.dtypes
+  end
+
+  def test_new_hash_schema
+    df = Polars::DataFrame.new({"a" => [DateTime.new(2022, 1, 1)]}, schema: {"a" => Polars::Datetime})
+    assert_kind_of Polars::Datetime, df["a"].dtype
+    assert_equal "us", df["a"].dtype.time_unit
+  end
+
+  def test_new_hash_schema_time_unit
+    df = Polars::DataFrame.new({"a" => [DateTime.new(2022, 1, 1)]}, schema: {"a" => Polars::Datetime.new("ns")})
+    assert_kind_of Polars::Datetime, df["a"].dtype
+    assert_equal "ns", df["a"].dtype.time_unit
   end
 
   def test_new_series
