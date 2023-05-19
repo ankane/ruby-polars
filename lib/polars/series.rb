@@ -3917,7 +3917,7 @@ module Polars
       UInt16 => RbSeries.method(:new_opt_u16),
       UInt32 => RbSeries.method(:new_opt_u32),
       UInt64 => RbSeries.method(:new_opt_u64),
-      # Decimal => RbSeries.method(:new_decimal),
+      Decimal => RbSeries.method(:new_decimal),
       Date => RbSeries.method(:new_from_anyvalues),
       Datetime => RbSeries.method(:new_from_anyvalues),
       Duration => RbSeries.method(:new_from_anyvalues),

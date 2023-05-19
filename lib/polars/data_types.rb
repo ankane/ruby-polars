@@ -63,6 +63,9 @@ module Polars
   class Float64 < FractionalType
   end
 
+  # Decimal 128-bit type with an optional precision and non-negative scale.
+  #
+  # NOTE: this is an experimental work-in-progress feature and may not work as expected.
   class Decimal < FractionalType
     attr_reader :precision, :scale
 
