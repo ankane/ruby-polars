@@ -3827,6 +3827,8 @@ module Polars
       end
 
       rb_temporal_types = [::Date, ::DateTime, ::Time]
+      # TODO uncomment in 0.6.0
+      # rb_temporal_types << ActiveSupport::TimeWithZone if defined?(ActiveSupport::TimeWithZone)
 
       value = _get_first_non_none(values)
       if !value.nil?

@@ -148,7 +148,7 @@ module Polars
         Utf8
       elsif ruby_dtype == TrueClass || ruby_dtype == FalseClass
         Boolean
-      elsif ruby_dtype == DateTime || ruby_dtype == ::Time
+      elsif ruby_dtype == DateTime || ruby_dtype == ::Time || (defined?(ActiveSupport::TimeWithZone) && ruby_dtype == ActiveSupport::TimeWithZone)
         Datetime.new("ns")
       elsif ruby_dtype == ::Date
         Date
