@@ -386,6 +386,13 @@ impl TryConvert for Wrap<DataType> {
                     }
                     DataType::Struct(fields)
                 }
+                "Polars::Datetime" => {
+                    let time_unit: Value = ob.funcall("time_unit", ())?;
+                    let time_unit = time_unit.try_convert::<Wrap<TimeUnit>>()?.0;
+                    let time_zone: Value = ob.funcall("time_zone", ())?;
+                    let time_zone = time_zone.try_convert()?;
+                    DataType::Datetime(time_unit, time_zone)
+                }
                 _ => todo!(),
             }
         } else {

@@ -72,4 +72,18 @@ class TypesTest < Minitest::Test
     assert_equal [Encoding::BINARY, nil, Encoding::BINARY], s.to_a.map { |v| v&.encoding }
     assert_equal Encoding::BINARY, s[0].encoding
   end
+
+  def test_series_dtype_datetime
+    s = Polars::Series.new([DateTime.new(2022, 1, 1)], dtype: Polars::Datetime)
+    assert_series [DateTime.new(2022, 1, 1)], s
+    assert_kind_of Polars::Datetime, s.dtype
+    assert_equal "us", s.dtype.time_unit
+  end
+
+  def test_series_dtype_datetime_time_unit
+    s = Polars::Series.new([DateTime.new(2022, 1, 1)], dtype: Polars::Datetime.new("ns"))
+    assert_series [DateTime.new(2022, 1, 1)], s
+    assert_kind_of Polars::Datetime, s.dtype
+    assert_equal "ns", s.dtype.time_unit
+  end
 end

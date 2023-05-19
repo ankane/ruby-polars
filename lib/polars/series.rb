@@ -3838,6 +3838,13 @@ module Polars
       if !dtype.nil? && Utils.is_polars_dtype(dtype) && ruby_dtype.nil?
         constructor = polars_type_to_constructor(dtype)
         rbseries = constructor.call(name, values, strict)
+
+        base_type = dtype.is_a?(DataType) ? dtype.class : dtype
+        if [Date, Datetime, Duration, Time, Categorical, Boolean].include?(base_type)
+          if rbseries.dtype != dtype
+            rbseries = rbseries.cast(dtype, true)
+          end
+        end
         return rbseries
       else
         if ruby_dtype.nil?
@@ -3910,9 +3917,17 @@ module Polars
       UInt16 => RbSeries.method(:new_opt_u16),
       UInt32 => RbSeries.method(:new_opt_u32),
       UInt64 => RbSeries.method(:new_opt_u64),
+      # Decimal => RbSeries.method(:new_decimal),
+      Date => RbSeries.method(:new_from_anyvalues),
+      Datetime => RbSeries.method(:new_from_anyvalues),
+      Duration => RbSeries.method(:new_from_anyvalues),
+      Time => RbSeries.method(:new_from_anyvalues),
       Boolean => RbSeries.method(:new_opt_bool),
       Utf8 => RbSeries.method(:new_str),
-      Binary => RbSeries.method(:new_binary)
+      Object => RbSeries.method(:new_object),
+      Categorical => RbSeries.method(:new_str),
+      Binary => RbSeries.method(:new_binary),
+      Null => RbSeries.method(:new_null)
     }
 
     SYM_TYPE_TO_CONSTRUCTOR = {
@@ -3933,6 +3948,8 @@ module Polars
     def polars_type_to_constructor(dtype)
       if dtype.is_a?(Class) && dtype < DataType
         POLARS_TYPE_TO_CONSTRUCTOR.fetch(dtype)
+      elsif dtype.is_a?(DataType)
+        POLARS_TYPE_TO_CONSTRUCTOR.fetch(dtype.class)
       else
         SYM_TYPE_TO_CONSTRUCTOR.fetch(dtype.to_sym)
       end

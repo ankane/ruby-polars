@@ -1,3 +1,7 @@
+## 0.5.1 (unreleased)
+
+- Added support for creating series with `Datetime` type
+
 ## 0.5.0 (2023-05-15)
 
 - Updated Polars to 0.29.0
