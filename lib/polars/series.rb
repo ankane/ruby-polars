@@ -3965,7 +3965,11 @@ module Polars
     }
 
     def rb_type_to_constructor(dtype)
-      RB_TYPE_TO_CONSTRUCTOR.fetch(dtype)
+      if defined?(BigDecimal) && dtype == BigDecimal
+        RbSeries.method(:new_decimal)
+      else
+        RB_TYPE_TO_CONSTRUCTOR.fetch(dtype)
+      end
     rescue KeyError
       RbSeries.method(:new_object)
     end
