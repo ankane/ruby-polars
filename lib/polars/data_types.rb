@@ -63,6 +63,15 @@ module Polars
   class Float64 < FractionalType
   end
 
+  class Decimal < FractionalType
+    attr_reader :precision, :scale
+
+    def initialize(precision, scale)
+      @precision = precision
+      @scale = scale
+    end
+  end
+
   # Boolean type.
   class Boolean < DataType
   end
