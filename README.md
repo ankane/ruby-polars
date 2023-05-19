@@ -348,7 +348,7 @@ df.to_numo
 You can specify column types when creating a data frame
 
 ```ruby
-Polars::DataFrame.new(data, columns: {"a" => Polars::Int32, "b" => Polars::Float32})
+Polars::DataFrame.new(data, schema: {"a" => Polars::Int32, "b" => Polars::Float32})
 ```
 
 Supported types are:
