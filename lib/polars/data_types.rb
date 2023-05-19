@@ -15,6 +15,10 @@ module Polars
   class FractionalType < NumericType
   end
 
+  # Base class for float data types.
+  class FloatType < FractionalType
+  end
+
   # Base class for temporal data types.
   class TemporalType < DataType
   end
@@ -56,11 +60,11 @@ module Polars
   end
 
   # 32-bit floating point type.
-  class Float32 < FractionalType
+  class Float32 < FloatType
   end
 
   # 64-bit floating point type.
-  class Float64 < FractionalType
+  class Float64 < FloatType
   end
 
   # Decimal 128-bit type with an optional precision and non-negative scale.
@@ -83,15 +87,16 @@ module Polars
   class Utf8 < DataType
   end
 
-  # Nested list/array type.
-  class List < NestedType
-    def initialize(inner)
-      @inner = Utils.rb_type_to_dtype(inner)
-    end
+  # Binary type.
+  class Binary < DataType
   end
 
   # Calendar date type.
   class Date < TemporalType
+  end
+
+  # Time of day type.
+  class Time < TemporalType
   end
 
   # Calendar date and time type.
@@ -115,16 +120,27 @@ module Polars
     end
   end
 
-  # Time of day type.
-  class Time < TemporalType
+  # A categorical encoding of a set of strings.
+  class Categorical < DataType
   end
 
   # Type for wrapping arbitrary Ruby objects.
   class Object < DataType
   end
 
-  # A categorical encoding of a set of strings.
-  class Categorical < DataType
+  # Type representing Null / None values.
+  class Null < DataType
+  end
+
+  # Type representing Datatype values that could not be determined statically.
+  class Unknown < DataType
+  end
+
+  # Nested list/array type.
+  class List < NestedType
+    def initialize(inner)
+      @inner = Utils.rb_type_to_dtype(inner)
+    end
   end
 
   # Definition of a single field within a `Struct` DataType.
@@ -162,17 +178,5 @@ module Polars
     def to_schema
       @fields.to_h { |f| [f.name, f.dtype] }
     end
-  end
-
-  # Binary type.
-  class Binary < DataType
-  end
-
-  # Type representing Null / None values.
-  class Null < DataType
-  end
-
-  # Type representing Datatype values that could not be determined statically.
-  class Unknown < DataType
   end
 end
