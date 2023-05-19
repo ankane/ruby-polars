@@ -98,6 +98,11 @@ class SeriesTest < Minitest::Test
     assert_series [1, nil, 3], s, dtype: Polars::Object
   end
 
+  def test_new_empty
+    s = Polars::Series.new([])
+    assert_series [], s, dtype: Polars::Float32
+  end
+
   def test_new_unsupported
     error = assert_raises(ArgumentError) do
       Polars::Series.new("a", Object.new)
