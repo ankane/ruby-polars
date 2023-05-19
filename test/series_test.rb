@@ -48,6 +48,14 @@ class SeriesTest < Minitest::Test
     assert_equal "ns", s.dtype.tu
   end
 
+  def test_new_time_with_zone
+    times = [Time.new(2022, 1, 1), Time.new(2022, 1, 2), Time.new(2022, 1, 3)].map { |v| v.in_time_zone("Eastern Time (US & Canada)") }
+    s = Polars::Series.new(times)
+    assert_series times, s, dtype: Polars::Object
+    # assert_kind_of Polars::Datetime, s.dtype
+    # assert_equal "ns", s.dtype.tu
+  end
+
   def test_new_nil
     s = Polars::Series.new([1, nil, 3])
     assert_series [1, nil, 3], s, dtype: Polars::Int64
