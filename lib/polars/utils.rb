@@ -139,16 +139,27 @@ module Polars
       data_type.is_a?(Symbol) || data_type.is_a?(String) || data_type.is_a?(DataType) || (data_type.is_a?(Class) && data_type < DataType)
     end
 
-    RB_TYPE_TO_DTYPE = {
-      Float => :f64,
-      Integer => :i64,
-      String => :str,
-      TrueClass => :bool,
-      FalseClass => :bool,
-      ::Date => :date,
-      ::DateTime => :datetime,
-      ::Time => :datetime
-    }
+    def self.map_rb_type_to_dtype(ruby_dtype)
+      if ruby_dtype == Float
+        Float64
+      elsif ruby_dtype == Integer
+        Int64
+      elsif ruby_dtype == String
+        Utf8
+      elsif ruby_dtype == TrueClass || ruby_dtype == FalseClass
+        Boolean
+      elsif ruby_dtype == DateTime || ruby_dtype == ::Time
+        Datetime.new("ns")
+      elsif ruby_dtype == ::Date
+        Date
+      elsif ruby_dtype == Array
+        List
+      elsif ruby_dtype == NilClass
+        Null
+      else
+        raise TypeError, "Invalid type"
+      end
+    end
 
     # TODO fix
     def self.rb_type_to_dtype(data_type)
@@ -158,8 +169,8 @@ module Polars
       end
 
       begin
-        RB_TYPE_TO_DTYPE.fetch(data_type).to_s
-      rescue KeyError
+        map_rb_type_to_dtype(data_type)
+      rescue TypeError
         raise ArgumentError, "Conversion of Ruby data type #{data_type} to Polars data type not implemented."
       end
     end
