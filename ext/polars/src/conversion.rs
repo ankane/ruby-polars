@@ -16,6 +16,7 @@ use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 use smartstring::alias::String as SmartString;
 
+use crate::object::OBJECT_NAME;
 use crate::rb_modules::utils;
 use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
 
@@ -362,9 +363,11 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Datetime" => DataType::Datetime(TimeUnit::Microseconds, None),
                 "Polars::Time" => DataType::Time,
                 "Polars::Duration" => DataType::Duration(TimeUnit::Microseconds),
+                "Polars::Decimal" => DataType::Decimal(None, None),
                 "Polars::Float32" => DataType::Float32,
                 "Polars::Float64" => DataType::Float64,
-                // "Polars::Object" => DataType::Object(OBJECT_NAME),
+                "Polars::Object" => DataType::Object(OBJECT_NAME),
+                // TODO change to Null
                 "Polars::List" => DataType::List(Box::new(DataType::Boolean)),
                 "Polars::Null" => DataType::Null,
                 "Polars::Unknown" => DataType::Unknown,

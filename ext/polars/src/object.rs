@@ -10,7 +10,7 @@ use polars_core::prelude::AnyValue;
 use crate::prelude::ObjectValue;
 use crate::Wrap;
 
-// pub(crate) const OBJECT_NAME: &str = "object";
+pub(crate) const OBJECT_NAME: &str = "object";
 
 pub(crate) fn register_object_builder() {
     if !registry::is_object_builder_registered() {
