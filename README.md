@@ -25,7 +25,7 @@ Polars.read_csv("iris.csv")
   .collect
 ```
 
-You can follow [Polars tutorials](https://pola-rs.github.io/polars-book/user-guide/introduction.html) and convert the code to Ruby in many cases. Feel free to open an issue if you run into problems.
+You can follow [Polars tutorials](https://pola-rs.github.io/polars-book/user-guide/) and convert the code to Ruby in many cases. Feel free to open an issue if you run into problems.
 
 ## Reference
 
