@@ -303,7 +303,7 @@ impl RbSeries {
     pub fn to_a(&self) -> Value {
         let series = &self.series.borrow();
 
-        fn to_list_recursive(series: &Series) -> Value {
+        fn to_a_recursive(series: &Series) -> Value {
             let rblist = match series.dtype() {
                 DataType::Boolean => RArray::from_iter(series.bool().unwrap()).into_value(),
                 DataType::UInt8 => RArray::from_iter(series.u8().unwrap()).into_value(),
@@ -339,7 +339,7 @@ impl RbSeries {
                                 v.push(QNIL).unwrap();
                             }
                             Some(s) => {
-                                let rblst = to_list_recursive(s.as_ref());
+                                let rblst = to_a_recursive(s.as_ref());
                                 v.push(rblst).unwrap();
                             }
                         }
@@ -385,7 +385,7 @@ impl RbSeries {
             rblist
         }
 
-        to_list_recursive(series)
+        to_a_recursive(series)
     }
 
     pub fn clone(&self) -> Self {
