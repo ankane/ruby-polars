@@ -352,7 +352,15 @@ impl IntoValue for Wrap<&DatetimeChunked> {
 
 impl IntoValue for Wrap<&TimeChunked> {
     fn into_value_with(self, _: &RubyHandle) -> Value {
-        todo!();
+        let utils = utils();
+        let iter = self.0.into_iter().map(|opt_v| {
+            opt_v.map(|v| {
+                utils
+                    .funcall::<_, _, Value>("_to_ruby_time", (v,))
+                    .unwrap()
+            })
+        });
+        RArray::from_iter(iter).into_value()
     }
 }
 

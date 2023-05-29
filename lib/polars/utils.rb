@@ -59,6 +59,22 @@ module Polars
       dt.to_i / (3600 * 24)
     end
 
+    def self._to_ruby_time(value)
+      raise Todo
+    end
+
+    def self._to_ruby_duration(value, time_unit = "ns")
+      if time_unit == "ns"
+        value / 1e9
+      elsif time_unit == "us"
+        value / 1e6
+      elsif time_unit == "ms"
+        value / 1e3
+      else
+        raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms'}}, got #{time_unit}"
+      end
+    end
+
     def self._to_ruby_date(value)
       # days to seconds
       # important to create from utc. Not doing this leads
@@ -79,18 +95,6 @@ module Polars
         end
       else
         raise Todo
-      end
-    end
-
-    def self._to_ruby_duration(value, time_unit = "ns")
-      if time_unit == "ns"
-        value / 1e9
-      elsif time_unit == "us"
-        value / 1e6
-      elsif time_unit == "ms"
-        value / 1e3
-      else
-        raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms'}}, got #{time_unit}"
       end
     end
 
