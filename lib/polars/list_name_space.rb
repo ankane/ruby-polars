@@ -124,8 +124,8 @@ module Polars
     #   # shape: (2,)
     #   # Series: '' [str]
     #   # [
-    #   #     "foo-bar"
-    #   #     "hello-world"
+    #   #         "foo-bar"
+    #   #         "hello-world"
     #   # ]
     def join(separator)
       super

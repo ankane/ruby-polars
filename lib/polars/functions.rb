@@ -43,7 +43,6 @@ module Polars
     #   # │ i64 ┆ i64 │
     #   # ╞═════╪═════╡
     #   # │ 1   ┆ 3   │
-    #   # ├╌╌╌╌╌┼╌╌╌╌╌┤
     #   # │ 2   ┆ 4   │
     #   # └─────┴─────┘
     def concat(items, rechunk: true, how: "vertical", parallel: true)
