@@ -55,10 +55,8 @@ class TypesTest < Minitest::Test
   end
 
   def test_series_dtype_decimal
-    skip # TODO fix
-
-    s = Polars::Series.new([BigDecimal("1.5"), nil, BigDecimal("3.5")], dtype: Polars::Decimal)
-    assert_series [1.5, nil, 3.5], s
+    s = Polars::Series.new([BigDecimal("12.3456"), nil, BigDecimal("-0.000078")], dtype: Polars::Decimal)
+    assert_series [12.3456, nil, -0.000078], s
     assert_kind_of Polars::Decimal, s.dtype
   end
 

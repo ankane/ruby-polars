@@ -227,7 +227,12 @@ impl IntoValue for Wrap<DataType> {
             DataType::UInt64 => pl.const_get::<_, Value>("UInt64").unwrap(),
             DataType::Float32 => pl.const_get::<_, Value>("Float32").unwrap(),
             DataType::Float64 => pl.const_get::<_, Value>("Float64").unwrap(),
-            DataType::Decimal(_precision, _scale) => todo!(),
+            DataType::Decimal(precision, scale) => {
+                let decimal_class = pl.const_get::<_, Value>("Decimal").unwrap();
+                decimal_class
+                    .funcall::<_, _, Value>("new", (precision, scale))
+                    .unwrap()
+            }
             DataType::Boolean => pl.const_get::<_, Value>("Boolean").unwrap(),
             DataType::Utf8 => pl.const_get::<_, Value>("Utf8").unwrap(),
             DataType::Binary => pl.const_get::<_, Value>("Binary").unwrap(),
@@ -372,7 +377,23 @@ impl IntoValue for Wrap<&DateChunked> {
 
 impl IntoValue for Wrap<&DecimalChunked> {
     fn into_value_with(self, _: &RubyHandle) -> Value {
-        todo!();
+        let utils = utils();
+        let rb_scale = (-(self.0.scale() as i32)).into_value();
+        let iter = self.0.into_iter().map(|opt_v| {
+            opt_v.map(|v| {
+                utils
+                    .funcall::<_, _, Value>("_to_ruby_decimal", (v.to_string(), rb_scale))
+                    .unwrap()
+            })
+        });
+        RArray::from_iter(iter).into_value()
+    }
+}
+
+fn abs_decimal_from_digits(digits: String, exp: i32) -> Option<(i128, usize)> {
+    match digits.parse::<i128>() {
+        Ok(v) => Some((v, ((digits.len() as i32) - exp) as usize)),
+        Err(_) => None,
     }
 }
 
@@ -563,7 +584,19 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
                 .funcall::<_, _, i64>("to_i", ())?;
             Ok(Wrap(AnyValue::Date((v / 86400) as i32)))
         } else if ob.is_kind_of(crate::rb_modules::bigdecimal()) {
-            todo!();
+            let (sign, digits, _, exp): (i8, String, i32, i32) = ob
+                .funcall::<_, _, Value>("split", ())
+                .unwrap()
+                .try_convert()
+                .unwrap();
+            let (mut v, scale) = abs_decimal_from_digits(digits, exp).ok_or_else(|| {
+                RbPolarsErr::other("BigDecimal is too large to fit in Decimal128".into())
+            })?;
+            if sign < 0 {
+                // TODO better error
+                v = v.checked_neg().unwrap();
+            }
+            Ok(Wrap(AnyValue::Decimal(v, scale)))
         } else {
             Err(RbPolarsErr::other(format!(
                 "object type not supported {:?}",

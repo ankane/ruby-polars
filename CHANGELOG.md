@@ -1,6 +1,7 @@
 ## 0.5.1 (unreleased)
 
 - Added support for creating series with `Datetime` type
+- Improved support for `Decimal` type
 - Fixed error with `groupby_dynamic` method
 
 ## 0.5.0 (2023-05-15)

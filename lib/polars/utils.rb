@@ -98,6 +98,10 @@ module Polars
       end
     end
 
+    def self._to_ruby_decimal(digits, scale)
+      BigDecimal("#{digits}e#{scale}")
+    end
+
     def self.selection_to_rbexpr_list(exprs)
       if exprs.is_a?(String) || exprs.is_a?(Symbol) || exprs.is_a?(Expr) || exprs.is_a?(Series)
         exprs = [exprs]
