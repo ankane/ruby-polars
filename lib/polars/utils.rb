@@ -82,15 +82,15 @@ module Polars
       end
     end
 
-    def self._to_ruby_duration(value, tu = "ns")
-      if tu == "ns"
+    def self._to_ruby_duration(value, time_unit = "ns")
+      if time_unit == "ns"
         value / 1e9
-      elsif tu == "us"
+      elsif time_unit == "us"
         value / 1e6
-      elsif tu == "ms"
+      elsif time_unit == "ms"
         value / 1e3
       else
-        raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms'}}, got #{tu}"
+        raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms'}}, got #{time_unit}"
       end
     end
 
