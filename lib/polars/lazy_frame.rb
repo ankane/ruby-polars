@@ -1218,11 +1218,7 @@ module Polars
     )
       index_column = Utils.expr_to_lit_or_expr(index_column, str_to_lit: false)
       if offset.nil?
-        if period.nil?
-          offset = "-#{every}"
-        else
-          offset = "0ns"
-        end
+        offset = period.nil? ? "-#{every}" : "0ns"
       end
 
       if period.nil?
