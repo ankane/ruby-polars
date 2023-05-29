@@ -82,8 +82,15 @@ module Polars
     #   # => 2001-01-02 00:00:00 UTC
     def median
       s = Utils.wrap_s(_s)
-      out = s.median.to_i
-      Utils._to_ruby_datetime(out, s.dtype, tu: s.time_unit)
+      out = s.median
+      if !out.nil?
+        if s.dtype == Date
+          return Utils._to_ruby_date(out.to_i)
+        else
+          return Utils._to_ruby_datetime(out.to_i, s.time_unit)
+        end
+      end
+      nil
     end
 
     # Return mean as Ruby object.
@@ -107,7 +114,14 @@ module Polars
     def mean
       s = Utils.wrap_s(_s)
       out = s.mean.to_i
-      Utils._to_ruby_datetime(out, s.dtype, tu: s.time_unit)
+      if !out.nil?
+        if s.dtype == Date
+          return Utils._to_ruby_date(out.to_i)
+        else
+          return Utils._to_ruby_datetime(out.to_i, s.time_unit)
+        end
+      end
+      nil
     end
 
     # Format Date/datetime with a formatting rule.

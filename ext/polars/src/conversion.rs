@@ -322,15 +322,57 @@ impl IntoValue for Wrap<&StructChunked> {
 impl IntoValue for Wrap<&DurationChunked> {
     fn into_value_with(self, _: &RubyHandle) -> Value {
         let utils = utils();
-        let tu = Wrap(self.0.time_unit()).into_value();
+        let time_unit = Wrap(self.0.time_unit()).into_value();
         let iter = self.0.into_iter().map(|opt_v| {
             opt_v.map(|v| {
                 utils
-                    .funcall::<_, _, Value>("_to_ruby_duration", (v, tu))
+                    .funcall::<_, _, Value>("_to_ruby_duration", (v, time_unit))
                     .unwrap()
             })
         });
         RArray::from_iter(iter).into_value()
+    }
+}
+
+impl IntoValue for Wrap<&DatetimeChunked> {
+    fn into_value_with(self, _: &RubyHandle) -> Value {
+        let utils = utils();
+        let time_unit = Wrap(self.0.time_unit()).into_value();
+        let time_zone = self.0.time_zone().clone().into_value();
+        let iter = self.0.into_iter().map(|opt_v| {
+            opt_v.map(|v| {
+                utils
+                    .funcall::<_, _, Value>("_to_ruby_datetime", (v, time_unit, time_zone))
+                    .unwrap()
+            })
+        });
+        RArray::from_iter(iter).into_value()
+    }
+}
+
+impl IntoValue for Wrap<&TimeChunked> {
+    fn into_value_with(self, _: &RubyHandle) -> Value {
+        todo!();
+    }
+}
+
+impl IntoValue for Wrap<&DateChunked> {
+    fn into_value_with(self, _: &RubyHandle) -> Value {
+        let utils = utils();
+        let iter = self.0.into_iter().map(|opt_v| {
+            opt_v.map(|v| {
+                utils
+                    .funcall::<_, _, Value>("_to_ruby_date", (v,))
+                    .unwrap()
+            })
+        });
+        RArray::from_iter(iter).into_value()
+    }
+}
+
+impl IntoValue for Wrap<&DecimalChunked> {
+    fn into_value_with(self, _: &RubyHandle) -> Value {
+        todo!();
     }
 }
 
@@ -516,6 +558,8 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
                 .funcall::<_, _, Value>("to_time", ())?
                 .funcall::<_, _, i64>("to_i", ())?;
             Ok(Wrap(AnyValue::Date((v / 86400) as i32)))
+        } else if ob.is_kind_of(crate::rb_modules::bigdecimal()) {
+            todo!();
         } else {
             Err(RbPolarsErr::other(format!(
                 "object type not supported {:?}",

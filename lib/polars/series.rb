@@ -3967,8 +3967,8 @@ module Polars
     }
 
     def rb_type_to_constructor(dtype)
-      # TODO fix
-      if false # defined?(BigDecimal) && dtype == BigDecimal
+      # TODO uncomment in 0.6.0
+      if false # dtype == BigDecimal
         RbSeries.method(:new_decimal)
       else
         RB_TYPE_TO_CONSTRUCTOR.fetch(dtype)

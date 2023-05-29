@@ -347,18 +347,20 @@ impl RbSeries {
                     v.into_value()
                 }
                 DataType::Date => {
-                    let a = RArray::with_capacity(series.len());
-                    for v in series.iter() {
-                        a.push::<Value>(Wrap(v).into_value()).unwrap();
-                    }
-                    return a.into_value();
+                    let ca = series.date().unwrap();
+                    return Wrap(ca).into_value();
+                }
+                DataType::Time => {
+                    let ca = series.time().unwrap();
+                    return Wrap(ca).into_value();
                 }
                 DataType::Datetime(_, _) => {
-                    let a = RArray::with_capacity(series.len());
-                    for v in series.iter() {
-                        a.push::<Value>(Wrap(v).into_value()).unwrap();
-                    }
-                    return a.into_value();
+                    let ca = series.datetime().unwrap();
+                    return Wrap(ca).into_value();
+                }
+                DataType::Decimal(_, _) => {
+                    let ca = series.decimal().unwrap();
+                    return Wrap(ca).into_value();
                 }
                 DataType::Utf8 => {
                     let ca = series.utf8().unwrap();
@@ -379,7 +381,6 @@ impl RbSeries {
                 DataType::Null | DataType::Unknown => {
                     panic!("to_a not implemented for null/unknown")
                 }
-                _ => todo!(),
             };
             rblist
         }

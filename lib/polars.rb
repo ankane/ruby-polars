@@ -6,6 +6,7 @@ rescue LoadError
 end
 
 # stdlib
+require "bigdecimal"
 require "date"
 require "stringio"
 

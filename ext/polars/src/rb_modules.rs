@@ -12,6 +12,10 @@ pub(crate) fn utils() -> RModule {
     *memoize!(RModule: polars().const_get("Utils").unwrap())
 }
 
+pub(crate) fn bigdecimal() -> RClass {
+    *memoize!(RClass: class::object().const_get("BigDecimal").unwrap())
+}
+
 pub(crate) fn date() -> RClass {
     *memoize!(RClass: class::object().const_get("Date").unwrap())
 }

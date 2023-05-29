@@ -59,31 +59,26 @@ module Polars
       dt.to_i / (3600 * 24)
     end
 
-    def self._to_ruby_datetime(value, dtype, tu: "ns", tz: nil)
-      if dtype == :date || dtype == Date
-        # days to seconds
-        # important to create from utc. Not doing this leads
-        # to inconsistencies dependent on the timezone you are in.
-        ::Time.at(value * 86400).utc.to_date
-      # TODO fix dtype
-      elsif dtype.to_s.start_with?("datetime[") || dtype.is_a?(Datetime)
-        if tz.nil? || tz == ""
-          if tu == "ns"
-            raise Todo
-          elsif tu == "us"
-            dt = ::Time.at(value / 1000000, value % 1000000, :usec).utc
-          elsif tu == "ms"
-            raise Todo
-          else
-            raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms'}}, got #{tu}"
-          end
-        else
-          raise Todo
-        end
+    def self._to_ruby_date(value)
+      # days to seconds
+      # important to create from utc. Not doing this leads
+      # to inconsistencies dependent on the timezone you are in.
+      ::Time.at(value * 86400).utc.to_date
+    end
 
-        dt
+    def self._to_ruby_datetime(value, time_unit = "ns", time_zone = nil)
+      if time_zone.nil? || time_zone == ""
+        if time_unit == "ns"
+          return ::Time.at(value / 1000000000, value % 1000000000, :nsec).utc
+        elsif time_unit == "us"
+          return ::Time.at(value / 1000000, value % 1000000, :usec).utc
+        elsif time_unit == "ms"
+          return ::Time.at(value / 1000, value % 1000, :millisecond).utc
+        else
+          raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms'}}, got #{time_unit}"
+        end
       else
-        raise NotImplementedError
+        raise Todo
       end
     end
 
