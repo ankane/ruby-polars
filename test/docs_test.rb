@@ -121,7 +121,11 @@ class DocsTest < Minitest::Test
   end
 
   def assert_examples(method)
-    return if [:align_frames, :from_epoch, :coalesce, :cumsum, :arange, :read_csv_batched, :sink_parquet].include?(method.name)
+    # requires files
+    return if [:read_csv_batched, :sink_parquet].include?(method.name)
+
+    # TODO fix
+    return if [:align_frames, :from_epoch, :coalesce, :cumsum, :arange].include?(method.name)
 
     code = ""
     method.tags(:example).each do |example|
@@ -138,6 +142,7 @@ class DocsTest < Minitest::Test
           puts
         end
 
+        # non-deterministic output
         next if [:sort, :sample, :mode, :duration, :_hash, :hash_rows].include?(method.name)
 
         # check output
