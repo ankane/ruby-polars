@@ -121,7 +121,7 @@ class DocsTest < Minitest::Test
   end
 
   def assert_examples(method)
-    return if [:align_frames, :from_epoch, :coalesce, :cumsum, :arange, :lengths, :read_csv_batched, :sink_parquet].include?(method.name)
+    return if [:align_frames, :from_epoch, :coalesce, :cumsum, :arange, :read_csv_batched, :sink_parquet].include?(method.name)
 
     code = ""
     method.tags(:example).each do |example|
