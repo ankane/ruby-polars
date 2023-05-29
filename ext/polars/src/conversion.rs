@@ -1,11 +1,11 @@
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 
+use magnus::encoding::{EncodingCapable, Index};
 use magnus::{
     class, exception, r_hash::ForEach, ruby_handle::RubyHandle, Integer, IntoValue, Module, RArray,
     RFloat, RHash, RString, Symbol, TryConvert, Value, QNIL,
 };
-use magnus::encoding::{EncodingCapable, Index};
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
@@ -354,11 +354,7 @@ impl IntoValue for Wrap<&TimeChunked> {
     fn into_value_with(self, _: &RubyHandle) -> Value {
         let utils = utils();
         let iter = self.0.into_iter().map(|opt_v| {
-            opt_v.map(|v| {
-                utils
-                    .funcall::<_, _, Value>("_to_ruby_time", (v,))
-                    .unwrap()
-            })
+            opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_time", (v,)).unwrap())
         });
         RArray::from_iter(iter).into_value()
     }
@@ -368,11 +364,7 @@ impl IntoValue for Wrap<&DateChunked> {
     fn into_value_with(self, _: &RubyHandle) -> Value {
         let utils = utils();
         let iter = self.0.into_iter().map(|opt_v| {
-            opt_v.map(|v| {
-                utils
-                    .funcall::<_, _, Value>("_to_ruby_date", (v,))
-                    .unwrap()
-            })
+            opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_date", (v,)).unwrap())
         });
         RArray::from_iter(iter).into_value()
     }
@@ -558,7 +550,11 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
         } else if ob.is_kind_of(crate::rb_modules::datetime()) {
             let sec: i64 = ob.funcall("to_i", ())?;
             let nsec: i64 = ob.funcall("nsec", ())?;
-            Ok(Wrap(AnyValue::Datetime(sec * 1_000_000_000 + nsec, TimeUnit::Nanoseconds, &None)))
+            Ok(Wrap(AnyValue::Datetime(
+                sec * 1_000_000_000 + nsec,
+                TimeUnit::Nanoseconds,
+                &None,
+            )))
         } else if ob.is_kind_of(crate::rb_modules::date()) {
             // convert to DateTime for UTC
             let v = ob
