@@ -1112,21 +1112,21 @@ module Polars
     #   df.groupby_dynamic("time", every: "1h", closed: "left").agg(
     #     [
     #       Polars.col("time").count.alias("time_count"),
-    #       Polars.col("time").list.alias("time_agg_list")
+    #       Polars.col("time").alias("time_agg_list")
     #     ]
     #   )
     #   # =>
     #   # shape: (4, 3)
-    #   # ┌─────────────────────┬────────────┬─────────────────────────────────────┐
-    #   # │ time                ┆ time_count ┆ time_agg_list                       │
-    #   # │ ---                 ┆ ---        ┆ ---                                 │
-    #   # │ datetime[μs]        ┆ u32        ┆ list[datetime[μs]]                  │
-    #   # ╞═════════════════════╪════════════╪═════════════════════════════════════╡
-    #   # │ 2021-12-16 00:00:00 ┆ 2          ┆ [2021-12-16 00:00:00, 2021-12-16... │
-    #   # │ 2021-12-16 01:00:00 ┆ 2          ┆ [2021-12-16 01:00:00, 2021-12-16... │
-    #   # │ 2021-12-16 02:00:00 ┆ 2          ┆ [2021-12-16 02:00:00, 2021-12-16... │
-    #   # │ 2021-12-16 03:00:00 ┆ 1          ┆ [2021-12-16 03:00:00]               │
-    #   # └─────────────────────┴────────────┴─────────────────────────────────────┘
+    #   # ┌─────────────────────┬────────────┬───────────────────────────────────┐
+    #   # │ time                ┆ time_count ┆ time_agg_list                     │
+    #   # │ ---                 ┆ ---        ┆ ---                               │
+    #   # │ datetime[μs]        ┆ u32        ┆ list[datetime[μs]]                │
+    #   # ╞═════════════════════╪════════════╪═══════════════════════════════════╡
+    #   # │ 2021-12-16 00:00:00 ┆ 2          ┆ [2021-12-16 00:00:00, 2021-12-16… │
+    #   # │ 2021-12-16 01:00:00 ┆ 2          ┆ [2021-12-16 01:00:00, 2021-12-16… │
+    #   # │ 2021-12-16 02:00:00 ┆ 2          ┆ [2021-12-16 02:00:00, 2021-12-16… │
+    #   # │ 2021-12-16 03:00:00 ┆ 1          ┆ [2021-12-16 03:00:00]             │
+    #   # └─────────────────────┴────────────┴───────────────────────────────────┘
     #
     # @example When closed="both" the time values at the window boundaries belong to 2 groups.
     #   df.groupby_dynamic("time", every: "1h", closed: "both").agg(
@@ -1193,7 +1193,7 @@ module Polars
     #     period: "3i",
     #     include_boundaries: true,
     #     closed: "right"
-    #   ).agg(Polars.col("A").list.alias("A_agg_list"))
+    #   ).agg(Polars.col("A").alias("A_agg_list"))
     #   # =>
     #   # shape: (3, 4)
     #   # ┌─────────────────┬─────────────────┬─────┬─────────────────┐
@@ -1216,6 +1216,7 @@ module Polars
       by: nil,
       start_by: "window"
     )
+      index_column = Utils.expr_to_lit_or_expr(index_column, str_to_lit: false)
       if offset.nil?
         if period.nil?
           offset = "-#{every}"
@@ -1234,7 +1235,7 @@ module Polars
 
       rbexprs_by = by.nil? ? [] : Utils.selection_to_rbexpr_list(by)
       lgb = _ldf.groupby_dynamic(
-        index_column,
+        index_column._rbexpr,
         every,
         period,
         offset,
