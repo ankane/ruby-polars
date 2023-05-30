@@ -93,6 +93,6 @@ class TypesTest < Minitest::Test
 
   def test_series_dtype_time
     s = Polars::Series.new([DateTime.new(2022, 1, 1, 12, 34, 56)], dtype: Polars::Time)
-    # assert_series [Time.utc(2000, 1, 1, 12, 34, 56)], s, dtype: Polars::Time
+    assert_series [Time.utc(2000, 1, 1, 12, 34, 56)], s, dtype: Polars::Time
   end
 end

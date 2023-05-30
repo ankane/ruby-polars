@@ -60,7 +60,14 @@ module Polars
     end
 
     def self._to_ruby_time(value)
-      raise Todo
+      if value == 0
+        ::Time.utc(2000, 1, 1)
+      else
+        seconds, nanoseconds = value.divmod(1_000_000_000)
+        minutes, seconds = seconds.divmod(60)
+        hours, minutes = minutes.divmod(60)
+        ::Time.utc(2000, 1, 1, hours, minutes, seconds, nanoseconds / 1000.0)
+      end
     end
 
     def self._to_ruby_duration(value, time_unit = "ns")

@@ -3,7 +3,7 @@
 - Updated Polars to 0.30.0
 - Added `Array` type
 - Added support for creating series with `Datetime` type
-- Improved support for `Decimal` type
+- Improved support for `Decimal` and `Time` types
 - Changed `arr` to `list` for `Series` and `Expr`
 - Changed series creation with `BigDecimal` objects to `Decimal` type
 - Changed series creation with `ActiveSupport::TimeWithZone` objects to `Datetime` type
