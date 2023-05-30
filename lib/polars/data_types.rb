@@ -174,6 +174,14 @@ module Polars
       @inner = Utils.rb_type_to_dtype(inner)
     end
 
+    def ==(other)
+      if other.is_a?(List)
+        @inner.nil? || other.inner.nil? || @inner == other.inner
+      else
+        false
+      end
+    end
+
     def to_s
       "#{self.class.name}(#{inner})"
     end
