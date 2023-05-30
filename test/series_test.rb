@@ -60,10 +60,9 @@ class SeriesTest < Minitest::Test
 
   def test_new_struct
     s = Polars::Series.new([{"f1" => 1}, {"f1" => 2}])
-    assert_kind_of Polars::Struct, s.dtype
+    assert_series [{"f1" => 1}, {"f1" => 2}], s, dtype: Polars::Struct
     assert_equal({"f1" => Polars::Int64}, s.dtype.to_schema)
-    assert_series [{"f1" => 1}, {"f1" => 2}], s
-    assert_series [1, 2], s.struct["f1"]
+    assert_series [1, 2], s.struct["f1"], dtype: Polars::Int64
   end
 
   def test_new_struct_nested
@@ -73,20 +72,18 @@ class SeriesTest < Minitest::Test
     ]
     s = Polars::Series.new(data)
     assert_kind_of Polars::Struct, s.dtype
-    assert_series [1, 2], s.struct["a"].struct["b"].struct["c"]
+    assert_series [1, 2], s.struct["a"].struct["b"].struct["c"], dtype: Polars::Int64
   end
 
   def test_new_list
     s = Polars::Series.new([[1, 2, 3], [5]])
-    assert_series [[1, 2, 3], [5]], s
-    assert_kind_of Polars::List, s.dtype
+    assert_series [[1, 2, 3], [5]], s, dtype: Polars::List
     assert s.flags.key?("FAST_EXPLODE")
   end
 
   def test_new_list_of_structs
     s = Polars::Series.new([[{}], [{}], [{}]])
-    assert_series [[{"" => nil}], [{"" => nil}], [{"" => nil}]], s
-    assert_kind_of Polars::List, s.dtype
+    assert_series [[{"" => nil}], [{"" => nil}], [{"" => nil}]], s, dtype: Polars::List
   end
 
   def test_new_strict
