@@ -126,6 +126,10 @@ module Polars
       @time_unit = time_unit || "us"
       @time_zone = time_zone
     end
+
+    def to_s
+      "#{self.class}(time_unit: #{time_unit.inspect}, time_zone: #{time_zone.inspect})"
+    end
   end
 
   # Time duration/delta type.
@@ -174,6 +178,10 @@ module Polars
     def initialize(width, inner)
       @width = width
       @inner = Utils.rb_type_to_dtype(inner)
+    end
+
+    def to_s
+      "#{self.class}(#{inner})"
     end
   end
 

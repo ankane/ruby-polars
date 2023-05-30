@@ -18,5 +18,7 @@ class DataTypesTest < Minitest::Test
     assert_equal "Polars::Int64", Polars::Int64.to_s
     assert_equal "Polars::List", Polars::List.to_s
     assert_equal "Polars::List(Polars::Int64)", Polars::List.new(Polars::Int64).to_s
+    assert_equal "Polars::Array(Polars::Int64)", Polars::Array.new(3, Polars::Int64).to_s
+    assert_equal %!Polars::Datetime(time_unit: "ns", time_zone: nil)!, Polars::Datetime.new("ns").to_s
   end
 end
