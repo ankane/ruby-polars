@@ -35,17 +35,13 @@ class SeriesTest < Minitest::Test
   def test_new_datetime
     datetimes = [DateTime.new(2022, 1, 1), DateTime.new(2022, 1, 2), DateTime.new(2022, 1, 3)]
     s = Polars::Series.new(datetimes)
-    assert_series datetimes, s
-    assert_kind_of Polars::Datetime, s.dtype
-    assert_equal "ns", s.dtype.tu
+    assert_series datetimes, s, dtype: Polars::Datetime.new("ns")
   end
 
   def test_new_time
     times = [Time.new(2022, 1, 1), Time.new(2022, 1, 2), Time.new(2022, 1, 3)]
     s = Polars::Series.new(times)
-    assert_series times, s
-    assert_kind_of Polars::Datetime, s.dtype
-    assert_equal "ns", s.dtype.tu
+    assert_series times, s, dtype: Polars::Datetime.new("ns")
   end
 
   def test_new_time_with_zone
