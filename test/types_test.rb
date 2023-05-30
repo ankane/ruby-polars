@@ -84,15 +84,16 @@ class TypesTest < Minitest::Test
 
   def test_series_dtype_datetime
     s = Polars::Series.new([DateTime.new(2022, 1, 1)], dtype: Polars::Datetime)
-    assert_series [DateTime.new(2022, 1, 1)], s
-    assert_kind_of Polars::Datetime, s.dtype
-    assert_equal "ns", s.dtype.time_unit
+    assert_series [DateTime.new(2022, 1, 1)], s, dtype: Polars::Datetime.new("ns")
   end
 
   def test_series_dtype_datetime_time_unit
     s = Polars::Series.new([DateTime.new(2022, 1, 1)], dtype: Polars::Datetime.new("ms"))
-    assert_series [DateTime.new(2022, 1, 1)], s
-    assert_kind_of Polars::Datetime, s.dtype
-    assert_equal "ms", s.dtype.time_unit
+    assert_series [DateTime.new(2022, 1, 1)], s, dtype: Polars::Datetime.new("ms")
+  end
+
+  def test_series_dtype_time
+    s = Polars::Series.new([Time.new(2022, 1, 1, 12, 34, 56)], dtype: Polars::Time)
+    # assert_series [Time.new(2000, 1, 1, 12, 34, 56)], s, dtype: Polars::Time
   end
 end
