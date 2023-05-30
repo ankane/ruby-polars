@@ -95,6 +95,10 @@ module Polars
       @precision = precision
       @scale = scale
     end
+
+    def to_s
+      "#{self.class}(precision: #{precision.inspect}, scale: #{scale.inspect})"
+    end
   end
 
   # Boolean type.
@@ -139,6 +143,10 @@ module Polars
 
     def initialize(time_unit = "us")
       @time_unit = time_unit
+    end
+
+    def to_s
+      "#{self.class}(time_unit: #{time_unit.inspect})"
     end
   end
 
