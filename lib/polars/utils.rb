@@ -40,17 +40,17 @@ module Polars
       td
     end
 
-    def self._datetime_to_pl_timestamp(dt, tu)
-      if tu == "ns"
+    def self._datetime_to_pl_timestamp(dt, time_unit)
+      if time_unit == "ns"
         (dt.to_datetime.to_time.to_f * 1e9).to_i
-      elsif tu == "us"
+      elsif time_unit == "us"
         (dt.to_datetime.to_time.to_f * 1e6).to_i
-      elsif tu == "ms"
+      elsif time_unit == "ms"
         (dt.to_datetime.to_time.to_f * 1e3).to_i
-      elsif tu.nil?
+      elsif time_unit.nil?
         (dt.to_datetime.to_time.to_f * 1e6).to_i
       else
-        raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms'}}, got #{tu}"
+        raise ArgumentError, "time_unit must be one of {{'ns', 'us', 'ms'}}, got #{tu}"
       end
     end
 
