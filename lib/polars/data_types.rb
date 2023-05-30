@@ -1,6 +1,21 @@
 module Polars
   # Base class for all Polars data types.
   class DataType
+    def self.base_type
+      self
+    end
+
+    def base_type
+      is_a?(DataType) ? self.class : self
+    end
+
+    def self.nested?
+      false
+    end
+
+    def nested?
+      self.class.nested?
+    end
   end
 
   # Base class for numeric data types.
@@ -25,6 +40,9 @@ module Polars
 
   # Base class for nested data types.
   class NestedType < DataType
+    def self.nested?
+      true
+    end
   end
 
   # 8-bit signed integer type.
