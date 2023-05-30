@@ -4,7 +4,7 @@ use std::hash::{Hash, Hasher};
 use magnus::encoding::{EncodingCapable, Index};
 use magnus::{
     class, exception, r_hash::ForEach, ruby_handle::RubyHandle, Integer, IntoValue, Module, RArray,
-    RFloat, RHash, RString, Symbol, TryConvert, Value, QNIL,
+    Float, RHash, RString, Symbol, TryConvert, Value, QNIL,
 };
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
@@ -530,7 +530,7 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
             Ok(AnyValue::Boolean(ob.try_convert::<bool>()?).into())
         } else if let Some(v) = Integer::from_value(ob) {
             Ok(AnyValue::Int64(v.to_i64()?).into())
-        } else if let Some(v) = RFloat::from_value(ob) {
+        } else if let Some(v) = Float::from_value(ob) {
             Ok(AnyValue::Float64(v.to_f64()).into())
         } else if let Some(v) = RString::from_value(ob) {
             if v.enc_get() == Index::utf8() {
