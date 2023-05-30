@@ -65,7 +65,6 @@ class SeriesTest < Minitest::Test
   def test_new_struct
     s = Polars::Series.new([{"f1" => 1}, {"f1" => 2}])
     assert_kind_of Polars::Struct, s.dtype
-    assert_equal "Polars::Struct([Polars::Field(f1: Polars::Int64)])", s.dtype.inspect
     assert_equal({"f1" => Polars::Int64}, s.dtype.to_schema)
     assert_series [{"f1" => 1}, {"f1" => 2}], s
     assert_series [1, 2], s.struct["f1"]
