@@ -33,9 +33,8 @@ class SeriesTest < Minitest::Test
   end
 
   def test_new_datetime
-    datetimes = [DateTime.new(2022, 1, 1), DateTime.new(2022, 1, 2), DateTime.new(2022, 1, 3)]
-    s = Polars::Series.new(datetimes)
-    assert_series datetimes, s, dtype: Polars::Datetime.new("ns")
+    s = Polars::Series.new([DateTime.new(2022, 1, 1), DateTime.new(2022, 1, 2), DateTime.new(2022, 1, 3)])
+    assert_series [Time.utc(2022, 1, 1), Time.utc(2022, 1, 2), Time.utc(2022, 1, 3)], s, dtype: Polars::Datetime.new("ns")
   end
 
   def test_new_time
@@ -108,7 +107,7 @@ class SeriesTest < Minitest::Test
 
   def test_new_object
     s = Polars::Series.new([Rational(1), nil, Rational(2, 4)])
-    assert_series [1, nil, 0.5], s, dtype: Polars::Object
+    assert_series [Rational(1), nil, Rational(2, 4)], s, dtype: Polars::Object
   end
 
   def test_new_empty
