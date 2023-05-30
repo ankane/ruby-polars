@@ -20,8 +20,6 @@ class LazyFrameTest < Minitest::Test
   end
 
   def test_unnest
-    skip
-
     df = (
       Polars::DataFrame.new(
         {
