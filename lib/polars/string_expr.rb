@@ -9,11 +9,129 @@ module Polars
       self._rbexpr = expr._rbexpr
     end
 
+    # Convert a Utf8 column into a Date column.
+    #
+    # @param format [String]
+    #   Format to use for conversion. Refer to the
+    #   [chrono crate documentation](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    #   for the full specification. Example: `"%Y-%m-%d"`.
+    #   If set to nil (default), the format is inferred from the data.
+    # @param strict [Boolean]
+    #   Raise an error if any conversion fails.
+    # @param exact [Boolean]
+    #   Require an exact format match. If false, allow the format to match anywhere
+    #   in the target string.
+    # @param cache [Boolean]
+    #   Use a cache of unique, converted dates to apply the conversion.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   s = Polars::Series.new(["2020/01/01", "2020/02/01", "2020/03/01"])
+    #   s.str.to_date
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [date]
+    #   # [
+    #   #         2020-01-01
+    #   #         2020-02-01
+    #   #         2020-03-01
+    #   # ]
+    def to_date(format = nil, strict: true, exact: true, cache: true)
+      _validate_format_argument(format)
+      Utils.wrap_expr(self._rbexpr.str_to_date(format, strict, exact, cache))
+    end
+
+    # Convert a Utf8 column into a Datetime column.
+    #
+    # @param format [String]
+    #   Format to use for conversion. Refer to the
+    #   [chrono crate documentation](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    #   for the full specification. Example: `"%Y-%m-%d %H:%M:%S"`.
+    #   If set to nil (default), the format is inferred from the data.
+    # @param time_unit ["us", "ns", "ms"]
+    #   Unit of time for the resulting Datetime column. If set to nil (default),
+    #   the time unit is inferred from the format string if given, eg:
+    #   `"%F %T%.3f"` => `Datetime("ms")`. If no fractional second component is
+    #   found, the default is `"us"`.
+    # @param time_zone [String]
+    #   Time zone for the resulting Datetime column.
+    # @param strict [Boolean]
+    #   Raise an error if any conversion fails.
+    # @param exact [Boolean]
+    #   Require an exact format match. If false, allow the format to match anywhere
+    #   in the target string.
+    # @param cache [Boolean]
+    #   Use a cache of unique, converted datetimes to apply the conversion.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   s = Polars::Series.new(["2020-01-01 01:00Z", "2020-01-01 02:00Z"])
+    #   s.str.to_datetime("%Y-%m-%d %H:%M%#z")
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [datetime[μs, UTC]]
+    #   # [
+    #   #         2020-01-01 01:00:00 UTC
+    #   #         2020-01-01 02:00:00 UTC
+    #   # ]
+    def to_datetime(
+      format = nil,
+      time_unit: nil,
+      time_zone: nil,
+      strict: true,
+      exact: true,
+      cache: true
+    )
+      _validate_format_argument(format)
+      Utils.wrap_expr(
+        self._rbexpr.str_to_datetime(
+          format,
+          time_unit,
+          time_zone,
+          strict,
+          exact,
+          cache
+        )
+      )
+    end
+
+    # Convert a Utf8 column into a Time column.
+    #
+    # @param format [String]
+    #   Format to use for conversion. Refer to the
+    #   [chrono crate documentation](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    #   for the full specification. Example: `"%H:%M:%S"`.
+    #   If set to nil (default), the format is inferred from the data.
+    # @param strict [Boolean]
+    #   Raise an error if any conversion fails.
+    # @param cache [Boolean]
+    #   Use a cache of unique, converted times to apply the conversion.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   s = Polars::Series.new(["01:00", "02:00", "03:00"])
+    #   s.str.to_time("%H:%M")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [time]
+    #   # [
+    #   #         01:00:00
+    #   #         02:00:00
+    #   #         03:00:00
+    #   # ]
+    def to_time(format = nil, strict: true, cache: true)
+      _validate_format_argument(format)
+      Utils.wrap_expr(_rbexpr.str_to_time(format, strict, cache))
+    end
+
     # Parse a Utf8 expression to a Date/Datetime/Time type.
     #
     # @param dtype [Object]
     #   The data type to convert into. Can be either Date, Datetime, or Time.
-    # @param fmt [String]
+    # @param format [String]
     #   Format to use, refer to the
     #   [chrono strftime documentation](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
     #   for specification. Example: `"%y-%m-%d"`.
@@ -38,10 +156,10 @@ module Polars
     #   s.str.strptime(Polars::Datetime, "%Y-%m-%d %H:%M%#z")
     #   # =>
     #   # shape: (2,)
-    #   # Series: '' [datetime[μs, +00:00]]
+    #   # Series: '' [datetime[μs, UTC]]
     #   # [
-    #   #         2020-01-01 01:00:00 +00:00
-    #   #         2020-01-01 02:00:00 +00:00
+    #   #         2020-01-01 01:00:00 UTC
+    #   #         2020-01-01 02:00:00 UTC
     #   # ]
     #
     # @example Dealing with different formats.
@@ -71,16 +189,18 @@ module Polars
     #   #         2022-01-31
     #   #         2001-07-08
     #   # ]
-    def strptime(dtype, fmt = nil, strict: true, exact: true, cache: true, tz_aware: false, utc: false)
+    def strptime(dtype, format = nil, strict: true, exact: true, cache: true, utc: false)
+      _validate_format_argument(format)
+
       if dtype == Date
-        Utils.wrap_expr(_rbexpr.str_parse_date(fmt, strict, exact, cache))
+        to_date(format, strict: strict, exact: exact, cache: cache)
       elsif dtype == Datetime || dtype.is_a?(Datetime)
         dtype = Datetime.new if dtype == Datetime
         time_unit = dtype.time_unit
         time_zone = dtype.time_zone
-        Utils.wrap_expr(_rbexpr.str_parse_datetime(fmt, time_unit, time_zone, strict, exact, cache, tz_aware, utc))
+        to_datetime(format, time_unit: time_unit, time_zone: time_zone, strict: strict, exact: exact, cache: cache)
       elsif dtype == Time
-        Utils.wrap_expr(_rbexpr.str_parse_time(fmt, strict, exact, cache))
+        to_time(format, strict: strict, cache: cache)
       else
         raise ArgumentError, "dtype should be of type {Date, Datetime, Time}"
       end
@@ -968,7 +1088,7 @@ module Polars
     #   # │ r   │
     #   # └─────┘
     def explode
-      Utils.wrap_expr(_rbexpr.explode)
+      Utils.wrap_expr(_rbexpr.str_explode)
     end
 
     # Parse integers with base radix from strings.
@@ -1017,6 +1137,12 @@ module Polars
     #   # └───────┘
     def parse_int(radix = 2, strict: true)
       Utils.wrap_expr(_rbexpr.str_parse_int(radix, strict))
+    end
+
+    private
+
+    def _validate_format_argument(format)
+      # TODO
     end
   end
 end

@@ -2,6 +2,7 @@ use magnus::{block::Proc, IntoValue, RArray, Value};
 use polars::lazy::dsl;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
+use polars_core::series::IsSorted;
 
 use crate::apply::lazy::map_single;
 use crate::conversion::{parse_fill_null_strategy, Wrap};
@@ -929,5 +930,14 @@ impl RbExpr {
 
     pub fn hash(&self, seed: u64, seed_1: u64, seed_2: u64, seed_3: u64) -> Self {
         self.inner.clone().hash(seed, seed_1, seed_2, seed_3).into()
+    }
+
+    pub fn set_sorted_flag(&self, descending: bool) -> Self {
+        let is_sorted = if descending {
+            IsSorted::Descending
+        } else {
+            IsSorted::Ascending
+        };
+        self.inner.clone().set_sorted_flag(is_sorted).into()
     }
 }

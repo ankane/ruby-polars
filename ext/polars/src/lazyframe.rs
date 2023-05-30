@@ -328,6 +328,7 @@ impl RbLazyFrame {
         offset: String,
         closed: Wrap<ClosedWindow>,
         by: RArray,
+        check_sorted: bool,
     ) -> RbResult<RbLazyGroupBy> {
         let closed_window = closed.0;
         let ldf = self.ldf.clone();
@@ -340,6 +341,7 @@ impl RbLazyFrame {
                 period: Duration::parse(&period),
                 offset: Duration::parse(&offset),
                 closed_window,
+                check_sorted,
             },
         );
 

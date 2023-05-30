@@ -194,7 +194,7 @@ impl IntoValue for Wrap<AnyValue<'_>> {
                 utils().funcall("_to_ruby_duration", (v, tu)).unwrap()
             }
             AnyValue::Time(_v) => todo!(),
-            AnyValue::List(v) => RbSeries::new(v).to_a().into_value(),
+            AnyValue::Array(v, _) | AnyValue::List(v) => RbSeries::new(v).to_a().into_value(),
             ref av @ AnyValue::Struct(_, _, flds) => struct_dict(av._iter_struct_av(), flds),
             AnyValue::StructOwned(payload) => struct_dict(payload.0.into_iter(), &payload.1),
             AnyValue::Object(v) => {
@@ -236,6 +236,13 @@ impl IntoValue for Wrap<DataType> {
             DataType::Boolean => pl.const_get::<_, Value>("Boolean").unwrap(),
             DataType::Utf8 => pl.const_get::<_, Value>("Utf8").unwrap(),
             DataType::Binary => pl.const_get::<_, Value>("Binary").unwrap(),
+            DataType::Array(inner, size) => {
+                let inner = Wrap(*inner);
+                let list_class = pl.const_get::<_, Value>("Array").unwrap();
+                list_class
+                    .funcall::<_, _, Value>("new", (size, inner))
+                    .unwrap()
+            }
             DataType::List(inner) => {
                 let inner = Wrap(*inner);
                 let list_class = pl.const_get::<_, Value>("List").unwrap();

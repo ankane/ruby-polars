@@ -551,32 +551,11 @@ module Polars
       agg(Polars.all.median)
     end
 
-    # Aggregate the groups into Series.
-    #
-    # @return [DataFrame]
-    #
-    # @example
-    #   df = Polars::DataFrame.new({"a" => ["one", "two", "one", "two"], "b" => [1, 2, 3, 4]})
-    #   df.groupby("a", maintain_order: true).agg_list
-    #   # =>
-    #   # shape: (2, 2)
-    #   # ┌─────┬─────────────────┐
-    #   # │ a   ┆ b               │
-    #   # │ --- ┆ ---             │
-    #   # │ str ┆ list[list[i64]] │
-    #   # ╞═════╪═════════════════╡
-    #   # │ one ┆ [[1, 3]]        │
-    #   # │ two ┆ [[2, 4]]        │
-    #   # └─────┴─────────────────┘
-    def agg_list
-      agg(Polars.all.list)
-    end
-
     # Plot data.
     #
     # @return [Vega::LiteChart]
     def plot(*args, **options)
-      raise ArgumentError, "Multiple groups not supported" if by.is_a?(Array) && by.size > 1
+      raise ArgumentError, "Multiple groups not supported" if by.is_a?(::Array) && by.size > 1
       # same message as Ruby
       raise ArgumentError, "unknown keyword: :group" if options.key?(:group)
 

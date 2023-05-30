@@ -1,9 +1,9 @@
 module Polars
-  # Series.arr namespace.
+  # Series.list namespace.
   class ListNameSpace
     include ExprDispatch
 
-    self._accessor = "arr"
+    self._accessor = "list"
 
     # @private
     def initialize(series)
@@ -16,7 +16,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new([[1, 2, 3], [5]])
-    #   s.arr.lengths
+    #   s.list.lengths
     #   # =>
     #   # shape: (2,)
     #   # Series: '' [u32]
@@ -119,7 +119,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new([["foo", "bar"], ["hello", "world"]])
-    #   s.arr.join("-")
+    #   s.list.join("-")
     #   # =>
     #   # shape: (2,)
     #   # Series: '' [str]
@@ -180,7 +180,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [[1, 2, 3, 4], [10, 2, 1]])
-    #   s.arr.diff
+    #   s.list.diff
     #   # =>
     #   # shape: (2,)
     #   # Series: 'a' [list[i64]]
@@ -201,7 +201,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [[1, 2, 3, 4], [10, 2, 1]])
-    #   s.arr.shift
+    #   s.list.shift
     #   # =>
     #   # shape: (2,)
     #   # Series: 'a' [list[i64]]
@@ -225,7 +225,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [[1, 2, 3, 4], [10, 2, 1]])
-    #   s.arr.slice(1, 2)
+    #   s.list.slice(1, 2)
     #   # =>
     #   # shape: (2,)
     #   # Series: 'a' [list[i64]]
@@ -246,7 +246,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [[1, 2, 3, 4], [10, 2, 1]])
-    #   s.arr.head(2)
+    #   s.list.head(2)
     #   # =>
     #   # shape: (2,)
     #   # Series: 'a' [list[i64]]
@@ -267,7 +267,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [[1, 2, 3, 4], [10, 2, 1]])
-    #   s.arr.tail(2)
+    #   s.list.tail(2)
     #   # =>
     #   # shape: (2,)
     #   # Series: 'a' [list[i64]]
@@ -291,7 +291,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"a" => [[1, 2, 3], [1, 2]]})
-    #   df.select([Polars.col("a").arr.to_struct])
+    #   df.select([Polars.col("a").list.to_struct])
     #   # =>
     #   # shape: (2, 1)
     #   # ┌────────────┐
@@ -323,7 +323,7 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new({"a" => [1, 8, 3], "b" => [4, 5, 2]})
     #   df.with_column(
-    #     Polars.concat_list(["a", "b"]).arr.eval(Polars.element.rank).alias("rank")
+    #     Polars.concat_list(["a", "b"]).list.eval(Polars.element.rank).alias("rank")
     #   )
     #   # =>
     #   # shape: (3, 3)

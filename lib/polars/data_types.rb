@@ -143,6 +143,16 @@ module Polars
     end
   end
 
+  # Nested list/array type.
+  class Array < NestedType
+    attr_reader :width, :inner
+
+    def initialize(width, inner)
+      @width = width
+      @inner = Utils.rb_type_to_dtype(inner)
+    end
+  end
+
   # Definition of a single field within a `Struct` DataType.
   class Field
     attr_reader :name, :dtype

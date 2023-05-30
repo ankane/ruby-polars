@@ -8,17 +8,17 @@ use crate::{RbExpr, RbResult};
 
 impl RbExpr {
     pub fn list_arg_max(&self) -> Self {
-        self.inner.clone().arr().arg_max().into()
+        self.inner.clone().list().arg_max().into()
     }
 
     pub fn list_arg_min(&self) -> Self {
-        self.inner.clone().arr().arg_min().into()
+        self.inner.clone().list().arg_min().into()
     }
 
     pub fn list_contains(&self, other: &RbExpr) -> Self {
         self.inner
             .clone()
-            .arr()
+            .list()
             .contains(other.inner.clone())
             .into()
     }
@@ -26,53 +26,58 @@ impl RbExpr {
     pub fn list_count_match(&self, expr: &RbExpr) -> Self {
         self.inner
             .clone()
-            .arr()
+            .list()
             .count_match(expr.inner.clone())
             .into()
     }
 
     pub fn list_diff(&self, n: i64, null_behavior: Wrap<NullBehavior>) -> RbResult<Self> {
-        Ok(self.inner.clone().arr().diff(n, null_behavior.0).into())
+        Ok(self.inner.clone().list().diff(n, null_behavior.0).into())
     }
 
     pub fn list_eval(&self, expr: &RbExpr, parallel: bool) -> Self {
         self.inner
             .clone()
-            .arr()
+            .list()
             .eval(expr.inner.clone(), parallel)
             .into()
     }
 
     pub fn list_get(&self, index: &RbExpr) -> Self {
-        self.inner.clone().arr().get(index.inner.clone()).into()
+        self.inner.clone().list().get(index.inner.clone()).into()
     }
 
     pub fn list_join(&self, separator: String) -> Self {
-        self.inner.clone().arr().join(&separator).into()
+        self.inner.clone().list().join(&separator).into()
     }
 
     pub fn list_lengths(&self) -> Self {
-        self.inner.clone().arr().lengths().into()
+        self.inner.clone().list().lengths().into()
     }
 
     pub fn list_max(&self) -> Self {
-        self.inner.clone().arr().max().into()
+        self.inner.clone().list().max().into()
     }
 
     pub fn list_mean(&self) -> Self {
-        self.inner.clone().arr().mean().with_fmt("arr.mean").into()
+        self.inner
+            .clone()
+            .list()
+            .mean()
+            .with_fmt("list.mean")
+            .into()
     }
 
     pub fn list_min(&self) -> Self {
-        self.inner.clone().arr().min().into()
+        self.inner.clone().list().min().into()
     }
 
     pub fn list_reverse(&self) -> Self {
-        self.inner.clone().arr().reverse().into()
+        self.inner.clone().list().reverse().into()
     }
 
     pub fn list_shift(&self, periods: i64) -> Self {
-        self.inner.clone().arr().shift(periods).into()
+        self.inner.clone().list().shift(periods).into()
     }
 
     pub fn list_slice(&self, offset: &RbExpr, length: Option<&RbExpr>) -> Self {
@@ -82,7 +87,7 @@ impl RbExpr {
         };
         self.inner
             .clone()
-            .arr()
+            .list()
             .slice(offset.inner.clone(), length)
             .into()
     }
@@ -90,23 +95,23 @@ impl RbExpr {
     pub fn list_sort(&self, reverse: bool) -> Self {
         self.inner
             .clone()
-            .arr()
+            .list()
             .sort(SortOptions {
                 descending: reverse,
                 ..Default::default()
             })
-            .with_fmt("arr.sort")
+            .with_fmt("list.sort")
             .into()
     }
 
     pub fn list_sum(&self) -> Self {
-        self.inner.clone().arr().sum().with_fmt("arr.sum").into()
+        self.inner.clone().list().sum().with_fmt("list.sum").into()
     }
 
     pub fn list_take(&self, index: &RbExpr, null_on_oob: bool) -> Self {
         self.inner
             .clone()
-            .arr()
+            .list()
             .take(index.inner.clone(), null_on_oob)
             .into()
     }
@@ -129,7 +134,7 @@ impl RbExpr {
         Ok(self
             .inner
             .clone()
-            .arr()
+            .list()
             .to_struct(width_strat.0, name_gen, upper_bound)
             .into())
     }
@@ -138,9 +143,9 @@ impl RbExpr {
         let e = self.inner.clone();
 
         if maintain_order {
-            e.arr().unique_stable().into()
+            e.list().unique_stable().into()
         } else {
-            e.arr().unique().into()
+            e.list().unique().into()
         }
     }
 }

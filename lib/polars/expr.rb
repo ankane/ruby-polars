@@ -362,7 +362,7 @@ module Polars
       if columns.is_a?(String)
         columns = [columns]
         return wrap_expr(_rbexpr.exclude(columns))
-      elsif !columns.is_a?(Array)
+      elsif !columns.is_a?(::Array)
         columns = [columns]
         return wrap_expr(_rbexpr.exclude_dtype(columns))
       end
@@ -820,18 +820,18 @@ module Polars
     #   df.select(Polars.repeat(nil, 3).append(Polars.col("a")).rechunk)
     #   # =>
     #   # shape: (6, 1)
-    #   # ┌─────────┐
-    #   # │ literal │
-    #   # │ ---     │
-    #   # │ i64     │
-    #   # ╞═════════╡
-    #   # │ null    │
-    #   # │ null    │
-    #   # │ null    │
-    #   # │ 1       │
-    #   # │ 1       │
-    #   # │ 2       │
-    #   # └─────────┘
+    #   # ┌────────┐
+    #   # │ repeat │
+    #   # │ ---    │
+    #   # │ i64    │
+    #   # ╞════════╡
+    #   # │ null   │
+    #   # │ null   │
+    #   # │ null   │
+    #   # │ 1      │
+    #   # │ 1      │
+    #   # │ 2      │
+    #   # └────────┘
     def rechunk
       wrap_expr(_rbexpr.rechunk)
     end
@@ -1534,10 +1534,10 @@ module Polars
     #   # │ two   │
     #   # └───────┘
     def sort_by(by, reverse: false)
-      if !by.is_a?(Array)
+      if !by.is_a?(::Array)
         by = [by]
       end
-      if !reverse.is_a?(Array)
+      if !reverse.is_a?(::Array)
         reverse = [reverse]
       end
       by = Utils.selection_to_rbexpr_list(by)
@@ -1578,7 +1578,7 @@ module Polars
     #   # │ two   ┆ 99    │
     #   # └───────┴───────┘
     def take(indices)
-      if indices.is_a?(Array)
+      if indices.is_a?(::Array)
         indices_lit = Polars.lit(Series.new("", indices, dtype: :u32))
       else
         indices_lit = Utils.expr_to_lit_or_expr(indices, str_to_lit: false)
@@ -2616,25 +2616,23 @@ module Polars
     # @return [Expr]
     #
     # @example
-    #   df = Polars::DataFrame.new({"foo" => ["hello", "world"]})
-    #   df.select(Polars.col("foo").flatten)
-    #   # =>
-    #   # shape: (10, 1)
-    #   # ┌─────┐
-    #   # │ foo │
-    #   # │ --- │
-    #   # │ str │
-    #   # ╞═════╡
-    #   # │ h   │
-    #   # │ e   │
-    #   # │ l   │
-    #   # │ l   │
-    #   # │ …   │
-    #   # │ o   │
-    #   # │ r   │
-    #   # │ l   │
-    #   # │ d   │
-    #   # └─────┘
+    #  df = Polars::DataFrame.new(
+    #    {
+    #      "group" => ["a", "b", "b"],
+    #      "values" => [[1, 2], [2, 3], [4]]
+    #    }
+    #  )
+    #  df.groupby("group").agg(Polars.col("values").flatten)
+    #  # =>
+    #  # shape: (2, 2)
+    #  # ┌───────┬───────────┐
+    #  # │ group ┆ values    │
+    #  # │ ---   ┆ ---       │
+    #  # │ str   ┆ list[i64] │
+    #  # ╞═══════╪═══════════╡
+    #  # │ a     ┆ [1, 2]    │
+    #  # │ b     ┆ [2, 3, 4] │
+    #  # └───────┴───────────┘
     def flatten
       wrap_expr(_rbexpr.explode)
     end
@@ -2798,7 +2796,7 @@ module Polars
     #   # │ false    │
     #   # └──────────┘
     def is_in(other)
-      if other.is_a?(Array)
+      if other.is_a?(::Array)
         if other.length == 0
           other = Polars.lit(nil)
         else
@@ -4929,8 +4927,8 @@ module Polars
     #
     # Enables downstream code to user fast paths for sorted arrays.
     #
-    # @param reverse [Boolean]
-    #   If the `Series` order is reversed, e.g. descending.
+    # @param descending [Boolean]
+    #   Whether the `Series` order is descending.
     #
     # @return [Expr]
     #
@@ -4950,9 +4948,9 @@ module Polars
     #   # ╞════════╡
     #   # │ 3      │
     #   # └────────┘
-    # def set_sorted(reverse: false)
-    #   map { |s| s.set_sorted(reverse) }
-    # end
+    def set_sorted(descending: false)
+      wrap_expr(_rbexpr.set_sorted_flag(descending))
+    end
 
     # Aggregate to list.
     #
@@ -4965,7 +4963,7 @@ module Polars
     #       "b" => [4, 5, 6]
     #     }
     #   )
-    #   df.select(Polars.all.list)
+    #   df.select(Polars.all.implode)
     #   # =>
     #   # shape: (1, 2)
     #   # ┌───────────┬───────────┐
@@ -4978,7 +4976,6 @@ module Polars
     def implode
       wrap_expr(_rbexpr.implode)
     end
-    alias_method :list, :implode
 
     # Shrink numeric columns to the minimal required datatype.
     #
@@ -5018,8 +5015,15 @@ module Polars
     # Create an object namespace of all list related methods.
     #
     # @return [ListExpr]
-    def arr
+    def list
       ListExpr.new(self)
+    end
+
+    # Create an object namespace of all array related methods.
+    #
+    # @return [ArrayExpr]
+    def arr
+      ArrayExpr.new(self)
     end
 
     # Create an object namespace of all binary related methods.

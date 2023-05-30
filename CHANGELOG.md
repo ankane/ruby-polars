@@ -1,8 +1,12 @@
-## 0.5.1 (unreleased)
+## 0.6.0 (unreleased)
 
+- Updated Polars to 0.30.0
+- Added `Array` type
 - Added support for creating series with `Datetime` type
 - Improved support for `Decimal` type
+- Changed `arr` to `list` for `Series` and `Expr`
 - Fixed error with `groupby_dynamic` method
+- Removed `agg_list` method from `GroupBy`
 
 ## 0.5.0 (2023-05-15)
 

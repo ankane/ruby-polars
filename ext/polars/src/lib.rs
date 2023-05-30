@@ -330,13 +330,14 @@ fn init() -> RbResult<()> {
     class.define_method("cumprod", method!(RbExpr::cumprod, 1))?;
     class.define_method("product", method!(RbExpr::product, 0))?;
     class.define_method("shrink_dtype", method!(RbExpr::shrink_dtype, 0))?;
-    class.define_method("str_parse_date", method!(RbExpr::str_to_date, 4))?;
-    class.define_method("str_parse_datetime", method!(RbExpr::str_to_datetime, 8))?;
-    class.define_method("str_parse_time", method!(RbExpr::str_to_time, 3))?;
+    class.define_method("str_to_date", method!(RbExpr::str_to_date, 4))?;
+    class.define_method("str_to_datetime", method!(RbExpr::str_to_datetime, 6))?;
+    class.define_method("str_to_time", method!(RbExpr::str_to_time, 3))?;
     class.define_method("str_strip", method!(RbExpr::str_strip, 1))?;
     class.define_method("str_rstrip", method!(RbExpr::str_rstrip, 1))?;
     class.define_method("str_lstrip", method!(RbExpr::str_lstrip, 1))?;
     class.define_method("str_slice", method!(RbExpr::str_slice, 2))?;
+    class.define_method("str_explode", method!(RbExpr::str_explode, 0))?;
     class.define_method("str_to_uppercase", method!(RbExpr::str_to_uppercase, 0))?;
     class.define_method("str_to_lowercase", method!(RbExpr::str_to_lowercase, 0))?;
     class.define_method("str_lengths", method!(RbExpr::str_lengths, 0))?;
@@ -349,6 +350,9 @@ fn init() -> RbResult<()> {
     class.define_method("str_contains", method!(RbExpr::str_contains, 3))?;
     class.define_method("str_ends_with", method!(RbExpr::str_ends_with, 1))?;
     class.define_method("str_starts_with", method!(RbExpr::str_starts_with, 1))?;
+    class.define_method("array_max", method!(RbExpr::array_max, 0))?;
+    class.define_method("array_min", method!(RbExpr::array_min, 0))?;
+    class.define_method("array_sum", method!(RbExpr::array_sum, 0))?;
     class.define_method("binary_contains", method!(RbExpr::bin_contains, 1))?;
     class.define_method("binary_ends_with", method!(RbExpr::bin_ends_with, 1))?;
     class.define_method("binary_starts_with", method!(RbExpr::bin_starts_with, 1))?;
@@ -517,6 +521,7 @@ fn init() -> RbResult<()> {
     class.define_method("exp", method!(RbExpr::exp, 0))?;
     class.define_method("entropy", method!(RbExpr::entropy, 2))?;
     class.define_method("_hash", method!(RbExpr::hash, 4))?;
+    class.define_method("set_sorted_flag", method!(RbExpr::set_sorted_flag, 1))?;
 
     // meta
     class.define_method("meta_pop", method!(RbExpr::meta_pop, 0))?;
@@ -598,7 +603,7 @@ fn init() -> RbResult<()> {
     class.define_method("filter", method!(RbLazyFrame::filter, 1))?;
     class.define_method("select", method!(RbLazyFrame::select, 1))?;
     class.define_method("groupby", method!(RbLazyFrame::groupby, 2))?;
-    class.define_method("groupby_rolling", method!(RbLazyFrame::groupby_rolling, 5))?;
+    class.define_method("groupby_rolling", method!(RbLazyFrame::groupby_rolling, 6))?;
     class.define_method("groupby_dynamic", method!(RbLazyFrame::groupby_dynamic, 9))?;
     class.define_method("with_context", method!(RbLazyFrame::with_context, 1))?;
     class.define_method("join_asof", method!(RbLazyFrame::join_asof, 11))?;
@@ -658,6 +663,7 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("new_null", function!(RbSeries::new_null, 3))?;
     class.define_singleton_method("new_object", function!(RbSeries::new_object, 3))?;
     class.define_singleton_method("new_series_list", function!(RbSeries::new_series_list, 3))?;
+    class.define_singleton_method("new_array", function!(RbSeries::new_array, 5))?;
     class.define_singleton_method("new_decimal", function!(RbSeries::new_decimal, 3))?;
     class.define_singleton_method("repeat", function!(RbSeries::repeat, 4))?;
     class.define_method("struct_unnest", method!(RbSeries::struct_unnest, 0))?;

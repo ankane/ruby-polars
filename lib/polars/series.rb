@@ -65,7 +65,7 @@ module Polars
           )
           .rename(name, in_place: true)
           ._s
-      elsif values.is_a?(Array)
+      elsif values.is_a?(::Array)
         self._s = sequence_to_rbseries(name, values, dtype: dtype, strict: strict, dtype_if_empty: dtype_if_empty)
       elsif defined?(Numo::NArray) && values.is_a?(Numo::NArray)
         self._s = numo_to_rbseries(name, values, strict: strict, nan_to_null: nan_to_null)
@@ -335,7 +335,7 @@ module Polars
     #
     # @return [Object]
     def []=(key, value)
-      if value.is_a?(Array)
+      if value.is_a?(::Array)
         if is_numeric || is_datelike
           set_at_idx(key, value)
           return
@@ -353,7 +353,7 @@ module Polars
         else
           raise Todo
         end
-      elsif key.is_a?(Array)
+      elsif key.is_a?(::Array)
         s = Utils.wrap_s(sequence_to_rbseries("", key, dtype: UInt32))
         self[s] = value
       elsif key.is_a?(Range)
@@ -1124,7 +1124,7 @@ module Polars
     #   #         3
     #   # ]
     def filter(predicate)
-      if predicate.is_a?(Array)
+      if predicate.is_a?(::Array)
         predicate = Series.new("", predicate)
       end
       Utils.wrap_s(_s.filter(predicate._s))
@@ -3581,8 +3581,15 @@ module Polars
     # Create an object namespace of all list related methods.
     #
     # @return [ListNameSpace]
-    def arr
+    def list
       ListNameSpace.new(self)
+    end
+
+    # Create an object namespace of all array related methods.
+    #
+    # @return [ArrayNameSpace]
+    def arr
+      ArrayNameSpace.new(self)
     end
 
     # Create an object namespace of all binary related methods.
@@ -3877,7 +3884,7 @@ module Polars
           return s._s
         elsif defined?(Numo::NArray) && value.is_a?(Numo::NArray) && value.shape.length == 1
           raise Todo
-        elsif ruby_dtype == Array
+        elsif ruby_dtype == ::Array
           return sequence_from_anyvalue_or_object(name, values)
         elsif ruby_dtype == Series
           return RbSeries.new_series_list(name, values.map(&:_s), strict)
@@ -3948,7 +3955,11 @@ module Polars
     }
 
     def polars_type_to_constructor(dtype)
-      if dtype.is_a?(Class) && dtype < DataType
+      if dtype == Array || dtype.is_a?(Array)
+        lambda do |name, values, strict|
+          RbSeries.new_array(dtype.width, dtype.inner, name, values, strict)
+        end
+      elsif dtype.is_a?(Class) && dtype < DataType
         POLARS_TYPE_TO_CONSTRUCTOR.fetch(dtype)
       elsif dtype.is_a?(DataType)
         POLARS_TYPE_TO_CONSTRUCTOR.fetch(dtype.class)

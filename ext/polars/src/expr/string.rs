@@ -25,7 +25,6 @@ impl RbExpr {
         self.inner.clone().str().to_date(options).into()
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn str_to_datetime(
         &self,
         format: Option<String>,
@@ -34,16 +33,12 @@ impl RbExpr {
         strict: bool,
         exact: bool,
         cache: bool,
-        utc: bool,
-        tz_aware: bool,
     ) -> Self {
         let options = StrptimeOptions {
             format,
             strict,
             exact,
             cache,
-            tz_aware,
-            utc,
         };
         self.inner
             .clone()
@@ -85,6 +80,10 @@ impl RbExpr {
             .map(function, GetOutput::from_type(DataType::Utf8))
             .with_fmt("str.slice")
             .into()
+    }
+
+    pub fn str_explode(&self) -> Self {
+        self.inner.clone().str().explode().into()
     }
 
     pub fn str_to_uppercase(&self) -> Self {

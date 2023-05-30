@@ -346,6 +346,22 @@ impl RbSeries {
                     }
                     v.into_value()
                 }
+                DataType::Array(_, _) => {
+                    let v = RArray::new();
+                    let ca = series.array().unwrap();
+                    for opt_s in ca.amortized_iter() {
+                        match opt_s {
+                            None => {
+                                v.push(QNIL).unwrap();
+                            }
+                            Some(s) => {
+                                let rblst = to_a_recursive(s.as_ref());
+                                v.push(rblst).unwrap();
+                            }
+                        }
+                    }
+                    v.into_value()
+                }
                 DataType::Date => {
                     let ca = series.date().unwrap();
                     return Wrap(ca).into_value();

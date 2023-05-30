@@ -14,7 +14,7 @@ module Polars
 
       if name.is_a?(DataType)
         Utils.wrap_expr(_dtype_cols([name]))
-      elsif name.is_a?(Array)
+      elsif name.is_a?(::Array)
         if name.length == 0 || Utils.strlike?(name[0])
           name = name.map { |v| v.is_a?(Symbol) ? v.to_s : v }
           Utils.wrap_expr(RbExpr.cols(name))
@@ -36,7 +36,7 @@ module Polars
     # @example A horizontal rank computation by taking the elements of a list
     #   df = Polars::DataFrame.new({"a" => [1, 8, 3], "b" => [4, 5, 2]})
     #   df.with_column(
-    #     Polars.concat_list(["a", "b"]).arr.eval(Polars.element.rank).alias("rank")
+    #     Polars.concat_list(["a", "b"]).list.eval(Polars.element.rank).alias("rank")
     #   )
     #   # =>
     #   # shape: (3, 3)
@@ -156,7 +156,7 @@ module Polars
         column.sum
       elsif Utils.strlike?(column)
         col(column.to_s).sum
-      elsif column.is_a?(Array)
+      elsif column.is_a?(::Array)
         exprs = Utils.selection_to_rbexpr_list(column)
         # TODO
         Utils.wrap_expr(_sum_exprs(exprs))
@@ -625,23 +625,42 @@ module Polars
     # @return [Expr, Series]
     #
     # @example
-    #   df.lazy.filter(Polars.col("foo") < Polars.arange(0, 100)).collect
+    #   Polars.arange(0, 3, eager: true)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'arange' [i64]
+    #   # [
+    #   #         0
+    #   #         1
+    #   #         2
+    #   # ]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2], "b" => [3, 4]})
+    #   df.select(Polars.arange(Polars.col("a"), Polars.col("b")))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌───────────┐
+    #   # │ arange    │
+    #   # │ ---       │
+    #   # │ list[i64] │
+    #   # ╞═══════════╡
+    #   # │ [1, 2]    │
+    #   # │ [2, 3]    │
+    #   # └───────────┘
     def arange(low, high, step: 1, eager: false, dtype: nil)
       low = Utils.expr_to_lit_or_expr(low, str_to_lit: false)
       high = Utils.expr_to_lit_or_expr(high, str_to_lit: false)
       range_expr = Utils.wrap_expr(RbExpr.arange(low._rbexpr, high._rbexpr, step))
 
-      if !dtype.nil? && dtype != "i64"
+      if !dtype.nil? && !["i64", Int64].include?(dtype)
         range_expr = range_expr.cast(dtype)
       end
 
       if !eager
         range_expr
       else
-        DataFrame.new
-          .select(range_expr)
-          .to_series
-          .rename("arange", in_place: true)
+        DataFrame.new.select(range_expr.alias("arange")).to_series
       end
     end
 
@@ -658,7 +677,7 @@ module Polars
     #
     # @return [Expr]
     def arg_sort_by(exprs, reverse: false)
-      if !exprs.is_a?(Array)
+      if !exprs.is_a?(::Array)
         exprs = [exprs]
       end
       if reverse == true || reverse == false
@@ -1124,13 +1143,11 @@ module Polars
       end
 
       if unit == "d"
-        expr = column.cast(:date)
+        expr = column.cast(Date)
       elsif unit == "s"
-        raise Todo
-        # expr = (column.cast(:i64) * 1_000_000).cast(Datetime("us"))
+        expr = (column.cast(Int64) * 1_000_000).cast(Datetime.new("us"))
       elsif Utils::DTYPE_TEMPORAL_UNITS.include?(unit)
-        raise Todo
-        # expr = column.cast(Datetime(unit))
+        expr = column.cast(Datetime.new(unit))
       else
         raise ArgumentError, "'unit' must be one of {{'ns', 'us', 'ms', 's', 'd'}}, got '#{unit}'."
       end

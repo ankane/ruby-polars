@@ -1,6 +1,14 @@
 require_relative "test_helper"
 
 class DocsTest < Minitest::Test
+  def test_array_expr
+    assert_docs Polars::ArrayExpr
+  end
+
+  def test_array_name_space
+    assert_docs Polars::ArrayNameSpace
+  end
+
   def test_binary_expr
     assert_docs Polars::BinaryExpr
   end
@@ -125,7 +133,7 @@ class DocsTest < Minitest::Test
     return if [:read_csv_batched, :sink_parquet].include?(method.name)
 
     # TODO fix
-    return if [:align_frames, :from_epoch, :coalesce, :cumsum, :arange].include?(method.name)
+    return if [:align_frames, :coalesce, :cumsum].include?(method.name)
 
     code = ""
     method.tags(:example).each do |example|
@@ -143,7 +151,7 @@ class DocsTest < Minitest::Test
         end
 
         # non-deterministic output
-        next if [:sort, :sample, :mode, :duration, :_hash, :hash_rows].include?(method.name)
+        next if [:sort, :sample, :mode, :duration, :_hash, :hash_rows, :flatten].include?(method.name)
 
         # check output
         lines = code.split("\n")

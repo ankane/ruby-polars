@@ -1,10 +1,10 @@
 use magnus::RArray;
 use polars_core::prelude::*;
 
-use crate::conversion::{slice_extract_wrapped, Wrap};
+use crate::conversion::{slice_extract_wrapped, vec_extract_wrapped, Wrap};
 use crate::prelude::ObjectValue;
 use crate::series::to_series_collection;
-use crate::{RbPolarsErr, RbResult, RbSeries};
+use crate::{RbPolarsErr, RbResult, RbSeries, RbValueError};
 
 impl RbSeries {
     pub fn new_opt_bool(name: String, obj: RArray, strict: bool) -> RbResult<RbSeries> {
@@ -135,6 +135,32 @@ impl RbSeries {
     pub fn new_series_list(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
         let series_vec = to_series_collection(val)?;
         Ok(Series::new(&name, &series_vec).into())
+    }
+
+    pub fn new_array(
+        width: usize,
+        inner: Option<Wrap<DataType>>,
+        name: String,
+        val: RArray,
+        _strict: bool,
+    ) -> RbResult<Self> {
+        let val = vec_wrap_any_value(val)?;
+        let val = vec_extract_wrapped(val);
+        let out = Series::new(&name, &val);
+        match out.dtype() {
+            DataType::List(list_inner) => {
+                let out = out
+                    .cast(&DataType::Array(
+                        Box::new(inner.map(|dt| dt.0).unwrap_or(*list_inner.clone())),
+                        width,
+                    ))
+                    .map_err(RbPolarsErr::from)?;
+                Ok(out.into())
+            }
+            _ => Err(RbValueError::new_err(
+                "could not create Array from input".to_string(),
+            )),
+        }
     }
 
     pub fn new_decimal(name: String, val: RArray, strict: bool) -> RbResult<Self> {

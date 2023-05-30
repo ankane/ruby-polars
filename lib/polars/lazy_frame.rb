@@ -4,6 +4,22 @@ module Polars
     # @private
     attr_accessor :_ldf
 
+    # Create a new LazyFrame.
+    def initialize(data = nil, schema: nil, schema_overrides: nil, orient: nil, infer_schema_length: 100, nan_to_null: false)
+      self._ldf = (
+        DataFrame.new(
+          data,
+          schema: schema,
+          schema_overrides: schema_overrides,
+          orient: orient,
+          infer_schema_length: infer_schema_length,
+          nan_to_null: nan_to_null
+        )
+        .lazy
+        ._ldf
+      )
+    end
+
     # @private
     def self._from_rbldf(rb_ldf)
       ldf = LazyFrame.allocate
@@ -921,6 +937,12 @@ module Polars
     #   Define whether the temporal window interval is closed or not.
     # @param by [Object]
     #   Also group by this column/these columns.
+    # @param check_sorted [Boolean]
+    #   When the `by` argument is given, polars can not check sortedness
+    #   by the metadata and has to do a full scan on the index column to
+    #   verify data is sorted. This is expensive. If you are sure the
+    #   data within the by groups is sorted, you can set this to `false`.
+    #   Doing so incorrectly will lead to incorrect output
     #
     # @return [LazyFrame]
     #
@@ -933,8 +955,8 @@ module Polars
     #     "2020-01-03 19:45:32",
     #     "2020-01-08 23:16:43"
     #   ]
-    #   df = Polars::DataFrame.new({"dt" => dates, "a" => [3, 7, 5, 9, 2, 1]}).with_column(
-    #     Polars.col("dt").str.strptime(Polars::Datetime)
+    #   df = Polars::LazyFrame.new({"dt" => dates, "a" => [3, 7, 5, 9, 2, 1]}).with_column(
+    #     Polars.col("dt").str.strptime(Polars::Datetime).set_sorted
     #   )
     #   df.groupby_rolling(index_column: "dt", period: "2d").agg(
     #     [
@@ -942,7 +964,7 @@ module Polars
     #       Polars.min("a").alias("min_a"),
     #       Polars.max("a").alias("max_a")
     #     ]
-    #   )
+    #   ).collect
     #   # =>
     #   # shape: (6, 4)
     #   # ┌─────────────────────┬───────┬───────┬───────┐
@@ -962,7 +984,8 @@ module Polars
       period:,
       offset: nil,
       closed: "right",
-      by: nil
+      by: nil,
+      check_sorted: true
     )
       index_column = Utils.expr_to_lit_or_expr(index_column, str_to_lit: false)
       if offset.nil?
@@ -974,7 +997,7 @@ module Polars
       offset = Utils._timedelta_to_pl_duration(offset)
 
       lgb = _ldf.groupby_rolling(
-        index_column._rbexpr, period, offset, closed, rbexprs_by
+        index_column._rbexpr, period, offset, closed, rbexprs_by, check_sorted
       )
       LazyGroupBy.new(lgb, self.class)
     end
@@ -1348,7 +1371,7 @@ module Polars
       if by.is_a?(String)
         by_left_ = [by]
         by_right_ = [by]
-      elsif by.is_a?(Array)
+      elsif by.is_a?(::Array)
         by_left_ = by
         by_right_ = by
       end
@@ -1616,7 +1639,7 @@ module Polars
     #   # │ null │
     #   # └──────┘
     def with_context(other)
-      if !other.is_a?(Array)
+      if !other.is_a?(::Array)
         other = [other]
       end
 
@@ -2225,7 +2248,7 @@ module Polars
     #
     # @return [LazyFrame]
     def unique(maintain_order: true, subset: nil, keep: "first")
-      if !subset.nil? && !subset.is_a?(Array)
+      if !subset.nil? && !subset.is_a?(::Array)
         subset = [subset]
       end
       _from_rbldf(_ldf.unique(maintain_order, subset, keep))
@@ -2258,7 +2281,7 @@ module Polars
     #   # │ 3   ┆ 8   ┆ c   │
     #   # └─────┴─────┴─────┘
     def drop_nulls(subset: nil)
-      if !subset.nil? && !subset.is_a?(Array)
+      if !subset.nil? && !subset.is_a?(::Array)
         subset = [subset]
       end
       _from_rbldf(_ldf.drop_nulls(subset))
@@ -2419,6 +2442,38 @@ module Polars
       end
       _from_rbldf(_ldf.unnest(names))
     end
+
+    # TODO
+    # def merge_sorted
+    # end
+
+    # Indicate that one or multiple columns are sorted.
+    #
+    # @param column [Object]
+    #   Columns that are sorted
+    # @param more_columns [Object]
+    #   Additional columns that are sorted, specified as positional arguments.
+    # @param descending [Boolean]
+    #   Whether the columns are sorted in descending order.
+    #
+    # @return [LazyFrame]
+    def set_sorted(
+      column,
+      *more_columns,
+      descending: false
+    )
+      columns = Utils.selection_to_rbexpr_list(column)
+      if more_columns.any?
+        columns.concat(Utils.selection_to_rbexpr_list(more_columns))
+      end
+      with_columns(
+        columns.map { |e| Utils.wrap_expr(e).set_sorted(descending: descending) }
+      )
+    end
+
+    # TODO
+    # def update
+    # end
 
     private
 

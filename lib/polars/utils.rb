@@ -155,7 +155,7 @@ module Polars
         Datetime.new("ns")
       elsif ruby_dtype == ::Date
         Date
-      elsif ruby_dtype == Array
+      elsif ruby_dtype == ::Array
         List
       elsif ruby_dtype == NilClass
         Null
@@ -242,30 +242,30 @@ module Polars
     end
 
     def self.is_bool_sequence(val)
-      val.is_a?(Array) && val.all? { |x| x == true || x == false }
+      val.is_a?(::Array) && val.all? { |x| x == true || x == false }
     end
 
     def self.is_dtype_sequence(val)
-      val.is_a?(Array) && val.all? { |x| is_polars_dtype(x) }
+      val.is_a?(::Array) && val.all? { |x| is_polars_dtype(x) }
     end
 
     def self.is_int_sequence(val)
-      val.is_a?(Array) && _is_iterable_of(val, Integer)
+      val.is_a?(::Array) && _is_iterable_of(val, Integer)
     end
 
     def self.is_expr_sequence(val)
-      val.is_a?(Array) && _is_iterable_of(val, Expr)
+      val.is_a?(::Array) && _is_iterable_of(val, Expr)
     end
 
     def self.is_rbexpr_sequence(val)
-      val.is_a?(Array) && _is_iterable_of(val, RbExpr)
+      val.is_a?(::Array) && _is_iterable_of(val, RbExpr)
     end
 
     def self.is_str_sequence(val, allow_str: false)
       if allow_str == false && val.is_a?(String)
         false
       else
-        val.is_a?(Array) && _is_iterable_of(val, String)
+        val.is_a?(::Array) && _is_iterable_of(val, String)
       end
     end
 

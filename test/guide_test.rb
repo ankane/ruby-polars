@@ -74,7 +74,7 @@ class GuideTest < Minitest::Test
     output df.select([
       Polars.col("*"),
       Polars.col("random").sum.over("groups").alias("sum[random]/groups"),
-      Polars.col("random").list.over("names").alias("random/name")
+      Polars.col("random").implode.over("names").alias("random/name")
     ])
   end
 
@@ -124,7 +124,7 @@ class GuideTest < Minitest::Test
         Polars.concat_list(Polars.all.exclude("student")).alias("all_grades")
       ).select([
         Polars.all.exclude("all_grades"),
-        Polars.col("all_grades").arr.eval(rank_pct, parallel: true).alias("grades_rank")
+        Polars.col("all_grades").list.eval(rank_pct, parallel: true).alias("grades_rank")
       ])
   end
 
@@ -243,7 +243,7 @@ class GuideTest < Minitest::Test
 
     output df.groupby("fruits")
       .agg([
-        Polars.col("B").filter(Polars.col("B") > 1).list.keep_name,
+        Polars.col("B").filter(Polars.col("B") > 1).implode.keep_name,
       ])
 
     output df.groupby("fruits")

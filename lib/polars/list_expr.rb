@@ -15,7 +15,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [1, 2], "bar" => [["a", "b"], ["c"]]})
-    #   df.select(Polars.col("bar").arr.lengths)
+    #   df.select(Polars.col("bar").list.lengths)
     #   # =>
     #   # shape: (2, 1)
     #   # ┌─────┐
@@ -36,7 +36,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"values" => [[1], [2, 3]]})
-    #   df.select(Polars.col("values").arr.sum)
+    #   df.select(Polars.col("values").list.sum)
     #   # =>
     #   # shape: (2, 1)
     #   # ┌────────┐
@@ -57,7 +57,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"values" => [[1], [2, 3]]})
-    #   df.select(Polars.col("values").arr.max)
+    #   df.select(Polars.col("values").list.max)
     #   # =>
     #   # shape: (2, 1)
     #   # ┌────────┐
@@ -78,7 +78,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"values" => [[1], [2, 3]]})
-    #   df.select(Polars.col("values").arr.min)
+    #   df.select(Polars.col("values").list.min)
     #   # =>
     #   # shape: (2, 1)
     #   # ┌────────┐
@@ -99,7 +99,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"values" => [[1], [2, 3]]})
-    #   df.select(Polars.col("values").arr.mean)
+    #   df.select(Polars.col("values").list.mean)
     #   # =>
     #   # shape: (2, 1)
     #   # ┌────────┐
@@ -124,7 +124,7 @@ module Polars
     #       "a" => [[3, 2, 1], [9, 1, 2]]
     #     }
     #   )
-    #   df.select(Polars.col("a").arr.sort)
+    #   df.select(Polars.col("a").list.sort)
     #   # =>
     #   # shape: (2, 1)
     #   # ┌───────────┐
@@ -149,7 +149,7 @@ module Polars
     #       "a" => [[3, 2, 1], [9, 1, 2]]
     #     }
     #   )
-    #   df.select(Polars.col("a").arr.reverse)
+    #   df.select(Polars.col("a").list.reverse)
     #   # =>
     #   # shape: (2, 1)
     #   # ┌───────────┐
@@ -174,7 +174,7 @@ module Polars
     #       "a" => [[1, 1, 2]]
     #     }
     #   )
-    #   df.select(Polars.col("a").arr.unique)
+    #   df.select(Polars.col("a").list.unique)
     #   # =>
     #   # shape: (1, 1)
     #   # ┌───────────┐
@@ -202,7 +202,7 @@ module Polars
     #       "b" => [["b", "c"], ["y", "z"]]
     #     }
     #   )
-    #   df.select(Polars.col("a").arr.concat("b"))
+    #   df.select(Polars.col("a").list.concat("b"))
     #   # =>
     #   # shape: (2, 1)
     #   # ┌─────────────────┐
@@ -214,11 +214,11 @@ module Polars
     #   # │ ["x", "y", "z"] │
     #   # └─────────────────┘
     def concat(other)
-      if other.is_a?(Array) && ![Expr, String, Series].any? { |c| other[0].is_a?(c) }
+      if other.is_a?(::Array) && ![Expr, String, Series].any? { |c| other[0].is_a?(c) }
         return concat(Series.new([other]))
       end
 
-      if !other.is_a?(Array)
+      if !other.is_a?(::Array)
         other_list = [other]
       else
         other_list = other.dup
@@ -241,7 +241,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [[3, 2, 1], [], [1, 2]]})
-    #   df.select(Polars.col("foo").arr.get(0))
+    #   df.select(Polars.col("foo").list.get(0))
     #   # =>
     #   # shape: (3, 1)
     #   # ┌──────┐
@@ -280,7 +280,7 @@ module Polars
     #
     # @return [Expr]
     def take(index, null_on_oob: false)
-      if index.is_a?(Array)
+      if index.is_a?(::Array)
         index = Series.new(index)
       end
       index = Utils.expr_to_lit_or_expr(index, str_to_lit: false)._rbexpr
@@ -293,7 +293,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [[3, 2, 1], [], [1, 2]]})
-    #   df.select(Polars.col("foo").arr.first)
+    #   df.select(Polars.col("foo").list.first)
     #   # =>
     #   # shape: (3, 1)
     #   # ┌──────┐
@@ -315,7 +315,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [[3, 2, 1], [], [1, 2]]})
-    #   df.select(Polars.col("foo").arr.last)
+    #   df.select(Polars.col("foo").list.last)
     #   # =>
     #   # shape: (3, 1)
     #   # ┌──────┐
@@ -340,7 +340,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [[3, 2, 1], [], [1, 2]]})
-    #   df.select(Polars.col("foo").arr.contains(1))
+    #   df.select(Polars.col("foo").list.contains(1))
     #   # =>
     #   # shape: (3, 1)
     #   # ┌───────┐
@@ -367,7 +367,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"s" => [["a", "b", "c"], ["x", "y"]]})
-    #   df.select(Polars.col("s").arr.join(" "))
+    #   df.select(Polars.col("s").list.join(" "))
     #   # =>
     #   # shape: (2, 1)
     #   # ┌───────┐
@@ -392,7 +392,7 @@ module Polars
     #       "a" => [[1, 2], [2, 1]]
     #     }
     #   )
-    #   df.select(Polars.col("a").arr.arg_min)
+    #   df.select(Polars.col("a").list.arg_min)
     #   # =>
     #   # shape: (2, 1)
     #   # ┌─────┐
@@ -417,7 +417,7 @@ module Polars
     #       "a" => [[1, 2], [2, 1]]
     #     }
     #   )
-    #   df.select(Polars.col("a").arr.arg_max)
+    #   df.select(Polars.col("a").list.arg_max)
     #   # =>
     #   # shape: (2, 1)
     #   # ┌─────┐
@@ -443,7 +443,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [[1, 2, 3, 4], [10, 2, 1]])
-    #   s.arr.diff
+    #   s.list.diff
     #   # =>
     #   # shape: (2,)
     #   # Series: 'a' [list[i64]]
@@ -464,7 +464,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [[1, 2, 3, 4], [10, 2, 1]])
-    #   s.arr.shift
+    #   s.list.shift
     #   # =>
     #   # shape: (2,)
     #   # Series: 'a' [list[i64]]
@@ -488,7 +488,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [[1, 2, 3, 4], [10, 2, 1]])
-    #   s.arr.slice(1, 2)
+    #   s.list.slice(1, 2)
     #   # =>
     #   # shape: (2,)
     #   # Series: 'a' [list[i64]]
@@ -511,7 +511,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [[1, 2, 3, 4], [10, 2, 1]])
-    #   s.arr.head(2)
+    #   s.list.head(2)
     #   # =>
     #   # shape: (2,)
     #   # Series: 'a' [list[i64]]
@@ -532,7 +532,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [[1, 2, 3, 4], [10, 2, 1]])
-    #   s.arr.tail(2)
+    #   s.list.tail(2)
     #   # =>
     #   # shape: (2,)
     #   # Series: 'a' [list[i64]]
@@ -554,7 +554,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"listcol" => [[0], [1], [1, 2, 3, 2], [1, 2, 1], [4, 4]]})
-    #   df.select(Polars.col("listcol").arr.count_match(2).alias("number_of_twos"))
+    #   df.select(Polars.col("listcol").list.count_match(2).alias("number_of_twos"))
     #   # =>
     #   # shape: (5, 1)
     #   # ┌────────────────┐
@@ -584,7 +584,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"a" => [[1, 2, 3], [1, 2]]})
-    #   df.select([Polars.col("a").arr.to_struct])
+    #   df.select([Polars.col("a").list.to_struct])
     #   # =>
     #   # shape: (2, 1)
     #   # ┌────────────┐
@@ -617,7 +617,7 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new({"a" => [1, 8, 3], "b" => [4, 5, 2]})
     #   df.with_column(
-    #     Polars.concat_list(["a", "b"]).arr.eval(Polars.element.rank).alias("rank")
+    #     Polars.concat_list(["a", "b"]).list.eval(Polars.element.rank).alias("rank")
     #   )
     #   # =>
     #   # shape: (3, 3)

@@ -36,7 +36,7 @@ module Polars
       elsif data.is_a?(Hash)
         data = data.transform_keys { |v| v.is_a?(Symbol) ? v.to_s : v }
         self._df = self.class.hash_to_rbdf(data, schema: schema, schema_overrides: schema_overrides, nan_to_null: nan_to_null)
-      elsif data.is_a?(Array)
+      elsif data.is_a?(::Array)
         self._df = self.class.sequence_to_rbdf(data, schema: schema, schema_overrides: schema_overrides, orient: orient, infer_schema_length: infer_schema_length)
       elsif data.is_a?(Series)
         self._df = self.class.series_to_rbdf(data, schema: schema, schema_overrides: schema_overrides)
@@ -116,7 +116,7 @@ module Polars
           dtypes.each do|k, v|
             dtype_list << [k, Utils.rb_type_to_dtype(v)]
           end
-        elsif dtypes.is_a?(Array)
+        elsif dtypes.is_a?(::Array)
           dtype_slice = dtypes
         else
           raise ArgumentError, "dtype arg should be list or dict"
@@ -590,7 +590,7 @@ module Polars
 
         # df[2, ..] (select row as df)
         if row_selection.is_a?(Integer)
-          if col_selection.is_a?(Array)
+          if col_selection.is_a?(::Array)
             df = self[0.., col_selection]
             return df.slice(row_selection, 1)
           end
@@ -611,7 +611,7 @@ module Polars
           return series[row_selection]
         end
 
-        if col_selection.is_a?(Array)
+        if col_selection.is_a?(::Array)
           # df[.., [1, 2]]
           if Utils.is_int_sequence(col_selection)
             series_list = col_selection.map { |i| to_series(i) }
@@ -641,7 +641,7 @@ module Polars
           return Slice.new(self).apply(item)
         end
 
-        if item.is_a?(Array) && item.all? { |v| Utils.strlike?(v) }
+        if item.is_a?(::Array) && item.all? { |v| Utils.strlike?(v) }
           # select multiple columns
           # df[["foo", "bar"]]
           return _from_rbdf(_df.select(item.map(&:to_s)))
@@ -684,13 +684,13 @@ module Polars
       end
 
       if Utils.strlike?(key)
-        if value.is_a?(Array) || (defined?(Numo::NArray) && value.is_a?(Numo::NArray))
+        if value.is_a?(::Array) || (defined?(Numo::NArray) && value.is_a?(Numo::NArray))
           value = Series.new(value)
         elsif !value.is_a?(Series)
           value = Polars.lit(value)
         end
         self._df = with_column(value.alias(key.to_s))._df
-      elsif key.is_a?(Array)
+      elsif key.is_a?(::Array)
         row_selection, col_selection = key
 
         if Utils.strlike?(col_selection)
@@ -1491,7 +1491,7 @@ module Polars
     #   # │ 1   ┆ 6.0 ┆ a   │
     #   # └─────┴─────┴─────┘
     def sort(by, reverse: false, nulls_last: false)
-      if by.is_a?(Array) || by.is_a?(Expr)
+      if by.is_a?(::Array) || by.is_a?(Expr)
         lazy
           .sort(by, reverse: reverse, nulls_last: nulls_last)
           .collect(no_optimization: true, string_cache: false)
@@ -1899,6 +1899,12 @@ module Polars
     #   Define whether the temporal window interval is closed or not.
     # @param by [Object]
     #   Also group by this column/these columns.
+    # @param check_sorted [Boolean]
+    #   When the `by` argument is given, polars can not check sortedness
+    #   by the metadata and has to do a full scan on the index column to
+    #   verify data is sorted. This is expensive. If you are sure the
+    #   data within the by groups is sorted, you can set this to `false`.
+    #   Doing so incorrectly will lead to incorrect output
     #
     # @return [RollingGroupBy]
     #
@@ -1912,7 +1918,7 @@ module Polars
     #     "2020-01-08 23:16:43"
     #   ]
     #   df = Polars::DataFrame.new({"dt" => dates, "a" => [3, 7, 5, 9, 2, 1]}).with_column(
-    #     Polars.col("dt").str.strptime(Polars::Datetime)
+    #     Polars.col("dt").str.strptime(Polars::Datetime).set_sorted
     #   )
     #   df.groupby_rolling(index_column: "dt", period: "2d").agg(
     #     [
@@ -1940,9 +1946,10 @@ module Polars
       period:,
       offset: nil,
       closed: "right",
-      by: nil
+      by: nil,
+      check_sorted: true
     )
-      RollingGroupBy.new(self, index_column, period, offset, closed, by)
+      RollingGroupBy.new(self, index_column, period, offset, closed, by, check_sorted)
     end
 
     # Group based on a time value (or index value of type `:i32`, `:i64`).
@@ -2242,7 +2249,7 @@ module Polars
     #       "groups" => ["A", "B", "A", "B"],
     #       "values" => [0, 1, 2, 3]
     #     }
-    #   )
+    #   ).set_sorted("time")
     #   df.upsample(
     #     time_column: "time", every: "1mo", by: "groups", maintain_order: true
     #   ).select(Polars.all.forward_fill)
@@ -2360,7 +2367,7 @@ module Polars
     #       ],  # note record date: Jan 1st (sorted!)
     #       "gdp" => [4164, 4411, 4566, 4696]
     #     }
-    #   )
+    #   ).set_sorted("date")
     #   population = Polars::DataFrame.new(
     #     {
     #       "date" => [
@@ -2371,7 +2378,7 @@ module Polars
     #       ],  # note record date: May 12th (sorted!)
     #       "population" => [82.19, 82.66, 83.12, 83.52]
     #     }
-    #   )
+    #   ).set_sorted("date")
     #   population.join_asof(
     #     gdp, left_on: "date", right_on: "date", strategy: "backward"
     #   )
@@ -2674,7 +2681,7 @@ module Polars
     #   # │ 3   ┆ 8   ┆ c   ┆ 30    │
     #   # └─────┴─────┴─────┴───────┘
     def hstack(columns, in_place: false)
-      if !columns.is_a?(Array)
+      if !columns.is_a?(::Array)
         columns = columns.get_columns
       end
       if in_place
@@ -2804,7 +2811,7 @@ module Polars
     #   # │ 3   ┆ 8.0 │
     #   # └─────┴─────┘
     def drop(columns)
-      if columns.is_a?(Array)
+      if columns.is_a?(::Array)
         df = clone
         columns.each do |n|
           df._df.drop_in_place(n)
@@ -3317,7 +3324,7 @@ module Polars
       n_fill = n_cols * n_rows - height
 
       if n_fill > 0
-        if !fill_values.is_a?(Array)
+        if !fill_values.is_a?(::Array)
           fill_values = [fill_values] * df.width
         end
 
@@ -3429,7 +3436,7 @@ module Polars
     def partition_by(groups, maintain_order: true, as_dict: false)
       if groups.is_a?(String)
         groups = [groups]
-      elsif !groups.is_a?(Array)
+      elsif !groups.is_a?(::Array)
         groups = Array(groups)
       end
 
@@ -3716,7 +3723,7 @@ module Polars
     #   # │ 4   ┆ 13.0 ┆ true  ┆ 16.0 ┆ 6.5  ┆ false │
     #   # └─────┴──────┴───────┴──────┴──────┴───────┘
     def with_columns(exprs)
-      if !exprs.nil? && !exprs.is_a?(Array)
+      if !exprs.nil? && !exprs.is_a?(::Array)
         exprs = [exprs]
       end
       lazy
@@ -4189,7 +4196,7 @@ module Polars
         subset = [subset]
       end
 
-      if subset.is_a?(Array) && subset.length == 1
+      if subset.is_a?(::Array) && subset.length == 1
         expr = Utils.expr_to_lit_or_expr(subset[0], str_to_lit: false)
       else
         struct_fields = subset.nil? ? Polars.all : subset
@@ -4758,6 +4765,38 @@ module Polars
       _from_rbdf(_df.unnest(names))
     end
 
+    # TODO
+    # def corr
+    # end
+
+    # TODO
+    # def merge_sorted
+    # end
+
+    # Indicate that one or multiple columns are sorted.
+    #
+    # @param column [Object]
+    #   Columns that are sorted
+    # @param more_columns [Object]
+    #   Additional columns that are sorted, specified as positional arguments.
+    # @param descending [Boolean]
+    #   Whether the columns are sorted in descending order.
+    #
+    # @return [DataFrame]
+    def set_sorted(
+      column,
+      *more_columns,
+      descending: false
+    )
+      lazy
+        .set_sorted(column, *more_columns, descending: descending)
+        .collect(no_optimization: true)
+    end
+
+    # TODO
+    # def update
+    # end
+
     private
 
     def initialize_copy(other)
@@ -5012,7 +5051,7 @@ module Polars
           rbdf = _post_apply_columns(rbdf, column_names)
         end
         return rbdf
-      elsif data[0].is_a?(Array)
+      elsif data[0].is_a?(::Array)
         if orient.nil? && !columns.nil?
           orient = columns.length == data.length ? "col" : "row"
         end
@@ -5117,7 +5156,7 @@ module Polars
 
     def _prepare_other_arg(other)
       if !other.is_a?(Series)
-        if other.is_a?(Array)
+        if other.is_a?(::Array)
           raise ArgumentError, "Operation not supported."
         end
 

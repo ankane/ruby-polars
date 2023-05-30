@@ -41,7 +41,7 @@ module Polars
           dtypes.each do|k, v|
             dtype_list << [k, Utils.rb_type_to_dtype(v)]
           end
-        elsif dtypes.is_a?(Array)
+        elsif dtypes.is_a?(::Array)
           dtype_slice = dtypes
         else
           raise ArgumentError, "dtype arg should be list or dict"
