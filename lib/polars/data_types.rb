@@ -218,6 +218,18 @@ module Polars
       @inner = Utils.rb_type_to_dtype(inner)
     end
 
+    # TODO check width?
+    def ==(other)
+      if other.eql?(Array)
+        true
+      elsif other.is_a?(Array)
+        @inner.nil? || other.inner.nil? || @inner == other.inner
+      else
+        false
+      end
+    end
+
+    # TODO add width?
     def to_s
       "#{self.class.name}(#{inner})"
     end
