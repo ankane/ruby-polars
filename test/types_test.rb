@@ -11,6 +11,7 @@ class TypesTest < Minitest::Test
       b: true,
       i: 1,
       f: 1.5,
+      c: BigDecimal("1.5"),
       s: "one",
       n: "two".b,
       d: Date.today,
@@ -24,6 +25,8 @@ class TypesTest < Minitest::Test
     assert_equal Polars::Boolean, schema["b"]
     assert_equal Polars::Int64, schema["i"]
     assert_equal Polars::Float64, schema["f"]
+    # TODO fix
+    assert_equal Polars::Float64, schema["c"]
     assert_equal Polars::Utf8, schema["s"]
     assert_equal Polars::Binary, schema["n"]
     assert_equal Polars::Date, schema["d"]
