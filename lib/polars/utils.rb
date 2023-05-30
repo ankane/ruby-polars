@@ -41,14 +41,20 @@ module Polars
     end
 
     def self._datetime_to_pl_timestamp(dt, time_unit)
+      dt = dt.to_datetime.to_time
       if time_unit == "ns"
-        (dt.to_datetime.to_time.to_f * 1e9).to_i
+        nanos = dt.nsec
+        dt.to_i * 1_000_000_000 + nanos
       elsif time_unit == "us"
-        (dt.to_datetime.to_time.to_f * 1e6).to_i
+        micros = dt.usec
+        dt.to_i * 1_000_000 + micros
       elsif time_unit == "ms"
-        (dt.to_datetime.to_time.to_f * 1e3).to_i
+        millis = dt.usec / 1000
+        dt.to_i * 1_000 + millis
       elsif time_unit.nil?
-        (dt.to_datetime.to_time.to_f * 1e6).to_i
+        # Ruby has ns precision
+        nanos = dt.nsec
+        dt.to_i * 1_000_000_000 + nanos
       else
         raise ArgumentError, "time_unit must be one of {{'ns', 'us', 'ms'}}, got #{tu}"
       end
