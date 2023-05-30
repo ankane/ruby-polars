@@ -5,6 +5,7 @@
 - Added support for creating series with `Datetime` type
 - Improved support for `Decimal` type
 - Changed `arr` to `list` for `Series` and `Expr`
+- Changed series creation with `BigDecimal` objects to `Decimal` type
 - Fixed error with `groupby_dynamic` method
 - Removed `agg_list` method from `GroupBy`
 

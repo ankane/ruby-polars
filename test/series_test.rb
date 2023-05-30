@@ -94,9 +94,14 @@ class SeriesTest < Minitest::Test
     assert_series [1, nil, 3.5], s, dtype: Polars::Float64
   end
 
-  def test_new_object
+  def test_new_bigdecimal
     s = Polars::Series.new([BigDecimal("1"), nil, BigDecimal("3")])
-    assert_series [1, nil, 3], s, dtype: Polars::Object
+    assert_series [BigDecimal("1"), nil, BigDecimal("3")], s, dtype: Polars::Decimal
+  end
+
+  def test_new_object
+    s = Polars::Series.new([Rational(1), nil, Rational(2, 4)])
+    assert_series [1, nil, 0.5], s, dtype: Polars::Object
   end
 
   def test_new_empty

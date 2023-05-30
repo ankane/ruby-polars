@@ -3974,16 +3974,12 @@ module Polars
       Float => RbSeries.method(:new_opt_f64),
       Integer => RbSeries.method(:new_opt_i64),
       TrueClass => RbSeries.method(:new_opt_bool),
-      FalseClass => RbSeries.method(:new_opt_bool)
+      FalseClass => RbSeries.method(:new_opt_bool),
+      BigDecimal => RbSeries.method(:new_decimal)
     }
 
     def rb_type_to_constructor(dtype)
-      # TODO uncomment in 0.6.0
-      if false # dtype == BigDecimal
-        RbSeries.method(:new_decimal)
-      else
-        RB_TYPE_TO_CONSTRUCTOR.fetch(dtype)
-      end
+      RB_TYPE_TO_CONSTRUCTOR.fetch(dtype)
     rescue KeyError
       RbSeries.method(:new_object)
     end
