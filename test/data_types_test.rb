@@ -13,4 +13,10 @@ class DataTypesTest < Minitest::Test
     assert Polars::List.nested?
     assert Polars::List.new(Polars::Int64).nested?
   end
+
+  def test_to_s
+    assert_equal "Polars::Int64", Polars::Int64.to_s
+    assert_equal "Polars::List", Polars::List.to_s
+    assert_equal "Polars::List(Polars::Int64)", Polars::List.new(Polars::Int64).to_s
+  end
 end

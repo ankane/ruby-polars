@@ -156,8 +156,14 @@ module Polars
 
   # Nested list/array type.
   class List < NestedType
+    attr_reader :inner
+
     def initialize(inner)
       @inner = Utils.rb_type_to_dtype(inner)
+    end
+
+    def to_s
+      "#{self.class}(#{inner})"
     end
   end
 
