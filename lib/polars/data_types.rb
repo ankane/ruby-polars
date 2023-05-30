@@ -203,8 +203,7 @@ module Polars
     end
 
     def inspect
-      class_name = self.class.name
-      "#{class_name}(#{@name}: #{@dtype})"
+      "#{self.class}(#{@name.inspect}, #{@dtype})"
     end
   end
 
@@ -221,8 +220,7 @@ module Polars
     end
 
     def inspect
-      class_name = self.class.name
-      "#{class_name}(#{@fields})"
+      "#{self.class}(#{@fields})"
     end
 
     def to_schema
