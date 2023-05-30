@@ -131,6 +131,16 @@ module Polars
       @time_zone = time_zone
     end
 
+    def ==(other)
+      if other.eql?(Datetime)
+        true
+      elsif other.is_a?(Datetime)
+        time_unit == other.time_unit && time_zone == other.time_zone
+      else
+        false
+      end
+    end
+
     def to_s
       "#{self.class.name}(time_unit: #{time_unit.inspect}, time_zone: #{time_zone.inspect})"
     end

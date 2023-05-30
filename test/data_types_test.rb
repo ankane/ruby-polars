@@ -27,8 +27,18 @@ class DataTypesTest < Minitest::Test
     assert_equal %!Polars::Struct([Polars::Field("a", Polars::Int64)])!, Polars::Struct.new([Polars::Field.new("a", Polars::Int64)]).inspect
   end
 
-  def test_equal
+  def test_equal_integer
     assert_equal Polars::Int64, Polars::Int64
+  end
+
+  def test_equal_datetime
+    assert_equal Polars::Datetime, Polars::Datetime
+    assert_equal Polars::Datetime.new("ns"), Polars::Datetime.new("ns")
+    refute_equal Polars::Datetime.new("ns"), Polars::Datetime.new("us")
+    assert_equal Polars::Datetime.new("ns"), Polars::Datetime
+  end
+
+  def test_equal_list
     assert_equal Polars::List, Polars::List
     assert_equal Polars::List.new(Polars::Int64), Polars::List.new(Polars::Int64)
     refute_equal Polars::List.new(Polars::Int64), Polars::List.new(Polars::Int32)
