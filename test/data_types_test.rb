@@ -64,7 +64,7 @@ class DataTypesTest < Minitest::Test
     assert_equal Polars::List.new(Polars::Int64), Polars::List.new(Polars::Int64)
     refute_equal Polars::List.new(Polars::Int64), Polars::List.new(Polars::Int32)
     assert_equal Polars::List.new(Polars::Int64), Polars::List
-    # assert_equal Polars::List, Polars::List.new(Polars::Int64)
+    assert_equal Polars::List, Polars::List.new(Polars::Int64)
   end
 
   def test_equal_array

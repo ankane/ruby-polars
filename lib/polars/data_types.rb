@@ -16,6 +16,10 @@ module Polars
     def nested?
       self.class.nested?
     end
+
+    def self.==(other)
+      eql?(other) || other.is_a?(self)
+    end
   end
 
   # Base class for numeric data types.
