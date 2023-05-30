@@ -101,7 +101,7 @@ class SeriesTest < Minitest::Test
 
   def test_new_bigdecimal_too_large
     error = assert_raises do
-      Polars::Series.new([BigDecimal("11111111112222222222.333333333344444444445555555555")])
+      Polars::Series.new([BigDecimal("-99999999999999999999.9999999999999999999")])
     end
     assert_equal "BigDecimal is too large to fit in Decimal128", error.message
   end
