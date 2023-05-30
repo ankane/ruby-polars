@@ -59,4 +59,12 @@ class DataTypesTest < Minitest::Test
     refute_equal Polars::Array.new(3, Polars::Int64), Polars::Array.new(3, Polars::Int32)
     assert_equal Polars::Array.new(3, Polars::Int64), Polars::Array
   end
+
+  def test_equal_struct
+    assert_equal Polars::Struct, Polars::Struct
+    assert_equal Polars::Struct.new([Polars::Field.new("a", Polars::Int64)]), Polars::Struct
+    assert_equal Polars::Struct.new([Polars::Field.new("a", Polars::Int64)]), Polars::Struct.new([Polars::Field.new("a", Polars::Int64)])
+    refute_equal Polars::Struct.new([Polars::Field.new("a", Polars::Int64)]), Polars::Struct.new([Polars::Field.new("b", Polars::Int64)])
+    refute_equal Polars::Struct.new([Polars::Field.new("a", Polars::Int64)]), Polars::Struct.new([Polars::Field.new("a", Polars::Int32)])
+  end
 end

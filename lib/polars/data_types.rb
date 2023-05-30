@@ -244,8 +244,12 @@ module Polars
       @dtype = Utils.rb_type_to_dtype(dtype)
     end
 
+    def ==(other)
+      name == other.name && dtype == other.dtype
+    end
+
     def inspect
-      "#{self.class.name}(#{@name.inspect}, #{@dtype})"
+      "#{self.class.name}(#{name.inspect}, #{dtype})"
     end
   end
 
@@ -261,8 +265,18 @@ module Polars
       end
     end
 
+    def ==(other)
+      if other.eql?(Struct)
+        true
+      elsif other.is_a?(Struct)
+        fields == other.fields
+      else
+        false
+      end
+    end
+
     def inspect
-      "#{self.class.name}(#{@fields})"
+      "#{self.class.name}(#{fields})"
     end
 
     def to_schema
