@@ -30,10 +30,10 @@ class TypesTest < Minitest::Test
     assert_equal Polars::Utf8, schema["s"]
     assert_equal Polars::Binary, schema["n"]
     assert_equal Polars::Date, schema["d"]
-    assert_kind_of Polars::Datetime, schema["t"]
-    assert_kind_of Polars::Datetime, schema["z"]
-    assert_kind_of Polars::Struct, schema["h"]
-    assert_kind_of Polars::List, schema["a"]
+    assert_equal Polars::Datetime.new("ns"), schema["t"]
+    assert_equal Polars::Datetime.new("ns"), schema["z"]
+    assert_equal Polars::Struct.new([Polars::Field.new("f", Polars::Int64)]), schema["h"]
+    assert_equal Polars::List.new(Polars::Int64), schema["a"]
   end
 
   def test_series_dtype_int
