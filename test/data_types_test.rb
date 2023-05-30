@@ -38,6 +38,13 @@ class DataTypesTest < Minitest::Test
     assert_equal Polars::Datetime.new("ns"), Polars::Datetime
   end
 
+  def test_equal_duration
+    assert_equal Polars::Duration, Polars::Duration
+    assert_equal Polars::Duration.new("ns"), Polars::Duration.new("ns")
+    refute_equal Polars::Duration.new("ns"), Polars::Duration.new("us")
+    assert_equal Polars::Duration.new("ns"), Polars::Duration
+  end
+
   def test_equal_list
     assert_equal Polars::List, Polars::List
     assert_equal Polars::List.new(Polars::Int64), Polars::List.new(Polars::Int64)

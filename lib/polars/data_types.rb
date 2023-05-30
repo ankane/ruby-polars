@@ -155,6 +155,16 @@ module Polars
       @time_unit = time_unit
     end
 
+    def ==(other)
+      if other.eql?(Duration)
+        true
+      elsif other.is_a?(Duration)
+        time_unit == other.time_unit
+      else
+        false
+      end
+    end
+
     def to_s
       "#{self.class.name}(time_unit: #{time_unit.inspect})"
     end
