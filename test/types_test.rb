@@ -63,12 +63,12 @@ class TypesTest < Minitest::Test
     assert_kind_of Polars::Decimal, s.dtype
   end
 
-  def test_series_dtype_bool
+  def test_series_dtype_boolean
     s = Polars::Series.new([true, nil, false], dtype: Polars::Boolean)
     assert_series [true, nil, false], s, dtype: Polars::Boolean
   end
 
-  def test_series_dtype_str
+  def test_series_dtype_utf8
     s = Polars::Series.new(["a", nil, "c"], dtype: Polars::Utf8)
     assert_series ["a", nil, "c"], s, dtype: Polars::Utf8
     assert_equal [Encoding::UTF_8, nil, Encoding::UTF_8], s.to_a.map { |v| v&.encoding }

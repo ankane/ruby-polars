@@ -27,8 +27,14 @@ class DataTypesTest < Minitest::Test
     assert_equal %!Polars::Struct([Polars::Field("a", Polars::Int64)])!, Polars::Struct.new([Polars::Field.new("a", Polars::Int64)]).inspect
   end
 
-  def test_equal_integer
+  def test_equal_int
     assert_equal Polars::Int64, Polars::Int64
+    refute_equal Polars::Int64, Polars::Int32
+  end
+
+  def test_equal_float
+    assert_equal Polars::Float64, Polars::Float64
+    refute_equal Polars::Float64, Polars::Float32
   end
 
   def test_equal_decimal
