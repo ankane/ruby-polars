@@ -96,6 +96,16 @@ module Polars
       @scale = scale
     end
 
+    def ==(other)
+      if other.eql?(Decimal)
+        true
+      elsif other.is_a?(Decimal)
+        precision == other.precision && scale == other.scale
+      else
+        false
+      end
+    end
+
     def to_s
       "#{self.class.name}(precision: #{precision.inspect}, scale: #{scale.inspect})"
     end

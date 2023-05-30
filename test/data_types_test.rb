@@ -31,6 +31,14 @@ class DataTypesTest < Minitest::Test
     assert_equal Polars::Int64, Polars::Int64
   end
 
+  def test_equal_decimal
+    assert_equal Polars::Decimal, Polars::Decimal
+    assert_equal Polars::Decimal.new(15, 1), Polars::Decimal.new(15, 1)
+    refute_equal Polars::Decimal.new(15, 1), Polars::Decimal.new(25, 1)
+    refute_equal Polars::Decimal.new(15, 1), Polars::Decimal.new(15, 2)
+    assert_equal Polars::Decimal.new(15, 1), Polars::Decimal
+  end
+
   def test_equal_datetime
     assert_equal Polars::Datetime, Polars::Datetime
     assert_equal Polars::Datetime.new("ns"), Polars::Datetime.new("ns")
