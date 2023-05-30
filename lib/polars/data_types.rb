@@ -175,7 +175,9 @@ module Polars
     end
 
     def ==(other)
-      if other.is_a?(List)
+      if other.eql?(List)
+        true
+      elsif other.is_a?(List)
         @inner.nil? || other.inner.nil? || @inner == other.inner
       else
         false
