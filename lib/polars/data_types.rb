@@ -97,7 +97,7 @@ module Polars
     end
 
     def to_s
-      "#{self.class}(precision: #{precision.inspect}, scale: #{scale.inspect})"
+      "#{self.class.name}(precision: #{precision.inspect}, scale: #{scale.inspect})"
     end
   end
 
@@ -132,7 +132,7 @@ module Polars
     end
 
     def to_s
-      "#{self.class}(time_unit: #{time_unit.inspect}, time_zone: #{time_zone.inspect})"
+      "#{self.class.name}(time_unit: #{time_unit.inspect}, time_zone: #{time_zone.inspect})"
     end
   end
 
@@ -146,7 +146,7 @@ module Polars
     end
 
     def to_s
-      "#{self.class}(time_unit: #{time_unit.inspect})"
+      "#{self.class.name}(time_unit: #{time_unit.inspect})"
     end
   end
 
@@ -175,7 +175,7 @@ module Polars
     end
 
     def to_s
-      "#{self.class}(#{inner})"
+      "#{self.class.name}(#{inner})"
     end
   end
 
@@ -189,7 +189,7 @@ module Polars
     end
 
     def to_s
-      "#{self.class}(#{inner})"
+      "#{self.class.name}(#{inner})"
     end
   end
 
@@ -203,7 +203,7 @@ module Polars
     end
 
     def inspect
-      "#{self.class}(#{@name.inspect}, #{@dtype})"
+      "#{self.class.name}(#{@name.inspect}, #{@dtype})"
     end
   end
 
@@ -220,7 +220,7 @@ module Polars
     end
 
     def inspect
-      "#{self.class}(#{@fields})"
+      "#{self.class.name}(#{@fields})"
     end
 
     def to_schema
