@@ -9,6 +9,7 @@ class ExprTest < Minitest::Test
     assert_lit "1.5", Polars.lit(1.5)
     assert_lit "Utf8(hello)", Polars.lit("hello")
     assert_lit "[binary value]", Polars.lit("hello".b)
+    assert_lit "Series", Polars.lit(Polars::Series.new([1, 2, 3]))
 
     error = assert_raises(ArgumentError) do
       Polars.lit(Object.new)
