@@ -136,8 +136,7 @@ pub fn cumfold(acc: &RbExpr, lambda: Value, exprs: RArray, include_init: bool) -
     Ok(polars::lazy::dsl::cumfold_exprs(acc.inner.clone(), func, exprs, include_init).into())
 }
 
-// TODO improve
-pub fn lit(value: Value) -> RbResult<RbExpr> {
+pub fn lit(value: Value, allow_object: bool) -> RbResult<RbExpr> {
     if value.is_kind_of(class::true_class()) || value.is_kind_of(class::false_class()) {
         Ok(dsl::lit(value.try_convert::<bool>()?).into())
     } else if let Some(v) = Integer::from_value(value) {
@@ -166,6 +165,8 @@ pub fn lit(value: Value) -> RbResult<RbExpr> {
         Ok(dsl::lit(series.series.borrow().clone()).into())
     } else if value.is_nil() {
         Ok(dsl::lit(Null {}).into())
+    } else if allow_object {
+        todo!()
     } else {
         Err(RbValueError::new_err(format!(
             "could not convert value {:?} as a Literal",

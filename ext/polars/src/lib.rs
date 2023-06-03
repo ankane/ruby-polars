@@ -546,7 +546,7 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("cols", function!(crate::functions::lazy::cols, 1))?;
     class.define_singleton_method("fold", function!(crate::functions::lazy::fold, 3))?;
     class.define_singleton_method("cumfold", function!(crate::functions::lazy::cumfold, 4))?;
-    class.define_singleton_method("lit", function!(crate::functions::lazy::lit, 1))?;
+    class.define_singleton_method("lit", function!(crate::functions::lazy::lit, 2))?;
     class.define_singleton_method("arange", function!(crate::functions::lazy::arange, 3))?;
     class.define_singleton_method("repeat", function!(crate::functions::lazy::repeat, 2))?;
     class.define_singleton_method(

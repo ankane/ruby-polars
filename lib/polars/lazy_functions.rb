@@ -283,18 +283,20 @@ module Polars
     # Return an expression representing a literal value.
     #
     # @return [Expr]
-    def lit(value)
+    def lit(value, dtype: nil, allow_object: nil)
       if value.is_a?(Polars::Series)
         name = value.name
         value = value._s
-        e = Utils.wrap_expr(RbExpr.lit(value))
+        e = Utils.wrap_expr(RbExpr.lit(value, allow_object))
         if name == ""
           return e
         end
         return e.alias(name)
+      elsif dtype
+        return Utils.wrap_expr(RbExpr.lit(value, allow_object)).cast(dtype)
       end
 
-      Utils.wrap_expr(RbExpr.lit(value))
+      Utils.wrap_expr(RbExpr.lit(value, allow_object))
     end
 
     # Cumulatively sum values in a column/Series, or horizontally across list of columns/expressions.
