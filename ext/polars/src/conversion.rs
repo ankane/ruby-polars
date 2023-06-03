@@ -150,7 +150,14 @@ impl IntoValue for Wrap<AnyValue<'_>> {
             AnyValue::Boolean(v) => Value::from(v),
             AnyValue::Utf8(v) => Value::from(v),
             AnyValue::Utf8Owned(v) => Value::from(v.as_str()),
-            AnyValue::Categorical(_idx, _rev, _arr) => todo!(),
+            AnyValue::Categorical(idx, rev, arr) => {
+                let s = if arr.is_null() {
+                    rev.get(idx)
+                } else {
+                    unsafe { arr.deref_unchecked().value(idx as usize) }
+                };
+                s.into_value()
+            }
             AnyValue::Date(v) => class::time()
                 .funcall::<_, _, Value>("at", (v * 86400,))
                 .unwrap()
