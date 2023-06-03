@@ -105,4 +105,9 @@ class TypesTest < Minitest::Test
     s = Polars::Series.new([DateTime.new(2022, 1, 1, 12, 34, 56)], dtype: Polars::Time)
     assert_series [Time.utc(2000, 1, 1, 12, 34, 56)], s, dtype: Polars::Time
   end
+
+  def test_series_dtype_categorical
+    s = Polars::Series.new(["one", "one", "two"], dtype: Polars::Categorical)
+    assert_series ["one", "one", "two"], s, dtype: Polars::Categorical
+  end
 end
