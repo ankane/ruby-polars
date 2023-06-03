@@ -33,7 +33,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.2
-      # TODO use v8 when released
+      # TODO switch to oxidize-rb/actions/cross-gem when setup supported
       - uses: oxidize-rb/cross-gem-action@main
         with:
           platform: ${{ matrix.platform }}
