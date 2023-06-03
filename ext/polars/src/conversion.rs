@@ -158,49 +158,20 @@ impl IntoValue for Wrap<AnyValue<'_>> {
                 };
                 s.into_value()
             }
-            AnyValue::Date(v) => class::time()
-                .funcall::<_, _, Value>("at", (v * 86400,))
-                .unwrap()
-                .funcall::<_, _, Value>("utc", ())
-                .unwrap()
-                .funcall::<_, _, Value>("to_date", ())
-                .unwrap(),
-            AnyValue::Datetime(v, tu, tz) => {
-                let t = match tu {
-                    TimeUnit::Nanoseconds => {
-                        let sec = v / 1000000000;
-                        let subsec = v % 1000000000;
-                        class::time()
-                            .funcall::<_, _, Value>("at", (sec, subsec, Symbol::new("nsec")))
-                            .unwrap()
-                    }
-                    TimeUnit::Microseconds => {
-                        let sec = v / 1000000;
-                        let subsec = v % 1000000;
-                        class::time()
-                            .funcall::<_, _, Value>("at", (sec, subsec, Symbol::new("usec")))
-                            .unwrap()
-                    }
-                    TimeUnit::Milliseconds => {
-                        let sec = v / 1000;
-                        let subsec = v % 1000;
-                        class::time()
-                            .funcall::<_, _, Value>("at", (sec, subsec, Symbol::new("millisecond")))
-                            .unwrap()
-                    }
-                };
-
-                if tz.is_some() {
-                    todo!();
-                } else {
-                    t.funcall::<_, _, Value>("utc", ()).unwrap()
-                }
+            AnyValue::Date(v) => {
+                utils().funcall("_to_ruby_date", (v,)).unwrap()
             }
-            AnyValue::Duration(v, tu) => {
-                let tu = tu.to_ascii();
-                utils().funcall("_to_ruby_duration", (v, tu)).unwrap()
+            AnyValue::Datetime(v, time_unit, time_zone) => {
+                let time_unit = time_unit.to_ascii();
+                utils().funcall("_to_ruby_datetime", (v, time_unit, time_zone.clone())).unwrap()
             }
-            AnyValue::Time(_v) => todo!(),
+            AnyValue::Duration(v, time_unit) => {
+                let time_unit = time_unit.to_ascii();
+                utils().funcall("_to_ruby_duration", (v, time_unit)).unwrap()
+            }
+            AnyValue::Time(v) => {
+                utils().funcall("_to_ruby_time", (v,)).unwrap()
+            }
             AnyValue::Array(v, _) | AnyValue::List(v) => RbSeries::new(v).to_a().into_value(),
             ref av @ AnyValue::Struct(_, _, flds) => struct_dict(av._iter_struct_av(), flds),
             AnyValue::StructOwned(payload) => struct_dict(payload.0.into_iter(), &payload.1),
