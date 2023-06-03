@@ -1,4 +1,5 @@
 use magnus::{class, Float, Integer, RArray, RString, Value};
+use magnus::encoding::{self, EncodingCapable};
 use polars::lazy::dsl;
 use polars::prelude::*;
 
@@ -156,8 +157,11 @@ pub fn lit(value: Value) -> RbResult<RbExpr> {
     } else if let Some(v) = Float::from_value(value) {
         Ok(dsl::lit(v.try_convert::<f64>()?).into())
     } else if let Some(v) = RString::from_value(value) {
-        // TODO check for binary encoding
-        Ok(dsl::lit(v.try_convert::<String>()?).into())
+        if v.enc_get() == encoding::Index::utf8() {
+            Ok(dsl::lit(v.try_convert::<String>()?).into())
+        } else {
+            Ok(dsl::lit(unsafe { v.as_slice() }).into())
+        }
     } else if let Ok(series) = value.try_convert::<&RbSeries>() {
         Ok(dsl::lit(series.series.borrow().clone()).into())
     } else if value.is_nil() {
