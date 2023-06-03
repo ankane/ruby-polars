@@ -185,7 +185,9 @@ impl IntoValue for Wrap<AnyValue<'_>> {
             }
             AnyValue::Binary(v) => RString::from_slice(v).into_value(),
             AnyValue::BinaryOwned(v) => RString::from_slice(&v).into_value(),
-            AnyValue::Decimal(_v, _scale) => todo!(),
+            AnyValue::Decimal(v, scale) => {
+                utils().funcall("_to_ruby_decimal", (v.to_string(), -(scale as i32))).unwrap()
+            }
         }
     }
 }
