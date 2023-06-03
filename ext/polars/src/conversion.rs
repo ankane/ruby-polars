@@ -437,8 +437,7 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Float32" => DataType::Float32,
                 "Polars::Float64" => DataType::Float64,
                 "Polars::Object" => DataType::Object(OBJECT_NAME),
-                // TODO change to Null
-                "Polars::List" => DataType::List(Box::new(DataType::Boolean)),
+                "Polars::List" => DataType::List(Box::new(DataType::Null)),
                 "Polars::Null" => DataType::Null,
                 "Polars::Unknown" => DataType::Unknown,
                 dt => {
