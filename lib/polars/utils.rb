@@ -84,7 +84,7 @@ module Polars
       elsif time_unit == "ms"
         value / 1e3
       else
-        raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms'}}, got #{time_unit}"
+        raise ArgumentError, "time_unit must be one of {{'ns', 'us', 'ms'}}, got #{time_unit}"
       end
     end
 
@@ -104,7 +104,7 @@ module Polars
         elsif time_unit == "ms"
           return ::Time.at(value / 1000, value % 1000, :millisecond).utc
         else
-          raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms'}}, got #{time_unit}"
+          raise ArgumentError, "time_unit must be one of {{'ns', 'us', 'ms'}}, got #{time_unit}"
         end
       else
         raise Todo
