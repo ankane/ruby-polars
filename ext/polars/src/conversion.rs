@@ -3,8 +3,8 @@ use std::hash::{Hash, Hasher};
 
 use magnus::encoding::{EncodingCapable, Index};
 use magnus::{
-    class, exception, r_hash::ForEach, ruby_handle::RubyHandle, Integer, IntoValue, Module, RArray,
-    Float, RHash, RString, Symbol, TryConvert, Value, QNIL,
+    class, exception, r_hash::ForEach, ruby_handle::RubyHandle, Float, Integer, IntoValue, Module,
+    RArray, RHash, RString, Symbol, TryConvert, Value, QNIL,
 };
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
@@ -158,20 +158,20 @@ impl IntoValue for Wrap<AnyValue<'_>> {
                 };
                 s.into_value()
             }
-            AnyValue::Date(v) => {
-                utils().funcall("_to_ruby_date", (v,)).unwrap()
-            }
+            AnyValue::Date(v) => utils().funcall("_to_ruby_date", (v,)).unwrap(),
             AnyValue::Datetime(v, time_unit, time_zone) => {
                 let time_unit = time_unit.to_ascii();
-                utils().funcall("_to_ruby_datetime", (v, time_unit, time_zone.clone())).unwrap()
+                utils()
+                    .funcall("_to_ruby_datetime", (v, time_unit, time_zone.clone()))
+                    .unwrap()
             }
             AnyValue::Duration(v, time_unit) => {
                 let time_unit = time_unit.to_ascii();
-                utils().funcall("_to_ruby_duration", (v, time_unit)).unwrap()
+                utils()
+                    .funcall("_to_ruby_duration", (v, time_unit))
+                    .unwrap()
             }
-            AnyValue::Time(v) => {
-                utils().funcall("_to_ruby_time", (v,)).unwrap()
-            }
+            AnyValue::Time(v) => utils().funcall("_to_ruby_time", (v,)).unwrap(),
             AnyValue::Array(v, _) | AnyValue::List(v) => RbSeries::new(v).to_a().into_value(),
             ref av @ AnyValue::Struct(_, _, flds) => struct_dict(av._iter_struct_av(), flds),
             AnyValue::StructOwned(payload) => struct_dict(payload.0.into_iter(), &payload.1),
@@ -185,9 +185,9 @@ impl IntoValue for Wrap<AnyValue<'_>> {
             }
             AnyValue::Binary(v) => RString::from_slice(v).into_value(),
             AnyValue::BinaryOwned(v) => RString::from_slice(&v).into_value(),
-            AnyValue::Decimal(v, scale) => {
-                utils().funcall("_to_ruby_decimal", (v.to_string(), -(scale as i32))).unwrap()
-            }
+            AnyValue::Decimal(v, scale) => utils()
+                .funcall("_to_ruby_decimal", (v.to_string(), -(scale as i32)))
+                .unwrap(),
         }
     }
 }
