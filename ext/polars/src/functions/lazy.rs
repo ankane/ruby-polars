@@ -1,4 +1,4 @@
-use magnus::{class, RArray, RString, Value};
+use magnus::{class, Float, Integer, RArray, RString, Value};
 use polars::lazy::dsl;
 use polars::prelude::*;
 
@@ -6,7 +6,7 @@ use crate::apply::lazy::binary_lambda;
 use crate::conversion::{get_lf, get_rbseq, Wrap};
 use crate::prelude::vec_extract_wrapped;
 use crate::rb_exprs_to_exprs;
-use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
+use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
 
 macro_rules! set_unwrapped_or_0 {
     ($($var:ident),+ $(,)?) => {
@@ -137,14 +137,10 @@ pub fn cumfold(acc: &RbExpr, lambda: Value, exprs: RArray, include_init: bool) -
 
 // TODO improve
 pub fn lit(value: Value) -> RbResult<RbExpr> {
-    if value.is_nil() {
-        Ok(dsl::lit(Null {}).into())
-    } else if let Ok(series) = value.try_convert::<&RbSeries>() {
-        Ok(dsl::lit(series.series.borrow().clone()).into())
-    } else if let Some(v) = RString::from_value(value) {
-        Ok(dsl::lit(v.try_convert::<String>()?).into())
-    } else if value.is_kind_of(class::integer()) {
-        match value.try_convert::<i64>() {
+    if value.is_kind_of(class::true_class()) || value.is_kind_of(class::false_class()) {
+        Ok(dsl::lit(value.try_convert::<bool>()?).into())
+    } else if let Some(v) = Integer::from_value(value) {
+        match v.try_convert::<i64>() {
             Ok(val) => {
                 if val > 0 && val < i32::MAX as i64 || val < 0 && val > i32::MIN as i64 {
                     Ok(dsl::lit(val as i32).into())
@@ -157,8 +153,20 @@ pub fn lit(value: Value) -> RbResult<RbExpr> {
                 Ok(dsl::lit(val).into())
             }
         }
+    } else if let Some(v) = Float::from_value(value) {
+        Ok(dsl::lit(v.try_convert::<f64>()?).into())
+    } else if let Some(v) = RString::from_value(value) {
+        // TODO check for binary encoding
+        Ok(dsl::lit(v.try_convert::<String>()?).into())
+    } else if let Ok(series) = value.try_convert::<&RbSeries>() {
+        Ok(dsl::lit(series.series.borrow().clone()).into())
+    } else if value.is_nil() {
+        Ok(dsl::lit(Null {}).into())
     } else {
-        Ok(dsl::lit(value.try_convert::<f64>()?).into())
+        Err(RbValueError::new_err(format!(
+            "could not convert value {:?} as a Literal",
+            value.to_string()
+        )))
     }
 }
 
