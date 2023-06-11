@@ -284,7 +284,7 @@ module Polars
     #
     # @return [Expr]
     def lit(value, dtype: nil, allow_object: nil)
-      if value.is_a?(::Time)
+      if value.is_a?(::Time) || value.is_a?(::DateTime)
         time_unit = dtype&.time_unit || "ns"
         time_zone = dtype.&time_zone
         e = lit(Utils._datetime_to_pl_timestamp(value, time_unit)).cast(Datetime.new(time_unit))
