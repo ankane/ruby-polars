@@ -303,6 +303,8 @@ module Polars
           return e
         end
         return e.alias(name)
+      elsif value.is_a?(::Array)
+        return lit(Series.new("", value))
       elsif dtype
         return Utils.wrap_expr(RbExpr.lit(value, allow_object)).cast(dtype)
       end
