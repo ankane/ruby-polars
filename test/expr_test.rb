@@ -11,6 +11,8 @@ class ExprTest < Minitest::Test
     assert_lit "Utf8(hello)", Polars.lit("hello")
     assert_lit "[binary value]", Polars.lit("hello".b)
     assert_lit "Series", Polars.lit(Polars::Series.new([1, 2, 3]))
+    assert_lit "1640995200000000000.strict_cast(Datetime(Nanoseconds, None)).strict_cast(Date)", Polars.lit(Date.new(2022, 1, 1))
+    assert_lit "1640995200000000000.strict_cast(Datetime(Nanoseconds, None))", Polars.lit(Time.utc(2022, 1, 1))
 
     error = assert_raises(ArgumentError) do
       Polars.lit(Object.new)
