@@ -997,6 +997,7 @@ module Polars
       return_bytes = file.nil?
       if return_bytes
         file = StringIO.new
+        file.set_encoding(Encoding::BINARY)
       end
       if Utils.pathlike?(file)
         file = Utils.normalise_filepath(file)

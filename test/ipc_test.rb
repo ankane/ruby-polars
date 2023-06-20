@@ -33,6 +33,8 @@ class IpcTest < Minitest::Test
 
   def test_write_ipc_to_string
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
-    assert df.write_ipc(nil).start_with?("ARROW")
+    output = df.write_ipc(nil)
+    assert output.start_with?("ARROW")
+    assert_equal Encoding::BINARY, output.encoding
   end
 end
