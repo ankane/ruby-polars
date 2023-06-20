@@ -456,12 +456,14 @@ impl RbDataFrame {
                 .finish(&mut self.df.borrow_mut())
                 .map_err(RbPolarsErr::from)?;
         } else {
-            let mut buf = get_file_like(rb_f, true)?;
-
+            let mut buf = Cursor::new(Vec::new());
             IpcWriter::new(&mut buf)
                 .with_compression(compression.0)
                 .finish(&mut self.df.borrow_mut())
                 .map_err(RbPolarsErr::from)?;
+            // TODO less copying
+            let rb_str = RString::from_slice(&buf.into_inner());
+            rb_f.funcall::<_, _, Value>("write", (rb_str,))?;
         }
         Ok(())
     }

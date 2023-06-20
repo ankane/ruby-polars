@@ -994,14 +994,20 @@ module Polars
     #
     # @return [nil]
     def write_ipc(file, compression: "uncompressed")
-      if compression.nil?
-        compression = "uncompressed"
+      return_bytes = file.nil?
+      if return_bytes
+        file = StringIO.new
       end
       if Utils.pathlike?(file)
         file = Utils.normalise_filepath(file)
       end
 
+      if compression.nil?
+        compression = "uncompressed"
+      end
+
       _df.write_ipc(file, compression)
+      return_bytes ? file.string : nil
     end
 
     # Write to Apache Parquet file.
