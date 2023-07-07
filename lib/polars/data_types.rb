@@ -227,9 +227,9 @@ module Polars
   class Array < NestedType
     attr_reader :width, :inner
 
-    def initialize(width, inner)
+    def initialize(width, inner = nil)
       @width = width
-      @inner = Utils.rb_type_to_dtype(inner)
+      @inner = Utils.rb_type_to_dtype(inner) if inner
     end
 
     # TODO check width?

@@ -3846,6 +3846,10 @@ module Polars
       end
 
       if !dtype.nil? && ![List, Unknown].include?(dtype) && Utils.is_polars_dtype(dtype) && ruby_dtype.nil?
+        if dtype == Array && !dtype.is_a?(Array) && value.is_a?(::Array)
+          dtype = Array.new(value.size)
+        end
+
         constructor = polars_type_to_constructor(dtype)
         rbseries = constructor.call(name, values, strict)
 
@@ -3966,7 +3970,7 @@ module Polars
     }
 
     def polars_type_to_constructor(dtype)
-      if dtype == Array || dtype.is_a?(Array)
+      if dtype.is_a?(Array)
         lambda do |name, values, strict|
           RbSeries.new_array(dtype.width, dtype.inner, name, values, strict)
         end
