@@ -7,6 +7,7 @@
 - Changed `arr` to `list` for `Series` and `Expr`
 - Changed series creation with `BigDecimal` objects to `Decimal` type
 - Changed series creation with `ActiveSupport::TimeWithZone` objects to `Datetime` type
+- Changed times to use nanosecond precision by default
 - Fixed error with `groupby_dynamic` method
 - Removed `agg_list` method from `GroupBy`
 
