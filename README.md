@@ -359,7 +359,7 @@ Supported types are:
 - unsigned integer - `UInt64`, `UInt32`, `UInt16`, `UInt8`
 - string - `Utf8`, `Binary`, `Categorical`
 - temporal - `Date`, `Datetime`, `Time`, `Duration`
-- nested - `List`, `Struct`, `Array` [unreleased]
+- other - `Object`, `List`, `Struct`, `Array` [unreleased]
 
 Get column types
 
