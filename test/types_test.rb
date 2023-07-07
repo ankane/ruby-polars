@@ -119,8 +119,6 @@ class TypesTest < Minitest::Test
   end
 
   def test_series_dtype_list
-    skip # TODO fix
-
     s = Polars::Series.new([[1, 2], [3]], dtype: Polars::List)
     assert_series [[1, 2], [3]], s, dtype: Polars::List.new(Polars::Int64)
   end
