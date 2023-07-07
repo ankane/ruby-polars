@@ -262,7 +262,7 @@ module Polars
       name == other.name && dtype == other.dtype
     end
 
-    def inspect
+    def to_s
       "#{self.class.name}(#{name.inspect}, #{dtype})"
     end
   end
@@ -289,8 +289,8 @@ module Polars
       end
     end
 
-    def inspect
-      "#{self.class.name}(#{fields})"
+    def to_s
+      "#{self.class.name}([#{fields.map(&:to_s).join("\n")}])"
     end
 
     def to_schema

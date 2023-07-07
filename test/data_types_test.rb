@@ -23,8 +23,7 @@ class DataTypesTest < Minitest::Test
     assert_equal "Polars::List", Polars::List.to_s
     assert_equal "Polars::List(Polars::Int64)", Polars::List.new(Polars::Int64).to_s
     assert_equal "Polars::Array(Polars::Int64)", Polars::Array.new(3, Polars::Int64).to_s
-    # TODO make consistent
-    assert_equal %!Polars::Struct([Polars::Field("a", Polars::Int64)])!, Polars::Struct.new([Polars::Field.new("a", Polars::Int64)]).inspect
+    assert_equal %!Polars::Struct([Polars::Field("a", Polars::Int64)])!, Polars::Struct.new([Polars::Field.new("a", Polars::Int64)]).to_s
   end
 
   def test_equal_int
