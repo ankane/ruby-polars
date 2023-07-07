@@ -3954,7 +3954,7 @@ module Polars
     }
 
     def polars_type_to_constructor(dtype)
-      if dtype == Array || dtype.is_a?(Array)
+      if dtype.base_type == Array
         lambda do |name, values, strict|
           RbSeries.new_array(dtype.width, dtype.inner, name, values, strict)
         end

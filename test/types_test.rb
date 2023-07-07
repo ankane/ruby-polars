@@ -117,4 +117,35 @@ class TypesTest < Minitest::Test
     s = Polars::Series.new(["one", "one", "two"], dtype: Polars::Categorical)
     assert_series ["one", "one", "two"], s, dtype: Polars::Categorical
   end
+
+  def test_series_dtype_list
+    skip # TODO fix
+
+    s = Polars::Series.new([[1, 2], [3]], dtype: Polars::List)
+    assert_series [[1, 2], [3]], s, dtype: Polars::List.new(Polars::In64)
+  end
+
+  def test_series_dtype_array
+    skip # TODO fix
+
+    s = Polars::Series.new([[1, 2], [3, 4]], dtype: Polars::Array)
+    assert_series [[1, 2], [3, 4]], s, dtype: Polars::Array.new(2, Polars::Int64)
+  end
+
+  def test_series_dtype_array_width
+    s = Polars::Series.new([[1, 2], [3, 4]], dtype: Polars::Array.new(2, Polars::Int64))
+    assert_series [[1, 2], [3, 4]], s, dtype: Polars::Array.new(2, Polars::Int64)
+  end
+
+  def test_series_dtype_array_incompatible_width
+    error = assert_raises do
+      Polars::Series.new([[1, 2], [3, 4]], dtype: Polars::Array.new(3, Polars::Int64))
+    end
+    assert_equal "Invalid argument error: incompatible offsets in source list", error.message
+  end
+
+  def test_series_dtype_struct
+    s = Polars::Series.new([{"a" => 1}, {"a" => 2}], dtype: Polars::Struct)
+    assert_series [{"a" => 1}, {"a" => 2}], s, dtype: Polars::Struct
+  end
 end
