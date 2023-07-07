@@ -161,4 +161,9 @@ class TypesTest < Minitest::Test
     s = Polars::Series.new([1, "two"], dtype: Polars::Object)
     assert_series [1, "two"], s, dtype: Polars::Object
   end
+
+  def test_series_dtype_null
+    s = Polars::Series.new([nil, nil, nil], dtype: Polars::Null)
+    assert_series [nil, nil, nil], s, dtype: Polars::Null
+  end
 end

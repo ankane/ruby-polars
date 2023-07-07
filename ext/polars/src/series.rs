@@ -394,7 +394,30 @@ impl RbSeries {
                     let ca = series.binary().unwrap();
                     return Wrap(ca).into_value();
                 }
-                DataType::Null | DataType::Unknown => {
+                DataType::Null => {
+                    let null: Option<u8> = None;
+                    let n = series.len();
+                    let iter = std::iter::repeat(null).take(n);
+                    use std::iter::{Repeat, Take};
+                    struct NullIter {
+                        iter: Take<Repeat<Option<u8>>>,
+                        n: usize,
+                    }
+                    impl Iterator for NullIter {
+                        type Item = Option<u8>;
+
+                        fn next(&mut self) -> Option<Self::Item> {
+                            self.iter.next()
+                        }
+                        fn size_hint(&self) -> (usize, Option<usize>) {
+                            (self.n, Some(self.n))
+                        }
+                    }
+                    impl ExactSizeIterator for NullIter {}
+
+                    RArray::from_iter(NullIter { iter, n }).into_value()
+                }
+                DataType::Unknown => {
                     panic!("to_a not implemented for null/unknown")
                 }
             };

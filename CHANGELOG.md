@@ -3,6 +3,7 @@
 - Updated Polars to 0.30.0
 - Added `Array` type
 - Added support for creating series with `Datetime` type
+- Added support for `Null` to `to_a` method
 - Improved support for `Decimal` and `Time` types
 - Changed `arr` to `list` for `Series` and `Expr`
 - Changed series creation with `BigDecimal` objects to `Decimal` type
