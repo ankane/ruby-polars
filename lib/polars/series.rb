@@ -3831,6 +3831,8 @@ module Polars
 
       if (values.nil? || values.empty?) && dtype.nil?
         dtype = dtype_if_empty || Float32
+      elsif dtype == List
+        ruby_dtype = ::Array
       end
 
       rb_temporal_types = [::Date, ::DateTime, ::Time]
@@ -3843,7 +3845,7 @@ module Polars
         end
       end
 
-      if !dtype.nil? && Utils.is_polars_dtype(dtype) && ruby_dtype.nil?
+      if !dtype.nil? && ![List, Unknown].include?(dtype) && Utils.is_polars_dtype(dtype) && ruby_dtype.nil?
         constructor = polars_type_to_constructor(dtype)
         rbseries = constructor.call(name, values, strict)
 
@@ -3884,6 +3886,16 @@ module Polars
         elsif defined?(Numo::NArray) && value.is_a?(Numo::NArray) && value.shape.length == 1
           raise Todo
         elsif ruby_dtype == ::Array
+          if dtype.is_a?(Object)
+            return RbSeries.new_object(name, values, strict)
+          end
+          if dtype
+            srs = sequence_from_anyvalue_or_object(name, values)
+            if dtype != srs.dtype
+              srs = srs.cast(dtype, strict: false)
+            end
+            return srs
+          end
           return sequence_from_anyvalue_or_object(name, values)
         elsif ruby_dtype == Series
           return RbSeries.new_series_list(name, values.map(&:_s), strict)
@@ -3954,7 +3966,7 @@ module Polars
     }
 
     def polars_type_to_constructor(dtype)
-      if dtype.base_type == Array
+      if dtype == Array || dtype.is_a?(Array)
         lambda do |name, values, strict|
           RbSeries.new_array(dtype.width, dtype.inner, name, values, strict)
         end

@@ -122,7 +122,12 @@ class TypesTest < Minitest::Test
     skip # TODO fix
 
     s = Polars::Series.new([[1, 2], [3]], dtype: Polars::List)
-    assert_series [[1, 2], [3]], s, dtype: Polars::List.new(Polars::In64)
+    assert_series [[1, 2], [3]], s, dtype: Polars::List.new(Polars::Int64)
+  end
+
+  def test_series_dtype_list_dtype
+    s = Polars::Series.new([[1, 2], [3]], dtype: Polars::List.new(Polars::Int64))
+    assert_series [[1, 2], [3]], s, dtype: Polars::List.new(Polars::Int64)
   end
 
   def test_series_dtype_array
@@ -147,5 +152,15 @@ class TypesTest < Minitest::Test
   def test_series_dtype_struct
     s = Polars::Series.new([{"a" => 1}, {"a" => 2}], dtype: Polars::Struct)
     assert_series [{"a" => 1}, {"a" => 2}], s, dtype: Polars::Struct
+  end
+
+  def test_series_dtype_struct_fields
+    s = Polars::Series.new([{"a" => 1}, {"a" => 2}], dtype: Polars::Struct.new([Polars::Field.new("a", Polars::Int64)]))
+    assert_series [{"a" => 1}, {"a" => 2}], s, dtype: Polars::Struct.new([Polars::Field.new("a", Polars::Int64)])
+  end
+
+  def test_series_dtype_object
+    s = Polars::Series.new([1, "two"], dtype: Polars::Object)
+    assert_series [1, "two"], s, dtype: Polars::Object
   end
 end
