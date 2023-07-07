@@ -1,5 +1,5 @@
-use magnus::{class, Float, Integer, RArray, RString, Value};
 use magnus::encoding::{self, EncodingCapable};
+use magnus::{class, Float, Integer, RArray, RString, Value};
 use polars::lazy::dsl;
 use polars::prelude::*;
 

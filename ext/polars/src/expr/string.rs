@@ -20,7 +20,6 @@ impl RbExpr {
             strict,
             exact,
             cache,
-            ..Default::default()
         };
         self.inner.clone().str().to_date(options).into()
     }
@@ -53,7 +52,6 @@ impl RbExpr {
             strict,
             cache,
             exact: true,
-            ..Default::default()
         };
         self.inner.clone().str().to_time(options).into()
     }
