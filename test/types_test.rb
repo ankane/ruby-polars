@@ -166,4 +166,14 @@ class TypesTest < Minitest::Test
     s = Polars::Series.new([nil, nil, nil], dtype: Polars::Null)
     assert_series [nil, nil, nil], s, dtype: Polars::Null
   end
+
+  def test_series_dtype_unknown_int
+    s = Polars::Series.new([1, 2, 3], dtype: Polars::Unknown)
+    assert_series [1, 2, 3], s, dtype: Polars::Int64
+  end
+
+  def test_series_dtype_unknown_utf8
+    s = Polars::Series.new(["a", "b", "c"], dtype: Polars::Unknown)
+    assert_series ["a", "b", "c"], s, dtype: Polars::Utf8
+  end
 end
