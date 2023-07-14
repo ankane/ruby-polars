@@ -317,6 +317,10 @@ module Polars
       end
 
       if item.is_a?(Integer)
+        if item < 0
+          item = len + item
+        end
+
         return _s.get_idx(item)
       end
 

@@ -281,6 +281,7 @@ class SeriesTest < Minitest::Test
   def test_get
     s = Polars::Series.new(1..3)
     assert_equal 2, s[1]
+    assert_equal 3, s[-1]
     assert_series [1, 2], s[[0, 1]]
     assert_series [1, 2], s[Polars::Series.new([0, 1])]
     assert_series [1], s[0..0]
