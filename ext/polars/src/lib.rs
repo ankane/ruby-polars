@@ -59,7 +59,7 @@ fn init() -> RbResult<()> {
     )?;
     module.define_singleton_method(
         "_concat_lf",
-        function!(crate::functions::lazy::concat_lf, 3),
+        function!(crate::functions::lazy::concat_lf, 4),
     )?;
     module.define_singleton_method(
         "_diag_concat_df",
@@ -179,7 +179,6 @@ fn init() -> RbResult<()> {
         "take_with_series",
         method!(RbDataFrame::take_with_series, 1),
     )?;
-    class.define_method("sort", method!(RbDataFrame::sort, 3))?;
     class.define_method("replace", method!(RbDataFrame::replace, 2))?;
     class.define_method("replace_at_idx", method!(RbDataFrame::replace_at_idx, 2))?;
     class.define_method("insert_at_idx", method!(RbDataFrame::insert_at_idx, 2))?;
@@ -193,7 +192,7 @@ fn init() -> RbResult<()> {
     class.define_method("_clone", method!(RbDataFrame::clone, 0))?;
     class.define_method("melt", method!(RbDataFrame::melt, 4))?;
     class.define_method("pivot_expr", method!(RbDataFrame::pivot_expr, 7))?;
-    class.define_method("partition_by", method!(RbDataFrame::partition_by, 2))?;
+    class.define_method("partition_by", method!(RbDataFrame::partition_by, 3))?;
     class.define_method("shift", method!(RbDataFrame::shift, 1))?;
     class.define_method("lazy", method!(RbDataFrame::lazy, 0))?;
     class.define_method("max", method!(RbDataFrame::max, 0))?;
@@ -208,7 +207,7 @@ fn init() -> RbResult<()> {
     class.define_method("hmin", method!(RbDataFrame::hmin, 0))?;
     class.define_method("hsum", method!(RbDataFrame::hsum, 1))?;
     class.define_method("quantile", method!(RbDataFrame::quantile, 2))?;
-    class.define_method("to_dummies", method!(RbDataFrame::to_dummies, 2))?;
+    class.define_method("to_dummies", method!(RbDataFrame::to_dummies, 3))?;
     class.define_method("null_count", method!(RbDataFrame::null_count, 0))?;
     class.define_method("apply", method!(RbDataFrame::apply, 3))?;
     class.define_method("shrink_to_fit", method!(RbDataFrame::shrink_to_fit, 0))?;
@@ -361,7 +360,7 @@ fn init() -> RbResult<()> {
     class.define_method("str_base64_encode", method!(RbExpr::str_base64_encode, 0))?;
     class.define_method("str_base64_decode", method!(RbExpr::str_base64_decode, 1))?;
     class.define_method("str_parse_int", method!(RbExpr::str_parse_int, 2))?;
-    class.define_method("str_json_extract", method!(RbExpr::str_json_extract, 1))?;
+    class.define_method("str_json_extract", method!(RbExpr::str_json_extract, 2))?;
     class.define_method("binary_hex_encode", method!(RbExpr::bin_hex_encode, 0))?;
     class.define_method("binary_hex_decode", method!(RbExpr::bin_hex_decode, 1))?;
     class.define_method(
@@ -461,8 +460,8 @@ fn init() -> RbResult<()> {
     class.define_method("rolling_min", method!(RbExpr::rolling_min, 6))?;
     class.define_method("rolling_max", method!(RbExpr::rolling_max, 6))?;
     class.define_method("rolling_mean", method!(RbExpr::rolling_mean, 6))?;
-    class.define_method("rolling_std", method!(RbExpr::rolling_std, 6))?;
-    class.define_method("rolling_var", method!(RbExpr::rolling_var, 6))?;
+    class.define_method("rolling_std", method!(RbExpr::rolling_std, 7))?;
+    class.define_method("rolling_var", method!(RbExpr::rolling_var, 7))?;
     class.define_method("rolling_median", method!(RbExpr::rolling_median, 6))?;
     class.define_method("rolling_quantile", method!(RbExpr::rolling_quantile, 8))?;
     class.define_method("rolling_skew", method!(RbExpr::rolling_skew, 2))?;
@@ -496,9 +495,9 @@ fn init() -> RbResult<()> {
     class.define_method("reshape", method!(RbExpr::reshape, 1))?;
     class.define_method("cumcount", method!(RbExpr::cumcount, 1))?;
     class.define_method("to_physical", method!(RbExpr::to_physical, 0))?;
-    class.define_method("shuffle", method!(RbExpr::shuffle, 1))?;
-    class.define_method("sample_n", method!(RbExpr::sample_n, 4))?;
-    class.define_method("sample_frac", method!(RbExpr::sample_frac, 4))?;
+    class.define_method("shuffle", method!(RbExpr::shuffle, 2))?;
+    class.define_method("sample_n", method!(RbExpr::sample_n, 5))?;
+    class.define_method("sample_frac", method!(RbExpr::sample_frac, 5))?;
     class.define_method("ewm_mean", method!(RbExpr::ewm_mean, 4))?;
     class.define_method("ewm_std", method!(RbExpr::ewm_std, 5))?;
     class.define_method("ewm_var", method!(RbExpr::ewm_var, 5))?;
@@ -548,7 +547,7 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("cumfold", function!(crate::functions::lazy::cumfold, 4))?;
     class.define_singleton_method("lit", function!(crate::functions::lazy::lit, 2))?;
     class.define_singleton_method("arange", function!(crate::functions::lazy::arange, 3))?;
-    class.define_singleton_method("repeat", function!(crate::functions::lazy::repeat, 2))?;
+    class.define_singleton_method("repeat", function!(crate::functions::lazy::repeat, 3))?;
     class.define_singleton_method(
         "pearson_corr",
         function!(crate::functions::lazy::pearson_corr, 3),
@@ -594,8 +593,8 @@ fn init() -> RbResult<()> {
         "optimization_toggle",
         method!(RbLazyFrame::optimization_toggle, 7),
     )?;
-    class.define_method("sort", method!(RbLazyFrame::sort, 3))?;
-    class.define_method("sort_by_exprs", method!(RbLazyFrame::sort_by_exprs, 3))?;
+    class.define_method("sort", method!(RbLazyFrame::sort, 4))?;
+    class.define_method("sort_by_exprs", method!(RbLazyFrame::sort_by_exprs, 4))?;
     class.define_method("cache", method!(RbLazyFrame::cache, 0))?;
     class.define_method("collect", method!(RbLazyFrame::collect, 0))?;
     class.define_method("sink_parquet", method!(RbLazyFrame::sink_parquet, 7))?;
@@ -731,7 +730,7 @@ fn init() -> RbResult<()> {
     class.define_method("_clone", method!(RbSeries::clone, 0))?;
     class.define_method("apply_lambda", method!(RbSeries::apply_lambda, 3))?;
     class.define_method("zip_with", method!(RbSeries::zip_with, 2))?;
-    class.define_method("to_dummies", method!(RbSeries::to_dummies, 1))?;
+    class.define_method("to_dummies", method!(RbSeries::to_dummies, 2))?;
     class.define_method("peak_max", method!(RbSeries::peak_max, 0))?;
     class.define_method("peak_min", method!(RbSeries::peak_min, 0))?;
     class.define_method("n_unique", method!(RbSeries::n_unique, 0))?;

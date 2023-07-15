@@ -796,22 +796,6 @@ impl RbDataFrame {
         Ok(RbDataFrame::new(df))
     }
 
-    pub fn sort(&self, by_column: String, reverse: bool, nulls_last: bool) -> RbResult<Self> {
-        let df = self
-            .df
-            .borrow()
-            .sort_with_options(
-                &by_column,
-                SortOptions {
-                    descending: reverse,
-                    nulls_last,
-                    multithreaded: true,
-                },
-            )
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbDataFrame::new(df))
-    }
-
     pub fn replace(&self, column: String, new_col: &RbSeries) -> RbResult<()> {
         self.df
             .borrow_mut()
@@ -935,11 +919,16 @@ impl RbDataFrame {
         Ok(RbDataFrame::new(df))
     }
 
-    pub fn partition_by(&self, groups: Vec<String>, stable: bool) -> RbResult<RArray> {
-        let out = if stable {
-            self.df.borrow().partition_by_stable(groups)
+    pub fn partition_by(
+        &self,
+        by: Vec<String>,
+        maintain_order: bool,
+        include_key: bool,
+    ) -> RbResult<RArray> {
+        let out = if maintain_order {
+            self.df.borrow().partition_by_stable(by, include_key)
         } else {
-            self.df.borrow().partition_by(groups)
+            self.df.borrow().partition_by(by, include_key)
         }
         .map_err(RbPolarsErr::from)?;
         Ok(RArray::from_iter(out.into_iter().map(RbDataFrame::new)))
@@ -1026,13 +1015,18 @@ impl RbDataFrame {
         &self,
         columns: Option<Vec<String>>,
         separator: Option<String>,
+        drop_first: bool,
     ) -> RbResult<Self> {
         let df = match columns {
             Some(cols) => self.df.borrow().columns_to_dummies(
                 cols.iter().map(|x| x as &str).collect(),
                 separator.as_deref(),
+                drop_first,
             ),
-            None => self.df.borrow().to_dummies(separator.as_deref()),
+            None => self
+                .df
+                .borrow()
+                .to_dummies(separator.as_deref(), drop_first),
         }
         .map_err(RbPolarsErr::from)?;
         Ok(df.into())

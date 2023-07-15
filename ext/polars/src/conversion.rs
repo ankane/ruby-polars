@@ -543,13 +543,23 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
             if v.is_empty() {
                 Ok(Wrap(AnyValue::List(Series::new_empty("", &DataType::Null))))
             } else {
-                let avs = v.try_convert::<Wrap<Row>>()?.0 .0;
-                // use first `n` values to infer datatype
-                // this value is not too large as this will be done with every
-                // anyvalue that has to be converted, which can be many
-                let n = 25;
-                let dtype = any_values_to_dtype(&avs[..std::cmp::min(avs.len(), n)])
-                    .map_err(RbPolarsErr::from)?;
+                let list = v;
+
+                let mut avs = Vec::with_capacity(25);
+                let mut iter = list.each();
+
+                for item in (&mut iter).take(25) {
+                    avs.push(item?.try_convert::<Wrap<AnyValue>>()?.0)
+                }
+
+                let (dtype, _n_types) = any_values_to_dtype(&avs).map_err(RbPolarsErr::from)?;
+
+                // push the rest
+                avs.reserve(list.len());
+                for item in iter {
+                    avs.push(item?.try_convert::<Wrap<AnyValue>>()?.0)
+                }
+
                 let s = Series::from_any_values_and_dtype("", &avs, &dtype, true)
                     .map_err(RbPolarsErr::from)?;
                 Ok(Wrap(AnyValue::List(s)))

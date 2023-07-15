@@ -13,16 +13,15 @@ crate-type = ["cdylib"]
 ahash = "0.8"
 chrono = "=0.4.24"
 magnus = "0.5"
-polars-core = "0.30.0"
+polars-core = "0.31.1"
 serde_json = "1"
 smartstring = "1"
 
 [dependencies.polars]
-version = "0.30.0"
+version = "0.31.1"
 features = [
     "abs",
     "approx_unique",
-    "arange",
     "arg_where",
     "asof_join",
     "avro",
@@ -69,6 +68,7 @@ features = [
     "propagate_nans",
     "random",
     "rank",
+    "range",
     "reinterpret",
     "repeat_by",
     "rolling_window",

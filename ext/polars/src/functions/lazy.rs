@@ -58,7 +58,12 @@ pub fn cols(names: Vec<String>) -> RbExpr {
     dsl::cols(names).into()
 }
 
-pub fn concat_lf(lfs: Value, rechunk: bool, parallel: bool) -> RbResult<RbLazyFrame> {
+pub fn concat_lf(
+    lfs: Value,
+    rechunk: bool,
+    parallel: bool,
+    to_supertypes: bool,
+) -> RbResult<RbLazyFrame> {
     let (seq, len) = get_rbseq(lfs)?;
     let mut lfs = Vec::with_capacity(len);
 
@@ -68,7 +73,15 @@ pub fn concat_lf(lfs: Value, rechunk: bool, parallel: bool) -> RbResult<RbLazyFr
         lfs.push(lf);
     }
 
-    let lf = polars::lazy::dsl::concat(lfs, rechunk, parallel).map_err(RbPolarsErr::from)?;
+    let lf = dsl::concat(
+        lfs,
+        UnionArgs {
+            rechunk,
+            parallel,
+            to_supertypes,
+        },
+    )
+    .map_err(RbPolarsErr::from)?;
     Ok(lf.into())
 }
 
@@ -175,12 +188,25 @@ pub fn lit(value: Value, allow_object: bool) -> RbResult<RbExpr> {
     }
 }
 
-pub fn repeat(value: Value, n_times: &RbExpr) -> RbResult<RbExpr> {
-    if value.is_nil() {
-        Ok(polars::lazy::dsl::repeat(Null {}, n_times.inner.clone()).into())
-    } else {
-        todo!();
+pub fn repeat(value: &RbExpr, n: &RbExpr, dtype: Option<Wrap<DataType>>) -> RbResult<RbExpr> {
+    let mut value = value.inner.clone();
+    let n = n.inner.clone();
+
+    if let Some(dtype) = dtype {
+        value = value.cast(dtype.0);
     }
+
+    if let Expr::Literal(lv) = &value {
+        let av = lv.to_anyvalue().unwrap();
+        // Integer inputs that fit in Int32 are parsed as such
+        if let DataType::Int64 = av.dtype() {
+            let int_value = av.try_extract::<i64>().unwrap();
+            if int_value >= i32::MIN as i64 && int_value <= i32::MAX as i64 {
+                value = value.cast(DataType::Int32);
+            }
+        }
+    }
+    Ok(dsl::repeat(value, n).into())
 }
 
 pub fn pearson_corr(a: &RbExpr, b: &RbExpr, ddof: u8) -> RbExpr {
@@ -216,7 +242,8 @@ pub fn dtype_cols2(dtypes: RArray) -> RbResult<RbExpr> {
     Ok(crate::functions::lazy::dtype_cols(dtypes))
 }
 
+// TODO rename to sum_horizontal
 pub fn sum_exprs(exprs: RArray) -> RbResult<RbExpr> {
     let exprs = rb_exprs_to_exprs(exprs)?;
-    Ok(polars::lazy::dsl::sum_exprs(exprs).into())
+    Ok(polars::lazy::dsl::sum_horizontal(exprs).into())
 }

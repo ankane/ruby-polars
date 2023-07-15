@@ -285,5 +285,28 @@ module Polars
     def self.local_file?(file)
       Dir.glob(file).any?
     end
+
+    def self.parse_as_expression(input, str_as_lit: false, structify: false)
+      if input.is_a?(Expr)
+        expr = input
+      elsif input.is_a?(String) && !str_as_lit
+        expr = Polars.col(input)
+        structify = false
+      elsif [Integer, Float, String, Series, ::Date, ::Time, ::DateTime].any? { |cls| input.is_a?(cls) } || input.nil?
+        expr = Polars.lit(input)
+        structify = false
+      elsif input.is_a?(Array)
+        expr = Polars.lit(Polars::Series.new("", [input]))
+        structify = false
+      else
+        raise TypeError, "did not expect value #{input} of type #{input.class.name}, maybe disambiguate with pl.lit or pl.col"
+      end
+
+      if structify
+        raise Todo
+      end
+
+      expr._rbexpr
+    end
   end
 end

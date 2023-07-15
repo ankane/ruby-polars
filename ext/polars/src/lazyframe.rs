@@ -230,7 +230,13 @@ impl RbLazyFrame {
         ldf.into()
     }
 
-    pub fn sort(&self, by_column: String, reverse: bool, nulls_last: bool) -> Self {
+    pub fn sort(
+        &self,
+        by_column: String,
+        reverse: bool,
+        nulls_last: bool,
+        maintain_order: bool,
+    ) -> Self {
         let ldf = self.ldf.clone();
         ldf.sort(
             &by_column,
@@ -238,6 +244,7 @@ impl RbLazyFrame {
                 descending: reverse,
                 nulls_last,
                 multithreaded: true,
+                maintain_order,
             },
         )
         .into()
@@ -248,10 +255,13 @@ impl RbLazyFrame {
         by_column: RArray,
         reverse: Vec<bool>,
         nulls_last: bool,
+        maintain_order: bool,
     ) -> RbResult<Self> {
         let ldf = self.ldf.clone();
         let exprs = rb_exprs_to_exprs(by_column)?;
-        Ok(ldf.sort_by_exprs(exprs, reverse, nulls_last).into())
+        Ok(ldf
+            .sort_by_exprs(exprs, reverse, nulls_last, maintain_order)
+            .into())
     }
 
     pub fn cache(&self) -> Self {

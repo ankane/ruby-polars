@@ -667,11 +667,11 @@ module Polars
     #   # │ {null,null} │
     #   # │ {2,false}   │
     #   # └─────────────┘
-    def json_extract(dtype = nil)
+    def json_extract(dtype = nil, infer_schema_length: 100)
       if !dtype.nil?
         dtype = Utils.rb_type_to_dtype(dtype)
       end
-      Utils.wrap_expr(_rbexpr.str_json_extract(dtype))
+      Utils.wrap_expr(_rbexpr.str_json_extract(dtype, infer_schema_length))
     end
 
     # Extract the first match of json string with provided JSONPath expression.

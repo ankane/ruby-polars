@@ -158,7 +158,6 @@ module Polars
         col(column.to_s).sum
       elsif column.is_a?(::Array)
         exprs = Utils.selection_to_rbexpr_list(column)
-        # TODO
         Utils.wrap_expr(_sum_exprs(exprs))
       else
         fold(lit(0).cast(:u32), ->(a, b) { a + b }, column).alias("sum")
@@ -1031,19 +1030,24 @@ module Polars
     #   Only used in `eager` mode. As expression, use `alias`.
     #
     # @return [Expr]
-    def repeat(value, n, eager: false, name: nil)
-      if eager
-        if name.nil?
-          name = ""
-        end
-        dtype = py_type_to_dtype(type(value))
-        Series._repeat(name, value, n, dtype)
-      else
-        if n.is_a?(Integer)
-          n = lit(n)
-        end
-        Utils.wrap_expr(RbExpr.repeat(value, n._rbexpr))
+    def repeat(value, n, dtype: nil, eager: false, name: nil)
+      if !name.nil?
+        warn "the `name` argument is deprecated. Use the `alias` method instead."
       end
+
+      if n.is_a?(Integer)
+        n = lit(n)
+      end
+
+      value = Utils.parse_as_expression(value, str_as_lit: true)
+      expr = Utils.wrap_expr(RbExpr.repeat(value, n._rbexpr, dtype))
+      if !name.nil?
+        expr = expr.alias(name)
+      end
+      if eager
+        return select(expr).to_series
+      end
+      expr
     end
 
     # Return indices where `condition` evaluates `true`.

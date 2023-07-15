@@ -1498,13 +1498,9 @@ module Polars
     #   # │ 1   ┆ 6.0 ┆ a   │
     #   # └─────┴─────┴─────┘
     def sort(by, reverse: false, nulls_last: false)
-      if by.is_a?(::Array) || by.is_a?(Expr)
-        lazy
-          .sort(by, reverse: reverse, nulls_last: nulls_last)
-          .collect(no_optimization: true, string_cache: false)
-      else
-        _from_rbdf(_df.sort(by, reverse, nulls_last))
-      end
+      lazy
+        .sort(by, reverse: reverse, nulls_last: nulls_last)
+        .collect(no_optimization: true)
     end
 
     # Sort the DataFrame by column in-place.
@@ -3440,7 +3436,7 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ C   ┆ 2   ┆ l   │
     #   # └─────┴─────┴─────┘}
-    def partition_by(groups, maintain_order: true, as_dict: false)
+    def partition_by(groups, maintain_order: true, include_key: true, as_dict: false)
       if groups.is_a?(String)
         groups = [groups]
       elsif !groups.is_a?(::Array)
@@ -3450,19 +3446,19 @@ module Polars
       if as_dict
         out = {}
         if groups.length == 1
-          _df.partition_by(groups, maintain_order).each do |df|
+          _df.partition_by(groups, maintain_order, include_key).each do |df|
             df = _from_rbdf(df)
             out[df[groups][0, 0]] = df
           end
         else
-          _df.partition_by(groups, maintain_order).each do |df|
+          _df.partition_by(groups, maintain_order, include_key).each do |df|
             df = _from_rbdf(df)
             out[df[groups].row(0)] = df
           end
         end
         out
       else
-        _df.partition_by(groups, maintain_order).map { |df| _from_rbdf(df) }
+        _df.partition_by(groups, maintain_order, include_key).map { |df| _from_rbdf(df) }
       end
     end
 
@@ -4111,11 +4107,11 @@ module Polars
     #   # │ 1     ┆ 0     ┆ 1     ┆ 0     ┆ 1     ┆ 0     │
     #   # │ 0     ┆ 1     ┆ 0     ┆ 1     ┆ 0     ┆ 1     │
     #   # └───────┴───────┴───────┴───────┴───────┴───────┘
-    def to_dummies(columns: nil, separator: "_")
+    def to_dummies(columns: nil, separator: "_", drop_first: false)
       if columns.is_a?(String)
         columns = [columns]
       end
-      _from_rbdf(_df.to_dummies(columns, separator))
+      _from_rbdf(_df.to_dummies(columns, separator, drop_first))
     end
 
     # Drop duplicate rows from this DataFrame.

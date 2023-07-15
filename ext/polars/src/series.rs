@@ -634,11 +634,11 @@ impl RbSeries {
         Ok(RbSeries::new(s))
     }
 
-    pub fn to_dummies(&self, sep: Option<String>) -> RbResult<RbDataFrame> {
+    pub fn to_dummies(&self, sep: Option<String>, drop_first: bool) -> RbResult<RbDataFrame> {
         let df = self
             .series
             .borrow()
-            .to_dummies(sep.as_deref())
+            .to_dummies(sep.as_deref(), drop_first)
             .map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }

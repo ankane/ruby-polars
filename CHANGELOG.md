@@ -1,6 +1,6 @@
 ## 0.6.0 (unreleased)
 
-- Updated Polars to 0.30.0
+- Updated Polars to 0.31.1
 - Added `Array` type
 - Added support for creating series with `Datetime` type
 - Added support for `Null` to `to_a` method

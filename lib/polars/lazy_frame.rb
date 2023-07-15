@@ -395,16 +395,16 @@ module Polars
     #   # │ 2   ┆ 7.0 ┆ b   │
     #   # │ 1   ┆ 6.0 ┆ a   │
     #   # └─────┴─────┴─────┘
-    def sort(by, reverse: false, nulls_last: false)
+    def sort(by, reverse: false, nulls_last: false, maintain_order: false)
       if by.is_a?(String)
-        _from_rbldf(_ldf.sort(by, reverse, nulls_last))
+        return _from_rbldf(_ldf.sort(by, reverse, nulls_last, maintain_order))
       end
       if Utils.bool?(reverse)
         reverse = [reverse]
       end
 
       by = Utils.selection_to_rbexpr_list(by)
-      _from_rbldf(_ldf.sort_by_exprs(by, reverse, nulls_last))
+      _from_rbldf(_ldf.sort_by_exprs(by, reverse, nulls_last, maintain_order))
     end
 
     # def profile

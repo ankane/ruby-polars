@@ -719,8 +719,8 @@ module Polars
     #   # │ 0   ┆ 1   ┆ 0   │
     #   # │ 0   ┆ 0   ┆ 1   │
     #   # └─────┴─────┴─────┘
-    def to_dummies(separator: "_")
-      Utils.wrap_df(_s.to_dummies(separator))
+    def to_dummies(separator: "_", drop_first: false)
+      Utils.wrap_df(_s.to_dummies(separator, drop_first))
     end
 
     # Count the unique values in a Series.
@@ -2817,7 +2817,8 @@ module Polars
       window_size,
       weights: nil,
       min_periods: nil,
-      center: false
+      center: false,
+      ddof: 1
     )
       to_frame
         .select(
@@ -2825,7 +2826,8 @@ module Polars
             window_size,
             weights: weights,
             min_periods: min_periods,
-            center: center
+            center: center,
+            ddof: ddof
           )
         )
         .to_series
@@ -2868,7 +2870,8 @@ module Polars
       window_size,
       weights: nil,
       min_periods: nil,
-      center: false
+      center: false,
+      ddof: 1
     )
       to_frame
         .select(
@@ -2876,7 +2879,8 @@ module Polars
             window_size,
             weights: weights,
             min_periods: min_periods,
-            center: center
+            center: center,
+            ddof: ddof
           )
         )
         .to_series

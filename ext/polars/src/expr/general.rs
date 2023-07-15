@@ -3,6 +3,7 @@ use polars::lazy::dsl;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 use polars_core::series::IsSorted;
+use std::any::Any;
 
 use crate::apply::lazy::map_single;
 use crate::conversion::{parse_fill_null_strategy, Wrap};
@@ -202,6 +203,7 @@ impl RbExpr {
                 descending,
                 nulls_last,
                 multithreaded: true,
+                maintain_order: false,
             })
             .into()
     }
@@ -213,6 +215,7 @@ impl RbExpr {
                 descending: reverse,
                 nulls_last,
                 multithreaded: true,
+                maintain_order: false,
             })
             .into()
     }
@@ -589,6 +592,7 @@ impl RbExpr {
             center,
             by,
             closed_window: closed.map(|c| c.0),
+            ..Default::default()
         };
         self.inner.clone().rolling_sum(options).into()
     }
@@ -609,6 +613,7 @@ impl RbExpr {
             center,
             by,
             closed_window: closed.map(|c| c.0),
+            ..Default::default()
         };
         self.inner.clone().rolling_min(options).into()
     }
@@ -629,6 +634,7 @@ impl RbExpr {
             center,
             by,
             closed_window: closed.map(|c| c.0),
+            ..Default::default()
         };
         self.inner.clone().rolling_max(options).into()
     }
@@ -649,11 +655,13 @@ impl RbExpr {
             center,
             by,
             closed_window: closed.map(|c| c.0),
+            ..Default::default()
         };
 
         self.inner.clone().rolling_mean(options).into()
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn rolling_std(
         &self,
         window_size: String,
@@ -662,6 +670,7 @@ impl RbExpr {
         center: bool,
         by: Option<String>,
         closed: Option<Wrap<ClosedWindow>>,
+        ddof: u8,
     ) -> Self {
         let options = RollingOptions {
             window_size: Duration::parse(&window_size),
@@ -670,11 +679,13 @@ impl RbExpr {
             center,
             by,
             closed_window: closed.map(|c| c.0),
+            fn_params: Some(Arc::new(RollingVarParams { ddof }) as Arc<dyn Any + Send + Sync>),
         };
 
         self.inner.clone().rolling_std(options).into()
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn rolling_var(
         &self,
         window_size: String,
@@ -683,6 +694,7 @@ impl RbExpr {
         center: bool,
         by: Option<String>,
         closed: Option<Wrap<ClosedWindow>>,
+        ddof: u8,
     ) -> Self {
         let options = RollingOptions {
             window_size: Duration::parse(&window_size),
@@ -691,6 +703,7 @@ impl RbExpr {
             center,
             by,
             closed_window: closed.map(|c| c.0),
+            fn_params: Some(Arc::new(RollingVarParams { ddof }) as Arc<dyn Any + Send + Sync>),
         };
 
         self.inner.clone().rolling_var(options).into()
@@ -712,8 +725,12 @@ impl RbExpr {
             center,
             by,
             closed_window: closed.map(|c| c.0),
+            fn_params: Some(Arc::new(RollingQuantileParams {
+                prob: 0.5,
+                interpol: QuantileInterpolOptions::Linear,
+            }) as Arc<dyn Any + Send + Sync>),
         };
-        self.inner.clone().rolling_median(options).into()
+        self.inner.clone().rolling_quantile(options).into()
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -735,12 +752,13 @@ impl RbExpr {
             center,
             by,
             closed_window: closed.map(|c| c.0),
+            fn_params: Some(Arc::new(RollingQuantileParams {
+                prob: quantile,
+                interpol: interpolation.0,
+            }) as Arc<dyn Any + Send + Sync>),
         };
 
-        self.inner
-            .clone()
-            .rolling_quantile(quantile, interpolation.0, options)
-            .into()
+        self.inner.clone().rolling_quantile(options).into()
     }
 
     pub fn rolling_skew(&self, window_size: usize, bias: bool) -> Self {
@@ -810,8 +828,8 @@ impl RbExpr {
             .into()
     }
 
-    pub fn shuffle(&self, seed: Option<u64>) -> Self {
-        self.inner.clone().shuffle(seed).into()
+    pub fn shuffle(&self, seed: Option<u64>, fixed_seed: bool) -> Self {
+        self.inner.clone().shuffle(seed, fixed_seed).into()
     }
 
     pub fn sample_n(
@@ -820,10 +838,11 @@ impl RbExpr {
         with_replacement: bool,
         shuffle: bool,
         seed: Option<u64>,
+        fixed_seed: bool,
     ) -> Self {
         self.inner
             .clone()
-            .sample_n(n, with_replacement, shuffle, seed)
+            .sample_n(n, with_replacement, shuffle, seed, fixed_seed)
             .into()
     }
 
@@ -833,10 +852,11 @@ impl RbExpr {
         with_replacement: bool,
         shuffle: bool,
         seed: Option<u64>,
+        fixed_seed: bool,
     ) -> Self {
         self.inner
             .clone()
-            .sample_frac(frac, with_replacement, shuffle, seed)
+            .sample_frac(frac, with_replacement, shuffle, seed, fixed_seed)
             .into()
     }
 

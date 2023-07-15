@@ -230,7 +230,11 @@ impl RbExpr {
             .into()
     }
 
-    pub fn str_json_extract(&self, dtype: Option<Wrap<DataType>>) -> Self {
+    pub fn str_json_extract(
+        &self,
+        dtype: Option<Wrap<DataType>>,
+        infer_schema_len: Option<usize>,
+    ) -> Self {
         let dtype = dtype.map(|wrap| wrap.0);
 
         let output_type = match dtype.clone() {
@@ -240,7 +244,7 @@ impl RbExpr {
 
         let function = move |s: Series| {
             let ca = s.utf8()?;
-            match ca.json_extract(dtype.clone()) {
+            match ca.json_extract(dtype.clone(), infer_schema_len) {
                 Ok(ca) => Ok(Some(ca.into_series())),
                 Err(e) => Err(PolarsError::ComputeError(format!("{e:?}").into())),
             }

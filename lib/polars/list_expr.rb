@@ -254,7 +254,7 @@ module Polars
     #   # │ 1    │
     #   # └──────┘
     def get(index)
-      index = Utils.expr_to_lit_or_expr(index, str_to_lit: false)._rbexpr
+      index = Utils.parse_as_expression(index)
       Utils.wrap_expr(_rbexpr.list_get(index))
     end
 

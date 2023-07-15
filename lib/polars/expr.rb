@@ -2436,14 +2436,14 @@ module Polars
     #   ).sort("group_col")
     #   # =>
     #   # shape: (2, 3)
-    #   # ┌───────────┬──────┬─────┐
-    #   # │ group_col ┆ lt   ┆ gte │
-    #   # │ ---       ┆ ---  ┆ --- │
-    #   # │ str       ┆ i64  ┆ i64 │
-    #   # ╞═══════════╪══════╪═════╡
-    #   # │ g1        ┆ 1    ┆ 2   │
-    #   # │ g2        ┆ null ┆ 3   │
-    #   # └───────────┴──────┴─────┘
+    #   # ┌───────────┬─────┬─────┐
+    #   # │ group_col ┆ lt  ┆ gte │
+    #   # │ ---       ┆ --- ┆ --- │
+    #   # │ str       ┆ i64 ┆ i64 │
+    #   # ╞═══════════╪═════╪═════╡
+    #   # │ g1        ┆ 1   ┆ 2   │
+    #   # │ g2        ┆ 0   ┆ 3   │
+    #   # └───────────┴─────┴─────┘
     def filter(predicate)
       wrap_expr(_rbexpr.filter(predicate._rbexpr))
     end
@@ -2474,14 +2474,14 @@ module Polars
     #   ).sort("group_col")
     #   # =>
     #   # shape: (2, 3)
-    #   # ┌───────────┬──────┬─────┐
-    #   # │ group_col ┆ lt   ┆ gte │
-    #   # │ ---       ┆ ---  ┆ --- │
-    #   # │ str       ┆ i64  ┆ i64 │
-    #   # ╞═══════════╪══════╪═════╡
-    #   # │ g1        ┆ 1    ┆ 2   │
-    #   # │ g2        ┆ null ┆ 3   │
-    #   # └───────────┴──────┴─────┘
+    #   # ┌───────────┬─────┬─────┐
+    #   # │ group_col ┆ lt  ┆ gte │
+    #   # │ ---       ┆ --- ┆ --- │
+    #   # │ str       ┆ i64 ┆ i64 │
+    #   # ╞═══════════╪═════╪═════╡
+    #   # │ g1        ┆ 1   ┆ 2   │
+    #   # │ g2        ┆ 0   ┆ 3   │
+    #   # └───────────┴─────┴─────┘
     def where(predicate)
       filter(predicate)
     end
@@ -3500,14 +3500,15 @@ module Polars
       min_periods: nil,
       center: false,
       by: nil,
-      closed: "left"
+      closed: "left",
+      ddof: 1
     )
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
       )
       wrap_expr(
         _rbexpr.rolling_std(
-          window_size, weights, min_periods, center, by, closed
+          window_size, weights, min_periods, center, by, closed, ddof
         )
       )
     end
@@ -3589,14 +3590,15 @@ module Polars
       min_periods: nil,
       center: false,
       by: nil,
-      closed: "left"
+      closed: "left",
+      ddof: 1
     )
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
       )
       wrap_expr(
         _rbexpr.rolling_var(
-          window_size, weights, min_periods, center, by, closed
+          window_size, weights, min_periods, center, by, closed, ddof
         )
       )
     end
@@ -4556,11 +4558,11 @@ module Polars
     #   # │ 1   │
     #   # │ 3   │
     #   # └─────┘
-    def shuffle(seed: nil)
+    def shuffle(seed: nil, fixed_seed: false)
       if seed.nil?
         seed = rand(10000)
       end
-      wrap_expr(_rbexpr.shuffle(seed))
+      wrap_expr(_rbexpr.shuffle(seed, fixed_seed))
     end
 
     # Sample from this expression.
@@ -4598,21 +4600,22 @@ module Polars
       with_replacement: true,
       shuffle: false,
       seed: nil,
-      n: nil
+      n: nil,
+      fixed_seed: false
     )
       if !n.nil? && !frac.nil?
         raise ArgumentError, "cannot specify both `n` and `frac`"
       end
 
       if !n.nil? && frac.nil?
-        return wrap_expr(_rbexpr.sample_n(n, with_replacement, shuffle, seed))
+        return wrap_expr(_rbexpr.sample_n(n, with_replacement, shuffle, seed, fixed_seed))
       end
 
       if frac.nil?
         frac = 1.0
       end
       wrap_expr(
-        _rbexpr.sample_frac(frac, with_replacement, shuffle, seed)
+        _rbexpr.sample_frac(frac, with_replacement, shuffle, seed, fixed_seed)
       )
     end
 
