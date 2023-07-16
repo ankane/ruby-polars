@@ -1,4 +1,4 @@
-use magnus::{class, IntoValue, RArray, TryConvert, Value};
+use magnus::{class, prelude::*, typed_data::Obj, IntoValue, RArray, TryConvert, Value};
 use polars::prelude::*;
 use polars_core::frame::row::{rows_to_schema_first_non_null, Row};
 use polars_core::series::SeriesIter;
@@ -36,18 +36,18 @@ pub fn apply_lambda_unknown<'a>(
         } else if out.is_kind_of(class::true_class()) || out.is_kind_of(class::false_class()) {
             let first_value = out.try_convert::<bool>().ok();
             return Ok((
-                RbSeries::new(
+                Obj::wrap(RbSeries::new(
                     apply_lambda_with_bool_out_type(df, lambda, null_count, first_value)
                         .into_series(),
-                )
-                .into(),
+                ))
+                .as_value(),
                 false,
             ));
         } else if out.is_kind_of(class::float()) {
             let first_value = out.try_convert::<f64>().ok();
 
             return Ok((
-                RbSeries::new(
+                Obj::wrap(RbSeries::new(
                     apply_lambda_with_primitive_out_type::<Float64Type>(
                         df,
                         lambda,
@@ -55,14 +55,14 @@ pub fn apply_lambda_unknown<'a>(
                         first_value,
                     )
                     .into_series(),
-                )
-                .into(),
+                ))
+                .as_value(),
                 false,
             ));
         } else if out.is_kind_of(class::integer()) {
             let first_value = out.try_convert::<i64>().ok();
             return Ok((
-                RbSeries::new(
+                Obj::wrap(RbSeries::new(
                     apply_lambda_with_primitive_out_type::<Int64Type>(
                         df,
                         lambda,
@@ -70,8 +70,8 @@ pub fn apply_lambda_unknown<'a>(
                         first_value,
                     )
                     .into_series(),
-                )
-                .into(),
+                ))
+                .as_value(),
                 false,
             ));
         // } else if out.is_kind_of(class::string()) {
@@ -93,17 +93,17 @@ pub fn apply_lambda_unknown<'a>(
                 .borrow();
             let dt = series.dtype();
             return Ok((
-                RbSeries::new(
+                Obj::wrap(RbSeries::new(
                     apply_lambda_with_list_out_type(df, lambda, null_count, Some(&series), dt)?
                         .into_series(),
-                )
-                .into(),
+                ))
+                .as_value(),
                 false,
             ));
         } else if out.try_convert::<Wrap<Row<'a>>>().is_ok() {
             let first_value = out.try_convert::<Wrap<Row<'a>>>().unwrap().0;
             return Ok((
-                RbDataFrame::from(
+                Obj::wrap(RbDataFrame::from(
                     apply_lambda_with_rows_output(
                         df,
                         lambda,
@@ -112,8 +112,8 @@ pub fn apply_lambda_unknown<'a>(
                         inference_size,
                     )
                     .map_err(RbPolarsErr::from)?,
-                )
-                .into(),
+                ))
+                .as_value(),
                 true,
             ));
         } else if out.is_kind_of(class::array()) {

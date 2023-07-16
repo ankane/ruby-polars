@@ -1,4 +1,6 @@
-use magnus::{r_hash::ForEach, IntoValue, RArray, RHash, RString, Value};
+use magnus::{
+    prelude::*, r_hash::ForEach, typed_data::Obj, IntoValue, RArray, RHash, RString, Value,
+};
 use polars::frame::row::{rows_to_schema_supertypes, Row};
 use polars::frame::NullStrategy;
 use polars::io::avro::AvroCompression;
@@ -487,7 +489,7 @@ impl RbDataFrame {
                     _ => Wrap(s.get(idx).unwrap()).into_value(),
                 }),
         )
-        .into()
+        .as_value()
     }
 
     pub fn row_tuples(&self) -> Value {
@@ -507,7 +509,7 @@ impl RbDataFrame {
                     }),
             )
         }))
-        .into()
+        .as_value()
     }
 
     pub fn to_numo(&self) -> Option<Value> {
@@ -1088,7 +1090,7 @@ impl RbDataFrame {
             _ => return apply_lambda_unknown(df, lambda, inference_size),
         };
 
-        Ok((RbSeries::from(out).into(), false))
+        Ok((Obj::wrap(RbSeries::from(out)).as_value(), false))
     }
 
     pub fn shrink_to_fit(&self) {

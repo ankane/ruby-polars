@@ -5,7 +5,7 @@ mod construction;
 mod export;
 mod set_at_idx;
 
-use magnus::{exception, Error, IntoValue, RArray, Value, QNIL};
+use magnus::{exception, prelude::*, Error, IntoValue, RArray, Value, QNIL};
 use polars::prelude::*;
 use polars::series::IsSorted;
 use std::cell::RefCell;

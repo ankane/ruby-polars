@@ -1,4 +1,4 @@
-use magnus::{class, IntoValue, RHash, TryConvert, Value};
+use magnus::{class, prelude::*, IntoValue, RHash, TryConvert, Value};
 use polars::prelude::*;
 
 use super::*;

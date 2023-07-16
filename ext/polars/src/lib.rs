@@ -23,7 +23,7 @@ use expr::RbExpr;
 use functions::whenthen::{RbWhen, RbWhenThen};
 use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
-use magnus::{define_module, function, method, prelude::*, Error};
+use magnus::{define_module, function, method, prelude::*, Error, Ruby};
 use series::RbSeries;
 
 #[cfg(target_os = "linux")]
@@ -43,7 +43,7 @@ static GLOBAL: MiMalloc = MiMalloc;
 type RbResult<T> = Result<T, Error>;
 
 #[magnus::init]
-fn init() -> RbResult<()> {
+fn init(ruby: &Ruby) -> RbResult<()> {
     let module = define_module("Polars")?;
     module.define_singleton_method(
         "_dtype_cols",
@@ -110,11 +110,11 @@ fn init() -> RbResult<()> {
         function!(crate::functions::meta::get_idx_type, 0),
     )?;
 
-    let class = module.define_class("RbBatchedCsv", Default::default())?;
+    let class = module.define_class("RbBatchedCsv", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbBatchedCsv::new, -1))?;
     class.define_method("next_batches", method!(RbBatchedCsv::next_batches, 1))?;
 
-    let class = module.define_class("RbDataFrame", Default::default())?;
+    let class = module.define_class("RbDataFrame", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbDataFrame::init, 1))?;
     class.define_singleton_method("read_csv", function!(RbDataFrame::read_csv, -1))?;
     class.define_singleton_method("read_parquet", function!(RbDataFrame::read_parquet, 9))?;
@@ -217,7 +217,7 @@ fn init() -> RbResult<()> {
     class.define_method("to_struct", method!(RbDataFrame::to_struct, 1))?;
     class.define_method("unnest", method!(RbDataFrame::unnest, 1))?;
 
-    let class = module.define_class("RbExpr", Default::default())?;
+    let class = module.define_class("RbExpr", ruby.class_object())?;
     class.define_method("+", method!(RbExpr::add, 1))?;
     class.define_method("-", method!(RbExpr::sub, 1))?;
     class.define_method("*", method!(RbExpr::mul, 1))?;
@@ -571,7 +571,7 @@ fn init() -> RbResult<()> {
         function!(crate::functions::lazy::concat_lst, 1),
     )?;
 
-    let class = module.define_class("RbLazyFrame", Default::default())?;
+    let class = module.define_class("RbLazyFrame", ruby.class_object())?;
     class.define_singleton_method("read_json", function!(RbLazyFrame::read_json, 1))?;
     class.define_singleton_method(
         "new_from_ndjson",
@@ -636,12 +636,12 @@ fn init() -> RbResult<()> {
     class.define_method("unnest", method!(RbLazyFrame::unnest, 1))?;
     class.define_method("width", method!(RbLazyFrame::width, 0))?;
 
-    let class = module.define_class("RbLazyGroupBy", Default::default())?;
+    let class = module.define_class("RbLazyGroupBy", ruby.class_object())?;
     class.define_method("agg", method!(RbLazyGroupBy::agg, 1))?;
     class.define_method("head", method!(RbLazyGroupBy::head, 1))?;
     class.define_method("tail", method!(RbLazyGroupBy::tail, 1))?;
 
-    let class = module.define_class("RbSeries", Default::default())?;
+    let class = module.define_class("RbSeries", ruby.class_object())?;
     class.define_singleton_method("new_opt_bool", function!(RbSeries::new_opt_bool, 3))?;
     class.define_singleton_method("new_opt_u8", function!(RbSeries::new_opt_u8, 3))?;
     class.define_singleton_method("new_opt_u16", function!(RbSeries::new_opt_u16, 3))?;
@@ -902,10 +902,10 @@ fn init() -> RbResult<()> {
     // extra
     class.define_method("extend_constant", method!(RbSeries::extend_constant, 2))?;
 
-    let class = module.define_class("RbWhen", Default::default())?;
+    let class = module.define_class("RbWhen", ruby.class_object())?;
     class.define_method("_then", method!(RbWhen::then, 1))?;
 
-    let class = module.define_class("RbWhenThen", Default::default())?;
+    let class = module.define_class("RbWhenThen", ruby.class_object())?;
     class.define_method("otherwise", method!(RbWhenThen::overwise, 1))?;
 
     Ok(())

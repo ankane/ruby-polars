@@ -1,4 +1,4 @@
-use magnus::RArray;
+use magnus::{prelude::*, RArray};
 use polars_core::prelude::*;
 
 use crate::conversion::{slice_extract_wrapped, vec_extract_wrapped, Wrap};

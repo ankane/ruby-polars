@@ -3,8 +3,8 @@ use std::hash::{Hash, Hasher};
 
 use magnus::encoding::{EncodingCapable, Index};
 use magnus::{
-    class, exception, r_hash::ForEach, ruby_handle::RubyHandle, Float, Integer, IntoValue, Module,
-    RArray, RHash, RString, Symbol, TryConvert, Value, QNIL,
+    class, exception, prelude::*, r_hash::ForEach, Float, Integer, IntoValue, Module, RArray,
+    RHash, RString, Ruby, Symbol, TryConvert, Value,
 };
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
@@ -134,22 +134,22 @@ fn struct_dict<'a>(vals: impl Iterator<Item = AnyValue<'a>>, flds: &[Field]) -> 
 }
 
 impl IntoValue for Wrap<AnyValue<'_>> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, ruby: &Ruby) -> Value {
         match self.0 {
-            AnyValue::UInt8(v) => Value::from(v),
-            AnyValue::UInt16(v) => Value::from(v),
-            AnyValue::UInt32(v) => Value::from(v),
-            AnyValue::UInt64(v) => Value::from(v),
-            AnyValue::Int8(v) => Value::from(v),
-            AnyValue::Int16(v) => Value::from(v),
-            AnyValue::Int32(v) => Value::from(v),
-            AnyValue::Int64(v) => Value::from(v),
-            AnyValue::Float32(v) => Value::from(v),
-            AnyValue::Float64(v) => Value::from(v),
-            AnyValue::Null => *QNIL,
-            AnyValue::Boolean(v) => Value::from(v),
-            AnyValue::Utf8(v) => Value::from(v),
-            AnyValue::Utf8Owned(v) => Value::from(v.as_str()),
+            AnyValue::UInt8(v) => ruby.into_value(v),
+            AnyValue::UInt16(v) => ruby.into_value(v),
+            AnyValue::UInt32(v) => ruby.into_value(v),
+            AnyValue::UInt64(v) => ruby.into_value(v),
+            AnyValue::Int8(v) => ruby.into_value(v),
+            AnyValue::Int16(v) => ruby.into_value(v),
+            AnyValue::Int32(v) => ruby.into_value(v),
+            AnyValue::Int64(v) => ruby.into_value(v),
+            AnyValue::Float32(v) => ruby.into_value(v),
+            AnyValue::Float64(v) => ruby.into_value(v),
+            AnyValue::Null => ruby.qnil().as_value(),
+            AnyValue::Boolean(v) => ruby.into_value(v),
+            AnyValue::Utf8(v) => ruby.into_value(v),
+            AnyValue::Utf8Owned(v) => ruby.into_value(v.as_str()),
             AnyValue::Categorical(idx, rev, arr) => {
                 let s = if arr.is_null() {
                     rev.get(idx)
@@ -193,7 +193,7 @@ impl IntoValue for Wrap<AnyValue<'_>> {
 }
 
 impl IntoValue for Wrap<DataType> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let pl = crate::rb_modules::polars();
 
         match self.0 {
@@ -266,7 +266,7 @@ impl IntoValue for Wrap<DataType> {
 }
 
 impl IntoValue for Wrap<TimeUnit> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let tu = match self.0 {
             TimeUnit::Nanoseconds => "ns",
             TimeUnit::Microseconds => "us",
@@ -277,14 +277,14 @@ impl IntoValue for Wrap<TimeUnit> {
 }
 
 impl IntoValue for Wrap<&Utf8Chunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let iter = self.0.into_iter();
         RArray::from_iter(iter).into_value()
     }
 }
 
 impl IntoValue for Wrap<&BinaryChunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let iter = self
             .0
             .into_iter()
@@ -294,7 +294,7 @@ impl IntoValue for Wrap<&BinaryChunked> {
 }
 
 impl IntoValue for Wrap<&StructChunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let s = self.0.clone().into_series();
         // todo! iterate its chunks and flatten.
         // make series::iter() accept a chunk index.
@@ -312,7 +312,7 @@ impl IntoValue for Wrap<&StructChunked> {
 }
 
 impl IntoValue for Wrap<&DurationChunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let utils = utils();
         let time_unit = Wrap(self.0.time_unit()).into_value();
         let iter = self.0.into_iter().map(|opt_v| {
@@ -327,7 +327,7 @@ impl IntoValue for Wrap<&DurationChunked> {
 }
 
 impl IntoValue for Wrap<&DatetimeChunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let utils = utils();
         let time_unit = Wrap(self.0.time_unit()).into_value();
         let time_zone = self.0.time_zone().clone().into_value();
@@ -343,7 +343,7 @@ impl IntoValue for Wrap<&DatetimeChunked> {
 }
 
 impl IntoValue for Wrap<&TimeChunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let utils = utils();
         let iter = self.0.into_iter().map(|opt_v| {
             opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_time", (v,)).unwrap())
@@ -353,7 +353,7 @@ impl IntoValue for Wrap<&TimeChunked> {
 }
 
 impl IntoValue for Wrap<&DateChunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let utils = utils();
         let iter = self.0.into_iter().map(|opt_v| {
             opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_date", (v,)).unwrap())
@@ -363,7 +363,7 @@ impl IntoValue for Wrap<&DateChunked> {
 }
 
 impl IntoValue for Wrap<&DecimalChunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let utils = utils();
         let rb_scale = (-(self.0.scale() as i32)).into_value();
         let iter = self.0.into_iter().map(|opt_v| {
@@ -648,7 +648,7 @@ impl Eq for ObjectValue {}
 
 impl PartialEq for ObjectValue {
     fn eq(&self, other: &Self) -> bool {
-        self.inner.eql(&other.inner).unwrap_or(false)
+        self.inner.eql(other.inner).unwrap_or(false)
     }
 }
 
@@ -690,14 +690,16 @@ impl ObjectValue {
 }
 
 impl IntoValue for ObjectValue {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         self.inner
     }
 }
 
 impl Default for ObjectValue {
     fn default() -> Self {
-        ObjectValue { inner: *QNIL }
+        ObjectValue {
+            inner: Ruby::get().unwrap().qnil().as_value(),
+        }
     }
 }
 

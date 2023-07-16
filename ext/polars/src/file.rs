@@ -1,4 +1,4 @@
-use magnus::{exception, Error, RString, Value};
+use magnus::{exception, prelude::*, Error, RString, Value};
 use polars::io::mmap::MmapBytesReader;
 use std::fs::File;
 use std::io::Cursor;

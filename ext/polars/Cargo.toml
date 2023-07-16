@@ -12,7 +12,7 @@ crate-type = ["cdylib"]
 [dependencies]
 ahash = "0.8"
 chrono = "=0.4.24"
-magnus = "0.5"
+magnus = { version = "0.6", features = ["deprecated-send-sync-value"] }
 polars-core = "0.31.1"
 serde_json = "1"
 smartstring = "1"
