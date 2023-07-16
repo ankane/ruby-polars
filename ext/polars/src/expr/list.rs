@@ -127,7 +127,7 @@ impl RbExpr {
         // let name_gen = name_gen.map(|lambda| {
         //     Arc::new(move |idx: usize| {
         //         let out: Value = lambda.funcall("call", (idx,)).unwrap();
-        //         out.try_convert::<String>().unwrap()
+        //         String::try_convert(out).unwrap()
         //     }) as NameGenerator
         // });
 

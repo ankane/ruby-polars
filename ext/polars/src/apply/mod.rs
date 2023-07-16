@@ -2,7 +2,7 @@ pub mod dataframe;
 pub mod lazy;
 pub mod series;
 
-use magnus::{RHash, Value};
+use magnus::{prelude::*, RHash, Value};
 use polars::chunked_array::builder::get_list_builder;
 use polars::prelude::*;
 use polars_core::export::rayon::prelude::*;
@@ -68,7 +68,7 @@ fn iterator_to_struct(
                 }
             }
             Some(dict) => {
-                let dict = dict.try_convert::<RHash>()?;
+                let dict = RHash::try_convert(dict)?;
                 if dict.len() != struct_width {
                     return Err(crate::error::ComputeError::new_err(
                         format!("Cannot create struct type.\n> The struct dtype expects {} fields, but it got a dict with {} fields.", struct_width, dict.len())
@@ -78,7 +78,7 @@ fn iterator_to_struct(
                 // the first item determines the output name
                 todo!()
                 // for ((_, val), field_items) in dict.iter().zip(&mut items) {
-                //     let item = val.try_convert::<Wrap<AnyValue>>()?;
+                //     let item = Wrap::<AnyValue>::try_convert(val)?;
                 //     field_items.push(item.0)
                 // }
             }

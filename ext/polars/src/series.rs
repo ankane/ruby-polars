@@ -5,7 +5,7 @@ mod construction;
 mod export;
 mod set_at_idx;
 
-use magnus::{exception, prelude::*, Error, IntoValue, RArray, Value, QNIL};
+use magnus::{exception, prelude::*, value::qnil, Error, IntoValue, RArray, Value};
 use polars::prelude::*;
 use polars::series::IsSorted;
 use std::cell::RefCell;
@@ -38,7 +38,7 @@ impl RbSeries {
 pub fn to_series_collection(rs: RArray) -> RbResult<Vec<Series>> {
     let mut series = Vec::new();
     for item in rs.each() {
-        series.push(item?.try_convert::<&RbSeries>()?.series.borrow().clone());
+        series.push(<&RbSeries>::try_convert(item?)?.series.borrow().clone());
     }
     Ok(series)
 }
@@ -325,7 +325,7 @@ impl RbSeries {
                         let obj: Option<&ObjectValue> = series.get_object(i).map(|any| any.into());
                         match obj {
                             Some(val) => v.push(val.to_object()).unwrap(),
-                            None => v.push(QNIL).unwrap(),
+                            None => v.push(qnil()).unwrap(),
                         };
                     }
                     v.into_value()
@@ -336,7 +336,7 @@ impl RbSeries {
                     for opt_s in ca.amortized_iter() {
                         match opt_s {
                             None => {
-                                v.push(QNIL).unwrap();
+                                v.push(qnil()).unwrap();
                             }
                             Some(s) => {
                                 let rblst = to_a_recursive(s.as_ref());
@@ -352,7 +352,7 @@ impl RbSeries {
                     for opt_s in ca.amortized_iter() {
                         match opt_s {
                             None => {
-                                v.push(QNIL).unwrap();
+                                v.push(qnil()).unwrap();
                             }
                             Some(s) => {
                                 let rblst = to_a_recursive(s.as_ref());

@@ -8,7 +8,7 @@ mod meta;
 mod string;
 mod r#struct;
 
-use magnus::RArray;
+use magnus::{prelude::*, RArray};
 use polars::lazy::dsl::Expr;
 
 use crate::RbResult;
@@ -28,7 +28,7 @@ impl From<Expr> for RbExpr {
 pub fn rb_exprs_to_exprs(rb_exprs: RArray) -> RbResult<Vec<Expr>> {
     let mut exprs = Vec::new();
     for item in rb_exprs.each() {
-        exprs.push(item?.try_convert::<&RbExpr>()?.inner.clone());
+        exprs.push(<&RbExpr>::try_convert(item?)?.inner.clone());
     }
     Ok(exprs)
 }

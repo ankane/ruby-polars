@@ -16,7 +16,7 @@ impl RbSeries {
                 if item.is_nil() {
                     builder.append_null()
                 } else {
-                    match item.try_convert::<bool>() {
+                    match bool::try_convert(*item) {
                         Ok(val) => builder.append_value(val),
                         Err(e) => {
                             if strict {
@@ -49,7 +49,7 @@ where
             if item.is_nil() {
                 builder.append_null()
             } else {
-                match item.try_convert::<T::Native>() {
+                match T::Native::try_convert(*item) {
                     Ok(val) => builder.append_value(val),
                     Err(e) => {
                         if strict {
@@ -92,7 +92,7 @@ init_method_opt!(new_opt_f64, Float64Type, f64);
 fn vec_wrap_any_value<'s>(arr: RArray) -> RbResult<Vec<Wrap<AnyValue<'s>>>> {
     let mut val = Vec::with_capacity(arr.len());
     for v in arr.each() {
-        val.push(v?.try_convert()?);
+        val.push(Wrap::<AnyValue<'s>>::try_convert(v?)?);
     }
     Ok(val)
 }

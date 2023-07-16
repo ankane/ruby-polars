@@ -45,7 +45,7 @@ pub fn col(name: String) -> RbExpr {
 pub fn collect_all(lfs: RArray) -> RbResult<RArray> {
     let lfs = lfs
         .each()
-        .map(|v| v?.try_convert::<&RbLazyFrame>())
+        .map(|v| <&RbLazyFrame>::try_convert(v?))
         .collect::<RbResult<Vec<&RbLazyFrame>>>()?;
 
     Ok(RArray::from_iter(lfs.iter().map(|lf| {
@@ -151,7 +151,7 @@ pub fn cumfold(acc: &RbExpr, lambda: Value, exprs: RArray, include_init: bool) -
 
 pub fn lit(value: Value, allow_object: bool) -> RbResult<RbExpr> {
     if value.is_kind_of(class::true_class()) || value.is_kind_of(class::false_class()) {
-        Ok(dsl::lit(value.try_convert::<bool>()?).into())
+        Ok(dsl::lit(bool::try_convert(value)?).into())
     } else if let Some(v) = Integer::from_value(value) {
         match v.to_i64() {
             Ok(val) => {
@@ -236,7 +236,7 @@ pub fn concat_lst(s: RArray) -> RbResult<RbExpr> {
 pub fn dtype_cols2(dtypes: RArray) -> RbResult<RbExpr> {
     let dtypes = dtypes
         .each()
-        .map(|v| v?.try_convert::<Wrap<DataType>>())
+        .map(|v| Wrap::<DataType>::try_convert(v?))
         .collect::<RbResult<Vec<Wrap<DataType>>>>()?;
     let dtypes = vec_extract_wrapped(dtypes);
     Ok(crate::functions::lazy::dtype_cols(dtypes))
