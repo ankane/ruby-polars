@@ -1,10 +1,10 @@
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
 
 use magnus::encoding::{EncodingCapable, Index};
 use magnus::{
-    class, exception, prelude::*, r_hash::ForEach, Float, Integer, IntoValue, Module, RArray,
-    RHash, RString, Ruby, Symbol, TryConvert, Value,
+    class, exception, prelude::*, r_hash::ForEach, value::Opaque, Float, Integer, IntoValue,
+    Module, RArray, RHash, RString, Ruby, Symbol, TryConvert, Value,
 };
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
@@ -177,11 +177,11 @@ impl IntoValue for Wrap<AnyValue<'_>> {
             AnyValue::StructOwned(payload) => struct_dict(payload.0.into_iter(), &payload.1),
             AnyValue::Object(v) => {
                 let object = v.as_any().downcast_ref::<ObjectValue>().unwrap();
-                object.inner
+                object.to_object()
             }
             AnyValue::ObjectOwned(v) => {
                 let object = v.0.as_any().downcast_ref::<ObjectValue>().unwrap();
-                object.inner
+                object.to_object()
             }
             AnyValue::Binary(v) => RString::from_slice(v).into_value(),
             AnyValue::BinaryOwned(v) => RString::from_slice(&v).into_value(),
@@ -624,15 +624,23 @@ impl TryConvert for Wrap<Schema> {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct ObjectValue {
-    pub inner: Value,
+    pub inner: Opaque<Value>,
+}
+
+impl Debug for ObjectValue {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ObjectValue")
+            .field("inner", &self.to_object())
+            .finish()
+    }
 }
 
 impl Hash for ObjectValue {
     fn hash<H: Hasher>(&self, state: &mut H) {
         let h = self
-            .inner
+            .to_object()
             .funcall::<_, _, isize>("hash", ())
             .expect("should be hashable");
         state.write_isize(h)
@@ -643,13 +651,13 @@ impl Eq for ObjectValue {}
 
 impl PartialEq for ObjectValue {
     fn eq(&self, other: &Self) -> bool {
-        self.inner.eql(other.inner).unwrap_or(false)
+        self.to_object().eql(other.to_object()).unwrap_or(false)
     }
 }
 
 impl Display for ObjectValue {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.inner)
+        write!(f, "{}", self.to_object())
     }
 }
 
@@ -661,13 +669,13 @@ impl PolarsObject for ObjectValue {
 
 impl From<Value> for ObjectValue {
     fn from(v: Value) -> Self {
-        Self { inner: v }
+        Self { inner: v.into() }
     }
 }
 
 impl TryConvert for ObjectValue {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        Ok(ObjectValue { inner: ob })
+        Ok(ObjectValue { inner: ob.into() })
     }
 }
 
@@ -680,20 +688,20 @@ impl From<&dyn PolarsObjectSafe> for &ObjectValue {
 // TODO remove
 impl ObjectValue {
     pub fn to_object(&self) -> Value {
-        self.inner
+        Ruby::get().unwrap().get_inner(self.inner)
     }
 }
 
 impl IntoValue for ObjectValue {
     fn into_value_with(self, _: &Ruby) -> Value {
-        self.inner
+        self.to_object()
     }
 }
 
 impl Default for ObjectValue {
     fn default() -> Self {
         ObjectValue {
-            inner: Ruby::get().unwrap().qnil().as_value(),
+            inner: Ruby::get().unwrap().qnil().as_value().into(),
         }
     }
 }

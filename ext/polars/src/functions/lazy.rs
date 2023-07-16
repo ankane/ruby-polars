@@ -1,5 +1,7 @@
 use magnus::encoding::{self, EncodingCapable};
-use magnus::{class, prelude::*, typed_data::Obj, Float, Integer, RArray, RString, Value};
+use magnus::{
+    class, prelude::*, typed_data::Obj, value::Opaque, Float, Integer, RArray, RString, Ruby, Value,
+};
 use polars::lazy::dsl;
 use polars::prelude::*;
 
@@ -137,15 +139,19 @@ pub fn dtype_cols(dtypes: Vec<DataType>) -> RbExpr {
 
 pub fn fold(acc: &RbExpr, lambda: Value, exprs: RArray) -> RbResult<RbExpr> {
     let exprs = rb_exprs_to_exprs(exprs)?;
+    let lambda = Opaque::from(lambda);
 
-    let func = move |a: Series, b: Series| binary_lambda(lambda, a, b);
+    let func =
+        move |a: Series, b: Series| binary_lambda(Ruby::get().unwrap().get_inner(lambda), a, b);
     Ok(polars::lazy::dsl::fold_exprs(acc.inner.clone(), func, exprs).into())
 }
 
 pub fn cumfold(acc: &RbExpr, lambda: Value, exprs: RArray, include_init: bool) -> RbResult<RbExpr> {
     let exprs = rb_exprs_to_exprs(exprs)?;
+    let lambda = Opaque::from(lambda);
 
-    let func = move |a: Series, b: Series| binary_lambda(lambda, a, b);
+    let func =
+        move |a: Series, b: Series| binary_lambda(Ruby::get().unwrap().get_inner(lambda), a, b);
     Ok(polars::lazy::dsl::cumfold_exprs(acc.inner.clone(), func, exprs, include_init).into())
 }
 

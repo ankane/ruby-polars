@@ -1,4 +1,4 @@
-use magnus::{block::Proc, prelude::*, IntoValue, RArray, Value};
+use magnus::{block::Proc, prelude::*, value::Opaque, IntoValue, RArray, Ruby, Value};
 use polars::lazy::dsl;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
@@ -554,9 +554,11 @@ impl RbExpr {
     }
 
     pub fn map_alias(&self, lambda: Proc) -> Self {
+        let lambda = Opaque::from(lambda);
         self.inner
             .clone()
             .map_alias(move |name| {
+                let lambda = Ruby::get().unwrap().get_inner(lambda);
                 let out = lambda.call::<_, String>((name,));
                 match out {
                     Ok(out) => Ok(out),
@@ -915,10 +917,12 @@ impl RbExpr {
 
     pub fn extend_constant(&self, value: Wrap<AnyValue>, n: usize) -> Self {
         let value = value.into_value();
+        let value = Opaque::from(value);
         self.inner
             .clone()
             .apply(
                 move |s| {
+                    let value = Ruby::get().unwrap().get_inner(value);
                     let value = Wrap::<AnyValue>::try_convert(value).unwrap().0;
                     s.extend_constant(value, n).map(Some)
                 },
