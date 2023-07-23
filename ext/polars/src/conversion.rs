@@ -522,7 +522,8 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
             let sec = ob.funcall::<_, _, i64>("to_i", ())?;
             let nsec = ob.funcall::<_, _, i64>("nsec", ())?;
             let v = sec * 1_000_000_000 + nsec;
-            // TODO support time zone
+            // TODO support time zone when possible
+            // https://github.com/pola-rs/polars/issues/9103
             Ok(AnyValue::Datetime(v, TimeUnit::Nanoseconds, &None).into())
         } else if ob.is_nil() {
             Ok(AnyValue::Null.into())
