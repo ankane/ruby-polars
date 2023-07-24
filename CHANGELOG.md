@@ -1,4 +1,4 @@
-## 0.6.0 (unreleased)
+## 0.6.0 (2023-07-23)
 
 - Updated Polars to 0.31.1
 - Added `Array` type
