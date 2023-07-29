@@ -77,7 +77,31 @@ module Polars
 
     # TODO activate_decimals
 
-    # TODO set_ascii_tables
+    # Use ASCII characters to display table outlines (set False to revert to UTF8).
+    #
+    # @return [Config]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"abc" => [1.0, 2.5, 5.0], "xyz" => [true, false, true]})
+    #   Polars::Config.new(ascii_tables: true) do
+    #     p df
+    #   end
+    #   # =>
+    #   # shape: (3, 2)
+    #   # +-----+-------+
+    #   # | abc | xyz   |
+    #   # | --- | ---   |
+    #   # | f64 | bool  |
+    #   # +=============+
+    #   # | 1.0 | true  |
+    #   # | 2.5 | false |
+    #   # | 5.0 | true  |
+    #   # +-----+-------+
+    def self.set_ascii_tables(active = true)
+      fmt = active ? "ASCII_FULL_CONDENSED" : "UTF8_FULL_CONDENSED"
+      ENV["POLARS_FMT_TABLE_FORMATTING"] = fmt
+      self
+    end
 
     # Allow multi-output expressions to be automatically turned into Structs.
     #
