@@ -209,7 +209,30 @@ module Polars
       self
     end
 
-    # TODO set_tbl_dataframe_shape_below
+    # Print the dataframe shape below the dataframe when displaying tables.
+    #
+    # @return [Config]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"abc" => [1.0, 2.5, 5.0], "xyz" => [true, false, true]})
+    #   Polars::Config.new(tbl_dataframe_shape_below: true) do
+    #     p df
+    #   end
+    #   # =>
+    #   # ┌─────┬───────┐
+    #   # │ abc ┆ xyz   │
+    #   # │ --- ┆ ---   │
+    #   # │ f64 ┆ bool  │
+    #   # ╞═════╪═══════╡
+    #   # │ 1.0 ┆ true  │
+    #   # │ 2.5 ┆ false │
+    #   # │ 5.0 ┆ true  │
+    #   # └─────┴───────┘
+    #   # shape: (3, 2)
+    def self.set_tbl_dataframe_shape_below(active = true)
+      ENV["POLARS_FMT_TABLE_DATAFRAME_SHAPE_BELOW"] = active ? "1" : "0"
+      self
+    end
 
     # TODO set_tbl_formatting
 
