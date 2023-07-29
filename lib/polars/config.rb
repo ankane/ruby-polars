@@ -81,6 +81,53 @@ module Polars
       self
     end
 
+    # Hide table column names.
+    #
+    # @return [Config]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"abc" => [1.0, 2.5, 5.0], "xyz" => [true, false, true]})
+    #   Polars::Config.new(tbl_hide_column_names: true) do
+    #     p df
+    #   end
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬───────┐
+    #   # │ f64 ┆ bool  │
+    #   # ╞═════╪═══════╡
+    #   # │ 1.0 ┆ true  │
+    #   # │ 2.5 ┆ false │
+    #   # │ 5.0 ┆ true  │
+    #   # └─────┴───────┘
+    def self.set_tbl_hide_column_names(active = true)
+      ENV["POLARS_FMT_TABLE_HIDE_COLUMN_NAMES"] = active ? "1" : "0"
+      self
+    end
+
+    # Hide the '---' separator between the column names and column types.
+    #
+    # @return [Config]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"abc" => [1.0, 2.5, 5.0], "xyz" => [true, false, true]})
+    #   Polars::Config.new(tbl_hide_dtype_separator: true) do
+    #     p df
+    #   end
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬───────┐
+    #   # │ abc ┆ xyz   │
+    #   # │ f64 ┆ bool  │
+    #   # ╞═════╪═══════╡
+    #   # │ 1.0 ┆ true  │
+    #   # │ 2.5 ┆ false │
+    #   # │ 5.0 ┆ true  │
+    #   # └─────┴───────┘
+    def self.set_tbl_hide_dtype_separator(active = true)
+      ENV["POLARS_FMT_TABLE_HIDE_COLUMN_SEPARATOR"] = active ? "1" : "0"
+      self
+    end
+
     # Hide the shape information of the dataframe when displaying tables.
     #
     # @return [Config]
