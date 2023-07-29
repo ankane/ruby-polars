@@ -79,9 +79,18 @@ module Polars
 
     # TODO set_ascii_tables
 
-    # TODO set_auto_structify
+    # Allow multi-output expressions to be automatically turned into Structs.
+    #
+    # @return [Config]
+    def self.set_auto_structify(active = true)
+      ENV["POLARS_AUTO_STRUCTIFY"] = active ? "1" : "0"
+      self
+    end
 
     # Control how floating  point values are displayed.
+    #
+    # @param fmt ["mixed", "full"]
+    #   How to format floating point numbers
     #
     # @return [Config]
     def self.set_fmt_float(fmt = "mixed")
