@@ -197,7 +197,37 @@ module Polars
       self
     end
 
-    # TODO set_tbl_cell_alignment
+    # Set table cell alignment.
+    #
+    # @param format [String]
+    #   * "LEFT": left aligned
+    #   * "CENTER": center aligned
+    #   * "RIGHT": right aligned
+    #
+    # @return [Config]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"column_abc" => [1.0, 2.5, 5.0], "column_xyz" => [true, false, true]}
+    #   )
+    #   Polars::Config.new(tbl_cell_alignment: "RIGHT") do
+    #     p df
+    #   end
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌────────────┬────────────┐
+    #   # │ column_abc ┆ column_xyz │
+    #   # │        --- ┆        --- │
+    #   # │        f64 ┆       bool │
+    #   # ╞════════════╪════════════╡
+    #   # │        1.0 ┆       true │
+    #   # │        2.5 ┆      false │
+    #   # │        5.0 ┆       true │
+    #   # └────────────┴────────────┘
+    def self.set_tbl_cell_alignment(format)
+      ENV["POLARS_FMT_TABLE_CELL_ALIGNMENT"] = format
+      self
+    end
 
     # Set the number of columns that are visible when displaying tables.
     #
