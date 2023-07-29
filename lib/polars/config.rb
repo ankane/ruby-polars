@@ -111,5 +111,24 @@ module Polars
       ENV["POLARS_FMT_MAX_ROWS"] = n.to_s
       self
     end
+
+    # Set the number of characters used to draw the table.
+    #
+    # @param width [Integer]
+    #   number of chars
+    #
+    # @return [Config]
+    def self.set_tbl_width_chars(width)
+      ENV["POLARS_TABLE_WIDTH"] = width.to_s
+      self
+    end
+
+    # Enable additional verbose/debug logging.
+    #
+    # @return [Config]
+    def self.set_verbose(active = true)
+      ENV["POLARS_VERBOSE"] = active ? "1" : "0"
+      self
+    end
   end
 end
