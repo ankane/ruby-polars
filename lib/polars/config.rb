@@ -88,6 +88,25 @@ module Polars
     #   rows (DataFrame) and all elements (Series).
     #
     # @return [Config]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"abc" => [1.0, 2.5, 3.5, 5.0], "xyz" => [true, false, true, false]}
+    #   )
+    #   Polars::Config.new(tbl_rows: 2) do
+    #     p df
+    #   end
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬───────┐
+    #   # │ abc ┆ xyz   │
+    #   # │ --- ┆ ---   │
+    #   # │ f64 ┆ bool  │
+    #   # ╞═════╪═══════╡
+    #   # │ 1.0 ┆ true  │
+    #   # │ …   ┆ …     │
+    #   # │ 5.0 ┆ false │
+    #   # └─────┴───────┘
     def self.set_tbl_rows(n)
       ENV["POLARS_FMT_MAX_ROWS"] = n.to_s
       self

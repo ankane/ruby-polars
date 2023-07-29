@@ -121,7 +121,7 @@ class DocsTest < Minitest::Test
         end
 
         assert_return(method)
-        assert_examples(method)
+        assert_examples(method, cls)
       end
     end
   end
@@ -132,7 +132,7 @@ class DocsTest < Minitest::Test
     end
   end
 
-  def assert_examples(method)
+  def assert_examples(method, cls)
     # requires files
     return if [:read_csv_batched, :sink_parquet].include?(method.name)
 
@@ -145,12 +145,17 @@ class DocsTest < Minitest::Test
       code += "\n" + example.text
       begin
         # just final output
-        output = instance_eval(code)
+        output =
+          if cls == Polars::Config
+            capture_io { instance_eval(code) }[0].chomp
+          else
+            instance_eval(code).inspect
+          end
 
         # print output
         if ENV["VERBOSE"]
           puts method.name
-          p output
+          puts output
           puts
         end
 
@@ -161,14 +166,14 @@ class DocsTest < Minitest::Test
         lines = code.split("\n")
         if lines.last.start_with?("# => ")
           expected = lines.last[5..]
-          assert_equal expected, output.inspect, "Example output (#{method.name})"
+          assert_equal expected, output, "Example output (#{method.name})"
         elsif lines.last.start_with?("# ")
           expected = []
           while (line = lines.pop) && line != "# =>"
             expected << line[2..]
           end
           expected = expected.reverse.join("\n")
-          output = output.inspect.gsub("\t", "        ")
+          output = output.gsub("\t", "        ")
           assert_equal expected, output, "Example output (#{method.name})"
         end
       rescue => e
