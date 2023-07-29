@@ -186,7 +186,28 @@ module Polars
       self
     end
 
-    # TODO set_tbl_column_data_type_inline
+    # Moves the data type inline with the column name (to the right, in parentheses).
+    #
+    # @return [Config]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"abc" => [1.0, 2.5, 5.0], "xyz" => [true, false, true]})
+    #   Polars::Config.new(tbl_column_data_type_inline: true) do
+    #     p df
+    #   end
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌───────────┬────────────┐
+    #   # │ abc (f64) ┆ xyz (bool) │
+    #   # ╞═══════════╪════════════╡
+    #   # │ 1.0       ┆ true       │
+    #   # │ 2.5       ┆ false      │
+    #   # │ 5.0       ┆ true       │
+    #   # └───────────┴────────────┘
+    def self.set_tbl_column_data_type_inline(active = true)
+      ENV["POLARS_FMT_TABLE_INLINE_COLUMN_DATA_TYPE"] = active ? "1" : "0"
+      self
+    end
 
     # TODO set_tbl_dataframe_shape_below
 
