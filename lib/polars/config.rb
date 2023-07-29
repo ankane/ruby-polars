@@ -98,7 +98,43 @@ module Polars
       self
     end
 
-    # TODO set_fmt_str_lengths
+    # Set the number of characters used to display string values.
+    #
+    # @param n [Integer]
+    #   number of characters to display
+    #
+    # @return [Config]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "txt" => [
+    #         "Play it, Sam. Play 'As Time Goes By'.",
+    #         "This is the beginning of a beautiful friendship.",
+    #       ]
+    #     }
+    #   )
+    #   Polars::Config.new(fmt_str_lengths: 50) do
+    #     p df
+    #   end
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌──────────────────────────────────────────────────┐
+    #   # │ txt                                              │
+    #   # │ ---                                              │
+    #   # │ str                                              │
+    #   # ╞══════════════════════════════════════════════════╡
+    #   # │ Play it, Sam. Play 'As Time Goes By'.            │
+    #   # │ This is the beginning of a beautiful friendship. │
+    #   # └──────────────────────────────────────────────────┘
+    def self.set_fmt_str_lengths(n)
+      if n <= 0
+        raise ArgumentError, "number of characters must be > 0"
+      end
+
+      ENV["POLARS_FMT_STR_LEN"] = n.to_s
+      self
+    end
 
     # TODO set_streaming_chunk_size
 
