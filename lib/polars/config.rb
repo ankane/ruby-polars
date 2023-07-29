@@ -75,7 +75,23 @@ module Polars
 
     # TODO state
 
-    # TODO activate_decimals
+    # Activate `Decimal` data types.
+    #
+    # This is a temporary setting that will be removed later once the
+    # `Decimal` type stabilize. This will happens without it being
+    # considered a breaking change.
+    #
+    # Currently, `Decimal` types are in an alpha state.
+    #
+    # @return [Config]
+    def self.activate_decimals(active = true)
+      if !active
+        ENV.delete("POLARS_ACTIVATE_DECIMAL")
+      else
+        ENV["POLARS_ACTIVATE_DECIMAL"] = "1"
+      end
+      self
+    end
 
     # Use ASCII characters to display table outlines (set False to revert to UTF8).
     #
