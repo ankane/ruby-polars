@@ -51,6 +51,11 @@ module Polars
     def self.load(cfg)
       options = JSON.parse(cfg)
       ENV.merge!(options["environment"])
+      options.fetch("fetch", {}).each do |cfg_methodname, value|
+        if POLARS_CFG_DIRECT_VARS.key?(cfg_methodname)
+          public_send(cfg_methodname, value)
+        end
+      end
       self
     end
 
@@ -70,7 +75,7 @@ module Polars
     # @return [Config]
     def self.save
       environment_vars = POLARS_CFG_ENV_VARS.sort.select { |k| ENV.key?(k) }.to_h { |k| [k, ENV[k]] }
-      direct_vars = {}
+      direct_vars = POLARS_CFG_DIRECT_VARS.to_h { |cfg_methodname, get_value| [cfg_methodname, get_value.call] }
       options = JSON.generate({environment: environment_vars, direct: direct_vars})
       options
     end
