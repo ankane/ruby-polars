@@ -81,6 +81,30 @@ module Polars
       self
     end
 
+    # Hide the shape information of the dataframe when displaying tables.
+    #
+    # @return [Config]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"abc" => [1.0, 2.5, 5.0], "xyz" => [true, false, true]})
+    #   Polars::Config.new(tbl_hide_dataframe_shape: true) do
+    #     p df
+    #   end
+    #   # =>
+    #   # ┌─────┬───────┐
+    #   # │ abc ┆ xyz   │
+    #   # │ --- ┆ ---   │
+    #   # │ f64 ┆ bool  │
+    #   # ╞═════╪═══════╡
+    #   # │ 1.0 ┆ true  │
+    #   # │ 2.5 ┆ false │
+    #   # │ 5.0 ┆ true  │
+    #   # └─────┴───────┘
+    def self.set_tbl_hide_dataframe_shape(active = true)
+      ENV["POLARS_FMT_TABLE_HIDE_DATAFRAME_SHAPE_INFORMATION"] = active ? "1" : "0"
+      self
+    end
+
     # Set the max number of rows used to draw the table (both Dataframe and Series).
     #
     # @param n [Integer]
