@@ -136,7 +136,26 @@ module Polars
       self
     end
 
-    # TODO set_streaming_chunk_size
+    # Overwrite chunk size used in `streaming` engine.
+    #
+    # By default, the chunk size is determined by the schema
+    # and size of the thread pool. For some datasets (esp.
+    # when you have large string elements) this can be too
+    # optimistic and lead to Out of Memory errors.
+    #
+    # @param size [Integer]
+    #   Number of rows per chunk. Every thread will process chunks
+    #   of this size.
+    #
+    # @return [Config]
+    def self.set_streaming_chunk_size(size)
+      if size < 1
+        raise ArgumentError, "number of rows per chunk must be >= 1"
+      end
+
+      ENV["POLARS_STREAMING_CHUNK_SIZE"] = size.to_s
+      self
+    end
 
     # TODO set_tbl_cell_alignment
 
