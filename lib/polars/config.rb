@@ -73,6 +73,14 @@ module Polars
       options
     end
 
+    # TODO state
+
+    # TODO activate_decimals
+
+    # TODO set_ascii_tables
+
+    # TODO set_auto_structify
+
     # Control how floating  point values are displayed.
     #
     # @return [Config]
@@ -80,6 +88,20 @@ module Polars
       Polars._set_float_fmt(fmt)
       self
     end
+
+    # TODO set_fmt_str_lengths
+
+    # TODO set_streaming_chunk_size
+
+    # TODO set_tbl_cell_alignment
+
+    # TODO set_tbl_cols
+
+    # TODO set_tbl_column_data_type_inline
+
+    # TODO set_tbl_dataframe_shape_below
+
+    # TODO set_tbl_formatting
 
     # Hide table column names.
     #
