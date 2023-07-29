@@ -304,7 +304,78 @@ module Polars
       self
     end
 
-    # TODO set_tbl_formatting
+    # Set table formatting style.
+    #
+    # @param format [String]
+    #   * "ASCII_FULL": ASCII, with all borders and lines, including row dividers.
+    #   * "ASCII_FULL_CONDENSED": Same as ASCII_FULL, but with dense row spacing.
+    #   * "ASCII_NO_BORDERS": ASCII, no borders.
+    #   * "ASCII_BORDERS_ONLY": ASCII, borders only.
+    #   * "ASCII_BORDERS_ONLY_CONDENSED": ASCII, borders only, dense row spacing.
+    #   * "ASCII_HORIZONTAL_ONLY": ASCII, horizontal lines only.
+    #   * "ASCII_MARKDOWN": ASCII, Markdown compatible.
+    #   * "UTF8_FULL": UTF8, with all borders and lines, including row dividers.
+    #   * "UTF8_FULL_CONDENSED": Same as UTF8_FULL, but with dense row spacing.
+    #   * "UTF8_NO_BORDERS": UTF8, no borders.
+    #   * "UTF8_BORDERS_ONLY": UTF8, borders only.
+    #   * "UTF8_HORIZONTAL_ONLY": UTF8, horizontal lines only.
+    #   * "NOTHING": No borders or other lines.
+    # @param rounded_corners [Boolean]
+    #   apply rounded corners to UTF8-styled tables (no-op for ASCII formats).
+    #
+    # @note
+    #   The UTF8 styles all use one or more of the semigraphic box-drawing characters
+    #   found in the Unicode Box Drawing block, which are not ASCII compatible:
+    #   https://en.wikipedia.org/wiki/Box-drawing_character#Box_Drawing
+    #
+    # @return [Config]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"abc" => [-2.5, 5.0], "mno" => ["hello", "world"], "xyz" => [true, false]}
+    #   )
+    #   Polars::Config.new(
+    #     tbl_formatting: "ASCII_MARKDOWN",
+    #     tbl_hide_column_data_types: true,
+    #     tbl_hide_dataframe_shape: true
+    #   ) do
+    #     p df
+    #   end
+    #   # =>
+    #   # | abc  | mno   | xyz   |
+    #   # |------|-------|-------|
+    #   # | -2.5 | hello | true  |
+    #   # | 5.0  | world | false |
+    def self.set_tbl_formatting(format = nil, rounded_corners: false)
+      if format
+        ENV["POLARS_FMT_TABLE_FORMATTING"] = format
+      end
+      ENV["POLARS_FMT_TABLE_ROUNDED_CORNERS"] = rounded_corners ? "1" : "0"
+      self
+    end
+
+    # Hide table column data types (i64, f64, str etc.).
+    #
+    # @return [Config]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"abc" => [1.0, 2.5, 5.0], "xyz" => [true, false, true]})
+    #   Polars::Config.new(tbl_hide_column_data_types: true) do
+    #     p df
+    #   end
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬───────┐
+    #   # │ abc ┆ xyz   │
+    #   # ╞═════╪═══════╡
+    #   # │ 1.0 ┆ true  │
+    #   # │ 2.5 ┆ false │
+    #   # │ 5.0 ┆ true  │
+    #   # └─────┴───────┘
+    def self.set_tbl_hide_column_data_types(active = true)
+      ENV["POLARS_FMT_TABLE_HIDE_COLUMN_DATA_TYPES"] = active ? "1" : "0"
+      self
+    end
 
     # Hide table column names.
     #
