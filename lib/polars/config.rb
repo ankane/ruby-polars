@@ -21,6 +21,8 @@ module Polars
       "POLARS_VERBOSE"
     ]
 
+    POLARS_CFG_DIRECT_VARS = {"set_fmt_float" => Polars.method(:_get_float_fmt)}
+
     # Initialize a Config object instance for context manager usage.
     def initialize(restore_defaults: false, **options)
       @original_state = self.class.save
@@ -73,7 +75,29 @@ module Polars
       options
     end
 
-    # TODO state
+    # Show the current state of all Config variables as a dict.
+    #
+    # @param if_set [Boolean]
+    #   by default this will show the state of all `Config` environment variables.
+    #   change this to `true` to restrict the returned dictionary to include only
+    #   those that have been set to a specific value.
+    # @param env_only [Boolean]
+    #   include only Config environment variables in the output; some options (such
+    #   as "set_fmt_float") are set directly, not via an environment variable.
+    #
+    # @return [Object]
+    def self.state(if_set: false, env_only: false)
+      config_state = POLARS_CFG_ENV_VARS.sort
+        .select { |var| !if_set || !ENV[var].nil? }
+        .to_h { |var| [var, ENV[var]] }
+      if !env_only
+        POLARS_CFG_DIRECT_VARS.each do |cfg_methodname, get_value|
+          config_state[cfg_methodname] = get_value.call
+        end
+      end
+
+      config_state
+    end
 
     # Activate `Decimal` data types.
     #

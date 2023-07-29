@@ -23,3 +23,11 @@ pub fn set_float_fmt(fmt: String) -> RbResult<()> {
     polars_core::fmt::set_float_fmt(fmt);
     Ok(())
 }
+
+pub fn get_float_fmt() -> RbResult<String> {
+    let strfmt = match polars_core::fmt::get_float_fmt() {
+        FloatFmt::Full => "full",
+        FloatFmt::Mixed => "mixed",
+    };
+    Ok(strfmt.to_string())
+}

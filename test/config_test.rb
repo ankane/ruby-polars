@@ -9,4 +9,8 @@ class ConfigTest < Minitest::Test
     end
     assert_match "…", s.inspect
   end
+
+  def test_state
+    assert_empty Polars::Config.state(if_set: true, env_only: true)
+  end
 end

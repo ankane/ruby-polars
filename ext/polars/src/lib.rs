@@ -113,6 +113,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "_set_float_fmt",
         function!(crate::functions::meta::set_float_fmt, 1),
     )?;
+    module.define_singleton_method(
+        "_get_float_fmt",
+        function!(crate::functions::meta::get_float_fmt, 0),
+    )?;
 
     let class = module.define_class("RbBatchedCsv", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbBatchedCsv::new, -1))?;
