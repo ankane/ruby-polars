@@ -110,6 +110,18 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(crate::functions::meta::get_idx_type, 0),
     )?;
     module.define_singleton_method(
+        "_threadpool_size",
+        function!(crate::functions::meta::threadpool_size, 0),
+    )?;
+    module.define_singleton_method(
+        "_enable_string_cache",
+        function!(crate::functions::meta::enable_string_cache, 1),
+    )?;
+    module.define_singleton_method(
+        "_using_string_cache",
+        function!(crate::functions::meta::using_string_cache, 0),
+    )?;
+    module.define_singleton_method(
         "_set_float_fmt",
         function!(crate::functions::meta::set_float_fmt, 1),
     )?;
