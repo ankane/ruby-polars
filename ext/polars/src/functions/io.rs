@@ -5,7 +5,7 @@ use crate::file::get_file_like;
 use crate::prelude::DataType;
 use crate::{RbPolarsErr, RbResult};
 
-pub fn read_ipc_schema(rb_f: Value) -> RbResult<Value> {
+pub fn read_ipc_schema(rb_f: Value) -> RbResult<RHash> {
     use polars_core::export::arrow::io::ipc::read::read_file_metadata;
     let mut r = get_file_like(rb_f, false)?;
     let metadata = read_file_metadata(&mut r).map_err(RbPolarsErr::arrow)?;
@@ -15,10 +15,10 @@ pub fn read_ipc_schema(rb_f: Value) -> RbResult<Value> {
         let dt: Wrap<DataType> = Wrap((&field.data_type).into());
         dict.aset(field.name, dt)?;
     }
-    Ok(dict.into())
+    Ok(dict)
 }
 
-pub fn read_parquet_schema(rb_f: Value) -> RbResult<Value> {
+pub fn read_parquet_schema(rb_f: Value) -> RbResult<RHash> {
     use polars_core::export::arrow::io::parquet::read::{infer_schema, read_metadata};
 
     let mut r = get_file_like(rb_f, false)?;
@@ -30,5 +30,5 @@ pub fn read_parquet_schema(rb_f: Value) -> RbResult<Value> {
         let dt: Wrap<DataType> = Wrap((&field.data_type).into());
         dict.aset(field.name, dt)?;
     }
-    Ok(dict.into())
+    Ok(dict)
 }

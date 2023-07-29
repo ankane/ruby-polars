@@ -1,5 +1,7 @@
 use magnus::encoding::{self, EncodingCapable};
-use magnus::{class, Float, Integer, RArray, RString, Value};
+use magnus::{
+    class, prelude::*, typed_data::Obj, value::Opaque, Float, Integer, RArray, RString, Ruby, Value,
+};
 use polars::lazy::dsl;
 use polars::prelude::*;
 
@@ -45,7 +47,7 @@ pub fn col(name: String) -> RbExpr {
 pub fn collect_all(lfs: RArray) -> RbResult<RArray> {
     let lfs = lfs
         .each()
-        .map(|v| v?.try_convert::<&RbLazyFrame>())
+        .map(|v| <&RbLazyFrame>::try_convert(v?))
         .collect::<RbResult<Vec<&RbLazyFrame>>>()?;
 
     Ok(RArray::from_iter(lfs.iter().map(|lf| {
@@ -137,23 +139,27 @@ pub fn dtype_cols(dtypes: Vec<DataType>) -> RbExpr {
 
 pub fn fold(acc: &RbExpr, lambda: Value, exprs: RArray) -> RbResult<RbExpr> {
     let exprs = rb_exprs_to_exprs(exprs)?;
+    let lambda = Opaque::from(lambda);
 
-    let func = move |a: Series, b: Series| binary_lambda(lambda, a, b);
+    let func =
+        move |a: Series, b: Series| binary_lambda(Ruby::get().unwrap().get_inner(lambda), a, b);
     Ok(polars::lazy::dsl::fold_exprs(acc.inner.clone(), func, exprs).into())
 }
 
 pub fn cumfold(acc: &RbExpr, lambda: Value, exprs: RArray, include_init: bool) -> RbResult<RbExpr> {
     let exprs = rb_exprs_to_exprs(exprs)?;
+    let lambda = Opaque::from(lambda);
 
-    let func = move |a: Series, b: Series| binary_lambda(lambda, a, b);
+    let func =
+        move |a: Series, b: Series| binary_lambda(Ruby::get().unwrap().get_inner(lambda), a, b);
     Ok(polars::lazy::dsl::cumfold_exprs(acc.inner.clone(), func, exprs, include_init).into())
 }
 
 pub fn lit(value: Value, allow_object: bool) -> RbResult<RbExpr> {
     if value.is_kind_of(class::true_class()) || value.is_kind_of(class::false_class()) {
-        Ok(dsl::lit(value.try_convert::<bool>()?).into())
+        Ok(dsl::lit(bool::try_convert(value)?).into())
     } else if let Some(v) = Integer::from_value(value) {
-        match v.try_convert::<i64>() {
+        match v.to_i64() {
             Ok(val) => {
                 if val > 0 && val < i32::MAX as i64 || val < 0 && val > i32::MIN as i64 {
                     Ok(dsl::lit(val as i32).into())
@@ -162,19 +168,19 @@ pub fn lit(value: Value, allow_object: bool) -> RbResult<RbExpr> {
                 }
             }
             _ => {
-                let val = value.try_convert::<u64>()?;
+                let val = v.to_u64()?;
                 Ok(dsl::lit(val).into())
             }
         }
     } else if let Some(v) = Float::from_value(value) {
-        Ok(dsl::lit(v.try_convert::<f64>()?).into())
+        Ok(dsl::lit(v.to_f64()).into())
     } else if let Some(v) = RString::from_value(value) {
         if v.enc_get() == encoding::Index::utf8() {
-            Ok(dsl::lit(v.try_convert::<String>()?).into())
+            Ok(dsl::lit(v.to_string()?).into())
         } else {
             Ok(dsl::lit(unsafe { v.as_slice() }).into())
         }
-    } else if let Ok(series) = value.try_convert::<&RbSeries>() {
+    } else if let Ok(series) = Obj::<RbSeries>::try_convert(value) {
         Ok(dsl::lit(series.series.borrow().clone()).into())
     } else if value.is_nil() {
         Ok(dsl::lit(Null {}).into())
@@ -236,7 +242,7 @@ pub fn concat_lst(s: RArray) -> RbResult<RbExpr> {
 pub fn dtype_cols2(dtypes: RArray) -> RbResult<RbExpr> {
     let dtypes = dtypes
         .each()
-        .map(|v| v?.try_convert::<Wrap<DataType>>())
+        .map(|v| Wrap::<DataType>::try_convert(v?))
         .collect::<RbResult<Vec<Wrap<DataType>>>>()?;
     let dtypes = vec_extract_wrapped(dtypes);
     Ok(crate::functions::lazy::dtype_cols(dtypes))

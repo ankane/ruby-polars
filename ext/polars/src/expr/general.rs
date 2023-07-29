@@ -1,4 +1,4 @@
-use magnus::{block::Proc, IntoValue, RArray, Value};
+use magnus::{block::Proc, prelude::*, value::Opaque, IntoValue, RArray, Ruby, Value};
 use polars::lazy::dsl;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
@@ -388,18 +388,18 @@ impl RbExpr {
     }
 
     pub fn clip(&self, min: Value, max: Value) -> Self {
-        let min = min.try_convert::<Wrap<AnyValue>>().unwrap().0;
-        let max = max.try_convert::<Wrap<AnyValue>>().unwrap().0;
+        let min = Wrap::<AnyValue>::try_convert(min).unwrap().0;
+        let max = Wrap::<AnyValue>::try_convert(max).unwrap().0;
         self.clone().inner.clip(min, max).into()
     }
 
     pub fn clip_min(&self, min: Value) -> Self {
-        let min = min.try_convert::<Wrap<AnyValue>>().unwrap().0;
+        let min = Wrap::<AnyValue>::try_convert(min).unwrap().0;
         self.clone().inner.clip_min(min).into()
     }
 
     pub fn clip_max(&self, max: Value) -> Self {
-        let max = max.try_convert::<Wrap<AnyValue>>().unwrap().0;
+        let max = Wrap::<AnyValue>::try_convert(max).unwrap().0;
         self.clone().inner.clip_max(max).into()
     }
 
@@ -554,9 +554,11 @@ impl RbExpr {
     }
 
     pub fn map_alias(&self, lambda: Proc) -> Self {
+        let lambda = Opaque::from(lambda);
         self.inner
             .clone()
             .map_alias(move |name| {
+                let lambda = Ruby::get().unwrap().get_inner(lambda);
                 let out = lambda.call::<_, String>((name,));
                 match out {
                     Ok(out) => Ok(out),
@@ -915,11 +917,13 @@ impl RbExpr {
 
     pub fn extend_constant(&self, value: Wrap<AnyValue>, n: usize) -> Self {
         let value = value.into_value();
+        let value = Opaque::from(value);
         self.inner
             .clone()
             .apply(
                 move |s| {
-                    let value = value.try_convert::<Wrap<AnyValue>>().unwrap().0;
+                    let value = Ruby::get().unwrap().get_inner(value);
+                    let value = Wrap::<AnyValue>::try_convert(value).unwrap().0;
                     s.extend_constant(value, n).map(Some)
                 },
                 GetOutput::same_type(),

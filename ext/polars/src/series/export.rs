@@ -1,4 +1,4 @@
-use magnus::{class, Module, RArray, RClass, RModule, Value};
+use magnus::{class, prelude::*, Module, RArray, RClass, RModule, Value};
 use polars_core::prelude::*;
 
 use crate::{raise_err, RbPolarsErr, RbResult, RbSeries};

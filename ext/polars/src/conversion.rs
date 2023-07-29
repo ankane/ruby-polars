@@ -1,10 +1,10 @@
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
 
 use magnus::encoding::{EncodingCapable, Index};
 use magnus::{
-    class, exception, r_hash::ForEach, ruby_handle::RubyHandle, Float, Integer, IntoValue, Module,
-    RArray, RHash, RString, Symbol, TryConvert, Value, QNIL,
+    class, exception, prelude::*, r_hash::ForEach, value::Opaque, Float, Integer, IntoValue,
+    Module, RArray, RHash, RString, Ruby, Symbol, TryConvert, Value,
 };
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
@@ -57,7 +57,7 @@ impl<T> From<T> for Wrap<T> {
 }
 
 pub(crate) fn get_rbseq(obj: Value) -> RbResult<(RArray, usize)> {
-    let seq: RArray = obj.try_convert()?;
+    let seq = RArray::try_convert(obj)?;
     let len = seq.len();
     Ok((seq, len))
 }
@@ -84,7 +84,7 @@ impl TryConvert for Wrap<Utf8Chunked> {
 
         for res in seq.each() {
             let item = res?;
-            match item.try_convert::<String>() {
+            match String::try_convert(item) {
                 Ok(val) => builder.append_value(&val),
                 Err(_) => builder.append_null(),
             }
@@ -100,7 +100,7 @@ impl TryConvert for Wrap<BinaryChunked> {
 
         for res in seq.each() {
             let item = res?;
-            match item.try_convert::<RString>() {
+            match RString::try_convert(item) {
                 Ok(val) => builder.append_value(unsafe { val.as_slice() }),
                 Err(_) => builder.append_null(),
             }
@@ -111,11 +111,11 @@ impl TryConvert for Wrap<BinaryChunked> {
 
 impl TryConvert for Wrap<NullValues> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        if let Ok(s) = ob.try_convert::<String>() {
+        if let Ok(s) = String::try_convert(ob) {
             Ok(Wrap(NullValues::AllColumnsSingle(s)))
-        } else if let Ok(s) = ob.try_convert::<Vec<String>>() {
+        } else if let Ok(s) = Vec::<String>::try_convert(ob) {
             Ok(Wrap(NullValues::AllColumns(s)))
-        } else if let Ok(s) = ob.try_convert::<Vec<(String, String)>>() {
+        } else if let Ok(s) = Vec::<(String, String)>::try_convert(ob) {
             Ok(Wrap(NullValues::Named(s)))
         } else {
             Err(RbPolarsErr::other(
@@ -134,22 +134,22 @@ fn struct_dict<'a>(vals: impl Iterator<Item = AnyValue<'a>>, flds: &[Field]) -> 
 }
 
 impl IntoValue for Wrap<AnyValue<'_>> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, ruby: &Ruby) -> Value {
         match self.0 {
-            AnyValue::UInt8(v) => Value::from(v),
-            AnyValue::UInt16(v) => Value::from(v),
-            AnyValue::UInt32(v) => Value::from(v),
-            AnyValue::UInt64(v) => Value::from(v),
-            AnyValue::Int8(v) => Value::from(v),
-            AnyValue::Int16(v) => Value::from(v),
-            AnyValue::Int32(v) => Value::from(v),
-            AnyValue::Int64(v) => Value::from(v),
-            AnyValue::Float32(v) => Value::from(v),
-            AnyValue::Float64(v) => Value::from(v),
-            AnyValue::Null => *QNIL,
-            AnyValue::Boolean(v) => Value::from(v),
-            AnyValue::Utf8(v) => Value::from(v),
-            AnyValue::Utf8Owned(v) => Value::from(v.as_str()),
+            AnyValue::UInt8(v) => ruby.into_value(v),
+            AnyValue::UInt16(v) => ruby.into_value(v),
+            AnyValue::UInt32(v) => ruby.into_value(v),
+            AnyValue::UInt64(v) => ruby.into_value(v),
+            AnyValue::Int8(v) => ruby.into_value(v),
+            AnyValue::Int16(v) => ruby.into_value(v),
+            AnyValue::Int32(v) => ruby.into_value(v),
+            AnyValue::Int64(v) => ruby.into_value(v),
+            AnyValue::Float32(v) => ruby.into_value(v),
+            AnyValue::Float64(v) => ruby.into_value(v),
+            AnyValue::Null => ruby.qnil().as_value(),
+            AnyValue::Boolean(v) => ruby.into_value(v),
+            AnyValue::Utf8(v) => ruby.into_value(v),
+            AnyValue::Utf8Owned(v) => ruby.into_value(v.as_str()),
             AnyValue::Categorical(idx, rev, arr) => {
                 let s = if arr.is_null() {
                     rev.get(idx)
@@ -177,11 +177,11 @@ impl IntoValue for Wrap<AnyValue<'_>> {
             AnyValue::StructOwned(payload) => struct_dict(payload.0.into_iter(), &payload.1),
             AnyValue::Object(v) => {
                 let object = v.as_any().downcast_ref::<ObjectValue>().unwrap();
-                object.inner
+                object.to_object()
             }
             AnyValue::ObjectOwned(v) => {
                 let object = v.0.as_any().downcast_ref::<ObjectValue>().unwrap();
-                object.inner
+                object.to_object()
             }
             AnyValue::Binary(v) => RString::from_slice(v).into_value(),
             AnyValue::BinaryOwned(v) => RString::from_slice(&v).into_value(),
@@ -193,7 +193,7 @@ impl IntoValue for Wrap<AnyValue<'_>> {
 }
 
 impl IntoValue for Wrap<DataType> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let pl = crate::rb_modules::polars();
 
         match self.0 {
@@ -266,7 +266,7 @@ impl IntoValue for Wrap<DataType> {
 }
 
 impl IntoValue for Wrap<TimeUnit> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let tu = match self.0 {
             TimeUnit::Nanoseconds => "ns",
             TimeUnit::Microseconds => "us",
@@ -277,14 +277,14 @@ impl IntoValue for Wrap<TimeUnit> {
 }
 
 impl IntoValue for Wrap<&Utf8Chunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let iter = self.0.into_iter();
         RArray::from_iter(iter).into_value()
     }
 }
 
 impl IntoValue for Wrap<&BinaryChunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let iter = self
             .0
             .into_iter()
@@ -294,7 +294,7 @@ impl IntoValue for Wrap<&BinaryChunked> {
 }
 
 impl IntoValue for Wrap<&StructChunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let s = self.0.clone().into_series();
         // todo! iterate its chunks and flatten.
         // make series::iter() accept a chunk index.
@@ -312,7 +312,7 @@ impl IntoValue for Wrap<&StructChunked> {
 }
 
 impl IntoValue for Wrap<&DurationChunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let utils = utils();
         let time_unit = Wrap(self.0.time_unit()).into_value();
         let iter = self.0.into_iter().map(|opt_v| {
@@ -327,7 +327,7 @@ impl IntoValue for Wrap<&DurationChunked> {
 }
 
 impl IntoValue for Wrap<&DatetimeChunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let utils = utils();
         let time_unit = Wrap(self.0.time_unit()).into_value();
         let time_zone = self.0.time_zone().clone().into_value();
@@ -343,7 +343,7 @@ impl IntoValue for Wrap<&DatetimeChunked> {
 }
 
 impl IntoValue for Wrap<&TimeChunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let utils = utils();
         let iter = self.0.into_iter().map(|opt_v| {
             opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_time", (v,)).unwrap())
@@ -353,7 +353,7 @@ impl IntoValue for Wrap<&TimeChunked> {
 }
 
 impl IntoValue for Wrap<&DateChunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let utils = utils();
         let iter = self.0.into_iter().map(|opt_v| {
             opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_date", (v,)).unwrap())
@@ -363,7 +363,7 @@ impl IntoValue for Wrap<&DateChunked> {
 }
 
 impl IntoValue for Wrap<&DecimalChunked> {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
+    fn into_value_with(self, _: &Ruby) -> Value {
         let utils = utils();
         let rb_scale = (-(self.0.scale() as i32)).into_value();
         let iter = self.0.into_iter().map(|opt_v| {
@@ -427,36 +427,35 @@ impl TryConvert for Wrap<DataType> {
                 }
             }
         // TODO improve
-        } else if ob.try_convert::<String>().is_err() {
+        } else if String::try_convert(ob).is_err() {
             let name = unsafe { ob.class().name() }.into_owned();
             match name.as_str() {
                 "Polars::Duration" => {
                     let time_unit: Value = ob.funcall("time_unit", ()).unwrap();
-                    let time_unit = time_unit.try_convert::<Wrap<TimeUnit>>()?.0;
+                    let time_unit = Wrap::<TimeUnit>::try_convert(time_unit)?.0;
                     DataType::Duration(time_unit)
                 }
                 "Polars::Datetime" => {
                     let time_unit: Value = ob.funcall("time_unit", ()).unwrap();
-                    let time_unit = time_unit.try_convert::<Wrap<TimeUnit>>()?.0;
-                    let time_zone: Value = ob.funcall("time_zone", ()).unwrap();
-                    let time_zone = time_zone.try_convert()?;
+                    let time_unit = Wrap::<TimeUnit>::try_convert(time_unit)?.0;
+                    let time_zone = ob.funcall("time_zone", ())?;
                     DataType::Datetime(time_unit, time_zone)
                 }
                 "Polars::Decimal" => {
-                    let precision = ob.funcall::<_, _, Value>("precision", ())?.try_convert()?;
-                    let scale = ob.funcall::<_, _, Value>("scale", ())?.try_convert()?;
+                    let precision = ob.funcall("precision", ())?;
+                    let scale = ob.funcall("scale", ())?;
                     DataType::Decimal(precision, Some(scale))
                 }
                 "Polars::List" => {
                     let inner: Value = ob.funcall("inner", ()).unwrap();
-                    let inner = inner.try_convert::<Wrap<DataType>>()?;
+                    let inner = Wrap::<DataType>::try_convert(inner)?;
                     DataType::List(Box::new(inner.0))
                 }
                 "Polars::Struct" => {
                     let arr: RArray = ob.funcall("fields", ())?;
                     let mut fields = Vec::with_capacity(arr.len());
                     for v in arr.each() {
-                        fields.push(v?.try_convert::<Wrap<Field>>()?.0);
+                        fields.push(Wrap::<Field>::try_convert(v?)?.0);
                     }
                     DataType::Struct(fields)
                 }
@@ -468,7 +467,7 @@ impl TryConvert for Wrap<DataType> {
                 }
             }
         } else {
-            match ob.try_convert::<String>()?.as_str() {
+            match String::try_convert(ob)?.as_str() {
                 "u8" => DataType::UInt8,
                 "u16" => DataType::UInt16,
                 "u32" => DataType::UInt32,
@@ -506,7 +505,7 @@ impl TryConvert for Wrap<DataType> {
 impl<'s> TryConvert for Wrap<AnyValue<'s>> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         if ob.is_kind_of(class::true_class()) || ob.is_kind_of(class::false_class()) {
-            Ok(AnyValue::Boolean(ob.try_convert::<bool>()?).into())
+            Ok(AnyValue::Boolean(bool::try_convert(ob)?).into())
         } else if let Some(v) = Integer::from_value(ob) {
             Ok(AnyValue::Int64(v.to_i64()?).into())
         } else if let Some(v) = Float::from_value(ob) {
@@ -532,8 +531,8 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
             let mut keys = Vec::with_capacity(len);
             let mut vals = Vec::with_capacity(len);
             dict.foreach(|k: Value, v: Value| {
-                let key = k.try_convert::<String>()?;
-                let val = v.try_convert::<Wrap<AnyValue>>()?.0;
+                let key = String::try_convert(k)?;
+                let val = Wrap::<AnyValue>::try_convert(v)?.0;
                 let dtype = DataType::from(&val);
                 keys.push(Field::new(&key, dtype));
                 vals.push(val);
@@ -550,7 +549,7 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
                 let mut iter = list.each();
 
                 for item in (&mut iter).take(25) {
-                    avs.push(item?.try_convert::<Wrap<AnyValue>>()?.0)
+                    avs.push(Wrap::<AnyValue>::try_convert(item?)?.0)
                 }
 
                 let (dtype, _n_types) = any_values_to_dtype(&avs).map_err(RbPolarsErr::from)?;
@@ -558,7 +557,7 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
                 // push the rest
                 avs.reserve(list.len());
                 for item in iter {
-                    avs.push(item?.try_convert::<Wrap<AnyValue>>()?.0)
+                    avs.push(Wrap::<AnyValue>::try_convert(item?)?.0)
                 }
 
                 let s = Series::from_any_values_and_dtype("", &avs, &dtype, true)
@@ -581,11 +580,7 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
                 .funcall::<_, _, i64>("to_i", ())?;
             Ok(Wrap(AnyValue::Date((v / 86400) as i32)))
         } else if ob.is_kind_of(crate::rb_modules::bigdecimal()) {
-            let (sign, digits, _, exp): (i8, String, i32, i32) = ob
-                .funcall::<_, _, Value>("split", ())
-                .unwrap()
-                .try_convert()
-                .unwrap();
+            let (sign, digits, _, exp): (i8, String, i32, i32) = ob.funcall("split", ()).unwrap();
             let (mut v, scale) = abs_decimal_from_digits(digits, exp).ok_or_else(|| {
                 RbPolarsErr::other("BigDecimal is too large to fit in Decimal128".into())
             })?;
@@ -606,8 +601,8 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
 impl<'s> TryConvert for Wrap<Row<'s>> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let mut vals: Vec<Wrap<AnyValue<'s>>> = Vec::new();
-        for item in ob.try_convert::<RArray>()?.each() {
-            vals.push(item?.try_convert::<Wrap<AnyValue<'s>>>()?);
+        for item in RArray::try_convert(ob)?.each() {
+            vals.push(Wrap::<AnyValue<'s>>::try_convert(item?)?);
         }
         let vals: Vec<AnyValue> = unsafe { std::mem::transmute(vals) };
         Ok(Wrap(Row(vals)))
@@ -616,7 +611,7 @@ impl<'s> TryConvert for Wrap<Row<'s>> {
 
 impl TryConvert for Wrap<Schema> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let dict = ob.try_convert::<RHash>()?;
+        let dict = RHash::try_convert(ob)?;
 
         let mut schema = Vec::new();
         dict.foreach(|key: String, val: Wrap<DataType>| {
@@ -629,15 +624,23 @@ impl TryConvert for Wrap<Schema> {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct ObjectValue {
-    pub inner: Value,
+    pub inner: Opaque<Value>,
+}
+
+impl Debug for ObjectValue {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ObjectValue")
+            .field("inner", &self.to_object())
+            .finish()
+    }
 }
 
 impl Hash for ObjectValue {
     fn hash<H: Hasher>(&self, state: &mut H) {
         let h = self
-            .inner
+            .to_object()
             .funcall::<_, _, isize>("hash", ())
             .expect("should be hashable");
         state.write_isize(h)
@@ -648,13 +651,13 @@ impl Eq for ObjectValue {}
 
 impl PartialEq for ObjectValue {
     fn eq(&self, other: &Self) -> bool {
-        self.inner.eql(&other.inner).unwrap_or(false)
+        self.to_object().eql(other.to_object()).unwrap_or(false)
     }
 }
 
 impl Display for ObjectValue {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.inner)
+        write!(f, "{}", self.to_object())
     }
 }
 
@@ -666,13 +669,13 @@ impl PolarsObject for ObjectValue {
 
 impl From<Value> for ObjectValue {
     fn from(v: Value) -> Self {
-        Self { inner: v }
+        Self { inner: v.into() }
     }
 }
 
 impl TryConvert for ObjectValue {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        Ok(ObjectValue { inner: ob })
+        Ok(ObjectValue { inner: ob.into() })
     }
 }
 
@@ -685,19 +688,21 @@ impl From<&dyn PolarsObjectSafe> for &ObjectValue {
 // TODO remove
 impl ObjectValue {
     pub fn to_object(&self) -> Value {
-        self.inner
+        Ruby::get().unwrap().get_inner(self.inner)
     }
 }
 
 impl IntoValue for ObjectValue {
-    fn into_value_with(self, _: &RubyHandle) -> Value {
-        self.inner
+    fn into_value_with(self, _: &Ruby) -> Value {
+        self.to_object()
     }
 }
 
 impl Default for ObjectValue {
     fn default() -> Self {
-        ObjectValue { inner: *QNIL }
+        ObjectValue {
+            inner: Ruby::get().unwrap().qnil().as_value().into(),
+        }
     }
 }
 
@@ -710,13 +715,13 @@ pub(crate) fn dicts_to_rows(
     let mut key_names = PlIndexSet::new();
     for d in dicts.each().take(infer_schema_len) {
         let d = d?;
-        let d = d.try_convert::<RHash>()?;
+        let d = RHash::try_convert(d)?;
 
         d.foreach(|name: Value, _value: Value| {
             if let Some(v) = Symbol::from_value(name) {
                 key_names.insert(v.name()?.into());
             } else {
-                key_names.insert(name.try_convert::<String>()?);
+                key_names.insert(String::try_convert(name)?);
             };
             Ok(ForEach::Continue)
         })?;
@@ -726,7 +731,7 @@ pub(crate) fn dicts_to_rows(
 
     for d in dicts.each() {
         let d = d?;
-        let d = d.try_convert::<RHash>()?;
+        let d = RHash::try_convert(d)?;
 
         let mut row = Vec::with_capacity(key_names.len());
 
@@ -734,7 +739,7 @@ pub(crate) fn dicts_to_rows(
             // TODO improve performance
             let val = match d.get(k.clone()).or_else(|| d.get(Symbol::new(k))) {
                 None => AnyValue::Null,
-                Some(val) => val.try_convert::<Wrap<AnyValue>>()?.0,
+                Some(val) => Wrap::<AnyValue>::try_convert(val)?.0,
             };
             row.push(val)
         }
@@ -745,7 +750,7 @@ pub(crate) fn dicts_to_rows(
 
 impl TryConvert for Wrap<AsofStrategy> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "backward" => AsofStrategy::Backward,
             "forward" => AsofStrategy::Forward,
             v => {
@@ -761,7 +766,7 @@ impl TryConvert for Wrap<AsofStrategy> {
 
 impl TryConvert for Wrap<InterpolationMethod> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "linear" => InterpolationMethod::Linear,
             "nearest" => InterpolationMethod::Nearest,
             v => {
@@ -776,7 +781,7 @@ impl TryConvert for Wrap<InterpolationMethod> {
 
 impl TryConvert for Wrap<Option<AvroCompression>> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "uncompressed" => None,
             "snappy" => Some(AvroCompression::Snappy),
             "deflate" => Some(AvroCompression::Deflate),
@@ -793,7 +798,7 @@ impl TryConvert for Wrap<Option<AvroCompression>> {
 
 impl TryConvert for Wrap<CategoricalOrdering> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "physical" => CategoricalOrdering::Physical,
             "lexical" => CategoricalOrdering::Lexical,
             v => {
@@ -809,7 +814,7 @@ impl TryConvert for Wrap<CategoricalOrdering> {
 
 impl TryConvert for Wrap<StartBy> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "window" => StartBy::WindowBound,
             "datapoint" => StartBy::DataPoint,
             "monday" => StartBy::Monday,
@@ -825,7 +830,7 @@ impl TryConvert for Wrap<StartBy> {
 
 impl TryConvert for Wrap<ClosedWindow> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "left" => ClosedWindow::Left,
             "right" => ClosedWindow::Right,
             "both" => ClosedWindow::Both,
@@ -843,7 +848,7 @@ impl TryConvert for Wrap<ClosedWindow> {
 
 impl TryConvert for Wrap<CsvEncoding> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "utf8" => CsvEncoding::Utf8,
             "utf8-lossy" => CsvEncoding::LossyUtf8,
             v => {
@@ -859,7 +864,7 @@ impl TryConvert for Wrap<CsvEncoding> {
 
 impl TryConvert for Wrap<Option<IpcCompression>> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "uncompressed" => None,
             "lz4" => Some(IpcCompression::LZ4),
             "zstd" => Some(IpcCompression::ZSTD),
@@ -876,7 +881,7 @@ impl TryConvert for Wrap<Option<IpcCompression>> {
 
 impl TryConvert for Wrap<JoinType> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "inner" => JoinType::Inner,
             "left" => JoinType::Left,
             "outer" => JoinType::Outer,
@@ -897,7 +902,7 @@ impl TryConvert for Wrap<JoinType> {
 
 impl TryConvert for Wrap<ListToStructWidthStrategy> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "first_non_null" => ListToStructWidthStrategy::FirstNonNull,
             "max_width" => ListToStructWidthStrategy::MaxWidth,
             v => {
@@ -913,7 +918,7 @@ impl TryConvert for Wrap<ListToStructWidthStrategy> {
 
 impl TryConvert for Wrap<NullBehavior> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "drop" => NullBehavior::Drop,
             "ignore" => NullBehavior::Ignore,
             v => {
@@ -929,7 +934,7 @@ impl TryConvert for Wrap<NullBehavior> {
 
 impl TryConvert for Wrap<NullStrategy> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "ignore" => NullStrategy::Ignore,
             "propagate" => NullStrategy::Propagate,
             v => {
@@ -945,7 +950,7 @@ impl TryConvert for Wrap<NullStrategy> {
 
 impl TryConvert for Wrap<ParallelStrategy> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "auto" => ParallelStrategy::Auto,
             "columns" => ParallelStrategy::Columns,
             "row_groups" => ParallelStrategy::RowGroups,
@@ -963,7 +968,7 @@ impl TryConvert for Wrap<ParallelStrategy> {
 
 impl TryConvert for Wrap<QuantileInterpolOptions> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "lower" => QuantileInterpolOptions::Lower,
             "higher" => QuantileInterpolOptions::Higher,
             "nearest" => QuantileInterpolOptions::Nearest,
@@ -982,7 +987,7 @@ impl TryConvert for Wrap<QuantileInterpolOptions> {
 
 impl TryConvert for Wrap<RankMethod> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "min" => RankMethod::Min,
             "max" => RankMethod::Max,
             "average" => RankMethod::Average,
@@ -1002,7 +1007,7 @@ impl TryConvert for Wrap<RankMethod> {
 
 impl TryConvert for Wrap<TimeUnit> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "ns" => TimeUnit::Nanoseconds,
             "us" => TimeUnit::Microseconds,
             "ms" => TimeUnit::Milliseconds,
@@ -1019,7 +1024,7 @@ impl TryConvert for Wrap<TimeUnit> {
 
 impl TryConvert for Wrap<UniqueKeepStrategy> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "first" => UniqueKeepStrategy::First,
             "last" => UniqueKeepStrategy::Last,
             v => {
@@ -1035,7 +1040,7 @@ impl TryConvert for Wrap<UniqueKeepStrategy> {
 
 impl TryConvert for Wrap<SearchSortedSide> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match ob.try_convert::<String>()?.as_str() {
+        let parsed = match String::try_convert(ob)?.as_str() {
             "any" => SearchSortedSide::Any,
             "left" => SearchSortedSide::Left,
             "right" => SearchSortedSide::Right,

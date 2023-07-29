@@ -21,7 +21,7 @@ pub(crate) fn register_object_builder() {
 
         let object_converter = Arc::new(|av: AnyValue| {
             let object = ObjectValue {
-                inner: Wrap(av).into_value(),
+                inner: Wrap(av).into_value().into(),
             };
             Box::new(object) as Box<dyn Any>
         });

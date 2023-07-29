@@ -1,4 +1,4 @@
-use magnus::{RArray, Value};
+use magnus::{prelude::*, RArray, Value};
 use polars::io::mmap::MmapBytesReader;
 use polars::io::RowCount;
 use polars::prelude::read_impl::OwnedBatchedCsvReader;
@@ -24,31 +24,31 @@ impl RbBatchedCsv {
     pub fn new(arguments: &[Value]) -> RbResult<Self> {
         // start arguments
         // this pattern is needed for more than 16
-        let infer_schema_length: Option<usize> = arguments[0].try_convert()?;
-        let chunk_size: usize = arguments[1].try_convert()?;
-        let has_header: bool = arguments[2].try_convert()?;
-        let ignore_errors: bool = arguments[3].try_convert()?;
-        let n_rows: Option<usize> = arguments[4].try_convert()?;
-        let skip_rows: usize = arguments[5].try_convert()?;
-        let projection: Option<Vec<usize>> = arguments[6].try_convert()?;
-        let sep: String = arguments[7].try_convert()?;
-        let rechunk: bool = arguments[8].try_convert()?;
-        let columns: Option<Vec<String>> = arguments[9].try_convert()?;
-        let encoding: Wrap<CsvEncoding> = arguments[10].try_convert()?;
-        let n_threads: Option<usize> = arguments[11].try_convert()?;
-        let path: PathBuf = arguments[12].try_convert()?;
-        let overwrite_dtype: Option<Vec<(String, Wrap<DataType>)>> = arguments[13].try_convert()?;
+        let infer_schema_length = Option::<usize>::try_convert(arguments[0])?;
+        let chunk_size = usize::try_convert(arguments[1])?;
+        let has_header = bool::try_convert(arguments[2])?;
+        let ignore_errors = bool::try_convert(arguments[3])?;
+        let n_rows = Option::<usize>::try_convert(arguments[4])?;
+        let skip_rows = usize::try_convert(arguments[5])?;
+        let projection = Option::<Vec<usize>>::try_convert(arguments[6])?;
+        let sep = String::try_convert(arguments[7])?;
+        let rechunk = bool::try_convert(arguments[8])?;
+        let columns = Option::<Vec<String>>::try_convert(arguments[9])?;
+        let encoding = Wrap::<CsvEncoding>::try_convert(arguments[10])?;
+        let n_threads = Option::<usize>::try_convert(arguments[11])?;
+        let path = PathBuf::try_convert(arguments[12])?;
+        let overwrite_dtype = Option::<Vec<(String, Wrap<DataType>)>>::try_convert(arguments[13])?;
         // TODO fix
-        let overwrite_dtype_slice: Option<Vec<Wrap<DataType>>> = None; // arguments[14].try_convert()?;
-        let low_memory: bool = arguments[15].try_convert()?;
-        let comment_char: Option<String> = arguments[16].try_convert()?;
-        let quote_char: Option<String> = arguments[17].try_convert()?;
-        let null_values: Option<Wrap<NullValues>> = arguments[18].try_convert()?;
-        let try_parse_dates: bool = arguments[19].try_convert()?;
-        let skip_rows_after_header: usize = arguments[20].try_convert()?;
-        let row_count: Option<(String, IdxSize)> = arguments[21].try_convert()?;
-        let sample_size: usize = arguments[22].try_convert()?;
-        let eol_char: String = arguments[23].try_convert()?;
+        let overwrite_dtype_slice = Option::<Vec<Wrap<DataType>>>::None; // Option::<Vec<Wrap<DataType>>>::try_convert(arguments[14])?;
+        let low_memory = bool::try_convert(arguments[15])?;
+        let comment_char = Option::<String>::try_convert(arguments[16])?;
+        let quote_char = Option::<String>::try_convert(arguments[17])?;
+        let null_values = Option::<Wrap<NullValues>>::try_convert(arguments[18])?;
+        let try_parse_dates = bool::try_convert(arguments[19])?;
+        let skip_rows_after_header = usize::try_convert(arguments[20])?;
+        let row_count = Option::<(String, IdxSize)>::try_convert(arguments[21])?;
+        let sample_size = usize::try_convert(arguments[22])?;
+        let eol_char = String::try_convert(arguments[23])?;
         // end arguments
 
         let null_values = null_values.map(|w| w.0);

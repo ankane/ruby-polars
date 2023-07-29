@@ -1,4 +1,4 @@
-use magnus::{class, IntoValue, RHash, TryConvert, Value};
+use magnus::{class, prelude::*, typed_data::Obj, IntoValue, RHash, TryConvert, Value};
 use polars::prelude::*;
 
 use super::*;
@@ -14,12 +14,12 @@ fn infer_and_finish<'a, A: ApplyLambda<'a>>(
     null_count: usize,
 ) -> RbResult<RbSeries> {
     if out.is_kind_of(class::true_class()) || out.is_kind_of(class::false_class()) {
-        let first_value = out.try_convert::<bool>().unwrap();
+        let first_value = bool::try_convert(out).unwrap();
         applyer
             .apply_lambda_with_bool_out_type(lambda, null_count, Some(first_value))
             .map(|ca| ca.into_series().into())
     } else if out.is_kind_of(class::float()) {
-        let first_value = out.try_convert::<f64>().unwrap();
+        let first_value = f64::try_convert(out).unwrap();
         applyer
             .apply_lambda_with_primitive_out_type::<Float64Type>(
                 lambda,
@@ -28,7 +28,7 @@ fn infer_and_finish<'a, A: ApplyLambda<'a>>(
             )
             .map(|ca| ca.into_series().into())
     } else if out.is_kind_of(class::string()) {
-        let first_value = out.try_convert::<String>().unwrap();
+        let first_value = String::try_convert(out).unwrap();
         applyer
             .apply_lambda_with_utf8_out_type(lambda, null_count, Some(first_value.as_str()))
             .map(|ca| ca.into_series().into())
@@ -37,13 +37,13 @@ fn infer_and_finish<'a, A: ApplyLambda<'a>>(
     } else if out.is_kind_of(class::array()) {
         todo!()
     } else if out.is_kind_of(class::hash()) {
-        let first = out.try_convert::<Wrap<AnyValue<'_>>>()?;
+        let first = Wrap::<AnyValue<'_>>::try_convert(out)?;
         applyer.apply_to_struct(lambda, null_count, first.0)
     }
     // this succeeds for numpy ints as well, where checking if it is pyint fails
     // we do this later in the chain so that we don't extract integers from string chars.
-    else if out.try_convert::<i64>().is_ok() {
-        let first_value = out.try_convert::<i64>().unwrap();
+    else if i64::try_convert(out).is_ok() {
+        let first_value = i64::try_convert(out).unwrap();
         applyer
             .apply_lambda_with_primitive_out_type::<Int64Type>(
                 lambda,
@@ -51,7 +51,7 @@ fn infer_and_finish<'a, A: ApplyLambda<'a>>(
                 Some(first_value),
             )
             .map(|ca| ca.into_series().into())
-    } else if let Ok(av) = out.try_convert::<Wrap<AnyValue>>() {
+    } else if let Ok(av) = Wrap::<AnyValue>::try_convert(out) {
         applyer
             .apply_extract_any_values(lambda, null_count, av.0)
             .map(|s| s.into())
@@ -141,7 +141,7 @@ where
     S: TryConvert,
 {
     match call_lambda(lambda, in_val) {
-        Ok(out) => out.try_convert::<S>(),
+        Ok(out) => S::try_convert(out),
         Err(e) => panic!("ruby function failed {}", e),
     }
 }
@@ -151,13 +151,9 @@ where
     T: IntoValue,
 {
     let out: Value = lambda.funcall("call", (in_val,))?;
-    let py_series: Value = out.funcall("_s", ())?;
-    Ok(py_series
-        .try_convert::<&RbSeries>()
-        .unwrap()
-        .series
-        .borrow()
-        .clone())
+    let py_series: Obj<RbSeries> = out.funcall("_s", ())?;
+    let tmp = py_series.series.borrow();
+    Ok(tmp.clone())
 }
 
 impl<'a> ApplyLambda<'a> for BooleanChunked {

@@ -1,4 +1,4 @@
-use magnus::{IntoValue, RArray, RHash, Value};
+use magnus::{IntoValue, RArray, RHash, TryConvert, Value};
 use polars::io::RowCount;
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
@@ -78,26 +78,26 @@ impl RbLazyFrame {
     pub fn new_from_csv(arguments: &[Value]) -> RbResult<Self> {
         // start arguments
         // this pattern is needed for more than 16
-        let path: String = arguments[0].try_convert()?;
-        let sep: String = arguments[1].try_convert()?;
-        let has_header: bool = arguments[2].try_convert()?;
-        let ignore_errors: bool = arguments[3].try_convert()?;
-        let skip_rows: usize = arguments[4].try_convert()?;
-        let n_rows: Option<usize> = arguments[5].try_convert()?;
-        let cache: bool = arguments[6].try_convert()?;
-        let overwrite_dtype: Option<Vec<(String, Wrap<DataType>)>> = arguments[7].try_convert()?;
-        let low_memory: bool = arguments[8].try_convert()?;
-        let comment_char: Option<String> = arguments[9].try_convert()?;
-        let quote_char: Option<String> = arguments[10].try_convert()?;
-        let null_values: Option<Wrap<NullValues>> = arguments[11].try_convert()?;
-        let infer_schema_length: Option<usize> = arguments[12].try_convert()?;
-        let with_schema_modify: Option<Value> = arguments[13].try_convert()?;
-        let rechunk: bool = arguments[14].try_convert()?;
-        let skip_rows_after_header: usize = arguments[15].try_convert()?;
-        let encoding: Wrap<CsvEncoding> = arguments[16].try_convert()?;
-        let row_count: Option<(String, IdxSize)> = arguments[17].try_convert()?;
-        let try_parse_dates: bool = arguments[18].try_convert()?;
-        let eol_char: String = arguments[19].try_convert()?;
+        let path = String::try_convert(arguments[0])?;
+        let sep = String::try_convert(arguments[1])?;
+        let has_header = bool::try_convert(arguments[2])?;
+        let ignore_errors = bool::try_convert(arguments[3])?;
+        let skip_rows = usize::try_convert(arguments[4])?;
+        let n_rows = Option::<usize>::try_convert(arguments[5])?;
+        let cache = bool::try_convert(arguments[6])?;
+        let overwrite_dtype = Option::<Vec<(String, Wrap<DataType>)>>::try_convert(arguments[7])?;
+        let low_memory = bool::try_convert(arguments[8])?;
+        let comment_char = Option::<String>::try_convert(arguments[9])?;
+        let quote_char = Option::<String>::try_convert(arguments[10])?;
+        let null_values = Option::<Wrap<NullValues>>::try_convert(arguments[11])?;
+        let infer_schema_length = Option::<usize>::try_convert(arguments[12])?;
+        let with_schema_modify = Option::<Value>::try_convert(arguments[13])?;
+        let rechunk = bool::try_convert(arguments[14])?;
+        let skip_rows_after_header = usize::try_convert(arguments[15])?;
+        let encoding = Wrap::<CsvEncoding>::try_convert(arguments[16])?;
+        let row_count = Option::<(String, IdxSize)>::try_convert(arguments[17])?;
+        let try_parse_dates = bool::try_convert(arguments[18])?;
+        let eol_char = String::try_convert(arguments[19])?;
         // end arguments
 
         let null_values = null_values.map(|w| w.0);
@@ -399,7 +399,7 @@ impl RbLazyFrame {
     pub fn with_context(&self, contexts: RArray) -> RbResult<Self> {
         let contexts = contexts
             .each()
-            .map(|v| v.unwrap().try_convert())
+            .map(|v| TryConvert::try_convert(v.unwrap()))
             .collect::<RbResult<Vec<&RbLazyFrame>>>()?;
         let contexts = contexts
             .into_iter()

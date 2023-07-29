@@ -1,4 +1,4 @@
-use magnus::{class, IntoValue, RArray, TryConvert, Value};
+use magnus::{class, prelude::*, typed_data::Obj, IntoValue, RArray, TryConvert, Value};
 use polars::prelude::*;
 use polars_core::frame::row::{rows_to_schema_first_non_null, Row};
 use polars_core::series::SeriesIter;
@@ -34,20 +34,20 @@ pub fn apply_lambda_unknown<'a>(
             null_count += 1;
             continue;
         } else if out.is_kind_of(class::true_class()) || out.is_kind_of(class::false_class()) {
-            let first_value = out.try_convert::<bool>().ok();
+            let first_value = bool::try_convert(out).ok();
             return Ok((
-                RbSeries::new(
+                Obj::wrap(RbSeries::new(
                     apply_lambda_with_bool_out_type(df, lambda, null_count, first_value)
                         .into_series(),
-                )
-                .into(),
+                ))
+                .as_value(),
                 false,
             ));
         } else if out.is_kind_of(class::float()) {
-            let first_value = out.try_convert::<f64>().ok();
+            let first_value = f64::try_convert(out).ok();
 
             return Ok((
-                RbSeries::new(
+                Obj::wrap(RbSeries::new(
                     apply_lambda_with_primitive_out_type::<Float64Type>(
                         df,
                         lambda,
@@ -55,14 +55,14 @@ pub fn apply_lambda_unknown<'a>(
                         first_value,
                     )
                     .into_series(),
-                )
-                .into(),
+                ))
+                .as_value(),
                 false,
             ));
         } else if out.is_kind_of(class::integer()) {
-            let first_value = out.try_convert::<i64>().ok();
+            let first_value = i64::try_convert(out).ok();
             return Ok((
-                RbSeries::new(
+                Obj::wrap(RbSeries::new(
                     apply_lambda_with_primitive_out_type::<Int64Type>(
                         df,
                         lambda,
@@ -70,12 +70,12 @@ pub fn apply_lambda_unknown<'a>(
                         first_value,
                     )
                     .into_series(),
-                )
-                .into(),
+                ))
+                .as_value(),
                 false,
             ));
         // } else if out.is_kind_of(class::string()) {
-        //     let first_value = out.try_convert::<String>().ok();
+        //     let first_value = String::try_convert(out).ok();
         //     return Ok((
         //         RbSeries::new(
         //             apply_lambda_with_utf8_out_type(df, lambda, null_count, first_value)
@@ -85,25 +85,21 @@ pub fn apply_lambda_unknown<'a>(
         //         false,
         //     ));
         } else if out.respond_to("_s", true)? {
-            let rb_rbseries: Value = out.funcall("_s", ()).unwrap();
-            let series = rb_rbseries
-                .try_convert::<&RbSeries>()
-                .unwrap()
-                .series
-                .borrow();
+            let rb_rbseries: Obj<RbSeries> = out.funcall("_s", ()).unwrap();
+            let series = rb_rbseries.series.borrow();
             let dt = series.dtype();
             return Ok((
-                RbSeries::new(
+                Obj::wrap(RbSeries::new(
                     apply_lambda_with_list_out_type(df, lambda, null_count, Some(&series), dt)?
                         .into_series(),
-                )
-                .into(),
+                ))
+                .as_value(),
                 false,
             ));
-        } else if out.try_convert::<Wrap<Row<'a>>>().is_ok() {
-            let first_value = out.try_convert::<Wrap<Row<'a>>>().unwrap().0;
+        } else if Wrap::<Row<'a>>::try_convert(out).is_ok() {
+            let first_value = Wrap::<Row<'a>>::try_convert(out).unwrap().0;
             return Ok((
-                RbDataFrame::from(
+                Obj::wrap(RbDataFrame::from(
                     apply_lambda_with_rows_output(
                         df,
                         lambda,
@@ -112,8 +108,8 @@ pub fn apply_lambda_unknown<'a>(
                         inference_size,
                     )
                     .map_err(RbPolarsErr::from)?,
-                )
-                .into(),
+                ))
+                .as_value(),
                 true,
             ));
         } else if out.is_kind_of(class::array()) {
@@ -143,7 +139,7 @@ where
         let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
         let tpl = (RArray::from_iter(iter),);
         match lambda.funcall::<_, _, Value>("call", tpl) {
-            Ok(val) => val.try_convert::<T>().ok(),
+            Ok(val) => T::try_convert(val).ok(),
             Err(e) => panic!("ruby function failed {}", e),
         }
     })
@@ -219,8 +215,7 @@ pub fn apply_lambda_with_list_out_type(
             let tpl = (RArray::from_iter(iter),);
             match lambda.funcall::<_, _, Value>("call", tpl) {
                 Ok(val) => match val.funcall::<_, _, Value>("_s", ()) {
-                    Ok(val) => val
-                        .try_convert::<&RbSeries>()
+                    Ok(val) => Obj::<RbSeries>::try_convert(val)
                         .ok()
                         .map(|ps| ps.series.borrow().clone()),
                     Err(_) => {
@@ -257,11 +252,11 @@ pub fn apply_lambda_with_rows_output<'a>(
         let tpl = (RArray::from_iter(iter),);
         match lambda.funcall::<_, _, Value>("call", tpl) {
             Ok(val) => {
-                match val.try_convert::<RArray>().ok() {
+                match RArray::try_convert(val).ok() {
                     Some(tuple) => {
                         row_buf.0.clear();
                         for v in tuple.each() {
-                            let v = v.unwrap().try_convert::<Wrap<AnyValue>>().unwrap().0;
+                            let v = Wrap::<AnyValue>::try_convert(v.unwrap()).unwrap().0;
                             row_buf.0.push(v);
                         }
                         let ptr = &row_buf as *const Row;
