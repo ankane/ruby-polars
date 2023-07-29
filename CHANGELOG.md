@@ -1,3 +1,7 @@
+## 0.6.1 (unreleased)
+
+- Added `Config` module
+
 ## 0.6.0 (2023-07-23)
 
 - Updated Polars to 0.31.1
