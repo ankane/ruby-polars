@@ -95,7 +95,32 @@ module Polars
 
     # TODO set_tbl_cell_alignment
 
-    # TODO set_tbl_cols
+    # Set the number of columns that are visible when displaying tables.
+    #
+    # @param n [Integer]
+    #   number of columns to display; if `n < 0` (eg: -1), display all columns.
+    #
+    # @return [Config]
+    #
+    # @example Set number of displayed columns to a low value:
+    #   Polars::Config.new do |cfg|
+    #     cfg.set_tbl_cols(5)
+    #     df = Polars::DataFrame.new(100.times.to_h { |i| [i.to_s, [i]] })
+    #     p df
+    #   end
+    #   # =>
+    #   # shape: (1, 100)
+    #   # ┌─────┬─────┬─────┬───┬─────┬─────┐
+    #   # │ 0   ┆ 1   ┆ 2   ┆ … ┆ 98  ┆ 99  │
+    #   # │ --- ┆ --- ┆ --- ┆   ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ i64 ┆   ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╪═══╪═════╪═════╡
+    #   # │ 0   ┆ 1   ┆ 2   ┆ … ┆ 98  ┆ 99  │
+    #   # └─────┴─────┴─────┴───┴─────┴─────┘
+    def self.set_tbl_cols(n)
+      ENV["POLARS_FMT_MAX_COLS"] = n.to_s
+      self
+    end
 
     # TODO set_tbl_column_data_type_inline
 
