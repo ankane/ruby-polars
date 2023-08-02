@@ -62,9 +62,10 @@ module Polars
           raise ArgumentError, "how must be one of {{'vertical', 'diagonal', 'horizontal'}}, got #{how}"
         end
       elsif first.is_a?(LazyFrame)
+        # TODO: Implement the rest of the logic in Python:
+        # https://github.com/pola-rs/polars/blob/rs-0.31.1/py-polars/polars/functions/eager.py#L170-L179
         if how == "vertical"
-          # TODO
-          return Utils.wrap_ldf(_concat_lf(items, rechunk, parallel))
+          return Utils.wrap_ldf(_concat_lf(items, rechunk, parallel, false))
         else
           raise ArgumentError, "Lazy only allows 'vertical' concat strategy."
         end
