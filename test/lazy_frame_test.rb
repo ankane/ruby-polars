@@ -70,4 +70,10 @@ class LazyFrameTest < Minitest::Test
     df = Polars::DataFrame.new({"a" => [1, 2, 3]}).lazy
     assert_match "FAST_PROJECT", df.select("a").describe_optimized_plan
   end
+
+  def test_concat
+    df1 = Polars::LazyFrame.new({"a" => [1], "b" => [3]})
+    df2 = Polars::LazyFrame.new({"a" => [2], "b" => [4]})
+    Polars.concat([df1, df2])
+  end
 end
