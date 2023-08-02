@@ -75,5 +75,7 @@ class LazyFrameTest < Minitest::Test
     df1 = Polars::LazyFrame.new({"a" => [1], "b" => [3]})
     df2 = Polars::LazyFrame.new({"a" => [2], "b" => [4]})
     Polars.concat([df1, df2])
+    Polars.concat([df1, df2], how: "vertical_relaxed")
+    Polars.concat([df1, df2], how: "diagonal")
   end
 end

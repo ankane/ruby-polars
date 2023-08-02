@@ -87,6 +87,20 @@ pub fn concat_lf(
     Ok(lf.into())
 }
 
+pub fn diag_concat_lf(lfs: RArray, rechunk: bool, parallel: bool) -> RbResult<RbLazyFrame> {
+    let iter = lfs.each();
+
+    let lfs = iter
+        .map(|item| {
+            let item = item?;
+            get_lf(item)
+        })
+        .collect::<RbResult<Vec<_>>>()?;
+
+    let lf = dsl::functions::diag_concat_lf(lfs, rechunk, parallel).map_err(RbPolarsErr::from)?;
+    Ok(lf.into())
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn duration(
     days: Option<&RbExpr>,

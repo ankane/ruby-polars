@@ -50,6 +50,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(crate::functions::lazy::dtype_cols2, 1),
     )?;
     module.define_singleton_method(
+        "_diag_concat_lf",
+        function!(crate::functions::lazy::diag_concat_lf, 3),
+    )?;
+    module.define_singleton_method(
         "_rb_duration",
         function!(crate::functions::lazy::duration, 8),
     )?;

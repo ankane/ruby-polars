@@ -19,8 +19,8 @@ module Polars
     #   DataFrames/Series/LazyFrames to concatenate.
     # @param rechunk [Boolean]
     #   Make sure that all data is in contiguous memory.
-    # @param how ["vertical", "diagonal", "horizontal"]
-    #   Lazy only supports the 'vertical' strategy.
+    # @param how ["vertical", "vertical_relaxed", "diagonal", "horizontal"]
+    #   LazyFrames do not support the `horizontal` strategy.
     #
     #   - Vertical: applies multiple `vstack` operations.
     #   - Diagonal: finds a union between the column schemas and fills missing column values with null.
@@ -62,12 +62,14 @@ module Polars
           raise ArgumentError, "how must be one of {{'vertical', 'diagonal', 'horizontal'}}, got #{how}"
         end
       elsif first.is_a?(LazyFrame)
-        # TODO: Implement the rest of the logic in Python:
-        # https://github.com/pola-rs/polars/blob/rs-0.31.1/py-polars/polars/functions/eager.py#L170-L179
         if how == "vertical"
           return Utils.wrap_ldf(_concat_lf(items, rechunk, parallel, false))
+        elsif how == "vertical_relaxed"
+          return Utils.wrap_ldf(_concat_lf(items, rechunk, parallel, true))
+        elsif how == "diagonal"
+          return Utils.wrap_ldf(_diag_concat_lf(items, rechunk, parallel))
         else
-          raise ArgumentError, "Lazy only allows 'vertical' concat strategy."
+          raise ArgumentError, "Lazy only allows 'vertical', 'vertical_relaxed', and 'diagonal' concat strategy."
         end
       elsif first.is_a?(Series)
         # TODO
