@@ -432,6 +432,18 @@ module Polars
     end
     alias_method :all, :all?
 
+    # Check if all boolean values in the column are `false`.
+    #
+    # @return [Boolean]
+    def none?(&block)
+      if block_given?
+        apply(&block).none?
+      else
+        to_frame.select(Polars.col(name).is_not.all).to_series[0]
+      end
+    end
+    alias_method :none, :none?
+
     # Compute the logarithm to a given base.
     #
     # @param base [Float]
