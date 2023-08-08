@@ -338,6 +338,13 @@ class SeriesTest < Minitest::Test
     assert Polars::Series.new([2, 4, 6]).all?(&:even?)
   end
 
+  def test_none
+    assert Polars::Series.new([false, false, false]).none?
+    refute Polars::Series.new([false, true, false]).none?
+    assert Polars::Series.new([1, 3, 5]).none?(&:even?)
+    refute Polars::Series.new([2, 3, 5]).none?(&:even?)
+  end
+
   def test_log
     s = Polars::Series.new([1, 2, 4])
     assert_series [0, 1, 2], s.log(2)
