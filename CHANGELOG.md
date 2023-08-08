@@ -1,6 +1,7 @@
 ## 0.6.1 (unreleased)
 
 - Added `Config` module
+- Added `none?` method to `Series`
 
 ## 0.6.0 (2023-07-23)
 
