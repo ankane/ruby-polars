@@ -6,3 +6,5 @@ jsonpath_lib = { git = "https://github.com/ritchie46/jsonpath", rev = "24eaf0b44
 
 [profile.release]
 strip = true
+opt-level = "z"
+codegen-units = 1
