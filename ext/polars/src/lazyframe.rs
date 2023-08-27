@@ -224,7 +224,7 @@ impl RbLazyFrame {
             .with_predicate_pushdown(predicate_pushdown)
             .with_simplify_expr(simplify_expr)
             .with_slice_pushdown(slice_pushdown)
-            .with_common_subplan_elimination(cse)
+            .with_comm_subplan_elim(cse)
             .with_streaming(allow_streaming)
             .with_projection_pushdown(projection_pushdown);
         ldf.into()

@@ -1,3 +1,4 @@
+use either::Either;
 use magnus::{
     prelude::*, r_hash::ForEach, typed_data::Obj, IntoValue, RArray, RHash, RString, Value,
 };
@@ -1107,17 +1108,20 @@ impl RbDataFrame {
         Ok(hash.into_series().into())
     }
 
-    pub fn transpose(&self, include_header: bool, names: String) -> RbResult<Self> {
-        let mut df = self.df.borrow().transpose().map_err(RbPolarsErr::from)?;
-        if include_header {
-            let s = Utf8Chunked::from_iter_values(
-                &names,
-                self.df.borrow().get_columns().iter().map(|s| s.name()),
-            )
-            .into_series();
-            df.insert_at_idx(0, s).unwrap();
-        }
-        Ok(df.into())
+    pub fn transpose(&self, keep_names_as: Option<String>, column_names: Value) -> RbResult<Self> {
+        let new_col_names = if let Ok(name) = <Vec<String>>::try_convert(column_names) {
+            Some(Either::Right(name))
+        } else if let Ok(name) = String::try_convert(column_names) {
+            Some(Either::Left(name))
+        } else {
+            None
+        };
+        Ok(self
+            .df
+            .borrow()
+            .transpose(keep_names_as.as_deref(), new_col_names)
+            .map_err(RbPolarsErr::from)?
+            .into())
     }
 
     pub fn upsample(

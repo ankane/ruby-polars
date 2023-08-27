@@ -16,23 +16,23 @@ impl From<dsl::When> for RbWhen {
 
 #[magnus::wrap(class = "Polars::RbWhenThen")]
 #[derive(Clone)]
-pub struct RbWhenThen {
-    pub inner: dsl::WhenThen,
+pub struct RbThen {
+    pub inner: dsl::Then,
 }
 
-impl From<dsl::WhenThen> for RbWhenThen {
-    fn from(inner: dsl::WhenThen) -> Self {
-        RbWhenThen { inner }
+impl From<dsl::Then> for RbThen {
+    fn from(inner: dsl::Then) -> Self {
+        RbThen { inner }
     }
 }
 
 impl RbWhen {
-    pub fn then(&self, expr: &RbExpr) -> RbWhenThen {
+    pub fn then(&self, expr: &RbExpr) -> RbThen {
         self.inner.clone().then(expr.inner.clone()).into()
     }
 }
 
-impl RbWhenThen {
+impl RbThen {
     pub fn overwise(&self, expr: &RbExpr) -> RbExpr {
         self.inner.clone().otherwise(expr.inner.clone()).into()
     }

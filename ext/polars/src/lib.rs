@@ -20,7 +20,7 @@ use dataframe::RbDataFrame;
 use error::{RbPolarsErr, RbTypeError, RbValueError};
 use expr::rb_exprs_to_exprs;
 use expr::RbExpr;
-use functions::whenthen::{RbWhen, RbWhenThen};
+use functions::whenthen::{RbThen, RbWhen};
 use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
 use magnus::{define_module, function, method, prelude::*, Error, Ruby};
@@ -310,7 +310,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("std", method!(RbExpr::std, 1))?;
     class.define_method("var", method!(RbExpr::var, 1))?;
     class.define_method("is_unique", method!(RbExpr::is_unique, 0))?;
-    class.define_method("approx_unique", method!(RbExpr::approx_unique, 0))?;
+    class.define_method("approx_n_unique", method!(RbExpr::approx_n_unique, 0))?;
     class.define_method("is_first", method!(RbExpr::is_first, 0))?;
     class.define_method("explode", method!(RbExpr::explode, 0))?;
     class.define_method("take_every", method!(RbExpr::take_every, 1))?;
@@ -354,7 +354,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("product", method!(RbExpr::product, 0))?;
     class.define_method("shrink_dtype", method!(RbExpr::shrink_dtype, 0))?;
     class.define_method("str_to_date", method!(RbExpr::str_to_date, 4))?;
-    class.define_method("str_to_datetime", method!(RbExpr::str_to_datetime, 6))?;
+    class.define_method("str_to_datetime", method!(RbExpr::str_to_datetime, 7))?;
     class.define_method("str_to_time", method!(RbExpr::str_to_time, 3))?;
     class.define_method("str_strip", method!(RbExpr::str_strip, 1))?;
     class.define_method("str_rstrip", method!(RbExpr::str_rstrip, 1))?;
@@ -464,8 +464,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "dt_replace_time_zone",
         method!(RbExpr::dt_replace_time_zone, 2),
     )?;
-    class.define_method("dt_tz_localize", method!(RbExpr::dt_tz_localize, 1))?;
-    class.define_method("dt_truncate", method!(RbExpr::dt_truncate, 2))?;
+    class.define_method("dt_truncate", method!(RbExpr::dt_truncate, 3))?;
     class.define_method("dt_month_start", method!(RbExpr::dt_month_start, 0))?;
     class.define_method("dt_month_end", method!(RbExpr::dt_month_end, 0))?;
     class.define_method("dt_round", method!(RbExpr::dt_round, 2))?;
@@ -526,8 +525,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("ewm_std", method!(RbExpr::ewm_std, 5))?;
     class.define_method("ewm_var", method!(RbExpr::ewm_var, 5))?;
     class.define_method("extend_constant", method!(RbExpr::extend_constant, 2))?;
-    class.define_method("any", method!(RbExpr::any, 0))?;
-    class.define_method("all", method!(RbExpr::all, 0))?;
+    class.define_method("any", method!(RbExpr::any, 1))?;
+    class.define_method("all", method!(RbExpr::all, 1))?;
     class.define_method(
         "struct_field_by_name",
         method!(RbExpr::struct_field_by_name, 1),
@@ -930,7 +929,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("_then", method!(RbWhen::then, 1))?;
 
     let class = module.define_class("RbWhenThen", ruby.class_object())?;
-    class.define_method("otherwise", method!(RbWhenThen::overwise, 1))?;
+    class.define_method("otherwise", method!(RbThen::overwise, 1))?;
 
     Ok(())
 }

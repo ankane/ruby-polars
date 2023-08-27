@@ -323,8 +323,8 @@ impl RbExpr {
         self.clone().inner.is_unique().into()
     }
 
-    pub fn approx_unique(&self) -> Self {
-        self.clone().inner.approx_unique().into()
+    pub fn approx_n_unique(&self) -> Self {
+        self.clone().inner.approx_n_unique().into()
     }
 
     pub fn is_first(&self) -> Self {
@@ -932,12 +932,12 @@ impl RbExpr {
             .into()
     }
 
-    pub fn any(&self) -> Self {
-        self.inner.clone().any().into()
+    pub fn any(&self, drop_nulls: bool) -> Self {
+        self.inner.clone().any(drop_nulls).into()
     }
 
-    pub fn all(&self) -> Self {
-        self.inner.clone().all().into()
+    pub fn all(&self, drop_nulls: bool) -> Self {
+        self.inner.clone().all(drop_nulls).into()
     }
 
     pub fn log(&self, base: f64) -> Self {

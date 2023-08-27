@@ -1151,22 +1151,8 @@ module Polars
     #   # │ b   ┆ 1   ┆ 2   ┆ 3   │
     #   # └─────┴─────┴─────┴─────┘
     def transpose(include_header: false, header_name: "column", column_names: nil)
-      df = _from_rbdf(_df.transpose(include_header, header_name))
-      if !column_names.nil?
-        names = []
-        n = df.width
-        if include_header
-          names << header_name
-          n -= 1
-        end
-
-        column_names = column_names.each
-        n.times do
-          names << column_names.next
-        end
-        df.columns = names
-      end
-      df
+      keep_names_as = include_header ? header_name : nil
+      _from_rbdf(_df.transpose(keep_names_as, column_names))
     end
 
     # Reverse the DataFrame.

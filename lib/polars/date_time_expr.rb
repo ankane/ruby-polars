@@ -97,7 +97,7 @@ module Polars
     #   # │ 2001-01-01 00:50:00 ┆ 2001-01-01 00:30:00 │
     #   # │ 2001-01-01 01:00:00 ┆ 2001-01-01 01:00:00 │
     #   # └─────────────────────┴─────────────────────┘
-    def truncate(every, offset: nil)
+    def truncate(every, offset: nil, use_earliest: nil)
       if offset.nil?
         offset = "0ns"
       end
@@ -105,7 +105,8 @@ module Polars
       Utils.wrap_expr(
         _rbexpr.dt_truncate(
           Utils._timedelta_to_pl_duration(every),
-          Utils._timedelta_to_pl_duration(offset)
+          Utils._timedelta_to_pl_duration(offset),
+          use_earliest
         )
       )
     end
@@ -1028,19 +1029,6 @@ module Polars
     # @return [Expr]
     def replace_time_zone(tz, use_earliest: nil)
       Utils.wrap_expr(_rbexpr.dt_replace_time_zone(tz, use_earliest))
-    end
-
-    # Localize tz-naive Datetime Series to tz-aware Datetime Series.
-    #
-    # This method takes a naive Datetime Series and makes this time zone aware.
-    # It does not move the time to another time zone.
-    #
-    # @param tz [String]
-    #   Time zone for the `Datetime` Series.
-    #
-    # @return [Expr]
-    def tz_localize(tz)
-      Utils.wrap_expr(_rbexpr.dt_tz_localize(tz))
     end
 
     # Extract the days from a Duration type.

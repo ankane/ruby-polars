@@ -82,7 +82,8 @@ module Polars
       time_zone: nil,
       strict: true,
       exact: true,
-      cache: true
+      cache: true,
+      use_earliest: nil
     )
       super
     end

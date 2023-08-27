@@ -1400,7 +1400,7 @@ module Polars
     #   #         2001-01-01 00:30:00
     #   #         2001-01-01 01:00:00
     #   # ]
-    def truncate(every, offset: nil)
+    def truncate(every, offset: nil, use_earliest: nil)
       super
     end
 

@@ -46,13 +46,16 @@ impl RbExpr {
             .into()
     }
 
-    #[allow(deprecated)]
-    pub fn dt_tz_localize(&self, tz: String) -> Self {
-        self.inner.clone().dt().tz_localize(tz).into()
-    }
-
-    pub fn dt_truncate(&self, every: String, offset: String) -> Self {
-        self.inner.clone().dt().truncate(&every, &offset).into()
+    pub fn dt_truncate(&self, every: String, offset: String, use_earliest: Option<bool>) -> Self {
+        self.inner
+            .clone()
+            .dt()
+            .truncate(TruncateOptions {
+                every,
+                offset,
+                use_earliest,
+            })
+            .into()
     }
 
     pub fn dt_month_start(&self) -> Self {

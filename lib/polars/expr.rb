@@ -191,8 +191,8 @@ module Polars
     #   # ╞══════╪═══════╡
     #   # │ true ┆ false │
     #   # └──────┴───────┘
-    def any
-      wrap_expr(_rbexpr.any)
+    def any(drop_nulls: true)
+      wrap_expr(_rbexpr.any(drop_nulls))
     end
 
     # Check if all boolean values in a Boolean column are `true`.
@@ -216,8 +216,8 @@ module Polars
     #   # ╞══════╪═══════╪═══════╡
     #   # │ true ┆ false ┆ false │
     #   # └──────┴───────┴───────┘
-    def all
-      wrap_expr(_rbexpr.all)
+    def all(drop_nulls: true)
+      wrap_expr(_rbexpr.all(drop_nulls))
     end
 
     # Compute the square root of the elements.
@@ -2063,7 +2063,7 @@ module Polars
     #   # │ 2   │
     #   # └─────┘
     def approx_unique
-      wrap_expr(_rbexpr.approx_unique)
+      wrap_expr(_rbexpr.approx_n_unique)
     end
 
     # Count null values.

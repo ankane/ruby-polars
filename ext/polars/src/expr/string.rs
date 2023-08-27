@@ -20,10 +20,12 @@ impl RbExpr {
             strict,
             exact,
             cache,
+            use_earliest: None,
         };
         self.inner.clone().str().to_date(options).into()
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn str_to_datetime(
         &self,
         format: Option<String>,
@@ -32,12 +34,14 @@ impl RbExpr {
         strict: bool,
         exact: bool,
         cache: bool,
+        use_earliest: Option<bool>,
     ) -> Self {
         let options = StrptimeOptions {
             format,
             strict,
             exact,
             cache,
+            use_earliest,
         };
         self.inner
             .clone()
@@ -52,6 +56,7 @@ impl RbExpr {
             strict,
             cache,
             exact: true,
+            use_earliest: None,
         };
         self.inner.clone().str().to_time(options).into()
     }

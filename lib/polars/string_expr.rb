@@ -82,7 +82,8 @@ module Polars
       time_zone: nil,
       strict: true,
       exact: true,
-      cache: true
+      cache: true,
+      use_earliest: nil
     )
       _validate_format_argument(format)
       Utils.wrap_expr(
@@ -92,7 +93,8 @@ module Polars
           time_zone,
           strict,
           exact,
-          cache
+          cache,
+          use_earliest
         )
       )
     end

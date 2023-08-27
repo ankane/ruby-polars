@@ -87,10 +87,6 @@ class DateTimeExprTest < Minitest::Test
     assert_expr dt_expr.replace_time_zone("tz")
   end
 
-  def test_tz_localize
-    assert_expr dt_expr.tz_localize("tz")
-  end
-
   def test_days
     assert_expr dt_expr.days
   end
