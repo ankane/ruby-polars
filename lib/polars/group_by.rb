@@ -188,7 +188,7 @@ module Polars
     #   # └─────────┴─────┘
     def head(n = 5)
       @df.lazy
-        .groupby(@by, maintain_order: @maintain_order)
+        .group_by(@by, maintain_order: @maintain_order)
         .head(n)
         .collect(no_optimization: true)
     end
@@ -239,7 +239,7 @@ module Polars
     #   # └─────────┴─────┘
     def tail(n = 5)
       @df.lazy
-        .groupby(@by, maintain_order: @maintain_order)
+        .group_by(@by, maintain_order: @maintain_order)
         .tail(n)
         .collect(no_optimization: true)
     end
