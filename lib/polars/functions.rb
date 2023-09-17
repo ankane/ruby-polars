@@ -92,9 +92,9 @@ module Polars
 
     # Create a range of type `Datetime` (or `Date`).
     #
-    # @param low [Object]
+    # @param start [Object]
     #   Lower bound of the date range.
-    # @param high [Object]
+    # @param stop [Object]
     #   Upper bound of the date range.
     # @param interval [Object]
     #   Interval periods. It can be a polars duration string, such as `3d12h4m25s`
@@ -148,8 +148,8 @@ module Polars
     #   #         1985-01-10 00:00:00
     #   # ]
     def date_range(
-      low,
-      high,
+      start,
+      stop,
       interval,
       lazy: false,
       closed: "both",
@@ -166,39 +166,28 @@ module Polars
         end
       end
 
-      if low.is_a?(Expr) || high.is_a?(Expr) || lazy
-        low = Utils.expr_to_lit_or_expr(low, str_to_lit: true)
-        high = Utils.expr_to_lit_or_expr(high, str_to_lit: true)
-        return Utils.wrap_expr(
-          _rb_date_range_lazy(low, high, interval, closed, name, time_zone)
-        )
+      if time_unit.nil?
+        if interval.include?("ns")
+          time_unit = "ns"
+        else
+          time_unit = "us"
+        end
       end
 
-      low, low_is_date = _ensure_datetime(low)
-      high, high_is_date = _ensure_datetime(high)
+      start_rbexpr = Utils.parse_as_expression(start)
+      stop_rbexpr = Utils.parse_as_expression(stop)
 
-      if !time_unit.nil?
-        tu = time_unit
-      elsif interval.include?("ns")
-        tu = "ns"
-      else
-        tu = "us"
-      end
-
-      start = Utils._datetime_to_pl_timestamp(low, tu)
-      stop = Utils._datetime_to_pl_timestamp(high, tu)
-      if name.nil?
-        name = ""
-      end
-
-      dt_range = Utils.wrap_s(
-        _rb_date_range(start, stop, interval, closed, name, tu, time_zone)
+      result = Utils.wrap_expr(
+        _rb_date_range(start_rbexpr, stop_rbexpr, interval, closed, time_unit, time_zone)
       )
-      if low_is_date && high_is_date && !["h", "m", "s"].any? { |v| _interval_granularity(interval).end_with?(v) }
-        dt_range = dt_range.cast(Date)
+
+      result = result.alias(name.to_s)
+
+      if !lazy
+        return select(result).to_series
       end
 
-      dt_range
+      result
     end
 
     # Bin values into discrete values.

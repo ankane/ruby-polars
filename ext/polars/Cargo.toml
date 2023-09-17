@@ -12,15 +12,15 @@ crate-type = ["cdylib"]
 
 [dependencies]
 ahash = "0.8"
-chrono = "=0.4.24"
+chrono = "0.4"
 either = "1.8"
 magnus = "0.6"
-polars-core = "0.32.0"
+polars-core = "0.33.2"
 serde_json = "1"
 smartstring = "1"
 
 [dependencies.polars]
-version = "0.32.0"
+version = "0.33.2"
 features = [
     "abs",
     "approx_unique",
@@ -39,15 +39,16 @@ features = [
     "diff",
     "dot_product",
     "dtype-full",
-    "dynamic_groupby",
+    "dynamic_group_by",
     "ewma",
     "extract_jsonpath",
     "fmt",
     "horizontal_concat",
     "interpolate",
     "ipc",
-    "is_first",
+    "is_first_distinct",
     "is_in",
+    "is_last_distinct",
     "is_unique",
     "json",
     "lazy",

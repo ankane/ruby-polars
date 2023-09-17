@@ -23,11 +23,11 @@ impl RbExpr {
             .into()
     }
 
-    pub fn list_count_match(&self, expr: &RbExpr) -> Self {
+    pub fn list_count_matches(&self, expr: &RbExpr) -> Self {
         self.inner
             .clone()
             .list()
-            .count_match(expr.inner.clone())
+            .count_matches(expr.inner.clone())
             .into()
     }
 

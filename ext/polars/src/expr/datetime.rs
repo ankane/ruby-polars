@@ -8,9 +8,8 @@ impl RbExpr {
         self.inner.clone().dt().to_string(&format).into()
     }
 
-    pub fn dt_offset_by(&self, by: String) -> Self {
-        let by = Duration::parse(&by);
-        self.inner.clone().dt().offset_by(by).into()
+    pub fn dt_offset_by(&self, by: &RbExpr) -> Self {
+        self.inner.clone().dt().offset_by(by.inner.clone()).into()
     }
 
     pub fn dt_epoch_seconds(&self) -> Self {
@@ -38,23 +37,19 @@ impl RbExpr {
         self.inner.clone().dt().cast_time_unit(tu.0).into()
     }
 
-    pub fn dt_replace_time_zone(&self, tz: Option<String>, use_earliest: Option<bool>) -> Self {
+    pub fn dt_replace_time_zone(&self, time_zone: Option<String>, ambiguous: &Self) -> Self {
         self.inner
             .clone()
             .dt()
-            .replace_time_zone(tz, use_earliest)
+            .replace_time_zone(time_zone, ambiguous.inner.clone())
             .into()
     }
 
-    pub fn dt_truncate(&self, every: String, offset: String, use_earliest: Option<bool>) -> Self {
+    pub fn dt_truncate(&self, every: String, offset: String, ambiguous: &Self) -> Self {
         self.inner
             .clone()
             .dt()
-            .truncate(TruncateOptions {
-                every,
-                offset,
-                use_earliest,
-            })
+            .truncate(TruncateOptions { every, offset }, ambiguous.inner.clone())
             .into()
     }
 

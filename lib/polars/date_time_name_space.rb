@@ -23,18 +23,8 @@ module Polars
     # @return [Object]
     #
     # @example
-    #   date = Polars.date_range(DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 3), "1d")
-    #   # =>
-    #   # shape: (3,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-02 00:00:00
-    #   #         2001-01-03 00:00:00
-    #   # ]
-    #
-    # @example
-    #   date.dt.min
+    #   s = Polars.date_range(DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 3), "1d")
+    #   s.dt.min
     #   # => 2001-01-01 00:00:00 UTC
     def min
       Utils.wrap_s(_s).min
@@ -45,18 +35,8 @@ module Polars
     # @return [Object]
     #
     # @example
-    #   date = Polars.date_range(DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 3), "1d")
-    #   # =>
-    #   # shape: (3,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-02 00:00:00
-    #   #         2001-01-03 00:00:00
-    #   # ]
-    #
-    # @example
-    #   date.dt.max
+    #   s = Polars.date_range(DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 3), "1d")
+    #   s.dt.max
     #   # => 2001-01-03 00:00:00 UTC
     def max
       Utils.wrap_s(_s).max

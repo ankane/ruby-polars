@@ -238,7 +238,7 @@ class DataFrameTest < Minitest::Test
     error = assert_raises do
       df[3, "c"]
     end
-    assert_equal "index 3 is out of bounds for sequence of size 3", error.message
+    assert_equal "index 3 is out of bounds for sequence of length 3", error.message
 
     error = assert_raises(ArgumentError) do
       df[] = 1

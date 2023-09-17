@@ -1,11 +1,9 @@
 use magnus::RArray;
-use polars::{functions, time};
-use polars_core::datatypes::{TimeUnit, TimeZone};
-use polars_core::prelude::{DataFrame, IntoSeries};
+use polars::functions;
+use polars_core::prelude::DataFrame;
 
-use crate::conversion::{get_df, get_series, Wrap};
+use crate::conversion::{get_df, get_series};
 use crate::error::RbPolarsErr;
-use crate::prelude::{ClosedWindow, Duration};
 use crate::{RbDataFrame, RbResult, RbSeries};
 
 pub fn concat_df(seq: RArray) -> RbResult<RbDataFrame> {
@@ -50,28 +48,6 @@ pub fn concat_series(seq: RArray) -> RbResult<RbSeries> {
         s.append(&item).map_err(RbPolarsErr::from)?;
     }
     Ok(s.into())
-}
-
-pub fn date_range(
-    start: i64,
-    stop: i64,
-    every: String,
-    closed: Wrap<ClosedWindow>,
-    name: String,
-    tu: Wrap<TimeUnit>,
-    tz: Option<TimeZone>,
-) -> RbResult<RbSeries> {
-    let date_range = time::date_range_impl(
-        &name,
-        start,
-        stop,
-        Duration::parse(&every),
-        closed.0,
-        tu.0,
-        tz.as_ref(),
-    )
-    .map_err(RbPolarsErr::from)?;
-    Ok(date_range.into_series().into())
 }
 
 pub fn diag_concat_df(seq: RArray) -> RbResult<RbDataFrame> {

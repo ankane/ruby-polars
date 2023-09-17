@@ -91,7 +91,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     module.define_singleton_method(
         "_rb_date_range",
-        function!(crate::functions::eager::date_range, 7),
+        function!(crate::functions::range::date_range, 6),
     )?;
     module.define_singleton_method(
         "_coalesce_exprs",
@@ -311,7 +311,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("var", method!(RbExpr::var, 1))?;
     class.define_method("is_unique", method!(RbExpr::is_unique, 0))?;
     class.define_method("approx_n_unique", method!(RbExpr::approx_n_unique, 0))?;
-    class.define_method("is_first", method!(RbExpr::is_first, 0))?;
+    class.define_method("is_first_distinct", method!(RbExpr::is_first_distinct, 0))?;
+    class.define_method("is_last_distinct", method!(RbExpr::is_last_distinct, 0))?;
     class.define_method("explode", method!(RbExpr::explode, 0))?;
     class.define_method("take_every", method!(RbExpr::take_every, 1))?;
     class.define_method("tail", method!(RbExpr::tail, 1))?;
@@ -356,9 +357,11 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_to_date", method!(RbExpr::str_to_date, 4))?;
     class.define_method("str_to_datetime", method!(RbExpr::str_to_datetime, 7))?;
     class.define_method("str_to_time", method!(RbExpr::str_to_time, 3))?;
-    class.define_method("str_strip", method!(RbExpr::str_strip, 1))?;
-    class.define_method("str_rstrip", method!(RbExpr::str_rstrip, 1))?;
-    class.define_method("str_lstrip", method!(RbExpr::str_lstrip, 1))?;
+    class.define_method("str_strip_chars", method!(RbExpr::str_strip_chars, 1))?;
+    class.define_method("str_strip_chars_start", method!(RbExpr::str_strip_chars_start, 1))?;
+    class.define_method("str_strip_chars_end", method!(RbExpr::str_strip_chars_end, 1))?;
+    class.define_method("str_strip_prefix", method!(RbExpr::str_strip_prefix, 1))?;
+    class.define_method("str_strip_suffix", method!(RbExpr::str_strip_suffix, 1))?;
     class.define_method("str_slice", method!(RbExpr::str_slice, 2))?;
     class.define_method("str_explode", method!(RbExpr::str_explode, 0))?;
     class.define_method("str_to_uppercase", method!(RbExpr::str_to_uppercase, 0))?;
@@ -401,7 +404,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("str_extract", method!(RbExpr::str_extract, 2))?;
     class.define_method("str_extract_all", method!(RbExpr::str_extract_all, 1))?;
-    class.define_method("count_match", method!(RbExpr::str_count_match, 1))?;
+    class.define_method("str_count_matches", method!(RbExpr::str_count_matches, 2))?;
     class.define_method("strftime", method!(RbExpr::dt_to_string, 1))?;
     class.define_method("str_split", method!(RbExpr::str_split, 1))?;
     class.define_method(
@@ -416,7 +419,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_splitn", method!(RbExpr::str_splitn, 2))?;
     class.define_method("list_lengths", method!(RbExpr::list_lengths, 0))?;
     class.define_method("list_contains", method!(RbExpr::list_contains, 1))?;
-    class.define_method("list_count_match", method!(RbExpr::list_count_match, 1))?;
+    class.define_method("list_count_matches", method!(RbExpr::list_count_matches, 1))?;
     class.define_method("year", method!(RbExpr::dt_year, 0))?;
     class.define_method("dt_is_leap_year", method!(RbExpr::dt_is_leap_year, 0))?;
     class.define_method("iso_year", method!(RbExpr::dt_iso_year, 0))?;
@@ -518,9 +521,9 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("reshape", method!(RbExpr::reshape, 1))?;
     class.define_method("cumcount", method!(RbExpr::cumcount, 1))?;
     class.define_method("to_physical", method!(RbExpr::to_physical, 0))?;
-    class.define_method("shuffle", method!(RbExpr::shuffle, 2))?;
-    class.define_method("sample_n", method!(RbExpr::sample_n, 5))?;
-    class.define_method("sample_frac", method!(RbExpr::sample_frac, 5))?;
+    class.define_method("shuffle", method!(RbExpr::shuffle, 1))?;
+    class.define_method("sample_n", method!(RbExpr::sample_n, 4))?;
+    class.define_method("sample_frac", method!(RbExpr::sample_frac, 4))?;
     class.define_method("ewm_mean", method!(RbExpr::ewm_mean, 4))?;
     class.define_method("ewm_std", method!(RbExpr::ewm_std, 5))?;
     class.define_method("ewm_var", method!(RbExpr::ewm_var, 5))?;
@@ -569,7 +572,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("fold", function!(crate::functions::lazy::fold, 3))?;
     class.define_singleton_method("cumfold", function!(crate::functions::lazy::cumfold, 4))?;
     class.define_singleton_method("lit", function!(crate::functions::lazy::lit, 2))?;
-    class.define_singleton_method("arange", function!(crate::functions::lazy::arange, 3))?;
+    class.define_singleton_method("int_range", function!(crate::functions::range::int_range, 4))?;
+    class.define_singleton_method("int_ranges", function!(crate::functions::range::int_ranges, 4))?;
     class.define_singleton_method("repeat", function!(crate::functions::lazy::repeat, 3))?;
     class.define_singleton_method(
         "pearson_corr",
@@ -624,9 +628,9 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("fetch", method!(RbLazyFrame::fetch, 1))?;
     class.define_method("filter", method!(RbLazyFrame::filter, 1))?;
     class.define_method("select", method!(RbLazyFrame::select, 1))?;
-    class.define_method("groupby", method!(RbLazyFrame::groupby, 2))?;
-    class.define_method("groupby_rolling", method!(RbLazyFrame::groupby_rolling, 6))?;
-    class.define_method("groupby_dynamic", method!(RbLazyFrame::groupby_dynamic, 9))?;
+    class.define_method("group_by", method!(RbLazyFrame::group_by, 2))?;
+    class.define_method("group_by_rolling", method!(RbLazyFrame::group_by_rolling, 6))?;
+    class.define_method("group_by_dynamic", method!(RbLazyFrame::group_by_dynamic, 9))?;
     class.define_method("with_context", method!(RbLazyFrame::with_context, 1))?;
     class.define_method("join_asof", method!(RbLazyFrame::join_asof, 11))?;
     class.define_method("join", method!(RbLazyFrame::join, 7))?;

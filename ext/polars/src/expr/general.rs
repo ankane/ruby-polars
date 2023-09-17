@@ -327,8 +327,12 @@ impl RbExpr {
         self.clone().inner.approx_n_unique().into()
     }
 
-    pub fn is_first(&self) -> Self {
-        self.clone().inner.is_first().into()
+    pub fn is_first_distinct(&self) -> Self {
+        self.clone().inner.is_first_distinct().into()
+    }
+
+    pub fn is_last_distinct(&self) -> Self {
+        self.clone().inner.is_last_distinct().into()
     }
 
     pub fn explode(&self) -> Self {
@@ -764,12 +768,7 @@ impl RbExpr {
     }
 
     pub fn rolling_skew(&self, window_size: usize, bias: bool) -> Self {
-        self.inner
-            .clone()
-            .rolling_apply_float(window_size, move |ca| {
-                ca.clone().into_series().skew(bias).unwrap()
-            })
-            .into()
+        self.inner.clone().rolling_skew(window_size, bias).into()
     }
 
     pub fn lower_bound(&self) -> Self {
@@ -830,8 +829,8 @@ impl RbExpr {
             .into()
     }
 
-    pub fn shuffle(&self, seed: Option<u64>, fixed_seed: bool) -> Self {
-        self.inner.clone().shuffle(seed, fixed_seed).into()
+    pub fn shuffle(&self, seed: Option<u64>) -> Self {
+        self.inner.clone().shuffle(seed).into()
     }
 
     pub fn sample_n(
@@ -840,11 +839,10 @@ impl RbExpr {
         with_replacement: bool,
         shuffle: bool,
         seed: Option<u64>,
-        fixed_seed: bool,
     ) -> Self {
         self.inner
             .clone()
-            .sample_n(n, with_replacement, shuffle, seed, fixed_seed)
+            .sample_n(n, with_replacement, shuffle, seed)
             .into()
     }
 
@@ -854,11 +852,10 @@ impl RbExpr {
         with_replacement: bool,
         shuffle: bool,
         seed: Option<u64>,
-        fixed_seed: bool,
     ) -> Self {
         self.inner
             .clone()
-            .sample_frac(frac, with_replacement, shuffle, seed, fixed_seed)
+            .sample_frac(frac, with_replacement, shuffle, seed)
             .into()
     }
 

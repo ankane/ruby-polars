@@ -1828,7 +1828,7 @@ module Polars
     #   # │ b   ┆ 11  │
     #   # │ c   ┆ 6   │
     #   # └─────┴─────┘
-    def groupby(by, maintain_order: false)
+    def group_by(by, maintain_order: false)
       if !Utils.bool?(maintain_order)
         raise TypeError, "invalid input for groupby arg `maintain_order`: #{maintain_order}."
       end
@@ -1839,6 +1839,7 @@ module Polars
         maintain_order: maintain_order
       )
     end
+    alias_method :groupby, :group_by
 
     # Create rolling groups based on a time column.
     #
@@ -1930,7 +1931,7 @@ module Polars
     #   # │ 2020-01-03 19:45:32 ┆ 11    ┆ 2     ┆ 9     │
     #   # │ 2020-01-08 23:16:43 ┆ 1     ┆ 1     ┆ 1     │
     #   # └─────────────────────┴───────┴───────┴───────┘
-    def groupby_rolling(
+    def group_by_rolling(
       index_column:,
       period:,
       offset: nil,
@@ -1940,6 +1941,7 @@ module Polars
     )
       RollingGroupBy.new(self, index_column, period, offset, closed, by, check_sorted)
     end
+    alias_method :groupby_rolling, :group_by_rolling
 
     # Group based on a time value (or index value of type `:i32`, `:i64`).
     #
@@ -2167,7 +2169,7 @@ module Polars
     #   # │ 2               ┆ 5               ┆ 2   ┆ ["B", "B", "C"] │
     #   # │ 4               ┆ 7               ┆ 4   ┆ ["C"]           │
     #   # └─────────────────┴─────────────────┴─────┴─────────────────┘
-    def groupby_dynamic(
+    def group_by_dynamic(
       index_column,
       every:,
       period: nil,
@@ -2191,6 +2193,7 @@ module Polars
         start_by
       )
     end
+    alias_method :groupby_dynamic, :group_by_dynamic
 
     # Upsample a DataFrame at a regular frequency.
     #

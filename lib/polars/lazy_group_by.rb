@@ -2,9 +2,8 @@ module Polars
   # Created by `df.lazy.groupby("foo")`.
   class LazyGroupBy
     # @private
-    def initialize(lgb, lazyframe_class)
+    def initialize(lgb)
       @lgb = lgb
-      @lazyframe_class = lazyframe_class
     end
 
     # Describe the aggregation that need to be done on a group.
@@ -12,7 +11,7 @@ module Polars
     # @return [LazyFrame]
     def agg(aggs)
       rbexprs = Utils.selection_to_rbexpr_list(aggs)
-      @lazyframe_class._from_rbldf(@lgb.agg(rbexprs))
+      Utils.wrap_ldf(@lgb.agg(rbexprs))
     end
 
     # Get the first `n` rows of each group.
@@ -44,7 +43,7 @@ module Polars
     #   # │ c       ┆ 2   │
     #   # └─────────┴─────┘
     def head(n = 5)
-      @lazyframe_class._from_rbldf(@lgb.head(n))
+      Utils.wrap_ldf(@lgb.head(n))
     end
 
     # Get the last `n` rows of each group.
@@ -76,7 +75,7 @@ module Polars
     #   # │ c       ┆ 4   │
     #   # └─────────┴─────┘
     def tail(n = 5)
-      @lazyframe_class._from_rbldf(@lgb.tail(n))
+      Utils.wrap_ldf(@lgb.tail(n))
     end
 
     # def apply

@@ -43,7 +43,7 @@ module Polars
     #   # ┌─────┬─────┬────────────┐
     #   # │ a   ┆ b   ┆ rank       │
     #   # │ --- ┆ --- ┆ ---        │
-    #   # │ i64 ┆ i64 ┆ list[f32]  │
+    #   # │ i64 ┆ i64 ┆ list[f64]  │
     #   # ╞═════╪═════╪════════════╡
     #   # │ 1   ┆ 4   ┆ [1.0, 2.0] │
     #   # │ 8   ┆ 5   ┆ [2.0, 1.0] │
@@ -625,16 +625,16 @@ module Polars
     # This can be used in a `select`, `with_column`, etc. Be sure that the resulting
     # range size is equal to the length of the DataFrame you are collecting.
     #
-    # @param low [Integer, Expr, Series]
+    # @param start [Integer, Expr, Series]
     #   Lower bound of range.
-    # @param high [Integer, Expr, Series]
+    # @param stop [Integer, Expr, Series]
     #   Upper bound of range.
     # @param step [Integer]
     #   Step size of the range.
     # @param eager [Boolean]
     #   If eager evaluation is `True`, a Series is returned instead of an Expr.
     # @param dtype [Symbol]
-    #   Apply an explicit integer dtype to the resulting expression (default is `:i64`).
+    #   Apply an explicit integer dtype to the resulting expression (default is `Int64`).
     #
     # @return [Expr, Series]
     #
@@ -648,35 +648,20 @@ module Polars
     #   #         1
     #   #         2
     #   # ]
-    #
-    # @example
-    #   df = Polars::DataFrame.new({"a" => [1, 2], "b" => [3, 4]})
-    #   df.select(Polars.arange(Polars.col("a"), Polars.col("b")))
-    #   # =>
-    #   # shape: (2, 1)
-    #   # ┌───────────┐
-    #   # │ arange    │
-    #   # │ ---       │
-    #   # │ list[i64] │
-    #   # ╞═══════════╡
-    #   # │ [1, 2]    │
-    #   # │ [2, 3]    │
-    #   # └───────────┘
-    def arange(low, high, step: 1, eager: false, dtype: nil)
-      low = Utils.expr_to_lit_or_expr(low, str_to_lit: false)
-      high = Utils.expr_to_lit_or_expr(high, str_to_lit: false)
-      range_expr = Utils.wrap_expr(RbExpr.arange(low._rbexpr, high._rbexpr, step))
+    def int_range(start, stop, step: 1, eager: false, dtype: nil)
+      start = Utils.parse_as_expression(start)
+      stop = Utils.parse_as_expression(stop)
+      dtype ||= Int64
+      dtype = dtype.to_s if dtype.is_a?(Symbol)
+      result = Utils.wrap_expr(RbExpr.int_range(start, stop, step, dtype)).alias("arange")
 
-      if !dtype.nil? && !["i64", Int64].include?(dtype)
-        range_expr = range_expr.cast(dtype)
+      if eager
+        return select(result).to_series
       end
 
-      if !eager
-        range_expr
-      else
-        DataFrame.new.select(range_expr.alias("arange")).to_series
-      end
+      result
     end
+    alias_method :arange, :int_range
 
     # Find the indexes that would sort the columns.
     #

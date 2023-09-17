@@ -333,7 +333,7 @@ impl RbSeries {
                 DataType::List(_) => {
                     let v = RArray::new();
                     let ca = series.list().unwrap();
-                    for opt_s in ca.amortized_iter() {
+                    for opt_s in unsafe { ca.amortized_iter() } {
                         match opt_s {
                             None => {
                                 v.push(qnil()).unwrap();

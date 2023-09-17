@@ -20,7 +20,6 @@ impl RbExpr {
             strict,
             exact,
             cache,
-            use_earliest: None,
         };
         self.inner.clone().str().to_date(options).into()
     }
@@ -34,19 +33,23 @@ impl RbExpr {
         strict: bool,
         exact: bool,
         cache: bool,
-        use_earliest: Option<bool>,
+        ambiguous: &Self,
     ) -> Self {
         let options = StrptimeOptions {
             format,
             strict,
             exact,
             cache,
-            use_earliest,
         };
         self.inner
             .clone()
             .str()
-            .to_datetime(time_unit.map(|tu| tu.0), time_zone, options)
+            .to_datetime(
+                time_unit.map(|tu| tu.0),
+                time_zone,
+                options,
+                ambiguous.inner.clone(),
+            )
             .into()
     }
 
@@ -56,21 +59,28 @@ impl RbExpr {
             strict,
             cache,
             exact: true,
-            use_earliest: None,
         };
         self.inner.clone().str().to_time(options).into()
     }
 
-    pub fn str_strip(&self, matches: Option<String>) -> Self {
-        self.inner.clone().str().strip(matches).into()
+    pub fn str_strip_chars(&self, matches: Option<String>) -> Self {
+        self.inner.clone().str().strip_chars(matches).into()
     }
 
-    pub fn str_rstrip(&self, matches: Option<String>) -> Self {
-        self.inner.clone().str().rstrip(matches).into()
+    pub fn str_strip_chars_start(&self, matches: Option<String>) -> Self {
+        self.inner.clone().str().strip_chars_start(matches).into()
     }
 
-    pub fn str_lstrip(&self, matches: Option<String>) -> Self {
-        self.inner.clone().str().lstrip(matches).into()
+    pub fn str_strip_chars_end(&self, matches: Option<String>) -> Self {
+        self.inner.clone().str().strip_chars_end(matches).into()
+    }
+
+    pub fn str_strip_prefix(&self, prefix: String) -> Self {
+        self.inner.clone().str().strip_prefix(prefix).into()
+    }
+
+    pub fn str_strip_suffix(&self, suffix: String) -> Self {
+        self.inner.clone().str().strip_suffix(suffix).into()
     }
 
     pub fn str_slice(&self, start: i64, length: Option<u64>) -> Self {
@@ -289,16 +299,20 @@ impl RbExpr {
             .into()
     }
 
-    pub fn str_count_match(&self, pat: String) -> Self {
-        self.inner.clone().str().count_match(&pat).into()
+    pub fn str_count_matches(&self, pat: &Self, literal: bool) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .count_matches(pat.inner.clone(), literal)
+            .into()
     }
 
-    pub fn str_split(&self, by: String) -> Self {
-        self.inner.clone().str().split(&by).into()
+    pub fn str_split(&self, by: &Self) -> Self {
+        self.inner.clone().str().split(by.inner.clone()).into()
     }
 
-    pub fn str_split_inclusive(&self, by: String) -> Self {
-        self.inner.clone().str().split_inclusive(&by).into()
+    pub fn str_split_inclusive(&self, by: &Self) -> Self {
+        self.inner.clone().str().split_inclusive(by.inner.clone()).into()
     }
 
     pub fn str_split_exact(&self, by: String, n: usize) -> Self {

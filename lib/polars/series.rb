@@ -3272,7 +3272,7 @@ module Polars
     #   s.rank
     #   # =>
     #   # shape: (5,)
-    #   # Series: 'a' [f32]
+    #   # Series: 'a' [f64]
     #   # [
     #   #         3.0
     #   #         4.5

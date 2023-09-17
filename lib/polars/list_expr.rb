@@ -568,9 +568,10 @@ module Polars
     #   # │ 1              │
     #   # │ 0              │
     #   # └────────────────┘
-    def count_match(element)
-      Utils.wrap_expr(_rbexpr.list_count_match(Utils.expr_to_lit_or_expr(element)._rbexpr))
+    def count_matches(element)
+      Utils.wrap_expr(_rbexpr.list_count_matches(Utils.expr_to_lit_or_expr(element)._rbexpr))
     end
+    alias_method :count_match, :count_matches
 
     # Convert the series of type `List` to a series of type `Struct`.
     #
@@ -624,7 +625,7 @@ module Polars
     #   # ┌─────┬─────┬────────────┐
     #   # │ a   ┆ b   ┆ rank       │
     #   # │ --- ┆ --- ┆ ---        │
-    #   # │ i64 ┆ i64 ┆ list[f32]  │
+    #   # │ i64 ┆ i64 ┆ list[f64]  │
     #   # ╞═════╪═════╪════════════╡
     #   # │ 1   ┆ 4   ┆ [1.0, 2.0] │
     #   # │ 8   ┆ 5   ┆ [2.0, 1.0] │

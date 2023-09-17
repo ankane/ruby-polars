@@ -1,6 +1,6 @@
 ## 0.7.0 (unreleased)
 
-- Updated Polars to 0.32.0
+- Updated Polars to 0.33.2
 - Added `Config` module
 - Added `none?` method to `Series`
 - Removed `tz_localize` method from `DateTimeExpr`

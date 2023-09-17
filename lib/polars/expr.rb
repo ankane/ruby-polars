@@ -2309,9 +2309,10 @@ module Polars
     #   # │ 1   ┆ false    │
     #   # │ 5   ┆ true     │
     #   # └─────┴──────────┘
-    def is_first
-      wrap_expr(_rbexpr.is_first)
+    def is_first_distinct
+      wrap_expr(_rbexpr.is_first_distinct)
     end
+    alias_method :is_first, :is_first_distinct
 
     # Get mask of duplicated values.
     #
@@ -3948,7 +3949,7 @@ module Polars
     #   # ┌─────┐
     #   # │ a   │
     #   # │ --- │
-    #   # │ f32 │
+    #   # │ f64 │
     #   # ╞═════╡
     #   # │ 3.0 │
     #   # │ 4.5 │
@@ -4558,11 +4559,11 @@ module Polars
     #   # │ 1   │
     #   # │ 3   │
     #   # └─────┘
-    def shuffle(seed: nil, fixed_seed: false)
+    def shuffle(seed: nil)
       if seed.nil?
         seed = rand(10000)
       end
-      wrap_expr(_rbexpr.shuffle(seed, fixed_seed))
+      wrap_expr(_rbexpr.shuffle(seed))
     end
 
     # Sample from this expression.
@@ -4600,22 +4601,21 @@ module Polars
       with_replacement: true,
       shuffle: false,
       seed: nil,
-      n: nil,
-      fixed_seed: false
+      n: nil
     )
       if !n.nil? && !frac.nil?
         raise ArgumentError, "cannot specify both `n` and `frac`"
       end
 
       if !n.nil? && frac.nil?
-        return wrap_expr(_rbexpr.sample_n(n, with_replacement, shuffle, seed, fixed_seed))
+        return wrap_expr(_rbexpr.sample_n(n, with_replacement, shuffle, seed))
       end
 
       if frac.nil?
         frac = 1.0
       end
       wrap_expr(
-        _rbexpr.sample_frac(frac, with_replacement, shuffle, seed, fixed_seed)
+        _rbexpr.sample_frac(frac, with_replacement, shuffle, seed)
       )
     end
 

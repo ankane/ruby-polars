@@ -318,20 +318,20 @@ impl RbLazyFrame {
         Ok(ldf.select(exprs).into())
     }
 
-    pub fn groupby(&self, by: RArray, maintain_order: bool) -> RbResult<RbLazyGroupBy> {
+    pub fn group_by(&self, by: RArray, maintain_order: bool) -> RbResult<RbLazyGroupBy> {
         let ldf = self.ldf.clone();
         let by = rb_exprs_to_exprs(by)?;
         let lazy_gb = if maintain_order {
-            ldf.groupby_stable(by)
+            ldf.group_by_stable(by)
         } else {
-            ldf.groupby(by)
+            ldf.group_by(by)
         };
         Ok(RbLazyGroupBy {
             lgb: RefCell::new(Some(lazy_gb)),
         })
     }
 
-    pub fn groupby_rolling(
+    pub fn group_by_rolling(
         &self,
         index_column: &RbExpr,
         period: String,
@@ -343,7 +343,7 @@ impl RbLazyFrame {
         let closed_window = closed.0;
         let ldf = self.ldf.clone();
         let by = rb_exprs_to_exprs(by)?;
-        let lazy_gb = ldf.groupby_rolling(
+        let lazy_gb = ldf.group_by_rolling(
             index_column.inner.clone(),
             by,
             RollingGroupOptions {
@@ -361,7 +361,7 @@ impl RbLazyFrame {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn groupby_dynamic(
+    pub fn group_by_dynamic(
         &self,
         index_column: &RbExpr,
         every: String,
@@ -376,7 +376,7 @@ impl RbLazyFrame {
         let closed_window = closed.0;
         let by = rb_exprs_to_exprs(by)?;
         let ldf = self.ldf.clone();
-        let lazy_gb = ldf.groupby_dynamic(
+        let lazy_gb = ldf.group_by_dynamic(
             index_column.inner.clone(),
             by,
             DynamicGroupOptions {

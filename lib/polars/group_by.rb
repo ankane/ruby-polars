@@ -44,7 +44,7 @@ module Polars
         Utils.wrap_df(_df)
           .lazy
           .with_row_count(name: temp_col)
-          .groupby(by, maintain_order: maintain_order)
+          .group_by(by, maintain_order: maintain_order)
           .agg(Polars.col(temp_col))
           .collect(no_optimization: true)
 
@@ -145,7 +145,7 @@ module Polars
     def agg(aggs)
       df = Utils.wrap_df(_df)
         .lazy
-        .groupby(by, maintain_order: maintain_order)
+        .group_by(by, maintain_order: maintain_order)
         .agg(aggs)
         .collect(no_optimization: true, string_cache: false)
       _dataframe_class._from_rbdf(df._df)

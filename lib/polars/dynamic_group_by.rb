@@ -34,7 +34,7 @@ module Polars
 
     def agg(aggs)
       @df.lazy
-        .groupby_dynamic(
+        .group_by_dynamic(
           @time_column,
           every: @every,
           period: @period,

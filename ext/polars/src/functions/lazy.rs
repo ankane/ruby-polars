@@ -17,10 +17,6 @@ macro_rules! set_unwrapped_or_0 {
     };
 }
 
-pub fn arange(low: &RbExpr, high: &RbExpr, step: i64) -> RbExpr {
-    dsl::arange(low.inner.clone(), high.inner.clone(), step).into()
-}
-
 pub fn arg_sort_by(by: RArray, descending: Vec<bool>) -> RbResult<RbExpr> {
     let by = rb_exprs_to_exprs(by)?;
     Ok(dsl::arg_sort_by(by, &descending).into())

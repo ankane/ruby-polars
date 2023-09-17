@@ -883,11 +883,12 @@ module Polars
     #   # │ b   ┆ 11  │
     #   # │ c   ┆ 6   │
     #   # └─────┴─────┘
-    def groupby(by, maintain_order: false)
+    def group_by(by, maintain_order: false)
       rbexprs_by = Utils.selection_to_rbexpr_list(by)
-      lgb = _ldf.groupby(rbexprs_by, maintain_order)
-      LazyGroupBy.new(lgb, self.class)
+      lgb = _ldf.group_by(rbexprs_by, maintain_order)
+      LazyGroupBy.new(lgb)
     end
+    alias_method :groupby, :group_by
 
     # Create rolling groups based on a time column.
     #
@@ -979,7 +980,7 @@ module Polars
     #   # │ 2020-01-03 19:45:32 ┆ 11    ┆ 2     ┆ 9     │
     #   # │ 2020-01-08 23:16:43 ┆ 1     ┆ 1     ┆ 1     │
     #   # └─────────────────────┴───────┴───────┴───────┘
-    def groupby_rolling(
+    def group_by_rolling(
       index_column:,
       period:,
       offset: nil,
@@ -987,7 +988,7 @@ module Polars
       by: nil,
       check_sorted: true
     )
-      index_column = Utils.expr_to_lit_or_expr(index_column, str_to_lit: false)
+      index_column = Utils.parse_as_expression(index_column)
       if offset.nil?
         offset = "-#{period}"
       end
@@ -996,11 +997,12 @@ module Polars
       period = Utils._timedelta_to_pl_duration(period)
       offset = Utils._timedelta_to_pl_duration(offset)
 
-      lgb = _ldf.groupby_rolling(
-        index_column._rbexpr, period, offset, closed, rbexprs_by, check_sorted
+      lgb = _ldf.group_by_rolling(
+        index_column, period, offset, closed, rbexprs_by, check_sorted
       )
-      LazyGroupBy.new(lgb, self.class)
+      LazyGroupBy.new(lgb)
     end
+    alias_method :groupby_rolling, :group_by_rolling
 
     # Group based on a time value (or index value of type `:i32`, `:i64`).
     #
@@ -1228,7 +1230,7 @@ module Polars
     #   # │ 2               ┆ 5               ┆ 2   ┆ ["B", "B", "C"] │
     #   # │ 4               ┆ 7               ┆ 4   ┆ ["C"]           │
     #   # └─────────────────┴─────────────────┴─────┴─────────────────┘
-    def groupby_dynamic(
+    def group_by_dynamic(
       index_column,
       every:,
       period: nil,
@@ -1253,7 +1255,7 @@ module Polars
       every = Utils._timedelta_to_pl_duration(every)
 
       rbexprs_by = by.nil? ? [] : Utils.selection_to_rbexpr_list(by)
-      lgb = _ldf.groupby_dynamic(
+      lgb = _ldf.group_by_dynamic(
         index_column._rbexpr,
         every,
         period,
@@ -1264,8 +1266,9 @@ module Polars
         rbexprs_by,
         start_by
       )
-      LazyGroupBy.new(lgb, self.class)
+      LazyGroupBy.new(lgb)
     end
+    alias_method :groupby_dynamic, :group_by_dynamic
 
     # Perform an asof join.
     #

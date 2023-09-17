@@ -83,9 +83,12 @@ module Polars
       strict: true,
       exact: true,
       cache: true,
-      use_earliest: nil
+      use_earliest: nil,
+      ambiguous: "raise"
     )
       _validate_format_argument(format)
+      ambiguous = Utils.rename_use_earliest_to_ambiguous(use_earliest, ambiguous)
+      ambiguous = Polars.lit(ambiguous) unless ambiguous.is_a?(Expr)
       Utils.wrap_expr(
         self._rbexpr.str_to_datetime(
           format,
@@ -94,7 +97,7 @@ module Polars
           strict,
           exact,
           cache,
-          use_earliest
+          ambiguous._rbexpr
         )
       )
     end
@@ -358,12 +361,13 @@ module Polars
     #   # │ trail │
     #   # │ both  │
     #   # └───────┘
-    def strip(matches = nil)
+    def strip_chars(matches = nil)
       if !matches.nil? && matches.length > 1
         raise ArgumentError, "matches should contain a single character"
       end
-      Utils.wrap_expr(_rbexpr.str_strip(matches))
+      Utils.wrap_expr(_rbexpr.str_strip_chars(matches))
     end
+    alias_method :strip, :strip_chars
 
     # Remove leading whitespace.
     #
@@ -386,12 +390,13 @@ module Polars
     #   # │ trail  │
     #   # │ both   │
     #   # └────────┘
-    def lstrip(matches = nil)
+    def strip_chars_start(matches = nil)
       if !matches.nil? && matches.length > 1
         raise ArgumentError, "matches should contain a single character"
       end
-      Utils.wrap_expr(_rbexpr.str_lstrip(matches))
+      Utils.wrap_expr(_rbexpr.str_strip_chars_start(matches))
     end
+    alias_method :lstrip, :strip_chars_start
 
     # Remove trailing whitespace.
     #
@@ -414,12 +419,13 @@ module Polars
     #   # │ trail │
     #   # │  both │
     #   # └───────┘
-    def rstrip(matches = nil)
+    def strip_chars_end(matches = nil)
       if !matches.nil? && matches.length > 1
         raise ArgumentError, "matches should contain a single character"
       end
-      Utils.wrap_expr(_rbexpr.str_rstrip(matches))
+      Utils.wrap_expr(_rbexpr.str_strip_chars_end(matches))
     end
+    alias_method :rstrip, :strip_chars_end
 
     # Fills the string with zeroes.
     #
@@ -866,9 +872,11 @@ module Polars
     #   # │ 5            │
     #   # │ 6            │
     #   # └──────────────┘
-    def count_match(pattern)
-      Utils.wrap_expr(_rbexpr.count_match(pattern))
+    def count_matches(pattern, literal: false)
+      pattern = Utils.parse_as_expression(pattern, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.str_count_matches(pattern, literal))
     end
+    alias_method :count_match, :count_matches
 
     # Split the string by a substring.
     #
@@ -894,6 +902,7 @@ module Polars
     #   # │ ["foo", "bar", "baz"] │
     #   # └───────────────────────┘
     def split(by, inclusive: false)
+      by = Utils.parse_as_expression(by, str_as_lit: true)
       if inclusive
         Utils.wrap_expr(_rbexpr.str_split_inclusive(by))
       else

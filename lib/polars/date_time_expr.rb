@@ -97,7 +97,9 @@ module Polars
     #   # │ 2001-01-01 00:50:00 ┆ 2001-01-01 00:30:00 │
     #   # │ 2001-01-01 01:00:00 ┆ 2001-01-01 01:00:00 │
     #   # └─────────────────────┴─────────────────────┘
-    def truncate(every, offset: nil, use_earliest: nil)
+    def truncate(every, offset: nil, use_earliest: nil, ambiguous: "raise")
+      ambiguous = Utils.rename_use_earliest_to_ambiguous(use_earliest, ambiguous)
+      ambiguous = Polars.lit(ambiguous) unless ambiguous.is_a?(Expr)
       if offset.nil?
         offset = "0ns"
       end
@@ -106,7 +108,7 @@ module Polars
         _rbexpr.dt_truncate(
           Utils._timedelta_to_pl_duration(every),
           Utils._timedelta_to_pl_duration(offset),
-          use_earliest
+          ambiguous._rbexpr
         )
       )
     end
@@ -1027,8 +1029,10 @@ module Polars
     #   Time zone for the `Datetime` Series.
     #
     # @return [Expr]
-    def replace_time_zone(tz, use_earliest: nil)
-      Utils.wrap_expr(_rbexpr.dt_replace_time_zone(tz, use_earliest))
+    def replace_time_zone(tz, use_earliest: nil, ambiguous: "raise")
+      ambiguous = Utils.rename_use_earliest_to_ambiguous(use_earliest, ambiguous)
+      ambiguous = Polars.lit(ambiguous) unless ambiguous.is_a?(Expr)
+      Utils.wrap_expr(_rbexpr.dt_replace_time_zone(tz, ambiguous._rbexpr))
     end
 
     # Extract the days from a Duration type.
@@ -1336,6 +1340,7 @@ module Polars
     #   # │ 2006-01-01 00:00:00 ┆ 2003-11-01 00:00:00 │
     #   # └─────────────────────┴─────────────────────┘
     def offset_by(by)
+      by = Utils.parse_as_expression(by, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.dt_offset_by(by))
     end
 

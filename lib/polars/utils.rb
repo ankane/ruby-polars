@@ -308,5 +308,17 @@ module Polars
 
       expr._rbexpr
     end
+
+    USE_EARLIEST_TO_AMBIGUOUS = {
+      true => "earliest",
+      false => "latest"
+    }
+
+    def self.rename_use_earliest_to_ambiguous(use_earliest, ambiguous)
+      unless use_earliest.nil?
+        ambiguous = USE_EARLIEST_TO_AMBIGUOUS.fetch(use_earliest)
+      end
+      ambiguous
+    end
   end
 end
