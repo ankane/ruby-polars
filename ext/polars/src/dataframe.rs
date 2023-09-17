@@ -14,12 +14,12 @@ use std::cell::RefCell;
 use std::io::{BufWriter, Cursor};
 use std::ops::Deref;
 
+use crate::conversion::*;
+use crate::file::{get_file_like, get_mmap_bytes_reader};
 use crate::map::dataframe::{
     apply_lambda_unknown, apply_lambda_with_bool_out_type, apply_lambda_with_primitive_out_type,
     apply_lambda_with_utf8_out_type,
 };
-use crate::conversion::*;
-use crate::file::{get_file_like, get_mmap_bytes_reader};
 use crate::rb_modules;
 use crate::series::{to_rbseries_collection, to_series_collection};
 use crate::{RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};

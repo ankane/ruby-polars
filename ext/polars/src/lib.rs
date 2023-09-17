@@ -1,4 +1,3 @@
-mod map;
 mod batched_csv;
 mod conversion;
 mod dataframe;
@@ -8,6 +7,7 @@ mod file;
 mod functions;
 mod lazyframe;
 mod lazygroupby;
+mod map;
 mod object;
 mod prelude;
 pub(crate) mod rb_modules;
@@ -382,8 +382,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_to_datetime", method!(RbExpr::str_to_datetime, 7))?;
     class.define_method("str_to_time", method!(RbExpr::str_to_time, 3))?;
     class.define_method("str_strip_chars", method!(RbExpr::str_strip_chars, 1))?;
-    class.define_method("str_strip_chars_start", method!(RbExpr::str_strip_chars_start, 1))?;
-    class.define_method("str_strip_chars_end", method!(RbExpr::str_strip_chars_end, 1))?;
+    class.define_method(
+        "str_strip_chars_start",
+        method!(RbExpr::str_strip_chars_start, 1),
+    )?;
+    class.define_method(
+        "str_strip_chars_end",
+        method!(RbExpr::str_strip_chars_end, 1),
+    )?;
     class.define_method("str_strip_prefix", method!(RbExpr::str_strip_prefix, 1))?;
     class.define_method("str_strip_suffix", method!(RbExpr::str_strip_suffix, 1))?;
     class.define_method("str_slice", method!(RbExpr::str_slice, 2))?;
@@ -596,8 +602,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("fold", function!(crate::functions::lazy::fold, 3))?;
     class.define_singleton_method("cumfold", function!(crate::functions::lazy::cumfold, 4))?;
     class.define_singleton_method("lit", function!(crate::functions::lazy::lit, 2))?;
-    class.define_singleton_method("int_range", function!(crate::functions::range::int_range, 4))?;
-    class.define_singleton_method("int_ranges", function!(crate::functions::range::int_ranges, 4))?;
+    class.define_singleton_method(
+        "int_range",
+        function!(crate::functions::range::int_range, 4),
+    )?;
+    class.define_singleton_method(
+        "int_ranges",
+        function!(crate::functions::range::int_ranges, 4),
+    )?;
     class.define_singleton_method("repeat", function!(crate::functions::lazy::repeat, 3))?;
     class.define_singleton_method(
         "pearson_corr",
@@ -653,8 +665,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("filter", method!(RbLazyFrame::filter, 1))?;
     class.define_method("select", method!(RbLazyFrame::select, 1))?;
     class.define_method("group_by", method!(RbLazyFrame::group_by, 2))?;
-    class.define_method("group_by_rolling", method!(RbLazyFrame::group_by_rolling, 6))?;
-    class.define_method("group_by_dynamic", method!(RbLazyFrame::group_by_dynamic, 9))?;
+    class.define_method(
+        "group_by_rolling",
+        method!(RbLazyFrame::group_by_rolling, 6),
+    )?;
+    class.define_method(
+        "group_by_dynamic",
+        method!(RbLazyFrame::group_by_dynamic, 9),
+    )?;
     class.define_method("with_context", method!(RbLazyFrame::with_context, 1))?;
     class.define_method("join_asof", method!(RbLazyFrame::join_asof, 11))?;
     class.define_method("join", method!(RbLazyFrame::join, 7))?;

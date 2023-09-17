@@ -312,7 +312,11 @@ impl RbExpr {
     }
 
     pub fn str_split_inclusive(&self, by: &Self) -> Self {
-        self.inner.clone().str().split_inclusive(by.inner.clone()).into()
+        self.inner
+            .clone()
+            .str()
+            .split_inclusive(by.inner.clone())
+            .into()
     }
 
     pub fn str_split_exact(&self, by: String, n: usize) -> Self {

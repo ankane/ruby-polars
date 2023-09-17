@@ -4,8 +4,8 @@ use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 use polars_core::series::IsSorted;
 
-use crate::map::lazy::map_single;
 use crate::conversion::{parse_fill_null_strategy, Wrap};
+use crate::map::lazy::map_single;
 use crate::rb_exprs_to_exprs;
 use crate::utils::reinterpret;
 use crate::{RbExpr, RbResult};

@@ -10,9 +10,9 @@ use polars::prelude::*;
 use polars::series::IsSorted;
 use std::cell::RefCell;
 
-use crate::map::series::{call_lambda_and_extract, ApplyLambda};
 use crate::apply_method_all_arrow_series2;
 use crate::conversion::*;
+use crate::map::series::{call_lambda_and_extract, ApplyLambda};
 use crate::series::set_at_idx::set_at_idx;
 use crate::{RbDataFrame, RbPolarsErr, RbResult};
 
