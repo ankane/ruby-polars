@@ -14,7 +14,7 @@ use std::cell::RefCell;
 use std::io::{BufWriter, Cursor};
 use std::ops::Deref;
 
-use crate::apply::dataframe::{
+use crate::map::dataframe::{
     apply_lambda_unknown, apply_lambda_with_bool_out_type, apply_lambda_with_primitive_out_type,
     apply_lambda_with_utf8_out_type,
 };

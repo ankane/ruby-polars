@@ -5,7 +5,7 @@ use magnus::{
 use polars::lazy::dsl;
 use polars::prelude::*;
 
-use crate::apply::lazy::binary_lambda;
+use crate::map::lazy::binary_lambda;
 use crate::conversion::{get_lf, get_rbseq, Wrap};
 use crate::prelude::vec_extract_wrapped;
 use crate::rb_exprs_to_exprs;

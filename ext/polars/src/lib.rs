@@ -1,4 +1,4 @@
-mod apply;
+mod map;
 mod batched_csv;
 mod conversion;
 mod dataframe;

@@ -5,7 +5,7 @@ use polars::series::ops::NullBehavior;
 use polars_core::series::IsSorted;
 use std::any::Any;
 
-use crate::apply::lazy::map_single;
+use crate::map::lazy::map_single;
 use crate::conversion::{parse_fill_null_strategy, Wrap};
 use crate::rb_exprs_to_exprs;
 use crate::utils::reinterpret;
