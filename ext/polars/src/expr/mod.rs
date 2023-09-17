@@ -5,6 +5,7 @@ mod datetime;
 mod general;
 mod list;
 mod meta;
+mod rolling;
 mod string;
 mod r#struct;
 
