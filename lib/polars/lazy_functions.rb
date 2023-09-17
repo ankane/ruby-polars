@@ -158,7 +158,7 @@ module Polars
         col(column.to_s).sum
       elsif column.is_a?(::Array)
         exprs = Utils.selection_to_rbexpr_list(column)
-        Utils.wrap_expr(_sum_exprs(exprs))
+        Utils.wrap_expr(_sum_horizontal(exprs))
       else
         fold(lit(0).cast(:u32), ->(a, b) { a + b }, column).alias("sum")
       end

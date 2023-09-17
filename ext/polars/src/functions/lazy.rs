@@ -257,9 +257,3 @@ pub fn dtype_cols2(dtypes: RArray) -> RbResult<RbExpr> {
     let dtypes = vec_extract_wrapped(dtypes);
     Ok(crate::functions::lazy::dtype_cols(dtypes))
 }
-
-// TODO rename to sum_horizontal
-pub fn sum_exprs(exprs: RArray) -> RbResult<RbExpr> {
-    let exprs = rb_exprs_to_exprs(exprs)?;
-    Ok(polars::lazy::dsl::sum_horizontal(exprs).into())
-}

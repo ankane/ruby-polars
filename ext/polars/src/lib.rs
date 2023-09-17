@@ -98,8 +98,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(crate::functions::lazy::coalesce, 1),
     )?;
     module.define_singleton_method(
-        "_sum_exprs",
-        function!(crate::functions::lazy::sum_exprs, 1),
+        "_sum_horizontal",
+        function!(crate::functions::aggregation::sum_horizontal, 1),
     )?;
     module.define_singleton_method(
         "_as_struct",
