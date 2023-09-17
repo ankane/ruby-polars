@@ -118,6 +118,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(crate::functions::aggregation::sum_horizontal, 1),
     )?;
     module.define_singleton_method(
+        "_dtype_str_repr",
+        function!(crate::functions::misc::dtype_str_repr, 1),
+    )?;
+    module.define_singleton_method(
         "_as_struct",
         function!(crate::functions::lazy::as_struct, 1),
     )?;
