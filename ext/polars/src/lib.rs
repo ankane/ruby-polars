@@ -133,6 +133,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "_get_float_fmt",
         function!(crate::functions::meta::get_float_fmt, 0),
     )?;
+    module.define_singleton_method(
+        "_set_random_seed",
+        function!(crate::functions::random::set_random_seed, 1),
+    )?;
 
     let class = module.define_class("RbBatchedCsv", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbBatchedCsv::new, -1))?;
