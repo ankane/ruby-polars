@@ -98,6 +98,22 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(crate::functions::lazy::coalesce, 1),
     )?;
     module.define_singleton_method(
+        "_all_horizontal",
+        function!(crate::functions::aggregation::all_horizontal, 1),
+    )?;
+    module.define_singleton_method(
+        "_any_horizontal",
+        function!(crate::functions::aggregation::any_horizontal, 1),
+    )?;
+    module.define_singleton_method(
+        "_max_horizontal",
+        function!(crate::functions::aggregation::max_horizontal, 1),
+    )?;
+    module.define_singleton_method(
+        "_min_horizontal",
+        function!(crate::functions::aggregation::min_horizontal, 1),
+    )?;
+    module.define_singleton_method(
         "_sum_horizontal",
         function!(crate::functions::aggregation::sum_horizontal, 1),
     )?;
