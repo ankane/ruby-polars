@@ -1833,9 +1833,8 @@ module Polars
         raise TypeError, "invalid input for groupby arg `maintain_order`: #{maintain_order}."
       end
       GroupBy.new(
-        _df,
+        self,
         by,
-        self.class,
         maintain_order: maintain_order
       )
     end

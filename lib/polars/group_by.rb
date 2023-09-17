@@ -2,14 +2,10 @@ module Polars
   # Starts a new GroupBy operation.
   class GroupBy
     # @private
-    attr_accessor :_df, :_dataframe_class, :by, :maintain_order
-
-    # @private
-    def initialize(df, by, dataframe_class, maintain_order: false)
-      self._df = df
-      self._dataframe_class = dataframe_class
-      self.by = by
-      self.maintain_order = maintain_order
+    def initialize(df, by, maintain_order: false)
+      @df = df
+      @by = by
+      @maintain_order = maintain_order
     end
 
     # Allows iteration over the groups of the groupby operation.
@@ -41,10 +37,9 @@ module Polars
 
       temp_col = "__POLARS_GB_GROUP_INDICES"
       groups_df =
-        Utils.wrap_df(_df)
-          .lazy
+        @df.lazy
           .with_row_count(name: temp_col)
-          .group_by(by, maintain_order: maintain_order)
+          .group_by(@by, maintain_order: @maintain_order)
           .agg(Polars.col(temp_col))
           .collect(no_optimization: true)
 
@@ -52,7 +47,7 @@ module Polars
 
       # When grouping by a single column, group name is a single value
       # When grouping by multiple columns, group name is a tuple of values
-      if by.is_a?(String) || by.is_a?(Expr)
+      if @by.is_a?(String) || @by.is_a?(Expr)
         _group_names = group_names.to_series.each
       else
         _group_names = group_names.iter_rows
@@ -62,10 +57,8 @@ module Polars
       _current_index = 0
 
       while _current_index < _group_indices.length
-        df = _dataframe_class._from_rbdf(_df)
-
         group_name = _group_names.next
-        group_data = df[_group_indices[_current_index]]
+        group_data = @df[_group_indices[_current_index]]
         _current_index += 1
 
         yield group_name, group_data
@@ -143,12 +136,10 @@ module Polars
     #   # │ two ┆ 6       ┆ 5            │
     #   # └─────┴─────────┴──────────────┘
     def agg(aggs)
-      df = Utils.wrap_df(_df)
-        .lazy
-        .group_by(by, maintain_order: maintain_order)
+      @df.lazy
+        .group_by(@by, maintain_order: @maintain_order)
         .agg(aggs)
-        .collect(no_optimization: true, string_cache: false)
-      _dataframe_class._from_rbdf(df._df)
+        .collect(no_optimization: true)
     end
 
     # Get the first `n` rows of each group.
@@ -196,14 +187,10 @@ module Polars
     #   # │ c       ┆ 2   │
     #   # └─────────┴─────┘
     def head(n = 5)
-      df = (
-        Utils.wrap_df(_df)
-          .lazy
-          .groupby(by, maintain_order: maintain_order)
-          .head(n)
-          .collect(no_optimization: true, string_cache: false)
-      )
-      _dataframe_class._from_rbdf(df._df)
+      @df.lazy
+        .groupby(@by, maintain_order: @maintain_order)
+        .head(n)
+        .collect(no_optimization: true)
     end
 
     # Get the last `n` rows of each group.
@@ -251,14 +238,10 @@ module Polars
     #   # │ c       ┆ 4   │
     #   # └─────────┴─────┘
     def tail(n = 5)
-      df = (
-        Utils.wrap_df(_df)
-          .lazy
-          .groupby(by, maintain_order: maintain_order)
-          .tail(n)
-          .collect(no_optimization: true, string_cache: false)
-      )
-      _dataframe_class._from_rbdf(df._df)
+      @df.lazy
+        .groupby(@by, maintain_order: @maintain_order)
+        .tail(n)
+        .collect(no_optimization: true)
     end
 
     # Aggregate the first values in the group.
@@ -555,11 +538,11 @@ module Polars
     #
     # @return [Vega::LiteChart]
     def plot(*args, **options)
-      raise ArgumentError, "Multiple groups not supported" if by.is_a?(::Array) && by.size > 1
+      raise ArgumentError, "Multiple groups not supported" if @by.is_a?(::Array) && @by.size > 1
       # same message as Ruby
       raise ArgumentError, "unknown keyword: :group" if options.key?(:group)
 
-      Utils.wrap_df(_df).plot(*args, **options, group: by)
+      @df.plot(*args, **options, group: @by)
     end
   end
 end
