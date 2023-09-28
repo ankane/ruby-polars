@@ -131,6 +131,13 @@ module Polars
       wrap_expr(_rbexpr.gt(_to_expr(other)._rbexpr))
     end
 
+    # Performs boolean not.
+    #
+    # @return [Expr]
+    def !
+      is_not
+    end
+
     # Performs negation.
     #
     # @return [Expr]

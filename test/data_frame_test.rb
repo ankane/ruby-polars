@@ -304,6 +304,11 @@ class DataFrameTest < Minitest::Test
   end
 
   def test_filter
+    a = Polars::Series.new("a", [1, 2, 3])
+    df = Polars::DataFrame.new([a])
+    assert_frame({"a" => [2, 3]}, df.filter(Polars.col("a") > 1))
+    assert_frame({"a" => [2, 3]}, df.filter(df["a"] > 1))
+    assert_frame({"a" => [1]}, df.filter(!(df["a"] > 1)))
   end
 
   def test_describe
