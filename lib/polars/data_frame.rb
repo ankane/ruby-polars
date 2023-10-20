@@ -5096,10 +5096,10 @@ module Polars
 
     def _compare_to_other_df(other, op)
       if columns != other.columns
-        raise ArgmentError, "DataFrame columns do not match"
+        raise ArgumentError, "DataFrame columns do not match"
       end
       if shape != other.shape
-        raise ArgmentError, "DataFrame dimensions do not match"
+        raise ArgumentError, "DataFrame dimensions do not match"
       end
 
       suffix = "__POLARS_CMP_OTHER"
