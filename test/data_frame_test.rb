@@ -157,6 +157,15 @@ class DataFrameTest < Minitest::Test
     assert_frame ({"a" => [false, true, true, true]}), a <= b
   end
 
+  def test_comp_data_frame_different_schema
+    a = Polars::DataFrame.new({"a" => [1]})
+    b = Polars::DataFrame.new({"b" => [1]})
+    error = assert_raises(ArgumentError) do
+      a == b
+    end
+    assert_match "DataFrame columns do not match", error.message
+  end
+
   def test_comp_scalar
     a = Polars::DataFrame.new({"a" => [1, 2, 3]})
     assert_frame ({"a" => [false, true, false]}), a == 2
