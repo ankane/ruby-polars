@@ -1,6 +1,6 @@
 ## 0.7.0 (unreleased)
 
-- Updated Polars to 0.34.1
+- Updated Polars to 0.34.2
 - Added `!` for `Expr`
 - Added `Config` module
 - Added `none?` method to `Series`
