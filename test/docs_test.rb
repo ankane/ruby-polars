@@ -93,6 +93,10 @@ class DocsTest < Minitest::Test
     assert_docs Polars::Series
   end
 
+  def test_sql_context
+    assert_docs Polars::SQLContext
+  end
+
   def test_string_expr
     assert_docs Polars::StringExpr
   end
@@ -141,7 +145,7 @@ class DocsTest < Minitest::Test
     return if [:read_csv_batched, :sink_parquet].include?(method.name)
 
     # TODO fix
-    return if [:align_frames, :coalesce, :cumsum, :extend_constant].include?(method.name)
+    return if [:align_frames, :coalesce, :cumsum, :extend_constant, :execute].include?(method.name)
 
     code = ""
     method.tags(:example).each do |example|
