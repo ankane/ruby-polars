@@ -12,6 +12,7 @@ mod object;
 mod prelude;
 pub(crate) mod rb_modules;
 mod series;
+mod sql;
 mod utils;
 
 use batched_csv::RbBatchedCsv;
@@ -25,6 +26,7 @@ use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
 use magnus::{define_module, function, method, prelude::*, Error, Ruby};
 use series::RbSeries;
+use sql::RbSQLContext;
 
 #[cfg(target_os = "linux")]
 use jemallocator::Jemalloc;
@@ -982,6 +984,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     let class = module.define_class("RbWhenThen", ruby.class_object())?;
     class.define_method("otherwise", method!(RbThen::overwise, 1))?;
+
+    // sql
+    let class = module.define_class("RbSQLContext", ruby.class_object())?;
+    class.define_singleton_method("new", function!(RbSQLContext::new, 0))?;
+    class.define_method("execute", method!(RbSQLContext::execute, 1))?;
+    class.define_method("get_tables", method!(RbSQLContext::get_tables, 0))?;
+    class.define_method("register", method!(RbSQLContext::register, 2))?;
+    class.define_method("unregister", method!(RbSQLContext::unregister, 1))?;
 
     Ok(())
 }

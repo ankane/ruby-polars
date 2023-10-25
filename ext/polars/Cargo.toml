@@ -82,6 +82,7 @@ features = [
     "semi_anti_join",
     "serde-lazy",
     "sign",
+    "sql",
     "string_encoding",
     "string_from_radix",
     "string_pad",
