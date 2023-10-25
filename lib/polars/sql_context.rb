@@ -137,5 +137,58 @@ module Polars
       end
       self
     end
+
+    # Unregister one or more eager/lazy frames by name.
+    #
+    # @param names [Object]
+    #   Names of the tables to unregister.
+    #
+    # @return [SQLContext]
+    #
+    # @example Register with a SQLContext object:
+    #   df0 = Polars::DataFrame.new({"ints" => [9, 8, 7, 6, 5]})
+    #   lf1 = Polars::LazyFrame.new({"text" => ["a", "b", "c"]})
+    #   lf2 = Polars::LazyFrame.new({"misc" => ["testing1234"]})
+    #   ctx = Polars::SQLContext.new(test1: df0, test2: lf1, test3: lf2)
+    #   ctx.tables
+    #   # => ["test1", "test2", "test3"]
+    #
+    # @example Unregister one or more of the tables:
+    #   ctx.unregister(["test1", "test3"]).tables
+    #   # => ["test2"]
+    def unregister(names)
+      if names.is_a?(String)
+        names = [names]
+      end
+      names.each do |nm|
+        _ctxt.unregister(nm)
+      end
+      self
+    end
+
+    # Return a list of the registered table names.
+    #
+    # @return [Array]
+    #
+    # @example Executing as SQL:
+    #   frame_data = Polars::DataFrame.new({"hello" => ["world"]})
+    #   ctx = Polars::SQLContext.new(hello_world: frame_data)
+    #   ctx.execute("SHOW TABLES", eager: true)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────────────┐
+    #   # │ name        │
+    #   # │ ---         │
+    #   # │ str         │
+    #   # ╞═════════════╡
+    #   # │ hello_world │
+    #   # └─────────────┘
+    #
+    # @example Calling the method:
+    #   ctx.tables
+    #   # => ["hello_world"]
+    def tables
+      _ctxt.get_tables.sort
+    end
   end
 end
