@@ -28,7 +28,7 @@ pub fn arg_where(condition: &RbExpr) -> RbExpr {
 
 pub fn as_struct(exprs: RArray) -> RbResult<RbExpr> {
     let exprs = rb_exprs_to_exprs(exprs)?;
-    Ok(dsl::as_struct(&exprs).into())
+    Ok(dsl::as_struct(exprs).into())
 }
 
 pub fn coalesce(exprs: RArray) -> RbResult<RbExpr> {
@@ -83,7 +83,12 @@ pub fn concat_lf(
     Ok(lf.into())
 }
 
-pub fn diag_concat_lf(lfs: RArray, rechunk: bool, parallel: bool) -> RbResult<RbLazyFrame> {
+pub fn concat_lf_diagonal(
+    lfs: RArray,
+    rechunk: bool,
+    parallel: bool,
+    to_supertypes: bool,
+) -> RbResult<RbLazyFrame> {
     let iter = lfs.each();
 
     let lfs = iter
@@ -93,40 +98,50 @@ pub fn diag_concat_lf(lfs: RArray, rechunk: bool, parallel: bool) -> RbResult<Rb
         })
         .collect::<RbResult<Vec<_>>>()?;
 
-    let lf = dsl::functions::diag_concat_lf(lfs, rechunk, parallel).map_err(RbPolarsErr::from)?;
+    let lf = dsl::functions::concat_lf_diagonal(
+        lfs,
+        UnionArgs {
+            rechunk,
+            parallel,
+            to_supertypes,
+        },
+    )
+    .map_err(RbPolarsErr::from)?;
     Ok(lf.into())
 }
 
 #[allow(clippy::too_many_arguments)]
 pub fn duration(
-    days: Option<&RbExpr>,
-    seconds: Option<&RbExpr>,
-    nanoseconds: Option<&RbExpr>,
-    microseconds: Option<&RbExpr>,
-    milliseconds: Option<&RbExpr>,
-    minutes: Option<&RbExpr>,
-    hours: Option<&RbExpr>,
     weeks: Option<&RbExpr>,
+    days: Option<&RbExpr>,
+    hours: Option<&RbExpr>,
+    minutes: Option<&RbExpr>,
+    seconds: Option<&RbExpr>,
+    milliseconds: Option<&RbExpr>,
+    microseconds: Option<&RbExpr>,
+    nanoseconds: Option<&RbExpr>,
+    time_unit: Wrap<TimeUnit>,
 ) -> RbExpr {
     set_unwrapped_or_0!(
-        days,
-        seconds,
-        nanoseconds,
-        microseconds,
-        milliseconds,
-        minutes,
-        hours,
         weeks,
+        days,
+        hours,
+        minutes,
+        seconds,
+        milliseconds,
+        microseconds,
+        nanoseconds,
     );
     let args = DurationArgs {
-        days,
-        seconds,
-        nanoseconds,
-        microseconds,
-        milliseconds,
-        minutes,
-        hours,
         weeks,
+        days,
+        hours,
+        minutes,
+        seconds,
+        milliseconds,
+        microseconds,
+        nanoseconds,
+        time_unit: time_unit.0,
     };
     dsl::duration(args).into()
 }

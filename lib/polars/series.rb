@@ -3109,7 +3109,7 @@ module Polars
     #   s.peak_max
     #   # =>
     #   # shape: (5,)
-    #   # Series: '' [bool]
+    #   # Series: 'a' [bool]
     #   # [
     #   #         false
     #   #         false
@@ -3118,7 +3118,7 @@ module Polars
     #   #         true
     #   # ]
     def peak_max
-      Utils.wrap_s(_s.peak_max)
+      super
     end
 
     # Get a boolean mask of the local minimum peaks.
@@ -3130,7 +3130,7 @@ module Polars
     #   s.peak_min
     #   # =>
     #   # shape: (5,)
-    #   # Series: '' [bool]
+    #   # Series: 'a' [bool]
     #   # [
     #   #         false
     #   #         true
@@ -3139,7 +3139,7 @@ module Polars
     #   #         false
     #   # ]
     def peak_min
-      Utils.wrap_s(_s.peak_min)
+      super
     end
 
     # Count the number of unique values in this Series.
@@ -3223,13 +3223,13 @@ module Polars
     #   s.interpolate
     #   # =>
     #   # shape: (5,)
-    #   # Series: 'a' [i64]
+    #   # Series: 'a' [f64]
     #   # [
-    #   #         1
-    #   #         2
-    #   #         3
-    #   #         4
-    #   #         5
+    #   #         1.0
+    #   #         2.0
+    #   #         3.0
+    #   #         4.0
+    #   #         5.0
     #   # ]
     def interpolate(method: "linear")
       super

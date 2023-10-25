@@ -104,9 +104,14 @@ module Polars
         offset = "0ns"
       end
 
+      if !every.is_a?(Expr)
+        every = Utils._timedelta_to_pl_duration(every)
+      end
+      every = Utils.parse_as_expression(every, str_as_lit: true)
+
       Utils.wrap_expr(
         _rbexpr.dt_truncate(
-          Utils._timedelta_to_pl_duration(every),
+          every,
           Utils._timedelta_to_pl_duration(offset),
           ambiguous._rbexpr
         )
@@ -208,15 +213,18 @@ module Polars
     #   # │ 2001-01-01 00:50:00 ┆ 2001-01-01 01:00:00 │
     #   # │ 2001-01-01 01:00:00 ┆ 2001-01-01 01:00:00 │
     #   # └─────────────────────┴─────────────────────┘
-    def round(every, offset: nil)
+    def round(every, offset: nil, ambiguous: "raise")
       if offset.nil?
         offset = "0ns"
       end
 
+      ambiguous = Polars.lit(ambiguous) unless ambiguous.is_a?(Expr)
+
       Utils.wrap_expr(
         _rbexpr.dt_round(
           Utils._timedelta_to_pl_duration(every),
-          Utils._timedelta_to_pl_duration(offset)
+          Utils._timedelta_to_pl_duration(offset),
+          ambiguous._rbexpr
         )
       )
     end

@@ -240,7 +240,7 @@ module Polars
     #   # │ 東京 ┆ 6      ┆ 2      │
     #   # └──────┴────────┴────────┘
     def lengths
-      Utils.wrap_expr(_rbexpr.str_lengths)
+      Utils.wrap_expr(_rbexpr.str_len_bytes)
     end
 
     # Get length of the strings as `:u32` (as number of chars).
@@ -272,7 +272,7 @@ module Polars
     #   # │ 東京 ┆ 6      ┆ 2      │
     #   # └──────┴────────┴────────┘
     def n_chars
-      Utils.wrap_expr(_rbexpr.str_n_chars)
+      Utils.wrap_expr(_rbexpr.str_len_chars)
     end
 
     # Vertically concat the values in the Series to a single string value.
@@ -342,7 +342,7 @@ module Polars
 
     # Remove leading and trailing whitespace.
     #
-    # @param matches [String, nil]
+    # @param characters [String, nil]
     #   An optional single character that should be trimmed.
     #
     # @return [Expr]
@@ -361,17 +361,15 @@ module Polars
     #   # │ trail │
     #   # │ both  │
     #   # └───────┘
-    def strip_chars(matches = nil)
-      if !matches.nil? && matches.length > 1
-        raise ArgumentError, "matches should contain a single character"
-      end
-      Utils.wrap_expr(_rbexpr.str_strip_chars(matches))
+    def strip_chars(characters = nil)
+      characters = Utils.parse_as_expression(characters, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.str_strip_chars(characters))
     end
     alias_method :strip, :strip_chars
 
     # Remove leading whitespace.
     #
-    # @param matches [String, nil]
+    # @param characters [String, nil]
     #   An optional single character that should be trimmed.
     #
     # @return [Expr]
@@ -390,17 +388,15 @@ module Polars
     #   # │ trail  │
     #   # │ both   │
     #   # └────────┘
-    def strip_chars_start(matches = nil)
-      if !matches.nil? && matches.length > 1
-        raise ArgumentError, "matches should contain a single character"
-      end
-      Utils.wrap_expr(_rbexpr.str_strip_chars_start(matches))
+    def strip_chars_start(characters = nil)
+      characters = Utils.parse_as_expression(characters, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.str_strip_chars_start(characters))
     end
     alias_method :lstrip, :strip_chars_start
 
     # Remove trailing whitespace.
     #
-    # @param matches [String, nil]
+    # @param characters [String, nil]
     #   An optional single character that should be trimmed.
     #
     # @return [Expr]
@@ -419,11 +415,9 @@ module Polars
     #   # │ trail │
     #   # │  both │
     #   # └───────┘
-    def strip_chars_end(matches = nil)
-      if !matches.nil? && matches.length > 1
-        raise ArgumentError, "matches should contain a single character"
-      end
-      Utils.wrap_expr(_rbexpr.str_strip_chars_end(matches))
+    def strip_chars_end(characters = nil)
+      characters = Utils.parse_as_expression(characters, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.str_strip_chars_end(characters))
     end
     alias_method :rstrip, :strip_chars_end
 
@@ -469,13 +463,13 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_zfill(alignment))
     end
 
-    # Return the string left justified in a string of length `width`.
+    # Return the string left justified in a string of length `length`.
     #
     # Padding is done using the specified `fillchar`.
-    # The original string is returned if `width` is less than or equal to
+    # The original string is returned if `length` is less than or equal to
     # `s.length`.
     #
-    # @param width [Integer]
+    # @param length [Integer]
     #   Justify left to this length.
     # @param fillchar [String]
     #   Fill with this ASCII character.
@@ -497,17 +491,18 @@ module Polars
     #   # │ null         │
     #   # │ hippopotamus │
     #   # └──────────────┘
-    def ljust(width, fillchar = " ")
-      Utils.wrap_expr(_rbexpr.str_ljust(width, fillchar))
+    def ljust(length, fillchar = " ")
+      Utils.wrap_expr(_rbexpr.str_pad_end(length, fillchar))
     end
+    alias_method :pad_end, :ljust
 
-    # Return the string right justified in a string of length `width`.
+    # Return the string right justified in a string of length `length`.
     #
     # Padding is done using the specified `fillchar`.
-    # The original string is returned if `width` is less than or equal to
+    # The original string is returned if `length` is less than or equal to
     # `s.length`.
     #
-    # @param width [Integer]
+    # @param length [Integer]
     #   Justify right to this length.
     # @param fillchar [String]
     #   Fill with this ASCII character.
@@ -529,9 +524,10 @@ module Polars
     #   # │ null         │
     #   # │ hippopotamus │
     #   # └──────────────┘
-    def rjust(width, fillchar = " ")
-      Utils.wrap_expr(_rbexpr.str_rjust(width, fillchar))
+    def rjust(length, fillchar = " ")
+      Utils.wrap_expr(_rbexpr.str_pad_start(length, fillchar))
     end
+    alias_method :pad_start, :rjust
 
     # Check if string contains a substring that matches a regex.
     #
@@ -945,6 +941,7 @@ module Polars
     #   # │ {"d","4"}   │
     #   # └─────────────┘
     def split_exact(by, n, inclusive: false)
+      by = Utils.parse_as_expression(by, str_as_lit: true)
       if inclusive
         Utils.wrap_expr(_rbexpr.str_split_exact_inclusive(by, n))
       else
@@ -981,6 +978,7 @@ module Polars
     #   # │ {"foo","bar baz"} │
     #   # └───────────────────┘
     def splitn(by, n)
+      by = Utils.parse_as_expression(by, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_splitn(by, n))
     end
 

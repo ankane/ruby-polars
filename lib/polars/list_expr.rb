@@ -27,8 +27,9 @@ module Polars
     #   # │ 1   │
     #   # └─────┘
     def lengths
-      Utils.wrap_expr(_rbexpr.list_lengths)
+      Utils.wrap_expr(_rbexpr.list_len)
     end
+    alias_method :len, :lengths
 
     # Sum all the lists in the array.
     #
@@ -379,6 +380,7 @@ module Polars
     #   # │ x y   │
     #   # └───────┘
     def join(separator)
+      separator = Utils.parse_as_expression(separator, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.list_join(separator))
     end
 
@@ -457,7 +459,7 @@ module Polars
 
     # Shift values by the given period.
     #
-    # @param periods [Integer]
+    # @param n [Integer]
     #   Number of places to shift (may be negative).
     #
     # @return [Expr]
@@ -472,8 +474,9 @@ module Polars
     #   #         [null, 1, … 3]
     #   #         [null, 10, 2]
     #   # ]
-    def shift(periods = 1)
-      Utils.wrap_expr(_rbexpr.list_shift(periods))
+    def shift(n = 1)
+      n = Utils.parse_as_expression(n)
+      Utils.wrap_expr(_rbexpr.list_shift(n))
     end
 
     # Slice every sublist.

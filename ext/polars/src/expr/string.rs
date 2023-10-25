@@ -63,36 +63,48 @@ impl RbExpr {
         self.inner.clone().str().to_time(options).into()
     }
 
-    pub fn str_strip_chars(&self, matches: Option<String>) -> Self {
-        self.inner.clone().str().strip_chars(matches).into()
+    pub fn str_strip_chars(&self, matches: &Self) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .strip_chars(matches.inner.clone())
+            .into()
     }
 
-    pub fn str_strip_chars_start(&self, matches: Option<String>) -> Self {
-        self.inner.clone().str().strip_chars_start(matches).into()
+    pub fn str_strip_chars_start(&self, matches: &Self) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .strip_chars_start(matches.inner.clone())
+            .into()
     }
 
-    pub fn str_strip_chars_end(&self, matches: Option<String>) -> Self {
-        self.inner.clone().str().strip_chars_end(matches).into()
+    pub fn str_strip_chars_end(&self, matches: &Self) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .strip_chars_end(matches.inner.clone())
+            .into()
     }
 
-    pub fn str_strip_prefix(&self, prefix: String) -> Self {
-        self.inner.clone().str().strip_prefix(prefix).into()
+    pub fn str_strip_prefix(&self, prefix: &Self) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .strip_prefix(prefix.inner.clone())
+            .into()
     }
 
-    pub fn str_strip_suffix(&self, suffix: String) -> Self {
-        self.inner.clone().str().strip_suffix(suffix).into()
+    pub fn str_strip_suffix(&self, suffix: &Self) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .strip_suffix(suffix.inner.clone())
+            .into()
     }
 
     pub fn str_slice(&self, start: i64, length: Option<u64>) -> Self {
-        let function = move |s: Series| {
-            let ca = s.utf8()?;
-            Ok(Some(ca.str_slice(start, length)?.into_series()))
-        };
-        self.clone()
-            .inner
-            .map(function, GetOutput::from_type(DataType::Utf8))
-            .with_fmt("str.slice")
-            .into()
+        self.inner.clone().str().slice(start, length).into()
     }
 
     pub fn str_explode(&self) -> Self {
@@ -107,28 +119,12 @@ impl RbExpr {
         self.inner.clone().str().to_lowercase().into()
     }
 
-    pub fn str_lengths(&self) -> Self {
-        let function = |s: Series| {
-            let ca = s.utf8()?;
-            Ok(Some(ca.str_lengths().into_series()))
-        };
-        self.clone()
-            .inner
-            .map(function, GetOutput::from_type(DataType::UInt32))
-            .with_fmt("str.lengths")
-            .into()
+    pub fn str_len_bytes(&self) -> Self {
+        self.inner.clone().str().len_bytes().into()
     }
 
-    pub fn str_n_chars(&self) -> Self {
-        let function = |s: Series| {
-            let ca = s.utf8()?;
-            Ok(Some(ca.str_n_chars().into_series()))
-        };
-        self.clone()
-            .inner
-            .map(function, GetOutput::from_type(DataType::UInt32))
-            .with_fmt("str.n_chars")
-            .into()
+    pub fn str_len_chars(&self) -> Self {
+        self.inner.clone().str().len_chars().into()
     }
 
     pub fn str_replace_n(&self, pat: &RbExpr, val: &RbExpr, literal: bool, n: i64) -> Self {
@@ -147,16 +143,16 @@ impl RbExpr {
             .into()
     }
 
+    pub fn str_pad_start(&self, length: usize, fillchar: char) -> Self {
+        self.clone().inner.str().pad_start(length, fillchar).into()
+    }
+
+    pub fn str_pad_end(&self, length: usize, fillchar: char) -> Self {
+        self.clone().inner.str().pad_end(length, fillchar).into()
+    }
+
     pub fn str_zfill(&self, alignment: usize) -> Self {
         self.clone().inner.str().zfill(alignment).into()
-    }
-
-    pub fn str_ljust(&self, width: usize, fillchar: char) -> Self {
-        self.clone().inner.str().ljust(width, fillchar).into()
-    }
-
-    pub fn str_rjust(&self, width: usize, fillchar: char) -> Self {
-        self.clone().inner.str().rjust(width, fillchar).into()
     }
 
     pub fn str_contains(&self, pat: &RbExpr, literal: Option<bool>, strict: bool) -> Self {
@@ -319,19 +315,23 @@ impl RbExpr {
             .into()
     }
 
-    pub fn str_split_exact(&self, by: String, n: usize) -> Self {
-        self.inner.clone().str().split_exact(&by, n).into()
-    }
-
-    pub fn str_split_exact_inclusive(&self, by: String, n: usize) -> Self {
+    pub fn str_split_exact(&self, by: &Self, n: usize) -> Self {
         self.inner
             .clone()
             .str()
-            .split_exact_inclusive(&by, n)
+            .split_exact(by.inner.clone(), n)
             .into()
     }
 
-    pub fn str_splitn(&self, by: String, n: usize) -> Self {
-        self.inner.clone().str().splitn(&by, n).into()
+    pub fn str_split_exact_inclusive(&self, by: &Self, n: usize) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .split_exact_inclusive(by.inner.clone(), n)
+            .into()
+    }
+
+    pub fn str_splitn(&self, by: &Self, n: usize) -> Self {
+        self.inner.clone().str().splitn(by.inner.clone(), n).into()
     }
 }

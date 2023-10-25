@@ -643,14 +643,6 @@ impl RbSeries {
         Ok(df.into())
     }
 
-    pub fn peak_max(&self) -> Self {
-        self.series.borrow().peak_max().into_series().into()
-    }
-
-    pub fn peak_min(&self) -> Self {
-        self.series.borrow().peak_min().into_series().into()
-    }
-
     pub fn n_unique(&self) -> RbResult<usize> {
         let n = self.series.borrow().n_unique().map_err(RbPolarsErr::from)?;
         Ok(n)

@@ -79,7 +79,7 @@ impl RbLazyFrame {
         // start arguments
         // this pattern is needed for more than 16
         let path = String::try_convert(arguments[0])?;
-        let sep = String::try_convert(arguments[1])?;
+        let separator = String::try_convert(arguments[1])?;
         let has_header = bool::try_convert(arguments[2])?;
         let ignore_errors = bool::try_convert(arguments[3])?;
         let skip_rows = usize::try_convert(arguments[4])?;
@@ -103,7 +103,7 @@ impl RbLazyFrame {
         let null_values = null_values.map(|w| w.0);
         let comment_char = comment_char.map(|s| s.as_bytes()[0]);
         let quote_char = quote_char.map(|s| s.as_bytes()[0]);
-        let delimiter = sep.as_bytes()[0];
+        let separator = separator.as_bytes()[0];
         let eol_char = eol_char.as_bytes()[0];
 
         let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
@@ -116,7 +116,7 @@ impl RbLazyFrame {
         });
         let r = LazyCsvReader::new(path)
             .with_infer_schema_length(infer_schema_length)
-            .with_delimiter(delimiter)
+            .with_separator(separator)
             .has_header(has_header)
             .with_ignore_errors(ignore_errors)
             .with_skip_rows(skip_rows)
@@ -151,6 +151,7 @@ impl RbLazyFrame {
         row_count: Option<(String, IdxSize)>,
         low_memory: bool,
         use_statistics: bool,
+        hive_partitioning: bool,
     ) -> RbResult<Self> {
         let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
         let args = ScanArgsParquet {
@@ -163,6 +164,7 @@ impl RbLazyFrame {
             // TODO support cloud options
             cloud_options: None,
             use_statistics,
+            hive_partitioning,
         };
         let lf = LazyFrame::scan_parquet(path, args).map_err(RbPolarsErr::from)?;
         Ok(lf.into())
@@ -367,11 +369,12 @@ impl RbLazyFrame {
         every: String,
         period: String,
         offset: String,
-        truncate: bool,
+        label: Wrap<Label>,
         include_boundaries: bool,
         closed: Wrap<ClosedWindow>,
         by: RArray,
         start_by: Wrap<StartBy>,
+        check_sorted: bool,
     ) -> RbResult<RbLazyGroupBy> {
         let closed_window = closed.0;
         let by = rb_exprs_to_exprs(by)?;
@@ -383,10 +386,11 @@ impl RbLazyFrame {
                 every: Duration::parse(&every),
                 period: Duration::parse(&period),
                 offset: Duration::parse(&offset),
-                truncate,
+                label: label.0,
                 include_boundaries,
                 closed_window,
                 start_by: start_by.0,
+                check_sorted,
                 ..Default::default()
             },
         );

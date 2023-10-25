@@ -50,12 +50,12 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(crate::functions::lazy::dtype_cols2, 1),
     )?;
     module.define_singleton_method(
-        "_diag_concat_lf",
-        function!(crate::functions::lazy::diag_concat_lf, 3),
+        "_concat_lf_diagonal",
+        function!(crate::functions::lazy::concat_lf_diagonal, 4),
     )?;
     module.define_singleton_method(
         "_rb_duration",
-        function!(crate::functions::lazy::duration, 8),
+        function!(crate::functions::lazy::duration, 9),
     )?;
     module.define_singleton_method(
         "_concat_df",
@@ -66,12 +66,12 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(crate::functions::lazy::concat_lf, 4),
     )?;
     module.define_singleton_method(
-        "_diag_concat_df",
-        function!(crate::functions::eager::diag_concat_df, 1),
+        "_concat_df_diagonal",
+        function!(crate::functions::eager::concat_df_diagonal, 1),
     )?;
     module.define_singleton_method(
-        "_hor_concat_df",
-        function!(crate::functions::eager::hor_concat_df, 1),
+        "_concat_df_horizontal",
+        function!(crate::functions::eager::concat_df_horizontal, 1),
     )?;
     module.define_singleton_method(
         "_concat_series",
@@ -139,11 +139,15 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     module.define_singleton_method(
         "_enable_string_cache",
-        function!(crate::functions::meta::enable_string_cache, 1),
+        function!(crate::functions::string_cache::enable_string_cache, 0),
+    )?;
+    module.define_singleton_method(
+        "_disable_string_cache",
+        function!(crate::functions::string_cache::disable_string_cache, 0),
     )?;
     module.define_singleton_method(
         "_using_string_cache",
-        function!(crate::functions::meta::using_string_cache, 0),
+        function!(crate::functions::string_cache::using_string_cache, 0),
     )?;
     module.define_singleton_method(
         "_set_float_fmt",
@@ -312,6 +316,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arg_sort", method!(RbExpr::arg_sort, 2))?;
     class.define_method("top_k", method!(RbExpr::top_k, 1))?;
     class.define_method("bottom_k", method!(RbExpr::bottom_k, 1))?;
+    class.define_method("peak_min", method!(RbExpr::peak_min, 0))?;
+    class.define_method("peak_max", method!(RbExpr::peak_max, 0))?;
     class.define_method("arg_max", method!(RbExpr::arg_max, 0))?;
     class.define_method("arg_min", method!(RbExpr::arg_min, 0))?;
     class.define_method("search_sorted", method!(RbExpr::search_sorted, 2))?;
@@ -348,8 +354,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("floor", method!(RbExpr::floor, 0))?;
     class.define_method("ceil", method!(RbExpr::ceil, 0))?;
     class.define_method("clip", method!(RbExpr::clip, 2))?;
-    class.define_method("clip_min", method!(RbExpr::clip_min, 1))?;
-    class.define_method("clip_max", method!(RbExpr::clip_max, 1))?;
     class.define_method("abs", method!(RbExpr::abs, 0))?;
     class.define_method("sin", method!(RbExpr::sin, 0))?;
     class.define_method("cos", method!(RbExpr::cos, 0))?;
@@ -396,13 +400,13 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_explode", method!(RbExpr::str_explode, 0))?;
     class.define_method("str_to_uppercase", method!(RbExpr::str_to_uppercase, 0))?;
     class.define_method("str_to_lowercase", method!(RbExpr::str_to_lowercase, 0))?;
-    class.define_method("str_lengths", method!(RbExpr::str_lengths, 0))?;
-    class.define_method("str_n_chars", method!(RbExpr::str_n_chars, 0))?;
+    class.define_method("str_len_bytes", method!(RbExpr::str_len_bytes, 0))?;
+    class.define_method("str_len_chars", method!(RbExpr::str_len_chars, 0))?;
     class.define_method("str_replace_n", method!(RbExpr::str_replace_n, 4))?;
     class.define_method("str_replace_all", method!(RbExpr::str_replace_all, 3))?;
     class.define_method("str_zfill", method!(RbExpr::str_zfill, 1))?;
-    class.define_method("str_ljust", method!(RbExpr::str_ljust, 2))?;
-    class.define_method("str_rjust", method!(RbExpr::str_rjust, 2))?;
+    class.define_method("str_pad_start", method!(RbExpr::str_pad_start, 2))?;
+    class.define_method("str_pad_end", method!(RbExpr::str_pad_end, 2))?;
     class.define_method("str_contains", method!(RbExpr::str_contains, 3))?;
     class.define_method("str_ends_with", method!(RbExpr::str_ends_with, 1))?;
     class.define_method("str_starts_with", method!(RbExpr::str_starts_with, 1))?;
@@ -447,7 +451,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbExpr::str_split_exact_inclusive, 2),
     )?;
     class.define_method("str_splitn", method!(RbExpr::str_splitn, 2))?;
-    class.define_method("list_lengths", method!(RbExpr::list_lengths, 0))?;
+    class.define_method("list_len", method!(RbExpr::list_len, 0))?;
     class.define_method("list_contains", method!(RbExpr::list_contains, 1))?;
     class.define_method("list_count_matches", method!(RbExpr::list_count_matches, 1))?;
     class.define_method("year", method!(RbExpr::dt_year, 0))?;
@@ -500,16 +504,12 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("dt_truncate", method!(RbExpr::dt_truncate, 3))?;
     class.define_method("dt_month_start", method!(RbExpr::dt_month_start, 0))?;
     class.define_method("dt_month_end", method!(RbExpr::dt_month_end, 0))?;
-    class.define_method("dt_round", method!(RbExpr::dt_round, 2))?;
+    class.define_method("dt_round", method!(RbExpr::dt_round, 3))?;
     class.define_method("dt_combine", method!(RbExpr::dt_combine, 2))?;
     class.define_method("map", method!(RbExpr::map, 3))?;
     class.define_method("dot", method!(RbExpr::dot, 1))?;
     class.define_method("reinterpret", method!(RbExpr::reinterpret, 1))?;
     class.define_method("mode", method!(RbExpr::mode, 0))?;
-    class.define_method("keep_name", method!(RbExpr::keep_name, 0))?;
-    class.define_method("prefix", method!(RbExpr::prefix, 1))?;
-    class.define_method("suffix", method!(RbExpr::suffix, 1))?;
-    class.define_method("map_alias", method!(RbExpr::map_alias, 1))?;
     class.define_method("exclude", method!(RbExpr::exclude, 1))?;
     class.define_method("interpolate", method!(RbExpr::interpolate, 1))?;
     class.define_method("rolling_sum", method!(RbExpr::rolling_sum, 6))?;
@@ -593,6 +593,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbExpr::meta_is_regex_projection, 0),
     )?;
 
+    // name
+    class.define_method("name_keep", method!(RbExpr::name_keep, 0))?;
+    class.define_method("name_map", method!(RbExpr::name_map, 1))?;
+    class.define_method("name_prefix", method!(RbExpr::name_prefix, 1))?;
+    class.define_method("name_suffix", method!(RbExpr::name_suffix, 1))?;
+    class.define_method("name_to_lowercase", method!(RbExpr::name_to_lowercase, 0))?;
+    class.define_method("name_to_uppercase", method!(RbExpr::name_to_uppercase, 0))?;
+
     // maybe add to different class
     class.define_singleton_method("col", function!(crate::functions::lazy::col, 1))?;
     class.define_singleton_method("count", function!(crate::functions::lazy::count, 0))?;
@@ -643,7 +651,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("new_from_csv", function!(RbLazyFrame::new_from_csv, -1))?;
     class.define_singleton_method(
         "new_from_parquet",
-        function!(RbLazyFrame::new_from_parquet, 8),
+        function!(RbLazyFrame::new_from_parquet, 9),
     )?;
     class.define_singleton_method("new_from_ipc", function!(RbLazyFrame::new_from_ipc, 6))?;
     class.define_method("write_json", method!(RbLazyFrame::write_json, 1))?;
@@ -671,7 +679,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method(
         "group_by_dynamic",
-        method!(RbLazyFrame::group_by_dynamic, 9),
+        method!(RbLazyFrame::group_by_dynamic, 10),
     )?;
     class.define_method("with_context", method!(RbLazyFrame::with_context, 1))?;
     class.define_method("join_asof", method!(RbLazyFrame::join_asof, 11))?;
@@ -800,8 +808,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("apply_lambda", method!(RbSeries::apply_lambda, 3))?;
     class.define_method("zip_with", method!(RbSeries::zip_with, 2))?;
     class.define_method("to_dummies", method!(RbSeries::to_dummies, 2))?;
-    class.define_method("peak_max", method!(RbSeries::peak_max, 0))?;
-    class.define_method("peak_min", method!(RbSeries::peak_min, 0))?;
     class.define_method("n_unique", method!(RbSeries::n_unique, 0))?;
     class.define_method("floor", method!(RbSeries::floor, 0))?;
     class.define_method("shrink_to_fit", method!(RbSeries::shrink_to_fit, 0))?;

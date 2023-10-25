@@ -408,21 +408,21 @@ module Polars
     #   # │ 18  ┆ 4   │
     #   # └─────┴─────┘
     def keep_name
-      wrap_expr(_rbexpr.keep_name)
+      name.keep
     end
 
     # Add a prefix to the root column name of the expression.
     #
     # @return [Expr]
     def prefix(prefix)
-      wrap_expr(_rbexpr.prefix(prefix))
+      name.prefix(prefix)
     end
 
     # Add a suffix to the root column name of the expression.
     #
     # @return [Expr]
     def suffix(suffix)
-      wrap_expr(_rbexpr.suffix(suffix))
+      name.suffix(suffix)
     end
 
     # Rename the output of an expression by mapping a function over the root name.
@@ -450,7 +450,7 @@ module Polars
     #   # │ 1         ┆ 3         │
     #   # └───────────┴───────────┘
     def map_alias(&f)
-      Utils.wrap_expr(_rbexpr.map_alias(f))
+      name.map(&f)
     end
 
     # Negate a boolean expression.
@@ -1344,6 +1344,7 @@ module Polars
     #   # │ 2     ┆ 98       │
     #   # └───────┴──────────┘
     def top_k(k: 5)
+      k = Utils.parse_as_expression(k)
       wrap_expr(_rbexpr.top_k(k))
     end
 
@@ -1382,6 +1383,7 @@ module Polars
     #   # │ 2     ┆ 98       │
     #   # └───────┴──────────┘
     def bottom_k(k: 5)
+      k = Utils.parse_as_expression(k)
       wrap_expr(_rbexpr.bottom_k(k))
     end
 
@@ -1573,17 +1575,17 @@ module Polars
     #       "value" => [1, 98, 2, 3, 99, 4]
     #     }
     #   )
-    #   df.groupby("group", maintain_order: true).agg(Polars.col("value").take(1))
+    #   df.group_by("group", maintain_order: true).agg(Polars.col("value").take([2, 1]))
     #   # =>
     #   # shape: (2, 2)
-    #   # ┌───────┬───────┐
-    #   # │ group ┆ value │
-    #   # │ ---   ┆ ---   │
-    #   # │ str   ┆ i64   │
-    #   # ╞═══════╪═══════╡
-    #   # │ one   ┆ 98    │
-    #   # │ two   ┆ 99    │
-    #   # └───────┴───────┘
+    #   # ┌───────┬───────────┐
+    #   # │ group ┆ value     │
+    #   # │ ---   ┆ ---       │
+    #   # │ str   ┆ list[i64] │
+    #   # ╞═══════╪═══════════╡
+    #   # │ one   ┆ [2, 98]   │
+    #   # │ two   ┆ [4, 99]   │
+    #   # └───────┴───────────┘
     def take(indices)
       if indices.is_a?(::Array)
         indices_lit = Polars.lit(Series.new("", indices, dtype: :u32))
@@ -2343,6 +2345,54 @@ module Polars
       wrap_expr(_rbexpr.is_duplicated)
     end
 
+    # Get a boolean mask of the local maximum peaks.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4, 5]})
+    #   df.select(Polars.col("a").peak_max)
+    #   # =>
+    #   # shape: (5, 1)
+    #   # ┌───────┐
+    #   # │ a     │
+    #   # │ ---   │
+    #   # │ bool  │
+    #   # ╞═══════╡
+    #   # │ false │
+    #   # │ false │
+    #   # │ false │
+    #   # │ false │
+    #   # │ true  │
+    #   # └───────┘
+    def peak_max
+      wrap_expr(_rbexpr.peak_max)
+    end
+
+    # Get a boolean mask of the local minimum peaks.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [4, 1, 3, 2, 5]})
+    #   df.select(Polars.col("a").peak_min)
+    #   # =>
+    #   # shape: (5, 1)
+    #   # ┌───────┐
+    #   # │ a     │
+    #   # │ ---   │
+    #   # │ bool  │
+    #   # ╞═══════╡
+    #   # │ false │
+    #   # │ true  │
+    #   # │ false │
+    #   # │ true  │
+    #   # │ false │
+    #   # └───────┘
+    def peak_min
+      wrap_expr(_rbexpr.peak_min)
+    end
+
     # Get quantile value.
     #
     # @param quantile [Float]
@@ -3065,11 +3115,11 @@ module Polars
     #   # ┌─────┬─────┐
     #   # │ a   ┆ b   │
     #   # │ --- ┆ --- │
-    #   # │ i64 ┆ f64 │
+    #   # │ f64 ┆ f64 │
     #   # ╞═════╪═════╡
-    #   # │ 1   ┆ 1.0 │
-    #   # │ 2   ┆ NaN │
-    #   # │ 3   ┆ 3.0 │
+    #   # │ 1.0 ┆ 1.0 │
+    #   # │ 2.0 ┆ NaN │
+    #   # │ 3.0 ┆ 3.0 │
     #   # └─────┴─────┘
     def interpolate(method: "linear")
       wrap_expr(_rbexpr.interpolate(method))
@@ -4049,6 +4099,7 @@ module Polars
     #   # │ 12   ┆ 0.0        │
     #   # └──────┴────────────┘
     def pct_change(n: 1)
+      n = Utils.parse_as_expression(n)
       wrap_expr(_rbexpr.pct_change(n))
     end
 
@@ -4113,16 +4164,14 @@ module Polars
       wrap_expr(_rbexpr.kurtosis(fisher, bias))
     end
 
-    # Clip (limit) the values in an array to a `min` and `max` boundary.
+    # Set values outside the given boundaries to the boundary value.
     #
-    # Only works for numerical types.
+    # Only works for numeric and temporal columns. If you want to clip other data
+    # types, consider writing a `when-then-otherwise` expression.
     #
-    # If you want to clip other dtypes, consider writing a "when, then, otherwise"
-    # expression. See `when` for more information.
-    #
-    # @param min_val [Numeric]
+    # @param lower_bound [Numeric]
     #   Minimum value.
-    # @param max_val [Numeric]
+    # @param upper_bound [Numeric]
     #   Maximum value.
     #
     # @return [Expr]
@@ -4142,8 +4191,14 @@ module Polars
     #   # │ null ┆ null        │
     #   # │ 50   ┆ 10          │
     #   # └──────┴─────────────┘
-    def clip(min_val, max_val)
-      wrap_expr(_rbexpr.clip(min_val, max_val))
+    def clip(lower_bound, upper_bound)
+      if !lower_bound.nil?
+        lower_bound = Utils.parse_as_expression(lower_bound, str_as_lit: true)
+      end
+      if !upper_bound.nil?
+        upper_bound = Utils.parse_as_expression(upper_bound, str_as_lit: true)
+      end
+      wrap_expr(_rbexpr.clip(lower_bound, upper_bound))
     end
 
     # Clip (limit) the values in an array to a `min` boundary.
@@ -4153,7 +4208,7 @@ module Polars
     # If you want to clip other dtypes, consider writing a "when, then, otherwise"
     # expression. See `when` for more information.
     #
-    # @param min_val [Numeric]
+    # @param lower_bound [Numeric]
     #   Minimum value.
     #
     # @return [Expr]
@@ -4173,8 +4228,8 @@ module Polars
     #   # │ null ┆ null        │
     #   # │ 50   ┆ 50          │
     #   # └──────┴─────────────┘
-    def clip_min(min_val)
-      wrap_expr(_rbexpr.clip_min(min_val))
+    def clip_min(lower_bound)
+      clip(lower_bound, nil)
     end
 
     # Clip (limit) the values in an array to a `max` boundary.
@@ -4184,7 +4239,7 @@ module Polars
     # If you want to clip other dtypes, consider writing a "when, then, otherwise"
     # expression. See `when` for more information.
     #
-    # @param max_val [Numeric]
+    # @param upper_bound [Numeric]
     #   Maximum value.
     #
     # @return [Expr]
@@ -4204,8 +4259,8 @@ module Polars
     #   # │ null ┆ null        │
     #   # │ 50   ┆ 0           │
     #   # └──────┴─────────────┘
-    def clip_max(max_val)
-      wrap_expr(_rbexpr.clip_max(max_val))
+    def clip_max(upper_bound)
+      clip(nil, upper_bound)
     end
 
     # Calculate the lower bound.
@@ -4615,12 +4670,14 @@ module Polars
       end
 
       if !n.nil? && frac.nil?
+        n = Utils.parse_as_expression(n)
         return wrap_expr(_rbexpr.sample_n(n, with_replacement, shuffle, seed))
       end
 
       if frac.nil?
         frac = 1.0
       end
+      frac = Utils.parse_as_expression(frac)
       wrap_expr(
         _rbexpr.sample_frac(frac, with_replacement, shuffle, seed)
       )
@@ -5062,6 +5119,13 @@ module Polars
     # @return [MetaExpr]
     def meta
       MetaExpr.new(self)
+    end
+
+    # Create an object namespace of all expressions that modify expression names.
+    #
+    # @return [NameExpr]
+    def name
+      NameExpr.new(self)
     end
 
     # Create an object namespace of all string related methods.

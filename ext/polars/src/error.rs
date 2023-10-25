@@ -1,6 +1,5 @@
 use magnus::exception;
 use magnus::Error;
-use polars::error::ArrowError;
 use polars::prelude::PolarsError;
 
 pub struct RbPolarsErr {}
@@ -8,10 +7,6 @@ pub struct RbPolarsErr {}
 impl RbPolarsErr {
     // convert to Error instead of Self
     pub fn from(e: PolarsError) -> Error {
-        Error::new(exception::runtime_error(), e.to_string())
-    }
-
-    pub fn arrow(e: ArrowError) -> Error {
         Error::new(exception::runtime_error(), e.to_string())
     }
 

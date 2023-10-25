@@ -144,7 +144,7 @@ class TypesTest < Minitest::Test
     error = assert_raises do
       Polars::Series.new([[1, 2], [3, 4]], dtype: Polars::Array.new(3, Polars::Int64))
     end
-    assert_equal "Invalid argument error: incompatible offsets in source list", error.message
+    assert_equal "incompatible offsets in source list", error.message
   end
 
   def test_series_dtype_struct

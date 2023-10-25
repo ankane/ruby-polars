@@ -15,14 +15,6 @@ pub fn threadpool_size() -> usize {
     POOL.current_num_threads()
 }
 
-pub fn enable_string_cache(toggle: bool) {
-    polars_core::enable_string_cache(toggle)
-}
-
-pub fn using_string_cache() -> bool {
-    polars_core::using_string_cache()
-}
-
 pub fn set_float_fmt(fmt: String) -> RbResult<()> {
     let fmt = match fmt.as_str() {
         "full" => FloatFmt::Full,

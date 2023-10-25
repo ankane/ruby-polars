@@ -1,4 +1,4 @@
-use magnus::{block::Proc, prelude::*, value::Opaque, IntoValue, RArray, Ruby, Value};
+use magnus::{prelude::*, value::Opaque, IntoValue, RArray, Ruby, Value};
 use polars::lazy::dsl;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
@@ -219,12 +219,20 @@ impl RbExpr {
             .into()
     }
 
-    pub fn top_k(&self, k: usize) -> Self {
-        self.inner.clone().top_k(k).into()
+    pub fn top_k(&self, k: &Self) -> Self {
+        self.inner.clone().top_k(k.inner.clone()).into()
     }
 
-    pub fn bottom_k(&self, k: usize) -> Self {
-        self.inner.clone().bottom_k(k).into()
+    pub fn bottom_k(&self, k: &Self) -> Self {
+        self.inner.clone().bottom_k(k.inner.clone()).into()
+    }
+
+    pub fn peak_min(&self) -> Self {
+        self.inner.clone().peak_min().into()
+    }
+
+    pub fn peak_max(&self) -> Self {
+        self.inner.clone().peak_max().into()
     }
 
     pub fn arg_max(&self) -> Self {
@@ -390,20 +398,15 @@ impl RbExpr {
         self.clone().inner.ceil().into()
     }
 
-    pub fn clip(&self, min: Value, max: Value) -> Self {
-        let min = Wrap::<AnyValue>::try_convert(min).unwrap().0;
-        let max = Wrap::<AnyValue>::try_convert(max).unwrap().0;
-        self.clone().inner.clip(min, max).into()
-    }
-
-    pub fn clip_min(&self, min: Value) -> Self {
-        let min = Wrap::<AnyValue>::try_convert(min).unwrap().0;
-        self.clone().inner.clip_min(min).into()
-    }
-
-    pub fn clip_max(&self, max: Value) -> Self {
-        let max = Wrap::<AnyValue>::try_convert(max).unwrap().0;
-        self.clone().inner.clip_max(max).into()
+    pub fn clip(&self, min: Option<&Self>, max: Option<&Self>) -> Self {
+        let expr = self.inner.clone();
+        let out = match (min, max) {
+            (Some(min), Some(max)) => expr.clip(min.inner.clone(), max.inner.clone()),
+            (Some(min), None) => expr.clip_min(min.inner.clone()),
+            (None, Some(max)) => expr.clip_max(max.inner.clone()),
+            (None, None) => expr,
+        };
+        out.into()
     }
 
     pub fn abs(&self) -> Self {
@@ -544,35 +547,6 @@ impl RbExpr {
         self.inner.clone().mode().into()
     }
 
-    pub fn keep_name(&self) -> Self {
-        self.inner.clone().keep_name().into()
-    }
-
-    pub fn prefix(&self, prefix: String) -> Self {
-        self.inner.clone().prefix(&prefix).into()
-    }
-
-    pub fn suffix(&self, suffix: String) -> Self {
-        self.inner.clone().suffix(&suffix).into()
-    }
-
-    pub fn map_alias(&self, lambda: Proc) -> Self {
-        let lambda = Opaque::from(lambda);
-        self.inner
-            .clone()
-            .map_alias(move |name| {
-                let lambda = Ruby::get().unwrap().get_inner(lambda);
-                let out = lambda.call::<_, String>((name,));
-                match out {
-                    Ok(out) => Ok(out),
-                    Err(e) => Err(PolarsError::ComputeError(
-                        format!("Ruby function in 'map_alias' produced an error: {}.", e).into(),
-                    )),
-                }
-            })
-            .into()
-    }
-
     pub fn exclude(&self, columns: Vec<String>) -> Self {
         self.inner.clone().exclude(columns).into()
     }
@@ -608,8 +582,8 @@ impl RbExpr {
         self.inner.clone().diff(n, null_behavior.0).into()
     }
 
-    pub fn pct_change(&self, n: i64) -> Self {
-        self.inner.clone().pct_change(n).into()
+    pub fn pct_change(&self, n: &Self) -> Self {
+        self.inner.clone().pct_change(n.inner.clone()).into()
     }
 
     pub fn skew(&self, bias: bool) -> Self {
@@ -645,27 +619,27 @@ impl RbExpr {
 
     pub fn sample_n(
         &self,
-        n: usize,
+        n: &Self,
         with_replacement: bool,
         shuffle: bool,
         seed: Option<u64>,
     ) -> Self {
         self.inner
             .clone()
-            .sample_n(n, with_replacement, shuffle, seed)
+            .sample_n(n.inner.clone(), with_replacement, shuffle, seed)
             .into()
     }
 
     pub fn sample_frac(
         &self,
-        frac: f64,
+        frac: &Self,
         with_replacement: bool,
         shuffle: bool,
         seed: Option<u64>,
     ) -> Self {
         self.inner
             .clone()
-            .sample_frac(frac, with_replacement, shuffle, seed)
+            .sample_frac(frac.inner.clone(), with_replacement, shuffle, seed)
             .into()
     }
 

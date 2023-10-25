@@ -47,12 +47,16 @@ impl RbExpr {
         self.inner.clone().list().get(index.inner.clone()).into()
     }
 
-    pub fn list_join(&self, separator: String) -> Self {
-        self.inner.clone().list().join(&separator).into()
+    pub fn list_join(&self, separator: &RbExpr) -> Self {
+        self.inner
+            .clone()
+            .list()
+            .join(separator.inner.clone())
+            .into()
     }
 
-    pub fn list_lengths(&self) -> Self {
-        self.inner.clone().list().lengths().into()
+    pub fn list_len(&self) -> Self {
+        self.inner.clone().list().len().into()
     }
 
     pub fn list_max(&self) -> Self {
@@ -76,8 +80,12 @@ impl RbExpr {
         self.inner.clone().list().reverse().into()
     }
 
-    pub fn list_shift(&self, periods: i64) -> Self {
-        self.inner.clone().list().shift(periods).into()
+    pub fn list_shift(&self, periods: &RbExpr) -> Self {
+        self.inner
+            .clone()
+            .list()
+            .shift(periods.inner.clone())
+            .into()
     }
 
     pub fn list_slice(&self, offset: &RbExpr, length: Option<&RbExpr>) -> Self {

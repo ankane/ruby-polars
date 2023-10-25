@@ -8,7 +8,7 @@ use crate::{RbPolarsErr, RbResult};
 pub fn read_ipc_schema(rb_f: Value) -> RbResult<RHash> {
     use polars_core::export::arrow::io::ipc::read::read_file_metadata;
     let mut r = get_file_like(rb_f, false)?;
-    let metadata = read_file_metadata(&mut r).map_err(RbPolarsErr::arrow)?;
+    let metadata = read_file_metadata(&mut r).map_err(RbPolarsErr::from)?;
 
     let dict = RHash::new();
     for field in metadata.schema.fields {
@@ -22,8 +22,8 @@ pub fn read_parquet_schema(rb_f: Value) -> RbResult<RHash> {
     use polars_core::export::arrow::io::parquet::read::{infer_schema, read_metadata};
 
     let mut r = get_file_like(rb_f, false)?;
-    let metadata = read_metadata(&mut r).map_err(RbPolarsErr::arrow)?;
-    let arrow_schema = infer_schema(&metadata).map_err(RbPolarsErr::arrow)?;
+    let metadata = read_metadata(&mut r).map_err(RbPolarsErr::from)?;
+    let arrow_schema = infer_schema(&metadata).map_err(RbPolarsErr::from)?;
 
     let dict = RHash::new();
     for field in arrow_schema.fields {

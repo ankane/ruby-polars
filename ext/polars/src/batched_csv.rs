@@ -31,7 +31,7 @@ impl RbBatchedCsv {
         let n_rows = Option::<usize>::try_convert(arguments[4])?;
         let skip_rows = usize::try_convert(arguments[5])?;
         let projection = Option::<Vec<usize>>::try_convert(arguments[6])?;
-        let sep = String::try_convert(arguments[7])?;
+        let separator = String::try_convert(arguments[7])?;
         let rechunk = bool::try_convert(arguments[8])?;
         let columns = Option::<Vec<String>>::try_convert(arguments[9])?;
         let encoding = Wrap::<CsvEncoding>::try_convert(arguments[10])?;
@@ -90,7 +90,7 @@ impl RbBatchedCsv {
             .infer_schema(infer_schema_length)
             .has_header(has_header)
             .with_n_rows(n_rows)
-            .with_delimiter(sep.as_bytes()[0])
+            .with_separator(separator.as_bytes()[0])
             .with_skip_rows(skip_rows)
             .with_ignore_errors(ignore_errors)
             .with_projection(projection)

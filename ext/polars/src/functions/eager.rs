@@ -50,20 +50,20 @@ pub fn concat_series(seq: RArray) -> RbResult<RbSeries> {
     Ok(s.into())
 }
 
-pub fn diag_concat_df(seq: RArray) -> RbResult<RbDataFrame> {
+pub fn concat_df_diagonal(seq: RArray) -> RbResult<RbDataFrame> {
     let mut dfs = Vec::new();
     for item in seq.each() {
         dfs.push(get_df(item?)?);
     }
-    let df = functions::diag_concat_df(&dfs).map_err(RbPolarsErr::from)?;
+    let df = functions::concat_df_diagonal(&dfs).map_err(RbPolarsErr::from)?;
     Ok(df.into())
 }
 
-pub fn hor_concat_df(seq: RArray) -> RbResult<RbDataFrame> {
+pub fn concat_df_horizontal(seq: RArray) -> RbResult<RbDataFrame> {
     let mut dfs = Vec::new();
     for item in seq.each() {
         dfs.push(get_df(item?)?);
     }
-    let df = functions::hor_concat_df(&dfs).map_err(RbPolarsErr::from)?;
+    let df = functions::concat_df_horizontal(&dfs).map_err(RbPolarsErr::from)?;
     Ok(df.into())
 }

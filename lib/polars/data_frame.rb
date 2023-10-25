@@ -4282,15 +4282,20 @@ module Polars
       end
 
       if n.nil? && !frac.nil?
+        frac = Series.new("frac", [frac]) unless frac.is_a?(Series)
+
         _from_rbdf(
-          _df.sample_frac(frac, with_replacement, shuffle, seed)
+          _df.sample_frac(frac._s, with_replacement, shuffle, seed)
         )
       end
 
       if n.nil?
         n = 1
       end
-      _from_rbdf(_df.sample_n(n, with_replacement, shuffle, seed))
+
+      n = Series.new("", [n]) unless n.is_a?(Series)
+
+      _from_rbdf(_df.sample_n(n._s, with_replacement, shuffle, seed))
     end
 
     # Apply a horizontal reduction on a DataFrame.
@@ -4659,16 +4664,16 @@ module Polars
     #   df.interpolate
     #   # =>
     #   # shape: (4, 3)
-    #   # ┌─────┬──────┬─────┐
-    #   # │ foo ┆ bar  ┆ baz │
-    #   # │ --- ┆ ---  ┆ --- │
-    #   # │ i64 ┆ i64  ┆ i64 │
-    #   # ╞═════╪══════╪═════╡
-    #   # │ 1   ┆ 6    ┆ 1   │
-    #   # │ 5   ┆ 7    ┆ 3   │
-    #   # │ 9   ┆ 9    ┆ 6   │
-    #   # │ 10  ┆ null ┆ 9   │
-    #   # └─────┴──────┴─────┘
+    #   # ┌──────┬──────┬──────────┐
+    #   # │ foo  ┆ bar  ┆ baz      │
+    #   # │ ---  ┆ ---  ┆ ---      │
+    #   # │ f64  ┆ f64  ┆ f64      │
+    #   # ╞══════╪══════╪══════════╡
+    #   # │ 1.0  ┆ 6.0  ┆ 1.0      │
+    #   # │ 5.0  ┆ 7.0  ┆ 3.666667 │
+    #   # │ 9.0  ┆ 9.0  ┆ 6.333333 │
+    #   # │ 10.0 ┆ null ┆ 9.0      │
+    #   # └──────┴──────┴──────────┘
     def interpolate
       select(Utils.col("*").interpolate)
     end

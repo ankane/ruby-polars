@@ -97,7 +97,8 @@ module Polars
       row_count_offset: 0,
       storage_options: nil,
       low_memory: false,
-      use_statistics: true
+      use_statistics: true,
+      hive_partitioning: true
     )
       _from_rbldf(
         RbLazyFrame.new_from_parquet(
@@ -108,7 +109,8 @@ module Polars
           rechunk,
           Utils._prepare_row_count_args(row_count_name, row_count_offset),
           low_memory,
-          use_statistics
+          use_statistics,
+          hive_partitioning
         )
       )
     end
@@ -1040,7 +1042,7 @@ module Polars
     # - "1i"      # length 1
     # - "10i"     # length 10
     #
-    # @param index_column
+    # @param index_column [Object]
     #   Column used to group based on the time window.
     #   Often to type Date/Datetime
     #   This column must be sorted in ascending order. If not the output will not
@@ -1049,23 +1051,29 @@ module Polars
     #   In case of a dynamic groupby on indices, dtype needs to be one of
     #   `:i32`, `:i64`. Note that `:i32` gets temporarily cast to `:i64`, so if
     #   performance matters use an `:i64` column.
-    # @param every
+    # @param every [Object]
     #   Interval of the window.
-    # @param period
+    # @param period [Object]
     #   Length of the window, if None it is equal to 'every'.
-    # @param offset
+    # @param offset [Object]
     #   Offset of the window if None and period is None it will be equal to negative
     #   `every`.
-    # @param truncate
+    # @param truncate [Boolean]
     #   Truncate the time value to the window lower bound.
-    # @param include_boundaries
+    # @param include_boundaries [Boolean]
     #   Add the lower and upper bound of the window to the "_lower_bound" and
     #   "_upper_bound" columns. This will impact performance because it's harder to
     #   parallelize
     # @param closed ["right", "left", "both", "none"]
     #   Define whether the temporal window interval is closed or not.
-    # @param by
+    # @param by [Object]
     #   Also group by this column/these columns
+    # @param check_sorted [Boolean]
+    #   When the `by` argument is given, polars can not check sortedness
+    #   by the metadata and has to do a full scan on the index column to
+    #   verify data is sorted. This is expensive. If you are sure the
+    #   data within the by groups is sorted, you can set this to `false`.
+    #   Doing so incorrectly will lead to incorrect output.
     #
     # @return [DataFrame]
     #
@@ -1235,12 +1243,18 @@ module Polars
       every:,
       period: nil,
       offset: nil,
-      truncate: true,
+      truncate: nil,
       include_boundaries: false,
       closed: "left",
+      label: "left",
       by: nil,
-      start_by: "window"
+      start_by: "window",
+      check_sorted: true
     )
+      if !truncate.nil?
+        label = truncate ? "left" : "datapoint"
+      end
+
       index_column = Utils.expr_to_lit_or_expr(index_column, str_to_lit: false)
       if offset.nil?
         offset = period.nil? ? "-#{every}" : "0ns"
@@ -1260,11 +1274,12 @@ module Polars
         every,
         period,
         offset,
-        truncate,
+        label,
         include_boundaries,
         closed,
         rbexprs_by,
-        start_by
+        start_by,
+        check_sorted
       )
       LazyGroupBy.new(lgb)
     end
@@ -2374,16 +2389,16 @@ module Polars
     #   df.interpolate.collect
     #   # =>
     #   # shape: (4, 3)
-    #   # ┌─────┬──────┬─────┐
-    #   # │ foo ┆ bar  ┆ baz │
-    #   # │ --- ┆ ---  ┆ --- │
-    #   # │ i64 ┆ i64  ┆ i64 │
-    #   # ╞═════╪══════╪═════╡
-    #   # │ 1   ┆ 6    ┆ 1   │
-    #   # │ 5   ┆ 7    ┆ 3   │
-    #   # │ 9   ┆ 9    ┆ 6   │
-    #   # │ 10  ┆ null ┆ 9   │
-    #   # └─────┴──────┴─────┘
+    #   # ┌──────┬──────┬──────────┐
+    #   # │ foo  ┆ bar  ┆ baz      │
+    #   # │ ---  ┆ ---  ┆ ---      │
+    #   # │ f64  ┆ f64  ┆ f64      │
+    #   # ╞══════╪══════╪══════════╡
+    #   # │ 1.0  ┆ 6.0  ┆ 1.0      │
+    #   # │ 5.0  ┆ 7.0  ┆ 3.666667 │
+    #   # │ 9.0  ┆ 9.0  ┆ 6.333333 │
+    #   # │ 10.0 ┆ null ┆ 9.0      │
+    #   # └──────┴──────┴──────────┘
     def interpolate
       select(Utils.col("*").interpolate)
     end

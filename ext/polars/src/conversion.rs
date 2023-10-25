@@ -14,6 +14,7 @@ use polars::frame::NullStrategy;
 use polars::io::avro::AvroCompression;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
+use polars_core::utils::arrow::util::total_ord::TotalEq;
 use smartstring::alias::String as SmartString;
 
 use crate::object::OBJECT_NAME;
@@ -655,6 +656,12 @@ impl PartialEq for ObjectValue {
     }
 }
 
+impl TotalEq for ObjectValue {
+    fn tot_eq(&self, other: &Self) -> bool {
+        self == other
+    }
+}
+
 impl Display for ObjectValue {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.to_object())
@@ -894,6 +901,22 @@ impl TryConvert for Wrap<JoinType> {
                 "how must be one of {{'inner', 'left', 'outer', 'semi', 'anti', 'cross'}}, got {}",
                 v
             )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<Label> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "left" => Label::Left,
+            "right" => Label::Right,
+            "datapoint" => Label::DataPoint,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "`label` must be one of {{'left', 'right', 'datapoint'}}, got {v}",
+                )))
             }
         };
         Ok(Wrap(parsed))

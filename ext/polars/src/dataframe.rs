@@ -110,7 +110,7 @@ impl RbDataFrame {
         let n_rows = Option::<usize>::try_convert(arguments[5])?;
         let skip_rows = usize::try_convert(arguments[6])?;
         let projection = Option::<Vec<usize>>::try_convert(arguments[7])?;
-        let sep = String::try_convert(arguments[8])?;
+        let separator = String::try_convert(arguments[8])?;
         let rechunk = bool::try_convert(arguments[9])?;
         let columns = Option::<Vec<String>>::try_convert(arguments[10])?;
         let encoding = Wrap::<CsvEncoding>::try_convert(arguments[11])?;
@@ -168,7 +168,7 @@ impl RbDataFrame {
             .infer_schema(infer_schema_length)
             .has_header(has_header)
             .with_n_rows(n_rows)
-            .with_delimiter(sep.as_bytes()[0])
+            .with_separator(separator.as_bytes()[0])
             .with_skip_rows(skip_rows)
             .with_ignore_errors(ignore_errors)
             .with_projection(projection)
@@ -399,8 +399,8 @@ impl RbDataFrame {
         &self,
         rb_f: Value,
         has_header: bool,
-        sep: u8,
-        quote: u8,
+        separator: u8,
+        quote_char: u8,
         batch_size: usize,
         datetime_format: Option<String>,
         date_format: Option<String>,
@@ -415,8 +415,8 @@ impl RbDataFrame {
             // no need for a buffered writer, because the csv writer does internal buffering
             CsvWriter::new(f)
                 .has_header(has_header)
-                .with_delimiter(sep)
-                .with_quoting_char(quote)
+                .with_separator(separator)
+                .with_quote_char(quote_char)
                 .with_batch_size(batch_size)
                 .with_datetime_format(datetime_format)
                 .with_date_format(date_format)
@@ -429,8 +429,8 @@ impl RbDataFrame {
             let mut buf = Cursor::new(Vec::new());
             CsvWriter::new(&mut buf)
                 .has_header(has_header)
-                .with_delimiter(sep)
-                .with_quoting_char(quote)
+                .with_separator(separator)
+                .with_quote_char(quote_char)
                 .with_batch_size(batch_size)
                 .with_datetime_format(datetime_format)
                 .with_date_format(date_format)
@@ -607,7 +607,7 @@ impl RbDataFrame {
 
     pub fn sample_n(
         &self,
-        n: usize,
+        n: &RbSeries,
         with_replacement: bool,
         shuffle: bool,
         seed: Option<u64>,
@@ -615,14 +615,14 @@ impl RbDataFrame {
         let df = self
             .df
             .borrow()
-            .sample_n(n, with_replacement, shuffle, seed)
+            .sample_n(&n.series.borrow(), with_replacement, shuffle, seed)
             .map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }
 
     pub fn sample_frac(
         &self,
-        frac: f64,
+        frac: &RbSeries,
         with_replacement: bool,
         shuffle: bool,
         seed: Option<u64>,
@@ -630,7 +630,7 @@ impl RbDataFrame {
         let df = self
             .df
             .borrow()
-            .sample_frac(frac, with_replacement, shuffle, seed)
+            .sample_frac(&frac.series.borrow(), with_replacement, shuffle, seed)
             .map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }

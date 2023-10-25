@@ -720,15 +720,22 @@ module Polars
     #   # │ 2022-01-16 00:00:00 ┆ 2022-01-04 00:00:00 ┆ 2022-01-02 00:00:02 ┆ 2022-01-02 00:00:00.002 ┆ 2022-01-02 02:00:00 │
     #   # └─────────────────────┴─────────────────────┴─────────────────────┴─────────────────────────┴─────────────────────┘
     def duration(
+      weeks: nil,
       days: nil,
-      seconds: nil,
-      nanoseconds: nil,
-      microseconds: nil,
-      milliseconds: nil,
-      minutes: nil,
       hours: nil,
-      weeks: nil
+      minutes: nil,
+      seconds: nil,
+      milliseconds: nil,
+      microseconds: nil,
+      nanoseconds: nil,
+      time_unit: "us"
     )
+      if !weeks.nil?
+        weeks = Utils.expr_to_lit_or_expr(weeks, str_to_lit: false)._rbexpr
+      end
+      if !days.nil?
+        days = Utils.expr_to_lit_or_expr(days, str_to_lit: false)._rbexpr
+      end
       if !hours.nil?
         hours = Utils.expr_to_lit_or_expr(hours, str_to_lit: false)._rbexpr
       end
@@ -747,23 +754,18 @@ module Polars
       if !nanoseconds.nil?
         nanoseconds = Utils.expr_to_lit_or_expr(nanoseconds, str_to_lit: false)._rbexpr
       end
-      if !days.nil?
-        days = Utils.expr_to_lit_or_expr(days, str_to_lit: false)._rbexpr
-      end
-      if !weeks.nil?
-        weeks = Utils.expr_to_lit_or_expr(weeks, str_to_lit: false)._rbexpr
-      end
 
       Utils.wrap_expr(
         _rb_duration(
+          weeks,
           days,
-          seconds,
-          nanoseconds,
-          microseconds,
-          milliseconds,
-          minutes,
           hours,
-          weeks
+          minutes,
+          seconds,
+          milliseconds,
+          microseconds,
+          nanoseconds,
+          time_unit
         )
       )
     end

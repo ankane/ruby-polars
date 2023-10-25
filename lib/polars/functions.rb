@@ -55,9 +55,9 @@ module Polars
         if how == "vertical"
           out = Utils.wrap_df(_concat_df(items))
         elsif how == "diagonal"
-          out = Utils.wrap_df(_diag_concat_df(items))
+          out = Utils.wrap_df(_concat_df_diagonal(items))
         elsif how == "horizontal"
-          out = Utils.wrap_df(_hor_concat_df(items))
+          out = Utils.wrap_df(_concat_df_horizontal(items))
         else
           raise ArgumentError, "how must be one of {{'vertical', 'diagonal', 'horizontal'}}, got #{how}"
         end
@@ -67,7 +67,7 @@ module Polars
         elsif how == "vertical_relaxed"
           return Utils.wrap_ldf(_concat_lf(items, rechunk, parallel, true))
         elsif how == "diagonal"
-          return Utils.wrap_ldf(_diag_concat_lf(items, rechunk, parallel))
+          return Utils.wrap_ldf(_concat_lf_diagonal(items, rechunk, parallel, false))
         else
           raise ArgumentError, "Lazy only allows 'vertical', 'vertical_relaxed', and 'diagonal' concat strategy."
         end
