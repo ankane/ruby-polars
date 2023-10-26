@@ -13,7 +13,7 @@ impl RbSeries {
                 let ca = s.utf8().unwrap();
 
                 // TODO make more efficient
-                let np_arr = RArray::from_iter(ca.into_iter());
+                let np_arr = RArray::from_iter(ca);
                 class::object()
                     .const_get::<_, RModule>("Numo")?
                     .const_get::<_, RClass>("RObject")?
