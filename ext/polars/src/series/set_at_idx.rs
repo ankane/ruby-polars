@@ -1,7 +1,23 @@
 use polars::export::arrow::array::Array;
 use polars::prelude::*;
 
-pub fn set_at_idx(mut s: Series, idx: &Series, values: &Series) -> PolarsResult<Series> {
+use crate::error::RbPolarsErr;
+use crate::{RbResult, RbSeries};
+
+impl RbSeries {
+    pub fn set_at_idx(&self, idx: &RbSeries, values: &RbSeries) -> RbResult<()> {
+        let mut s = self.series.borrow_mut();
+        match set_at_idx(s.clone(), &idx.series.borrow(), &values.series.borrow()) {
+            Ok(out) => {
+                *s = out;
+                Ok(())
+            }
+            Err(e) => Err(RbPolarsErr::from(e)),
+        }
+    }
+}
+
+fn set_at_idx(mut s: Series, idx: &Series, values: &Series) -> PolarsResult<Series> {
     let logical_dtype = s.dtype().clone();
     let idx = idx.cast(&IDX_DTYPE)?;
     let idx = idx.rechunk();

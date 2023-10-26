@@ -13,7 +13,6 @@ use std::cell::RefCell;
 use crate::apply_method_all_arrow_series2;
 use crate::conversion::*;
 use crate::map::series::{call_lambda_and_extract, ApplyLambda};
-use crate::series::set_at_idx::set_at_idx;
 use crate::{RbDataFrame, RbPolarsErr, RbResult};
 
 #[magnus::wrap(class = "Polars::RbSeries")]
@@ -698,17 +697,6 @@ impl RbSeries {
             )
         } else {
             None
-        }
-    }
-
-    pub fn set_at_idx(&self, idx: &RbSeries, values: &RbSeries) -> RbResult<()> {
-        let mut s = self.series.borrow_mut();
-        match set_at_idx(s.clone(), &idx.series.borrow(), &values.series.borrow()) {
-            Ok(out) => {
-                *s = out;
-                Ok(())
-            }
-            Err(e) => Err(RbPolarsErr::from(e)),
         }
     }
 }
