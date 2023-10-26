@@ -1,4 +1,4 @@
-// use polars::export::arrow2::array::Array;
+use polars::export::arrow::array::Array;
 use polars::prelude::*;
 
 pub fn set_at_idx(mut s: Series, idx: &Series, values: &Series) -> PolarsResult<Series> {
@@ -8,11 +8,11 @@ pub fn set_at_idx(mut s: Series, idx: &Series, values: &Series) -> PolarsResult<
     let idx = idx.idx().unwrap();
     let idx = idx.downcast_iter().next().unwrap();
 
-    // if idx.null_count() > 0 {
-    //     return Err(PolarsError::ComputeError(
-    //         "index values should not be null".into(),
-    //     ));
-    // }
+    if idx.null_count() > 0 {
+        return Err(PolarsError::ComputeError(
+            "index values should not be null".into(),
+        ));
+    }
 
     let idx = idx.values().as_slice();
 
