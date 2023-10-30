@@ -20,7 +20,6 @@ module Polars
     #   this does not yield conclusive results, column orientation is used.
     def initialize(data = nil, schema: nil, columns: nil, schema_overrides: nil, orient: nil, infer_schema_length: 100, nan_to_null: false)
       schema ||= columns
-      raise Todo if schema_overrides
 
       # TODO deprecate in favor of read_sql
       if defined?(ActiveRecord) && (data.is_a?(ActiveRecord::Relation) || data.is_a?(ActiveRecord::Result))
@@ -4946,7 +4945,7 @@ module Polars
         end
 
       if schema_overrides && schema_overrides.any?
-        raise Todo
+        column_dtypes.merge!(schema_overrides)
       end
 
       column_dtypes.each do |col, dtype|

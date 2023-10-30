@@ -622,10 +622,22 @@ module Polars
           raise ArgumentError, "Expected ActiveRecord::Relation, ActiveRecord::Result, or String"
         end
       data = {}
+      schema_overrides = {}
       result.columns.each_with_index do |k, i|
         data[k] = result.rows.map { |r| r[i] }
+        column_type = result.column_types[i]&.type
+        polars_type =
+          case column_type
+          when :datetime
+            Datetime
+          when :string
+            Utf8
+          when :integer
+            Int64
+          end
+        schema_overrides[k] = polars_type if polars_type
       end
-      DataFrame.new(data)
+      DataFrame.new(data, schema_overrides: schema_overrides)
     end
     alias_method :read_sql, :read_database
 

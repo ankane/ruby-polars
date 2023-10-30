@@ -9,12 +9,17 @@ logger = ActiveSupport::Logger.new(ENV["VERBOSE"] ? STDOUT : nil)
 ActiveRecord::Base.logger = logger
 ActiveRecord::Migration.verbose = ENV["VERBOSE"]
 
-ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ":memory:"
+if ENV["ADAPTER"] == "postgresql"
+  ActiveRecord::Base.establish_connection adapter: "postgresql", database: "polars_ruby_test"
+else
+  ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ":memory:"
+end
 
 ActiveRecord::Schema.define do
-  create_table :users do |t|
+  create_table :users, force: true do |t|
     t.string :name
     t.integer :number
+    t.datetime :joined_at
   end
 end
 
