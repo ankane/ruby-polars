@@ -36,7 +36,7 @@ class DatabaseTest < Minitest::Test
   end
 
   def test_read_database_null
-    skip unless ENV["ADAPTER"] == "postgresql"
+    skip unless postgresql?
 
     User.create!
     df = Polars.read_database("SELECT * FROM users ORDER BY id")
@@ -58,7 +58,7 @@ class DatabaseTest < Minitest::Test
     assert_series users.map(&:name), df["name"]
     assert_series users.map(&:number), df["number"]
     assert_series users.map(&:inexact), df["inexact"]
-    if ENV["ADAPTER"] == "postgresql"
+    if postgresql?
       assert_series users.map(&:active), df["active"]
     end
     assert_series users.map(&:joined_at), df["joined_at"]
@@ -71,7 +71,7 @@ class DatabaseTest < Minitest::Test
     assert_equal Polars::Utf8, schema["name"]
     assert_equal Polars::Int64, schema["number"]
     assert_equal Polars::Float64, schema["inexact"]
-    if ENV["ADAPTER"] == "postgresql"
+    if postgresql?
       assert_equal Polars::Boolean, schema["active"]
       assert_equal Polars::Datetime, schema["joined_at"]
     else
@@ -81,6 +81,12 @@ class DatabaseTest < Minitest::Test
   end
 
   def create_users
-    3.times.map { |i| User.create!(name: "User #{i}", number: i, inexact: i + 0.5, active: i % 2 == 0, joined_at: Time.now) }
+    # round time since Postgres only stores microseconds
+    now = postgresql? ? Time.now.round(6) : Time.now
+    3.times.map { |i| User.create!(name: "User #{i}", number: i, inexact: i + 0.5, active: i % 2 == 0, joined_at: now + i) }
+  end
+
+  def postgresql?
+    ENV["ADAPTER"] == "postgresql"
   end
 end
