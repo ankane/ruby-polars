@@ -19,6 +19,8 @@ ActiveRecord::Schema.define do
   create_table :users, force: true do |t|
     t.string :name
     t.integer :number
+    t.float :inexact
+    t.boolean :active
     t.datetime :joined_at
   end
 end

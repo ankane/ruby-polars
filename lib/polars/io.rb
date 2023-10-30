@@ -634,6 +634,10 @@ module Polars
             Utf8
           when :integer
             Int64
+          when :float
+            Float64
+          when :boolean
+            Boolean
           end
         schema_overrides[k] = polars_type if polars_type
       end
