@@ -4945,7 +4945,7 @@ module Polars
           [lookup[col[0]] || col[0], col[1]]
         end
 
-      if schema_overrides
+      if schema_overrides && schema_overrides.any?
         raise Todo
       end
 
@@ -5049,13 +5049,54 @@ module Polars
         return rbdf
       elsif data[0].is_a?(::Array)
         if orient.nil? && !columns.nil?
-          orient = columns.length == data.length ? "col" : "row"
+          first_element = data[0]
+          row_types = first_element.filter_map { |value| value.class }.uniq
+          if row_types.include?(Integer) && row_types.include?(Float)
+            row_types.delete(Integer)
+          end
+          orient = row_types.length == 1 ? "col" : "row"
         end
 
         if orient == "row"
-          raise Todo
+          column_names, schema_overrides = _unpack_schema(
+            schema, schema_overrides: schema_overrides, n_expected: first_element.length
+          )
+          local_schema_override = (
+            schema_overrides.any? ? (raise Todo) : {}
+          )
+          if column_names.any? && first_element.length > 0 && first_element.length != column_names.length
+            raise ArgumentError, "the row data does not match the number of columns"
+          end
+
+          unpack_nested = false
+          local_schema_override.each do |col, tp|
+            raise Todo
+          end
+
+          if unpack_nested
+            raise Todo
+          else
+            rbdf = RbDataFrame.read_rows(
+              data,
+              infer_schema_length,
+              local_schema_override.any? ? local_schema_override : nil
+            )
+          end
+          if column_names.any? || schema_overrides.any?
+            rbdf = _post_apply_columns(
+              rbdf, column_names, schema_overrides: schema_overrides
+            )
+          end
+          return rbdf
         elsif orient == "col" || orient.nil?
-          raise Todo
+          column_names, schema_overrides = _unpack_schema(
+            schema, schema_overrides: schema_overrides, n_expected: data.length
+          )
+          data_series =
+            data.map.with_index do |element, i|
+              Series.new(column_names[i], element, dtype: schema_overrides[column_names[i]])._s
+            end
+          return RbDataFrame.new(data_series)
         else
           raise ArgumentError, "orient must be one of {{'col', 'row', nil}}, got #{orient} instead."
         end

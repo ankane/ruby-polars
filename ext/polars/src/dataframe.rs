@@ -344,6 +344,27 @@ impl RbDataFrame {
         Ok(())
     }
 
+    pub fn read_rows(
+        rb_rows: RArray,
+        infer_schema_length: Option<usize>,
+        schema_overwrite: Option<Wrap<Schema>>,
+    ) -> RbResult<Self> {
+        let mut rows = Vec::with_capacity(rb_rows.len());
+        for v in rb_rows.each() {
+            let rb_row = RArray::try_convert(v?)?;
+            let mut row = Vec::with_capacity(rb_row.len());
+            for val in rb_row.each() {
+                row.push(Wrap::<AnyValue>::try_convert(val?)?.0);
+            }
+            rows.push(Row(row));
+        }
+        Self::finish_from_rows(
+            rows,
+            infer_schema_length,
+            schema_overwrite.map(|wrap| wrap.0),
+        )
+    }
+
     pub fn read_hashes(
         dicts: Value,
         infer_schema_length: Option<usize>,

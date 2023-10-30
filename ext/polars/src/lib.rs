@@ -174,6 +174,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("read_parquet", function!(RbDataFrame::read_parquet, 9))?;
     class.define_singleton_method("read_ipc", function!(RbDataFrame::read_ipc, 6))?;
     class.define_singleton_method("read_avro", function!(RbDataFrame::read_avro, 4))?;
+    class.define_singleton_method("read_rows", function!(RbDataFrame::read_rows, 3))?;
     class.define_singleton_method("read_hashes", function!(RbDataFrame::read_hashes, 3))?;
     class.define_singleton_method("read_hash", function!(RbDataFrame::read_hash, 1))?;
     class.define_singleton_method("read_json", function!(RbDataFrame::read_json, 1))?;
