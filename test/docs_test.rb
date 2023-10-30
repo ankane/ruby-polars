@@ -145,7 +145,7 @@ class DocsTest < Minitest::Test
     return if [:read_csv_batched, :sink_parquet].include?(method.name)
 
     # TODO fix
-    return if [:align_frames, :coalesce, :cumsum, :extend_constant].include?(method.name)
+    return if [:align_frames, :coalesce, :cumsum].include?(method.name)
 
     code = ""
     method.tags(:example).each do |example|
