@@ -23,6 +23,10 @@ ActiveRecord::Schema.define do
     t.boolean :active
     t.datetime :joined_at
     t.date :joined_on
+    t.binary :bin
+    t.decimal :dec
+    t.text :txt
+    t.time :joined_time
   end
 end
 

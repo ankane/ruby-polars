@@ -55,7 +55,7 @@ class DatabaseTest < Minitest::Test
   private
 
   def assert_result(df, users)
-    assert_equal ["id", "name", "number", "inexact", "active", "joined_at", "joined_on"], df.columns
+    assert_equal ["id", "name", "number", "inexact", "active", "joined_at", "joined_on", "bin", "dec", "txt", "joined_time"], df.columns
     assert_series users.map(&:id), df["id"]
     assert_series users.map(&:name), df["name"]
     assert_series users.map(&:number), df["number"]
@@ -81,9 +81,17 @@ class DatabaseTest < Minitest::Test
     if postgresql?
       assert_equal Polars::Boolean, schema["active"]
       assert_equal Polars::Datetime, schema["joined_at"]
+      assert_equal Polars::Binary, schema["bin"]
+      assert_equal Polars::Decimal, schema["dec"]
+      assert_equal Polars::Utf8, schema["txt"]
+      assert_equal Polars::Time, schema["joined_time"]
     else
       assert_equal Polars::Int64, schema["active"]
       assert_equal Polars::Utf8, schema["joined_at"]
+      assert_equal Polars::Object, schema["bin"]
+      assert_equal Polars::Object, schema["dec"]
+      assert_equal Polars::Object, schema["txt"]
+      assert_equal Polars::Object, schema["joined_time"]
     end
   end
 

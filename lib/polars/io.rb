@@ -628,19 +628,25 @@ module Polars
         column_type = result.column_types[i]&.type
         polars_type =
           case column_type
+          when :binary
+            Binary
+          when :boolean
+            Boolean
           when :date
             data[k].map! { |v| v.nil? ? v : ::Date.parse(v) }
             Date
-          when :datetime
+          when :datetime, :timestamp
             Datetime
-          when :string
-            Utf8
-          when :integer
-            Int64
+          when :decimal
+            Decimal
           when :float
             Float64
-          when :boolean
-            Boolean
+          when :integer
+            Int64
+          when :string, :text
+            Utf8
+          when :time
+            Time
           end
         schema_overrides[k] = polars_type if polars_type
       end
