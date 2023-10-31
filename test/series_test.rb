@@ -49,7 +49,12 @@ class SeriesTest < Minitest::Test
     assert_series times, s, dtype: Polars::Datetime.new("ns")
   end
 
-  def test_new_nil
+  def test_new_all_nil
+    s = Polars::Series.new([nil, nil, nil])
+    assert_series [nil, nil, nil], s, dtype: Polars::Object
+  end
+
+  def test_new_some_nil
     s = Polars::Series.new([1, nil, 3])
     assert_series [1, nil, 3], s, dtype: Polars::Int64
   end
