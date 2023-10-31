@@ -6,15 +6,17 @@ class DatabaseTest < Minitest::Test
   end
 
   def test_relation
-    users = create_users
-    df = Polars::DataFrame.new(User.order(:id))
-    assert_result df, users
+    error = assert_raises(ArgumentError) do
+      Polars::DataFrame.new(User.order(:id))
+    end
+    assert_equal "Use read_database instead", error.message
   end
 
   def test_result
-    users = create_users
-    df = Polars::DataFrame.new(User.connection.select_all("SELECT * FROM users ORDER BY id"))
-    assert_result df, users
+    error = assert_raises(ArgumentError) do
+      Polars::DataFrame.new(User.connection.select_all("SELECT * FROM users ORDER BY id"))
+    end
+    assert_equal "Use read_database instead", error.message
   end
 
   def test_read_database_relation

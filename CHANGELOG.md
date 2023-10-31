@@ -6,6 +6,7 @@
 - Added `Config` module
 - Added `none?` method to `Series`
 - Removed `tz_localize` method from `DateTimeExpr`
+- Removed support for passing Active Record objects to `DataFrame.new` (use `read_database` instead)
 
 ## 0.6.0 (2023-07-23)
 
