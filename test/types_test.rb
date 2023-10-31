@@ -18,7 +18,8 @@ class TypesTest < Minitest::Test
       t: Time.now,
       z: Time.now.in_time_zone("Eastern Time (US & Canada)"),
       h: {"f" => 1},
-      a: [1, 2, 3]
+      a: [1, 2, 3],
+      u: nil
     }
     df = Polars::DataFrame.new([row])
     schema = df.schema
@@ -34,6 +35,8 @@ class TypesTest < Minitest::Test
     assert_equal Polars::Datetime.new("ns"), schema["z"]
     assert_equal Polars::Struct.new([Polars::Field.new("f", Polars::Int64)]), schema["h"]
     assert_equal Polars::List.new(Polars::Int64), schema["a"]
+    # TODO fix
+    assert_equal Polars::Boolean, schema["u"]
   end
 
   def test_series_dtype_int
