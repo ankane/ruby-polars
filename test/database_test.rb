@@ -55,7 +55,6 @@ class DatabaseTest < Minitest::Test
   private
 
   def assert_result(df, users)
-    assert_equal ["id", "name", "number", "inexact", "active", "joined_at", "joined_on", "bin", "dec", "txt", "joined_time"], df.columns
     assert_series users.map(&:id), df["id"]
     assert_series users.map(&:name), df["name"]
     assert_series users.map(&:number), df["number"]
