@@ -44,7 +44,7 @@ class DatabaseTest < Minitest::Test
       assert_schema df
     else
       df.dtypes[1..].each do |dtype|
-        assert_equal Polars::Object, dtype
+        assert_equal Polars::Null, dtype
       end
     end
   end

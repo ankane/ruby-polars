@@ -56,7 +56,7 @@ impl RbDataFrame {
         // replace inferred nulls with boolean
         let fields = schema.iter_fields().map(|mut fld| match fld.data_type() {
             DataType::Null => {
-                fld.coerce(DataType::Boolean);
+                // fld.coerce(DataType::Boolean);
                 fld
             }
             DataType::Decimal(_, _) => {

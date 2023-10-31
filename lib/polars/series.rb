@@ -4010,7 +4010,8 @@ module Polars
       Integer => RbSeries.method(:new_opt_i64),
       TrueClass => RbSeries.method(:new_opt_bool),
       FalseClass => RbSeries.method(:new_opt_bool),
-      BigDecimal => RbSeries.method(:new_decimal)
+      BigDecimal => RbSeries.method(:new_decimal),
+      NilClass => RbSeries.method(:new_null)
     }
 
     def rb_type_to_constructor(dtype)

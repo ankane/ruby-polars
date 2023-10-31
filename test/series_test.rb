@@ -51,8 +51,7 @@ class SeriesTest < Minitest::Test
 
   def test_new_all_nil
     s = Polars::Series.new([nil, nil, nil])
-    # TODO fix
-    assert_series [nil, nil, nil], s, dtype: Polars::Object
+    assert_series [nil, nil, nil], s, dtype: Polars::Null
   end
 
   def test_new_some_nil

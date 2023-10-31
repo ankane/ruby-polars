@@ -35,8 +35,7 @@ class TypesTest < Minitest::Test
     assert_equal Polars::Datetime.new("ns"), schema["z"]
     assert_equal Polars::Struct.new([Polars::Field.new("f", Polars::Int64)]), schema["h"]
     assert_equal Polars::List.new(Polars::Int64), schema["a"]
-    # TODO fix
-    assert_equal Polars::Boolean, schema["u"]
+    assert_equal Polars::Null, schema["u"]
   end
 
   def test_series_dtype_int
