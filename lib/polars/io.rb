@@ -626,7 +626,7 @@ module Polars
       result.columns.each_with_index do |k, i|
         data[k] = result.rows.map { |r| r[i] }
         column_type = result.column_types[i]
-        data[k].map! { |v| column_type.cast(v) } if column_type
+        data[k].map! { |v| column_type.deserialize(v) } if column_type
         polars_type =
           case column_type&.type
           when :binary
