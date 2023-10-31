@@ -2,7 +2,7 @@ module Polars
   # A dynamic grouper.
   #
   # This has an `.agg` method which allows you to run all polars expressions in a
-  # groupby context.
+  # group by context.
   class DynamicGroupBy
     def initialize(
       df,

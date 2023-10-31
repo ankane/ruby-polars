@@ -2,7 +2,7 @@ module Polars
   # A rolling grouper.
   #
   # This has an `.agg` method which will allow you to run all polars expressions in a
-  # groupby context.
+  # group by context.
   class RollingGroupBy
     def initialize(
       df,

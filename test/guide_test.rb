@@ -26,13 +26,13 @@ class GuideTest < Minitest::Test
   def test_quickstart
     Polars.read_csv("test/support/iris.csv")
       .filter(Polars.col("sepal_length") > 5)
-      .groupby("species")
+      .group_by("species")
       .agg(Polars.all.sum)
 
     Polars.read_csv("test/support/iris.csv")
       .lazy
       .filter(Polars.col("sepal_length") > 5)
-      .groupby("species")
+      .group_by("species")
       .agg(Polars.all.sum)
       .collect
   end
@@ -99,7 +99,7 @@ class GuideTest < Minitest::Test
       Polars.col("random").count.alias("count")
     ])
 
-    output df.groupby("groups").agg([
+    output df.group_by("groups").agg([
       Polars.sum("nrs"),
       Polars.col("random").count.alias("count"),
       Polars.col("random").filter(Polars.col("names").is_not_null).sum.suffix("_sum"),
@@ -199,7 +199,7 @@ class GuideTest < Minitest::Test
     #   Polars.fold(Polars.col("A"), ->(a, b) { a + "-" + b }, Polars.all.exclude("A")).alias("str_concat_2")
     # ])
 
-    output df.sort("cars").groupby("fruits")
+    output df.sort("cars").group_by("fruits")
       .agg([
         Polars.col("B").sum.alias("B_sum"),
         Polars.sum("B").alias("B_sum2"),
@@ -208,7 +208,7 @@ class GuideTest < Minitest::Test
         Polars.col("cars").reverse
       ])
 
-    output df.sort("cars").groupby("fruits")
+    output df.sort("cars").group_by("fruits")
       .agg([
         Polars.col("B").sum.alias("B_sum"),
         Polars.sum("B").alias("B_sum2"),
@@ -217,7 +217,7 @@ class GuideTest < Minitest::Test
         Polars.col("cars").reverse
       ]).explode("cars")
 
-    output df.groupby("fruits")
+    output df.group_by("fruits")
       .agg([
         Polars.col("B").sum.alias("B_sum"),
         Polars.sum("B").alias("B_sum2"),
@@ -226,7 +226,7 @@ class GuideTest < Minitest::Test
         Polars.col("B").shift.alias("B_shifted")
       ]).explode("B_shifted")
 
-    output df.sort("cars").groupby("fruits")
+    output df.sort("cars").group_by("fruits")
       .agg([
         Polars.col("B").sum,
         Polars.sum("B").alias("B_sum2"),
@@ -235,23 +235,23 @@ class GuideTest < Minitest::Test
         Polars.col("cars").reverse
       ]).explode("cars")
 
-    output df.groupby("fruits")
+    output df.group_by("fruits")
       .agg([
         Polars.col("B").shift.alias("shift_B"),
         Polars.col("B").reverse.alias("rev_B")
       ])
 
-    output df.groupby("fruits")
+    output df.group_by("fruits")
       .agg([
         Polars.col("B").filter(Polars.col("B") > 1).implode.keep_name,
       ])
 
-    output df.groupby("fruits")
+    output df.group_by("fruits")
       .agg([
         Polars.col("B").filter(Polars.col("B") > 1).mean,
       ])
 
-    output df.groupby("fruits")
+    output df.group_by("fruits")
       .agg([
         Polars.col("B").shift_and_fill(1, 0).alias("shifted"),
         Polars.col("B").shift_and_fill(1, 0).sum.alias("shifted_sum")

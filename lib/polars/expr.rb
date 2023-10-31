@@ -689,7 +689,7 @@ module Polars
     #       "value" => [94, 95, 96, 97, 97, 99]
     #     }
     #   )
-    #   df.groupby("group", maintain_order: true).agg(Polars.col("value").agg_groups)
+    #   df.group_by("group", maintain_order: true).agg(Polars.col("value").agg_groups)
     #   # =>
     #   # shape: (2, 2)
     #   # ┌───────┬───────────┐
@@ -1236,7 +1236,7 @@ module Polars
 
     # Sort this column. In projection/ selection context the whole column is sorted.
     #
-    # If used in a groupby context, the groups are sorted.
+    # If used in a group by context, the groups are sorted.
     #
     # @param reverse [Boolean]
     #   false -> order from small to large.
@@ -1294,7 +1294,7 @@ module Polars
     #   # └───────┘
     #
     # @example
-    #   df.groupby("group").agg(Polars.col("value").sort)
+    #   df.group_by("group").agg(Polars.col("value").sort)
     #   # =>
     #   # shape: (2, 2)
     #   # ┌───────┬────────────┐
@@ -1503,7 +1503,7 @@ module Polars
     # Sort this column by the ordering of another column, or multiple other columns.
     #
     # In projection/ selection context the whole column is sorted.
-    # If used in a groupby context, the groups are sorted.
+    # If used in a group by context, the groups are sorted.
     #
     # @param by [Object]
     #   The column(s) used for sorting.
@@ -2210,7 +2210,7 @@ module Polars
 
     # Apply window function over a subgroup.
     #
-    # This is similar to a groupby + aggregation + self join.
+    # This is similar to a group by + aggregation + self join.
     # Or similar to [window functions in Postgres](https://www.postgresql.org/docs/current/tutorial-window.html).
     #
     # @param expr [Object]
@@ -2485,7 +2485,7 @@ module Polars
     #     }
     #   )
     #   (
-    #     df.groupby("group_col").agg(
+    #     df.group_by("group_col").agg(
     #       [
     #         Polars.col("b").filter(Polars.col("b") < 2).sum.alias("lt"),
     #         Polars.col("b").filter(Polars.col("b") >= 2).sum.alias("gte")
@@ -2523,7 +2523,7 @@ module Polars
     #     }
     #   )
     #   (
-    #     df.groupby("group_col").agg(
+    #     df.group_by("group_col").agg(
     #       [
     #         Polars.col("b").where(Polars.col("b") < 2).sum.alias("lt"),
     #         Polars.col("b").where(Polars.col("b") >= 2).sum.alias("gte")
@@ -2641,7 +2641,7 @@ module Polars
     #
     # @example In a GroupBy context the function is applied by group:
     #   df.lazy
-    #     .groupby("b", maintain_order: true)
+    #     .group_by("b", maintain_order: true)
     #     .agg(
     #       [
     #         Polars.col("a").apply { |x| x.sum }
@@ -2680,7 +2680,7 @@ module Polars
     #      "values" => [[1, 2], [2, 3], [4]]
     #    }
     #  )
-    #  df.groupby("group").agg(Polars.col("values").flatten)
+    #  df.group_by("group").agg(Polars.col("values").flatten)
     #  # =>
     #  # shape: (2, 2)
     #  # ┌───────┬───────────┐
@@ -3170,7 +3170,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `groupby_rolling` this method can cache the window size
+    #   window, consider using `group_by_rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]
@@ -3259,7 +3259,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `groupby_rolling` this method can cache the window size
+    #   window, consider using `group_by_rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]
@@ -3348,7 +3348,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `groupby_rolling` this method can cache the window size
+    #   window, consider using `group_by_rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]
@@ -3437,7 +3437,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `groupby_rolling` this method can cache the window size
+    #   window, consider using `group_by_rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]
@@ -3526,7 +3526,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `groupby_rolling` this method can cache the window size
+    #   window, consider using `group_by_rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]
@@ -3616,7 +3616,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `groupby_rolling` this method can cache the window size
+    #   window, consider using `group_by_rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]
@@ -3702,7 +3702,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `groupby_rolling` this method can cache the window size
+    #   window, consider using `group_by_rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]
@@ -3791,7 +3791,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `groupby_rolling` this method can cache the window size
+    #   window, consider using `group_by_rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]
@@ -4949,7 +4949,7 @@ module Polars
     #   Number of valid values there should be in the window before the expression
     #   is evaluated. valid values = `length - null_count`
     # @param parallel [Boolean]
-    #   Run in parallel. Don't do this in a groupby or another operation that
+    #   Run in parallel. Don't do this in a group by or another operation that
     #   already has much parallelization.
     #
     # @return [Expr]

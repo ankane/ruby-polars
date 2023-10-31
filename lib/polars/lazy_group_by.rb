@@ -1,5 +1,5 @@
 module Polars
-  # Created by `df.lazy.groupby("foo")`.
+  # Created by `df.lazy.group_by("foo")`.
   class LazyGroupBy
     # @private
     def initialize(lgb)
@@ -28,7 +28,7 @@ module Polars
     #       "nrs" => [1, 2, 3, 4, 5, 6]
     #     }
     #   )
-    #   df.groupby("letters").head(2).sort("letters")
+    #   df.group_by("letters").head(2).sort("letters")
     #   # =>
     #   # shape: (5, 2)
     #   # ┌─────────┬─────┐
@@ -60,7 +60,7 @@ module Polars
     #       "nrs" => [1, 2, 3, 4, 5, 6]
     #     }
     #   )
-    #   df.groupby("letters").tail(2).sort("letters")
+    #   df.group_by("letters").tail(2).sort("letters")
     #   # =>
     #   # shape: (5, 2)
     #   # ┌─────────┬─────┐

@@ -811,7 +811,7 @@ module Polars
     #   Number of valid values there should be in the window before the expression
     #   is evaluated. valid values = `length - null_count`
     # @param parallel [Boolean]
-    #   Run in parallel. Don't do this in a groupby or another operation that
+    #   Run in parallel. Don't do this in a group by or another operation that
     #   already has much parallelization.
     #
     # @return [Series]

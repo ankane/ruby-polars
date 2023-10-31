@@ -59,17 +59,17 @@ class PlotTest < Minitest::Test
 
   def test_group_method
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3], "c" => ["group1", "group1", "group2"]})
-    assert_group df.groupby("c").plot("a", "b", type: "line")
-    assert_group df.groupby("c").plot("a", "b", type: "column")
-    assert_group df.groupby("c").plot("a", "b", type: "bar")
-    assert_group df.groupby("c").plot("a", "b", type: "area")
-    assert_group df.groupby("c").plot("b", "b", type: "scatter")
+    assert_group df.group_by("c").plot("a", "b", type: "line")
+    assert_group df.group_by("c").plot("a", "b", type: "column")
+    assert_group df.group_by("c").plot("a", "b", type: "bar")
+    assert_group df.group_by("c").plot("a", "b", type: "area")
+    assert_group df.group_by("c").plot("b", "b", type: "scatter")
   end
 
   def test_group_method_multiple_columns
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3], "c" => ["group1", "group1", "group2"]})
     error = assert_raises(ArgumentError) do
-      df.groupby(["c", "c"]).plot("a", "b")
+      df.group_by(["c", "c"]).plot("a", "b")
     end
     assert_equal "Multiple groups not supported", error.message
   end
@@ -77,7 +77,7 @@ class PlotTest < Minitest::Test
   def test_group_method_group_option
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3], "c" => ["group1", "group1", "group2"]})
     error = assert_raises(ArgumentError) do
-      df.groupby("c").plot("a", "b", group: "c")
+      df.group_by("c").plot("a", "b", group: "c")
     end
     assert_equal "unknown keyword: :group", error.message
   end

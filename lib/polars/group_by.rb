@@ -8,13 +8,13 @@ module Polars
       @maintain_order = maintain_order
     end
 
-    # Allows iteration over the groups of the groupby operation.
+    # Allows iteration over the groups of the group by operation.
     #
     # @return [Object]
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => ["a", "a", "b"], "bar" => [1, 2, 3]})
-    #   df.groupby("foo", maintain_order: true).each.to_h
+    #   df.group_by("foo", maintain_order: true).each.to_h
     #   # =>
     #   # {"a"=>shape: (2, 2)
     #   # ┌─────┬─────┐
@@ -89,7 +89,7 @@ module Polars
     #       "shape" => ["square", "triangle", "square", "triangle", "square"]
     #     }
     #   )
-    #   df.groupby("color").apply { |group_df| group_df.sample(2) }
+    #   df.group_by("color").apply { |group_df| group_df.sample(2) }
     #   # =>
     #   # shape: (4, 3)
     #   # ┌─────┬───────┬──────────┐
@@ -103,7 +103,7 @@ module Polars
     #   # │ 3   ┆ red   ┆ triangle │
     #   # └─────┴───────┴──────────┘
     # def apply(&f)
-    #   _dataframe_class._from_rbdf(_df.groupby_apply(by, f))
+    #   _dataframe_class._from_rbdf(_df.group_by_apply(by, f))
     # end
 
     # Use multiple aggregations on columns.
@@ -119,7 +119,7 @@ module Polars
     #   df = Polars::DataFrame.new(
     #     {"foo" => ["one", "two", "two", "one", "two"], "bar" => [5, 3, 2, 4, 1]}
     #   )
-    #   df.groupby("foo", maintain_order: true).agg(
+    #   df.group_by("foo", maintain_order: true).agg(
     #     [
     #       Polars.sum("bar").suffix("_sum"),
     #       Polars.col("bar").sort.tail(2).sum.suffix("_tail_sum")
@@ -172,7 +172,7 @@ module Polars
     #   # └─────────┴─────┘
     #
     # @example
-    #   df.groupby("letters").head(2).sort("letters")
+    #   df.group_by("letters").head(2).sort("letters")
     #   # =>
     #   # shape: (5, 2)
     #   # ┌─────────┬─────┐
@@ -223,7 +223,7 @@ module Polars
     #   # └─────────┴─────┘
     #
     # @example
-    #   df.groupby("letters").tail(2).sort("letters")
+    #   df.group_by("letters").tail(2).sort("letters")
     #   # =>
     #   # shape: (5, 2)
     #   # ┌─────────┬─────┐
@@ -257,7 +257,7 @@ module Polars
     #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
     #     }
     #   )
-    #   df.groupby("d", maintain_order: true).first
+    #   df.group_by("d", maintain_order: true).first
     #   # =>
     #   # shape: (3, 4)
     #   # ┌────────┬─────┬──────┬───────┐
@@ -286,7 +286,7 @@ module Polars
     #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
     #     }
     #   )
-    #   df.groupby("d", maintain_order: true).last
+    #   df.group_by("d", maintain_order: true).last
     #   # =>
     #   # shape: (3, 4)
     #   # ┌────────┬─────┬──────┬───────┐
@@ -315,7 +315,7 @@ module Polars
     #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
     #     }
     #   )
-    #   df.groupby("d", maintain_order: true).sum
+    #   df.group_by("d", maintain_order: true).sum
     #   # =>
     #   # shape: (3, 4)
     #   # ┌────────┬─────┬──────┬─────┐
@@ -344,7 +344,7 @@ module Polars
     #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"],
     #     }
     #   )
-    #   df.groupby("d", maintain_order: true).min
+    #   df.group_by("d", maintain_order: true).min
     #   # =>
     #   # shape: (3, 4)
     #   # ┌────────┬─────┬──────┬───────┐
@@ -373,7 +373,7 @@ module Polars
     #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
     #     }
     #   )
-    #   df.groupby("d", maintain_order: true).max
+    #   df.group_by("d", maintain_order: true).max
     #   # =>
     #   # shape: (3, 4)
     #   # ┌────────┬─────┬──────┬──────┐
@@ -402,7 +402,7 @@ module Polars
     #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
     #     }
     #   )
-    #   df.groupby("d", maintain_order: true).count
+    #   df.group_by("d", maintain_order: true).count
     #   # =>
     #   # shape: (3, 2)
     #   # ┌────────┬───────┐
@@ -431,7 +431,7 @@ module Polars
     #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
     #     }
     #   )
-    #   df.groupby("d", maintain_order: true).mean
+    #   df.group_by("d", maintain_order: true).mean
     #   # =>
     #   # shape: (3, 4)
     #   # ┌────────┬─────┬──────────┬──────────┐
@@ -459,7 +459,7 @@ module Polars
     #       "d" => ["Apple", "Banana", "Apple", "Apple", "Banana", "Banana"]
     #     }
     #   )
-    #   df.groupby("d", maintain_order: true).n_unique
+    #   df.group_by("d", maintain_order: true).n_unique
     #   # =>
     #   # shape: (2, 3)
     #   # ┌────────┬─────┬─────┐
@@ -491,7 +491,7 @@ module Polars
     #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
     #     }
     #   )
-    #   df.groupby("d", maintain_order: true).quantile(1)
+    #   df.group_by("d", maintain_order: true).quantile(1)
     #   # =>
     #   # shape: (3, 3)
     #   # ┌────────┬─────┬──────┐
@@ -519,7 +519,7 @@ module Polars
     #       "d" => ["Apple", "Banana", "Apple", "Apple", "Banana", "Banana"]
     #     }
     #   )
-    #   df.groupby("d", maintain_order: true).median
+    #   df.group_by("d", maintain_order: true).median
     #   # =>
     #   # shape: (2, 3)
     #   # ┌────────┬─────┬──────┐

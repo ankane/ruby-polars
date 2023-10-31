@@ -447,7 +447,7 @@ module Polars
     #       "c" => [6, 5, 4, 3, 2, 1]
     #     }
     #   ).lazy
-    #   df.groupby("a", maintain_order: true).agg(Polars.all.sum).collect
+    #   df.group_by("a", maintain_order: true).agg(Polars.all.sum).collect
     #   # =>
     #   # shape: (3, 3)
     #   # ┌─────┬─────┬─────┐
@@ -625,7 +625,7 @@ module Polars
     #       "c" => [6, 5, 4, 3, 2, 1]
     #     }
     #   ).lazy
-    #   df.groupby("a", maintain_order: true).agg(Polars.all.sum).fetch(2)
+    #   df.group_by("a", maintain_order: true).agg(Polars.all.sum).fetch(2)
     #   # =>
     #   # shape: (2, 3)
     #   # ┌─────┬─────┬─────┐
@@ -855,13 +855,13 @@ module Polars
       _from_rbldf(_ldf.select(exprs))
     end
 
-    # Start a groupby operation.
+    # Start a group by operation.
     #
     # @param by [Object]
     #   Column(s) to group by.
     # @param maintain_order [Boolean]
     #   Make sure that the order of the groups remain consistent. This is more
-    #   expensive than a default groupby.
+    #   expensive than a default group by.
     #
     # @return [LazyGroupBy]
     #
@@ -873,7 +873,7 @@ module Polars
     #       "c" => [6, 5, 4, 3, 2, 1]
     #     }
     #   ).lazy
-    #   df.groupby("a", maintain_order: true).agg(Polars.col("b").sum).collect
+    #   df.group_by("a", maintain_order: true).agg(Polars.col("b").sum).collect
     #   # =>
     #   # shape: (3, 2)
     #   # ┌─────┬─────┐
@@ -897,9 +897,9 @@ module Polars
     #
     # Also works for index values of type `:i32` or `:i64`.
     #
-    # Different from a `dynamic_groupby` the windows are now determined by the
+    # Different from a `dynamic_group_by` the windows are now determined by the
     # individual values and are not of constant intervals. For constant intervals
-    # use *groupby_dynamic*.
+    # use *group_by_dynamic*.
     #
     # The `period` and `offset` arguments are created either from a timedelta, or
     # by using the following string language:
@@ -919,7 +919,7 @@ module Polars
     # Or combine them:
     # "3d12h4m25s" # 3 days, 12 hours, 4 minutes, and 25 seconds
     #
-    # In case of a groupby_rolling on an integer column, the windows are defined by:
+    # In case of a group_by_rolling on an integer column, the windows are defined by:
     #
     # - "1i"      # length 1
     # - "10i"     # length 10
@@ -930,7 +930,7 @@ module Polars
     #   This column must be sorted in ascending order. If not the output will not
     #   make sense.
     #
-    #   In case of a rolling groupby on indices, dtype needs to be one of
+    #   In case of a rolling group by on indices, dtype needs to be one of
     #   `:i32`, `:i64`. Note that `:i32` gets temporarily cast to `:i64`, so if
     #   performance matters use an `:i64` column.
     # @param period [Object]
@@ -962,7 +962,7 @@ module Polars
     #   df = Polars::LazyFrame.new({"dt" => dates, "a" => [3, 7, 5, 9, 2, 1]}).with_column(
     #     Polars.col("dt").str.strptime(Polars::Datetime).set_sorted
     #   )
-    #   df.groupby_rolling(index_column: "dt", period: "2d").agg(
+    #   df.group_by_rolling(index_column: "dt", period: "2d").agg(
     #     [
     #       Polars.sum("a").alias("sum_a"),
     #       Polars.min("a").alias("min_a"),
@@ -1010,7 +1010,7 @@ module Polars
     # Group based on a time value (or index value of type `:i32`, `:i64`).
     #
     # Time windows are calculated and rows are assigned to windows. Different from a
-    # normal groupby is that a row can be member of multiple groups. The time/index
+    # normal group by is that a row can be member of multiple groups. The time/index
     # window could be seen as a rolling window, with a window size determined by
     # dates/times/values instead of slots in the DataFrame.
     #
@@ -1038,7 +1038,7 @@ module Polars
     # Or combine them:
     # "3d12h4m25s" # 3 days, 12 hours, 4 minutes, and 25 seconds
     #
-    # In case of a groupby_dynamic on an integer column, the windows are defined by:
+    # In case of a group_by_dynamic on an integer column, the windows are defined by:
     #
     # - "1i"      # length 1
     # - "10i"     # length 10
@@ -1049,7 +1049,7 @@ module Polars
     #   This column must be sorted in ascending order. If not the output will not
     #   make sense.
     #
-    #   In case of a dynamic groupby on indices, dtype needs to be one of
+    #   In case of a dynamic group by on indices, dtype needs to be one of
     #   `:i32`, `:i64`. Note that `:i32` gets temporarily cast to `:i64`, so if
     #   performance matters use an `:i64` column.
     # @param every [Object]
@@ -1106,7 +1106,7 @@ module Polars
     #   # └─────────────────────┴─────┘
     #
     # @example Group by windows of 1 hour starting at 2021-12-16 00:00:00.
-    #   df.groupby_dynamic("time", every: "1h", closed: "right").agg(
+    #   df.group_by_dynamic("time", every: "1h", closed: "right").agg(
     #     [
     #       Polars.col("time").min.alias("time_min"),
     #       Polars.col("time").max.alias("time_max")
@@ -1126,7 +1126,7 @@ module Polars
     #   # └─────────────────────┴─────────────────────┴─────────────────────┘
     #
     # @example The window boundaries can also be added to the aggregation result.
-    #   df.groupby_dynamic(
+    #   df.group_by_dynamic(
     #     "time", every: "1h", include_boundaries: true, closed: "right"
     #   ).agg([Polars.col("time").count.alias("time_count")])
     #   # =>
@@ -1143,7 +1143,7 @@ module Polars
     #   # └─────────────────────┴─────────────────────┴─────────────────────┴────────────┘
     #
     # @example When closed="left", should not include right end of interval.
-    #   df.groupby_dynamic("time", every: "1h", closed: "left").agg(
+    #   df.group_by_dynamic("time", every: "1h", closed: "left").agg(
     #     [
     #       Polars.col("time").count.alias("time_count"),
     #       Polars.col("time").alias("time_agg_list")
@@ -1163,7 +1163,7 @@ module Polars
     #   # └─────────────────────┴────────────┴───────────────────────────────────┘
     #
     # @example When closed="both" the time values at the window boundaries belong to 2 groups.
-    #   df.groupby_dynamic("time", every: "1h", closed: "both").agg(
+    #   df.group_by_dynamic("time", every: "1h", closed: "both").agg(
     #     [Polars.col("time").count.alias("time_count")]
     #   )
     #   # =>
@@ -1180,7 +1180,7 @@ module Polars
     #   # │ 2021-12-16 03:00:00 ┆ 1          │
     #   # └─────────────────────┴────────────┘
     #
-    # @example Dynamic groupbys can also be combined with grouping on normal keys.
+    # @example Dynamic group bys can also be combined with grouping on normal keys.
     #   df = Polars::DataFrame.new(
     #     {
     #       "time" => Polars.date_range(
@@ -1191,7 +1191,7 @@ module Polars
     #       "groups" => ["a", "a", "a", "b", "b", "a", "a"]
     #     }
     #   )
-    #   df.groupby_dynamic(
+    #   df.group_by_dynamic(
     #     "time",
     #     every: "1h",
     #     closed: "both",
@@ -1214,14 +1214,14 @@ module Polars
     #   # │ b      ┆ 2021-12-16 02:00:00 ┆ 2021-12-16 03:00:00 ┆ 2021-12-16 02:00:00 ┆ 1          │
     #   # └────────┴─────────────────────┴─────────────────────┴─────────────────────┴────────────┘
     #
-    # @example Dynamic groupby on an index column.
+    # @example Dynamic group by on an index column.
     #   df = Polars::DataFrame.new(
     #     {
     #       "idx" => Polars.arange(0, 6, eager: true),
     #       "A" => ["A", "A", "B", "B", "B", "C"]
     #     }
     #   )
-    #   df.groupby_dynamic(
+    #   df.group_by_dynamic(
     #     "idx",
     #     every: "2i",
     #     period: "3i",

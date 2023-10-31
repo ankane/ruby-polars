@@ -366,12 +366,14 @@ class DataFrameTest < Minitest::Test
     assert_series [18, 19, 20], df.tail(3)["a"]
   end
 
-  def test_groupby
+  def test_group_by
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    df.group_by("a").count
+    df.group_by(:a).count
+    df.group_by(["a", "b"]).count
+    df.group_by([:a, :b]).count
     df.groupby("a").count
-    df.groupby(:a).count
-    df.groupby(["a", "b"]).count
-    df.groupby([:a, :b]).count
+    df.group("a").count
   end
 
   def test_join
