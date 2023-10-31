@@ -487,7 +487,7 @@ impl TryConvert for Wrap<DataType> {
                 "time" => DataType::Time,
                 "dur" => DataType::Duration(TimeUnit::Microseconds),
                 "f64" => DataType::Float64,
-                // "obj" => DataType::Object(OBJECT_NAME),
+                "obj" => DataType::Object(OBJECT_NAME),
                 "list" => DataType::List(Box::new(DataType::Boolean)),
                 "null" => DataType::Null,
                 "unk" => DataType::Unknown,
