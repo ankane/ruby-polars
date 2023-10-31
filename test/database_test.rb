@@ -88,17 +88,30 @@ class DatabaseTest < Minitest::Test
     else
       assert_equal Polars::Int64, schema["active"]
       assert_equal Polars::Utf8, schema["joined_at"]
-      assert_equal Polars::Object, schema["bin"]
-      assert_equal Polars::Object, schema["dec"]
-      assert_equal Polars::Object, schema["txt"]
-      assert_equal Polars::Object, schema["joined_time"]
+      assert_equal Polars::Binary, schema["bin"]
+      assert_equal Polars::Float64, schema["dec"]
+      assert_equal Polars::Utf8, schema["txt"]
+      assert_equal Polars::Utf8, schema["joined_time"]
     end
   end
 
   def create_users
     # round time since Postgres only stores microseconds
     now = postgresql? ? Time.now.round(6) : Time.now
-    3.times.map { |i| User.create!(name: "User #{i}", number: i, inexact: i + 0.5, active: i % 2 == 0, joined_at: now + i, joined_on: Date.today + i) }
+    3.times.map do |i|
+      User.create!(
+        name: "User #{i}",
+        number: i,
+        inexact: i + 0.5,
+        active: i % 2 == 0,
+        joined_at: now + i,
+        joined_on: Date.today + i,
+        bin: "bin".b,
+        dec: BigDecimal("1.5"),
+        txt: "txt",
+        joined_time: now
+      )
+    end
   end
 
   def postgresql?
