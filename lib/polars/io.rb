@@ -628,6 +628,9 @@ module Polars
         column_type = result.column_types[i]&.type
         polars_type =
           case column_type
+          when :date
+            data[k].map! { |v| v.nil? ? v : ::Date.parse(v) }
+            Date
           when :datetime
             Datetime
           when :string

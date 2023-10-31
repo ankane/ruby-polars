@@ -22,6 +22,7 @@ ActiveRecord::Schema.define do
     t.float :inexact
     t.boolean :active
     t.datetime :joined_at
+    t.date :joined_on
   end
 end
 

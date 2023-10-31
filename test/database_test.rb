@@ -55,7 +55,7 @@ class DatabaseTest < Minitest::Test
   private
 
   def assert_result(df, users)
-    assert_equal ["id", "name", "number", "inexact", "active", "joined_at"], df.columns
+    assert_equal ["id", "name", "number", "inexact", "active", "joined_at", "joined_on"], df.columns
     assert_series users.map(&:id), df["id"]
     assert_series users.map(&:name), df["name"]
     assert_series users.map(&:number), df["number"]
@@ -64,6 +64,11 @@ class DatabaseTest < Minitest::Test
       assert_series users.map(&:active), df["active"]
     end
     assert_series users.map(&:joined_at), df["joined_at"]
+    if postgresql?
+      assert_series users.map(&:joined_on), df["joined_on"]
+    else
+      assert_series users.map(&:joined_on).map(&:to_s), df["joined_on"]
+    end
     assert_schema df
   end
 
@@ -85,7 +90,7 @@ class DatabaseTest < Minitest::Test
   def create_users
     # round time since Postgres only stores microseconds
     now = postgresql? ? Time.now.round(6) : Time.now
-    3.times.map { |i| User.create!(name: "User #{i}", number: i, inexact: i + 0.5, active: i % 2 == 0, joined_at: now + i) }
+    3.times.map { |i| User.create!(name: "User #{i}", number: i, inexact: i + 0.5, active: i % 2 == 0, joined_at: now + i, joined_on: Date.today + i) }
   end
 
   def postgresql?
