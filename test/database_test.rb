@@ -69,7 +69,6 @@ class DatabaseTest < Minitest::Test
     else
       assert_series users.map(&:joined_on).map(&:to_s), df["joined_on"]
     end
-    # TODO fix for Postgres
     assert_series users.map(&:bin), df["bin"]
     assert_series users.map(&:dec), df["dec"]
     assert_series users.map(&:txt), df["txt"]
