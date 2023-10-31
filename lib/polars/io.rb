@@ -621,12 +621,20 @@ module Polars
         else
           raise ArgumentError, "Expected ActiveRecord::Relation, ActiveRecord::Result, or String"
         end
+
       data = {}
       schema_overrides = {}
+
       result.columns.each_with_index do |k, i|
-        data[k] = result.rows.map { |r| r[i] }
         column_type = result.column_types[i]
-        data[k].map! { |v| column_type.deserialize(v) } if column_type
+
+        data[k] =
+          if column_type
+            result.rows.map { |r| column_type.deserialize(r[i]) }
+          else
+            result.rows.map { |r| r[i] }
+          end
+
         polars_type =
           case column_type&.type
           when :binary
@@ -648,8 +656,10 @@ module Polars
           when :time
             Time
           end
+
         schema_overrides[k] = polars_type if polars_type
       end
+
       DataFrame.new(data, schema_overrides: schema_overrides)
     end
     alias_method :read_sql, :read_database
