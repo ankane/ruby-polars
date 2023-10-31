@@ -38,11 +38,15 @@ class DatabaseTest < Minitest::Test
   end
 
   def test_read_database_null
-    skip unless postgresql?
-
     User.create!
     df = Polars.read_database("SELECT * FROM users ORDER BY id")
-    assert_schema df
+    if postgresql?
+      assert_schema df
+    else
+      df.dtypes[1..].each do |dtype|
+        assert_equal Polars::Object, dtype
+      end
+    end
   end
 
   def test_read_database_unsupported
