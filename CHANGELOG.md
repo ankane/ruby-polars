@@ -5,7 +5,7 @@
 - Added `!` for `Expr`
 - Added `Config` module
 - Added `none?` method to `Series`
-- Aliased `groupby` to `group_by` for `DataFrame` and `LazyFrame`
+- Aliased `groupby` to `group` for `DataFrame` and `LazyFrame`
 - Changed series creation with all `nil` objects to `Null` type
 - Removed `tz_localize` method from `DateTimeExpr`
 - Removed support for passing Active Record objects to `DataFrame.new` (use `read_database` instead)

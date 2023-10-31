@@ -1833,6 +1833,7 @@ module Polars
       )
     end
     alias_method :groupby, :group_by
+    alias_method :group, :group_by
 
     # Create rolling groups based on a time column.
     #
