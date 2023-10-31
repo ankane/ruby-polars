@@ -60,19 +60,26 @@ class DatabaseTest < Minitest::Test
     assert_series users.map(&:name), df["name"]
     assert_series users.map(&:number), df["number"]
     assert_series users.map(&:inexact), df["inexact"]
+
     if postgresql?
       assert_series users.map(&:active), df["active"]
+    else
+      assert_series users.map(&:active).map { |v| v ? 1 : 0 }, df["active"]
     end
+
     assert_series users.map(&:joined_at), df["joined_at"]
+
     if postgresql?
       assert_series users.map(&:joined_on), df["joined_on"]
     else
       assert_series users.map(&:joined_on).map(&:to_s), df["joined_on"]
     end
+
     assert_series users.map(&:bin), df["bin"]
     assert_series users.map(&:dec), df["dec"]
     assert_series users.map(&:txt), df["txt"]
     assert_series users.map(&:joined_time), df["joined_time"]
+
     assert_schema df
   end
 
