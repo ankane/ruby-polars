@@ -625,15 +625,15 @@ module Polars
       schema_overrides = {}
       result.columns.each_with_index do |k, i|
         data[k] = result.rows.map { |r| r[i] }
-        column_type = result.column_types[i]&.type
+        column_type = result.column_types[i]
+        data[k].map! { |v| column_type.cast(v) } if column_type
         polars_type =
-          case column_type
+          case column_type&.type
           when :binary
             Binary
           when :boolean
             Boolean
           when :date
-            data[k].map! { |v| v.nil? ? v : ::Date.parse(v) }
             Date
           when :datetime, :timestamp
             Datetime

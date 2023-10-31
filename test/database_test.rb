@@ -69,6 +69,11 @@ class DatabaseTest < Minitest::Test
     else
       assert_series users.map(&:joined_on).map(&:to_s), df["joined_on"]
     end
+    # TODO fix for Postgres
+    # assert_series users.map(&:bin), df["bin"]
+    assert_series users.map(&:dec), df["dec"]
+    assert_series users.map(&:txt), df["txt"]
+    assert_series users.map(&:joined_time), df["joined_time"]
     assert_schema df
   end
 
@@ -98,7 +103,7 @@ class DatabaseTest < Minitest::Test
   def create_users
     # round time since Postgres only stores microseconds
     now = postgresql? ? Time.now.round(6) : Time.now
-    3.times.map do |i|
+    3.times do |i|
       User.create!(
         name: "User #{i}",
         number: i,
@@ -112,6 +117,8 @@ class DatabaseTest < Minitest::Test
         joined_time: now
       )
     end
+    # reload for time column
+    User.order(:id).to_a
   end
 
   def postgresql?
