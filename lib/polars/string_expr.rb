@@ -279,6 +279,8 @@ module Polars
     #
     # @param delimiter [String]
     #   The delimiter to insert between consecutive string values.
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default).
     #
     # @return [Expr]
     #
@@ -287,15 +289,28 @@ module Polars
     #   df.select(Polars.col("foo").str.concat("-"))
     #   # =>
     #   # shape: (1, 1)
-    #   # ┌──────────┐
-    #   # │ foo      │
-    #   # │ ---      │
-    #   # │ str      │
-    #   # ╞══════════╡
-    #   # │ 1-null-2 │
-    #   # └──────────┘
-    def concat(delimiter = "-")
-      Utils.wrap_expr(_rbexpr.str_concat(delimiter))
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ 1-2 │
+    #   # └─────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, nil, 2]})
+    #   df.select(Polars.col("foo").str.concat("-", ignore_nulls: false))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────┐
+    #   # │ foo  │
+    #   # │ ---  │
+    #   # │ str  │
+    #   # ╞══════╡
+    #   # │ null │
+    #   # └──────┘
+    def concat(delimiter = "-", ignore_nulls: true)
+      Utils.wrap_expr(_rbexpr.str_concat(delimiter, ignore_nulls))
     end
 
     # Transform to uppercase variant.
@@ -1100,6 +1115,52 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_explode)
     end
 
+    # Convert an Utf8 column into an Int64 column with base radix.
+    #
+    # @param base [Integer]
+    #   Positive integer which is the base of the string we are parsing.
+    #   Default: 10.
+    # @param strict [Boolean]
+    #   Bool, default=true will raise any ParseError or overflow as ComputeError.
+    #   false silently convert to Null.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"bin" => ["110", "101", "010", "invalid"]})
+    #   df.with_columns(Polars.col("bin").str.to_integer(base: 2, strict: false).alias("parsed"))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────────┬────────┐
+    #   # │ bin     ┆ parsed │
+    #   # │ ---     ┆ ---    │
+    #   # │ str     ┆ i64    │
+    #   # ╞═════════╪════════╡
+    #   # │ 110     ┆ 6      │
+    #   # │ 101     ┆ 5      │
+    #   # │ 010     ┆ 2      │
+    #   # │ invalid ┆ null   │
+    #   # └─────────┴────────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"hex" => ["fa1e", "ff00", "cafe", nil]})
+    #   df.with_columns(Polars.col("hex").str.to_integer(base: 16, strict: true).alias("parsed"))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌──────┬────────┐
+    #   # │ hex  ┆ parsed │
+    #   # │ ---  ┆ ---    │
+    #   # │ str  ┆ i64    │
+    #   # ╞══════╪════════╡
+    #   # │ fa1e ┆ 64030  │
+    #   # │ ff00 ┆ 65280  │
+    #   # │ cafe ┆ 51966  │
+    #   # │ null ┆ null   │
+    #   # └──────┴────────┘
+    def to_integer(base: 10, strict: true)
+      Utils.wrap_expr(_rbexpr.str_to_integer(base, strict))
+    end
+
     # Parse integers with base radix from strings.
     #
     # By default base 2. ParseError/Overflows become Nulls.
@@ -1128,24 +1189,8 @@ module Polars
     #   # │ 2    │
     #   # │ null │
     #   # └──────┘
-    #
-    # @example
-    #   df = Polars::DataFrame.new({"hex" => ["fa1e", "ff00", "cafe", nil]})
-    #   df.select(Polars.col("hex").str.parse_int(16, strict: true))
-    #   # =>
-    #   # shape: (4, 1)
-    #   # ┌───────┐
-    #   # │ hex   │
-    #   # │ ---   │
-    #   # │ i32   │
-    #   # ╞═══════╡
-    #   # │ 64030 │
-    #   # │ 65280 │
-    #   # │ 51966 │
-    #   # │ null  │
-    #   # └───────┘
     def parse_int(radix = 2, strict: true)
-      Utils.wrap_expr(_rbexpr.str_parse_int(radix, strict))
+      to_integer(base: 2, strict: strict).cast(Int32, strict: strict)
     end
 
     private

@@ -4,8 +4,12 @@ use crate::conversion::Wrap;
 use crate::RbExpr;
 
 impl RbExpr {
-    pub fn str_concat(&self, delimiter: String) -> Self {
-        self.inner.clone().str().concat(&delimiter).into()
+    pub fn str_concat(&self, delimiter: String, ignore_nulls: bool) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .concat(&delimiter, ignore_nulls)
+            .into()
     }
 
     pub fn str_to_date(
@@ -232,11 +236,11 @@ impl RbExpr {
             .into()
     }
 
-    pub fn str_parse_int(&self, radix: u32, strict: bool) -> Self {
+    pub fn str_to_integer(&self, base: u32, strict: bool) -> Self {
         self.inner
             .clone()
             .str()
-            .from_radix(radix, strict)
+            .to_integer(base, strict)
             .with_fmt("str.parse_int")
             .into()
     }

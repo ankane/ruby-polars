@@ -1,6 +1,6 @@
 ## 0.7.0 (unreleased)
 
-- Updated Polars to 0.34.2
+- Updated Polars to 0.35.2
 - Added support for SQL querying
 - Added `!` for `Expr`
 - Added `Config` module

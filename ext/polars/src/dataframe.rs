@@ -419,7 +419,7 @@ impl RbDataFrame {
     pub fn write_csv(
         &self,
         rb_f: Value,
-        has_header: bool,
+        include_header: bool,
         separator: u8,
         quote_char: u8,
         batch_size: usize,
@@ -435,7 +435,7 @@ impl RbDataFrame {
             let f = std::fs::File::create(s).unwrap();
             // no need for a buffered writer, because the csv writer does internal buffering
             CsvWriter::new(f)
-                .has_header(has_header)
+                .include_header(include_header)
                 .with_separator(separator)
                 .with_quote_char(quote_char)
                 .with_batch_size(batch_size)
@@ -449,7 +449,7 @@ impl RbDataFrame {
         } else {
             let mut buf = Cursor::new(Vec::new());
             CsvWriter::new(&mut buf)
-                .has_header(has_header)
+                .include_header(include_header)
                 .with_separator(separator)
                 .with_quote_char(quote_char)
                 .with_batch_size(batch_size)
@@ -994,30 +994,48 @@ impl RbDataFrame {
         self.df.borrow().median().into()
     }
 
-    pub fn hmean(&self, null_strategy: Wrap<NullStrategy>) -> RbResult<Option<RbSeries>> {
+    pub fn max_horizontal(&self) -> RbResult<Option<RbSeries>> {
         let s = self
             .df
             .borrow()
-            .hmean(null_strategy.0)
+            .max_horizontal()
             .map_err(RbPolarsErr::from)?;
         Ok(s.map(|s| s.into()))
     }
 
-    pub fn hmax(&self) -> RbResult<Option<RbSeries>> {
-        let s = self.df.borrow().hmax().map_err(RbPolarsErr::from)?;
-        Ok(s.map(|s| s.into()))
-    }
-
-    pub fn hmin(&self) -> RbResult<Option<RbSeries>> {
-        let s = self.df.borrow().hmin().map_err(RbPolarsErr::from)?;
-        Ok(s.map(|s| s.into()))
-    }
-
-    pub fn hsum(&self, null_strategy: Wrap<NullStrategy>) -> RbResult<Option<RbSeries>> {
+    pub fn min_horizontal(&self) -> RbResult<Option<RbSeries>> {
         let s = self
             .df
             .borrow()
-            .hsum(null_strategy.0)
+            .min_horizontal()
+            .map_err(RbPolarsErr::from)?;
+        Ok(s.map(|s| s.into()))
+    }
+
+    pub fn sum_horizontal(&self, ignore_nulls: bool) -> RbResult<Option<RbSeries>> {
+        let null_strategy = if ignore_nulls {
+            NullStrategy::Ignore
+        } else {
+            NullStrategy::Propagate
+        };
+        let s = self
+            .df
+            .borrow()
+            .sum_horizontal(null_strategy)
+            .map_err(RbPolarsErr::from)?;
+        Ok(s.map(|s| s.into()))
+    }
+
+    pub fn mean_horizontal(&self, ignore_nulls: bool) -> RbResult<Option<RbSeries>> {
+        let null_strategy = if ignore_nulls {
+            NullStrategy::Ignore
+        } else {
+            NullStrategy::Propagate
+        };
+        let s = self
+            .df
+            .borrow()
+            .mean_horizontal(null_strategy)
             .map_err(RbPolarsErr::from)?;
         Ok(s.map(|s| s.into()))
     }

@@ -233,9 +233,23 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   Polars::Series.new([1, nil, 2]).str.concat("-")[0]
-    #   # => "1-null-2"
-    def concat(delimiter = "-")
+    #   Polars::Series.new([1, nil, 2]).str.concat("-")
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "1-2"
+    #   # ]
+    #
+    # @example
+    #   Polars::Series.new([1, nil, 2]).str.concat("-", ignore_nulls: false)
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         null
+    #   # ]
+    def concat(delimiter = "-", ignore_nulls: true)
       super
     end
 

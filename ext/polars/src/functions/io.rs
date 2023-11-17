@@ -11,15 +11,15 @@ pub fn read_ipc_schema(rb_f: Value) -> RbResult<RHash> {
     let metadata = read_file_metadata(&mut r).map_err(RbPolarsErr::from)?;
 
     let dict = RHash::new();
-    for field in metadata.schema.fields {
+    for field in &metadata.schema.fields {
         let dt: Wrap<DataType> = Wrap((&field.data_type).into());
-        dict.aset(field.name, dt)?;
+        dict.aset(field.name.clone(), dt)?;
     }
     Ok(dict)
 }
 
 pub fn read_parquet_schema(rb_f: Value) -> RbResult<RHash> {
-    use polars_core::export::arrow::io::parquet::read::{infer_schema, read_metadata};
+    use polars_parquet::read::{infer_schema, read_metadata};
 
     let mut r = get_file_like(rb_f, false)?;
     let metadata = read_metadata(&mut r).map_err(RbPolarsErr::from)?;

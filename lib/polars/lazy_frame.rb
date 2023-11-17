@@ -352,6 +352,7 @@ module Polars
         slice_pushdown,
         common_subplan_elimination,
         allow_streaming,
+        false
       )
 
       ldf.describe_optimized_plan
@@ -468,7 +469,8 @@ module Polars
       no_optimization: false,
       slice_pushdown: true,
       common_subplan_elimination: true,
-      allow_streaming: false
+      allow_streaming: false,
+      _eager: false
     )
       if no_optimization
         predicate_pushdown = false
@@ -488,7 +490,8 @@ module Polars
         simplify_expression,
         slice_pushdown,
         common_subplan_elimination,
-        allow_streaming
+        allow_streaming,
+        _eager
       )
       Utils.wrap_df(ldf.collect)
     end
@@ -570,7 +573,8 @@ module Polars
         simplify_expression,
         slice_pushdown,
         false,
-        true
+        true,
+        false
       )
       lf.sink_parquet(
         path,
@@ -662,7 +666,8 @@ module Polars
         simplify_expression,
         slice_pushdown,
         common_subplan_elimination,
-        allow_streaming
+        allow_streaming,
+        false
       )
       Utils.wrap_df(ldf.fetch(n_rows))
     end
@@ -1744,8 +1749,10 @@ module Polars
 
     # Shift the values by a given period.
     #
-    # @param periods [Integer]
+    # @param n [Integer]
     #   Number of places to shift (may be negative).
+    # @param fill_value [Object]
+    #   Fill the resulting null values with this value.
     #
     # @return [LazyFrame]
     #
@@ -1782,8 +1789,12 @@ module Polars
     #   # │ 5    ┆ 6    │
     #   # │ null ┆ null │
     #   # └──────┴──────┘
-    def shift(periods)
-      _from_rbldf(_ldf.shift(periods))
+    def shift(n, fill_value: nil)
+      if !fill_value.nil?
+        fill_value = Utils.parse_as_expression(fill_value, str_as_lit: true)
+      end
+      n = Utils.parse_as_expression(n)
+      _from_rbldf(_ldf.shift(n, fill_value))
     end
 
     # Shift the values by a given period and fill the resulting null values.
@@ -1829,10 +1840,7 @@ module Polars
     #   # │ 0   ┆ 0   │
     #   # └─────┴─────┘
     def shift_and_fill(periods, fill_value)
-      if !fill_value.is_a?(Expr)
-        fill_value = Polars.lit(fill_value)
-      end
-      _from_rbldf(_ldf.shift_and_fill(periods, fill_value._rbexpr))
+      shift(periods, fill_value: fill_value)
     end
 
     # Get a slice of this DataFrame.

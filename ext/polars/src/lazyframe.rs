@@ -219,6 +219,7 @@ impl RbLazyFrame {
         slice_pushdown: bool,
         cse: bool,
         allow_streaming: bool,
+        _eager: bool,
     ) -> RbLazyFrame {
         let ldf = self.ldf.clone();
         let ldf = ldf
@@ -228,6 +229,7 @@ impl RbLazyFrame {
             .with_slice_pushdown(slice_pushdown)
             .with_comm_subplan_elim(cse)
             .with_streaming(allow_streaming)
+            ._with_eager(_eager)
             .with_projection_pushdown(projection_pushdown);
         ldf.into()
     }
@@ -494,14 +496,13 @@ impl RbLazyFrame {
         ldf.reverse().into()
     }
 
-    pub fn shift(&self, periods: i64) -> Self {
-        let ldf = self.ldf.clone();
-        ldf.shift(periods).into()
-    }
-
-    pub fn shift_and_fill(&self, periods: i64, fill_value: &RbExpr) -> Self {
-        let ldf = self.ldf.clone();
-        ldf.shift_and_fill(periods, fill_value.inner.clone()).into()
+    pub fn shift(&self, n: &RbExpr, fill_value: Option<&RbExpr>) -> Self {
+        let lf = self.ldf.clone();
+        let out = match fill_value {
+            Some(v) => lf.shift_and_fill(n.inner.clone(), v.inner.clone()),
+            None => lf.shift(n.inner.clone()),
+        };
+        out.into()
     }
 
     pub fn fill_nan(&self, fill_value: &RbExpr) -> Self {

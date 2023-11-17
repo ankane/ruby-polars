@@ -912,8 +912,8 @@ module Polars
     #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4]})
     #   df.select(
     #     [
-    #       Polars.col("a").cumsum,
-    #       Polars.col("a").cumsum(reverse: true).alias("a_reverse")
+    #       Polars.col("a").cum_sum,
+    #       Polars.col("a").cum_sum(reverse: true).alias("a_reverse")
     #     ]
     #   )
     #   # =>
@@ -928,9 +928,10 @@ module Polars
     #   # │ 6   ┆ 7         │
     #   # │ 10  ┆ 4         │
     #   # └─────┴───────────┘
-    def cumsum(reverse: false)
-      wrap_expr(_rbexpr.cumsum(reverse))
+    def cum_sum(reverse: false)
+      wrap_expr(_rbexpr.cum_sum(reverse))
     end
+    alias_method :cumsum, :cum_sum
 
     # Get an array with the cumulative product computed at every element.
     #
@@ -947,8 +948,8 @@ module Polars
     #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4]})
     #   df.select(
     #     [
-    #       Polars.col("a").cumprod,
-    #       Polars.col("a").cumprod(reverse: true).alias("a_reverse")
+    #       Polars.col("a").cum_prod,
+    #       Polars.col("a").cum_prod(reverse: true).alias("a_reverse")
     #     ]
     #   )
     #   # =>
@@ -963,9 +964,10 @@ module Polars
     #   # │ 6   ┆ 12        │
     #   # │ 24  ┆ 4         │
     #   # └─────┴───────────┘
-    def cumprod(reverse: false)
-      wrap_expr(_rbexpr.cumprod(reverse))
+    def cum_prod(reverse: false)
+      wrap_expr(_rbexpr.cum_prod(reverse))
     end
+    alias_method :cumprod, :cum_prod
 
     # Get an array with the cumulative min computed at every element.
     #
@@ -978,8 +980,8 @@ module Polars
     #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4]})
     #   df.select(
     #     [
-    #       Polars.col("a").cummin,
-    #       Polars.col("a").cummin(reverse: true).alias("a_reverse")
+    #       Polars.col("a").cum_min,
+    #       Polars.col("a").cum_min(reverse: true).alias("a_reverse")
     #     ]
     #   )
     #   # =>
@@ -994,9 +996,10 @@ module Polars
     #   # │ 1   ┆ 3         │
     #   # │ 1   ┆ 4         │
     #   # └─────┴───────────┘
-    def cummin(reverse: false)
-      wrap_expr(_rbexpr.cummin(reverse))
+    def cum_min(reverse: false)
+      wrap_expr(_rbexpr.cum_min(reverse))
     end
+    alias_method :cummin, :cum_min
 
     # Get an array with the cumulative max computed at every element.
     #
@@ -1009,8 +1012,8 @@ module Polars
     #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4]})
     #   df.select(
     #     [
-    #       Polars.col("a").cummax,
-    #       Polars.col("a").cummax(reverse: true).alias("a_reverse")
+    #       Polars.col("a").cum_max,
+    #       Polars.col("a").cum_max(reverse: true).alias("a_reverse")
     #     ]
     #   )
     #   # =>
@@ -1025,9 +1028,10 @@ module Polars
     #   # │ 3   ┆ 4         │
     #   # │ 4   ┆ 4         │
     #   # └─────┴───────────┘
-    def cummax(reverse: false)
-      wrap_expr(_rbexpr.cummax(reverse))
+    def cum_max(reverse: false)
+      wrap_expr(_rbexpr.cum_max(reverse))
     end
+    alias_method :cummax, :cum_max
 
     # Get an array with the cumulative count computed at every element.
     #
@@ -1042,8 +1046,8 @@ module Polars
     #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4]})
     #   df.select(
     #     [
-    #       Polars.col("a").cumcount,
-    #       Polars.col("a").cumcount(reverse: true).alias("a_reverse")
+    #       Polars.col("a").cum_count,
+    #       Polars.col("a").cum_count(reverse: true).alias("a_reverse")
     #     ]
     #   )
     #   # =>
@@ -1058,9 +1062,10 @@ module Polars
     #   # │ 2   ┆ 1         │
     #   # │ 3   ┆ 0         │
     #   # └─────┴───────────┘
-    def cumcount(reverse: false)
-      wrap_expr(_rbexpr.cumcount(reverse))
+    def cum_count(reverse: false)
+      wrap_expr(_rbexpr.cum_count(reverse))
     end
+    alias_method :cumcount, :cum_count
 
     # Rounds down to the nearest integer value.
     #
@@ -1586,19 +1591,22 @@ module Polars
     #   # │ one   ┆ [2, 98]   │
     #   # │ two   ┆ [4, 99]   │
     #   # └───────┴───────────┘
-    def take(indices)
+    def gather(indices)
       if indices.is_a?(::Array)
         indices_lit = Polars.lit(Series.new("", indices, dtype: :u32))
       else
         indices_lit = Utils.expr_to_lit_or_expr(indices, str_to_lit: false)
       end
-      wrap_expr(_rbexpr.take(indices_lit._rbexpr))
+      wrap_expr(_rbexpr.gather(indices_lit._rbexpr))
     end
+    alias_method :take, :gather
 
     # Shift the values by a given period.
     #
-    # @param periods [Integer]
+    # @param n [Integer]
     #   Number of places to shift (may be negative).
+    # @param fill_value [Object]
+    #   Fill the resulting null values with this value.
     #
     # @return [Expr]
     #
@@ -1617,8 +1625,12 @@ module Polars
     #   # │ 2    │
     #   # │ 3    │
     #   # └──────┘
-    def shift(periods = 1)
-      wrap_expr(_rbexpr.shift(periods))
+    def shift(n = 1, fill_value: nil)
+      if !fill_value.nil?
+        fill_value = Utils.parse_as_expression(fill_value, str_as_lit: true)
+      end
+      n = Utils.parse_as_expression(n)
+      wrap_expr(_rbexpr.shift(n, fill_value))
     end
 
     # Shift the values by a given period and fill the resulting null values.
@@ -1646,8 +1658,7 @@ module Polars
     #   # │ 3   │
     #   # └─────┘
     def shift_and_fill(periods, fill_value)
-      fill_value = Utils.expr_to_lit_or_expr(fill_value, str_to_lit: true)
-      wrap_expr(_rbexpr.shift_and_fill(periods, fill_value._rbexpr))
+      shift(periods, fill_value: fill_value)
     end
 
     # Fill null values using the specified value or strategy.
@@ -2728,7 +2739,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4, 5, 6, 7, 8, 9]})
-    #   df.select(Polars.col("foo").take_every(3))
+    #   df.select(Polars.col("foo").gather_every(3))
     #   # =>
     #   # shape: (3, 1)
     #   # ┌─────┐
@@ -2740,9 +2751,10 @@ module Polars
     #   # │ 4   │
     #   # │ 7   │
     #   # └─────┘
-    def take_every(n)
-      wrap_expr(_rbexpr.take_every(n))
+    def gather_every(n)
+      wrap_expr(_rbexpr.gather_every(n))
     end
+    alias_method :take_every, :gather_every
 
     # Get the first `n` rows.
     #

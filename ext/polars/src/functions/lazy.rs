@@ -177,7 +177,7 @@ pub fn cumfold(acc: &RbExpr, lambda: Value, exprs: RArray, include_init: bool) -
 
     let func =
         move |a: Series, b: Series| binary_lambda(Ruby::get().unwrap().get_inner(lambda), a, b);
-    Ok(polars::lazy::dsl::cumfold_exprs(acc.inner.clone(), func, exprs, include_init).into())
+    Ok(polars::lazy::dsl::cum_fold_exprs(acc.inner.clone(), func, exprs, include_init).into())
 }
 
 pub fn lit(value: Value, allow_object: bool) -> RbResult<RbExpr> {
@@ -249,8 +249,8 @@ pub fn spearman_rank_corr(a: &RbExpr, b: &RbExpr, ddof: u8, propagate_nans: bool
         .into()
 }
 
-pub fn cov(a: &RbExpr, b: &RbExpr) -> RbExpr {
-    polars::lazy::dsl::cov(a.inner.clone(), b.inner.clone()).into()
+pub fn cov(a: &RbExpr, b: &RbExpr, ddof: u8) -> RbExpr {
+    polars::lazy::dsl::cov(a.inner.clone(), b.inner.clone(), ddof).into()
 }
 
 pub fn concat_str(s: RArray, sep: String) -> RbResult<RbExpr> {

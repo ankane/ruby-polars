@@ -250,8 +250,8 @@ impl RbExpr {
             .into()
     }
 
-    pub fn take(&self, idx: &RbExpr) -> Self {
-        self.clone().inner.take(idx.inner.clone()).into()
+    pub fn gather(&self, idx: &RbExpr) -> Self {
+        self.clone().inner.gather(idx.inner.clone()).into()
     }
 
     pub fn sort_by(&self, by: RArray, reverse: Vec<bool>) -> RbResult<Self> {
@@ -267,14 +267,13 @@ impl RbExpr {
         self.clone().inner.forward_fill(limit).into()
     }
 
-    pub fn shift(&self, periods: i64) -> Self {
-        self.clone().inner.shift(periods).into()
-    }
-    pub fn shift_and_fill(&self, periods: i64, fill_value: &RbExpr) -> Self {
-        self.clone()
-            .inner
-            .shift_and_fill(periods, fill_value.inner.clone())
-            .into()
+    pub fn shift(&self, n: &Self, fill_value: Option<&Self>) -> Self {
+        let expr = self.inner.clone();
+        let out = match fill_value {
+            Some(v) => expr.shift_and_fill(n.inner.clone(), v.inner.clone()),
+            None => expr.shift(n.inner.clone()),
+        };
+        out.into()
     }
 
     pub fn fill_null(&self, expr: &RbExpr) -> Self {
@@ -346,14 +345,14 @@ impl RbExpr {
         self.clone().inner.explode().into()
     }
 
-    pub fn take_every(&self, n: usize) -> Self {
+    pub fn gather_every(&self, n: usize) -> Self {
         self.clone()
             .inner
             .map(
-                move |s: Series| Ok(Some(s.take_every(n))),
+                move |s: Series| Ok(Some(s.gather_every(n))),
                 GetOutput::same_type(),
             )
-            .with_fmt("take_every")
+            .with_fmt("gather_every")
             .into()
     }
 
@@ -498,20 +497,20 @@ impl RbExpr {
         self.clone().inner.pow(exponent.inner.clone()).into()
     }
 
-    pub fn cumsum(&self, reverse: bool) -> Self {
-        self.clone().inner.cumsum(reverse).into()
+    pub fn cum_sum(&self, reverse: bool) -> Self {
+        self.clone().inner.cum_sum(reverse).into()
     }
 
-    pub fn cummax(&self, reverse: bool) -> Self {
-        self.clone().inner.cummax(reverse).into()
+    pub fn cum_max(&self, reverse: bool) -> Self {
+        self.clone().inner.cum_max(reverse).into()
     }
 
-    pub fn cummin(&self, reverse: bool) -> Self {
-        self.clone().inner.cummin(reverse).into()
+    pub fn cum_min(&self, reverse: bool) -> Self {
+        self.clone().inner.cum_min(reverse).into()
     }
 
-    pub fn cumprod(&self, reverse: bool) -> Self {
-        self.clone().inner.cumprod(reverse).into()
+    pub fn cum_prod(&self, reverse: bool) -> Self {
+        self.clone().inner.cum_prod(reverse).into()
     }
 
     pub fn product(&self) -> Self {
@@ -598,8 +597,8 @@ impl RbExpr {
         self.inner.clone().reshape(&dims).into()
     }
 
-    pub fn cumcount(&self, reverse: bool) -> Self {
-        self.inner.clone().cumcount(reverse).into()
+    pub fn cum_count(&self, reverse: bool) -> Self {
+        self.inner.clone().cum_count(reverse).into()
     }
 
     pub fn to_physical(&self) -> Self {

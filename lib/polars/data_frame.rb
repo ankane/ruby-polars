@@ -899,6 +899,7 @@ module Polars
     def write_csv(
       file = nil,
       has_header: true,
+      include_header: nil,
       sep: ",",
       quote: '"',
       batch_size: 1024,
@@ -908,6 +909,8 @@ module Polars
       float_precision: nil,
       null_value: nil
     )
+      include_header = has_header if include_header.nil?
+
       if sep.length > 1
         raise ArgumentError, "only single byte separator is allowed"
       elsif quote.length > 1
@@ -921,7 +924,7 @@ module Polars
         buffer.set_encoding(Encoding::BINARY)
         _df.write_csv(
           buffer,
-          has_header,
+          include_header,
           sep.ord,
           quote.ord,
           batch_size,
@@ -940,7 +943,7 @@ module Polars
 
       _df.write_csv(
         file,
-        has_header,
+        include_header,
         sep.ord,
         quote.ord,
         batch_size,
@@ -3447,8 +3450,10 @@ module Polars
 
     # Shift values by the given period.
     #
-    # @param periods [Integer]
+    # @param n [Integer]
     #   Number of places to shift (may be negative).
+    # @param fill_value [Object]
+    #  Fill the resulting null values with this value.
     #
     # @return [DataFrame]
     #
@@ -3486,8 +3491,8 @@ module Polars
     #   # │ 3    ┆ 8    ┆ c    │
     #   # │ null ┆ null ┆ null │
     #   # └──────┴──────┴──────┘
-    def shift(periods)
-      _from_rbdf(_df.shift(periods))
+    def shift(n, fill_value: nil)
+      lazy.shift(n, fill_value: fill_value).collect(_eager: true)
     end
 
     # Shift the values by a given period and fill the resulting null values.
@@ -3520,9 +3525,7 @@ module Polars
     #   # │ 2   ┆ 7   ┆ b   │
     #   # └─────┴─────┴─────┘
     def shift_and_fill(periods, fill_value)
-      lazy
-        .shift_and_fill(periods, fill_value)
-        .collect(no_optimization: true, string_cache: false)
+      shift(periods, fill_value: fill_value)
     end
 
     # Get a mask of all duplicated rows in this DataFrame.
@@ -3773,7 +3776,7 @@ module Polars
       if axis == 0
         _from_rbdf(_df.max)
       elsif axis == 1
-        Utils.wrap_s(_df.hmax)
+        Utils.wrap_s(_df.max_horizontal)
       else
         raise ArgumentError, "Axis should be 0 or 1."
       end
@@ -3805,7 +3808,7 @@ module Polars
       if axis == 0
         _from_rbdf(_df.min)
       elsif axis == 1
-        Utils.wrap_s(_df.hmin)
+        Utils.wrap_s(_df.min_horizontal)
       else
         raise ArgumentError, "Axis should be 0 or 1."
       end
@@ -3854,7 +3857,7 @@ module Polars
       when 0
         _from_rbdf(_df.sum)
       when 1
-        Utils.wrap_s(_df.hsum(null_strategy))
+        Utils.wrap_s(_df.sum_horizontal(null_strategy))
       else
         raise ArgumentError, "Axis should be 0 or 1."
       end
@@ -3892,7 +3895,7 @@ module Polars
       when 0
         _from_rbdf(_df.mean)
       when 1
-        Utils.wrap_s(_df.hmean(null_strategy))
+        Utils.wrap_s(_df.mean_horizontal(null_strategy))
       else
         raise ArgumentError, "Axis should be 0 or 1."
       end
@@ -4589,7 +4592,7 @@ module Polars
     #
     # @example
     #   s = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => [5, 6, 7, 8]})
-    #   s.take_every(2)
+    #   s.gather_every(2)
     #   # =>
     #   # shape: (2, 2)
     #   # ┌─────┬─────┐
@@ -4600,9 +4603,10 @@ module Polars
     #   # │ 1   ┆ 5   │
     #   # │ 3   ┆ 7   │
     #   # └─────┴─────┘
-    def take_every(n)
-      select(Utils.col("*").take_every(n))
+    def gather_every(n)
+      select(Utils.col("*").gather_every(n))
     end
+    alias_method :take_every, :gather_every
 
     # Hash and combine the rows in this DataFrame.
     #

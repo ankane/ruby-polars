@@ -931,7 +931,8 @@ module Polars
           simplify_expression,
           slice_pushdown,
           common_subplan_elimination,
-          allow_streaming
+          allow_streaming,
+          false
         )
         prepared << ldf
       end

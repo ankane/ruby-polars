@@ -97,9 +97,7 @@ module Polars
     #   # │ 2001-01-01 00:50:00 ┆ 2001-01-01 00:30:00 │
     #   # │ 2001-01-01 01:00:00 ┆ 2001-01-01 01:00:00 │
     #   # └─────────────────────┴─────────────────────┘
-    def truncate(every, offset: nil, use_earliest: nil, ambiguous: "raise")
-      ambiguous = Utils.rename_use_earliest_to_ambiguous(use_earliest, ambiguous)
-      ambiguous = Polars.lit(ambiguous) unless ambiguous.is_a?(Expr)
+    def truncate(every, offset: nil, use_earliest: nil)
       if offset.nil?
         offset = "0ns"
       end
@@ -113,7 +111,6 @@ module Polars
         _rbexpr.dt_truncate(
           every,
           Utils._timedelta_to_pl_duration(offset),
-          ambiguous._rbexpr
         )
       )
     end
@@ -213,18 +210,15 @@ module Polars
     #   # │ 2001-01-01 00:50:00 ┆ 2001-01-01 01:00:00 │
     #   # │ 2001-01-01 01:00:00 ┆ 2001-01-01 01:00:00 │
     #   # └─────────────────────┴─────────────────────┘
-    def round(every, offset: nil, ambiguous: "raise")
+    def round(every, offset: nil)
       if offset.nil?
         offset = "0ns"
       end
 
-      ambiguous = Polars.lit(ambiguous) unless ambiguous.is_a?(Expr)
-
       Utils.wrap_expr(
         _rbexpr.dt_round(
           Utils._timedelta_to_pl_duration(every),
-          Utils._timedelta_to_pl_duration(offset),
-          ambiguous._rbexpr
+          Utils._timedelta_to_pl_duration(offset)
         )
       )
     end

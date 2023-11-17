@@ -257,10 +257,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("std", method!(RbDataFrame::std, 1))?;
     class.define_method("var", method!(RbDataFrame::var, 1))?;
     class.define_method("median", method!(RbDataFrame::median, 0))?;
-    class.define_method("hmean", method!(RbDataFrame::hmean, 1))?;
-    class.define_method("hmax", method!(RbDataFrame::hmax, 0))?;
-    class.define_method("hmin", method!(RbDataFrame::hmin, 0))?;
-    class.define_method("hsum", method!(RbDataFrame::hsum, 1))?;
+    class.define_method("mean_horizontal", method!(RbDataFrame::mean_horizontal, 1))?;
+    class.define_method("max_horizontal", method!(RbDataFrame::max_horizontal, 0))?;
+    class.define_method("min_horizontal", method!(RbDataFrame::min_horizontal, 0))?;
+    class.define_method("sum_horizontal", method!(RbDataFrame::sum_horizontal, 1))?;
     class.define_method("quantile", method!(RbDataFrame::quantile, 2))?;
     class.define_method("to_dummies", method!(RbDataFrame::to_dummies, 3))?;
     class.define_method("null_count", method!(RbDataFrame::null_count, 0))?;
@@ -324,12 +324,11 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arg_max", method!(RbExpr::arg_max, 0))?;
     class.define_method("arg_min", method!(RbExpr::arg_min, 0))?;
     class.define_method("search_sorted", method!(RbExpr::search_sorted, 2))?;
-    class.define_method("take", method!(RbExpr::take, 1))?;
+    class.define_method("gather", method!(RbExpr::gather, 1))?;
     class.define_method("sort_by", method!(RbExpr::sort_by, 2))?;
     class.define_method("backward_fill", method!(RbExpr::backward_fill, 1))?;
     class.define_method("forward_fill", method!(RbExpr::forward_fill, 1))?;
-    class.define_method("shift", method!(RbExpr::shift, 1))?;
-    class.define_method("shift_and_fill", method!(RbExpr::shift_and_fill, 2))?;
+    class.define_method("shift", method!(RbExpr::shift, 2))?;
     class.define_method("fill_null", method!(RbExpr::fill_null, 1))?;
     class.define_method(
         "fill_null_with_strategy",
@@ -347,7 +346,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("is_first_distinct", method!(RbExpr::is_first_distinct, 0))?;
     class.define_method("is_last_distinct", method!(RbExpr::is_last_distinct, 0))?;
     class.define_method("explode", method!(RbExpr::explode, 0))?;
-    class.define_method("take_every", method!(RbExpr::take_every, 1))?;
+    class.define_method("gather_every", method!(RbExpr::gather_every, 1))?;
     class.define_method("tail", method!(RbExpr::tail, 1))?;
     class.define_method("head", method!(RbExpr::head, 1))?;
     class.define_method("slice", method!(RbExpr::slice, 2))?;
@@ -379,10 +378,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("is_in", method!(RbExpr::is_in, 1))?;
     class.define_method("repeat_by", method!(RbExpr::repeat_by, 1))?;
     class.define_method("pow", method!(RbExpr::pow, 1))?;
-    class.define_method("cumsum", method!(RbExpr::cumsum, 1))?;
-    class.define_method("cummax", method!(RbExpr::cummax, 1))?;
-    class.define_method("cummin", method!(RbExpr::cummin, 1))?;
-    class.define_method("cumprod", method!(RbExpr::cumprod, 1))?;
+    class.define_method("cum_sum", method!(RbExpr::cum_sum, 1))?;
+    class.define_method("cum_max", method!(RbExpr::cum_max, 1))?;
+    class.define_method("cum_min", method!(RbExpr::cum_min, 1))?;
+    class.define_method("cum_prod", method!(RbExpr::cum_prod, 1))?;
     class.define_method("product", method!(RbExpr::product, 0))?;
     class.define_method("shrink_dtype", method!(RbExpr::shrink_dtype, 0))?;
     class.define_method("str_to_date", method!(RbExpr::str_to_date, 4))?;
@@ -423,7 +422,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_hex_decode", method!(RbExpr::str_hex_decode, 1))?;
     class.define_method("str_base64_encode", method!(RbExpr::str_base64_encode, 0))?;
     class.define_method("str_base64_decode", method!(RbExpr::str_base64_decode, 1))?;
-    class.define_method("str_parse_int", method!(RbExpr::str_parse_int, 2))?;
+    class.define_method("str_to_integer", method!(RbExpr::str_to_integer, 2))?;
     class.define_method("str_json_extract", method!(RbExpr::str_json_extract, 2))?;
     class.define_method("binary_hex_encode", method!(RbExpr::bin_hex_encode, 0))?;
     class.define_method("binary_hex_decode", method!(RbExpr::bin_hex_decode, 1))?;
@@ -504,10 +503,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "dt_replace_time_zone",
         method!(RbExpr::dt_replace_time_zone, 2),
     )?;
-    class.define_method("dt_truncate", method!(RbExpr::dt_truncate, 3))?;
+    class.define_method("dt_truncate", method!(RbExpr::dt_truncate, 2))?;
     class.define_method("dt_month_start", method!(RbExpr::dt_month_start, 0))?;
     class.define_method("dt_month_end", method!(RbExpr::dt_month_end, 0))?;
-    class.define_method("dt_round", method!(RbExpr::dt_round, 3))?;
+    class.define_method("dt_round", method!(RbExpr::dt_round, 2))?;
     class.define_method("dt_combine", method!(RbExpr::dt_combine, 2))?;
     class.define_method("map", method!(RbExpr::map, 3))?;
     class.define_method("dot", method!(RbExpr::dot, 1))?;
@@ -549,10 +548,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("pct_change", method!(RbExpr::pct_change, 1))?;
     class.define_method("skew", method!(RbExpr::skew, 1))?;
     class.define_method("kurtosis", method!(RbExpr::kurtosis, 2))?;
-    class.define_method("str_concat", method!(RbExpr::str_concat, 1))?;
+    class.define_method("str_concat", method!(RbExpr::str_concat, 2))?;
     class.define_method("cat_set_ordering", method!(RbExpr::cat_set_ordering, 1))?;
     class.define_method("reshape", method!(RbExpr::reshape, 1))?;
-    class.define_method("cumcount", method!(RbExpr::cumcount, 1))?;
+    class.define_method("cum_count", method!(RbExpr::cum_count, 1))?;
     class.define_method("to_physical", method!(RbExpr::to_physical, 0))?;
     class.define_method("shuffle", method!(RbExpr::shuffle, 1))?;
     class.define_method("sample_n", method!(RbExpr::sample_n, 4))?;
@@ -630,7 +629,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "spearman_rank_corr",
         function!(crate::functions::lazy::spearman_rank_corr, 4),
     )?;
-    class.define_singleton_method("cov", function!(crate::functions::lazy::cov, 2))?;
+    class.define_singleton_method("cov", function!(crate::functions::lazy::cov, 3))?;
     class.define_singleton_method(
         "arg_sort_by",
         function!(crate::functions::lazy::arg_sort_by, 2),
@@ -665,7 +664,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method(
         "optimization_toggle",
-        method!(RbLazyFrame::optimization_toggle, 7),
+        method!(RbLazyFrame::optimization_toggle, 8),
     )?;
     class.define_method("sort", method!(RbLazyFrame::sort, 4))?;
     class.define_method("sort_by_exprs", method!(RbLazyFrame::sort_by_exprs, 4))?;
@@ -690,8 +689,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("with_columns", method!(RbLazyFrame::with_columns, 1))?;
     class.define_method("rename", method!(RbLazyFrame::rename, 2))?;
     class.define_method("reverse", method!(RbLazyFrame::reverse, 0))?;
-    class.define_method("shift", method!(RbLazyFrame::shift, 1))?;
-    class.define_method("shift_and_fill", method!(RbLazyFrame::shift_and_fill, 2))?;
+    class.define_method("shift", method!(RbLazyFrame::shift, 2))?;
     class.define_method("fill_nan", method!(RbLazyFrame::fill_nan, 1))?;
     class.define_method("min", method!(RbLazyFrame::min, 0))?;
     class.define_method("max", method!(RbLazyFrame::max, 0))?;
