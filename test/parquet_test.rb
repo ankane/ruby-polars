@@ -66,4 +66,13 @@ class ParquetTest < Minitest::Test
     df = Polars.read_parquet("test/support/types.parquet")
     assert_nil df.write_parquet(temp_path)
   end
+
+  def test_decimals
+    Polars::Config.activate_decimals
+    df = Polars::DataFrame.new({"a" => [BigDecimal("1"), BigDecimal("2"), BigDecimal("3")]})
+    path = temp_path
+    assert_nil df.write_parquet(path)
+    df2 = Polars.read_parquet(path)
+    assert_series [1, 2, 3], df2["a"], dtype: Polars::Decimal
+  end
 end
