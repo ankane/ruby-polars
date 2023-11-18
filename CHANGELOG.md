@@ -1,4 +1,4 @@
-## 0.7.0 (unreleased)
+## 0.7.0 (2023-11-17)
 
 - Updated Polars to 0.35.2
 - Added support for SQL querying

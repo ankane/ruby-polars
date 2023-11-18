@@ -20,7 +20,7 @@ This library follows the [Polars Python API](https://pola-rs.github.io/polars/py
 Polars.read_csv("iris.csv")
   .lazy
   .filter(Polars.col("sepal_length") > 5)
-  .groupby("species")
+  .group_by("species")
   .agg(Polars.all.sum)
   .collect
 ```
@@ -260,19 +260,19 @@ df["a"].var
 Group
 
 ```ruby
-df.groupby("a").count
+df.group_by("a").count
 ```
 
 Works with all summary statistics
 
 ```ruby
-df.groupby("a").max
+df.group_by("a").max
 ```
 
 Multiple groups
 
 ```ruby
-df.groupby(["a", "b"]).count
+df.group_by(["a", "b"]).count
 ```
 
 ## Combining Data Frames
@@ -403,13 +403,13 @@ df.plot("a", "b", type: "pie")
 Group data
 
 ```ruby
-df.groupby("c").plot("a", "b")
+df.group_by("c").plot("a", "b")
 ```
 
 Stacked columns or bars
 
 ```ruby
-df.groupby("c").plot("a", "b", stacked: true)
+df.group_by("c").plot("a", "b", stacked: true)
 ```
 
 ## History
