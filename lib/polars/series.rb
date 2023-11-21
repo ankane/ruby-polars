@@ -1248,15 +1248,45 @@ module Polars
 
     # Return the `k` largest elements.
     #
-    # If `reverse: true`, the smallest elements will be given.
+    # @param k [Integer]
+    #   Number of elements to return.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [2, 5, 1, 4, 3])
+    #   s.top_k(k: 3)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         5
+    #   #         4
+    #   #         3
+    #   # ]
+    def top_k(k: 5)
+      super
+    end
+
+    # Return the `k` smallest elements.
     #
     # @param k [Integer]
     #   Number of elements to return.
-    # @param reverse [Boolean]
-    #   Return the smallest elements.
     #
     # @return [Boolean]
-    def top_k(k: 5, reverse: false)
+    #
+    # @example
+    #   s = Polars::Series.new("a", [2, 5, 1, 4, 3])
+    #   s.bottom_k(k: 3)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ]
+    def bottom_k(k: 5)
       super
     end
 

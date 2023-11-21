@@ -1,3 +1,7 @@
+## 0.7.1 (unreleased)
+
+- Fixed error with `top_k` method
+
 ## 0.7.0 (2023-11-17)
 
 - Updated Polars to 0.35.2
