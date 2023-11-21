@@ -312,6 +312,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("cut", method!(RbExpr::cut, 4))?;
     class.define_method("qcut", method!(RbExpr::qcut, 5))?;
     class.define_method("qcut_uniform", method!(RbExpr::qcut_uniform, 5))?;
+    class.define_method("rle", method!(RbExpr::rle, 0))?;
+    class.define_method("rle_id", method!(RbExpr::rle_id, 0))?;
     class.define_method("agg_groups", method!(RbExpr::agg_groups, 0))?;
     class.define_method("count", method!(RbExpr::count, 0))?;
     class.define_method("value_counts", method!(RbExpr::value_counts, 2))?;

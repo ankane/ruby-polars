@@ -209,6 +209,14 @@ impl RbExpr {
             .into()
     }
 
+    pub fn rle(&self) -> Self {
+        self.inner.clone().rle().into()
+    }
+
+    pub fn rle_id(&self) -> Self {
+        self.inner.clone().rle_id().into()
+    }
+
     pub fn agg_groups(&self) -> Self {
         self.clone().inner.agg_groups().into()
     }

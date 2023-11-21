@@ -78,6 +78,7 @@ features = [
     "range",
     "reinterpret",
     "repeat_by",
+    "rle",
     "rolling_window",
     "round_series",
     "row_hash",

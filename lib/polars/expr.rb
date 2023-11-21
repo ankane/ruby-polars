@@ -2625,6 +2625,59 @@ module Polars
       wrap_expr(rbexpr)
     end
 
+    # Get the lengths of runs of identical values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(Polars::Series.new("s", [1, 1, 2, 1, nil, 1, 3, 3]))
+    #   df.select(Polars.col("s").rle).unnest("s")
+    #   # =>
+    #   # shape: (6, 2)
+    #   # ┌─────────┬────────┐
+    #   # │ lengths ┆ values │
+    #   # │ ---     ┆ ---    │
+    #   # │ i32     ┆ i64    │
+    #   # ╞═════════╪════════╡
+    #   # │ 2       ┆ 1      │
+    #   # │ 1       ┆ 2      │
+    #   # │ 1       ┆ 1      │
+    #   # │ 1       ┆ null   │
+    #   # │ 1       ┆ 1      │
+    #   # │ 2       ┆ 3      │
+    #   # └─────────┴────────┘
+    def rle
+      wrap_expr(_rbexpr.rle)
+    end
+
+    # Map values to run IDs.
+    #
+    # Similar to RLE, but it maps each value to an ID corresponding to the run into
+    # which it falls. This is especially useful when you want to define groups by
+    # runs of identical values rather than the values themselves.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 1, 1, 1], "b" => ["x", "x", nil, "y", "y"]})
+    #   df.with_columns([Polars.col("a").rle_id.alias("a_r"), Polars.struct(["a", "b"]).rle_id.alias("ab_r")])
+    #   # =>
+    #   # shape: (5, 4)
+    #   # ┌─────┬──────┬─────┬──────┐
+    #   # │ a   ┆ b    ┆ a_r ┆ ab_r │
+    #   # │ --- ┆ ---  ┆ --- ┆ ---  │
+    #   # │ i64 ┆ str  ┆ u32 ┆ u32  │
+    #   # ╞═════╪══════╪═════╪══════╡
+    #   # │ 1   ┆ x    ┆ 0   ┆ 0    │
+    #   # │ 2   ┆ x    ┆ 1   ┆ 1    │
+    #   # │ 1   ┆ null ┆ 2   ┆ 2    │
+    #   # │ 1   ┆ y    ┆ 2   ┆ 3    │
+    #   # │ 1   ┆ y    ┆ 2   ┆ 3    │
+    #   # └─────┴──────┴─────┴──────┘
+    def rle_id
+      wrap_expr(_rbexpr.rle_id)
+    end
+
     # Filter a single column.
     #
     # Mostly useful in an aggregation context. If you want to filter on a DataFrame

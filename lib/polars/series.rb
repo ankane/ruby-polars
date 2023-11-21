@@ -888,6 +888,59 @@ module Polars
       result
     end
 
+    # Get the lengths of runs of identical values.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("s", [1, 1, 2, 1, nil, 1, 3, 3])
+    #   s.rle.struct.unnest
+    #   # =>
+    #   # shape: (6, 2)
+    #   # ┌─────────┬────────┐
+    #   # │ lengths ┆ values │
+    #   # │ ---     ┆ ---    │
+    #   # │ i32     ┆ i64    │
+    #   # ╞═════════╪════════╡
+    #   # │ 2       ┆ 1      │
+    #   # │ 1       ┆ 2      │
+    #   # │ 1       ┆ 1      │
+    #   # │ 1       ┆ null   │
+    #   # │ 1       ┆ 1      │
+    #   # │ 2       ┆ 3      │
+    #   # └─────────┴────────┘
+    def rle
+      super
+    end
+
+    # Map values to run IDs.
+    #
+    # Similar to RLE, but it maps each value to an ID corresponding to the run into
+    # which it falls. This is especially useful when you want to define groups by
+    # runs of identical values rather than the values themselves.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("s", [1, 1, 2, 1, nil, 1, 3, 3])
+    #   s.rle_id()
+    #   # =>
+    #   # shape: (8,)
+    #   # Series: 's' [u32]
+    #   # [
+    #   #         0
+    #   #         0
+    #   #         1
+    #   #         2
+    #   #         3
+    #   #         4
+    #   #         5
+    #   #         5
+    #   # ]
+    def rle_id
+      super
+    end
+
     # Count the unique values in a Series.
     #
     # @param sort [Boolean]

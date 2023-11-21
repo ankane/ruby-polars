@@ -1,6 +1,7 @@
 ## 0.7.1 (unreleased)
 
 - Added `cut` and `qcut` methods to `Series` and `Expr`
+- Added `rle` and `rle_id` methods to `Series` and `Expr`
 - Added `bottom_k` method to `Series`
 - Fixed error with `top_k` method
 
