@@ -74,5 +74,7 @@ class ParquetTest < Minitest::Test
     assert_nil df.write_parquet(path)
     df2 = Polars.read_parquet(path)
     assert_series [1, 2, 3], df2["a"], dtype: Polars::Decimal
+  ensure
+    Polars::Config.activate_decimals(false)
   end
 end
