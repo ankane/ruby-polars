@@ -2478,6 +2478,62 @@ module Polars
       wrap_expr(_rbexpr.quantile(quantile._rbexpr, interpolation))
     end
 
+    # Bin continuous values into discrete categories.
+    #
+    # @param breaks [Array]
+    #   List of unique cut points.
+    # @param labels [Array]
+    #   Names of the categories. The number of labels must be equal to the number
+    #   of cut points plus one.
+    # @param left_closed [Boolean]
+    #   Set the intervals to be left-closed instead of right-closed.
+    # @param include_breaks [Boolean]
+    #   Include a column with the right endpoint of the bin each observation falls
+    #   in. This will change the data type of the output from a
+    #   `Categorical` to a `Struct`.
+    #
+    # @return [Expr]
+    #
+    # @example Divide a column into three categories.
+    #   df = Polars::DataFrame.new({"foo" => [-2, -1, 0, 1, 2]})
+    #   df.with_columns(
+    #     Polars.col("foo").cut([-1, 1], labels: ["a", "b", "c"]).alias("cut")
+    #   )
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ cut │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ cat │
+    #   # ╞═════╪═════╡
+    #   # │ -2  ┆ a   │
+    #   # │ -1  ┆ a   │
+    #   # │ 0   ┆ b   │
+    #   # │ 1   ┆ b   │
+    #   # │ 2   ┆ c   │
+    #   # └─────┴─────┘
+    #
+    # @example Add both the category and the breakpoint.
+    #   df.with_columns(
+    #     Polars.col("foo").cut([-1, 1], include_breaks: true).alias("cut")
+    #   ).unnest("cut")
+    #   # =>
+    #   # shape: (5, 3)
+    #   # ┌─────┬──────┬────────────┐
+    #   # │ foo ┆ brk  ┆ foo_bin    │
+    #   # │ --- ┆ ---  ┆ ---        │
+    #   # │ i64 ┆ f64  ┆ cat        │
+    #   # ╞═════╪══════╪════════════╡
+    #   # │ -2  ┆ -1.0 ┆ (-inf, -1] │
+    #   # │ -1  ┆ -1.0 ┆ (-inf, -1] │
+    #   # │ 0   ┆ 1.0  ┆ (-1, 1]    │
+    #   # │ 1   ┆ 1.0  ┆ (-1, 1]    │
+    #   # │ 2   ┆ inf  ┆ (1, inf]   │
+    #   # └─────┴──────┴────────────┘
+    def cut(breaks, labels: nil, left_closed: false, include_breaks: false)
+      wrap_expr(_rbexpr.cut(breaks, labels, left_closed, include_breaks))
+    end
+
     # Filter a single column.
     #
     # Mostly useful in an aggregation context. If you want to filter on a DataFrame

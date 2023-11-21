@@ -735,6 +735,73 @@ module Polars
       Utils.wrap_df(_s.to_dummies(separator, drop_first))
     end
 
+    # Bin continuous values into discrete categories.
+    #
+    # @param breaks [Array]
+    #   List of unique cut points.
+    # @param labels [Array]
+    #   Names of the categories. The number of labels must be equal to the number
+    #   of cut points plus one.
+    # @param left_closed [Boolean]
+    #   Set the intervals to be left-closed instead of right-closed.
+    # @param include_breaks [Boolean]
+    #   Include a column with the right endpoint of the bin each observation falls
+    #   in. This will change the data type of the output from a
+    #   `Categorical` to a `Struct`.
+    #
+    # @return [Series]
+    #
+    # @example Divide the column into three categories.
+    #   s = Polars::Series.new("foo", [-2, -1, 0, 1, 2])
+    #   s.cut([-1, 1], labels: ["a", "b", "c"])
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'foo' [cat]
+    #   # [
+    #   #         "a"
+    #   #         "a"
+    #   #         "b"
+    #   #         "b"
+    #   #         "c"
+    #   # ]
+    #
+    # @example Create a DataFrame with the breakpoint and category for each value.
+    #   cut = s.cut([-1, 1], include_breaks: true).alias("cut")
+    #   s.to_frame.with_columns(cut).unnest("cut")
+    #   # =>
+    #   # shape: (5, 3)
+    #   # ┌─────┬─────────────┬────────────┐
+    #   # │ foo ┆ break_point ┆ category   │
+    #   # │ --- ┆ ---         ┆ ---        │
+    #   # │ i64 ┆ f64         ┆ cat        │
+    #   # ╞═════╪═════════════╪════════════╡
+    #   # │ -2  ┆ -1.0        ┆ (-inf, -1] │
+    #   # │ -1  ┆ -1.0        ┆ (-inf, -1] │
+    #   # │ 0   ┆ 1.0         ┆ (-1, 1]    │
+    #   # │ 1   ┆ 1.0         ┆ (-1, 1]    │
+    #   # │ 2   ┆ inf         ┆ (1, inf]   │
+    #   # └─────┴─────────────┴────────────┘
+    def cut(breaks, labels: nil, left_closed: false, include_breaks: false)
+      result = (
+        to_frame
+        .select(
+          Polars.col(name).cut(
+            breaks,
+            labels: labels,
+            left_closed: left_closed,
+            include_breaks: include_breaks
+          )
+        )
+        .to_series
+      )
+
+      if include_breaks
+        result = result.struct.rename_fields(["break_point", "category"])
+      end
+
+      result
+    end
+
     # Count the unique values in a Series.
     #
     # @param sort [Boolean]

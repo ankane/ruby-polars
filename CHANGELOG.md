@@ -1,5 +1,6 @@
 ## 0.7.1 (unreleased)
 
+- Added `cut` method to `Series` and `Expr`
 - Added `bottom_k` method to `Series`
 - Fixed error with `top_k` method
 

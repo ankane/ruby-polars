@@ -162,6 +162,19 @@ impl RbExpr {
             .into()
     }
 
+    pub fn cut(
+        &self,
+        breaks: Vec<f64>,
+        labels: Option<Vec<String>>,
+        left_closed: bool,
+        include_breaks: bool,
+    ) -> Self {
+        self.inner
+            .clone()
+            .cut(breaks, labels, left_closed, include_breaks)
+            .into()
+    }
+
     pub fn agg_groups(&self) -> Self {
         self.clone().inner.agg_groups().into()
     }

@@ -35,6 +35,7 @@ features = [
     "csv",
     "cum_agg",
     "cumulative_eval",
+    "cutqcut",
     "dataframe_arithmetic",
     "date_offset",
     "diagonal_concat",
