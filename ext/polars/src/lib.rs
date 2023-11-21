@@ -310,6 +310,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("implode", method!(RbExpr::implode, 0))?;
     class.define_method("quantile", method!(RbExpr::quantile, 2))?;
     class.define_method("cut", method!(RbExpr::cut, 4))?;
+    class.define_method("qcut", method!(RbExpr::qcut, 5))?;
+    class.define_method("qcut_uniform", method!(RbExpr::qcut_uniform, 5))?;
     class.define_method("agg_groups", method!(RbExpr::agg_groups, 0))?;
     class.define_method("count", method!(RbExpr::count, 0))?;
     class.define_method("value_counts", method!(RbExpr::value_counts, 2))?;

@@ -175,6 +175,40 @@ impl RbExpr {
             .into()
     }
 
+    pub fn qcut(
+        &self,
+        probs: Vec<f64>,
+        labels: Option<Vec<String>>,
+        left_closed: bool,
+        allow_duplicates: bool,
+        include_breaks: bool,
+    ) -> Self {
+        self.inner
+            .clone()
+            .qcut(probs, labels, left_closed, allow_duplicates, include_breaks)
+            .into()
+    }
+
+    pub fn qcut_uniform(
+        &self,
+        n_bins: usize,
+        labels: Option<Vec<String>>,
+        left_closed: bool,
+        allow_duplicates: bool,
+        include_breaks: bool,
+    ) -> Self {
+        self.inner
+            .clone()
+            .qcut_uniform(
+                n_bins,
+                labels,
+                left_closed,
+                allow_duplicates,
+                include_breaks,
+            )
+            .into()
+    }
+
     pub fn agg_groups(&self) -> Self {
         self.clone().inner.agg_groups().into()
     }

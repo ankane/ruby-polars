@@ -802,6 +802,92 @@ module Polars
       result
     end
 
+    # Bin continuous values into discrete categories based on their quantiles.
+    #
+    # @param quantiles [Array]
+    #   Either a list of quantile probabilities between 0 and 1 or a positive
+    #   integer determining the number of bins with uniform probability.
+    # @param labels [Array]
+    #   Names of the categories. The number of labels must be equal to the number
+    #   of cut points plus one.
+    # @param left_closed [Boolean]
+    #   Set the intervals to be left-closed instead of right-closed.
+    # @param allow_duplicates [Boolean]
+    #   If set to `true`, duplicates in the resulting quantiles are dropped,
+    #   rather than raising a `DuplicateError`. This can happen even with unique
+    #   probabilities, depending on the data.
+    # @param include_breaks [Boolean]
+    #   Include a column with the right endpoint of the bin each observation falls
+    #   in. This will change the data type of the output from a
+    #   `Categorical` to a `Struct`.
+    #
+    # @return [Series]
+    #
+    # @example Divide a column into three categories according to pre-defined quantile probabilities.
+    #   s = Polars::Series.new("foo", [-2, -1, 0, 1, 2])
+    #   s.qcut([0.25, 0.75], labels: ["a", "b", "c"])
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'foo' [cat]
+    #   # [
+    #   #         "a"
+    #   #         "a"
+    #   #         "b"
+    #   #         "b"
+    #   #         "c"
+    #   # ]
+    #
+    # @example Divide a column into two categories using uniform quantile probabilities.
+    #   s.qcut(2, labels: ["low", "high"], left_closed: true)
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'foo' [cat]
+    #   # [
+    #   #         "low"
+    #   #         "low"
+    #   #         "high"
+    #   #         "high"
+    #   #         "high"
+    #   # ]
+    #
+    # @example Create a DataFrame with the breakpoint and category for each value.
+    #   cut = s.qcut([0.25, 0.75], include_breaks: true).alias("cut")
+    #   s.to_frame.with_columns(cut).unnest("cut")
+    #   # =>
+    #   # shape: (5, 3)
+    #   # ┌─────┬─────────────┬────────────┐
+    #   # │ foo ┆ break_point ┆ category   │
+    #   # │ --- ┆ ---         ┆ ---        │
+    #   # │ i64 ┆ f64         ┆ cat        │
+    #   # ╞═════╪═════════════╪════════════╡
+    #   # │ -2  ┆ -1.0        ┆ (-inf, -1] │
+    #   # │ -1  ┆ -1.0        ┆ (-inf, -1] │
+    #   # │ 0   ┆ 1.0         ┆ (-1, 1]    │
+    #   # │ 1   ┆ 1.0         ┆ (-1, 1]    │
+    #   # │ 2   ┆ inf         ┆ (1, inf]   │
+    #   # └─────┴─────────────┴────────────┘
+    def qcut(quantiles, labels: nil, left_closed: false, allow_duplicates: false, include_breaks: false)
+      result = (
+        to_frame
+        .select(
+          Polars.col(name).qcut(
+            quantiles,
+            labels: labels,
+            left_closed: left_closed,
+            allow_duplicates: allow_duplicates,
+            include_breaks: include_breaks
+          )
+        )
+        .to_series
+      )
+
+      if include_breaks
+        result = result.struct.rename_fields(["break_point", "category"])
+      end
+
+      result
+    end
+
     # Count the unique values in a Series.
     #
     # @param sort [Boolean]
