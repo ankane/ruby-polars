@@ -1,5 +1,6 @@
 ## 0.7.1 (unreleased)
 
+- Added `bottom_k` method to `Series`
 - Fixed error with `top_k` method
 
 ## 0.7.0 (2023-11-17)
