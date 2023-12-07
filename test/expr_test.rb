@@ -23,6 +23,12 @@ class ExprTest < Minitest::Test
     assert_match "could not convert value", error.message
   end
 
+  def test_min
+    df = Polars::DataFrame.new({"a" => [1, 5, 3], "b" => [4, 2, 6]})
+    assert_frame ({"a" => [1]}), df.select(Polars.min("a"))
+    assert_frame ({"a" => [1], "b" => [2]}), df.select(Polars.min(["a", "b"]))
+  end
+
   def assert_lit(expected, lit)
     assert_equal expected, lit.inspect
   end

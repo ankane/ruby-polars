@@ -107,44 +107,28 @@ module Polars
     # Get the maximum value.
     #
     # @param column [Object]
-    #   Column(s) to be used in aggregation. Will lead to different behavior based on
-    #   the input:
-    #
-    #   - [String, Series] -> aggregate the maximum value of that column.
-    #   - [Array<Expr>] -> aggregate the maximum value horizontally.
+    #   Column(s) to be used in aggregation.
     #
     # @return [Expr, Object]
     def max(column)
       if column.is_a?(Series)
         column.max
-      elsif Utils.strlike?(column)
-        col(column).max
       else
-        exprs = Utils.selection_to_rbexpr_list(column)
-        # TODO
-        Utils.wrap_expr(_max_exprs(exprs))
+        col(column).max
       end
     end
 
     # Get the minimum value.
     #
     # @param column [Object]
-    #   Column(s) to be used in aggregation. Will lead to different behavior based on
-    #   the input:
-    #
-    #   - [String, Series] -> aggregate the minimum value of that column.
-    #   - [Array<Expr>] -> aggregate the minimum value horizontally.
+    #   Column(s) to be used in aggregation.
     #
     # @return [Expr, Object]
     def min(column)
       if column.is_a?(Series)
         column.min
-      elsif Utils.strlike?(column)
-        col(column).min
       else
-        exprs = Utils.selection_to_rbexpr_list(column)
-        # TODO
-        Utils.wrap_expr(_min_exprs(exprs))
+        col(column).min
       end
     end
 
