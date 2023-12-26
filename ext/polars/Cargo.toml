@@ -14,7 +14,7 @@ crate-type = ["cdylib"]
 ahash = "0.8"
 chrono = "0.4"
 either = "1.8"
-magnus = "0.6"
+magnus = "=0.6.0"
 polars-core = "=0.35.2"
 polars-parquet = "=0.35.2"
 serde_json = "1"
