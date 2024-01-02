@@ -341,7 +341,7 @@ module Polars
     def []=(key, value)
       if value.is_a?(::Array)
         if is_numeric || is_datelike
-          set_at_idx(key, value)
+          scatter(key, value)
           return
         end
         raise ArgumentError, "cannot set Series of dtype: #{dtype} with list/tuple as value; use a scalar value"
@@ -351,9 +351,9 @@ module Polars
         if key.dtype == Boolean
           self._s = set(key, value)._s
         elsif key.dtype == UInt64
-          self._s = set_at_idx(key.cast(UInt32), value)._s
+          self._s = scatter(key.cast(UInt32), value)._s
         elsif key.dtype == UInt32
-          self._s = set_at_idx(key, value)._s
+          self._s = scatter(key, value)._s
         else
           raise Todo
         end
@@ -1941,13 +1941,14 @@ module Polars
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3])
     #   s2 = Polars::Series.new("b", [4, 5, 6])
-    #   s.series_equal(s)
+    #   s.equals(s)
     #   # => true
-    #   s.series_equal(s2)
+    #   s.equals(s2)
     #   # => false
-    def series_equal(other, null_equal: false, strict: false)
-      _s.series_equal(other._s, null_equal, strict)
+    def equals(other, null_equal: false, strict: false)
+      _s.equals(other._s, null_equal, strict)
     end
+    alias_method :series_equal, :equals
 
     # Length of this Series.
     #
@@ -2218,7 +2219,7 @@ module Polars
     #   #         10
     #   #         3
     #   # ]
-    def set_at_idx(idx, value)
+    def scatter(idx, value)
       if idx.is_a?(Integer)
         idx = [idx]
       end
@@ -2237,9 +2238,10 @@ module Polars
       elsif !value.is_a?(Series)
         value = Series.new("", value)
       end
-      _s.set_at_idx(idx._s, value._s)
+      _s.scatter(idx._s, value._s)
       self
     end
+    alias_method :set_at_idx, :scatter
 
     # Create an empty copy of the current Series.
     #
@@ -3066,7 +3068,8 @@ module Polars
       weights: nil,
       min_periods: nil,
       center: false,
-      ddof: 1
+      ddof: 1,
+      warn_if_unsorted: true
     )
       to_frame
         .select(
@@ -3075,7 +3078,8 @@ module Polars
             weights: weights,
             min_periods: min_periods,
             center: center,
-            ddof: ddof
+            ddof: ddof,
+            warn_if_unsorted: warn_if_unsorted
           )
         )
         .to_series
@@ -3119,7 +3123,8 @@ module Polars
       weights: nil,
       min_periods: nil,
       center: false,
-      ddof: 1
+      ddof: 1,
+      warn_if_unsorted: true
     )
       to_frame
         .select(
@@ -3128,7 +3133,8 @@ module Polars
             weights: weights,
             min_periods: min_periods,
             center: center,
-            ddof: ddof
+            ddof: ddof,
+            warn_if_unsorted: warn_if_unsorted
           )
         )
         .to_series
@@ -3170,7 +3176,8 @@ module Polars
       window_size,
       weights: nil,
       min_periods: nil,
-      center: false
+      center: false,
+      warn_if_unsorted: true
     )
       if min_periods.nil?
         min_periods = window_size
@@ -3182,7 +3189,8 @@ module Polars
             window_size,
             weights: weights,
             min_periods: min_periods,
-            center: center
+            center: center,
+            warn_if_unsorted: warn_if_unsorted
           )
         )
         .to_series
@@ -3241,7 +3249,8 @@ module Polars
       window_size: 2,
       weights: nil,
       min_periods: nil,
-      center: false
+      center: false,
+      warn_if_unsorted: true
     )
       if min_periods.nil?
         min_periods = window_size
@@ -3255,7 +3264,8 @@ module Polars
             window_size: window_size,
             weights: weights,
             min_periods: min_periods,
-            center: center
+            center: center,
+            warn_if_unsorted: warn_if_unsorted
           )
         )
         .to_series

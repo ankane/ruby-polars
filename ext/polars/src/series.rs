@@ -3,7 +3,7 @@ mod arithmetic;
 mod comparison;
 mod construction;
 mod export;
-mod set_at_idx;
+mod scatter;
 
 use magnus::{exception, prelude::*, value::qnil, Error, IntoValue, RArray, Value};
 use polars::prelude::*;
@@ -80,7 +80,7 @@ impl RbSeries {
 
     pub fn get_fmt(&self, index: usize, str_lengths: usize) -> String {
         let val = format!("{}", self.series.borrow().get(index).unwrap());
-        if let DataType::Utf8 | DataType::Categorical(_) = self.series.borrow().dtype() {
+        if let DataType::String | DataType::Categorical(_, _) = self.series.borrow().dtype() {
             let v_trunc = &val[..val
                 .char_indices()
                 .take(str_lengths)
@@ -90,7 +90,7 @@ impl RbSeries {
             if val == v_trunc {
                 val
             } else {
-                format!("{}...", v_trunc)
+                format!("{}…", v_trunc)
             }
         } else {
             val
@@ -273,15 +273,13 @@ impl RbSeries {
         Ok(s.into())
     }
 
-    pub fn series_equal(&self, other: &RbSeries, null_equal: bool, strict: bool) -> bool {
+    pub fn equals(&self, other: &RbSeries, null_equal: bool, strict: bool) -> bool {
         if strict {
             self.series.borrow().eq(&other.series.borrow())
         } else if null_equal {
-            self.series
-                .borrow()
-                .series_equal_missing(&other.series.borrow())
+            self.series.borrow().equals_missing(&other.series.borrow())
         } else {
-            self.series.borrow().series_equal(&other.series.borrow())
+            self.series.borrow().equals(&other.series.borrow())
         }
     }
 
@@ -315,10 +313,10 @@ impl RbSeries {
                 DataType::Int64 => RArray::from_iter(series.i64().unwrap()).into_value(),
                 DataType::Float32 => RArray::from_iter(series.f32().unwrap()).into_value(),
                 DataType::Float64 => RArray::from_iter(series.f64().unwrap()).into_value(),
-                DataType::Categorical(_) => {
+                DataType::Categorical(_, _) => {
                     RArray::from_iter(series.categorical().unwrap().iter_str()).into_value()
                 }
-                DataType::Object(_) => {
+                DataType::Object(_, _) => {
                     let v = RArray::with_capacity(series.len());
                     for i in 0..series.len() {
                         let obj: Option<&ObjectValue> = series.get_object(i).map(|any| any.into());
@@ -377,8 +375,8 @@ impl RbSeries {
                     let ca = series.decimal().unwrap();
                     return Wrap(ca).into_value();
                 }
-                DataType::Utf8 => {
-                    let ca = series.utf8().unwrap();
+                DataType::String => {
+                    let ca = series.str().unwrap();
                     return Wrap(ca).into_value();
                 }
                 DataType::Struct(_) => {
@@ -442,7 +440,7 @@ impl RbSeries {
 
         macro_rules! dispatch_apply {
             ($self:expr, $method:ident, $($args:expr),*) => {
-                if matches!($self.dtype(), DataType::Object(_)) {
+                if matches!($self.dtype(), DataType::Object(_, _)) {
                     // let ca = $self.0.unpack::<ObjectType<ObjectValue>>().unwrap();
                     // ca.$method($($args),*)
                     todo!()
@@ -463,7 +461,7 @@ impl RbSeries {
             DataType::Datetime(_, _)
                 | DataType::Date
                 | DataType::Duration(_)
-                | DataType::Categorical(_)
+                | DataType::Categorical(_, _)
                 | DataType::Time
         ) || !skip_nulls
         {
@@ -604,12 +602,12 @@ impl RbSeries {
                 )?;
                 ca.into_datetime(tu, tz).into_series()
             }
-            Some(DataType::Utf8) => {
+            Some(DataType::String) => {
                 let ca = dispatch_apply!(series, apply_lambda_with_utf8_out_type, lambda, 0, None)?;
 
                 ca.into_series()
             }
-            Some(DataType::Object(_)) => {
+            Some(DataType::Object(_, _)) => {
                 let ca =
                     dispatch_apply!(series, apply_lambda_with_object_out_type, lambda, 0, None)?;
                 ca.into_series()
@@ -656,8 +654,13 @@ impl RbSeries {
         self.series.borrow_mut().shrink_to_fit();
     }
 
-    pub fn dot(&self, other: &RbSeries) -> Option<f64> {
-        self.series.borrow().dot(&other.series.borrow())
+    pub fn dot(&self, other: &RbSeries) -> RbResult<f64> {
+        let out = self
+            .series
+            .borrow()
+            .dot(&other.series.borrow())
+            .map_err(RbPolarsErr::from)?;
+        Ok(out)
     }
 
     pub fn skew(&self, bias: bool) -> RbResult<Option<f64>> {

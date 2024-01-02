@@ -218,11 +218,15 @@ impl RbExpr {
     }
 
     pub fn agg_groups(&self) -> Self {
-        self.clone().inner.agg_groups().into()
+        self.inner.clone().agg_groups().into()
     }
 
     pub fn count(&self) -> Self {
-        self.clone().inner.count().into()
+        self.inner.clone().count().into()
+    }
+
+    pub fn len(&self) -> Self {
+        self.inner.clone().len().into()
     }
 
     pub fn value_counts(&self, multithreaded: bool, sorted: bool) -> Self {
@@ -400,11 +404,11 @@ impl RbExpr {
         self.clone().inner.explode().into()
     }
 
-    pub fn gather_every(&self, n: usize) -> Self {
+    pub fn gather_every(&self, n: usize, offset: usize) -> Self {
         self.clone()
             .inner
             .map(
-                move |s: Series| Ok(Some(s.gather_every(n))),
+                move |s: Series| Ok(Some(s.gather_every(n, offset))),
                 GetOutput::same_type(),
             )
             .with_fmt("gather_every")

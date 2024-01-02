@@ -120,7 +120,7 @@ impl RbDataFrame {
         // TODO fix
         let overwrite_dtype_slice = Option::<Vec<Wrap<DataType>>>::None; // Option::<Vec<Wrap<DataType>>>::try_convert(arguments[15])?;
         let low_memory = bool::try_convert(arguments[16])?;
-        let comment_char = Option::<String>::try_convert(arguments[17])?;
+        let comment_prefix = Option::<String>::try_convert(arguments[17])?;
         let quote_char = Option::<String>::try_convert(arguments[18])?;
         let null_values = Option::<Wrap<NullValues>>::try_convert(arguments[19])?;
         let try_parse_dates = bool::try_convert(arguments[20])?;
@@ -131,7 +131,6 @@ impl RbDataFrame {
         // end arguments
 
         let null_values = null_values.map(|w| w.0);
-        let comment_char = comment_char.map(|s| s.as_bytes()[0]);
         let eol_char = eol_char.as_bytes()[0];
 
         let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
@@ -181,7 +180,7 @@ impl RbDataFrame {
             .with_dtypes(overwrite_dtype.map(Arc::new))
             .with_dtypes_slice(overwrite_dtype_slice.as_deref())
             .low_memory(low_memory)
-            .with_comment_char(comment_char)
+            .with_comment_prefix(comment_prefix.as_deref())
             .with_null_values(null_values)
             .with_try_parse_dates(try_parse_dates)
             .with_quote_char(quote_char)
@@ -297,12 +296,18 @@ impl RbDataFrame {
             Ok(df) => Ok(df.into()),
             // try arrow json reader instead
             // this is row oriented
-            Err(_) => {
-                let out = JsonReader::new(mmap_bytes_r)
-                    .with_json_format(JsonFormat::Json)
-                    .finish()
-                    .map_err(|e| RbPolarsErr::other(format!("{:?}", e)))?;
-                Ok(out.into())
+            Err(e) => {
+                let msg = format!("{e}");
+                if msg.contains("successful parse invalid data") {
+                    let e = RbPolarsErr::from(PolarsError::ComputeError(msg.into()));
+                    Err(e)
+                } else {
+                    let out = JsonReader::new(mmap_bytes_r)
+                        .with_json_format(JsonFormat::Json)
+                        .finish()
+                        .map_err(|e| RbPolarsErr::other(format!("{:?}", e)))?;
+                    Ok(out.into())
+                }
             }
         }
     }
@@ -504,7 +509,7 @@ impl RbDataFrame {
                 .get_columns()
                 .iter()
                 .map(|s| match s.dtype() {
-                    DataType::Object(_) => {
+                    DataType::Object(_, _) => {
                         let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
                         obj.unwrap().to_object()
                     }
@@ -523,7 +528,7 @@ impl RbDataFrame {
                     .get_columns()
                     .iter()
                     .map(|s| match s.dtype() {
-                        DataType::Object(_) => {
+                        DataType::Object(_, _) => {
                             let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
                             obj.unwrap().to_object()
                         }
@@ -785,8 +790,8 @@ impl RbDataFrame {
             .map(|s| RbSeries::new(s.clone()))
     }
 
-    pub fn find_idx_by_name(&self, name: String) -> Option<usize> {
-        self.df.borrow().find_idx_by_name(&name)
+    pub fn get_column_index(&self, name: String) -> Option<usize> {
+        self.df.borrow().get_column_index(&name)
     }
 
     // TODO remove clone
@@ -828,18 +833,18 @@ impl RbDataFrame {
         Ok(())
     }
 
-    pub fn replace_at_idx(&self, index: usize, new_col: &RbSeries) -> RbResult<()> {
+    pub fn replace_column(&self, index: usize, new_col: &RbSeries) -> RbResult<()> {
         self.df
             .borrow_mut()
-            .replace_at_idx(index, new_col.series.borrow().clone())
+            .replace_column(index, new_col.series.borrow().clone())
             .map_err(RbPolarsErr::from)?;
         Ok(())
     }
 
-    pub fn insert_at_idx(&self, index: usize, new_col: &RbSeries) -> RbResult<()> {
+    pub fn insert_column(&self, index: usize, new_col: &RbSeries) -> RbResult<()> {
         self.df
             .borrow_mut()
-            .insert_at_idx(index, new_col.series.borrow().clone())
+            .insert_column(index, new_col.series.borrow().clone())
             .map_err(RbPolarsErr::from)?;
         Ok(())
     }
@@ -874,11 +879,11 @@ impl RbDataFrame {
         Ok(mask.into_series().into())
     }
 
-    pub fn frame_equal(&self, other: &RbDataFrame, null_equal: bool) -> bool {
+    pub fn equals(&self, other: &RbDataFrame, null_equal: bool) -> bool {
         if null_equal {
-            self.df.borrow().frame_equal_missing(&other.df.borrow())
+            self.df.borrow().equals_missing(&other.df.borrow())
         } else {
-            self.df.borrow().frame_equal(&other.df.borrow())
+            self.df.borrow().equals(&other.df.borrow())
         }
     }
 
@@ -966,34 +971,6 @@ impl RbDataFrame {
         self.df.borrow().clone().lazy().into()
     }
 
-    pub fn max(&self) -> Self {
-        self.df.borrow().max().into()
-    }
-
-    pub fn min(&self) -> Self {
-        self.df.borrow().min().into()
-    }
-
-    pub fn sum(&self) -> Self {
-        self.df.borrow().sum().into()
-    }
-
-    pub fn mean(&self) -> Self {
-        self.df.borrow().mean().into()
-    }
-
-    pub fn std(&self, ddof: u8) -> Self {
-        self.df.borrow().std(ddof).into()
-    }
-
-    pub fn var(&self, ddof: u8) -> Self {
-        self.df.borrow().var(ddof).into()
-    }
-
-    pub fn median(&self) -> Self {
-        self.df.borrow().median().into()
-    }
-
     pub fn max_horizontal(&self) -> RbResult<Option<RbSeries>> {
         let s = self
             .df
@@ -1040,18 +1017,18 @@ impl RbDataFrame {
         Ok(s.map(|s| s.into()))
     }
 
-    pub fn quantile(
-        &self,
-        quantile: f64,
-        interpolation: Wrap<QuantileInterpolOptions>,
-    ) -> RbResult<Self> {
-        let df = self
-            .df
-            .borrow()
-            .quantile(quantile, interpolation.0)
-            .map_err(RbPolarsErr::from)?;
-        Ok(df.into())
-    }
+    // pub fn quantile(
+    //     &self,
+    //     quantile: f64,
+    //     interpolation: Wrap<QuantileInterpolOptions>,
+    // ) -> RbResult<Self> {
+    //     let df = self
+    //         .df
+    //         .borrow()
+    //         .quantile(quantile, interpolation.0)
+    //         .map_err(RbPolarsErr::from)?;
+    //     Ok(df.into())
+    // }
 
     pub fn to_dummies(
         &self,
@@ -1124,7 +1101,7 @@ impl RbDataFrame {
                     .into_datetime(tu, tz)
                     .into_series()
             }
-            Some(DataType::Utf8) => {
+            Some(DataType::String) => {
                 apply_lambda_with_utf8_out_type(df, lambda, 0, None).into_series()
             }
             _ => return apply_lambda_unknown(df, lambda, inference_size),

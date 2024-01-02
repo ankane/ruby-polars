@@ -220,7 +220,7 @@ module Polars
     #   date.dt.quarter
     #   # =>
     #   # shape: (4,)
-    #   # Series: '' [u32]
+    #   # Series: '' [i8]
     #   # [
     #   #         1
     #   #         1
@@ -258,7 +258,7 @@ module Polars
     #   date.dt.month
     #   # =>
     #   # shape: (4,)
-    #   # Series: '' [u32]
+    #   # Series: '' [i8]
     #   # [
     #   #         1
     #   #         2
@@ -296,7 +296,7 @@ module Polars
     #   date.dt.week
     #   # =>
     #   # shape: (4,)
-    #   # Series: '' [u32]
+    #   # Series: '' [i8]
     #   # [
     #   #         1
     #   #         5
@@ -336,7 +336,7 @@ module Polars
     #   date.dt.weekday
     #   # =>
     #   # shape: (7,)
-    #   # Series: '' [u32]
+    #   # Series: '' [i8]
     #   # [
     #   #         1
     #   #         2
@@ -378,7 +378,7 @@ module Polars
     #   date.dt.day
     #   # =>
     #   # shape: (5,)
-    #   # Series: '' [u32]
+    #   # Series: '' [i8]
     #   # [
     #   #         1
     #   #         3
@@ -416,7 +416,7 @@ module Polars
     #   date.dt.ordinal_day
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [u32]
+    #   # Series: '' [i16]
     #   # [
     #   #         1
     #   #         32
@@ -452,7 +452,7 @@ module Polars
     #   date.dt.hour
     #   # =>
     #   # shape: (4,)
-    #   # Series: '' [u32]
+    #   # Series: '' [i8]
     #   # [
     #   #         0
     #   #         1
@@ -488,7 +488,7 @@ module Polars
     #   date.dt.minute
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [u32]
+    #   # Series: '' [i8]
     #   # [
     #   #         0
     #   #         2
@@ -531,7 +531,7 @@ module Polars
     #   date.dt.second
     #   # =>
     #   # shape: (9,)
-    #   # Series: '' [u32]
+    #   # Series: '' [i8]
     #   # [
     #   #         0
     #   #         0
@@ -593,7 +593,7 @@ module Polars
     #   date.dt.millisecond
     #   # =>
     #   # shape: (9,)
-    #   # Series: '' [u32]
+    #   # Series: '' [i32]
     #   # [
     #   #         0
     #   #         500
@@ -638,7 +638,7 @@ module Polars
     #   date.dt.microsecond
     #   # =>
     #   # shape: (9,)
-    #   # Series: '' [u32]
+    #   # Series: '' [i32]
     #   # [
     #   #         0
     #   #         500000
@@ -683,7 +683,7 @@ module Polars
     #   date.dt.nanosecond
     #   # =>
     #   # shape: (9,)
-    #   # Series: '' [u32]
+    #   # Series: '' [i32]
     #   # [
     #   #         0
     #   #         500000000

@@ -14,7 +14,7 @@ use polars::frame::NullStrategy;
 use polars::io::avro::AvroCompression;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
-use polars_core::utils::arrow::util::total_ord::TotalEq;
+use polars_utils::total_ord::TotalEq;
 use smartstring::alias::String as SmartString;
 
 use crate::object::OBJECT_NAME;
@@ -78,10 +78,10 @@ pub(crate) fn get_series(obj: Value) -> RbResult<Series> {
     Ok(rbs.series.borrow().clone())
 }
 
-impl TryConvert for Wrap<Utf8Chunked> {
+impl TryConvert for Wrap<StringChunked> {
     fn try_convert(obj: Value) -> RbResult<Self> {
         let (seq, len) = get_rbseq(obj)?;
-        let mut builder = Utf8ChunkedBuilder::new("", len, len * 25);
+        let mut builder = StringChunkedBuilder::new("", len, len * 25);
 
         for res in seq.each() {
             let item = res?;
@@ -149,8 +149,8 @@ impl IntoValue for Wrap<AnyValue<'_>> {
             AnyValue::Float64(v) => ruby.into_value(v),
             AnyValue::Null => ruby.qnil().as_value(),
             AnyValue::Boolean(v) => ruby.into_value(v),
-            AnyValue::Utf8(v) => ruby.into_value(v),
-            AnyValue::Utf8Owned(v) => ruby.into_value(v.as_str()),
+            AnyValue::String(v) => ruby.into_value(v),
+            AnyValue::StringOwned(v) => ruby.into_value(v.as_str()),
             AnyValue::Categorical(idx, rev, arr) => {
                 let s = if arr.is_null() {
                     rev.get(idx)
@@ -215,7 +215,7 @@ impl IntoValue for Wrap<DataType> {
                     .unwrap()
             }
             DataType::Boolean => pl.const_get::<_, Value>("Boolean").unwrap(),
-            DataType::Utf8 => pl.const_get::<_, Value>("Utf8").unwrap(),
+            DataType::String => pl.const_get::<_, Value>("Utf8").unwrap(),
             DataType::Binary => pl.const_get::<_, Value>("Binary").unwrap(),
             DataType::Array(inner, size) => {
                 let inner = Wrap(*inner);
@@ -242,8 +242,8 @@ impl IntoValue for Wrap<DataType> {
                     .funcall::<_, _, Value>("new", (tu.to_ascii(),))
                     .unwrap()
             }
-            DataType::Object(_) => pl.const_get::<_, Value>("Object").unwrap(),
-            DataType::Categorical(_) => pl.const_get::<_, Value>("Categorical").unwrap(),
+            DataType::Object(_, _) => pl.const_get::<_, Value>("Object").unwrap(),
+            DataType::Categorical(_, _) => pl.const_get::<_, Value>("Categorical").unwrap(),
             DataType::Time => pl.const_get::<_, Value>("Time").unwrap(),
             DataType::Struct(fields) => {
                 let field_class = pl.const_get::<_, Value>("Field").unwrap();
@@ -277,7 +277,7 @@ impl IntoValue for Wrap<TimeUnit> {
     }
 }
 
-impl IntoValue for Wrap<&Utf8Chunked> {
+impl IntoValue for Wrap<&StringChunked> {
     fn into_value_with(self, _: &Ruby) -> Value {
         let iter = self.0.into_iter();
         RArray::from_iter(iter).into_value()
@@ -406,10 +406,10 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Int16" => DataType::Int16,
                 "Polars::Int32" => DataType::Int32,
                 "Polars::Int64" => DataType::Int64,
-                "Polars::Utf8" => DataType::Utf8,
+                "Polars::Utf8" => DataType::String,
                 "Polars::Binary" => DataType::Binary,
                 "Polars::Boolean" => DataType::Boolean,
-                "Polars::Categorical" => DataType::Categorical(None),
+                "Polars::Categorical" => DataType::Categorical(None, Default::default()),
                 "Polars::Date" => DataType::Date,
                 "Polars::Datetime" => DataType::Datetime(TimeUnit::Microseconds, None),
                 "Polars::Time" => DataType::Time,
@@ -417,7 +417,7 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Decimal" => DataType::Decimal(None, None),
                 "Polars::Float32" => DataType::Float32,
                 "Polars::Float64" => DataType::Float64,
-                "Polars::Object" => DataType::Object(OBJECT_NAME),
+                "Polars::Object" => DataType::Object(OBJECT_NAME, None),
                 "Polars::List" => DataType::List(Box::new(DataType::Null)),
                 "Polars::Null" => DataType::Null,
                 "Polars::Unknown" => DataType::Unknown,
@@ -477,17 +477,17 @@ impl TryConvert for Wrap<DataType> {
                 "i16" => DataType::Int16,
                 "i32" => DataType::Int32,
                 "i64" => DataType::Int64,
-                "str" => DataType::Utf8,
+                "str" => DataType::String,
                 "bin" => DataType::Binary,
                 "bool" => DataType::Boolean,
-                "cat" => DataType::Categorical(None),
+                "cat" => DataType::Categorical(None, Default::default()),
                 "date" => DataType::Date,
                 "datetime" => DataType::Datetime(TimeUnit::Microseconds, None),
                 "f32" => DataType::Float32,
                 "time" => DataType::Time,
                 "dur" => DataType::Duration(TimeUnit::Microseconds),
                 "f64" => DataType::Float64,
-                "obj" => DataType::Object(OBJECT_NAME),
+                "obj" => DataType::Object(OBJECT_NAME, None),
                 "list" => DataType::List(Box::new(DataType::Boolean)),
                 "null" => DataType::Null,
                 "unk" => DataType::Unknown,
@@ -513,7 +513,7 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
             Ok(AnyValue::Float64(v.to_f64()).into())
         } else if let Some(v) = RString::from_value(ob) {
             if v.enc_get() == Index::utf8() {
-                Ok(AnyValue::Utf8Owned(v.to_string()?.into()).into())
+                Ok(AnyValue::StringOwned(v.to_string()?.into()).into())
             } else {
                 Ok(AnyValue::BinaryOwned(unsafe { v.as_slice() }.to_vec()).into())
             }
@@ -891,7 +891,8 @@ impl TryConvert for Wrap<JoinType> {
         let parsed = match String::try_convert(ob)?.as_str() {
             "inner" => JoinType::Inner,
             "left" => JoinType::Left,
-            "outer" => JoinType::Outer,
+            "outer" => JoinType::Outer { coalesce: false },
+            "outer_coalesce" => JoinType::Outer { coalesce: true },
             "semi" => JoinType::Semi,
             "anti" => JoinType::Anti,
             // #[cfg(feature = "cross_join")]

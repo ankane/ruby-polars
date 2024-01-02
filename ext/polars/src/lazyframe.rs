@@ -87,7 +87,7 @@ impl RbLazyFrame {
         let cache = bool::try_convert(arguments[6])?;
         let overwrite_dtype = Option::<Vec<(String, Wrap<DataType>)>>::try_convert(arguments[7])?;
         let low_memory = bool::try_convert(arguments[8])?;
-        let comment_char = Option::<String>::try_convert(arguments[9])?;
+        let comment_prefix = Option::<String>::try_convert(arguments[9])?;
         let quote_char = Option::<String>::try_convert(arguments[10])?;
         let null_values = Option::<Wrap<NullValues>>::try_convert(arguments[11])?;
         let infer_schema_length = Option::<usize>::try_convert(arguments[12])?;
@@ -101,7 +101,6 @@ impl RbLazyFrame {
         // end arguments
 
         let null_values = null_values.map(|w| w.0);
-        let comment_char = comment_char.map(|s| s.as_bytes()[0]);
         let quote_char = quote_char.map(|s| s.as_bytes()[0]);
         let separator = separator.as_bytes()[0];
         let eol_char = eol_char.as_bytes()[0];
@@ -124,7 +123,7 @@ impl RbLazyFrame {
             .with_cache(cache)
             .with_dtype_overwrite(overwrite_dtype.as_ref())
             .low_memory(low_memory)
-            .with_comment_char(comment_char)
+            .with_comment_prefix(comment_prefix.as_deref())
             .with_quote_char(quote_char)
             .with_end_of_line_char(eol_char)
             .with_rechunk(rechunk)
@@ -510,48 +509,58 @@ impl RbLazyFrame {
         ldf.fill_nan(fill_value.inner.clone()).into()
     }
 
-    pub fn min(&self) -> Self {
+    pub fn min(&self) -> RbResult<Self> {
         let ldf = self.ldf.clone();
-        ldf.min().into()
+        let out = ldf.min().map_err(RbPolarsErr::from)?;
+        Ok(out.into())
     }
 
-    pub fn max(&self) -> Self {
+    pub fn max(&self) -> RbResult<Self> {
         let ldf = self.ldf.clone();
-        ldf.max().into()
+        let out = ldf.max().map_err(RbPolarsErr::from)?;
+        Ok(out.into())
     }
 
-    pub fn sum(&self) -> Self {
+    pub fn sum(&self) -> RbResult<Self> {
         let ldf = self.ldf.clone();
-        ldf.sum().into()
+        let out = ldf.sum().map_err(RbPolarsErr::from)?;
+        Ok(out.into())
     }
 
-    pub fn mean(&self) -> Self {
+    pub fn mean(&self) -> RbResult<Self> {
         let ldf = self.ldf.clone();
-        ldf.mean().into()
+        let out = ldf.mean().map_err(RbPolarsErr::from)?;
+        Ok(out.into())
     }
 
-    pub fn std(&self, ddof: u8) -> Self {
+    pub fn std(&self, ddof: u8) -> RbResult<Self> {
         let ldf = self.ldf.clone();
-        ldf.std(ddof).into()
+        let out = ldf.std(ddof).map_err(RbPolarsErr::from)?;
+        Ok(out.into())
     }
 
-    pub fn var(&self, ddof: u8) -> Self {
+    pub fn var(&self, ddof: u8) -> RbResult<Self> {
         let ldf = self.ldf.clone();
-        ldf.var(ddof).into()
+        let out = ldf.var(ddof).map_err(RbPolarsErr::from)?;
+        Ok(out.into())
     }
 
-    pub fn median(&self) -> Self {
+    pub fn median(&self) -> RbResult<Self> {
         let ldf = self.ldf.clone();
-        ldf.median().into()
+        let out = ldf.median().map_err(RbPolarsErr::from)?;
+        Ok(out.into())
     }
 
     pub fn quantile(
         &self,
         quantile: &RbExpr,
         interpolation: Wrap<QuantileInterpolOptions>,
-    ) -> Self {
+    ) -> RbResult<Self> {
         let ldf = self.ldf.clone();
-        ldf.quantile(quantile.inner.clone(), interpolation.0).into()
+        let out = ldf
+            .quantile(quantile.inner.clone(), interpolation.0)
+            .map_err(RbPolarsErr::from)?;
+        Ok(out.into())
     }
 
     pub fn explode(&self, column: RArray) -> RbResult<Self> {

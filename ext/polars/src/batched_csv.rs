@@ -41,7 +41,7 @@ impl RbBatchedCsv {
         // TODO fix
         let overwrite_dtype_slice = Option::<Vec<Wrap<DataType>>>::None; // Option::<Vec<Wrap<DataType>>>::try_convert(arguments[14])?;
         let low_memory = bool::try_convert(arguments[15])?;
-        let comment_char = Option::<String>::try_convert(arguments[16])?;
+        let comment_prefix = Option::<String>::try_convert(arguments[16])?;
         let quote_char = Option::<String>::try_convert(arguments[17])?;
         let null_values = Option::<Wrap<NullValues>>::try_convert(arguments[18])?;
         let try_parse_dates = bool::try_convert(arguments[19])?;
@@ -52,7 +52,6 @@ impl RbBatchedCsv {
         // end arguments
 
         let null_values = null_values.map(|w| w.0);
-        let comment_char = comment_char.map(|s| s.as_bytes()[0]);
         let eol_char = eol_char.as_bytes()[0];
 
         let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
@@ -101,7 +100,7 @@ impl RbBatchedCsv {
             .with_n_threads(n_threads)
             .with_dtypes_slice(overwrite_dtype_slice.as_deref())
             .low_memory(low_memory)
-            .with_comment_char(comment_char)
+            .with_comment_prefix(comment_prefix.as_deref())
             .with_null_values(null_values)
             .with_try_parse_dates(try_parse_dates)
             .with_quote_char(quote_char)

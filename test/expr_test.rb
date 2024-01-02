@@ -8,7 +8,7 @@ class ExprTest < Minitest::Test
     assert_lit "1", Polars.lit(1)
     assert_lit "1.strict_cast(Int8)", Polars.lit(1, dtype: Polars::Int8)
     assert_lit "1.5", Polars.lit(1.5)
-    assert_lit "Utf8(hello)", Polars.lit("hello")
+    assert_lit "String(hello)", Polars.lit("hello")
     assert_lit "[binary value]", Polars.lit("hello".b)
     assert_lit "Series", Polars.lit(Polars::Series.new([1, 2, 3]))
     assert_lit "Series", Polars.lit([1, 2, 3])

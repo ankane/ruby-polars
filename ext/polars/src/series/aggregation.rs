@@ -17,6 +17,7 @@ impl RbSeries {
             self.series
                 .borrow()
                 .max_as_series()
+                .map_err(RbPolarsErr::from)?
                 .get(0)
                 .map_err(RbPolarsErr::from)?,
         )
@@ -48,6 +49,7 @@ impl RbSeries {
             self.series
                 .borrow()
                 .min_as_series()
+                .map_err(RbPolarsErr::from)?
                 .get(0)
                 .map_err(RbPolarsErr::from)?,
         )
@@ -75,6 +77,7 @@ impl RbSeries {
             self.series
                 .borrow()
                 .sum_as_series()
+                .map_err(RbPolarsErr::from)?
                 .get(0)
                 .map_err(RbPolarsErr::from)?,
         )

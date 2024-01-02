@@ -9,8 +9,8 @@ impl RbSeries {
     pub fn to_numo(&self) -> RbResult<Value> {
         let s = &self.series.borrow();
         match s.dtype() {
-            DataType::Utf8 => {
-                let ca = s.utf8().unwrap();
+            DataType::String => {
+                let ca = s.str().unwrap();
 
                 // TODO make more efficient
                 let np_arr = RArray::from_iter(ca);

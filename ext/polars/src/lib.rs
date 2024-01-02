@@ -224,8 +224,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("drop", method!(RbDataFrame::drop, 1))?;
     class.define_method("select_at_idx", method!(RbDataFrame::select_at_idx, 1))?;
     class.define_method(
-        "find_idx_by_name",
-        method!(RbDataFrame::find_idx_by_name, 1),
+        "get_column_index",
+        method!(RbDataFrame::get_column_index, 1),
     )?;
     class.define_method("column", method!(RbDataFrame::column, 1))?;
     class.define_method("select", method!(RbDataFrame::select, 1))?;
@@ -235,14 +235,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbDataFrame::take_with_series, 1),
     )?;
     class.define_method("replace", method!(RbDataFrame::replace, 2))?;
-    class.define_method("replace_at_idx", method!(RbDataFrame::replace_at_idx, 2))?;
-    class.define_method("insert_at_idx", method!(RbDataFrame::insert_at_idx, 2))?;
+    class.define_method("replace_column", method!(RbDataFrame::replace_column, 2))?;
+    class.define_method("insert_column", method!(RbDataFrame::insert_column, 2))?;
     class.define_method("slice", method!(RbDataFrame::slice, 2))?;
     class.define_method("head", method!(RbDataFrame::head, 1))?;
     class.define_method("tail", method!(RbDataFrame::tail, 1))?;
     class.define_method("is_unique", method!(RbDataFrame::is_unique, 0))?;
     class.define_method("is_duplicated", method!(RbDataFrame::is_duplicated, 0))?;
-    class.define_method("frame_equal", method!(RbDataFrame::frame_equal, 2))?;
+    class.define_method("equals", method!(RbDataFrame::equals, 2))?;
     class.define_method("with_row_count", method!(RbDataFrame::with_row_count, 2))?;
     class.define_method("_clone", method!(RbDataFrame::clone, 0))?;
     class.define_method("melt", method!(RbDataFrame::melt, 4))?;
@@ -250,18 +250,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("partition_by", method!(RbDataFrame::partition_by, 3))?;
     class.define_method("shift", method!(RbDataFrame::shift, 1))?;
     class.define_method("lazy", method!(RbDataFrame::lazy, 0))?;
-    class.define_method("max", method!(RbDataFrame::max, 0))?;
-    class.define_method("min", method!(RbDataFrame::min, 0))?;
-    class.define_method("sum", method!(RbDataFrame::sum, 0))?;
-    class.define_method("mean", method!(RbDataFrame::mean, 0))?;
-    class.define_method("std", method!(RbDataFrame::std, 1))?;
-    class.define_method("var", method!(RbDataFrame::var, 1))?;
-    class.define_method("median", method!(RbDataFrame::median, 0))?;
     class.define_method("mean_horizontal", method!(RbDataFrame::mean_horizontal, 1))?;
     class.define_method("max_horizontal", method!(RbDataFrame::max_horizontal, 0))?;
     class.define_method("min_horizontal", method!(RbDataFrame::min_horizontal, 0))?;
     class.define_method("sum_horizontal", method!(RbDataFrame::sum_horizontal, 1))?;
-    class.define_method("quantile", method!(RbDataFrame::quantile, 2))?;
     class.define_method("to_dummies", method!(RbDataFrame::to_dummies, 3))?;
     class.define_method("null_count", method!(RbDataFrame::null_count, 0))?;
     class.define_method("apply", method!(RbDataFrame::apply, 3))?;
@@ -316,6 +308,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("rle_id", method!(RbExpr::rle_id, 0))?;
     class.define_method("agg_groups", method!(RbExpr::agg_groups, 0))?;
     class.define_method("count", method!(RbExpr::count, 0))?;
+    class.define_method("len", method!(RbExpr::len, 0))?;
     class.define_method("value_counts", method!(RbExpr::value_counts, 2))?;
     class.define_method("unique_counts", method!(RbExpr::unique_counts, 0))?;
     class.define_method("null_count", method!(RbExpr::null_count, 0))?;
@@ -351,7 +344,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("is_first_distinct", method!(RbExpr::is_first_distinct, 0))?;
     class.define_method("is_last_distinct", method!(RbExpr::is_last_distinct, 0))?;
     class.define_method("explode", method!(RbExpr::explode, 0))?;
-    class.define_method("gather_every", method!(RbExpr::gather_every, 1))?;
+    class.define_method("gather_every", method!(RbExpr::gather_every, 2))?;
     class.define_method("tail", method!(RbExpr::tail, 1))?;
     class.define_method("head", method!(RbExpr::head, 1))?;
     class.define_method("slice", method!(RbExpr::slice, 2))?;
@@ -523,10 +516,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("rolling_min", method!(RbExpr::rolling_min, 6))?;
     class.define_method("rolling_max", method!(RbExpr::rolling_max, 6))?;
     class.define_method("rolling_mean", method!(RbExpr::rolling_mean, 6))?;
-    class.define_method("rolling_std", method!(RbExpr::rolling_std, 7))?;
-    class.define_method("rolling_var", method!(RbExpr::rolling_var, 7))?;
-    class.define_method("rolling_median", method!(RbExpr::rolling_median, 6))?;
-    class.define_method("rolling_quantile", method!(RbExpr::rolling_quantile, 8))?;
+    class.define_method("rolling_std", method!(RbExpr::rolling_std, 8))?;
+    class.define_method("rolling_var", method!(RbExpr::rolling_var, 8))?;
+    class.define_method("rolling_median", method!(RbExpr::rolling_median, 7))?;
+    class.define_method("rolling_quantile", method!(RbExpr::rolling_quantile, 9))?;
     class.define_method("rolling_skew", method!(RbExpr::rolling_skew, 2))?;
     class.define_method("lower_bound", method!(RbExpr::lower_bound, 0))?;
     class.define_method("upper_bound", method!(RbExpr::upper_bound, 0))?;
@@ -555,6 +548,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("kurtosis", method!(RbExpr::kurtosis, 2))?;
     class.define_method("str_concat", method!(RbExpr::str_concat, 2))?;
     class.define_method("cat_set_ordering", method!(RbExpr::cat_set_ordering, 1))?;
+    class.define_method("cat_get_categories", method!(RbExpr::cat_get_categories, 0))?;
     class.define_method("reshape", method!(RbExpr::reshape, 1))?;
     class.define_method("cum_count", method!(RbExpr::cum_count, 1))?;
     class.define_method("to_physical", method!(RbExpr::to_physical, 0))?;
@@ -797,7 +791,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("has_validity", method!(RbSeries::has_validity, 0))?;
     class.define_method("sample_n", method!(RbSeries::sample_n, 4))?;
     class.define_method("sample_frac", method!(RbSeries::sample_frac, 4))?;
-    class.define_method("series_equal", method!(RbSeries::series_equal, 3))?;
+    class.define_method("equals", method!(RbSeries::equals, 3))?;
     class.define_method("eq", method!(RbSeries::eq, 1))?;
     class.define_method("neq", method!(RbSeries::neq, 1))?;
     class.define_method("gt", method!(RbSeries::gt, 1))?;
@@ -822,7 +816,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("kurtosis", method!(RbSeries::kurtosis, 2))?;
     class.define_method("cast", method!(RbSeries::cast, 2))?;
     class.define_method("time_unit", method!(RbSeries::time_unit, 0))?;
-    class.define_method("set_at_idx", method!(RbSeries::set_at_idx, 2))?;
+    class.define_method("scatter", method!(RbSeries::scatter, 2))?;
 
     // set
     // class.define_method("set_with_mask_str", method!(RbSeries::set_with_mask_str, 2))?;

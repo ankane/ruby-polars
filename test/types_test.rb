@@ -26,8 +26,7 @@ class TypesTest < Minitest::Test
     assert_equal Polars::Boolean, schema["b"]
     assert_equal Polars::Int64, schema["i"]
     assert_equal Polars::Float64, schema["f"]
-    # TODO fix
-    assert_equal Polars::Float64, schema["c"]
+    assert_equal Polars::Decimal, schema["c"]
     assert_equal Polars::Utf8, schema["s"]
     assert_equal Polars::Binary, schema["n"]
     assert_equal Polars::Date, schema["d"]
@@ -146,7 +145,7 @@ class TypesTest < Minitest::Test
     error = assert_raises do
       Polars::Series.new([[1, 2], [3, 4]], dtype: Polars::Array.new(3, Polars::Int64))
     end
-    assert_equal "incompatible offsets in source list", error.message
+    assert_equal "not all elements have the specified width 3", error.message
   end
 
   def test_series_dtype_struct

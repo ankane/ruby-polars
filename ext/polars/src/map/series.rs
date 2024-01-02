@@ -101,7 +101,7 @@ pub trait ApplyLambda<'a> {
         lambda: Value,
         init_null_count: usize,
         first_value: Option<&str>,
-    ) -> RbResult<Utf8Chunked>;
+    ) -> RbResult<StringChunked>;
 
     /// Apply a lambda with list output type
     fn apply_lambda_with_list_out_type(
@@ -285,7 +285,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
         lambda: Value,
         init_null_count: usize,
         first_value: Option<&str>,
-    ) -> RbResult<Utf8Chunked> {
+    ) -> RbResult<StringChunked> {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
             Ok(ChunkedArray::full_null(self.name(), self.len()))
@@ -562,7 +562,7 @@ where
         lambda: Value,
         init_null_count: usize,
         first_value: Option<&str>,
-    ) -> RbResult<Utf8Chunked> {
+    ) -> RbResult<StringChunked> {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
             Ok(ChunkedArray::full_null(self.name(), self.len()))
@@ -705,7 +705,7 @@ where
     }
 }
 
-impl<'a> ApplyLambda<'a> for Utf8Chunked {
+impl<'a> ApplyLambda<'a> for StringChunked {
     fn apply_lambda_unknown(&'a self, lambda: Value) -> RbResult<RbSeries> {
         let mut null_count = 0;
         for opt_v in self.into_iter() {
@@ -834,7 +834,7 @@ impl<'a> ApplyLambda<'a> for Utf8Chunked {
         lambda: Value,
         init_null_count: usize,
         first_value: Option<&str>,
-    ) -> RbResult<Utf8Chunked> {
+    ) -> RbResult<StringChunked> {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
             Ok(ChunkedArray::full_null(self.name(), self.len()))
@@ -1079,7 +1079,7 @@ impl<'a> ApplyLambda<'a> for StructChunked {
         lambda: Value,
         init_null_count: usize,
         first_value: Option<&str>,
-    ) -> RbResult<Utf8Chunked> {
+    ) -> RbResult<StringChunked> {
         let names = self.fields().iter().map(|s| s.name()).collect::<Vec<_>>();
 
         let skip = usize::from(first_value.is_some());

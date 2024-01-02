@@ -100,6 +100,7 @@ impl RbExpr {
         by: Option<String>,
         closed: Option<Wrap<ClosedWindow>>,
         ddof: u8,
+        warn_if_unsorted: bool,
     ) -> Self {
         let options = RollingOptions {
             window_size: Duration::parse(&window_size),
@@ -109,6 +110,7 @@ impl RbExpr {
             by,
             closed_window: closed.map(|c| c.0),
             fn_params: Some(Arc::new(RollingVarParams { ddof }) as Arc<dyn Any + Send + Sync>),
+            warn_if_unsorted,
         };
 
         self.inner.clone().rolling_std(options).into()
@@ -124,6 +126,7 @@ impl RbExpr {
         by: Option<String>,
         closed: Option<Wrap<ClosedWindow>>,
         ddof: u8,
+        warn_if_unsorted: bool,
     ) -> Self {
         let options = RollingOptions {
             window_size: Duration::parse(&window_size),
@@ -133,6 +136,7 @@ impl RbExpr {
             by,
             closed_window: closed.map(|c| c.0),
             fn_params: Some(Arc::new(RollingVarParams { ddof }) as Arc<dyn Any + Send + Sync>),
+            warn_if_unsorted,
         };
 
         self.inner.clone().rolling_var(options).into()
@@ -146,6 +150,7 @@ impl RbExpr {
         center: bool,
         by: Option<String>,
         closed: Option<Wrap<ClosedWindow>>,
+        warn_if_unsorted: bool,
     ) -> Self {
         let options = RollingOptions {
             window_size: Duration::parse(&window_size),
@@ -154,12 +159,10 @@ impl RbExpr {
             center,
             by,
             closed_window: closed.map(|c| c.0),
-            fn_params: Some(Arc::new(RollingQuantileParams {
-                prob: 0.5,
-                interpol: QuantileInterpolOptions::Linear,
-            }) as Arc<dyn Any + Send + Sync>),
+            fn_params: None,
+            warn_if_unsorted,
         };
-        self.inner.clone().rolling_quantile(options).into()
+        self.inner.clone().rolling_median(options).into()
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -173,6 +176,7 @@ impl RbExpr {
         center: bool,
         by: Option<String>,
         closed: Option<Wrap<ClosedWindow>>,
+        warn_if_unsorted: bool,
     ) -> Self {
         let options = RollingOptions {
             window_size: Duration::parse(&window_size),
@@ -181,13 +185,14 @@ impl RbExpr {
             center,
             by,
             closed_window: closed.map(|c| c.0),
-            fn_params: Some(Arc::new(RollingQuantileParams {
-                prob: quantile,
-                interpol: interpolation.0,
-            }) as Arc<dyn Any + Send + Sync>),
+            fn_params: None,
+            warn_if_unsorted,
         };
 
-        self.inner.clone().rolling_quantile(options).into()
+        self.inner
+            .clone()
+            .rolling_quantile(interpolation.0, quantile, options)
+            .into()
     }
 
     pub fn rolling_skew(&self, window_size: usize, bias: bool) -> Self {

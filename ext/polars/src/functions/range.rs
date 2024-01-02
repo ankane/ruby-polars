@@ -6,21 +6,16 @@ use crate::prelude::*;
 use crate::RbExpr;
 
 pub fn int_range(start: &RbExpr, end: &RbExpr, step: i64, dtype: Wrap<DataType>) -> RbExpr {
+    let start = start.inner.clone();
+    let end = end.inner.clone();
     let dtype = dtype.0;
-
-    let mut result = dsl::int_range(start.inner.clone(), end.inner.clone(), step);
-
-    if dtype != DataType::Int64 {
-        result = result.cast(dtype)
-    }
-
-    result.into()
+    dsl::int_range(start, end, step, dtype).into()
 }
 
-pub fn int_ranges(start: &RbExpr, end: &RbExpr, step: i64, dtype: Wrap<DataType>) -> RbExpr {
+pub fn int_ranges(start: &RbExpr, end: &RbExpr, step: &RbExpr, dtype: Wrap<DataType>) -> RbExpr {
     let dtype = dtype.0;
 
-    let mut result = dsl::int_ranges(start.inner.clone(), end.inner.clone(), step);
+    let mut result = dsl::int_ranges(start.inner.clone(), end.inner.clone(), step.inner.clone());
 
     if dtype != DataType::Int64 {
         result = result.cast(DataType::List(Box::new(dtype)))

@@ -106,7 +106,7 @@ impl RbSeries {
         Ok(s.into())
     }
 
-    pub fn new_str(name: String, val: Wrap<Utf8Chunked>, _strict: bool) -> Self {
+    pub fn new_str(name: String, val: Wrap<StringChunked>, _strict: bool) -> Self {
         let mut s = val.0.into_series();
         s.rename(&name);
         RbSeries::new(s)

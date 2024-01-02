@@ -698,7 +698,7 @@ module Polars
         s[row_selection] = value
 
         if col_selection.is_a?(Integer)
-          replace_at_idx(col_selection, s)
+          replace_column(col_selection, s)
         elsif Utils.strlike?(col_selection)
           replace(col_selection, s)
         end
@@ -1222,7 +1222,7 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new({"foo" => [1, 2, 3], "bar" => [4, 5, 6]})
     #   s = Polars::Series.new("baz", [97, 98, 99])
-    #   df.insert_at_idx(1, s)
+    #   df.insert_column(1, s)
     #   # =>
     #   # shape: (3, 3)
     #   # ┌─────┬─────┬─────┐
@@ -1244,7 +1244,7 @@ module Polars
     #     }
     #   )
     #   s = Polars::Series.new("d", [-2.5, 15, 20.5, 0])
-    #   df.insert_at_idx(3, s)
+    #   df.insert_column(3, s)
     #   # =>
     #   # shape: (4, 4)
     #   # ┌─────┬──────┬───────┬──────┐
@@ -1257,13 +1257,14 @@ module Polars
     #   # │ 3   ┆ 10.0 ┆ false ┆ 20.5 │
     #   # │ 4   ┆ 13.0 ┆ true  ┆ 0.0  │
     #   # └─────┴──────┴───────┴──────┘
-    def insert_at_idx(index, series)
+    def insert_column(index, series)
       if index < 0
         index = columns.length + index
       end
-      _df.insert_at_idx(index, series._s)
+      _df.insert_column(index, series._s)
       self
     end
+    alias_method :insert_at_idx, :insert_column
 
     # Filter the rows in the DataFrame based on a predicate expression.
     #
@@ -1367,7 +1368,7 @@ module Polars
           ]
         )._df
       )
-      summary.insert_at_idx(
+      summary.insert_column(
         0,
         Polars::Series.new(
           "describe",
@@ -1388,11 +1389,12 @@ module Polars
     #   df = Polars::DataFrame.new(
     #     {"foo" => [1, 2, 3], "bar" => [6, 7, 8], "ham" => ["a", "b", "c"]}
     #   )
-    #   df.find_idx_by_name("ham")
+    #   df.get_column_index("ham")
     #   # => 2
-    def find_idx_by_name(name)
-      _df.find_idx_by_name(name)
+    def get_column_index(name)
+      _df.get_column_index(name)
     end
+    alias_method :find_idx_by_name, :get_column_index
 
     # Replace a column at an index location.
     #
@@ -1412,7 +1414,7 @@ module Polars
     #     }
     #   )
     #   s = Polars::Series.new("apple", [10, 20, 30])
-    #   df.replace_at_idx(0, s)
+    #   df.replace_column(0, s)
     #   # =>
     #   # shape: (3, 3)
     #   # ┌───────┬─────┬─────┐
@@ -1424,13 +1426,14 @@ module Polars
     #   # │ 20    ┆ 7   ┆ b   │
     #   # │ 30    ┆ 8   ┆ c   │
     #   # └───────┴─────┴─────┘
-    def replace_at_idx(index, series)
+    def replace_column(index, series)
       if index < 0
         index = columns.length + index
       end
-      _df.replace_at_idx(index, series._s)
+      _df.replace_column(index, series._s)
       self
     end
+    alias_method :replace_at_idx, :replace_column
 
     # Sort the DataFrame by column.
     #
@@ -1524,13 +1527,14 @@ module Polars
     #       "ham" => ["c", "b", "a"]
     #     }
     #   )
-    #   df1.frame_equal(df1)
+    #   df1.equals(df1)
     #   # => true
-    #   df1.frame_equal(df2)
+    #   df1.equals(df2)
     #   # => false
-    def frame_equal(other, null_equal: true)
-      _df.frame_equal(other._df, null_equal)
+    def equals(other, null_equal: true)
+      _df.equals(other._df, null_equal)
     end
+    alias_method :frame_equal, :equals
 
     # Replace a column by a new Series.
     #
@@ -2461,17 +2465,17 @@ module Polars
     # @example
     #   df.join(other_df, on: "ham", how: "outer")
     #   # =>
-    #   # shape: (4, 4)
-    #   # ┌──────┬──────┬─────┬───────┐
-    #   # │ foo  ┆ bar  ┆ ham ┆ apple │
-    #   # │ ---  ┆ ---  ┆ --- ┆ ---   │
-    #   # │ i64  ┆ f64  ┆ str ┆ str   │
-    #   # ╞══════╪══════╪═════╪═══════╡
-    #   # │ 1    ┆ 6.0  ┆ a   ┆ x     │
-    #   # │ 2    ┆ 7.0  ┆ b   ┆ y     │
-    #   # │ null ┆ null ┆ d   ┆ z     │
-    #   # │ 3    ┆ 8.0  ┆ c   ┆ null  │
-    #   # └──────┴──────┴─────┴───────┘
+    #   # shape: (4, 5)
+    #   # ┌──────┬──────┬──────┬───────┬───────────┐
+    #   # │ foo  ┆ bar  ┆ ham  ┆ apple ┆ ham_right │
+    #   # │ ---  ┆ ---  ┆ ---  ┆ ---   ┆ ---       │
+    #   # │ i64  ┆ f64  ┆ str  ┆ str   ┆ str       │
+    #   # ╞══════╪══════╪══════╪═══════╪═══════════╡
+    #   # │ 1    ┆ 6.0  ┆ a    ┆ x     ┆ a         │
+    #   # │ 2    ┆ 7.0  ┆ b    ┆ y     ┆ b         │
+    #   # │ null ┆ null ┆ null ┆ z     ┆ d         │
+    #   # │ 3    ┆ 8.0  ┆ c    ┆ null  ┆ null      │
+    #   # └──────┴──────┴──────┴───────┴───────────┘
     #
     # @example
     #   df.join(other_df, on: "ham", how: "left")
@@ -3774,7 +3778,7 @@ module Polars
     #   # └─────┴─────┴─────┘
     def max(axis: 0)
       if axis == 0
-        _from_rbdf(_df.max)
+        lazy.max.collect(_eager: true)
       elsif axis == 1
         Utils.wrap_s(_df.max_horizontal)
       else
@@ -3806,7 +3810,7 @@ module Polars
     #   # └─────┴─────┴─────┘
     def min(axis: 0)
       if axis == 0
-        _from_rbdf(_df.min)
+        lazy.min.collect(_eager: true)
       elsif axis == 1
         Utils.wrap_s(_df.min_horizontal)
       else
@@ -3855,7 +3859,7 @@ module Polars
     def sum(axis: 0, null_strategy: "ignore")
       case axis
       when 0
-        _from_rbdf(_df.sum)
+        lazy.sum.collect(_eager: true)
       when 1
         Utils.wrap_s(_df.sum_horizontal(null_strategy))
       else
@@ -3893,7 +3897,7 @@ module Polars
     def mean(axis: 0, null_strategy: "ignore")
       case axis
       when 0
-        _from_rbdf(_df.mean)
+        lazy.mean.collect(_eager: true)
       when 1
         Utils.wrap_s(_df.mean_horizontal(null_strategy))
       else
@@ -3939,7 +3943,7 @@ module Polars
     #   # │ 0.816497 ┆ 0.816497 ┆ null │
     #   # └──────────┴──────────┴──────┘
     def std(ddof: 1)
-      _from_rbdf(_df.std(ddof))
+      lazy.std(ddof: ddof).collect(_eager: true)
     end
 
     # Aggregate the columns of this DataFrame to their variance value.
@@ -3980,7 +3984,7 @@ module Polars
     #   # │ 0.666667 ┆ 0.666667 ┆ null │
     #   # └──────────┴──────────┴──────┘
     def var(ddof: 1)
-      _from_rbdf(_df.var(ddof))
+      lazy.var(ddof: ddof).collect(_eager: true)
     end
 
     # Aggregate the columns of this DataFrame to their median value.
@@ -4006,7 +4010,7 @@ module Polars
     #   # │ 2.0 ┆ 7.0 ┆ null │
     #   # └─────┴─────┴──────┘
     def median
-      _from_rbdf(_df.median)
+      lazy.median.collect(_eager: true)
     end
 
     # Aggregate the columns of this DataFrame to their product values.
@@ -4063,7 +4067,7 @@ module Polars
     #   # │ 2.0 ┆ 7.0 ┆ null │
     #   # └─────┴─────┴──────┘
     def quantile(quantile, interpolation: "nearest")
-      _from_rbdf(_df.quantile(quantile, interpolation))
+      lazy.quantile(quantile, interpolation: interpolation).collect(_eager: true)
     end
 
     # Get one hot encoded dummy variables.
@@ -4603,8 +4607,8 @@ module Polars
     #   # │ 1   ┆ 5   │
     #   # │ 3   ┆ 7   │
     #   # └─────┴─────┘
-    def gather_every(n)
-      select(Utils.col("*").gather_every(n))
+    def gather_every(n, offset = 0)
+      select(Utils.col("*").gather_every(n, offset))
     end
     alias_method :take_every, :gather_every
 

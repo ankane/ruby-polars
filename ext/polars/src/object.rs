@@ -2,6 +2,7 @@ use std::any::Any;
 use std::sync::Arc;
 
 use magnus::IntoValue;
+use polars::prelude::*;
 use polars_core::chunked_array::object::builder::ObjectChunkedBuilder;
 use polars_core::chunked_array::object::registry;
 use polars_core::chunked_array::object::registry::AnonymousObjectBuilder;
@@ -26,6 +27,8 @@ pub(crate) fn register_object_builder() {
             Box::new(object) as Box<dyn Any>
         });
 
-        registry::register_object_builder(object_builder, object_converter)
+        let object_size = std::mem::size_of::<ObjectValue>();
+        let physical_dtype = ArrowDataType::FixedSizeBinary(object_size);
+        registry::register_object_builder(object_builder, object_converter, physical_dtype)
     }
 }

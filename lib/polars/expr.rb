@@ -704,7 +704,7 @@ module Polars
       wrap_expr(_rbexpr.agg_groups)
     end
 
-    # Count the number of values in this expression.
+    # Count the number of non-null values in this expression.
     #
     # @return [Expr]
     #
@@ -718,7 +718,7 @@ module Polars
     #   # │ --- ┆ --- │
     #   # │ u32 ┆ u32 │
     #   # ╞═════╪═════╡
-    #   # │ 3   ┆ 3   │
+    #   # │ 3   ┆ 2   │
     #   # └─────┴─────┘
     def count
       wrap_expr(_rbexpr.count)
@@ -743,7 +743,7 @@ module Polars
     #   # │ 3   ┆ 3   │
     #   # └─────┴─────┘
     def len
-      count
+      wrap_expr(_rbexpr.len)
     end
 
     # Get a slice of this expression.
@@ -2423,7 +2423,7 @@ module Polars
     #   # │ --- │
     #   # │ f64 │
     #   # ╞═════╡
-    #   # │ 1.0 │
+    #   # │ 2.0 │
     #   # └─────┘
     #
     # @example
@@ -2951,8 +2951,8 @@ module Polars
     #   # │ 4   │
     #   # │ 7   │
     #   # └─────┘
-    def gather_every(n)
-      wrap_expr(_rbexpr.gather_every(n))
+    def gather_every(n, offset = 0)
+      wrap_expr(_rbexpr.gather_every(n, offset))
     end
     alias_method :take_every, :gather_every
 
@@ -3771,14 +3771,15 @@ module Polars
       center: false,
       by: nil,
       closed: "left",
-      ddof: 1
+      ddof: 1,
+      warn_if_unsorted: true
     )
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
       )
       wrap_expr(
         _rbexpr.rolling_std(
-          window_size, weights, min_periods, center, by, closed, ddof
+          window_size, weights, min_periods, center, by, closed, ddof, warn_if_unsorted
         )
       )
     end
@@ -3861,14 +3862,15 @@ module Polars
       center: false,
       by: nil,
       closed: "left",
-      ddof: 1
+      ddof: 1,
+      warn_if_unsorted: true
     )
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
       )
       wrap_expr(
         _rbexpr.rolling_var(
-          window_size, weights, min_periods, center, by, closed, ddof
+          window_size, weights, min_periods, center, by, closed, ddof, warn_if_unsorted
         )
       )
     end
@@ -3946,14 +3948,15 @@ module Polars
       min_periods: nil,
       center: false,
       by: nil,
-      closed: "left"
+      closed: "left",
+      warn_if_unsorted: true
     )
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
       )
       wrap_expr(
         _rbexpr.rolling_median(
-          window_size, weights, min_periods, center, by, closed
+          window_size, weights, min_periods, center, by, closed, warn_if_unsorted
         )
       )
     end
@@ -4037,14 +4040,15 @@ module Polars
       min_periods: nil,
       center: false,
       by: nil,
-      closed: "left"
+      closed: "left",
+      warn_if_unsorted: true
     )
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
       )
       wrap_expr(
         _rbexpr.rolling_quantile(
-          quantile, interpolation, window_size, weights, min_periods, center, by, closed
+          quantile, interpolation, window_size, weights, min_periods, center, by, closed, warn_if_unsorted
         )
       )
     end

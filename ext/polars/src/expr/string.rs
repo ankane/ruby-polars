@@ -192,7 +192,7 @@ impl RbExpr {
         self.clone()
             .inner
             .map(
-                move |s| s.utf8().map(|s| Some(s.hex_encode().into_series())),
+                move |s| s.str().map(|s| Some(s.hex_encode().into_series())),
                 GetOutput::same_type(),
             )
             .with_fmt("str.hex_encode")
@@ -203,7 +203,7 @@ impl RbExpr {
         self.clone()
             .inner
             .map(
-                move |s| s.utf8()?.hex_decode(strict).map(|s| Some(s.into_series())),
+                move |s| s.str()?.hex_decode(strict).map(|s| Some(s.into_series())),
                 GetOutput::same_type(),
             )
             .with_fmt("str.hex_decode")
@@ -214,7 +214,7 @@ impl RbExpr {
         self.clone()
             .inner
             .map(
-                move |s| s.utf8().map(|s| Some(s.base64_encode().into_series())),
+                move |s| s.str().map(|s| Some(s.base64_encode().into_series())),
                 GetOutput::same_type(),
             )
             .with_fmt("str.base64_encode")
@@ -226,7 +226,7 @@ impl RbExpr {
             .inner
             .map(
                 move |s| {
-                    s.utf8()?
+                    s.str()?
                         .base64_decode(strict)
                         .map(|s| Some(s.into_series()))
                 },
@@ -258,8 +258,8 @@ impl RbExpr {
         };
 
         let function = move |s: Series| {
-            let ca = s.utf8()?;
-            match ca.json_extract(dtype.clone(), infer_schema_len) {
+            let ca = s.str()?;
+            match ca.json_decode(dtype.clone(), infer_schema_len) {
                 Ok(ca) => Ok(Some(ca.into_series())),
                 Err(e) => Err(PolarsError::ComputeError(format!("{e:?}").into())),
             }
@@ -268,13 +268,13 @@ impl RbExpr {
         self.clone()
             .inner
             .map(function, output_type)
-            .with_fmt("str.json_extract")
+            .with_fmt("str.json_decode")
             .into()
     }
 
     pub fn str_json_path_match(&self, pat: String) -> Self {
         let function = move |s: Series| {
-            let ca = s.utf8()?;
+            let ca = s.str()?;
             match ca.json_path_match(&pat) {
                 Ok(ca) => Ok(Some(ca.into_series())),
                 Err(e) => Err(PolarsError::ComputeError(format!("{:?}", e).into())),
@@ -282,7 +282,7 @@ impl RbExpr {
         };
         self.clone()
             .inner
-            .map(function, GetOutput::from_type(DataType::Utf8))
+            .map(function, GetOutput::from_type(DataType::String))
             .with_fmt("str.json_path_match")
             .into()
     }
