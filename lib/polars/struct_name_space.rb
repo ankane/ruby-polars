@@ -16,7 +16,7 @@ module Polars
     def [](item)
       if item.is_a?(Integer)
         field(fields[item])
-      elsif item.is_a?(String)
+      elsif item.is_a?(::String)
         field(item)
       else
         raise ArgumentError, "expected type Integer or String, got #{item.class.name}"

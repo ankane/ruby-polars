@@ -34,7 +34,7 @@ module Polars
     #   s3 = Polars::Series.new([1, 2, 3])
     def initialize(name = nil, values = nil, dtype: nil, strict: true, nan_to_null: false, dtype_if_empty: nil)
       # Handle case where values are passed as the first argument
-      if !name.nil? && !name.is_a?(String)
+      if !name.nil? && !name.is_a?(::String)
         if values.nil?
           values = name
           name = nil
@@ -46,7 +46,7 @@ module Polars
       name = "" if name.nil?
 
       # TODO improve
-      if values.is_a?(Range) && values.begin.is_a?(String)
+      if values.is_a?(Range) && values.begin.is_a?(::String)
         values = values.to_a
       end
 
@@ -2134,7 +2134,7 @@ module Polars
     #   s.is_utf8
     #   # => true
     def is_utf8
-      dtype == Utf8
+      dtype == String
     end
     alias_method :utf8?, :is_utf8
 
@@ -2239,7 +2239,7 @@ module Polars
       end
 
       idx = Series.new("", idx)
-      if value.is_a?(Integer) || value.is_a?(Float) || Utils.bool?(value) || value.is_a?(String) || value.nil?
+      if value.is_a?(Integer) || value.is_a?(Float) || Utils.bool?(value) || value.is_a?(::String) || value.nil?
         value = Series.new("", [value])
 
         # if we need to set more than a single value, we extend it
@@ -4018,7 +4018,7 @@ module Polars
         return Utils.wrap_s(_s.send(op, other._s))
       end
 
-      if (other.is_a?(Float) || other.is_a?(::Date) || other.is_a?(::DateTime) || other.is_a?(::Time) || other.is_a?(String)) && !is_float
+      if (other.is_a?(Float) || other.is_a?(::Date) || other.is_a?(::DateTime) || other.is_a?(::Time) || other.is_a?(::String)) && !is_float
         _s2 = sequence_to_rbseries(name, [other])
         return Utils.wrap_s(_s.send(op, _s2))
       end
@@ -4184,7 +4184,7 @@ module Polars
           return RbSeries.new_series_list(name, values, strict)
         else
           constructor =
-            if value.is_a?(String)
+            if value.is_a?(::String)
               if value.encoding == Encoding::UTF_8
                 RbSeries.method(:new_str)
               else

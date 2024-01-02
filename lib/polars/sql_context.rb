@@ -157,7 +157,7 @@ module Polars
     #   ctx.unregister(["test1", "test3"]).tables
     #   # => ["test2"]
     def unregister(names)
-      if names.is_a?(String)
+      if names.is_a?(::String)
         names = [names]
       end
       names.each do |nm|

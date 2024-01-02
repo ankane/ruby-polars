@@ -47,7 +47,7 @@ module Polars
 
       # When grouping by a single column, group name is a single value
       # When grouping by multiple columns, group name is a tuple of values
-      if @by.is_a?(String) || @by.is_a?(Expr)
+      if @by.is_a?(::String) || @by.is_a?(Expr)
         _group_names = group_names.to_series.each
       else
         _group_names = group_names.iter_rows

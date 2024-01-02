@@ -21,7 +21,7 @@ class IpcTest < Minitest::Test
 
   def test_read_ipc_schema
     schema = Polars.read_ipc_schema("test/support/data.arrow")
-    assert_equal ({"a" => Polars::Int64, "b" => Polars::Utf8}), schema
+    assert_equal ({"a" => Polars::Int64, "b" => Polars::String}), schema
   end
 
   def test_write_ipc

@@ -27,7 +27,7 @@ module Polars
       if obj.is_a?(Range)
         # size only works for numeric ranges
         obj.to_a.length
-      elsif obj.is_a?(String)
+      elsif obj.is_a?(::String)
         nil
       else
         obj.length
@@ -116,7 +116,7 @@ module Polars
     end
 
     def self.selection_to_rbexpr_list(exprs)
-      if exprs.is_a?(String) || exprs.is_a?(Symbol) || exprs.is_a?(Expr) || exprs.is_a?(Series)
+      if exprs.is_a?(::String) || exprs.is_a?(Symbol) || exprs.is_a?(Expr) || exprs.is_a?(Series)
         exprs = [exprs]
       end
 
@@ -124,9 +124,9 @@ module Polars
     end
 
     def self.expr_to_lit_or_expr(expr, str_to_lit: true)
-      if (expr.is_a?(String) || expr.is_a?(Symbol)) && !str_to_lit
+      if (expr.is_a?(::String) || expr.is_a?(Symbol)) && !str_to_lit
         col(expr)
-      elsif expr.is_a?(Integer) || expr.is_a?(Float) || expr.is_a?(String) || expr.is_a?(Symbol) || expr.is_a?(Series) || expr.nil?
+      elsif expr.is_a?(Integer) || expr.is_a?(Float) || expr.is_a?(::String) || expr.is_a?(Symbol) || expr.is_a?(Series) || expr.nil?
         lit(expr)
       elsif expr.is_a?(Expr)
         expr
@@ -152,7 +152,7 @@ module Polars
       if data_type == Unknown
         return include_unknown
       end
-      data_type.is_a?(Symbol) || data_type.is_a?(String) || data_type.is_a?(DataType) || (data_type.is_a?(Class) && data_type < DataType)
+      data_type.is_a?(Symbol) || data_type.is_a?(::String) || data_type.is_a?(DataType) || (data_type.is_a?(Class) && data_type < DataType)
     end
 
     def self.map_rb_type_to_dtype(ruby_dtype)
@@ -160,7 +160,7 @@ module Polars
         Float64
       elsif ruby_dtype == Integer
         Int64
-      elsif ruby_dtype == String
+      elsif ruby_dtype == ::String
         Utf8
       elsif ruby_dtype == TrueClass || ruby_dtype == FalseClass
         Boolean
@@ -211,7 +211,7 @@ module Polars
       projection = nil
       if columns
         raise Todo
-        # if columns.is_a?(String) || columns.is_a?(Symbol)
+        # if columns.is_a?(::String) || columns.is_a?(Symbol)
         #   columns = [columns]
         # elsif is_int_sequence(columns)
         #   projection = columns.to_a
@@ -243,11 +243,11 @@ module Polars
     end
 
     def self.strlike?(value)
-      value.is_a?(String) || value.is_a?(Symbol)
+      value.is_a?(::String) || value.is_a?(Symbol)
     end
 
     def self.pathlike?(value)
-      value.is_a?(String) || (defined?(Pathname) && value.is_a?(Pathname))
+      value.is_a?(::String) || (defined?(Pathname) && value.is_a?(Pathname))
     end
 
     def self._is_iterable_of(val, eltype)
@@ -275,10 +275,10 @@ module Polars
     end
 
     def self.is_str_sequence(val, allow_str: false)
-      if allow_str == false && val.is_a?(String)
+      if allow_str == false && val.is_a?(::String)
         false
       else
-        val.is_a?(::Array) && _is_iterable_of(val, String)
+        val.is_a?(::Array) && _is_iterable_of(val, ::String)
       end
     end
 
@@ -289,10 +289,10 @@ module Polars
     def self.parse_as_expression(input, str_as_lit: false, structify: false)
       if input.is_a?(Expr)
         expr = input
-      elsif input.is_a?(String) && !str_as_lit
+      elsif input.is_a?(::String) && !str_as_lit
         expr = Polars.col(input)
         structify = false
-      elsif [Integer, Float, String, Series, ::Date, ::Time, ::DateTime].any? { |cls| input.is_a?(cls) } || input.nil?
+      elsif [Integer, Float, ::String, Series, ::Date, ::Time, ::DateTime].any? { |cls| input.is_a?(cls) } || input.nil?
         expr = Polars.lit(input)
         structify = false
       elsif input.is_a?(Array)

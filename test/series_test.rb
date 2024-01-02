@@ -13,7 +13,7 @@ class SeriesTest < Minitest::Test
 
   def test_new_string
     s = Polars::Series.new(["a", "b", "c"])
-    assert_series ["a", "b", "c"], s, dtype: Polars::Utf8
+    assert_series ["a", "b", "c"], s, dtype: Polars::String
   end
 
   def test_new_binary

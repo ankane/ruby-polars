@@ -3,7 +3,7 @@ require_relative "test_helper"
 class TypesTest < Minitest::Test
   def test_dtypes
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
-    assert_equal [Polars::Int64, Polars::Utf8], df.dtypes
+    assert_equal [Polars::Int64, Polars::String], df.dtypes
   end
 
   def test_dtypes_hashes
@@ -27,7 +27,7 @@ class TypesTest < Minitest::Test
     assert_equal Polars::Int64, schema["i"]
     assert_equal Polars::Float64, schema["f"]
     assert_equal Polars::Decimal, schema["c"]
-    assert_equal Polars::Utf8, schema["s"]
+    assert_equal Polars::String, schema["s"]
     assert_equal Polars::Binary, schema["n"]
     assert_equal Polars::Date, schema["d"]
     assert_equal Polars::Datetime.new("ns"), schema["t"]
@@ -70,8 +70,8 @@ class TypesTest < Minitest::Test
   end
 
   def test_series_dtype_utf8
-    s = Polars::Series.new(["a", nil, "c"], dtype: Polars::Utf8)
-    assert_series ["a", nil, "c"], s, dtype: Polars::Utf8
+    s = Polars::Series.new(["a", nil, "c"], dtype: Polars::String)
+    assert_series ["a", nil, "c"], s, dtype: Polars::String
     assert_equal [Encoding::UTF_8, nil, Encoding::UTF_8], s.to_a.map { |v| v&.encoding }
     assert_equal Encoding::UTF_8, s[0].encoding
   end
@@ -175,6 +175,6 @@ class TypesTest < Minitest::Test
 
   def test_series_dtype_unknown_utf8
     s = Polars::Series.new(["a", "b", "c"], dtype: Polars::Unknown)
-    assert_series ["a", "b", "c"], s, dtype: Polars::Utf8
+    assert_series ["a", "b", "c"], s, dtype: Polars::String
   end
 end

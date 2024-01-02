@@ -119,10 +119,10 @@ module Polars
 
       processed_null_values = Utils._process_null_values(null_values)
 
-      if columns.is_a?(String)
+      if columns.is_a?(::String)
         columns = [columns]
       end
-      if file.is_a?(String) && file.include?("*")
+      if file.is_a?(::String) && file.include?("*")
         dtypes_dict = nil
         if !dtype_list.nil?
           dtypes_dict = dtype_list.to_h
@@ -206,11 +206,11 @@ module Polars
       if Utils.pathlike?(source)
         source = Utils.normalise_filepath(source)
       end
-      if columns.is_a?(String)
+      if columns.is_a?(::String)
         columns = [columns]
       end
 
-      if source.is_a?(String) && source.include?("*") && Utils.local_file?(source)
+      if source.is_a?(::String) && source.include?("*") && Utils.local_file?(source)
         scan =
           Polars.scan_parquet(
             source,
@@ -269,11 +269,11 @@ module Polars
       if Utils.pathlike?(file)
         file = Utils.normalise_filepath(file)
       end
-      if columns.is_a?(String)
+      if columns.is_a?(::String)
         columns = [columns]
       end
 
-      if file.is_a?(String) && file.include?("*")
+      if file.is_a?(::String) && file.include?("*")
         raise Todo
       end
 
@@ -411,7 +411,7 @@ module Polars
     #     }
     #   )
     #   df.dtypes
-    #   # => [Polars::Int64, Polars::Float64, Polars::Utf8]
+    #   # => [Polars::Int64, Polars::Float64, Polars::String]
     def dtypes
       _df.dtypes
     end
@@ -429,7 +429,7 @@ module Polars
     #     }
     #   )
     #   df.schema
-    #   # => {"foo"=>Polars::Int64, "bar"=>Polars::Float64, "ham"=>Polars::Utf8}
+    #   # => {"foo"=>Polars::Int64, "bar"=>Polars::Float64, "ham"=>Polars::String}
     def schema
       columns.zip(dtypes).to_h
     end
@@ -589,13 +589,13 @@ module Polars
             return df.slice(row_selection, 1)
           end
           # df[2, "a"]
-          if col_selection.is_a?(String) || col_selection.is_a?(Symbol)
+          if col_selection.is_a?(::String) || col_selection.is_a?(Symbol)
             return self[col_selection][row_selection]
           end
         end
 
         # column selection can be "a" and ["a", "b"]
-        if col_selection.is_a?(String) || col_selection.is_a?(Symbol)
+        if col_selection.is_a?(::String) || col_selection.is_a?(Symbol)
           col_selection = [col_selection]
         end
 
@@ -621,7 +621,7 @@ module Polars
 
         # select single column
         # df["foo"]
-        if item.is_a?(String) || item.is_a?(Symbol)
+        if item.is_a?(::String) || item.is_a?(Symbol)
           return Utils.wrap_s(_df.column(item.to_s))
         end
 
@@ -647,7 +647,7 @@ module Polars
 
         if item.is_a?(Series)
           dtype = item.dtype
-          if dtype == Utf8
+          if dtype == String
             return _from_rbdf(_df.select(item))
           elsif dtype == UInt32
             return _from_rbdf(_df.take_with_series(item._s))
@@ -1720,7 +1720,7 @@ module Polars
     #   # │ 3   ┆ 8   ┆ c   │
     #   # └─────┴─────┴─────┘
     def drop_nulls(subset: nil)
-      if subset.is_a?(String)
+      if subset.is_a?(::String)
         subset = [subset]
       end
       _from_rbdf(_df.drop_nulls(subset))
@@ -2271,7 +2271,7 @@ module Polars
       if by.nil?
         by = []
       end
-      if by.is_a?(String)
+      if by.is_a?(::String)
         by = [by]
       end
       if offset.nil?
@@ -3115,17 +3115,17 @@ module Polars
       sort_columns: false,
       separator: "_"
     )
-      if values.is_a?(String)
+      if values.is_a?(::String)
         values = [values]
       end
-      if index.is_a?(String)
+      if index.is_a?(::String)
         index = [index]
       end
-      if columns.is_a?(String)
+      if columns.is_a?(::String)
         columns = [columns]
       end
 
-      if aggregate_fn.is_a?(String)
+      if aggregate_fn.is_a?(::String)
         case aggregate_fn
         when "first"
           aggregate_expr = Polars.element.first._rbexpr
@@ -3210,10 +3210,10 @@ module Polars
     #   # │ z   ┆ c        ┆ 6     │
     #   # └─────┴──────────┴───────┘
     def melt(id_vars: nil, value_vars: nil, variable_name: nil, value_name: nil)
-      if value_vars.is_a?(String)
+      if value_vars.is_a?(::String)
         value_vars = [value_vars]
       end
-      if id_vars.is_a?(String)
+      if id_vars.is_a?(::String)
         id_vars = [id_vars]
       end
       if value_vars.nil?
@@ -3427,7 +3427,7 @@ module Polars
     #   # │ C   ┆ 2   ┆ l   │
     #   # └─────┴─────┴─────┘}
     def partition_by(groups, maintain_order: true, include_key: true, as_dict: false)
-      if groups.is_a?(String)
+      if groups.is_a?(::String)
         groups = [groups]
       elsif !groups.is_a?(::Array)
         groups = Array(groups)
@@ -4098,7 +4098,7 @@ module Polars
     #   # │ 0     ┆ 1     ┆ 0     ┆ 1     ┆ 0     ┆ 1     │
     #   # └───────┴───────┴───────┴───────┴───────┴───────┘
     def to_dummies(columns: nil, separator: "_", drop_first: false)
-      if columns.is_a?(String)
+      if columns.is_a?(::String)
         columns = [columns]
       end
       _from_rbdf(_df.to_dummies(columns, separator, drop_first))
@@ -4758,7 +4758,7 @@ module Polars
     #   # │ bar    ┆ 2   ┆ b   ┆ null ┆ [3]       ┆ womp  │
     #   # └────────┴─────┴─────┴──────┴───────────┴───────┘
     def unnest(names)
-      if names.is_a?(String)
+      if names.is_a?(::String)
         names = [names]
       end
       _from_rbdf(_df.unnest(names))
@@ -4871,10 +4871,10 @@ module Polars
             if val.is_a?(Hash) && dtype != Struct
               updated_data[name] = DataFrame.new(val).to_struct(name)
             elsif !Utils.arrlen(val).nil?
-              updated_data[name] = Series.new(String.new(name), val, dtype: dtype)
-            elsif val.nil? || [Integer, Float, TrueClass, FalseClass, String, ::Date, ::DateTime, ::Time].any? { |cls| val.is_a?(cls) }
+              updated_data[name] = Series.new(::String.new(name), val, dtype: dtype)
+            elsif val.nil? || [Integer, Float, TrueClass, FalseClass, ::String, ::Date, ::DateTime, ::Time].any? { |cls| val.is_a?(cls) }
               dtype = Polars::Float64 if val.nil? && dtype.nil?
-              updated_data[name] = Series.new(String.new(name), [val], dtype: dtype).extend_constant(val, array_len - 1)
+              updated_data[name] = Series.new(::String.new(name), [val], dtype: dtype).extend_constant(val, array_len - 1)
             else
               raise Todo
             end
@@ -4931,7 +4931,7 @@ module Polars
       end
       column_names =
         (schema || []).map.with_index do |col, i|
-          if col.is_a?(String)
+          if col.is_a?(::String)
             col || "column_#{i}"
           else
             col[0]
@@ -4944,7 +4944,7 @@ module Polars
       lookup = column_names.zip(lookup_names || []).to_h
 
       column_dtypes =
-        (schema || []).select { |col| !col.is_a?(String) && col[1] }.to_h do |col|
+        (schema || []).select { |col| !col.is_a?(::String) && col[1] }.to_h do |col|
           [lookup[col[0]] || col[0], col[1]]
         end
 

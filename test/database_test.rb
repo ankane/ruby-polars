@@ -84,11 +84,11 @@ class DatabaseTest < Minitest::Test
     schema = df.schema
 
     assert_equal Polars::Int64, schema["id"]
-    assert_equal Polars::Utf8, schema["name"]
+    assert_equal Polars::String, schema["name"]
     assert_equal Polars::Int64, schema["number"]
     assert_equal Polars::Float64, schema["inexact"]
     assert_equal Polars::Binary, schema["bin"]
-    assert_equal Polars::Utf8, schema["txt"]
+    assert_equal Polars::String, schema["txt"]
 
     if postgresql?
       assert_equal Polars::Boolean, schema["active"]
@@ -97,9 +97,9 @@ class DatabaseTest < Minitest::Test
       assert_equal Polars::Time, schema["joined_time"]
     else
       assert_equal Polars::Int64, schema["active"]
-      assert_equal Polars::Utf8, schema["joined_at"]
+      assert_equal Polars::String, schema["joined_at"]
       assert_equal Polars::Float64, schema["dec"]
-      assert_equal Polars::Utf8, schema["joined_time"]
+      assert_equal Polars::String, schema["joined_time"]
     end
   end
 

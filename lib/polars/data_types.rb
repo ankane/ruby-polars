@@ -120,8 +120,11 @@ module Polars
   end
 
   # UTF-8 encoded string type.
-  class Utf8 < DataType
+  class String < DataType
   end
+
+  # Allow Utf8 as an alias for String
+  Utf8 = String
 
   # Binary type.
   class Binary < DataType

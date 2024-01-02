@@ -13,7 +13,7 @@ module Polars
     #
     # @return [Expr]
     def [](item)
-      if item.is_a?(String)
+      if item.is_a?(::String)
         field(item)
       elsif item.is_a?(Integer)
         Utils.wrap_expr(_rbexpr.struct_field_by_index(item))

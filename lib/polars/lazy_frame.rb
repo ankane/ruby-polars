@@ -218,7 +218,7 @@ module Polars
     #     }
     #   ).lazy
     #   lf.dtypes
-    #   # => [Polars::Int64, Polars::Float64, Polars::Utf8]
+    #   # => [Polars::Int64, Polars::Float64, Polars::String]
     def dtypes
       _ldf.dtypes
     end
@@ -236,7 +236,7 @@ module Polars
     #     }
     #   ).lazy
     #   lf.schema
-    #   # => {"foo"=>Polars::Int64, "bar"=>Polars::Float64, "ham"=>Polars::Utf8}
+    #   # => {"foo"=>Polars::Int64, "bar"=>Polars::Float64, "ham"=>Polars::String}
     def schema
       _ldf.schema
     end
@@ -399,7 +399,7 @@ module Polars
     #   # │ 1   ┆ 6.0 ┆ a   │
     #   # └─────┴─────┴─────┘
     def sort(by, reverse: false, nulls_last: false, maintain_order: false)
-      if by.is_a?(String)
+      if by.is_a?(::String)
         return _from_rbldf(_ldf.sort(by, reverse, nulls_last, maintain_order))
       end
       if Utils.bool?(reverse)
@@ -1371,7 +1371,7 @@ module Polars
         raise ArgumentError, "Expected a `LazyFrame` as join table, got #{other.class.name}"
       end
 
-      if on.is_a?(String)
+      if on.is_a?(::String)
         left_on = on
         right_on = on
       end
@@ -1380,19 +1380,19 @@ module Polars
         raise ArgumentError, "You should pass the column to join on as an argument."
       end
 
-      if by_left.is_a?(String) || by_left.is_a?(Expr)
+      if by_left.is_a?(::String) || by_left.is_a?(Expr)
         by_left_ = [by_left]
       else
         by_left_ = by_left
       end
 
-      if by_right.is_a?(String) || by_right.is_a?(Expr)
+      if by_right.is_a?(::String) || by_right.is_a?(Expr)
         by_right_ = [by_right]
       else
         by_right_ = by_right
       end
 
-      if by.is_a?(String)
+      if by.is_a?(::String)
         by_left_ = [by]
         by_right_ = [by]
       elsif by.is_a?(::Array)
@@ -1402,7 +1402,7 @@ module Polars
 
       tolerance_str = nil
       tolerance_num = nil
-      if tolerance.is_a?(String)
+      if tolerance.is_a?(::String)
         tolerance_str = tolerance
       else
         tolerance_num = tolerance
@@ -1722,7 +1722,7 @@ module Polars
     #
     # @return [LazyFrame]
     def drop(columns)
-      if columns.is_a?(String)
+      if columns.is_a?(::String)
         columns = [columns]
       end
       _from_rbldf(_ldf.drop_columns(columns))
@@ -2363,10 +2363,10 @@ module Polars
     #   # │ z   ┆ c        ┆ 6     │
     #   # └─────┴──────────┴───────┘
     def melt(id_vars: nil, value_vars: nil, variable_name: nil, value_name: nil, streamable: true)
-      if value_vars.is_a?(String)
+      if value_vars.is_a?(::String)
         value_vars = [value_vars]
       end
-      if id_vars.is_a?(String)
+      if id_vars.is_a?(::String)
         id_vars = [id_vars]
       end
       if value_vars.nil?
@@ -2464,7 +2464,7 @@ module Polars
     #   # │ bar    ┆ 2   ┆ b   ┆ null ┆ [3]       ┆ womp  │
     #   # └────────┴─────┴─────┴──────┴───────────┴───────┘
     def unnest(names)
-      if names.is_a?(String)
+      if names.is_a?(::String)
         names = [names]
       end
       _from_rbldf(_ldf.unnest(names))

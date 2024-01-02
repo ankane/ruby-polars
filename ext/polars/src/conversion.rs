@@ -215,7 +215,7 @@ impl IntoValue for Wrap<DataType> {
                     .unwrap()
             }
             DataType::Boolean => pl.const_get::<_, Value>("Boolean").unwrap(),
-            DataType::String => pl.const_get::<_, Value>("Utf8").unwrap(),
+            DataType::String => pl.const_get::<_, Value>("String").unwrap(),
             DataType::Binary => pl.const_get::<_, Value>("Binary").unwrap(),
             DataType::Array(inner, size) => {
                 let inner = Wrap(*inner);
@@ -406,7 +406,7 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Int16" => DataType::Int16,
                 "Polars::Int32" => DataType::Int32,
                 "Polars::Int64" => DataType::Int64,
-                "Polars::Utf8" => DataType::String,
+                "Polars::String" => DataType::String,
                 "Polars::Binary" => DataType::Binary,
                 "Polars::Boolean" => DataType::Boolean,
                 "Polars::Categorical" => DataType::Categorical(None, Default::default()),

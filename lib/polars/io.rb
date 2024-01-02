@@ -616,7 +616,7 @@ module Polars
           query
         elsif query.is_a?(ActiveRecord::Relation)
           query.connection.select_all(query.to_sql)
-        elsif query.is_a?(String)
+        elsif query.is_a?(::String)
           ActiveRecord::Base.connection.select_all(query)
         else
           raise ArgumentError, "Expected ActiveRecord::Relation, ActiveRecord::Result, or String"
@@ -652,7 +652,7 @@ module Polars
           when :integer
             Int64
           when :string, :text
-            Utf8
+            String
           when :time
             Time
           end
@@ -856,7 +856,7 @@ module Polars
     private
 
     def _prepare_file_arg(file)
-      if file.is_a?(String) && file =~ /\Ahttps?:\/\//
+      if file.is_a?(::String) && file =~ /\Ahttps?:\/\//
         raise ArgumentError, "use URI(...) for remote files"
       end
 
@@ -870,7 +870,7 @@ module Polars
     end
 
     def _check_arg_is_1byte(arg_name, arg, can_be_empty = false)
-      if arg.is_a?(String)
+      if arg.is_a?(::String)
         arg_byte_length = arg.bytesize
         if can_be_empty
           if arg_byte_length > 1

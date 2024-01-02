@@ -366,7 +366,7 @@ module Polars
     #   # │ 3   ┆ 1.5  │
     #   # └─────┴──────┘
     def exclude(columns)
-      if columns.is_a?(String)
+      if columns.is_a?(::String)
         columns = [columns]
         return wrap_expr(_rbexpr.exclude(columns))
       elsif !columns.is_a?(::Array)
@@ -374,11 +374,11 @@ module Polars
         return wrap_expr(_rbexpr.exclude_dtype(columns))
       end
 
-      if !columns.all? { |a| a.is_a?(String) } || !columns.all? { |a| Utils.is_polars_dtype(a) }
+      if !columns.all? { |a| a.is_a?(::String) } || !columns.all? { |a| Utils.is_polars_dtype(a) }
         raise ArgumentError, "input should be all string or all DataType"
       end
 
-      if columns[0].is_a?(String)
+      if columns[0].is_a?(::String)
         wrap_expr(_rbexpr.exclude(columns))
       else
         wrap_expr(_rbexpr.exclude_dtype(columns))
