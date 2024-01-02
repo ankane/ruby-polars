@@ -4,7 +4,7 @@
 - Added `cut` and `qcut` methods to `Series` and `Expr`
 - Added `rle` and `rle_id` methods to `Series` and `Expr`
 - Added `bottom_k` method to `Series`
-- Changed `count` to ignore null values
+- Changed `count` method for `Series` and `Expr` to ignore null values
 - Fixed error with `top_k` method
 - Dropped support for Ruby < 3.1
 
