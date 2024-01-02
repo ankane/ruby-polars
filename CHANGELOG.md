@@ -5,6 +5,7 @@
 - Added `rle` and `rle_id` methods to `Series` and `Expr`
 - Added `bottom_k` method to `Series`
 - Fixed error with `top_k` method
+- Dropped support for Ruby < 3.1
 
 ## 0.7.0 (2023-11-17)
 
