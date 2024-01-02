@@ -8,6 +8,7 @@ mod functions;
 mod lazyframe;
 mod lazygroupby;
 mod map;
+mod on_startup;
 mod object;
 mod prelude;
 pub(crate) mod rb_modules;
