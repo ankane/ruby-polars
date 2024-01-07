@@ -1,6 +1,7 @@
 ## 0.8.0 (unreleased)
 
 - Updated Polars to 0.36.2
+- Added support for Ruby 3.3
 - Added `cut` and `qcut` methods to `Series` and `Expr`
 - Added `rle` and `rle_id` methods to `Series` and `Expr`
 - Added `bottom_k` method to `Series`
