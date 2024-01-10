@@ -1,4 +1,4 @@
-## 0.8.0 (2023-01-10)
+## 0.8.0 (2024-01-10)
 
 - Updated Polars to 0.36.2
 - Added support for Ruby 3.3
