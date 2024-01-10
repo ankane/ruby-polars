@@ -1950,7 +1950,7 @@ module Polars
     end
     alias_method :series_equal, :equals
 
-    # Return the number of non-null elements in the column.
+    # Return the number of non-null elements in the Series.
     #
     # @return [Integer]
     #
@@ -1962,12 +1962,12 @@ module Polars
       len - null_count
     end
 
-    # Length of this Series.
+    # Return the number of elements in the Series.
     #
     # @return [Integer]
     #
     # @example
-    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s = Polars::Series.new("a", [1, 2, nil])
     #   s.len
     #   # => 3
     def len
