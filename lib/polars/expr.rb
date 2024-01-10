@@ -726,8 +726,6 @@ module Polars
 
     # Count the number of values in this expression.
     #
-    # Alias for {#count}.
-    #
     # @return [Expr]
     #
     # @example
