@@ -2,11 +2,11 @@
 
 - Updated Polars to 0.36.2
 - Added support for Ruby 3.3
+- Added warning to `count` method for `Series` and `Expr` about excluding null values in 0.9.0
 - Added `cut` and `qcut` methods to `Series` and `Expr`
 - Added `rle` and `rle_id` methods to `Series` and `Expr`
 - Added `bottom_k` method to `Series`
 - Aliased `Utf8` data type to `String`
-- Changed `count` method for `Series` and `Expr` to exclude null values
 - Fixed error with `top_k` method
 - Dropped support for Ruby < 3.1
 

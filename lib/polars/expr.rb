@@ -704,7 +704,7 @@ module Polars
       wrap_expr(_rbexpr.agg_groups)
     end
 
-    # Count the number of non-null values in this expression.
+    # Count the number of values in this expression.
     #
     # @return [Expr]
     #
@@ -718,10 +718,12 @@ module Polars
     #   # │ --- ┆ --- │
     #   # │ u32 ┆ u32 │
     #   # ╞═════╪═════╡
-    #   # │ 3   ┆ 2   │
+    #   # │ 3   ┆ 3   │
     #   # └─────┴─────┘
     def count
-      wrap_expr(_rbexpr.count)
+      warn "`Expr#count` will exclude null values in 0.9.0. Use `Expr#length` instead."
+      # wrap_expr(_rbexpr.count)
+      wrap_expr(_rbexpr.len)
     end
 
     # Count the number of values in this expression.
@@ -743,6 +745,7 @@ module Polars
     def len
       wrap_expr(_rbexpr.len)
     end
+    alias_method :length, :len
 
     # Get a slice of this expression.
     #
