@@ -37,6 +37,19 @@ class DatabaseTest < Minitest::Test
     assert_result df, users
   end
 
+  def test_read_database_schema_overrides
+    users = create_users
+
+    df = Polars.read_database("SELECT id FROM users ORDER BY id")
+    assert_equal Polars::Int64, df["id"].dtype
+
+    df = Polars.read_database("SELECT id FROM users ORDER BY id", schema_overrides: {"id" => Polars::Int16})
+    assert_equal Polars::Int16, df["id"].dtype
+
+    df = Polars.read_database("SELECT id FROM users ORDER BY id", schema_overrides: {id: Polars::Int16})
+    assert_equal Polars::Int16, df["id"].dtype
+  end
+
   def test_read_database_null
     User.create!
     df = Polars.read_database("SELECT * FROM users ORDER BY id")

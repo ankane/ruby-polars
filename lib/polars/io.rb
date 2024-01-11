@@ -604,9 +604,12 @@ module Polars
     #
     # @param query [Object]
     #   ActiveRecord::Relation or ActiveRecord::Result.
+    # @param schema_overrides [Hash]
+    #   A hash mapping column names to dtypes, used to override the schema
+    #   inferred from the query.
     #
     # @return [DataFrame]
-    def read_database(query)
+    def read_database(query, schema_overrides: nil)
       if !defined?(ActiveRecord)
         raise Error, "Active Record not available"
       end
@@ -623,7 +626,7 @@ module Polars
         end
 
       data = {}
-      schema_overrides = {}
+      schema_overrides = (schema_overrides || {}).transform_keys(&:to_s)
 
       result.columns.each_with_index do |k, i|
         column_type = result.column_types[i]
@@ -657,7 +660,7 @@ module Polars
             Time
           end
 
-        schema_overrides[k] = polars_type if polars_type
+        schema_overrides[k] ||= polars_type if polars_type
       end
 
       DataFrame.new(data, schema_overrides: schema_overrides)

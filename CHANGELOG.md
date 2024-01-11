@@ -1,3 +1,7 @@
+## 0.8.1 (unreleased)
+
+- Added `schema_overrides` option to `read_database` method
+
 ## 0.8.0 (2024-01-10)
 
 - Updated Polars to 0.36.2
