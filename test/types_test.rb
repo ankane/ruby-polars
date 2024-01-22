@@ -179,6 +179,7 @@ class TypesTest < Minitest::Test
   end
 
   def test_bigdecimal
-    Polars::DataFrame.new([{a: BigDecimal("1e1")}])
+    assert_includes Polars::DataFrame.new([{a: BigDecimal("1e1")}]).inspect, "│ 10 "
+    assert_includes Polars::DataFrame.new([{a: BigDecimal("1e2")}]).inspect, "│ 100 "
   end
 end
