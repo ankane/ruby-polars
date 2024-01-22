@@ -80,4 +80,15 @@ class DataTypesTest < Minitest::Test
     refute_equal Polars::Struct.new([Polars::Field.new("a", Polars::Int64)]), Polars::Struct.new([Polars::Field.new("b", Polars::Int64)])
     refute_equal Polars::Struct.new([Polars::Field.new("a", Polars::Int64)]), Polars::Struct.new([Polars::Field.new("a", Polars::Int32)])
   end
+
+  def test_is_numeric
+    assert Polars::Int64.numeric?
+    refute Polars::String.numeric?
+  end
+
+  def test_is_decimal
+    assert Polars::Decimal.decimal?
+    assert Polars::Decimal.new(15, 1).decimal?
+    refute Polars::String.numeric?
+  end
 end

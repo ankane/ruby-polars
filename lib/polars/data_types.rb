@@ -20,6 +20,22 @@ module Polars
     def self.==(other)
       eql?(other) || other.is_a?(self)
     end
+
+    def self.numeric?
+      self < NumericType
+    end
+
+    def numeric?
+      self.class.numeric?
+    end
+
+    def self.decimal?
+      self == Decimal
+    end
+
+    def decimal?
+      self.class.decimal?
+    end
   end
 
   # Base class for numeric data types.
