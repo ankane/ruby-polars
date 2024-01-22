@@ -21,18 +21,18 @@ module Polars
       self == Decimal
     end
 
-    # TODO Change to IntegerType in 0.9.0
     def self.integer?
+      # TODO Change to IntegerType in 0.9.0
       self < IntegralType
     end
 
-    # TODO Add SignedIntegerType in 0.9.0
     def self.signed_integer?
+      # TODO Add SignedIntegerType in 0.9.0
       [Int8, Int16, Int32, Int64].include?(self)
     end
 
-    # TODO Add UnsignedIntegerType in 0.9.0
     def self.unsigned_integer?
+      # TODO Add UnsignedIntegerType in 0.9.0
       [UInt8, UInt16, UInt32, UInt64].include?(self)
     end
 
