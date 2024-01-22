@@ -77,6 +77,7 @@ class DataTypesTest < Minitest::Test
 
   def test_is_numeric
     assert Polars::Int64.numeric?
+    assert Polars::Float64.numeric?
     refute Polars::String.numeric?
   end
 
@@ -112,6 +113,8 @@ class DataTypesTest < Minitest::Test
   end
 
   def test_is_temporal
+    assert Polars::Date.temporal?
+    assert Polars::Time.temporal?
     assert Polars::Datetime.temporal?
     assert Polars::Datetime.new("ns").temporal?
     assert Polars::Duration.temporal?
