@@ -379,8 +379,19 @@ impl IntoValue for Wrap<&DecimalChunked> {
 }
 
 fn abs_decimal_from_digits(digits: String, exp: i32) -> Option<(i128, usize)> {
+    let exp = exp - (digits.len() as i32);
     match digits.parse::<i128>() {
-        Ok(v) => Some((v, ((digits.len() as i32) - exp) as usize)),
+        Ok(mut v) => {
+            let scale = if exp > 0 {
+                v = 10_i128
+                    .checked_pow(exp as u32)
+                    .and_then(|factor| v.checked_mul(factor))?;
+                0
+            } else {
+                (-exp) as usize
+            };
+            Some((v, scale))
+        }
         Err(_) => None,
     }
 }
