@@ -187,6 +187,15 @@ class TypesTest < Minitest::Test
   end
 
   def assert_bigdecimal(v, exp)
-    assert_includes Polars::DataFrame.new([{a: BigDecimal(v)}]).inspect, "│ #{exp} "
+    b = BigDecimal(v)
+
+    s = Polars::Series.new([b])
+    assert_includes s.inspect, "\t#{exp}\n"
+    assert_equal b, s.to_a[0]
+    assert_equal b, s[0]
+
+    df = Polars::DataFrame.new([{a: b}])
+    assert_includes df.inspect, "│ #{exp} "
+    assert_equal b, df.to_a[0]["a"]
   end
 end
