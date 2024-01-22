@@ -179,6 +179,7 @@ class TypesTest < Minitest::Test
   end
 
   def test_bigdecimal
+    assert_bigdecimal "1e-2", "0.01"
     assert_bigdecimal "1e-1", "0.1"
     assert_bigdecimal "1e0", "1"
     assert_bigdecimal "1e1", "10"
