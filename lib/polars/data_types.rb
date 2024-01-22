@@ -13,10 +13,6 @@ module Polars
       false
     end
 
-    def nested?
-      self.class.nested?
-    end
-
     def self.==(other)
       eql?(other) || other.is_a?(self)
     end
@@ -25,16 +21,29 @@ module Polars
       self < NumericType
     end
 
-    def numeric?
-      self.class.numeric?
-    end
-
     def self.decimal?
       self == Decimal
     end
 
-    def decimal?
-      self.class.decimal?
+    # TODO Change to IntegerType in 0.9.0
+    def self.integer?
+      self < IntegralType
+    end
+
+    # TODO Add SignedIntegerType in 0.9.0
+    def self.signed_integer?
+      [Int8, Int16, Int32, Int64].include?(self)
+    end
+
+    # TODO Add UnsignedIntegerType in 0.9.0
+    def self.unsigned_integer?
+      [UInt8, UInt16, UInt32, UInt64].include?(self)
+    end
+
+    [:nested?, :numeric?, :decimal?, :integer?, :signed_integer?, :unsigned_integer?].each do |v|
+      define_method(v) do
+        self.class.public_send(v)
+      end
     end
   end
 

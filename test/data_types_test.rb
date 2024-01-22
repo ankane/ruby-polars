@@ -91,4 +91,22 @@ class DataTypesTest < Minitest::Test
     assert Polars::Decimal.new(15, 1).decimal?
     refute Polars::String.numeric?
   end
+
+  def test_is_integer
+    assert Polars::Int64.integer?
+    assert Polars::UInt64.integer?
+    refute Polars::String.integer?
+  end
+
+  def test_is_signed_integer
+    assert Polars::Int64.signed_integer?
+    refute Polars::UInt64.signed_integer?
+    refute Polars::String.signed_integer?
+  end
+
+  def test_is_unsigned_integer
+    assert Polars::UInt64.unsigned_integer?
+    refute Polars::Int64.unsigned_integer?
+    refute Polars::String.unsigned_integer?
+  end
 end
