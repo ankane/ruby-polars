@@ -179,23 +179,25 @@ class TypesTest < Minitest::Test
   end
 
   def test_bigdecimal
-    assert_bigdecimal "1e-2", "0.01"
-    assert_bigdecimal "1e-1", "0.1"
-    assert_bigdecimal "1e0", "1"
-    assert_bigdecimal "1e1", "10"
-    assert_bigdecimal "1e2", "100"
+    assert_bigdecimal "1e-2", "0.01", 2
+    assert_bigdecimal "1e-1", "0.1", 1
+    assert_bigdecimal "1e0", "1", 0
+    assert_bigdecimal "1e1", "10", 0
+    assert_bigdecimal "1e2", "100", 0
   end
 
-  def assert_bigdecimal(v, exp)
+  def assert_bigdecimal(v, exp, scale)
     b = BigDecimal(v)
 
     s = Polars::Series.new([b])
     assert_includes s.inspect, "\t#{exp}\n"
     assert_equal b, s.to_a[0]
     assert_equal b, s[0]
+    assert_equal scale, s.dtype.scale
 
     df = Polars::DataFrame.new([{a: b}])
     assert_includes df.inspect, "│ #{exp} "
     assert_equal b, df.to_a[0]["a"]
+    assert_equal scale, df.schema["a"].scale
   end
 end
