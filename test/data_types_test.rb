@@ -8,12 +8,6 @@ class DataTypesTest < Minitest::Test
     assert_equal Polars::Duration, Polars::Duration.new("ns").base_type
   end
 
-  def test_is_nested
-    refute Polars::Int64.nested?
-    assert Polars::List.nested?
-    assert Polars::List.new(Polars::Int64).nested?
-  end
-
   def test_to_s
     assert_equal "Polars::Int64", Polars::Int64.to_s
     assert_equal "Polars::Decimal", Polars::Decimal.to_s
@@ -108,5 +102,27 @@ class DataTypesTest < Minitest::Test
     assert Polars::UInt64.unsigned_integer?
     refute Polars::Int64.unsigned_integer?
     refute Polars::String.unsigned_integer?
+  end
+
+  def test_is_float
+    assert Polars::Float32.float?
+    assert Polars::Float64.float?
+    refute Polars::Int64.float?
+    refute Polars::String.float?
+  end
+
+  def test_is_temporal
+    assert Polars::Datetime.temporal?
+    assert Polars::Datetime.new("ns").temporal?
+    assert Polars::Duration.temporal?
+    assert Polars::Duration.new("ns").temporal?
+    refute Polars::Int64.temporal?
+    refute Polars::String.temporal?
+  end
+
+  def test_is_nested
+    refute Polars::Int64.nested?
+    assert Polars::List.nested?
+    assert Polars::List.new(Polars::Int64).nested?
   end
 end

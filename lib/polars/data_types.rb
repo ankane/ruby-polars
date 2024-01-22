@@ -9,10 +9,6 @@ module Polars
       is_a?(DataType) ? self.class : self
     end
 
-    def self.nested?
-      false
-    end
-
     def self.==(other)
       eql?(other) || other.is_a?(self)
     end
@@ -40,7 +36,19 @@ module Polars
       [UInt8, UInt16, UInt32, UInt64].include?(self)
     end
 
-    [:nested?, :numeric?, :decimal?, :integer?, :signed_integer?, :unsigned_integer?].each do |v|
+    def self.float?
+      self < FloatType
+    end
+
+    def self.temporal?
+      self < TemporalType
+    end
+
+    def self.nested?
+      false
+    end
+
+    [:numeric?, :decimal?, :integer?, :signed_integer?, :unsigned_integer?, :float?, :temporal?, :nested?].each do |v|
       define_method(v) do
         self.class.public_send(v)
       end
