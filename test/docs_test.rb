@@ -37,6 +37,10 @@ class DocsTest < Minitest::Test
     assert_docs Polars::DataFrame
   end
 
+  def test_data_types
+    assert_docs Polars::DataType
+  end
+
   def test_date_time_expr
     assert_docs Polars::DateTimeExpr
   end

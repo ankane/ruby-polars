@@ -1,49 +1,92 @@
 module Polars
   # Base class for all Polars data types.
   class DataType
+    # Return this DataType's fundamental/root type class.
+    #
+    # @return [Class]
+    #
+    # @example
+    #   Polars::Datetime.new("ns").base_type
+    #   # => Polars::Datetime
+    # @example
+    #   Polars::List.new(Polars::Int32).base_type
+    #   # => Polars::List
+    # @example
+    #   Polars::Struct.new([Polars::Field.new("a", Polars::Int64), Polars::Field.new("b", Polars::Boolean)]).base_type
+    #   # => Polars::Struct
     def self.base_type
       self
     end
 
+    # Return this DataType's fundamental/root type class.
+    #
+    # @return [Class]
     def base_type
       is_a?(DataType) ? self.class : self
     end
 
+    # Check if this DataType is the same as another DataType.
+    #
+    # @return [Boolean]
     def self.==(other)
       eql?(other) || other.is_a?(self)
     end
 
+    # Check whether the data type is a numeric type.
+    #
+    # @return [Boolean]
     def self.numeric?
       self < NumericType
     end
 
+    # Check whether the data type is a decimal type.
+    #
+    # @return [Boolean]
     def self.decimal?
       self == Decimal
     end
 
+    # Check whether the data type is an integer type.
+    #
+    # @return [Boolean]
     def self.integer?
       # TODO Change to IntegerType in 0.9.0
       self < IntegralType
     end
 
+    # Check whether the data type is a signed integer type.
+    #
+    # @return [Boolean]
     def self.signed_integer?
       # TODO Add SignedIntegerType in 0.9.0
       [Int8, Int16, Int32, Int64].include?(self)
     end
 
+    # Check whether the data type is an unsigned integer type.
+    #
+    # @return [Boolean]
     def self.unsigned_integer?
       # TODO Add UnsignedIntegerType in 0.9.0
       [UInt8, UInt16, UInt32, UInt64].include?(self)
     end
 
+    # Check whether the data type is a float type.
+    #
+    # @return [Boolean]
     def self.float?
       self < FloatType
     end
 
+    # Check whether the data type is a temporal type.
+    #
+    # @return [Boolean]
     def self.temporal?
       self < TemporalType
     end
 
+    # Check whether the data type is a nested type.
+    #
+    # @return [Boolean]
     def self.nested?
       false
     end
