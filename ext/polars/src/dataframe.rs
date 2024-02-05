@@ -428,14 +428,14 @@ impl RbDataFrame {
         include_header: bool,
         separator: u8,
         quote_char: u8,
-        batch_size: usize,
+        batch_size: Wrap<NonZeroUsize>,
         datetime_format: Option<String>,
         date_format: Option<String>,
         time_format: Option<String>,
         float_precision: Option<usize>,
         null_value: Option<String>,
     ) -> RbResult<()> {
-        let batch_size = NonZeroUsize::new(batch_size).unwrap();
+        let batch_size = batch_size.0;
         let null = null_value.unwrap_or_default();
 
         if let Ok(s) = String::try_convert(rb_f) {

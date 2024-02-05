@@ -56,13 +56,13 @@ impl RbLazyFrame {
     pub fn new_from_ndjson(
         path: String,
         infer_schema_length: Option<usize>,
-        batch_size: Option<usize>,
+        batch_size: Option<Wrap<NonZeroUsize>>,
         n_rows: Option<usize>,
         low_memory: bool,
         rechunk: bool,
         row_index: Option<(String, IdxSize)>,
     ) -> RbResult<Self> {
-        let batch_size = batch_size.map(|v| NonZeroUsize::new(v).unwrap());
+        let batch_size = batch_size.map(|v| v.0);
         let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
 
         let lf = LazyJsonLineReader::new(path)

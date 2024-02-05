@@ -1,5 +1,6 @@
 use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
+use std::num::NonZeroUsize;
 
 use magnus::encoding::{EncodingCapable, Index};
 use magnus::{
@@ -1166,4 +1167,13 @@ where
     S: AsRef<str>,
 {
     container.into_iter().map(|s| s.as_ref().into()).collect()
+}
+
+impl TryConvert for Wrap<NonZeroUsize> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let v = usize::try_convert(ob)?;
+        NonZeroUsize::new(v)
+            .map(|v| Wrap(v))
+            .ok_or(RbValueError::new_err("must be non-zero".into()))
+    }
 }
