@@ -142,6 +142,7 @@ impl RbExpr {
         self.inner.clone().rolling_var(options).into()
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn rolling_median(
         &self,
         window_size: String,
