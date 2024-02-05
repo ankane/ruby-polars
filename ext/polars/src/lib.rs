@@ -244,7 +244,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("is_unique", method!(RbDataFrame::is_unique, 0))?;
     class.define_method("is_duplicated", method!(RbDataFrame::is_duplicated, 0))?;
     class.define_method("equals", method!(RbDataFrame::equals, 2))?;
-    class.define_method("with_row_count", method!(RbDataFrame::with_row_count, 2))?;
+    class.define_method("with_row_index", method!(RbDataFrame::with_row_index, 2))?;
     class.define_method("_clone", method!(RbDataFrame::clone, 0))?;
     class.define_method("melt", method!(RbDataFrame::melt, 4))?;
     class.define_method("pivot_expr", method!(RbDataFrame::pivot_expr, 7))?;
@@ -533,7 +533,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("list_reverse", method!(RbExpr::list_reverse, 0))?;
     class.define_method("list_unique", method!(RbExpr::list_unique, 1))?;
     class.define_method("list_get", method!(RbExpr::list_get, 1))?;
-    class.define_method("list_join", method!(RbExpr::list_join, 1))?;
+    class.define_method("list_join", method!(RbExpr::list_join, 2))?;
     class.define_method("list_arg_min", method!(RbExpr::list_arg_min, 0))?;
     class.define_method("list_arg_max", method!(RbExpr::list_arg_max, 0))?;
     class.define_method("list_diff", method!(RbExpr::list_diff, 2))?;
@@ -605,7 +605,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     // maybe add to different class
     class.define_singleton_method("col", function!(crate::functions::lazy::col, 1))?;
-    class.define_singleton_method("count", function!(crate::functions::lazy::count, 0))?;
+    class.define_singleton_method("len", function!(crate::functions::lazy::len, 0))?;
     class.define_singleton_method("first", function!(crate::functions::lazy::first, 0))?;
     class.define_singleton_method("last", function!(crate::functions::lazy::last, 0))?;
     class.define_singleton_method("cols", function!(crate::functions::lazy::cols, 1))?;
@@ -637,7 +637,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("when", function!(crate::functions::whenthen::when, 1))?;
     class.define_singleton_method(
         "concat_str",
-        function!(crate::functions::lazy::concat_str, 2),
+        function!(crate::functions::lazy::concat_str, 3),
     )?;
     class.define_singleton_method(
         "concat_lst",
@@ -705,8 +705,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("slice", method!(RbLazyFrame::slice, 2))?;
     class.define_method("tail", method!(RbLazyFrame::tail, 1))?;
     class.define_method("melt", method!(RbLazyFrame::melt, 5))?;
-    class.define_method("with_row_count", method!(RbLazyFrame::with_row_count, 2))?;
-    class.define_method("drop_columns", method!(RbLazyFrame::drop_columns, 1))?;
+    class.define_method("with_row_index", method!(RbLazyFrame::with_row_index, 2))?;
+    class.define_method("drop", method!(RbLazyFrame::drop, 1))?;
     class.define_method("_clone", method!(RbLazyFrame::clone, 0))?;
     class.define_method("columns", method!(RbLazyFrame::columns, 0))?;
     class.define_method("dtypes", method!(RbLazyFrame::dtypes, 0))?;
@@ -783,7 +783,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("mul", method!(RbSeries::mul, 1))?;
     class.define_method("div", method!(RbSeries::div, 1))?;
     class.define_method("rem", method!(RbSeries::rem, 1))?;
-    class.define_method("sort", method!(RbSeries::sort, 1))?;
+    class.define_method("sort", method!(RbSeries::sort, 2))?;
     class.define_method("value_counts", method!(RbSeries::value_counts, 1))?;
     class.define_method("arg_min", method!(RbSeries::arg_min, 0))?;
     class.define_method("arg_max", method!(RbSeries::arg_max, 0))?;

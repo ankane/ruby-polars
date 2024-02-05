@@ -1,6 +1,6 @@
 use magnus::{prelude::*, RArray, Value};
 use polars::io::mmap::MmapBytesReader;
-use polars::io::RowCount;
+use polars::io::RowIndex;
 use polars::prelude::read_impl::OwnedBatchedCsvReader;
 use polars::prelude::*;
 use std::cell::RefCell;
@@ -46,7 +46,7 @@ impl RbBatchedCsv {
         let null_values = Option::<Wrap<NullValues>>::try_convert(arguments[18])?;
         let try_parse_dates = bool::try_convert(arguments[19])?;
         let skip_rows_after_header = usize::try_convert(arguments[20])?;
-        let row_count = Option::<(String, IdxSize)>::try_convert(arguments[21])?;
+        let row_index = Option::<(String, IdxSize)>::try_convert(arguments[21])?;
         let sample_size = usize::try_convert(arguments[22])?;
         let eol_char = String::try_convert(arguments[23])?;
         // end arguments
@@ -54,7 +54,7 @@ impl RbBatchedCsv {
         let null_values = null_values.map(|w| w.0);
         let eol_char = eol_char.as_bytes()[0];
 
-        let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
+        let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
 
         let quote_char = if let Some(s) = quote_char {
             if s.is_empty() {
@@ -106,7 +106,7 @@ impl RbBatchedCsv {
             .with_quote_char(quote_char)
             .with_end_of_line_char(eol_char)
             .with_skip_rows_after_header(skip_rows_after_header)
-            .with_row_count(row_count)
+            .with_row_index(row_index)
             .sample_size(sample_size);
 
         let reader = if low_memory {

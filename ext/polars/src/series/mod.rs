@@ -215,8 +215,8 @@ impl RbSeries {
         }
     }
 
-    pub fn sort(&self, reverse: bool) -> Self {
-        (self.series.borrow_mut().sort(reverse)).into()
+    pub fn sort(&self, descending: bool, nulls_last: bool) -> Self {
+        (self.series.borrow_mut().sort(descending, nulls_last)).into()
     }
 
     pub fn value_counts(&self, sorted: bool) -> RbResult<RbDataFrame> {
@@ -313,7 +313,7 @@ impl RbSeries {
                 DataType::Int64 => RArray::from_iter(series.i64().unwrap()).into_value(),
                 DataType::Float32 => RArray::from_iter(series.f32().unwrap()).into_value(),
                 DataType::Float64 => RArray::from_iter(series.f64().unwrap()).into_value(),
-                DataType::Categorical(_, _) => {
+                DataType::Categorical(_, _) | DataType::Enum(_, _) => {
                     RArray::from_iter(series.categorical().unwrap().iter_str()).into_value()
                 }
                 DataType::Object(_, _) => {
@@ -415,7 +415,10 @@ impl RbSeries {
                     RArray::from_iter(NullIter { iter, n }).into_value()
                 }
                 DataType::Unknown => {
-                    panic!("to_a not implemented for null/unknown")
+                    panic!("to_a not implemented for unknown")
+                }
+                DataType::BinaryOffset => {
+                    unreachable!()
                 }
             };
             rblist

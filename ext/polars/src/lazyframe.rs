@@ -1,9 +1,10 @@
 use magnus::{IntoValue, RArray, RHash, TryConvert, Value};
-use polars::io::RowCount;
+use polars::io::RowIndex;
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
 use std::cell::RefCell;
 use std::io::{BufWriter, Read};
+use std::num::NonZeroUsize;
 use std::path::PathBuf;
 
 use crate::conversion::*;
@@ -59,9 +60,10 @@ impl RbLazyFrame {
         n_rows: Option<usize>,
         low_memory: bool,
         rechunk: bool,
-        row_count: Option<(String, IdxSize)>,
+        row_index: Option<(String, IdxSize)>,
     ) -> RbResult<Self> {
-        let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
+        let batch_size = batch_size.map(|v| NonZeroUsize::new(v).unwrap());
+        let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
 
         let lf = LazyJsonLineReader::new(path)
             .with_infer_schema_length(infer_schema_length)
@@ -69,7 +71,7 @@ impl RbLazyFrame {
             .with_n_rows(n_rows)
             .low_memory(low_memory)
             .with_rechunk(rechunk)
-            .with_row_count(row_count)
+            .with_row_index(row_index)
             .finish()
             .map_err(RbPolarsErr::from)?;
         Ok(lf.into())
@@ -95,7 +97,7 @@ impl RbLazyFrame {
         let rechunk = bool::try_convert(arguments[14])?;
         let skip_rows_after_header = usize::try_convert(arguments[15])?;
         let encoding = Wrap::<CsvEncoding>::try_convert(arguments[16])?;
-        let row_count = Option::<(String, IdxSize)>::try_convert(arguments[17])?;
+        let row_index = Option::<(String, IdxSize)>::try_convert(arguments[17])?;
         let try_parse_dates = bool::try_convert(arguments[18])?;
         let eol_char = String::try_convert(arguments[19])?;
         // end arguments
@@ -105,7 +107,7 @@ impl RbLazyFrame {
         let separator = separator.as_bytes()[0];
         let eol_char = eol_char.as_bytes()[0];
 
-        let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
+        let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
 
         let overwrite_dtype = overwrite_dtype.map(|overwrite_dtype| {
             overwrite_dtype
@@ -129,7 +131,7 @@ impl RbLazyFrame {
             .with_rechunk(rechunk)
             .with_skip_rows_after_header(skip_rows_after_header)
             .with_encoding(encoding.0)
-            .with_row_count(row_count)
+            .with_row_index(row_index)
             .with_try_parse_dates(try_parse_dates)
             .with_null_values(null_values);
 
@@ -147,18 +149,18 @@ impl RbLazyFrame {
         cache: bool,
         parallel: Wrap<ParallelStrategy>,
         rechunk: bool,
-        row_count: Option<(String, IdxSize)>,
+        row_index: Option<(String, IdxSize)>,
         low_memory: bool,
         use_statistics: bool,
         hive_partitioning: bool,
     ) -> RbResult<Self> {
-        let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
+        let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
         let args = ScanArgsParquet {
             n_rows,
             cache,
             parallel: parallel.0,
             rechunk,
-            row_count,
+            row_index,
             low_memory,
             // TODO support cloud options
             cloud_options: None,
@@ -174,15 +176,15 @@ impl RbLazyFrame {
         n_rows: Option<usize>,
         cache: bool,
         rechunk: bool,
-        row_count: Option<(String, IdxSize)>,
+        row_index: Option<(String, IdxSize)>,
         memory_map: bool,
     ) -> RbResult<Self> {
-        let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
+        let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
         let args = ScanArgsIpc {
             n_rows,
             cache,
             rechunk,
-            row_count,
+            row_index,
             memmap: memory_map,
         };
         let lf = LazyFrame::scan_ipc(path, args).map_err(RbPolarsErr::from)?;
@@ -619,14 +621,14 @@ impl RbLazyFrame {
         ldf.melt(args).into()
     }
 
-    pub fn with_row_count(&self, name: String, offset: Option<IdxSize>) -> Self {
+    pub fn with_row_index(&self, name: String, offset: Option<IdxSize>) -> Self {
         let ldf = self.ldf.clone();
-        ldf.with_row_count(&name, offset).into()
+        ldf.with_row_index(&name, offset).into()
     }
 
-    pub fn drop_columns(&self, cols: Vec<String>) -> Self {
+    pub fn drop(&self, cols: Vec<String>) -> Self {
         let ldf = self.ldf.clone();
-        ldf.drop_columns(cols).into()
+        ldf.drop(cols).into()
     }
 
     pub fn clone(&self) -> Self {

@@ -445,37 +445,29 @@ module Polars
     # sign character rather than before. The original string is returned if width is
     # less than or equal to `s.length`.
     #
-    # @param alignment [Integer]
+    # @param length [Integer]
     #   Fill the value up to this length
     #
     # @return [Expr]
     #
     # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "num" => [-10, -1, 0, 1, 10, 100, 1000, 10000, 100000, 1000000, nil]
-    #     }
-    #   )
-    #   df.with_column(Polars.col("num").cast(String).str.zfill(5))
+    #   df = Polars::DataFrame.new({"a" => [-1, 123, 999999, nil]})
+    #   df.with_columns(Polars.col("a").cast(Polars::String).str.zfill(4).alias("zfill"))
     #   # =>
-    #   # shape: (11, 1)
-    #   # ┌─────────┐
-    #   # │ num     │
-    #   # │ ---     │
-    #   # │ str     │
-    #   # ╞═════════╡
-    #   # │ -0010   │
-    #   # │ -0001   │
-    #   # │ 00000   │
-    #   # │ 00001   │
-    #   # │ …       │
-    #   # │ 10000   │
-    #   # │ 100000  │
-    #   # │ 1000000 │
-    #   # │ null    │
-    #   # └─────────┘
-    def zfill(alignment)
-      Utils.wrap_expr(_rbexpr.str_zfill(alignment))
+    #   # shape: (4, 2)
+    #   # ┌────────┬────────┐
+    #   # │ a      ┆ zfill  │
+    #   # │ ---    ┆ ---    │
+    #   # │ i64    ┆ str    │
+    #   # ╞════════╪════════╡
+    #   # │ -1     ┆ -001   │
+    #   # │ 123    ┆ 0123   │
+    #   # │ 999999 ┆ 999999 │
+    #   # │ null   ┆ null   │
+    #   # └────────┴────────┘
+    def zfill(length)
+      length = Utils.parse_as_expression(length)
+      Utils.wrap_expr(_rbexpr.str_zfill(length))
     end
 
     # Return the string left justified in a string of length `length`.
@@ -745,15 +737,15 @@ module Polars
     #   df.select(Polars.col("encoded").str.decode("hex"))
     #   # =>
     #   # shape: (3, 1)
-    #   # ┌───────────────┐
-    #   # │ encoded       │
-    #   # │ ---           │
-    #   # │ binary        │
-    #   # ╞═══════════════╡
-    #   # │ [binary data] │
-    #   # │ [binary data] │
-    #   # │ null          │
-    #   # └───────────────┘
+    #   # ┌─────────┐
+    #   # │ encoded │
+    #   # │ ---     │
+    #   # │ binary  │
+    #   # ╞═════════╡
+    #   # │ b"foo"  │
+    #   # │ b"bar"  │
+    #   # │ null    │
+    #   # └─────────┘
     def decode(encoding, strict: true)
       if encoding == "hex"
         Utils.wrap_expr(_rbexpr.str_hex_decode(strict))
@@ -824,6 +816,7 @@ module Polars
     #   # │ 678 │
     #   # └─────┘
     def extract(pattern, group_index: 1)
+      pattern = Utils.parse_as_expression(pattern, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_extract(pattern, group_index))
     end
 
@@ -1087,6 +1080,8 @@ module Polars
     #   # │ dragonfruit ┆ uit      │
     #   # └─────────────┴──────────┘
     def slice(offset, length = nil)
+      offset = Utils.parse_as_expression(offset)
+      length = Utils.parse_as_expression(length)
       Utils.wrap_expr(_rbexpr.str_slice(offset, length))
     end
 

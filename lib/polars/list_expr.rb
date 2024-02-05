@@ -363,6 +363,8 @@ module Polars
     #
     # @param separator [String]
     #   string to separate the items with
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default).
     #
     # @return [Expr]
     #
@@ -379,9 +381,9 @@ module Polars
     #   # │ a b c │
     #   # │ x y   │
     #   # └───────┘
-    def join(separator)
+    def join(separator, ignore_nulls: true)
       separator = Utils.parse_as_expression(separator, str_as_lit: true)
-      Utils.wrap_expr(_rbexpr.list_join(separator))
+      Utils.wrap_expr(_rbexpr.list_join(separator, ignore_nulls))
     end
 
     # Retrieve the index of the minimal value in every sublist.

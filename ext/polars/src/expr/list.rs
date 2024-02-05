@@ -47,11 +47,11 @@ impl RbExpr {
         self.inner.clone().list().get(index.inner.clone()).into()
     }
 
-    pub fn list_join(&self, separator: &RbExpr) -> Self {
+    pub fn list_join(&self, separator: &RbExpr, ignore_nulls: bool) -> Self {
         self.inner
             .clone()
             .list()
-            .join(separator.inner.clone())
+            .join(separator.inner.clone(), ignore_nulls)
             .into()
     }
 

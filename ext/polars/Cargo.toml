@@ -15,14 +15,14 @@ ahash = "0.8"
 chrono = "0.4"
 either = "1.8"
 magnus = "0.6"
-polars-core = "=0.36.2"
-polars-parquet = "=0.36.2"
-polars-utils = "=0.36.2"
+polars-core = "=0.37.0"
+polars-parquet = "=0.37.0"
+polars-utils = "=0.37.0"
 serde_json = "1"
 smartstring = "1"
 
 [dependencies.polars]
-version = "=0.36.2"
+version = "=0.37.0"
 features = [
     "abs",
     "approx_unique",
@@ -47,7 +47,6 @@ features = [
     "ewma",
     "extract_jsonpath",
     "fmt",
-    "horizontal_concat",
     "interpolate",
     "ipc",
     "is_first_distinct",
@@ -56,7 +55,6 @@ features = [
     "is_unique",
     "json",
     "lazy",
-    "lazy_regex",
     "list_count",
     "list_eval",
     "list_gather",
@@ -77,6 +75,7 @@ features = [
     "random",
     "rank",
     "range",
+    "regex",
     "reinterpret",
     "repeat_by",
     "rle",

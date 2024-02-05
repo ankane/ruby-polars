@@ -146,8 +146,8 @@ pub fn duration(
     dsl::duration(args).into()
 }
 
-pub fn count() -> RbExpr {
-    dsl::count().into()
+pub fn len() -> RbExpr {
+    dsl::len().into()
 }
 
 pub fn first() -> RbExpr {
@@ -253,9 +253,9 @@ pub fn cov(a: &RbExpr, b: &RbExpr, ddof: u8) -> RbExpr {
     polars::lazy::dsl::cov(a.inner.clone(), b.inner.clone(), ddof).into()
 }
 
-pub fn concat_str(s: RArray, sep: String) -> RbResult<RbExpr> {
+pub fn concat_str(s: RArray, separator: String, ignore_nulls: bool) -> RbResult<RbExpr> {
     let s = rb_exprs_to_exprs(s)?;
-    Ok(dsl::concat_str(s, &sep).into())
+    Ok(dsl::concat_str(s, &separator, ignore_nulls).into())
 }
 
 pub fn concat_lst(s: RArray) -> RbResult<RbExpr> {

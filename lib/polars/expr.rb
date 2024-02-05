@@ -1044,25 +1044,25 @@ module Polars
     # @return [Expr]
     #
     # @example
-    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4]})
-    #   df.select(
+    #   df = Polars::DataFrame.new({"a" => ["x", "k", nil, "d"]})
+    #   df.with_columns(
     #     [
-    #       Polars.col("a").cum_count,
-    #       Polars.col("a").cum_count(reverse: true).alias("a_reverse")
+    #       Polars.col("a").cum_count.alias("cum_count"),
+    #       Polars.col("a").cum_count(reverse: true).alias("cum_count_reverse")
     #     ]
     #   )
     #   # =>
-    #   # shape: (4, 2)
-    #   # ┌─────┬───────────┐
-    #   # │ a   ┆ a_reverse │
-    #   # │ --- ┆ ---       │
-    #   # │ u32 ┆ u32       │
-    #   # ╞═════╪═══════════╡
-    #   # │ 0   ┆ 3         │
-    #   # │ 1   ┆ 2         │
-    #   # │ 2   ┆ 1         │
-    #   # │ 3   ┆ 0         │
-    #   # └─────┴───────────┘
+    #   # shape: (4, 3)
+    #   # ┌──────┬───────────┬───────────────────┐
+    #   # │ a    ┆ cum_count ┆ cum_count_reverse │
+    #   # │ ---  ┆ ---       ┆ ---               │
+    #   # │ str  ┆ u32       ┆ u32               │
+    #   # ╞══════╪═══════════╪═══════════════════╡
+    #   # │ x    ┆ 1         ┆ 3                 │
+    #   # │ k    ┆ 2         ┆ 2                 │
+    #   # │ null ┆ 2         ┆ 1                 │
+    #   # │ d    ┆ 3         ┆ 1                 │
+    #   # └──────┴───────────┴───────────────────┘
     def cum_count(reverse: false)
       wrap_expr(_rbexpr.cum_count(reverse))
     end

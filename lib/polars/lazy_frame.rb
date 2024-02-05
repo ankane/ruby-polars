@@ -1725,7 +1725,7 @@ module Polars
       if columns.is_a?(::String)
         columns = [columns]
       end
-      _from_rbldf(_ldf.drop_columns(columns))
+      _from_rbldf(_ldf.drop(columns))
     end
 
     # Rename column names.
@@ -1955,7 +1955,7 @@ module Polars
     #       "b" => [2, 4, 6]
     #     }
     #   ).lazy
-    #   df.with_row_count.collect
+    #   df.with_row_index.collect
     #   # =>
     #   # shape: (3, 3)
     #   # ┌────────┬─────┬─────┐
@@ -1967,9 +1967,10 @@ module Polars
     #   # │ 1      ┆ 3   ┆ 4   │
     #   # │ 2      ┆ 5   ┆ 6   │
     #   # └────────┴─────┴─────┘
-    def with_row_count(name: "row_nr", offset: 0)
-      _from_rbldf(_ldf.with_row_count(name, offset))
+    def with_row_index(name: "row_nr", offset: 0)
+      _from_rbldf(_ldf.with_row_index(name, offset))
     end
+    alias_method :with_row_count, :with_row_index
 
     # Take every nth row in the LazyFrame and return as a new LazyFrame.
     #

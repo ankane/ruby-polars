@@ -6,12 +6,13 @@ use polars::frame::row::{rows_to_schema_supertypes, Row};
 use polars::frame::NullStrategy;
 use polars::io::avro::AvroCompression;
 use polars::io::mmap::ReaderBytes;
-use polars::io::RowCount;
+use polars::io::RowIndex;
 use polars::prelude::pivot::{pivot, pivot_stable};
 use polars::prelude::*;
 use polars_core::utils::try_get_supertype;
 use std::cell::RefCell;
 use std::io::{BufWriter, Cursor};
+use std::num::NonZeroUsize;
 use std::ops::Deref;
 
 use crate::conversion::*;
@@ -125,7 +126,7 @@ impl RbDataFrame {
         let null_values = Option::<Wrap<NullValues>>::try_convert(arguments[19])?;
         let try_parse_dates = bool::try_convert(arguments[20])?;
         let skip_rows_after_header = usize::try_convert(arguments[21])?;
-        let row_count = Option::<(String, IdxSize)>::try_convert(arguments[22])?;
+        let row_index = Option::<(String, IdxSize)>::try_convert(arguments[22])?;
         let sample_size = usize::try_convert(arguments[23])?;
         let eol_char = String::try_convert(arguments[24])?;
         // end arguments
@@ -133,7 +134,7 @@ impl RbDataFrame {
         let null_values = null_values.map(|w| w.0);
         let eol_char = eol_char.as_bytes()[0];
 
-        let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
+        let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
 
         let quote_char = if let Some(s) = quote_char {
             if s.is_empty() {
@@ -186,7 +187,7 @@ impl RbDataFrame {
             .with_quote_char(quote_char)
             .with_end_of_line_char(eol_char)
             .with_skip_rows_after_header(skip_rows_after_header)
-            .with_row_count(row_count)
+            .with_row_index(row_index)
             .sample_size(sample_size)
             .finish()
             .map_err(RbPolarsErr::from)?;
@@ -200,19 +201,19 @@ impl RbDataFrame {
         projection: Option<Vec<usize>>,
         n_rows: Option<usize>,
         parallel: Wrap<ParallelStrategy>,
-        row_count: Option<(String, IdxSize)>,
+        row_index: Option<(String, IdxSize)>,
         low_memory: bool,
         use_statistics: bool,
         rechunk: bool,
     ) -> RbResult<Self> {
-        let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
+        let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
         let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
         let df = ParquetReader::new(mmap_bytes_r)
             .with_projection(projection)
             .with_columns(columns)
             .read_parallel(parallel.0)
             .with_n_rows(n_rows)
-            .with_row_count(row_count)
+            .with_row_index(row_index)
             .set_low_memory(low_memory)
             .use_statistics(use_statistics)
             .set_rechunk(rechunk)
@@ -226,16 +227,16 @@ impl RbDataFrame {
         columns: Option<Vec<String>>,
         projection: Option<Vec<usize>>,
         n_rows: Option<usize>,
-        row_count: Option<(String, IdxSize)>,
+        row_index: Option<(String, IdxSize)>,
         memory_map: bool,
     ) -> RbResult<Self> {
-        let row_count = row_count.map(|(name, offset)| RowCount { name, offset });
+        let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
         let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
         let df = IpcReader::new(mmap_bytes_r)
             .with_projection(projection)
             .with_columns(columns)
             .with_n_rows(n_rows)
-            .with_row_count(row_count)
+            .with_row_index(row_index)
             .memory_mapped(memory_map)
             .finish()
             .map_err(RbPolarsErr::from)?;
@@ -434,6 +435,7 @@ impl RbDataFrame {
         float_precision: Option<usize>,
         null_value: Option<String>,
     ) -> RbResult<()> {
+        let batch_size = NonZeroUsize::new(batch_size).unwrap();
         let null = null_value.unwrap_or_default();
 
         if let Ok(s) = String::try_convert(rb_f) {
@@ -887,11 +889,11 @@ impl RbDataFrame {
         }
     }
 
-    pub fn with_row_count(&self, name: String, offset: Option<IdxSize>) -> RbResult<Self> {
+    pub fn with_row_index(&self, name: String, offset: Option<IdxSize>) -> RbResult<Self> {
         let df = self
             .df
             .borrow()
-            .with_row_count(&name, offset)
+            .with_row_index(&name, offset)
             .map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }

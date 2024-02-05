@@ -353,8 +353,8 @@ module Polars
     #   # shape: (3,)
     #   # Series: '' [binary]
     #   # [
-    #   #         [binary data]
-    #   #         [binary data]
+    #   #         b"foo"
+    #   #         b"bar"
     #   #         null
     #   # ]
     def decode(encoding, strict: false)
@@ -690,11 +690,11 @@ module Polars
     # sign character rather than before. The original string is returned if width is
     # less than or equal to `s.length`.
     #
-    # @param alignment [Integer]
+    # @param length [Integer]
     #   Fill the value up to this length.
     #
     # @return [Series]
-    def zfill(alignment)
+    def zfill(length)
       super
     end
 

@@ -65,7 +65,8 @@ module Polars
     # @return [Expr, Integer]
     def count(column = nil)
       if column.nil?
-        return Utils.wrap_expr(RbExpr.count)
+        warn "`Polars.count` is deprecated. Use `Polars.length` instead."
+        return Utils.wrap_expr(RbExpr.len._alias("count"))
       end
 
       if column.is_a?(Series)
@@ -74,6 +75,52 @@ module Polars
         col(column).count
       end
     end
+
+    # Return the number of rows in the context.
+    #
+    # This is similar to `COUNT(*)` in SQL.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, nil],
+    #       "b" => [3, nil, nil],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.len)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ len │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 3   │
+    #   # └─────┘
+    #
+    # @example Generate an index column by using `len` in conjunction with `int_range`.
+    #   df.select([
+    #     Polars.int_range(Polars.len, dtype: Polars::UInt32).alias("index"),
+    #     Polars.all
+    #   ])
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌───────┬──────┬──────┬─────┐
+    #   # │ index ┆ a    ┆ b    ┆ c   │
+    #   # │ ---   ┆ ---  ┆ ---  ┆ --- │
+    #   # │ u32   ┆ i64  ┆ i64  ┆ str │
+    #   # ╞═══════╪══════╪══════╪═════╡
+    #   # │ 0     ┆ 1    ┆ 3    ┆ foo │
+    #   # │ 1     ┆ 2    ┆ null ┆ bar │
+    #   # │ 2     ┆ null ┆ null ┆ foo │
+    #   # └───────┴──────┴──────┴─────┘
+    def len
+      Utils.wrap_expr(RbExpr.len)
+    end
+    alias_method :length, :len
 
     # Aggregate to list.
     #
@@ -632,7 +679,12 @@ module Polars
     #   #         1
     #   #         2
     #   # ]
-    def int_range(start, stop, step: 1, eager: false, dtype: nil)
+    def int_range(start, stop = nil, step: 1, eager: false, dtype: nil)
+      if stop.nil?
+        stop = start
+        start = 0
+      end
+
       start = Utils.parse_as_expression(start)
       stop = Utils.parse_as_expression(stop)
       dtype ||= Int64
@@ -760,6 +812,8 @@ module Polars
     #   Columns to concat into a Utf8 Series.
     # @param sep [String]
     #   String value that will be used to separate the values.
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default).
     #
     # @return [Expr]
     #
@@ -794,9 +848,9 @@ module Polars
     #   # │ 2   ┆ cats ┆ swim ┆ 4 cats swim   │
     #   # │ 3   ┆ null ┆ walk ┆ null          │
     #   # └─────┴──────┴──────┴───────────────┘
-    def concat_str(exprs, sep: "")
+    def concat_str(exprs, sep: "", ignore_nulls: false)
       exprs = Utils.selection_to_rbexpr_list(exprs)
-      return Utils.wrap_expr(RbExpr.concat_str(exprs, sep))
+      return Utils.wrap_expr(RbExpr.concat_str(exprs, sep, ignore_nulls))
     end
 
     # Format expressions as a string.

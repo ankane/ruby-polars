@@ -1443,12 +1443,12 @@ module Polars
     #   #         2
     #   #         1
     #   # ]
-    def sort(reverse: false, in_place: false)
+    def sort(reverse: false, nulls_last: false, in_place: false)
       if in_place
-        self._s = _s.sort(reverse)
+        self._s = _s.sort(reverse, nulls_last)
         self
       else
-        Utils.wrap_s(_s.sort(reverse))
+        Utils.wrap_s(_s.sort(reverse, nulls_last))
       end
     end
 

@@ -38,7 +38,7 @@ module Polars
       temp_col = "__POLARS_GB_GROUP_INDICES"
       groups_df =
         @df.lazy
-          .with_row_count(name: temp_col)
+          .with_row_index(name: temp_col)
           .group_by(@by, maintain_order: @maintain_order)
           .agg(Polars.col(temp_col))
           .collect(no_optimization: true)

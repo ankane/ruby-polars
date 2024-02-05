@@ -1084,7 +1084,7 @@ module Polars
     #   df.estimated_size
     #   # => 25888898
     #   df.estimated_size("mb")
-    #   # => 24.689577102661133
+    #   # => 26.702880859375
     def estimated_size(unit = "b")
       sz = _df.estimated_size
       Utils.scale_bytes(sz, to: unit)
@@ -1782,7 +1782,7 @@ module Polars
     #       "b" => [2, 4, 6]
     #     }
     #   )
-    #   df.with_row_count
+    #   df.with_row_index
     #   # =>
     #   # shape: (3, 3)
     #   # ┌────────┬─────┬─────┐
@@ -1794,9 +1794,10 @@ module Polars
     #   # │ 1      ┆ 3   ┆ 4   │
     #   # │ 2      ┆ 5   ┆ 6   │
     #   # └────────┴─────┴─────┘
-    def with_row_count(name: "row_nr", offset: 0)
-      _from_rbdf(_df.with_row_count(name, offset))
+    def with_row_index(name: "row_nr", offset: 0)
+      _from_rbdf(_df.with_row_index(name, offset))
     end
+    alias_method :with_row_count, :with_row_index
 
     # Start a group by operation.
     #

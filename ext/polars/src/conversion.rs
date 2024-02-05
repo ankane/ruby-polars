@@ -81,7 +81,7 @@ pub(crate) fn get_series(obj: Value) -> RbResult<Series> {
 impl TryConvert for Wrap<StringChunked> {
     fn try_convert(obj: Value) -> RbResult<Self> {
         let (seq, len) = get_rbseq(obj)?;
-        let mut builder = StringChunkedBuilder::new("", len, len * 25);
+        let mut builder = StringChunkedBuilder::new("", len);
 
         for res in seq.each() {
             let item = res?;
@@ -97,7 +97,7 @@ impl TryConvert for Wrap<StringChunked> {
 impl TryConvert for Wrap<BinaryChunked> {
     fn try_convert(obj: Value) -> RbResult<Self> {
         let (seq, len) = get_rbseq(obj)?;
-        let mut builder = BinaryChunkedBuilder::new("", len, len * 25);
+        let mut builder = BinaryChunkedBuilder::new("", len);
 
         for res in seq.each() {
             let item = res?;
@@ -151,7 +151,7 @@ impl IntoValue for Wrap<AnyValue<'_>> {
             AnyValue::Boolean(v) => ruby.into_value(v),
             AnyValue::String(v) => ruby.into_value(v),
             AnyValue::StringOwned(v) => ruby.into_value(v.as_str()),
-            AnyValue::Categorical(idx, rev, arr) => {
+            AnyValue::Categorical(idx, rev, arr) | AnyValue::Enum(idx, rev, arr) => {
                 let s = if arr.is_null() {
                     rev.get(idx)
                 } else {
@@ -244,6 +244,9 @@ impl IntoValue for Wrap<DataType> {
             }
             DataType::Object(_, _) => pl.const_get::<_, Value>("Object").unwrap(),
             DataType::Categorical(_, _) => pl.const_get::<_, Value>("Categorical").unwrap(),
+            DataType::Enum(_, _) => {
+                todo!()
+            }
             DataType::Time => pl.const_get::<_, Value>("Time").unwrap(),
             DataType::Struct(fields) => {
                 let field_class = pl.const_get::<_, Value>("Field").unwrap();
@@ -262,6 +265,9 @@ impl IntoValue for Wrap<DataType> {
             }
             DataType::Null => pl.const_get::<_, Value>("Null").unwrap(),
             DataType::Unknown => pl.const_get::<_, Value>("Unknown").unwrap(),
+            DataType::BinaryOffset => {
+                unimplemented!()
+            }
         }
     }
 }

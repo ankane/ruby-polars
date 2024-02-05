@@ -107,8 +107,12 @@ impl RbExpr {
             .into()
     }
 
-    pub fn str_slice(&self, start: i64, length: Option<u64>) -> Self {
-        self.inner.clone().str().slice(start, length).into()
+    pub fn str_slice(&self, start: &Self, length: &Self) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .slice(start.inner.clone(), length.inner.clone())
+            .into()
     }
 
     pub fn str_explode(&self) -> Self {
@@ -155,8 +159,8 @@ impl RbExpr {
         self.clone().inner.str().pad_end(length, fillchar).into()
     }
 
-    pub fn str_zfill(&self, alignment: usize) -> Self {
-        self.clone().inner.str().zfill(alignment).into()
+    pub fn str_zfill(&self, length: &Self) -> Self {
+        self.clone().inner.str().zfill(length.inner.clone()).into()
     }
 
     pub fn str_contains(&self, pat: &RbExpr, literal: Option<bool>, strict: bool) -> Self {
@@ -287,8 +291,12 @@ impl RbExpr {
             .into()
     }
 
-    pub fn str_extract(&self, pat: String, group_index: usize) -> Self {
-        self.inner.clone().str().extract(&pat, group_index).into()
+    pub fn str_extract(&self, pat: &Self, group_index: usize) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .extract(pat.inner.clone(), group_index)
+            .into()
     }
 
     pub fn str_extract_all(&self, pat: &RbExpr) -> Self {

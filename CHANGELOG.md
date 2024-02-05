@@ -1,5 +1,6 @@
-## 0.8.1 (unreleased)
+## 0.9.0 (unreleased)
 
+- Updated Polars to 0.37.0
 - Added `schema_overrides` option to `read_database` method
 - Fixed error with `BigDecimal` objects
 
