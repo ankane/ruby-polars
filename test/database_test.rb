@@ -122,6 +122,8 @@ class DatabaseTest < Minitest::Test
   def create_users
     # round time since Postgres only stores microseconds
     now = postgresql? ? Time.now.round(6) : Time.now
+    # TODO fix nil
+    settings = [{"hello" => "world"}, {}, {}]
     3.times do |i|
       User.create!(
         name: "User #{i}",
@@ -134,7 +136,7 @@ class DatabaseTest < Minitest::Test
         dec: BigDecimal("1.5"),
         txt: "txt",
         joined_time: now,
-        settings: i == 1 ? {} : {"count" => i}
+        settings: settings[i]
       )
     end
     # reload for time column
