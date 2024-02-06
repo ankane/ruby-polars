@@ -134,7 +134,7 @@ class DatabaseTest < Minitest::Test
         dec: BigDecimal("1.5"),
         txt: "txt",
         joined_time: now,
-        settings: {"hello" => "world"}
+        settings: i == 1 ? {} : {"count" => i}
       )
     end
     # reload for time column
