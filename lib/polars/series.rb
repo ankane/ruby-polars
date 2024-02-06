@@ -4124,7 +4124,7 @@ module Polars
         end
       end
 
-      if !dtype.nil? && ![List, Unknown].include?(dtype) && Utils.is_polars_dtype(dtype) && ruby_dtype.nil?
+      if !dtype.nil? && ![List, Struct, Unknown].include?(dtype) && Utils.is_polars_dtype(dtype) && ruby_dtype.nil?
         if dtype == Array && !dtype.is_a?(Array) && value.is_a?(::Array)
           dtype = Array.new(value.size)
         end
@@ -4139,6 +4139,14 @@ module Polars
           end
         end
         return rbseries
+      elsif dtype == Struct
+        struct_schema = dtype.is_a?(Struct) ? dtype.to_schema : nil
+        empty = {}
+        return DataFrame.sequence_to_rbdf(
+          values.map { |v| v.nil? ? empty : v },
+          schema: struct_schema,
+          orient: "row",
+        ).to_struct(name)
       else
         if ruby_dtype.nil?
           if value.nil?

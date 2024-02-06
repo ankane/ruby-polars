@@ -46,44 +46,51 @@ impl RbDataFrame {
     fn finish_from_rows(
         rows: Vec<Row>,
         infer_schema_length: Option<usize>,
-        schema_overwrite: Option<Schema>,
+        schema: Option<Schema>,
+        schema_overrides_by_idx: Option<Vec<(usize, DataType)>>,
     ) -> RbResult<Self> {
-        // object builder must be registered.
+        // Object builder must be registered
         crate::on_startup::register_object_builder();
 
-        let schema =
+        let mut final_schema =
             rows_to_schema_supertypes(&rows, infer_schema_length.map(|n| std::cmp::max(1, n)))
                 .map_err(RbPolarsErr::from)?;
-        // replace inferred nulls with boolean
-        let fields = schema.iter_fields().map(|mut fld| match fld.data_type() {
-            DataType::Null => {
-                // fld.coerce(DataType::Boolean);
-                fld
-            }
-            DataType::Decimal(_, _) => {
-                fld.coerce(DataType::Decimal(None, None));
-                fld
-            }
-            _ => fld,
-        });
-        let mut schema = Schema::from_iter(fields);
 
-        if let Some(schema_overwrite) = schema_overwrite {
-            for (i, (name, dtype)) in schema_overwrite.into_iter().enumerate() {
-                if let Some((name_, dtype_)) = schema.get_at_index_mut(i) {
+        // Erase scale from inferred decimals.
+        for dtype in final_schema.iter_dtypes_mut() {
+            if let DataType::Decimal(_, _) = dtype {
+                *dtype = DataType::Decimal(None, None)
+            }
+        }
+
+        // Integrate explicit/inferred schema.
+        if let Some(schema) = schema {
+            for (i, (name, dtype)) in schema.into_iter().enumerate() {
+                if let Some((name_, dtype_)) = final_schema.get_at_index_mut(i) {
                     *name_ = name;
 
-                    // if user sets dtype unknown, we use the inferred datatype
+                    // If schema dtype is Unknown, overwrite with inferred datatype.
                     if !matches!(dtype, DataType::Unknown) {
                         *dtype_ = dtype;
                     }
                 } else {
-                    schema.with_column(name, dtype);
+                    final_schema.with_column(name, dtype);
                 }
             }
         }
 
-        let df = DataFrame::from_rows_and_schema(&rows, &schema).map_err(RbPolarsErr::from)?;
+        // Optional per-field overrides; these supersede default/inferred dtypes.
+        if let Some(overrides) = schema_overrides_by_idx {
+            for (i, dtype) in overrides {
+                if let Some((_, dtype_)) = final_schema.get_at_index_mut(i) {
+                    if !matches!(dtype, DataType::Unknown) {
+                        *dtype_ = dtype;
+                    }
+                }
+            }
+        }
+        let df =
+            DataFrame::from_rows_and_schema(&rows, &final_schema).map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }
 
@@ -353,7 +360,7 @@ impl RbDataFrame {
     pub fn read_rows(
         rb_rows: RArray,
         infer_schema_length: Option<usize>,
-        schema_overwrite: Option<Wrap<Schema>>,
+        schema: Option<Wrap<Schema>>,
     ) -> RbResult<Self> {
         let mut rows = Vec::with_capacity(rb_rows.len());
         for v in rb_rows.each() {
@@ -364,30 +371,34 @@ impl RbDataFrame {
             }
             rows.push(Row(row));
         }
-        Self::finish_from_rows(
-            rows,
-            infer_schema_length,
-            schema_overwrite.map(|wrap| wrap.0),
-        )
+        Self::finish_from_rows(rows, infer_schema_length, schema.map(|wrap| wrap.0), None)
     }
 
     pub fn read_hashes(
         dicts: Value,
         infer_schema_length: Option<usize>,
-        schema_overwrite: Option<Wrap<Schema>>,
+        schema: Option<Wrap<Schema>>,
+        schema_overrides: Option<Wrap<Schema>>,
     ) -> RbResult<Self> {
-        let (rows, mut names) = dicts_to_rows(&dicts, infer_schema_length.unwrap_or(50))?;
+        let mut schema_columns = PlIndexSet::new();
+        if let Some(s) = &schema {
+            schema_columns.extend(s.0.iter_names().map(|n| n.to_string()))
+        }
+        let (rows, names) = dicts_to_rows(&dicts, infer_schema_length, schema_columns)?;
 
-        // ensure the new names are used
-        if let Some(schema) = &schema_overwrite {
-            for (new_name, name) in schema.0.iter_names().zip(names.iter_mut()) {
-                *name = new_name.to_string();
+        let mut schema_overrides_by_idx: Vec<(usize, DataType)> = Vec::new();
+        if let Some(overrides) = schema_overrides {
+            for (idx, name) in names.iter().enumerate() {
+                if let Some(dtype) = overrides.0.get(name) {
+                    schema_overrides_by_idx.push((idx, dtype.clone()));
+                }
             }
         }
         let rbdf = Self::finish_from_rows(
             rows,
             infer_schema_length,
-            schema_overwrite.map(|wrap| wrap.0),
+            schema.map(|wrap| wrap.0),
+            Some(schema_overrides_by_idx),
         )?;
 
         unsafe {

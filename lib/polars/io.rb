@@ -658,6 +658,9 @@ module Polars
             String
           when :time
             Time
+          # TODO fix issue with null
+          # when :json, :jsonb
+          #   Struct
           end
 
         schema_overrides[k] ||= polars_type if polars_type

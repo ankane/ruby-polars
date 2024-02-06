@@ -108,11 +108,14 @@ class DatabaseTest < Minitest::Test
       assert_equal Polars::Datetime, schema["joined_at"]
       assert_equal Polars::Decimal, schema["dec"]
       assert_equal Polars::Time, schema["joined_time"]
+      # TODO fix for null
+      # assert_equal Polars::Struct, schema["settings"]
     else
       assert_equal Polars::Int64, schema["active"]
       assert_equal Polars::String, schema["joined_at"]
       assert_equal Polars::Float64, schema["dec"]
       assert_equal Polars::String, schema["joined_time"]
+      assert_equal Polars::String, schema["settings"]
     end
   end
 
@@ -130,7 +133,8 @@ class DatabaseTest < Minitest::Test
         bin: "bin".b,
         dec: BigDecimal("1.5"),
         txt: "txt",
-        joined_time: now
+        joined_time: now,
+        settings: {"hello" => "world"}
       )
     end
     # reload for time column

@@ -27,6 +27,7 @@ ActiveRecord::Schema.define do
     t.decimal :dec
     t.text :txt
     t.time :joined_time
+    t.column :settings, :jsonb
   end
 end
 

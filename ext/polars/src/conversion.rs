@@ -733,24 +733,33 @@ impl Default for ObjectValue {
 
 pub(crate) fn dicts_to_rows(
     records: &Value,
-    infer_schema_len: usize,
+    infer_schema_len: Option<usize>,
+    schema_columns: PlIndexSet<String>,
 ) -> RbResult<(Vec<Row>, Vec<String>)> {
+    let infer_schema_len = infer_schema_len.map(|n| std::cmp::max(1, n));
     let (dicts, len) = get_rbseq(*records)?;
 
-    let mut key_names = PlIndexSet::new();
-    for d in dicts.each().take(infer_schema_len) {
-        let d = d?;
-        let d = RHash::try_convert(d)?;
+    let key_names = {
+        if !schema_columns.is_empty() {
+            schema_columns
+        } else {
+            let mut inferred_keys = PlIndexSet::new();
+            for d in dicts.each().take(infer_schema_len.unwrap_or(usize::MAX)) {
+                let d = d?;
+                let d = RHash::try_convert(d)?;
 
-        d.foreach(|name: Value, _value: Value| {
-            if let Some(v) = Symbol::from_value(name) {
-                key_names.insert(v.name()?.into());
-            } else {
-                key_names.insert(String::try_convert(name)?);
-            };
-            Ok(ForEach::Continue)
-        })?;
-    }
+                d.foreach(|name: Value, _value: Value| {
+                    if let Some(v) = Symbol::from_value(name) {
+                        inferred_keys.insert(v.name()?.into());
+                    } else {
+                        inferred_keys.insert(String::try_convert(name)?);
+                    };
+                    Ok(ForEach::Continue)
+                })?;
+            }
+            inferred_keys
+        }
+    };
 
     let mut rows = Vec::with_capacity(len);
 

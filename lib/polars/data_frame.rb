@@ -47,8 +47,8 @@ module Polars
     end
 
     # @private
-    def self._from_hashes(data, infer_schema_length: 100, schema: nil)
-      rbdf = RbDataFrame.read_hashes(data, infer_schema_length, schema)
+    def self._from_hashes(data, infer_schema_length: 100, schema: nil, schema_overrides: nil)
+      rbdf = RbDataFrame.read_hashes(data, infer_schema_length, schema, schema_overrides)
       _from_rbdf(rbdf)
     end
 
@@ -5046,7 +5046,7 @@ module Polars
       elsif data[0].is_a?(Hash)
         column_names, dtypes = _unpack_schema(columns)
         schema_overrides = dtypes ? include_unknowns(dtypes, column_names) : nil
-        rbdf = RbDataFrame.read_hashes(data, infer_schema_length, schema_overrides)
+        rbdf = RbDataFrame.read_hashes(data, infer_schema_length, schema, schema_overrides)
         if column_names
           rbdf = _post_apply_columns(rbdf, column_names)
         end
