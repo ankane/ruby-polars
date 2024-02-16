@@ -492,6 +492,7 @@ module Polars
     def is_not
       wrap_expr(_rbexpr.is_not)
     end
+    alias_method :_not, :is_not
 
     # Returns a boolean Series indicating which values are null.
     #
