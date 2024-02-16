@@ -61,6 +61,14 @@ impl RbExpr {
         self.inner.clone().dt().month_end().into()
     }
 
+    pub fn dt_base_utc_offset(&self) -> Self {
+        self.inner.clone().dt().base_utc_offset().into()
+    }
+
+    pub fn dt_dst_offset(&self) -> Self {
+        self.inner.clone().dt().dst_offset().into()
+    }
+
     pub fn dt_round(&self, every: String, offset: String) -> Self {
         self.inner.clone().dt().round(&every, &offset).into()
     }
@@ -149,73 +157,31 @@ impl RbExpr {
         self.inner.clone().dt().timestamp(tu.0).into()
     }
 
-    pub fn duration_days(&self) -> Self {
-        self.inner
-            .clone()
-            .map(
-                |s| Ok(Some(s.duration()?.days().into_series())),
-                GetOutput::from_type(DataType::Int64),
-            )
-            .into()
+    pub fn dt_total_days(&self) -> Self {
+        self.inner.clone().dt().total_days().into()
     }
 
-    pub fn duration_hours(&self) -> Self {
-        self.inner
-            .clone()
-            .map(
-                |s| Ok(Some(s.duration()?.hours().into_series())),
-                GetOutput::from_type(DataType::Int64),
-            )
-            .into()
+    pub fn dt_total_hours(&self) -> Self {
+        self.inner.clone().dt().total_hours().into()
     }
 
-    pub fn duration_minutes(&self) -> Self {
-        self.inner
-            .clone()
-            .map(
-                |s| Ok(Some(s.duration()?.minutes().into_series())),
-                GetOutput::from_type(DataType::Int64),
-            )
-            .into()
+    pub fn dt_total_minutes(&self) -> Self {
+        self.inner.clone().dt().total_minutes().into()
     }
 
-    pub fn duration_seconds(&self) -> Self {
-        self.inner
-            .clone()
-            .map(
-                |s| Ok(Some(s.duration()?.seconds().into_series())),
-                GetOutput::from_type(DataType::Int64),
-            )
-            .into()
+    pub fn dt_total_seconds(&self) -> Self {
+        self.inner.clone().dt().total_seconds().into()
     }
 
-    pub fn duration_milliseconds(&self) -> Self {
-        self.inner
-            .clone()
-            .map(
-                |s| Ok(Some(s.duration()?.milliseconds().into_series())),
-                GetOutput::from_type(DataType::Int64),
-            )
-            .into()
+    pub fn dt_total_milliseconds(&self) -> Self {
+        self.inner.clone().dt().total_milliseconds().into()
     }
 
-    pub fn duration_microseconds(&self) -> Self {
-        self.inner
-            .clone()
-            .map(
-                |s| Ok(Some(s.duration()?.microseconds().into_series())),
-                GetOutput::from_type(DataType::Int64),
-            )
-            .into()
+    pub fn dt_total_microseconds(&self) -> Self {
+        self.inner.clone().dt().total_microseconds().into()
     }
 
-    pub fn duration_nanoseconds(&self) -> Self {
-        self.inner
-            .clone()
-            .map(
-                |s| Ok(Some(s.duration()?.nanoseconds().into_series())),
-                GetOutput::from_type(DataType::Int64),
-            )
-            .into()
+    pub fn dt_total_nanoseconds(&self) -> Self {
+        self.inner.clone().dt().total_nanoseconds().into()
     }
 }

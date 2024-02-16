@@ -1066,9 +1066,10 @@ module Polars
     #   # │ 2020-04-01 00:00:00 ┆ 31        │
     #   # │ 2020-05-01 00:00:00 ┆ 30        │
     #   # └─────────────────────┴───────────┘
-    def days
-      Utils.wrap_expr(_rbexpr.duration_days)
+    def total_days
+      Utils.wrap_expr(_rbexpr.dt_total_days)
     end
+    alias_method :days, :total_days
 
     # Extract the hours from a Duration type.
     #
@@ -1100,9 +1101,10 @@ module Polars
     #   # │ 2020-01-03 00:00:00 ┆ 24         │
     #   # │ 2020-01-04 00:00:00 ┆ 24         │
     #   # └─────────────────────┴────────────┘
-    def hours
-      Utils.wrap_expr(_rbexpr.duration_hours)
+    def total_hours
+      Utils.wrap_expr(_rbexpr.dt_total_hours)
     end
+    alias_method :hours, :total_hours
 
     # Extract the minutes from a Duration type.
     #
@@ -1134,9 +1136,10 @@ module Polars
     #   # │ 2020-01-03 00:00:00 ┆ 1440         │
     #   # │ 2020-01-04 00:00:00 ┆ 1440         │
     #   # └─────────────────────┴──────────────┘
-    def minutes
-      Utils.wrap_expr(_rbexpr.duration_minutes)
+    def total_minutes
+      Utils.wrap_expr(_rbexpr.dt_total_minutes)
     end
+    alias_method :minutes, :total_minutes
 
     # Extract the seconds from a Duration type.
     #
@@ -1169,9 +1172,10 @@ module Polars
     #   # │ 2020-01-01 00:03:00 ┆ 60           │
     #   # │ 2020-01-01 00:04:00 ┆ 60           │
     #   # └─────────────────────┴──────────────┘
-    def seconds
-      Utils.wrap_expr(_rbexpr.duration_seconds)
+    def total_seconds
+      Utils.wrap_expr(_rbexpr.dt_total_seconds)
     end
+    alias_method :seconds, :total_seconds
 
     # Extract the milliseconds from a Duration type.
     #
@@ -1210,9 +1214,10 @@ module Polars
     #   # │ 2020-01-01 00:00:00.999 ┆ 1                 │
     #   # │ 2020-01-01 00:00:01     ┆ 1                 │
     #   # └─────────────────────────┴───────────────────┘
-    def milliseconds
-      Utils.wrap_expr(_rbexpr.duration_milliseconds)
+    def total_milliseconds
+      Utils.wrap_expr(_rbexpr.dt_total_milliseconds)
     end
+    alias_method :milliseconds, :total_milliseconds
 
     # Extract the microseconds from a Duration type.
     #
@@ -1251,9 +1256,10 @@ module Polars
     #   # │ 2020-01-01 00:00:00.999 ┆ 1000              │
     #   # │ 2020-01-01 00:00:01     ┆ 1000              │
     #   # └─────────────────────────┴───────────────────┘
-    def microseconds
-      Utils.wrap_expr(_rbexpr.duration_microseconds)
+    def total_microseconds
+      Utils.wrap_expr(_rbexpr.dt_total_microseconds)
     end
+    alias_method :microseconds, :total_microseconds
 
     # Extract the nanoseconds from a Duration type.
     #
@@ -1292,9 +1298,10 @@ module Polars
     #   # │ 2020-01-01 00:00:00.999 ┆ 1000000          │
     #   # │ 2020-01-01 00:00:01     ┆ 1000000          │
     #   # └─────────────────────────┴──────────────────┘
-    def nanoseconds
-      Utils.wrap_expr(_rbexpr.duration_nanoseconds)
+    def total_nanoseconds
+      Utils.wrap_expr(_rbexpr.dt_total_nanoseconds)
     end
+    alias_method :nanoseconds, :total_nanoseconds
 
     # Offset this date by a relative time offset.
     #

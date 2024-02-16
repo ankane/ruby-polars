@@ -485,21 +485,21 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("millisecond", method!(RbExpr::dt_millisecond, 0))?;
     class.define_method("microsecond", method!(RbExpr::dt_microsecond, 0))?;
     class.define_method("nanosecond", method!(RbExpr::dt_nanosecond, 0))?;
-    class.define_method("duration_days", method!(RbExpr::duration_days, 0))?;
-    class.define_method("duration_hours", method!(RbExpr::duration_hours, 0))?;
-    class.define_method("duration_minutes", method!(RbExpr::duration_minutes, 0))?;
-    class.define_method("duration_seconds", method!(RbExpr::duration_seconds, 0))?;
+    class.define_method("dt_total_days", method!(RbExpr::dt_total_days, 0))?;
+    class.define_method("dt_total_hours", method!(RbExpr::dt_total_hours, 0))?;
+    class.define_method("dt_total_minutes", method!(RbExpr::dt_total_minutes, 0))?;
+    class.define_method("dt_total_seconds", method!(RbExpr::dt_total_seconds, 0))?;
     class.define_method(
-        "duration_nanoseconds",
-        method!(RbExpr::duration_nanoseconds, 0),
+        "dt_total_nanoseconds",
+        method!(RbExpr::dt_total_nanoseconds, 0),
     )?;
     class.define_method(
-        "duration_microseconds",
-        method!(RbExpr::duration_microseconds, 0),
+        "dt_total_microseconds",
+        method!(RbExpr::dt_total_microseconds, 0),
     )?;
     class.define_method(
-        "duration_milliseconds",
-        method!(RbExpr::duration_milliseconds, 0),
+        "dt_total_milliseconds",
+        method!(RbExpr::dt_total_milliseconds, 0),
     )?;
     class.define_method("timestamp", method!(RbExpr::dt_timestamp, 1))?;
     class.define_method("dt_offset_by", method!(RbExpr::dt_offset_by, 1))?;
@@ -517,6 +517,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("dt_truncate", method!(RbExpr::dt_truncate, 2))?;
     class.define_method("dt_month_start", method!(RbExpr::dt_month_start, 0))?;
     class.define_method("dt_month_end", method!(RbExpr::dt_month_end, 0))?;
+    class.define_method("dt_base_utc_offset", method!(RbExpr::dt_base_utc_offset, 0))?;
+    class.define_method("dt_dst_offset", method!(RbExpr::dt_dst_offset, 0))?;
     class.define_method("dt_round", method!(RbExpr::dt_round, 2))?;
     class.define_method("dt_combine", method!(RbExpr::dt_combine, 2))?;
     class.define_method("map", method!(RbExpr::map, 3))?;
