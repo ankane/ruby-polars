@@ -78,6 +78,7 @@ features = [
     "regex",
     "reinterpret",
     "repeat_by",
+    "replace",
     "rle",
     "rolling_window",
     "round_series",

@@ -2,6 +2,9 @@ module Polars
   # Expressions that can be used in various contexts.
   class Expr
     # @private
+    NO_DEFAULT = Object.new
+
+    # @private
     attr_accessor :_rbexpr
 
     # @private
@@ -5295,6 +5298,168 @@ module Polars
     #   # └─────┴────────────┴────────────┴──────┴──────┴─────┴──────┴───────┘
     def shrink_dtype
       wrap_expr(_rbexpr.shrink_dtype)
+    end
+
+    # Replace values by different values.
+    #
+    # @param old [Object]
+    #   Value or sequence of values to replace.
+    #   Accepts expression input. Sequences are parsed as Series,
+    #   other non-expression inputs are parsed as literals.
+    #   Also accepts a mapping of values to their replacement.
+    # @param new [Object]
+    #   Value or sequence of values to replace by.
+    #   Accepts expression input. Sequences are parsed as Series,
+    #   other non-expression inputs are parsed as literals.
+    #   Length must match the length of `old` or have length 1.
+    # @param default [Object]
+    #   Set values that were not replaced to this value.
+    #   Defaults to keeping the original value.
+    #   Accepts expression input. Non-expression inputs are parsed as literals.
+    # @param return_dtype [Object]
+    #   The data type of the resulting expression. If set to `nil` (default),
+    #   the data type is determined automatically based on the other inputs.
+    #
+    # @return [Expr]
+    #
+    # @example Replace a single value by another value. Values that were not replaced remain unchanged.
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 2, 3]})
+    #   df.with_columns(replaced: Polars.col("a").replace(2, 100))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬──────────┐
+    #   # │ a   ┆ replaced │
+    #   # │ --- ┆ ---      │
+    #   # │ i64 ┆ i64      │
+    #   # ╞═════╪══════════╡
+    #   # │ 1   ┆ 1        │
+    #   # │ 2   ┆ 100      │
+    #   # │ 2   ┆ 100      │
+    #   # │ 3   ┆ 3        │
+    #   # └─────┴──────────┘
+    #
+    # @example Replace multiple values by passing sequences to the `old` and `new` parameters.
+    #   df.with_columns(replaced: Polars.col("a").replace([2, 3], [100, 200]))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬──────────┐
+    #   # │ a   ┆ replaced │
+    #   # │ --- ┆ ---      │
+    #   # │ i64 ┆ i64      │
+    #   # ╞═════╪══════════╡
+    #   # │ 1   ┆ 1        │
+    #   # │ 2   ┆ 100      │
+    #   # │ 2   ┆ 100      │
+    #   # │ 3   ┆ 200      │
+    #   # └─────┴──────────┘
+    #
+    # @example Passing a mapping with replacements is also supported as syntactic sugar. Specify a default to set all values that were not matched.
+    #   mapping = {2 => 100, 3 => 200}
+    #   df.with_columns(replaced: Polars.col("a").replace(mapping, default: -1))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬──────────┐
+    #   # │ a   ┆ replaced │
+    #   # │ --- ┆ ---      │
+    #   # │ i64 ┆ i64      │
+    #   # ╞═════╪══════════╡
+    #   # │ 1   ┆ -1       │
+    #   # │ 2   ┆ 100      │
+    #   # │ 2   ┆ 100      │
+    #   # │ 3   ┆ 200      │
+    #   # └─────┴──────────┘
+    #
+    # @example Replacing by values of a different data type sets the return type based on a combination of the `new` data type and either the original data type or the default data type if it was set.
+    #   df = Polars::DataFrame.new({"a" => ["x", "y", "z"]})
+    #   mapping = {"x" => 1, "y" => 2, "z" => 3}
+    #   df.with_columns(replaced: Polars.col("a").replace(mapping))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬──────────┐
+    #   # │ a   ┆ replaced │
+    #   # │ --- ┆ ---      │
+    #   # │ str ┆ str      │
+    #   # ╞═════╪══════════╡
+    #   # │ x   ┆ 1        │
+    #   # │ y   ┆ 2        │
+    #   # │ z   ┆ 3        │
+    #   # └─────┴──────────┘
+    #
+    # @example
+    #   df.with_columns(replaced: Polars.col("a").replace(mapping, default: nil))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬──────────┐
+    #   # │ a   ┆ replaced │
+    #   # │ --- ┆ ---      │
+    #   # │ str ┆ i64      │
+    #   # ╞═════╪══════════╡
+    #   # │ x   ┆ 1        │
+    #   # │ y   ┆ 2        │
+    #   # │ z   ┆ 3        │
+    #   # └─────┴──────────┘
+    #
+    # @example Set the `return_dtype` parameter to control the resulting data type directly.
+    #   df.with_columns(
+    #     replaced: Polars.col("a").replace(mapping, return_dtype: Polars::UInt8)
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬──────────┐
+    #   # │ a   ┆ replaced │
+    #   # │ --- ┆ ---      │
+    #   # │ str ┆ u8       │
+    #   # ╞═════╪══════════╡
+    #   # │ x   ┆ 1        │
+    #   # │ y   ┆ 2        │
+    #   # │ z   ┆ 3        │
+    #   # └─────┴──────────┘
+    #
+    # @example Expression input is supported for all parameters.
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 2, 3], "b" => [1.5, 2.5, 5.0, 1.0]})
+    #   df.with_columns(
+    #     replaced: Polars.col("a").replace(
+    #       Polars.col("a").max,
+    #       Polars.col("b").sum,
+    #       default: Polars.col("b")
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬─────┬──────────┐
+    #   # │ a   ┆ b   ┆ replaced │
+    #   # │ --- ┆ --- ┆ ---      │
+    #   # │ i64 ┆ f64 ┆ f64      │
+    #   # ╞═════╪═════╪══════════╡
+    #   # │ 1   ┆ 1.5 ┆ 1.5      │
+    #   # │ 2   ┆ 2.5 ┆ 2.5      │
+    #   # │ 2   ┆ 5.0 ┆ 5.0      │
+    #   # │ 3   ┆ 1.0 ┆ 10.0     │
+    #   # └─────┴─────┴──────────┘
+    def replace(old, new = NO_DEFAULT, default: NO_DEFAULT, return_dtype: nil)
+      if new.eql?(NO_DEFAULT) && old.is_a?(Hash)
+        new = Series.new(old.values)
+        old = Series.new(old.keys)
+      else
+        if old.is_a?(::Array)
+          old = Series.new(old)
+        end
+        if new.is_a?(::Array)
+          new = Series.new(new)
+        end
+      end
+
+      old = Utils.parse_as_expression(old, str_as_lit: true)
+      new = Utils.parse_as_expression(new, str_as_lit: true)
+
+      default =
+        if default.eql?(NO_DEFAULT)
+          nil
+        else
+          Utils.parse_as_expression(default, str_as_lit: true)
+        end
+
+      wrap_expr(_rbexpr.replace(old, new, default, return_dtype))
     end
 
     # Create an object namespace of all list related methods.

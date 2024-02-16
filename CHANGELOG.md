@@ -1,6 +1,7 @@
 ## 0.9.0 (unreleased)
 
 - Updated Polars to 0.37.0
+- Added `replace` method to `Expr`
 - Added `schema_overrides` option to `read_database` method
 - Fixed error with `BigDecimal` objects
 

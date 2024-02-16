@@ -579,6 +579,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("entropy", method!(RbExpr::entropy, 2))?;
     class.define_method("_hash", method!(RbExpr::hash, 4))?;
     class.define_method("set_sorted_flag", method!(RbExpr::set_sorted_flag, 1))?;
+    class.define_method("replace", method!(RbExpr::replace, 4))?;
 
     // meta
     class.define_method("meta_pop", method!(RbExpr::meta_pop, 0))?;

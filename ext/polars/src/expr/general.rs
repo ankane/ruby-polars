@@ -803,4 +803,22 @@ impl RbExpr {
         };
         self.inner.clone().set_sorted_flag(is_sorted).into()
     }
+
+    pub fn replace(
+        &self,
+        old: &RbExpr,
+        new: &RbExpr,
+        default: Option<&RbExpr>,
+        return_dtype: Option<Wrap<DataType>>,
+    ) -> Self {
+        self.inner
+            .clone()
+            .replace(
+                old.inner.clone(),
+                new.inner.clone(),
+                default.map(|e| e.inner.clone()),
+                return_dtype.map(|dt| dt.0),
+            )
+            .into()
+    }
 }
