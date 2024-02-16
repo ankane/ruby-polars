@@ -286,20 +286,51 @@ module Polars
       Dir.glob(file).any?
     end
 
-    def self.parse_as_expression(input, str_as_lit: false, structify: false)
+    def self.parse_as_list_of_expressions(*inputs, __structify: false, **named_inputs)
+      exprs = _parse_positional_inputs(inputs, structify: __structify)
+      if named_inputs.any?
+        named_exprs = _parse_named_inputs(named_inputs, structify: __structify)
+        exprs.concat(named_exprs)
+      end
+
+      exprs
+    end
+
+    def self._parse_positional_inputs(inputs, structify: false)
+      inputs_iter = _parse_inputs_as_iterable(inputs)
+      inputs_iter.map { |e| parse_as_expression(e, structify: structify) }
+    end
+
+    def self._parse_inputs_as_iterable(inputs)
+      if inputs.empty?
+        return []
+      end
+
+      if inputs.length == 1 && inputs[0].is_a?(::Array)
+        return inputs[0]
+      end
+
+      inputs
+    end
+
+    def self._parse_named_inputs(named_inputs, structify: false)
+      named_inputs.map do |name, input|
+        parse_as_expression(input, structify: structify)._alias(name.to_s)
+      end
+    end
+
+    def self.parse_as_expression(input, str_as_lit: false, list_as_lit: true, structify: false, dtype: nil)
       if input.is_a?(Expr)
         expr = input
       elsif input.is_a?(::String) && !str_as_lit
         expr = Polars.col(input)
         structify = false
-      elsif [Integer, Float, ::String, Series, ::Date, ::Time, ::DateTime].any? { |cls| input.is_a?(cls) } || input.nil?
-        expr = Polars.lit(input)
-        structify = false
-      elsif input.is_a?(Array)
-        expr = Polars.lit(Polars::Series.new("", [input]))
+      elsif input.is_a?(::Array) && !list_as_lit
+        expr = Polars.lit(Series.new(input), dtype: dtype)
         structify = false
       else
-        raise TypeError, "did not expect value #{input} of type #{input.class.name}, maybe disambiguate with pl.lit or pl.col"
+        expr = Polars.lit(input, dtype: dtype)
+        structify = false
       end
 
       if structify

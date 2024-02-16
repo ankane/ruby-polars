@@ -1608,27 +1608,9 @@ module Polars
     #   # │ 3   ┆ 10.0 ┆ false ┆ 9.0  ┆ 5.0  ┆ true  │
     #   # │ 4   ┆ 13.0 ┆ true  ┆ 16.0 ┆ 6.5  ┆ false │
     #   # └─────┴──────┴───────┴──────┴──────┴───────┘
-    def with_columns(exprs)
-      exprs =
-        if exprs.nil?
-          []
-        elsif exprs.is_a?(Expr)
-          [exprs]
-        else
-          exprs.to_a
-        end
-
-      rbexprs = []
-      exprs.each do |e|
-        case e
-        when Expr
-          rbexprs << e._rbexpr
-        when Series
-          rbexprs << Utils.lit(e)._rbexpr
-        else
-          raise ArgumentError, "Expected an expression, got #{e}"
-        end
-      end
+    def with_columns(*exprs, **named_exprs)
+      structify = ENV.fetch("POLARS_AUTO_STRUCTIFY", "0") != "0"
+      rbexprs = Utils.parse_as_list_of_expressions(*exprs, **named_exprs, __structify: structify)
 
       _from_rbldf(_ldf.with_columns(rbexprs))
     end

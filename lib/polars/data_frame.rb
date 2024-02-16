@@ -3682,14 +3682,21 @@ module Polars
       )
     end
 
-    # Add or overwrite multiple columns in a DataFrame.
+    # Add columns to this DataFrame.
+    #
+    # Added columns will replace existing columns with the same name.
     #
     # @param exprs [Array]
-    #   Array of Expressions that evaluate to columns.
+    #   Column(s) to add, specified as positional arguments.
+    #   Accepts expression input. Strings are parsed as column names, other
+    #   non-expression inputs are parsed as literals.
+    # @param named_exprs [Hash]
+    #   Additional columns to add, specified as keyword arguments.
+    #   The columns will be renamed to the keyword used.
     #
     # @return [DataFrame]
     #
-    # @example
+    # @example Pass an expression to add it as a new column.
     #   df = Polars::DataFrame.new(
     #     {
     #       "a" => [1, 2, 3, 4],
@@ -3697,11 +3704,41 @@ module Polars
     #       "c" => [true, true, false, true]
     #     }
     #   )
+    #   df.with_columns((Polars.col("a") ** 2).alias("a^2"))
+    #   # =>
+    #   # shape: (4, 4)
+    #   # ┌─────┬──────┬───────┬──────┐
+    #   # │ a   ┆ b    ┆ c     ┆ a^2  │
+    #   # │ --- ┆ ---  ┆ ---   ┆ ---  │
+    #   # │ i64 ┆ f64  ┆ bool  ┆ f64  │
+    #   # ╞═════╪══════╪═══════╪══════╡
+    #   # │ 1   ┆ 0.5  ┆ true  ┆ 1.0  │
+    #   # │ 2   ┆ 4.0  ┆ true  ┆ 4.0  │
+    #   # │ 3   ┆ 10.0 ┆ false ┆ 9.0  │
+    #   # │ 4   ┆ 13.0 ┆ true  ┆ 16.0 │
+    #   # └─────┴──────┴───────┴──────┘
+    #
+    # @example Added columns will replace existing columns with the same name.
+    #   df.with_columns(Polars.col("a").cast(Polars::Float64))
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬──────┬───────┐
+    #   # │ a   ┆ b    ┆ c     │
+    #   # │ --- ┆ ---  ┆ ---   │
+    #   # │ f64 ┆ f64  ┆ bool  │
+    #   # ╞═════╪══════╪═══════╡
+    #   # │ 1.0 ┆ 0.5  ┆ true  │
+    #   # │ 2.0 ┆ 4.0  ┆ true  │
+    #   # │ 3.0 ┆ 10.0 ┆ false │
+    #   # │ 4.0 ┆ 13.0 ┆ true  │
+    #   # └─────┴──────┴───────┘
+    #
+    # @example Multiple columns can be added by passing a list of expressions.
     #   df.with_columns(
     #     [
     #       (Polars.col("a") ** 2).alias("a^2"),
     #       (Polars.col("b") / 2).alias("b/2"),
-    #       (Polars.col("c").is_not).alias("not c")
+    #       (Polars.col("c").not_).alias("not c"),
     #     ]
     #   )
     #   # =>
@@ -3716,13 +3753,45 @@ module Polars
     #   # │ 3   ┆ 10.0 ┆ false ┆ 9.0  ┆ 5.0  ┆ true  │
     #   # │ 4   ┆ 13.0 ┆ true  ┆ 16.0 ┆ 6.5  ┆ false │
     #   # └─────┴──────┴───────┴──────┴──────┴───────┘
-    def with_columns(exprs)
-      if !exprs.nil? && !exprs.is_a?(::Array)
-        exprs = [exprs]
-      end
-      lazy
-        .with_columns(exprs)
-        .collect(no_optimization: true, string_cache: false)
+    #
+    # @example Multiple columns also can be added using positional arguments instead of a list.
+    #   df.with_columns(
+    #     (Polars.col("a") ** 2).alias("a^2"),
+    #     (Polars.col("b") / 2).alias("b/2"),
+    #     (Polars.col("c").not_).alias("not c"),
+    #   )
+    #   # =>
+    #   # shape: (4, 6)
+    #   # ┌─────┬──────┬───────┬──────┬──────┬───────┐
+    #   # │ a   ┆ b    ┆ c     ┆ a^2  ┆ b/2  ┆ not c │
+    #   # │ --- ┆ ---  ┆ ---   ┆ ---  ┆ ---  ┆ ---   │
+    #   # │ i64 ┆ f64  ┆ bool  ┆ f64  ┆ f64  ┆ bool  │
+    #   # ╞═════╪══════╪═══════╪══════╪══════╪═══════╡
+    #   # │ 1   ┆ 0.5  ┆ true  ┆ 1.0  ┆ 0.25 ┆ false │
+    #   # │ 2   ┆ 4.0  ┆ true  ┆ 4.0  ┆ 2.0  ┆ false │
+    #   # │ 3   ┆ 10.0 ┆ false ┆ 9.0  ┆ 5.0  ┆ true  │
+    #   # │ 4   ┆ 13.0 ┆ true  ┆ 16.0 ┆ 6.5  ┆ false │
+    #   # └─────┴──────┴───────┴──────┴──────┴───────┘
+    #
+    # @example Use keyword arguments to easily name your expression inputs.
+    #   df.with_columns(
+    #     ab: Polars.col("a") * Polars.col("b"),
+    #     not_c: Polars.col("c").not_
+    #   )
+    #   # =>
+    #   # shape: (4, 5)
+    #   # ┌─────┬──────┬───────┬──────┬───────┐
+    #   # │ a   ┆ b    ┆ c     ┆ ab   ┆ not_c │
+    #   # │ --- ┆ ---  ┆ ---   ┆ ---  ┆ ---   │
+    #   # │ i64 ┆ f64  ┆ bool  ┆ f64  ┆ bool  │
+    #   # ╞═════╪══════╪═══════╪══════╪═══════╡
+    #   # │ 1   ┆ 0.5  ┆ true  ┆ 0.5  ┆ false │
+    #   # │ 2   ┆ 4.0  ┆ true  ┆ 8.0  ┆ false │
+    #   # │ 3   ┆ 10.0 ┆ false ┆ 30.0 ┆ true  │
+    #   # │ 4   ┆ 13.0 ┆ true  ┆ 52.0 ┆ false │
+    #   # └─────┴──────┴───────┴──────┴───────┘
+    def with_columns(*exprs, **named_exprs)
+      lazy.with_columns(*exprs, **named_exprs).collect(_eager: true)
     end
 
     # Get number of chunks used by the ChunkedArrays of this DataFrame.
