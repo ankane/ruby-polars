@@ -414,6 +414,18 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("array_max", method!(RbExpr::array_max, 0))?;
     class.define_method("array_min", method!(RbExpr::array_min, 0))?;
     class.define_method("array_sum", method!(RbExpr::array_sum, 0))?;
+    class.define_method("arr_unique", method!(RbExpr::arr_unique, 1))?;
+    class.define_method("arr_to_list", method!(RbExpr::arr_to_list, 0))?;
+    class.define_method("arr_all", method!(RbExpr::arr_all, 0))?;
+    class.define_method("arr_any", method!(RbExpr::arr_any, 0))?;
+    class.define_method("arr_sort", method!(RbExpr::arr_sort, 2))?;
+    class.define_method("arr_reverse", method!(RbExpr::arr_reverse, 0))?;
+    class.define_method("arr_arg_min", method!(RbExpr::arr_arg_min, 0))?;
+    class.define_method("arr_arg_max", method!(RbExpr::arr_arg_max, 0))?;
+    class.define_method("arr_get", method!(RbExpr::arr_get, 1))?;
+    class.define_method("arr_join", method!(RbExpr::arr_join, 2))?;
+    class.define_method("arr_contains", method!(RbExpr::arr_contains, 1))?;
+    class.define_method("arr_count_matches", method!(RbExpr::arr_count_matches, 1))?;
     class.define_method("binary_contains", method!(RbExpr::bin_contains, 1))?;
     class.define_method("binary_ends_with", method!(RbExpr::bin_ends_with, 1))?;
     class.define_method("binary_starts_with", method!(RbExpr::bin_starts_with, 1))?;
