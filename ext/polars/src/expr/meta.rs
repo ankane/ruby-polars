@@ -46,6 +46,10 @@ impl RbExpr {
         self.inner.clone().meta().has_multiple_outputs()
     }
 
+    pub fn meta_is_column(&self) -> bool {
+        self.inner.clone().meta().is_column()
+    }
+
     pub fn meta_is_regex_projection(&self) -> bool {
         self.inner.clone().meta().is_regex_projection()
     }

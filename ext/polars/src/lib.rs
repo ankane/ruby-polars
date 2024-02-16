@@ -454,6 +454,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("str_extract", method!(RbExpr::str_extract, 2))?;
     class.define_method("str_extract_all", method!(RbExpr::str_extract_all, 1))?;
+    class.define_method("str_extract_groups", method!(RbExpr::str_extract_groups, 1))?;
     class.define_method("str_count_matches", method!(RbExpr::str_count_matches, 2))?;
     class.define_method("strftime", method!(RbExpr::dt_to_string, 1))?;
     class.define_method("str_split", method!(RbExpr::str_split, 1))?;
@@ -467,6 +468,9 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbExpr::str_split_exact_inclusive, 2),
     )?;
     class.define_method("str_splitn", method!(RbExpr::str_splitn, 2))?;
+    class.define_method("str_to_decimal", method!(RbExpr::str_to_decimal, 1))?;
+    class.define_method("str_contains_any", method!(RbExpr::str_contains_any, 2))?;
+    class.define_method("str_replace_many", method!(RbExpr::str_replace_many, 3))?;
     class.define_method("list_len", method!(RbExpr::list_len, 0))?;
     class.define_method("list_contains", method!(RbExpr::list_contains, 1))?;
     class.define_method("list_count_matches", method!(RbExpr::list_count_matches, 1))?;
@@ -544,8 +548,17 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("list_max", method!(RbExpr::list_max, 0))?;
     class.define_method("list_min", method!(RbExpr::list_min, 0))?;
     class.define_method("list_sum", method!(RbExpr::list_sum, 0))?;
+    class.define_method("list_drop_nulls", method!(RbExpr::list_drop_nulls, 0))?;
+    class.define_method("list_sample_n", method!(RbExpr::list_sample_n, 4))?;
+    class.define_method(
+        "list_sample_fraction",
+        method!(RbExpr::list_sample_fraction, 4),
+    )?;
+    class.define_method("list_gather", method!(RbExpr::list_gather, 2))?;
     class.define_method("list_take", method!(RbExpr::list_take, 2))?;
+    class.define_method("list_to_array", method!(RbExpr::list_to_array, 1))?;
     class.define_method("list_mean", method!(RbExpr::list_mean, 0))?;
+    class.define_method("list_tail", method!(RbExpr::list_tail, 1))?;
     class.define_method("list_sort", method!(RbExpr::list_sort, 1))?;
     class.define_method("list_reverse", method!(RbExpr::list_reverse, 0))?;
     class.define_method("list_unique", method!(RbExpr::list_unique, 1))?;
@@ -553,6 +566,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("list_join", method!(RbExpr::list_join, 2))?;
     class.define_method("list_arg_min", method!(RbExpr::list_arg_min, 0))?;
     class.define_method("list_arg_max", method!(RbExpr::list_arg_max, 0))?;
+    class.define_method("list_all", method!(RbExpr::list_all, 0))?;
+    class.define_method("list_any", method!(RbExpr::list_any, 0))?;
     class.define_method("list_diff", method!(RbExpr::list_diff, 2))?;
     class.define_method("list_shift", method!(RbExpr::list_shift, 1))?;
     class.define_method("list_slice", method!(RbExpr::list_slice, 2))?;
@@ -591,6 +606,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "struct_rename_fields",
         method!(RbExpr::struct_rename_fields, 1),
     )?;
+    class.define_method("struct_json_encode", method!(RbExpr::struct_json_encode, 0))?;
     class.define_method("log", method!(RbExpr::log, 1))?;
     class.define_method("exp", method!(RbExpr::exp, 0))?;
     class.define_method("entropy", method!(RbExpr::entropy, 2))?;
@@ -608,6 +624,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "meta_has_multiple_outputs",
         method!(RbExpr::meta_has_multiple_outputs, 0),
     )?;
+    class.define_method("meta_is_column", method!(RbExpr::meta_is_column, 0))?;
     class.define_method(
         "meta_is_regex_projection",
         method!(RbExpr::meta_is_regex_projection, 0),

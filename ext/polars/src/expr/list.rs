@@ -7,6 +7,14 @@ use crate::conversion::Wrap;
 use crate::{RbExpr, RbResult};
 
 impl RbExpr {
+    pub fn list_all(&self) -> Self {
+        self.inner.clone().list().all().into()
+    }
+
+    pub fn list_any(&self) -> Self {
+        self.inner.clone().list().any().into()
+    }
+
     pub fn list_arg_max(&self) -> Self {
         self.inner.clone().list().arg_max().into()
     }
@@ -100,6 +108,10 @@ impl RbExpr {
             .into()
     }
 
+    pub fn list_tail(&self, n: &RbExpr) -> Self {
+        self.inner.clone().list().tail(n.inner.clone()).into()
+    }
+
     pub fn list_sort(&self, reverse: bool) -> Self {
         self.inner
             .clone()
@@ -116,12 +128,56 @@ impl RbExpr {
         self.inner.clone().list().sum().with_fmt("list.sum").into()
     }
 
+    pub fn list_drop_nulls(&self) -> Self {
+        self.inner.clone().list().drop_nulls().into()
+    }
+
+    pub fn list_sample_n(
+        &self,
+        n: &RbExpr,
+        with_replacement: bool,
+        shuffle: bool,
+        seed: Option<u64>,
+    ) -> Self {
+        self.inner
+            .clone()
+            .list()
+            .sample_n(n.inner.clone(), with_replacement, shuffle, seed)
+            .into()
+    }
+
+    pub fn list_sample_fraction(
+        &self,
+        fraction: &RbExpr,
+        with_replacement: bool,
+        shuffle: bool,
+        seed: Option<u64>,
+    ) -> Self {
+        self.inner
+            .clone()
+            .list()
+            .sample_fraction(fraction.inner.clone(), with_replacement, shuffle, seed)
+            .into()
+    }
+
+    pub fn list_gather(&self, index: &RbExpr, null_on_oob: bool) -> Self {
+        self.inner
+            .clone()
+            .list()
+            .take(index.inner.clone(), null_on_oob)
+            .into()
+    }
+
     pub fn list_take(&self, index: &RbExpr, null_on_oob: bool) -> Self {
         self.inner
             .clone()
             .list()
             .take(index.inner.clone(), null_on_oob)
             .into()
+    }
+
+    pub fn list_to_array(&self, width: usize) -> Self {
+        self.inner.clone().list().to_array(width).into()
     }
 
     pub fn list_to_struct(

@@ -1,7 +1,7 @@
 use polars::prelude::*;
 
 use crate::conversion::Wrap;
-use crate::RbExpr;
+use crate::{RbExpr, RbPolarsErr, RbResult};
 
 impl RbExpr {
     pub fn str_concat(&self, delimiter: String, ignore_nulls: bool) -> Self {
@@ -307,6 +307,16 @@ impl RbExpr {
             .into()
     }
 
+    pub fn str_extract_groups(&self, pat: String) -> RbResult<Self> {
+        Ok(self
+            .inner
+            .clone()
+            .str()
+            .extract_groups(&pat)
+            .map_err(RbPolarsErr::from)?
+            .into())
+    }
+
     pub fn str_count_matches(&self, pat: &Self, literal: bool) -> Self {
         self.inner
             .clone()
@@ -345,5 +355,34 @@ impl RbExpr {
 
     pub fn str_splitn(&self, by: &Self, n: usize) -> Self {
         self.inner.clone().str().splitn(by.inner.clone(), n).into()
+    }
+
+    pub fn str_to_decimal(&self, infer_len: usize) -> Self {
+        self.inner.clone().str().to_decimal(infer_len).into()
+    }
+
+    pub fn str_contains_any(&self, patterns: &RbExpr, ascii_case_insensitive: bool) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .contains_any(patterns.inner.clone(), ascii_case_insensitive)
+            .into()
+    }
+
+    pub fn str_replace_many(
+        &self,
+        patterns: &RbExpr,
+        replace_with: &RbExpr,
+        ascii_case_insensitive: bool,
+    ) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .replace_many(
+                patterns.inner.clone(),
+                replace_with.inner.clone(),
+                ascii_case_insensitive,
+            )
+            .into()
     }
 }
