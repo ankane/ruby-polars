@@ -1,3 +1,5 @@
+use std::ops::Neg;
+
 use magnus::{prelude::*, value::Opaque, IntoValue, RArray, Ruby, Value};
 use polars::lazy::dsl;
 use polars::prelude::*;
@@ -11,55 +13,67 @@ use crate::utils::reinterpret;
 use crate::{RbExpr, RbResult};
 
 impl RbExpr {
-    pub fn add(&self, rhs: &RbExpr) -> RbResult<Self> {
+    pub fn add(&self, rhs: &Self) -> RbResult<Self> {
         Ok(dsl::binary_expr(self.inner.clone(), Operator::Plus, rhs.inner.clone()).into())
     }
 
-    pub fn sub(&self, rhs: &RbExpr) -> RbResult<Self> {
+    pub fn sub(&self, rhs: &Self) -> RbResult<Self> {
         Ok(dsl::binary_expr(self.inner.clone(), Operator::Minus, rhs.inner.clone()).into())
     }
 
-    pub fn mul(&self, rhs: &RbExpr) -> RbResult<Self> {
+    pub fn mul(&self, rhs: &Self) -> RbResult<Self> {
         Ok(dsl::binary_expr(self.inner.clone(), Operator::Multiply, rhs.inner.clone()).into())
     }
 
-    pub fn truediv(&self, rhs: &RbExpr) -> RbResult<Self> {
+    pub fn truediv(&self, rhs: &Self) -> RbResult<Self> {
         Ok(dsl::binary_expr(self.inner.clone(), Operator::TrueDivide, rhs.inner.clone()).into())
     }
 
-    pub fn _mod(&self, rhs: &RbExpr) -> RbResult<Self> {
+    pub fn _mod(&self, rhs: &Self) -> RbResult<Self> {
         Ok(dsl::binary_expr(self.inner.clone(), Operator::Modulus, rhs.inner.clone()).into())
     }
 
-    pub fn floordiv(&self, rhs: &RbExpr) -> RbResult<Self> {
+    pub fn floordiv(&self, rhs: &Self) -> RbResult<Self> {
         Ok(dsl::binary_expr(self.inner.clone(), Operator::FloorDivide, rhs.inner.clone()).into())
+    }
+
+    pub fn neg(&self) -> RbResult<Self> {
+        Ok(self.inner.clone().neg().into())
     }
 
     pub fn to_str(&self) -> String {
         format!("{:?}", self.inner)
     }
 
-    pub fn eq(&self, other: &RbExpr) -> Self {
+    pub fn eq(&self, other: &Self) -> Self {
         self.clone().inner.eq(other.inner.clone()).into()
     }
 
-    pub fn neq(&self, other: &RbExpr) -> Self {
+    pub fn eq_missing(&self, other: &Self) -> Self {
+        self.inner.clone().eq_missing(other.inner.clone()).into()
+    }
+
+    pub fn neq(&self, other: &Self) -> Self {
         self.clone().inner.neq(other.inner.clone()).into()
     }
 
-    pub fn gt(&self, other: &RbExpr) -> Self {
+    pub fn neq_missing(&self, other: &Self) -> Self {
+        self.inner.clone().neq_missing(other.inner.clone()).into()
+    }
+
+    pub fn gt(&self, other: &Self) -> Self {
         self.clone().inner.gt(other.inner.clone()).into()
     }
 
-    pub fn gt_eq(&self, other: &RbExpr) -> Self {
+    pub fn gt_eq(&self, other: &Self) -> Self {
         self.clone().inner.gt_eq(other.inner.clone()).into()
     }
 
-    pub fn lt_eq(&self, other: &RbExpr) -> Self {
+    pub fn lt_eq(&self, other: &Self) -> Self {
         self.clone().inner.lt_eq(other.inner.clone()).into()
     }
 
-    pub fn lt(&self, other: &RbExpr) -> Self {
+    pub fn lt(&self, other: &Self) -> Self {
         self.clone().inner.lt(other.inner.clone()).into()
     }
 
@@ -67,7 +81,7 @@ impl RbExpr {
         self.clone().inner.alias(&name).into()
     }
 
-    pub fn is_not(&self) -> Self {
+    pub fn not_(&self) -> Self {
         self.clone().inner.not().into()
     }
 
@@ -151,11 +165,7 @@ impl RbExpr {
         self.clone().inner.implode().into()
     }
 
-    pub fn quantile(
-        &self,
-        quantile: &RbExpr,
-        interpolation: Wrap<QuantileInterpolOptions>,
-    ) -> Self {
+    pub fn quantile(&self, quantile: &Self, interpolation: Wrap<QuantileInterpolOptions>) -> Self {
         self.clone()
             .inner
             .quantile(quantile.inner.clone(), interpolation.0)
@@ -302,14 +312,14 @@ impl RbExpr {
         self.clone().inner.arg_min().into()
     }
 
-    pub fn search_sorted(&self, element: &RbExpr, side: Wrap<SearchSortedSide>) -> Self {
+    pub fn search_sorted(&self, element: &Self, side: Wrap<SearchSortedSide>) -> Self {
         self.inner
             .clone()
             .search_sorted(element.inner.clone(), side.0)
             .into()
     }
 
-    pub fn gather(&self, idx: &RbExpr) -> Self {
+    pub fn gather(&self, idx: &Self) -> Self {
         self.clone().inner.gather(idx.inner.clone()).into()
     }
 
@@ -335,7 +345,7 @@ impl RbExpr {
         out.into()
     }
 
-    pub fn fill_null(&self, expr: &RbExpr) -> Self {
+    pub fn fill_null(&self, expr: &Self) -> Self {
         self.clone().inner.fill_null(expr.inner.clone()).into()
     }
 
@@ -356,7 +366,7 @@ impl RbExpr {
             .into())
     }
 
-    pub fn fill_nan(&self, expr: &RbExpr) -> Self {
+    pub fn fill_nan(&self, expr: &Self) -> Self {
         self.inner.clone().fill_nan(expr.inner.clone()).into()
     }
 
@@ -368,7 +378,7 @@ impl RbExpr {
         self.inner.clone().drop_nans().into()
     }
 
-    pub fn filter(&self, predicate: &RbExpr) -> Self {
+    pub fn filter(&self, predicate: &Self) -> Self {
         self.clone().inner.filter(predicate.inner.clone()).into()
     }
 
@@ -423,14 +433,14 @@ impl RbExpr {
         self.clone().inner.head(n).into()
     }
 
-    pub fn slice(&self, offset: &RbExpr, length: &RbExpr) -> Self {
+    pub fn slice(&self, offset: &Self, length: &Self) -> Self {
         self.inner
             .clone()
             .slice(offset.inner.clone(), length.inner.clone())
             .into()
     }
 
-    pub fn append(&self, other: &RbExpr, upcast: bool) -> Self {
+    pub fn append(&self, other: &Self, upcast: bool) -> Self {
         self.inner
             .clone()
             .append(other.inner.clone(), upcast)
@@ -532,27 +542,27 @@ impl RbExpr {
         Ok(self.clone().inner.over(partition_by).into())
     }
 
-    pub fn _and(&self, expr: &RbExpr) -> Self {
+    pub fn _and(&self, expr: &Self) -> Self {
         self.clone().inner.and(expr.inner.clone()).into()
     }
 
-    pub fn _xor(&self, expr: &RbExpr) -> Self {
+    pub fn _xor(&self, expr: &Self) -> Self {
         self.clone().inner.xor(expr.inner.clone()).into()
     }
 
-    pub fn _or(&self, expr: &RbExpr) -> Self {
+    pub fn _or(&self, expr: &Self) -> Self {
         self.clone().inner.or(expr.inner.clone()).into()
     }
 
-    pub fn is_in(&self, expr: &RbExpr) -> Self {
+    pub fn is_in(&self, expr: &Self) -> Self {
         self.clone().inner.is_in(expr.inner.clone()).into()
     }
 
-    pub fn repeat_by(&self, by: &RbExpr) -> Self {
+    pub fn repeat_by(&self, by: &Self) -> Self {
         self.clone().inner.repeat_by(by.inner.clone()).into()
     }
 
-    pub fn pow(&self, exponent: &RbExpr) -> Self {
+    pub fn pow(&self, exponent: &Self) -> Self {
         self.clone().inner.pow(exponent.inner.clone()).into()
     }
 
@@ -584,7 +594,7 @@ impl RbExpr {
         map_single(self, lambda, output_type, agg_list)
     }
 
-    pub fn dot(&self, other: &RbExpr) -> Self {
+    pub fn dot(&self, other: &Self) -> Self {
         self.inner.clone().dot(other.inner.clone()).into()
     }
 
@@ -621,7 +631,7 @@ impl RbExpr {
         self.inner.clone().upper_bound().into()
     }
 
-    pub fn cumulative_eval(&self, expr: &RbExpr, min_periods: usize, parallel: bool) -> Self {
+    pub fn cumulative_eval(&self, expr: &Self, min_periods: usize, parallel: bool) -> Self {
         self.inner
             .clone()
             .cumulative_eval(expr.inner.clone(), min_periods, parallel)
@@ -806,9 +816,9 @@ impl RbExpr {
 
     pub fn replace(
         &self,
-        old: &RbExpr,
-        new: &RbExpr,
-        default: Option<&RbExpr>,
+        old: &Self,
+        new: &Self,
+        default: Option<&Self>,
         return_dtype: Option<Wrap<DataType>>,
     ) -> Self {
         self.inner

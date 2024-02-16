@@ -493,7 +493,7 @@ module Polars
     #   # │ true  │
     #   # └───────┘
     def is_not
-      wrap_expr(_rbexpr.is_not)
+      wrap_expr(_rbexpr.not_)
     end
     alias_method :not_, :is_not
 
