@@ -751,6 +751,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("melt", method!(RbLazyFrame::melt, 5))?;
     class.define_method("with_row_index", method!(RbLazyFrame::with_row_index, 2))?;
     class.define_method("drop", method!(RbLazyFrame::drop, 1))?;
+    class.define_method("cast_all", method!(RbLazyFrame::cast_all, 2))?;
     class.define_method("_clone", method!(RbLazyFrame::clone, 0))?;
     class.define_method("columns", method!(RbLazyFrame::columns, 0))?;
     class.define_method("dtypes", method!(RbLazyFrame::dtypes, 0))?;
