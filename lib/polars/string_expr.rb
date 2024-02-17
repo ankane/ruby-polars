@@ -788,7 +788,7 @@ module Polars
     #     {"json" => ['{"a":1, "b": true}', nil, '{"a":2, "b": false}']}
     #   )
     #   dtype = Polars::Struct.new([Polars::Field.new("a", Polars::Int64), Polars::Field.new("b", Polars::Boolean)])
-    #   df.select(Polars.col("json").str.json_extract(dtype))
+    #   df.select(Polars.col("json").str.json_decode(dtype))
     #   # =>
     #   # shape: (3, 1)
     #   # ┌─────────────┐
@@ -800,12 +800,13 @@ module Polars
     #   # │ {null,null} │
     #   # │ {2,false}   │
     #   # └─────────────┘
-    def json_extract(dtype = nil, infer_schema_length: 100)
+    def json_decode(dtype = nil, infer_schema_length: 100)
       if !dtype.nil?
         dtype = Utils.rb_type_to_dtype(dtype)
       end
-      Utils.wrap_expr(_rbexpr.str_json_extract(dtype, infer_schema_length))
+      Utils.wrap_expr(_rbexpr.str_json_decode(dtype, infer_schema_length))
     end
+    alias_method :json_extract, :json_decode
 
     # Extract the first match of json string with provided JSONPath expression.
     #

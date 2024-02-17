@@ -438,7 +438,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_base64_encode", method!(RbExpr::str_base64_encode, 0))?;
     class.define_method("str_base64_decode", method!(RbExpr::str_base64_decode, 1))?;
     class.define_method("str_to_integer", method!(RbExpr::str_to_integer, 2))?;
-    class.define_method("str_json_extract", method!(RbExpr::str_json_extract, 2))?;
+    class.define_method("str_json_decode", method!(RbExpr::str_json_decode, 2))?;
     class.define_method("binary_hex_encode", method!(RbExpr::bin_hex_encode, 0))?;
     class.define_method("binary_hex_decode", method!(RbExpr::bin_hex_decode, 1))?;
     class.define_method(

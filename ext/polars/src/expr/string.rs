@@ -249,7 +249,7 @@ impl RbExpr {
             .into()
     }
 
-    pub fn str_json_extract(
+    pub fn str_json_decode(
         &self,
         dtype: Option<Wrap<DataType>>,
         infer_schema_len: Option<usize>,
