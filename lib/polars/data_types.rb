@@ -307,6 +307,9 @@ module Polars
     attr_reader :width, :inner
 
     def initialize(width, inner = nil)
+      if width.is_a?(Class) && width < DataType
+        inner, width = width, inner
+      end
       @width = width
       @inner = Utils.rb_type_to_dtype(inner) if inner
     end
