@@ -3335,8 +3335,8 @@ module Polars
     #   # shape: (2,)
     #   # Series: 'a' [i64]
     #   # [
-    #   #     1
-    #   #     5
+    #   #         5
+    #   #         3
     #   # ]
     def sample(
       n: nil,
