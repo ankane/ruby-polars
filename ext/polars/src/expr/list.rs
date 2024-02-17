@@ -168,14 +168,6 @@ impl RbExpr {
             .into()
     }
 
-    pub fn list_take(&self, index: &RbExpr, null_on_oob: bool) -> Self {
-        self.inner
-            .clone()
-            .list()
-            .take(index.inner.clone(), null_on_oob)
-            .into()
-    }
-
     pub fn list_to_array(&self, width: usize) -> Self {
         self.inner.clone().list().to_array(width).into()
     }

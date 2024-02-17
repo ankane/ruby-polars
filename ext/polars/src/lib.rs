@@ -555,7 +555,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbExpr::list_sample_fraction, 4),
     )?;
     class.define_method("list_gather", method!(RbExpr::list_gather, 2))?;
-    class.define_method("list_take", method!(RbExpr::list_take, 2))?;
     class.define_method("list_to_array", method!(RbExpr::list_to_array, 1))?;
     class.define_method("list_mean", method!(RbExpr::list_mean, 0))?;
     class.define_method("list_tail", method!(RbExpr::list_tail, 1))?;

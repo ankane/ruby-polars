@@ -9,6 +9,60 @@ module Polars
       self._rbexpr = expr._rbexpr
     end
 
+    # Evaluate whether all boolean values in a list are true.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [[true, true], [false, true], [false, false], [nil], [], nil]}
+    #   )
+    #   df.with_columns(all: Polars.col("a").list.all)
+    #   # =>
+    #   # shape: (6, 2)
+    #   # ┌────────────────┬───────┐
+    #   # │ a              ┆ all   │
+    #   # │ ---            ┆ ---   │
+    #   # │ list[bool]     ┆ bool  │
+    #   # ╞════════════════╪═══════╡
+    #   # │ [true, true]   ┆ true  │
+    #   # │ [false, true]  ┆ false │
+    #   # │ [false, false] ┆ false │
+    #   # │ [null]         ┆ true  │
+    #   # │ []             ┆ true  │
+    #   # │ null           ┆ null  │
+    #   # └────────────────┴───────┘
+    def all
+      Utils.wrap_expr(_rbexpr.list_all)
+    end
+
+    # Evaluate whether any boolean value in a list is true.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [[true, true], [false, true], [false, false], [nil], [], nil]}
+    #   )
+    #   df.with_columns(any: Polars.col("a").list.any)
+    #   # =>
+    #   # shape: (6, 2)
+    #   # ┌────────────────┬───────┐
+    #   # │ a              ┆ any   │
+    #   # │ ---            ┆ ---   │
+    #   # │ list[bool]     ┆ bool  │
+    #   # ╞════════════════╪═══════╡
+    #   # │ [true, true]   ┆ true  │
+    #   # │ [false, true]  ┆ true  │
+    #   # │ [false, false] ┆ false │
+    #   # │ [null]         ┆ false │
+    #   # │ []             ┆ false │
+    #   # │ null           ┆ null  │
+    #   # └────────────────┴───────┘
+    def any
+      Utils.wrap_expr(_rbexpr.list_any)
+    end
+
     # Get the length of the arrays as `:u32`.
     #
     # @return [Expr]
@@ -30,6 +84,80 @@ module Polars
       Utils.wrap_expr(_rbexpr.list_len)
     end
     alias_method :len, :lengths
+
+    # Drop all null values in the list.
+    #
+    # The original order of the remaining elements is preserved.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"values" => [[nil, 1, nil, 2], [nil], [3, 4]]})
+    #   df.with_columns(drop_nulls: Polars.col("values").list.drop_nulls)
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌────────────────┬────────────┐
+    #   # │ values         ┆ drop_nulls │
+    #   # │ ---            ┆ ---        │
+    #   # │ list[i64]      ┆ list[i64]  │
+    #   # ╞════════════════╪════════════╡
+    #   # │ [null, 1, … 2] ┆ [1, 2]     │
+    #   # │ [null]         ┆ []         │
+    #   # │ [3, 4]         ┆ [3, 4]     │
+    #   # └────────────────┴────────────┘
+    def drop_nulls
+      Utils.wrap_expr(_rbexpr.list_drop_nulls)
+    end
+
+    # Sample from this list.
+    #
+    # @param n [Integer]
+    #   Number of items to return. Cannot be used with `fraction`. Defaults to 1 if
+    #   `fraction` is nil.
+    # @param fraction [Float]
+    #   Fraction of items to return. Cannot be used with `n`.
+    # @param with_replacement [Boolean]
+    #   Allow values to be sampled more than once.
+    # @param shuffle [Boolean]
+    #   Shuffle the order of sampled data points.
+    # @param seed [Integer]
+    #   Seed for the random number generator. If set to nil (default), a
+    #   random seed is generated for each sample operation.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"values" => [[1, 2, 3], [4, 5]], "n" => [2, 1]})
+    #   df.with_columns(sample: Polars.col("values").list.sample(Polars.col("n"), seed: 1))
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌───────────┬─────┬───────────┐
+    #   # │ values    ┆ n   ┆ sample    │
+    #   # │ ---       ┆ --- ┆ ---       │
+    #   # │ list[i64] ┆ i64 ┆ list[i64] │
+    #   # ╞═══════════╪═════╪═══════════╡
+    #   # │ [1, 2, 3] ┆ 2   ┆ [2, 1]    │
+    #   # │ [4, 5]    ┆ 1   ┆ [5]       │
+    #   # └───────────┴─────┴───────────┘
+    def sample(n = nil, fraction: nil, with_replacement: false, shuffle: false, seed: nil)
+      if !n.nil? && !fraction.nil?
+        msg = "cannot specify both `n` and `fraction`"
+        raise ArgumentError, msg
+      end
+
+      if !fraction.nil?
+        fraction = Utils.parse_as_expression(fraction)
+        return Utils.wrap_expr(
+          _rbexpr.list_sample_fraction(
+            fraction, with_replacement, shuffle, seed
+          )
+        )
+      end
+
+      n = 1 if n.nil?
+      n = Utils.parse_as_expression(n)
+      Utils.wrap_expr(_rbexpr.list_sample_n(n, with_replacement, shuffle, seed))
+    end
 
     # Sum all the lists in the array.
     #
@@ -280,13 +408,29 @@ module Polars
     #   Note that defaulting to raising an error is much cheaper
     #
     # @return [Expr]
-    def take(index, null_on_oob: false)
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [[3, 2, 1], [], [1, 2, 3, 4, 5]]})
+    #   df.with_columns(gather: Polars.col("a").list.gather([0, 4], null_on_oob: true))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────────────┬──────────────┐
+    #   # │ a           ┆ gather       │
+    #   # │ ---         ┆ ---          │
+    #   # │ list[i64]   ┆ list[i64]    │
+    #   # ╞═════════════╪══════════════╡
+    #   # │ [3, 2, 1]   ┆ [3, null]    │
+    #   # │ []          ┆ [null, null] │
+    #   # │ [1, 2, … 5] ┆ [1, 5]       │
+    #   # └─────────────┴──────────────┘
+    def gather(index, null_on_oob: false)
       if index.is_a?(::Array)
         index = Series.new(index)
       end
       index = Utils.expr_to_lit_or_expr(index, str_to_lit: false)._rbexpr
-      Utils.wrap_expr(_rbexpr.list_take(index, null_on_oob))
+      Utils.wrap_expr(_rbexpr.list_gather(index, null_on_oob))
     end
+    alias_method :take, :gather
 
     # Get the first value of the sublists.
     #
@@ -546,8 +690,8 @@ module Polars
     #   #         [2, 1]
     #   # ]
     def tail(n = 5)
-      offset = -Utils.expr_to_lit_or_expr(n, str_to_lit: false)
-      slice(offset, n)
+      n = Utils.parse_as_expression(n)
+      Utils.wrap_expr(_rbexpr.list_tail(n))
     end
 
     # Count how often the value produced by ``element`` occurs.
