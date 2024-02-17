@@ -2453,9 +2453,47 @@ module Polars
       _from_rbldf(_ldf.unnest(names))
     end
 
-    # TODO
-    # def merge_sorted
-    # end
+    # Take two sorted DataFrames and merge them by the sorted key.
+    #
+    # The output of this operation will also be sorted.
+    # It is the callers responsibility that the frames are sorted
+    # by that key otherwise the output will not make sense.
+    #
+    # The schemas of both LazyFrames must be equal.
+    #
+    # @param other [DataFrame]
+    #   Other DataFrame that must be merged
+    # @param key [String]
+    #   Key that is sorted.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df0 = Polars::LazyFrame.new(
+    #     {"name" => ["steve", "elise", "bob"], "age" => [42, 44, 18]}
+    #   ).sort("age")
+    #   df1 = Polars::LazyFrame.new(
+    #     {"name" => ["anna", "megan", "steve", "thomas"], "age" => [21, 33, 42, 20]}
+    #   ).sort("age")
+    #   df0.merge_sorted(df1, "age").collect
+    #   # =>
+    #   # shape: (7, 2)
+    #   # ┌────────┬─────┐
+    #   # │ name   ┆ age │
+    #   # │ ---    ┆ --- │
+    #   # │ str    ┆ i64 │
+    #   # ╞════════╪═════╡
+    #   # │ bob    ┆ 18  │
+    #   # │ thomas ┆ 20  │
+    #   # │ anna   ┆ 21  │
+    #   # │ megan  ┆ 33  │
+    #   # │ steve  ┆ 42  │
+    #   # │ steve  ┆ 42  │
+    #   # │ elise  ┆ 44  │
+    #   # └────────┴─────┘
+    def merge_sorted(other, key)
+      _from_rbldf(_ldf.merge_sorted(other._ldf, key))
+    end
 
     # Indicate that one or multiple columns are sorted.
     #

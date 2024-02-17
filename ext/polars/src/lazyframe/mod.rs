@@ -670,4 +670,13 @@ impl RbLazyFrame {
     pub fn width(&self) -> RbResult<usize> {
         Ok(self.get_schema()?.len())
     }
+
+    pub fn merge_sorted(&self, other: &Self, key: String) -> RbResult<Self> {
+        let out = self
+            .ldf
+            .clone()
+            .merge_sorted(other.ldf.clone(), &key)
+            .map_err(RbPolarsErr::from)?;
+        Ok(out.into())
+    }
 }

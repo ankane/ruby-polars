@@ -67,6 +67,7 @@ features = [
     "list_sample",
     "list_to_struct",
     "log",
+    "merge_sorted",
     "meta",
     "mode",
     "moment",

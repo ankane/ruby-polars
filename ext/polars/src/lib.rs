@@ -757,6 +757,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("schema", method!(RbLazyFrame::schema, 0))?;
     class.define_method("unnest", method!(RbLazyFrame::unnest, 1))?;
     class.define_method("width", method!(RbLazyFrame::width, 0))?;
+    class.define_method("merge_sorted", method!(RbLazyFrame::merge_sorted, 2))?;
 
     let class = module.define_class("RbLazyGroupBy", ruby.class_object())?;
     class.define_method("agg", method!(RbLazyGroupBy::agg, 1))?;
