@@ -100,6 +100,22 @@ module Polars
     # Get the column name that this expression would produce.
     #
     # @return [String]
+    #
+    # @example
+    #   e = Polars.col("foo") * Polars.col("bar")
+    #   e.meta.output_name
+    #   # => "foo"
+    #   e_filter = Polars.col("foo").filter(Polars.col("bar") == 13)
+    #   e_filter.meta.output_name
+    #   # => "foo"
+    #   e_sum_over = Polars.sum("foo").over("groups")
+    #   e_sum_over.meta.output_name
+    #   # => "foo"
+    #   e_sum_slice = Polars.sum("foo").slice(Polars.len - 10, Polars.col("bar"))
+    #   e_sum_slice.meta.output_name
+    #   # => "foo"
+    #   Polars.len().meta.output_name
+    #   # => "len"
     def output_name
       _rbexpr.meta_output_name
     end
@@ -107,6 +123,14 @@ module Polars
     # Pop the latest expression and return the input(s) of the popped expression.
     #
     # @return [Array]
+    #
+    # @example
+    #   e = Polars.col("foo").alias("bar")
+    #   first = e.meta.pop[0]
+    #   first.meta == Polars.col("foo")
+    #   # => true
+    #   first.meta == Polars.col("bar")
+    #   # => false
     def pop
       _rbexpr.meta_pop.map { |e| Utils.wrap_expr(e) }
     end
@@ -114,6 +138,20 @@ module Polars
     # Get a list with the root column name.
     #
     # @return [Array]
+    #
+    # @example
+    #   e = Polars.col("foo") * Polars.col("bar")
+    #   e.meta.root_names
+    #   # => ["foo", "bar"]
+    #   e_filter = Polars.col("foo").filter(Polars.col("bar") == 13)
+    #   e_filter.meta.root_names
+    #   # => ["foo", "bar"]
+    #   e_sum_over = Polars.sum("foo").over("groups")
+    #   e_sum_over.meta.root_names
+    #   # => ["foo", "groups"]
+    #   e_sum_slice = Polars.sum("foo").slice(Polars.len - 10, Polars.col("bar"))
+    #   e_sum_slice.meta.root_names
+    #   # => ["foo", "bar"]
     def root_names
       _rbexpr.meta_roots
     end
@@ -121,6 +159,14 @@ module Polars
     # Undo any renaming operation like `alias` or `keep_name`.
     #
     # @return [Expr]
+    #
+    # @example
+    #   e = Polars.col("foo").alias("bar")
+    #   e.meta.undo_aliases.meta == Polars.col("foo")
+    #   # => true
+    #   e = Polars.col("foo").sum().over("bar")
+    #   e.name.keep.meta.undo_aliases.meta == e
+    #   # => true
     def undo_aliases
       Utils.wrap_expr(_rbexpr.meta_undo_aliases)
     end
