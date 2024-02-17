@@ -45,4 +45,11 @@ class JsonTest < Minitest::Test
     assert_nil df.write_ndjson(path)
     assert_frame df, Polars.read_ndjson(path)
   end
+
+  def test_sink_ndjson
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    path = temp_path
+    assert_nil df.lazy.sink_ndjson(path)
+    assert_frame df, Polars.read_ndjson(path)
+  end
 end

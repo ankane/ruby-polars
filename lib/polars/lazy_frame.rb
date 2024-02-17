@@ -342,6 +342,7 @@ module Polars
       simplify_expression: true,
       slice_pushdown: true,
       common_subplan_elimination: true,
+      comm_subexpr_elim: true,
       allow_streaming: false
     )
       ldf = _ldf.optimization_toggle(
@@ -351,6 +352,7 @@ module Polars
         simplify_expression,
         slice_pushdown,
         common_subplan_elimination,
+        comm_subexpr_elim,
         allow_streaming,
         false
       )
@@ -469,6 +471,7 @@ module Polars
       no_optimization: false,
       slice_pushdown: true,
       common_subplan_elimination: true,
+      comm_subexpr_elim: true,
       allow_streaming: false,
       _eager: false
     )
@@ -477,6 +480,7 @@ module Polars
         projection_pushdown = false
         slice_pushdown = false
         common_subplan_elimination = false
+        comm_subexpr_elim = false
       end
 
       if allow_streaming
@@ -490,6 +494,7 @@ module Polars
         simplify_expression,
         slice_pushdown,
         common_subplan_elimination,
+        comm_subexpr_elim,
         allow_streaming,
         _eager
       )
@@ -560,22 +565,15 @@ module Polars
       no_optimization: false,
       slice_pushdown: true
     )
-      if no_optimization
-        predicate_pushdown = false
-        projection_pushdown = false
-        slice_pushdown = false
-      end
-
-      lf = _ldf.optimization_toggle(
-        type_coercion,
-        predicate_pushdown,
-        projection_pushdown,
-        simplify_expression,
-        slice_pushdown,
-        false,
-        true,
-        false
+      lf = _set_sink_optimizations(
+        type_coercion: type_coercion,
+        predicate_pushdown: predicate_pushdown,
+        projection_pushdown: projection_pushdown,
+        simplify_expression: simplify_expression,
+        slice_pushdown: slice_pushdown,
+        no_optimization: no_optimization
       )
+
       lf.sink_parquet(
         path,
         compression,
@@ -584,6 +582,83 @@ module Polars
         row_group_size,
         data_pagesize_limit,
         maintain_order
+      )
+    end
+
+    # Evaluate the query in streaming mode and write to an NDJSON file.
+    #
+    # This allows streaming results that are larger than RAM to be written to disk.
+    #
+    # @param path [String]
+    #   File path to which the file should be written.
+    # @param maintain_order [Boolean]
+    #   Maintain the order in which data is processed.
+    #   Setting this to `false` will be slightly faster.
+    # @param type_coercion [Boolean]
+    #   Do type coercion optimization.
+    # @param predicate_pushdown [Boolean]
+    #   Do predicate pushdown optimization.
+    # @param projection_pushdown [Boolean]
+    #   Do projection pushdown optimization.
+    # @param simplify_expression [Boolean]
+    #   Run simplify expressions optimization.
+    # @param slice_pushdown [Boolean]
+    #   Slice pushdown optimization.
+    # @param no_optimization [Boolean]
+    #   Turn off (certain) optimizations.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   lf = Polars.scan_csv("/path/to/my_larger_than_ram_file.csv")
+    #   lf.sink_ndjson("out.ndjson")
+    def sink_ndjson(
+      path,
+      maintain_order: true,
+      type_coercion: true,
+      predicate_pushdown: true,
+      projection_pushdown: true,
+      simplify_expression: true,
+      slice_pushdown: true,
+      no_optimization: false
+    )
+      lf = _set_sink_optimizations(
+        type_coercion: type_coercion,
+        predicate_pushdown: predicate_pushdown,
+        projection_pushdown: projection_pushdown,
+        simplify_expression: simplify_expression,
+        slice_pushdown: slice_pushdown,
+        no_optimization: no_optimization
+      )
+
+      lf.sink_json(path, maintain_order)
+    end
+
+    # @private
+    def _set_sink_optimizations(
+      type_coercion: true,
+      predicate_pushdown: true,
+      projection_pushdown: true,
+      simplify_expression: true,
+      slice_pushdown: true,
+      no_optimization: false
+    )
+      if no_optimization
+        predicate_pushdown = false
+        projection_pushdown = false
+        slice_pushdown = false
+      end
+
+      _ldf.optimization_toggle(
+        type_coercion,
+        predicate_pushdown,
+        projection_pushdown,
+        simplify_expression,
+        slice_pushdown,
+        false,
+        false,
+        true,
+        false
       )
     end
 
@@ -650,6 +725,7 @@ module Polars
       no_optimization: false,
       slice_pushdown: true,
       common_subplan_elimination: true,
+      comm_subexpr_elim: true,
       allow_streaming: false
     )
       if no_optimization
@@ -666,6 +742,7 @@ module Polars
         simplify_expression,
         slice_pushdown,
         common_subplan_elimination,
+        comm_subexpr_elim,
         allow_streaming,
         false
       )

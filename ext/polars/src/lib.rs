@@ -709,7 +709,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method(
         "optimization_toggle",
-        method!(RbLazyFrame::optimization_toggle, 8),
+        method!(RbLazyFrame::optimization_toggle, 9),
     )?;
     class.define_method("sort", method!(RbLazyFrame::sort, 4))?;
     class.define_method("sort_by_exprs", method!(RbLazyFrame::sort_by_exprs, 4))?;

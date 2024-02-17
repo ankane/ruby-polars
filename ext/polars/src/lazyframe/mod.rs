@@ -218,20 +218,24 @@ impl RbLazyFrame {
         projection_pushdown: bool,
         simplify_expr: bool,
         slice_pushdown: bool,
-        cse: bool,
+        comm_subplan_elim: bool,
+        comm_subexpr_elim: bool,
         allow_streaming: bool,
         _eager: bool,
     ) -> RbLazyFrame {
         let ldf = self.ldf.clone();
-        let ldf = ldf
+        let mut ldf = ldf
             .with_type_coercion(type_coercion)
             .with_predicate_pushdown(predicate_pushdown)
             .with_simplify_expr(simplify_expr)
             .with_slice_pushdown(slice_pushdown)
-            .with_comm_subplan_elim(cse)
             .with_streaming(allow_streaming)
             ._with_eager(_eager)
             .with_projection_pushdown(projection_pushdown);
+
+        ldf = ldf.with_comm_subplan_elim(comm_subplan_elim);
+        ldf = ldf.with_comm_subexpr_elim(comm_subexpr_elim);
+
         ldf.into()
     }
 
