@@ -214,6 +214,98 @@ module Polars
       _comp(other, :lt_eq)
     end
 
+    # Method equivalent of operator expression `series == other`.
+    #
+    # @return [Object]
+    def eq(other)
+      self == other
+    end
+
+    # Method equivalent of equality operator `series == other` where `nil == nil`.
+    #
+    # This differs from the standard `ne` where null values are propagated.
+    #
+    # @param other [Object]
+    #   A literal or expression value to compare with.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   s1 = Polars::Series.new("a", [333, 200, nil])
+    #   s2 = Polars::Series.new("a", [100, 200, nil])
+    #   s1.eq(s2)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         false
+    #   #         true
+    #   #         null
+    #   # ]
+    #
+    # @example
+    #   s1.eq_missing(s2)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         false
+    #   #         true
+    #   #         true
+    #   # ]
+    def eq_missing(other)
+      if other.is_a?(Expr)
+        return Polars.lit(self).eq_missing(other)
+      end
+      to_frame.select(Polars.col(name).eq_missing(other)).to_series
+    end
+
+    # Method equivalent of operator expression `series != other`.
+    #
+    # @return [Object]
+    def ne(other)
+      self != other
+    end
+
+    # Method equivalent of equality operator `series != other` where `None == None`.
+    #
+    # This differs from the standard `ne` where null values are propagated.
+    #
+    # @param other [Object]
+    #   A literal or expression value to compare with.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   s1 = Polars::Series.new("a", [333, 200, nil])
+    #   s2 = Polars::Series.new("a", [100, 200, nil])
+    #   s1.ne(s2)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         true
+    #   #         false
+    #   #         null
+    #   # ]
+    #
+    # @example
+    #   s1.ne_missing(s2)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         true
+    #   #         false
+    #   #         false
+    #   # ]
+    def ne_missing(other)
+      if other.is_a?(Expr)
+        return Polars.lit(self).ne_missing(other)
+      end
+      to_frame.select(Polars.col(name).ne_missing(other)).to_series
+    end
+
     # Performs addition.
     #
     # @return [Series]
