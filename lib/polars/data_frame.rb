@@ -2868,7 +2868,7 @@ module Polars
     #       "c" => [true, true, false, nil]
     #     }
     #   )
-    #   df.cleared
+    #   df.clear
     #   # =>
     #   # shape: (0, 3)
     #   # ┌─────┬─────┬──────┐
@@ -2877,9 +2877,31 @@ module Polars
     #   # │ i64 ┆ f64 ┆ bool │
     #   # ╞═════╪═════╪══════╡
     #   # └─────┴─────┴──────┘
-    def cleared
-      height > 0 ? head(0) : clone
+    #
+    # @example
+    #   df.clear(2)
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ a    ┆ b    ┆ c    │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ f64  ┆ bool │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ null ┆ null ┆ null │
+    #   # │ null ┆ null ┆ null │
+    #   # └──────┴──────┴──────┘
+    def clear(n = 0)
+      if n == 0
+        _from_rbdf(_df.clear)
+      elsif n > 0 || len > 0
+        self.class.new(
+          schema.to_h { |nm, tp| [nm, Series.new(name: nm, dtype: tp).extend_constant(nil, n)] }
+        )
+      else
+        clone
+      end
     end
+    alias_method :cleared, :clear
 
     # clone handled by initialize_copy
 

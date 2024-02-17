@@ -264,6 +264,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("upsample", method!(RbDataFrame::upsample, 5))?;
     class.define_method("to_struct", method!(RbDataFrame::to_struct, 1))?;
     class.define_method("unnest", method!(RbDataFrame::unnest, 1))?;
+    class.define_method("clear", method!(RbDataFrame::clear, 0))?;
 
     let class = module.define_class("RbExpr", ruby.class_object())?;
     class.define_method("+", method!(RbExpr::add, 1))?;

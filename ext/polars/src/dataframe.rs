@@ -1176,4 +1176,8 @@ impl RbDataFrame {
         let df = self.df.borrow().unnest(names).map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }
+
+    pub fn clear(&self) -> Self {
+        self.df.borrow().clear().into()
+    }
 }

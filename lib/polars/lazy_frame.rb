@@ -713,7 +713,7 @@ module Polars
     #       "c" => [true, true, false, nil],
     #     }
     #   ).lazy
-    #   df.cleared.fetch
+    #   df.clear.fetch
     #   # =>
     #   # shape: (0, 3)
     #   # ┌─────┬─────┬──────┐
@@ -722,9 +722,23 @@ module Polars
     #   # │ i64 ┆ f64 ┆ bool │
     #   # ╞═════╪═════╪══════╡
     #   # └─────┴─────┴──────┘
-    def cleared
-      DataFrame.new(columns: schema).lazy
+    #
+    # @example
+    #   lf.clear(2).fetch
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ a    ┆ b    ┆ c    │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ f64  ┆ bool │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ null ┆ null ┆ null │
+    #   # │ null ┆ null ┆ null │
+    #   # └──────┴──────┴──────┘
+    def clear(n = 0)
+      DataFrame.new(columns: schema).clear(n).lazy
     end
+    alias_method :cleared, :clear
 
     # Filter the rows in the DataFrame based on a predicate expression.
     #

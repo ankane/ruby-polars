@@ -8,6 +8,7 @@
 - Added more methods to `ArrayExpr` and `ArrayNameSpace`
 - Added more methods to `ListExpr` and `ListNameSpace`
 - Added `schema_overrides` option to `read_database` method
+- Aliased `cleared` to `clear` for `DataFrame` and `LazyFrame`
 - Fixed error with `BigDecimal` objects
 
 ## 0.8.0 (2024-01-10)
