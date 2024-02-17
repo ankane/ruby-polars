@@ -151,6 +151,10 @@ impl RbExpr {
             .into()
     }
 
+    pub fn str_reverse(&self) -> Self {
+        self.inner.clone().str().reverse().into()
+    }
+
     pub fn str_pad_start(&self, length: usize, fillchar: char) -> Self {
         self.clone().inner.str().pad_start(length, fillchar).into()
     }

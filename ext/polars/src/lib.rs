@@ -409,6 +409,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_len_chars", method!(RbExpr::str_len_chars, 0))?;
     class.define_method("str_replace_n", method!(RbExpr::str_replace_n, 4))?;
     class.define_method("str_replace_all", method!(RbExpr::str_replace_all, 3))?;
+    class.define_method("str_reverse", method!(RbExpr::str_reverse, 0))?;
     class.define_method("str_zfill", method!(RbExpr::str_zfill, 1))?;
     class.define_method("str_pad_start", method!(RbExpr::str_pad_start, 2))?;
     class.define_method("str_pad_end", method!(RbExpr::str_pad_end, 2))?;

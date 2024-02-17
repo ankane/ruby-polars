@@ -1231,6 +1231,28 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_replace_all(pattern._rbexpr, value._rbexpr, literal))
     end
 
+    # Returns string values in reversed order.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"text" => ["foo", "bar", "man\u0303ana"]})
+    #   df.with_columns(Polars.col("text").str.reverse.alias("reversed"))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌────────┬──────────┐
+    #   # │ text   ┆ reversed │
+    #   # │ ---    ┆ ---      │
+    #   # │ str    ┆ str      │
+    #   # ╞════════╪══════════╡
+    #   # │ foo    ┆ oof      │
+    #   # │ bar    ┆ rab      │
+    #   # │ mañana ┆ anañam   │
+    #   # └────────┴──────────┘
+    def reverse
+      Utils.wrap_expr(_rbexpr.str_reverse)
+    end
+
     # Create subslices of the string values of a Utf8 Series.
     #
     # @param offset [Integer]
