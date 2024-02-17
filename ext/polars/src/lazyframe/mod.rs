@@ -671,6 +671,11 @@ impl RbLazyFrame {
         Ok(self.get_schema()?.len())
     }
 
+    pub fn count(&self) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.count().into()
+    }
+
     pub fn merge_sorted(&self, other: &Self, key: String) -> RbResult<Self> {
         let out = self
             .ldf
