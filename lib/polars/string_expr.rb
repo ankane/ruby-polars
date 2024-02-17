@@ -975,6 +975,62 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_extract_all(pattern._rbexpr))
     end
 
+    # Extract all capture groups for the given regex pattern.
+    #
+    # @param pattern [String]
+    #   A valid regular expression pattern containing at least one capture group,
+    #   compatible with the [regex crate](https://docs.rs/regex/latest/regex/).
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "url": [
+    #         "http://vote.com/ballon_dor?candidate=messi&ref=python",
+    #         "http://vote.com/ballon_dor?candidate=weghorst&ref=polars",
+    #         "http://vote.com/ballon_dor?error=404&ref=rust"
+    #       ]
+    #     }
+    #   )
+    #   pattern = /candidate=(?<candidate>\w+)&ref=(?<ref>\w+)/.to_s
+    #   df.select(captures: Polars.col("url").str.extract_groups(pattern)).unnest(
+    #     "captures"
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌───────────┬────────┐
+    #   # │ candidate ┆ ref    │
+    #   # │ ---       ┆ ---    │
+    #   # │ str       ┆ str    │
+    #   # ╞═══════════╪════════╡
+    #   # │ messi     ┆ python │
+    #   # │ weghorst  ┆ polars │
+    #   # │ null      ┆ null   │
+    #   # └───────────┴────────┘
+    #
+    # @example Unnamed groups have their numerical position converted to a string:
+    #   pattern = /candidate=(\w+)&ref=(\w+)/.to_s
+    #   (
+    #     df.with_columns(
+    #       captures: Polars.col("url").str.extract_groups(pattern)
+    #     ).with_columns(name: Polars.col("captures").struct["1"].str.to_uppercase)
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌───────────────────────────────────┬───────────────────────┬──────────┐
+    #   # │ url                               ┆ captures              ┆ name     │
+    #   # │ ---                               ┆ ---                   ┆ ---      │
+    #   # │ str                               ┆ struct[2]             ┆ str      │
+    #   # ╞═══════════════════════════════════╪═══════════════════════╪══════════╡
+    #   # │ http://vote.com/ballon_dor?candi… ┆ {"messi","python"}    ┆ MESSI    │
+    #   # │ http://vote.com/ballon_dor?candi… ┆ {"weghorst","polars"} ┆ WEGHORST │
+    #   # │ http://vote.com/ballon_dor?error… ┆ {null,null}           ┆ null     │
+    #   # └───────────────────────────────────┴───────────────────────┴──────────┘
+    def extract_groups(pattern)
+      Utils.wrap_expr(_rbexpr.str_extract_groups(pattern))
+    end
+
     # Count all successive non-overlapping regex matches.
     #
     # @param pattern [String]

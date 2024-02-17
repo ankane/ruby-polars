@@ -3614,8 +3614,13 @@ module Polars
 
     # Select columns from this DataFrame.
     #
-    # @param exprs [Object]
-    #   Column or columns to select.
+    # @param exprs [Array]
+    #   Column(s) to select, specified as positional arguments.
+    #   Accepts expression input. Strings are parsed as column names,
+    #   other non-expression inputs are parsed as literals.
+    # @param named_exprs [Hash]
+    #   Additional columns to select, specified as keyword arguments.
+    #   The columns will be renamed to the keyword used.
     #
     # @return [DataFrame]
     #
@@ -3695,13 +3700,8 @@ module Polars
     #   # │ 0       │
     #   # │ 10      │
     #   # └─────────┘
-    def select(exprs)
-      _from_rbdf(
-        lazy
-          .select(exprs)
-          .collect(no_optimization: true, string_cache: false)
-          ._df
-      )
+    def select(*exprs, **named_exprs)
+      lazy.select(*exprs, **named_exprs).collect(_eager: true)
     end
 
     # Add columns to this DataFrame.

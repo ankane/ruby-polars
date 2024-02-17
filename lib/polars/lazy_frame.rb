@@ -1053,8 +1053,13 @@ module Polars
 
     # Select columns from this DataFrame.
     #
-    # @param exprs [Object]
-    #   Column or columns to select.
+    # @param exprs [Array]
+    #   Column(s) to select, specified as positional arguments.
+    #   Accepts expression input. Strings are parsed as column names,
+    #   other non-expression inputs are parsed as literals.
+    # @param named_exprs [Hash]
+    #   Additional columns to select, specified as keyword arguments.
+    #   The columns will be renamed to the keyword used.
     #
     # @return [LazyFrame]
     #
@@ -1134,9 +1139,13 @@ module Polars
     #   # │ 0       │
     #   # │ 10      │
     #   # └─────────┘
-    def select(exprs)
-      exprs = Utils.selection_to_rbexpr_list(exprs)
-      _from_rbldf(_ldf.select(exprs))
+    def select(*exprs, **named_exprs)
+      structify = ENV.fetch("POLARS_AUTO_STRUCTIFY", "0") != "0"
+
+      rbexprs = Utils.parse_as_list_of_expressions(
+        *exprs, **named_exprs, __structify: structify
+      )
+      _from_rbldf(_ldf.select(rbexprs))
     end
 
     # Start a group by operation.
