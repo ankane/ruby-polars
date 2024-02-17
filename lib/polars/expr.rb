@@ -3023,6 +3023,77 @@ module Polars
       head(n)
     end
 
+    # Method equivalent of equality operator `expr == other`.
+    #
+    # @param other [Object]
+    #   A literal or expression value to compare with.
+    #
+    # @return [Expr]
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "x" => [1.0, 2.0, Float::NAN, 4.0],
+    #       "y" => [2.0, 2.0, Float::NAN, 4.0]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("x").eq(Polars.col("y")).alias("x == y")
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬─────┬────────┐
+    #   # │ x   ┆ y   ┆ x == y │
+    #   # │ --- ┆ --- ┆ ---    │
+    #   # │ f64 ┆ f64 ┆ bool   │
+    #   # ╞═════╪═════╪════════╡
+    #   # │ 1.0 ┆ 2.0 ┆ false  │
+    #   # │ 2.0 ┆ 2.0 ┆ true   │
+    #   # │ NaN ┆ NaN ┆ true   │
+    #   # │ 4.0 ┆ 4.0 ┆ true   │
+    #   # └─────┴─────┴────────┘
+    def eq(other)
+      self == other
+    end
+
+    # Method equivalent of equality operator `expr == other` where `None == None`.
+    #
+    # This differs from default `eq` where null values are propagated.
+    #
+    # @param other [Object]
+    #   A literal or expression value to compare with.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     data={
+    #       "x" => [1.0, 2.0, Float::NAN, 4.0, nil, nil],
+    #       "y" => [2.0, 2.0, Float::NAN, 4.0, 5.0, nil]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("x").eq(Polars.col("y")).alias("x eq y"),
+    #     Polars.col("x").eq_missing(Polars.col("y")).alias("x eq_missing y"),
+    #   )
+    #   # =>
+    #   # shape: (6, 4)
+    #   # ┌──────┬──────┬────────┬────────────────┐
+    #   # │ x    ┆ y    ┆ x eq y ┆ x eq_missing y │
+    #   # │ ---  ┆ ---  ┆ ---    ┆ ---            │
+    #   # │ f64  ┆ f64  ┆ bool   ┆ bool           │
+    #   # ╞══════╪══════╪════════╪════════════════╡
+    #   # │ 1.0  ┆ 2.0  ┆ false  ┆ false          │
+    #   # │ 2.0  ┆ 2.0  ┆ true   ┆ true           │
+    #   # │ NaN  ┆ NaN  ┆ true   ┆ true           │
+    #   # │ 4.0  ┆ 4.0  ┆ true   ┆ true           │
+    #   # │ null ┆ 5.0  ┆ null   ┆ false          │
+    #   # │ null ┆ null ┆ null   ┆ true           │
+    #   # └──────┴──────┴────────┴────────────────┘
+    def eq_missing(other)
+      other = Utils.parse_as_expression(other, str_as_lit: true)
+      wrap_expr(_rbexpr.eq_missing(other))
+    end
+
     # Raise expression to the power of exponent.
     #
     # @return [Expr]
