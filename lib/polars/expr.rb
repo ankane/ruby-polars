@@ -82,7 +82,8 @@ module Polars
     #
     # @return [Expr]
     def **(power)
-      pow(power)
+      exponent = Utils.expr_to_lit_or_expr(power)
+      _from_rbexpr(_rbexpr.pow(exponent._rbexpr))
     end
 
     # Greater than or equal.
@@ -3530,8 +3531,7 @@ module Polars
     #   # │ 64.0 │
     #   # └──────┘
     def pow(exponent)
-      exponent = Utils.expr_to_lit_or_expr(exponent)
-      _from_rbexpr(_rbexpr.pow(exponent._rbexpr))
+      self**exponent
     end
 
     # Check if elements of this expression are present in the other Series.
