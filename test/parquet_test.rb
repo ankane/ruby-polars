@@ -59,7 +59,9 @@ class ParquetTest < Minitest::Test
 
   def test_sink_parquet
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
-    assert_nil df.lazy.sink_parquet(temp_path)
+    path = temp_path
+    assert_nil df.lazy.sink_parquet(path)
+    assert_frame df, Polars.read_parquet(path)
   end
 
   def test_types
