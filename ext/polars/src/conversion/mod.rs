@@ -219,6 +219,7 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Binary" => DataType::Binary,
                 "Polars::Boolean" => DataType::Boolean,
                 "Polars::Categorical" => DataType::Categorical(None, Default::default()),
+                "Polars::Enum" => DataType::Enum(None, Default::default()),
                 "Polars::Date" => DataType::Date,
                 "Polars::Datetime" => DataType::Datetime(TimeUnit::Microseconds, None),
                 "Polars::Time" => DataType::Time,
@@ -240,6 +241,13 @@ impl TryConvert for Wrap<DataType> {
         } else if String::try_convert(ob).is_err() {
             let name = unsafe { ob.class().name() }.into_owned();
             match name.as_str() {
+                "Polars::Enum" => {
+                    let categories = ob.funcall("categories", ()).unwrap();
+                    let s = get_series(categories)?;
+                    let ca = s.str().map_err(RbPolarsErr::from)?;
+                    let categories = ca.downcast_iter().next().unwrap().clone();
+                    create_enum_data_type(categories)
+                }
                 "Polars::Duration" => {
                     let time_unit: Value = ob.funcall("time_unit", ()).unwrap();
                     let time_unit = Wrap::<TimeUnit>::try_convert(time_unit)?.0;

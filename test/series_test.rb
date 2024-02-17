@@ -95,6 +95,12 @@ class SeriesTest < Minitest::Test
     assert_series [1, nil, 3.5], s, dtype: Polars::Float64
   end
 
+  def test_new_enum
+    dtype = Polars::Enum.new(["a", "b"])
+    s = Polars::Series.new([nil, "a", "b"], dtype: dtype)
+    assert_series [nil, "a", "b"], s #, dtype: dtype
+  end
+
   def test_new_bigdecimal
     s = Polars::Series.new([BigDecimal("1"), nil, BigDecimal("3")])
     assert_series [BigDecimal("1"), nil, BigDecimal("3")], s, dtype: Polars::Decimal

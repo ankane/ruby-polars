@@ -4360,7 +4360,7 @@ module Polars
         rbseries = constructor.call(name, values, strict)
 
         base_type = dtype.is_a?(DataType) ? dtype.class : dtype
-        if [Date, Datetime, Duration, Time, Categorical, Boolean].include?(base_type)
+        if [Date, Datetime, Duration, Time, Categorical, Boolean, Enum].include?(base_type)
           if rbseries.dtype != dtype
             rbseries = rbseries.cast(dtype, true)
           end
@@ -4464,6 +4464,7 @@ module Polars
       Utf8 => RbSeries.method(:new_str),
       Object => RbSeries.method(:new_object),
       Categorical => RbSeries.method(:new_str),
+      Enum => RbSeries.method(:new_str),
       Binary => RbSeries.method(:new_binary),
       Null => RbSeries.method(:new_null)
     }

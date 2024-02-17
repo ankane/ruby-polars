@@ -266,6 +266,56 @@ module Polars
   class Categorical < DataType
   end
 
+  # A fixed set categorical encoding of a set of strings.
+  #
+  # NOTE: this is an experimental work-in-progress feature and may not work as expected.
+  class Enum < DataType
+    attr_reader :categories
+
+    def initialize(categories)
+      if !categories.is_a?(Series)
+        categories = Series.new(categories)
+      end
+
+      if categories.empty?
+        self.categories = Series.new("category", [], dtype: String)
+        return
+      end
+
+      if categories.null_count > 0
+        msg = "Enum categories must not contain null values"
+        raise TypeError, msg
+      end
+
+      if (dtype = categories.dtype) != String
+        msg = "Enum categories must be strings; found data of type #{dtype}"
+        raise TypeError, msg
+      end
+
+      if categories.n_unique != categories.len
+        duplicate = categories.filter(categories.is_duplicated)[0]
+        msg = "Enum categories must be unique; found duplicate #{duplicate}"
+        raise ArgumentError, msg
+      end
+
+      @categories = categories.rechunk.alias("category")
+    end
+
+    def ==(other)
+      if other.eql?(Enum)
+        true
+      elsif other.is_a?(Enum)
+        categories == other.categories
+      else
+        false
+      end
+    end
+
+    def to_s
+      "#{self.class.name}(categories: #{categories.to_a.inspect})"
+    end
+  end
+
   # Type for wrapping arbitrary Ruby objects.
   class Object < DataType
   end
