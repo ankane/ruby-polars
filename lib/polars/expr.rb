@@ -71,13 +71,6 @@ module Polars
       _from_rbexpr(_rbexpr / _to_rbexpr(other))
     end
 
-    # Performs floor division.
-    #
-    # @return [Expr]
-    def floordiv(other)
-      _from_rbexpr(_rbexpr.floordiv(_to_rbexpr(other)))
-    end
-
     # Returns the modulo.
     #
     # @return [Expr]
@@ -145,7 +138,7 @@ module Polars
     #
     # @return [Expr]
     def -@
-      Utils.lit(0) - self
+      _from_rbexpr(_rbexpr.neg)
     end
 
     # Cast to physical representation of the logical dtype.
@@ -3296,6 +3289,225 @@ module Polars
     def ne_missing(other)
       other = Utils.parse_as_expression(other, str_as_lit: true)
       _from_rbexpr(_rbexpr.neq_missing(other))
+    end
+
+    # Method equivalent of addition operator `expr + other`.
+    #
+    # @param other [Object]
+    #   numeric or string value; accepts expression input.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => [1, 2, 3, 4, 5]})
+    #   df.with_columns(
+    #     Polars.col("x").add(2).alias("x+int"),
+    #     Polars.col("x").add(Polars.col("x").cum_prod).alias("x+expr")
+    #   )
+    #   # =>
+    #   # shape: (5, 3)
+    #   # ┌─────┬───────┬────────┐
+    #   # │ x   ┆ x+int ┆ x+expr │
+    #   # │ --- ┆ ---   ┆ ---    │
+    #   # │ i64 ┆ i64   ┆ i64    │
+    #   # ╞═════╪═══════╪════════╡
+    #   # │ 1   ┆ 3     ┆ 2      │
+    #   # │ 2   ┆ 4     ┆ 4      │
+    #   # │ 3   ┆ 5     ┆ 9      │
+    #   # │ 4   ┆ 6     ┆ 28     │
+    #   # │ 5   ┆ 7     ┆ 125    │
+    #   # └─────┴───────┴────────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"x" => ["a", "d", "g"], "y": ["b", "e", "h"], "z": ["c", "f", "i"]}
+    #   )
+    #   df.with_columns(Polars.col("x").add(Polars.col("y")).add(Polars.col("z")).alias("xyz"))
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌─────┬─────┬─────┬─────┐
+    #   # │ x   ┆ y   ┆ z   ┆ xyz │
+    #   # │ --- ┆ --- ┆ --- ┆ --- │
+    #   # │ str ┆ str ┆ str ┆ str │
+    #   # ╞═════╪═════╪═════╪═════╡
+    #   # │ a   ┆ b   ┆ c   ┆ abc │
+    #   # │ d   ┆ e   ┆ f   ┆ def │
+    #   # │ g   ┆ h   ┆ i   ┆ ghi │
+    #   # └─────┴─────┴─────┴─────┘
+    def add(other)
+      self + other
+    end
+
+    # Method equivalent of integer division operator `expr // other`.
+    #
+    # @param other [Object]
+    #   Numeric literal or expression value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => [1, 2, 3, 4, 5]})
+    #   df.with_columns(
+    #     Polars.col("x").truediv(2).alias("x/2"),
+    #     Polars.col("x").floordiv(2).alias("x//2")
+    #   )
+    #   # =>
+    #   # shape: (5, 3)
+    #   # ┌─────┬─────┬──────┐
+    #   # │ x   ┆ x/2 ┆ x//2 │
+    #   # │ --- ┆ --- ┆ ---  │
+    #   # │ i64 ┆ f64 ┆ i64  │
+    #   # ╞═════╪═════╪══════╡
+    #   # │ 1   ┆ 0.5 ┆ 0    │
+    #   # │ 2   ┆ 1.0 ┆ 1    │
+    #   # │ 3   ┆ 1.5 ┆ 1    │
+    #   # │ 4   ┆ 2.0 ┆ 2    │
+    #   # │ 5   ┆ 2.5 ┆ 2    │
+    #   # └─────┴─────┴──────┘
+    def floordiv(other)
+      _from_rbexpr(_rbexpr.floordiv(_to_rbexpr(other)))
+    end
+
+    # Method equivalent of modulus operator `expr % other`.
+    #
+    # @param other [Object]
+    #   Numeric literal or expression value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => [0, 1, 2, 3, 4]})
+    #   df.with_columns(Polars.col("x").mod(2).alias("x%2"))
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────┬─────┐
+    #   # │ x   ┆ x%2 │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 0   ┆ 0   │
+    #   # │ 1   ┆ 1   │
+    #   # │ 2   ┆ 0   │
+    #   # │ 3   ┆ 1   │
+    #   # │ 4   ┆ 0   │
+    #   # └─────┴─────┘
+    def mod(other)
+      self % other
+    end
+
+    # Method equivalent of multiplication operator `expr * other`.
+    #
+    # @param other [Object]
+    #   Numeric literal or expression value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => [1, 2, 4, 8, 16]})
+    #   df.with_columns(
+    #     Polars.col("x").mul(2).alias("x*2"),
+    #     Polars.col("x").mul(Polars.col("x").log(2)).alias("x * xlog2"),
+    #   )
+    #   # =>
+    #   # shape: (5, 3)
+    #   # ┌─────┬─────┬───────────┐
+    #   # │ x   ┆ x*2 ┆ x * xlog2 │
+    #   # │ --- ┆ --- ┆ ---       │
+    #   # │ i64 ┆ i64 ┆ f64       │
+    #   # ╞═════╪═════╪═══════════╡
+    #   # │ 1   ┆ 2   ┆ 0.0       │
+    #   # │ 2   ┆ 4   ┆ 2.0       │
+    #   # │ 4   ┆ 8   ┆ 8.0       │
+    #   # │ 8   ┆ 16  ┆ 24.0      │
+    #   # │ 16  ┆ 32  ┆ 64.0      │
+    #   # └─────┴─────┴───────────┘
+    def mul(other)
+      self * other
+    end
+
+    # Method equivalent of subtraction operator `expr - other`.
+    #
+    # @param other [Object]
+    #   Numeric literal or expression value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => [0, 1, 2, 3, 4]})
+    #   df.with_columns(
+    #     Polars.col("x").sub(2).alias("x-2"),
+    #     Polars.col("x").sub(Polars.col("x").cum_sum).alias("x-expr"),
+    #   )
+    #   # =>
+    #   # shape: (5, 3)
+    #   # ┌─────┬─────┬────────┐
+    #   # │ x   ┆ x-2 ┆ x-expr │
+    #   # │ --- ┆ --- ┆ ---    │
+    #   # │ i64 ┆ i64 ┆ i64    │
+    #   # ╞═════╪═════╪════════╡
+    #   # │ 0   ┆ -2  ┆ 0      │
+    #   # │ 1   ┆ -1  ┆ 0      │
+    #   # │ 2   ┆ 0   ┆ -1     │
+    #   # │ 3   ┆ 1   ┆ -3     │
+    #   # │ 4   ┆ 2   ┆ -6     │
+    #   # └─────┴─────┴────────┘
+    def sub(other)
+      self - other
+    end
+
+    # Method equivalent of unary minus operator `-expr`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [-1, 0, 2, nil]})
+    #   df.with_columns(Polars.col("a").neg)
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ i64  │
+    #   # ╞══════╡
+    #   # │ 1    │
+    #   # │ 0    │
+    #   # │ -2   │
+    #   # │ null │
+    #   # └──────┘
+    def neg
+      -self
+    end
+
+    # Method equivalent of float division operator `expr / other`.
+    #
+    # @param other [Object]
+    #   Numeric literal or expression value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"x" => [-2, -1, 0, 1, 2], "y" => [0.5, 0.0, 0.0, -4.0, -0.5]}
+    #   )
+    #   df.with_columns(
+    #     Polars.col("x").truediv(2).alias("x/2"),
+    #     Polars.col("x").truediv(Polars.col("y")).alias("x/y")
+    #   )
+    #   # =>
+    #   # shape: (5, 4)
+    #   # ┌─────┬──────┬──────┬───────┐
+    #   # │ x   ┆ y    ┆ x/2  ┆ x/y   │
+    #   # │ --- ┆ ---  ┆ ---  ┆ ---   │
+    #   # │ i64 ┆ f64  ┆ f64  ┆ f64   │
+    #   # ╞═════╪══════╪══════╪═══════╡
+    #   # │ -2  ┆ 0.5  ┆ -1.0 ┆ -4.0  │
+    #   # │ -1  ┆ 0.0  ┆ -0.5 ┆ -inf  │
+    #   # │ 0   ┆ 0.0  ┆ 0.0  ┆ NaN   │
+    #   # │ 1   ┆ -4.0 ┆ 0.5  ┆ -0.25 │
+    #   # │ 2   ┆ -0.5 ┆ 1.0  ┆ -4.0  │
+    #   # └─────┴──────┴──────┴───────┘
+    def truediv(other)
+      self / other
     end
 
     # Raise expression to the power of exponent.
