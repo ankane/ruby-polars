@@ -710,14 +710,14 @@ module Polars
     # @return [LazyFrame]
     #
     # @example
-    #   df = Polars::DataFrame.new(
+    #   lf = Polars::LazyFrame.new(
     #     {
     #       "a" => [nil, 2, 3, 4],
     #       "b" => [0.5, nil, 2.5, 13],
     #       "c" => [true, true, false, nil],
     #     }
     #   ).lazy
-    #   df.clear.fetch
+    #   lf.clear.fetch
     #   # =>
     #   # shape: (0, 3)
     #   # ┌─────┬─────┬──────┐

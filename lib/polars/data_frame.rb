@@ -2895,7 +2895,7 @@ module Polars
         _from_rbdf(_df.clear)
       elsif n > 0 || len > 0
         self.class.new(
-          schema.to_h { |nm, tp| [nm, Series.new(name: nm, dtype: tp).extend_constant(nil, n)] }
+          schema.to_h { |nm, tp| [nm, Series.new(nm, [], dtype: tp).extend_constant(nil, n)] }
         )
       else
         clone
