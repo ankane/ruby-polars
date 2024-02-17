@@ -214,9 +214,23 @@ module Polars
       _comp(other, :lt_eq)
     end
 
+    # Method equivalent of operator expression `series <= other`.
+    #
+    # @return [Series]
+    def le(other)
+      self <= other
+    end
+
+    # Method equivalent of operator expression `series < other`.
+    #
+    # @return [Series]
+    def lt(other)
+      self < other
+    end
+
     # Method equivalent of operator expression `series == other`.
     #
-    # @return [Object]
+    # @return [Series]
     def eq(other)
       self == other
     end
@@ -262,7 +276,7 @@ module Polars
 
     # Method equivalent of operator expression `series != other`.
     #
-    # @return [Object]
+    # @return [Series]
     def ne(other)
       self != other
     end
@@ -304,6 +318,20 @@ module Polars
         return Polars.lit(self).ne_missing(other)
       end
       to_frame.select(Polars.col(name).ne_missing(other)).to_series
+    end
+
+    # Method equivalent of operator expression `series >= other`.
+    #
+    # @return [Series]
+    def ge(other)
+      self >= other
+    end
+
+    # Method equivalent of operator expression `series > other`.
+    #
+    # @return [Series]
+    def gt(other)
+      self > other
     end
 
     # Performs addition.

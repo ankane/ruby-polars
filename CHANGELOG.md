@@ -4,7 +4,7 @@
 - Added `sink_ipc`, `sink_csv`, and `sink_ndjson` methods to `LazyFrame`
 - Added `replace` method to `Expr`
 - Added `eq`, `eq_missing`, `ne`, and `ne_missing` methods to `Series` and `Expr`
-- Added `ge`, `gt`, `le`, and `lt` methods to `Expr`
+- Added `ge`, `gt`, `le`, and `lt` methods to `Series` and `Expr`
 - Added `merge_sorted` method to `DataFrame` and `LazyFrame`
 - Added more methods to `ArrayExpr` and `ArrayNameSpace`
 - Added more methods to `ListExpr` and `ListNameSpace`
