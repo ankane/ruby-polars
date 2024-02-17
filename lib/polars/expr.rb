@@ -3073,7 +3073,7 @@ module Polars
     #   )
     #   df.with_columns(
     #     Polars.col("x").eq(Polars.col("y")).alias("x eq y"),
-    #     Polars.col("x").eq_missing(Polars.col("y")).alias("x eq_missing y"),
+    #     Polars.col("x").eq_missing(Polars.col("y")).alias("x eq_missing y")
     #   )
     #   # =>
     #   # shape: (6, 4)
@@ -3092,6 +3092,78 @@ module Polars
     def eq_missing(other)
       other = Utils.parse_as_expression(other, str_as_lit: true)
       wrap_expr(_rbexpr.eq_missing(other))
+    end
+
+    # Method equivalent of inequality operator `expr != other`.
+    #
+    # @param other [Object]
+    #   A literal or expression value to compare with.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "x" => [1.0, 2.0, Float::NAN, 4.0],
+    #       "y" => [2.0, 2.0, Float::NAN, 4.0]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("x").ne(Polars.col("y")).alias("x != y"),
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬─────┬────────┐
+    #   # │ x   ┆ y   ┆ x != y │
+    #   # │ --- ┆ --- ┆ ---    │
+    #   # │ f64 ┆ f64 ┆ bool   │
+    #   # ╞═════╪═════╪════════╡
+    #   # │ 1.0 ┆ 2.0 ┆ true   │
+    #   # │ 2.0 ┆ 2.0 ┆ false  │
+    #   # │ NaN ┆ NaN ┆ false  │
+    #   # │ 4.0 ┆ 4.0 ┆ false  │
+    #   # └─────┴─────┴────────┘
+    def ne(other)
+      self != other
+    end
+
+    # Method equivalent of equality operator `expr != other` where `None == None`.
+    #
+    # This differs from default `ne` where null values are propagated.
+    #
+    # @param other [Object]
+    #   A literal or expression value to compare with.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "x" => [1.0, 2.0, Float::NAN, 4.0, nil, nil],
+    #       "y" => [2.0, 2.0, Float::NAN, 4.0, 5.0, nil]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("x").ne(Polars.col("y")).alias("x ne y"),
+    #     Polars.col("x").ne_missing(Polars.col("y")).alias("x ne_missing y")
+    #   )
+    #   # =>
+    #   # shape: (6, 4)
+    #   # ┌──────┬──────┬────────┬────────────────┐
+    #   # │ x    ┆ y    ┆ x ne y ┆ x ne_missing y │
+    #   # │ ---  ┆ ---  ┆ ---    ┆ ---            │
+    #   # │ f64  ┆ f64  ┆ bool   ┆ bool           │
+    #   # ╞══════╪══════╪════════╪════════════════╡
+    #   # │ 1.0  ┆ 2.0  ┆ true   ┆ true           │
+    #   # │ 2.0  ┆ 2.0  ┆ false  ┆ false          │
+    #   # │ NaN  ┆ NaN  ┆ false  ┆ false          │
+    #   # │ 4.0  ┆ 4.0  ┆ false  ┆ false          │
+    #   # │ null ┆ 5.0  ┆ null   ┆ true           │
+    #   # │ null ┆ null ┆ null   ┆ false          │
+    #   # └──────┴──────┴────────┴────────────────┘
+    def ne_missing(other)
+      other = Utils.parse_as_expression(other, str_as_lit: true)
+      wrap_expr(_rbexpr.neq_missing(other))
     end
 
     # Raise expression to the power of exponent.
