@@ -211,6 +211,49 @@ module Polars
       end
     end
 
+    # Convert a String column into a Decimal column.
+    #
+    # This method infers the needed parameters `precision` and `scale`.
+    #
+    # @param inference_length [Integer]
+    #   Number of elements to parse to determine the `precision` and `scale`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "numbers": [
+    #         "40.12",
+    #         "3420.13",
+    #         "120134.19",
+    #         "3212.98",
+    #         "12.90",
+    #         "143.09",
+    #         "143.9"
+    #       ]
+    #     }
+    #   )
+    #   df.with_columns(numbers_decimal: Polars.col("numbers").str.to_decimal)
+    #   # =>
+    #   # shape: (7, 2)
+    #   # ┌───────────┬─────────────────┐
+    #   # │ numbers   ┆ numbers_decimal │
+    #   # │ ---       ┆ ---             │
+    #   # │ str       ┆ decimal[*,2]    │
+    #   # ╞═══════════╪═════════════════╡
+    #   # │ 40.12     ┆ 40.12           │
+    #   # │ 3420.13   ┆ 3420.13         │
+    #   # │ 120134.19 ┆ 120134.19       │
+    #   # │ 3212.98   ┆ 3212.98         │
+    #   # │ 12.90     ┆ 12.90           │
+    #   # │ 143.09    ┆ 143.09          │
+    #   # │ 143.9     ┆ 143.90          │
+    #   # └───────────┴─────────────────┘
+    def to_decimal(inference_length = 100)
+      Utils.wrap_expr(_rbexpr.str_to_decimal(inference_length))
+    end
+
     # Get length of the strings as `:u32` (as number of bytes).
     #
     # @return [Expr]
@@ -222,8 +265,8 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new({"s" => ["Café", nil, "345", "東京"]}).with_columns(
     #     [
-    #       Polars.col("s").str.lengths.alias("length"),
-    #       Polars.col("s").str.n_chars.alias("nchars")
+    #       Polars.col("s").str.len_bytes.alias("length"),
+    #       Polars.col("s").str.len_chars.alias("nchars")
     #     ]
     #   )
     #   df
@@ -239,9 +282,10 @@ module Polars
     #   # │ 345  ┆ 3      ┆ 3      │
     #   # │ 東京 ┆ 6      ┆ 2      │
     #   # └──────┴────────┴────────┘
-    def lengths
+    def len_bytes
       Utils.wrap_expr(_rbexpr.str_len_bytes)
     end
+    alias_method :lengths, :len_bytes
 
     # Get length of the strings as `:u32` (as number of chars).
     #
@@ -254,8 +298,8 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new({"s" => ["Café", nil, "345", "東京"]}).with_columns(
     #     [
-    #       Polars.col("s").str.lengths.alias("length"),
-    #       Polars.col("s").str.n_chars.alias("nchars")
+    #       Polars.col("s").str.len_bytes.alias("length"),
+    #       Polars.col("s").str.len_chars.alias("nchars")
     #     ]
     #   )
     #   df
@@ -271,9 +315,10 @@ module Polars
     #   # │ 345  ┆ 3      ┆ 3      │
     #   # │ 東京 ┆ 6      ┆ 2      │
     #   # └──────┴────────┴────────┘
-    def n_chars
+    def len_chars
       Utils.wrap_expr(_rbexpr.str_len_chars)
     end
+    alias_method :n_chars, :len_chars
 
     # Vertically concat the values in the Series to a single string value.
     #
@@ -353,6 +398,30 @@ module Polars
     #   # └─────┘
     def to_lowercase
       Utils.wrap_expr(_rbexpr.str_to_lowercase)
+    end
+
+    # Transform to titlecase variant.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"sing": ["welcome to my world", "THERE'S NO TURNING BACK"]}
+    #   )
+    #   df.with_columns(foo_title: Polars.col("sing").str.to_titlecase)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────────────────────────┬─────────────────────────┐
+    #   # │ sing                    ┆ foo_title               │
+    #   # │ ---                     ┆ ---                     │
+    #   # │ str                     ┆ str                     │
+    #   # ╞═════════════════════════╪═════════════════════════╡
+    #   # │ welcome to my world     ┆ Welcome To My World     │
+    #   # │ THERE'S NO TURNING BACK ┆ There's No Turning Back │
+    #   # └─────────────────────────┴─────────────────────────┘
+    def to_titlecase
+      raise Todo
+      Utils.wrap_expr(_rbexpr.str_to_titlecase)
     end
 
     # Remove leading and trailing whitespace.
