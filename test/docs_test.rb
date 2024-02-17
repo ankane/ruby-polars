@@ -146,7 +146,7 @@ class DocsTest < Minitest::Test
 
   def assert_examples(method, cls)
     # requires files
-    return if [:read_csv_batched, :sink_parquet, :sink_ipc, :sink_ndjson].include?(method.name)
+    return if [:read_csv_batched, :sink_parquet, :sink_ipc, :sink_csv, :sink_ndjson].include?(method.name)
 
     # TODO fix
     return if [:align_frames, :coalesce, :cumsum].include?(method.name)

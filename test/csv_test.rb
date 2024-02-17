@@ -98,6 +98,13 @@ class CsvTest < Minitest::Test
     assert_equal "a,b\n1,one\n2,two\n3,three\n", df.to_csv
   end
 
+  def test_sink_csv
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    path = temp_path
+    assert_nil df.lazy.sink_csv(path)
+    assert_frame df, Polars.read_csv(path)
+  end
+
   def test_has_header_true
     df = Polars.read_csv("test/support/data.csv", has_header: true)
     assert_equal ["a", "b"], df.columns

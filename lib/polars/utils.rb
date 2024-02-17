@@ -351,5 +351,18 @@ module Polars
       end
       ambiguous
     end
+
+    def self._check_arg_is_1byte(arg_name, arg, can_be_empty = false)
+      if arg.is_a?(::String)
+        arg_byte_length = arg.bytesize
+        if can_be_empty
+          if arg_byte_length > 1
+            raise ArgumentError, "#{arg_name} should be a single byte character or empty, but is #{arg_byte_length} bytes long."
+          end
+        elsif arg_byte_length != 1
+          raise ArgumentError, "#{arg_name} should be a single byte character, but is #{arg_byte_length} bytes long."
+        end
+      end
+    end
   end
 end

@@ -115,10 +115,10 @@ module Polars
       sample_size: 1024,
       eol_char: "\n"
     )
-      _check_arg_is_1byte("sep", sep, false)
-      _check_arg_is_1byte("comment_char", comment_char, false)
-      _check_arg_is_1byte("quote_char", quote_char, true)
-      _check_arg_is_1byte("eol_char", eol_char, false)
+      Utils._check_arg_is_1byte("sep", sep, false)
+      Utils._check_arg_is_1byte("comment_char", comment_char, false)
+      Utils._check_arg_is_1byte("quote_char", quote_char, true)
+      Utils._check_arg_is_1byte("eol_char", eol_char, false)
 
       projection, columns = Utils.handle_projection_columns(columns)
 
@@ -264,9 +264,9 @@ module Polars
       parse_dates: false,
       eol_char: "\n"
     )
-      _check_arg_is_1byte("sep", sep, false)
-      _check_arg_is_1byte("comment_char", comment_char, false)
-      _check_arg_is_1byte("quote_char", quote_char, true)
+      Utils._check_arg_is_1byte("sep", sep, false)
+      Utils._check_arg_is_1byte("comment_char", comment_char, false)
+      Utils._check_arg_is_1byte("quote_char", quote_char, true)
 
       if Utils.pathlike?(source)
         source = Utils.normalise_filepath(source)
@@ -873,19 +873,6 @@ module Polars
       end
 
       yield file
-    end
-
-    def _check_arg_is_1byte(arg_name, arg, can_be_empty = false)
-      if arg.is_a?(::String)
-        arg_byte_length = arg.bytesize
-        if can_be_empty
-          if arg_byte_length > 1
-            raise ArgumentError, "#{arg_name} should be a single byte character or empty, but is #{arg_byte_length} bytes long."
-          end
-        elsif arg_byte_length != 1
-          raise ArgumentError, "#{arg_name} should be a single byte character, but is #{arg_byte_length} bytes long."
-        end
-      end
     end
   end
 end

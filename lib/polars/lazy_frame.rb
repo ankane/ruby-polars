@@ -642,6 +642,133 @@ module Polars
       )
     end
 
+    # Evaluate the query in streaming mode and write to a CSV file.
+    #
+    # This allows streaming results that are larger than RAM to be written to disk.
+    #
+    # @param path [String]
+    #   File path to which the file should be written.
+    # @param include_bom [Boolean]
+    #   Whether to include UTF-8 BOM in the CSV output.
+    # @param include_header [Boolean]
+    #   Whether to include header in the CSV output.
+    # @param separator [String]
+    #   Separate CSV fields with this symbol.
+    # @param line_terminator [String]
+    #   String used to end each row.
+    # @param quote_char [String]
+    #   Byte to use as quoting character.
+    # @param batch_size [Integer]
+    #   Number of rows that will be processed per thread.
+    # @param datetime_format [String]
+    #   A format string, with the specifiers defined by the
+    #   `chrono <https://docs.rs/chrono/latest/chrono/format/strftime/index.html>`_
+    #   Rust crate. If no format specified, the default fractional-second
+    #   precision is inferred from the maximum timeunit found in the frame's
+    #   Datetime cols (if any).
+    # @param date_format [String]
+    #   A format string, with the specifiers defined by the
+    #   `chrono <https://docs.rs/chrono/latest/chrono/format/strftime/index.html>`_
+    #   Rust crate.
+    # @param time_format [String]
+    #   A format string, with the specifiers defined by the
+    #   `chrono <https://docs.rs/chrono/latest/chrono/format/strftime/index.html>`_
+    #   Rust crate.
+    # @param float_precision [Integer]
+    #   Number of decimal places to write, applied to both `Float32` and
+    #   `Float64` datatypes.
+    # @param null_value [String]
+    #   A string representing null values (defaulting to the empty string).
+    # @param quote_style ["necessary", "always", "non_numeric", "never"]
+    #   Determines the quoting strategy used.
+    #
+    #   - necessary (default): This puts quotes around fields only when necessary.
+    #     They are necessary when fields contain a quote,
+    #     delimiter or record terminator.
+    #     Quotes are also necessary when writing an empty record
+    #     (which is indistinguishable from a record with one empty field).
+    #     This is the default.
+    #   - always: This puts quotes around every field. Always.
+    #   - never: This never puts quotes around fields, even if that results in
+    #     invalid CSV data (e.g.: by not quoting strings containing the
+    #     separator).
+    #   - non_numeric: This puts quotes around all fields that are non-numeric.
+    #     Namely, when writing a field that does not parse as a valid float
+    #     or integer, then quotes will be used even if they aren`t strictly
+    #     necessary.
+    # @param maintain_order [Boolean]
+    #   Maintain the order in which data is processed.
+    #   Setting this to `false` will  be slightly faster.
+    # @param type_coercion [Boolean]
+    #   Do type coercion optimization.
+    # @param predicate_pushdown [Boolean]
+    #   Do predicate pushdown optimization.
+    # @param projection_pushdown [Boolean]
+    #   Do projection pushdown optimization.
+    # @param simplify_expression [Boolean]
+    #   Run simplify expressions optimization.
+    # @param slice_pushdown [Boolean]
+    #   Slice pushdown optimization.
+    # @param no_optimization [Boolean]
+    #   Turn off (certain) optimizations.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   lf = Polars.scan_csv("/path/to/my_larger_than_ram_file.csv")
+    #   lf.sink_csv("out.csv")
+    def sink_csv(
+      path,
+      include_bom: false,
+      include_header: true,
+      separator: ",",
+      line_terminator: "\n",
+      quote_char: '"',
+      batch_size: 1024,
+      datetime_format: nil,
+      date_format: nil,
+      time_format: nil,
+      float_precision: nil,
+      null_value: nil,
+      quote_style: nil,
+      maintain_order: true,
+      type_coercion: true,
+      predicate_pushdown: true,
+      projection_pushdown: true,
+      simplify_expression: true,
+      slice_pushdown: true,
+      no_optimization: false
+    )
+      Utils._check_arg_is_1byte("separator", separator, false)
+      Utils._check_arg_is_1byte("quote_char", quote_char, false)
+
+      lf = _set_sink_optimizations(
+        type_coercion: type_coercion,
+        predicate_pushdown: predicate_pushdown,
+        projection_pushdown: projection_pushdown,
+        simplify_expression: simplify_expression,
+        slice_pushdown: slice_pushdown,
+        no_optimization: no_optimization
+      )
+
+      lf.sink_csv(
+        path,
+        include_bom,
+        include_header,
+        separator.ord,
+        line_terminator,
+        quote_char.ord,
+        batch_size,
+        datetime_format,
+        date_format,
+        time_format,
+        float_precision,
+        null_value,
+        quote_style,
+        maintain_order
+      )
+    end
+
     # Evaluate the query in streaming mode and write to an NDJSON file.
     #
     # This allows streaming results that are larger than RAM to be written to disk.
