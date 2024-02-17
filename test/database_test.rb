@@ -38,7 +38,7 @@ class DatabaseTest < Minitest::Test
   end
 
   def test_read_database_schema_overrides
-    users = create_users
+    create_users
 
     df = Polars.read_database("SELECT id FROM users ORDER BY id")
     assert_equal Polars::Int64, df["id"].dtype
