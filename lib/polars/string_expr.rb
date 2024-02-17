@@ -505,6 +505,125 @@ module Polars
     end
     alias_method :rstrip, :strip_chars_end
 
+    # Remove prefix.
+    #
+    # The prefix will be removed from the string exactly once, if found.
+    #
+    # @param prefix [String]
+    #   The prefix to be removed.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => ["foobar", "foofoobar", "foo", "bar"]})
+    #   df.with_columns(Polars.col("a").str.strip_prefix("foo").alias("stripped"))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌───────────┬──────────┐
+    #   # │ a         ┆ stripped │
+    #   # │ ---       ┆ ---      │
+    #   # │ str       ┆ str      │
+    #   # ╞═══════════╪══════════╡
+    #   # │ foobar    ┆ bar      │
+    #   # │ foofoobar ┆ foobar   │
+    #   # │ foo       ┆          │
+    #   # │ bar       ┆ bar      │
+    #   # └───────────┴──────────┘
+    def strip_prefix(prefix)
+      prefix = Utils.parse_as_expression(prefix, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.str_strip_prefix(prefix))
+    end
+
+    # Remove suffix.
+    #
+    # The suffix will be removed from the string exactly once, if found.
+    #
+    #
+    # @param suffix [String]
+    #   The suffix to be removed.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => ["foobar", "foobarbar", "foo", "bar"]})
+    #   df.with_columns(Polars.col("a").str.strip_suffix("bar").alias("stripped"))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌───────────┬──────────┐
+    #   # │ a         ┆ stripped │
+    #   # │ ---       ┆ ---      │
+    #   # │ str       ┆ str      │
+    #   # ╞═══════════╪══════════╡
+    #   # │ foobar    ┆ foo      │
+    #   # │ foobarbar ┆ foobar   │
+    #   # │ foo       ┆ foo      │
+    #   # │ bar       ┆          │
+    #   # └───────────┴──────────┘
+    def strip_suffix(suffix)
+      suffix = Utils.parse_as_expression(suffix, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.str_strip_suffix(suffix))
+    end
+
+    # Pad the start of the string until it reaches the given length.
+    #
+    # @param length [Integer]
+    #   Pad the string until it reaches this length. Strings with length equal to
+    #   or greater than this value are returned as-is.
+    # @param fill_char [String]
+    #   The character to pad the string with.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a": ["cow", "monkey", "hippopotamus", nil]})
+    #   df.with_columns(padded: Polars.col("a").str.pad_start(8, "*"))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌──────────────┬──────────────┐
+    #   # │ a            ┆ padded       │
+    #   # │ ---          ┆ ---          │
+    #   # │ str          ┆ str          │
+    #   # ╞══════════════╪══════════════╡
+    #   # │ cow          ┆ *****cow     │
+    #   # │ monkey       ┆ **monkey     │
+    #   # │ hippopotamus ┆ hippopotamus │
+    #   # │ null         ┆ null         │
+    #   # └──────────────┴──────────────┘
+    def pad_start(length, fill_char = " ")
+      Utils.wrap_expr(_rbexpr.str_pad_start(length, fill_char))
+    end
+    alias_method :rjust, :pad_start
+
+    # Pad the end of the string until it reaches the given length.
+    #
+    # @param length [Integer]
+    #   Pad the string until it reaches this length. Strings with length equal to
+    #   or greater than this value are returned as-is.
+    # @param fill_char [String]
+    #   The character to pad the string with.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a": ["cow", "monkey", "hippopotamus", nil]})
+    #   df.with_columns(padded: Polars.col("a").str.pad_end(8, "*"))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌──────────────┬──────────────┐
+    #   # │ a            ┆ padded       │
+    #   # │ ---          ┆ ---          │
+    #   # │ str          ┆ str          │
+    #   # ╞══════════════╪══════════════╡
+    #   # │ cow          ┆ cow*****     │
+    #   # │ monkey       ┆ monkey**     │
+    #   # │ hippopotamus ┆ hippopotamus │
+    #   # │ null         ┆ null         │
+    #   # └──────────────┴──────────────┘
+    def pad_end(length, fill_char = " ")
+      Utils.wrap_expr(_rbexpr.str_pad_end(length, fill_char))
+    end
+    alias_method :ljust, :pad_end
+
     # Fills the string with zeroes.
     #
     # Return a copy of the string left filled with ASCII '0' digits to make a string
@@ -538,72 +657,6 @@ module Polars
       length = Utils.parse_as_expression(length)
       Utils.wrap_expr(_rbexpr.str_zfill(length))
     end
-
-    # Return the string left justified in a string of length `length`.
-    #
-    # Padding is done using the specified `fillchar`.
-    # The original string is returned if `length` is less than or equal to
-    # `s.length`.
-    #
-    # @param length [Integer]
-    #   Justify left to this length.
-    # @param fillchar [String]
-    #   Fill with this ASCII character.
-    #
-    # @return [Expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new({"a" => ["cow", "monkey", nil, "hippopotamus"]})
-    #   df.select(Polars.col("a").str.ljust(8, "*"))
-    #   # =>
-    #   # shape: (4, 1)
-    #   # ┌──────────────┐
-    #   # │ a            │
-    #   # │ ---          │
-    #   # │ str          │
-    #   # ╞══════════════╡
-    #   # │ cow*****     │
-    #   # │ monkey**     │
-    #   # │ null         │
-    #   # │ hippopotamus │
-    #   # └──────────────┘
-    def ljust(length, fillchar = " ")
-      Utils.wrap_expr(_rbexpr.str_pad_end(length, fillchar))
-    end
-    alias_method :pad_end, :ljust
-
-    # Return the string right justified in a string of length `length`.
-    #
-    # Padding is done using the specified `fillchar`.
-    # The original string is returned if `length` is less than or equal to
-    # `s.length`.
-    #
-    # @param length [Integer]
-    #   Justify right to this length.
-    # @param fillchar [String]
-    #   Fill with this ASCII character.
-    #
-    # @return [Expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new({"a" => ["cow", "monkey", nil, "hippopotamus"]})
-    #   df.select(Polars.col("a").str.rjust(8, "*"))
-    #   # =>
-    #   # shape: (4, 1)
-    #   # ┌──────────────┐
-    #   # │ a            │
-    #   # │ ---          │
-    #   # │ str          │
-    #   # ╞══════════════╡
-    #   # │ *****cow     │
-    #   # │ **monkey     │
-    #   # │ null         │
-    #   # │ hippopotamus │
-    #   # └──────────────┘
-    def rjust(length, fillchar = " ")
-      Utils.wrap_expr(_rbexpr.str_pad_start(length, fillchar))
-    end
-    alias_method :pad_start, :rjust
 
     # Check if string contains a substring that matches a regex.
     #

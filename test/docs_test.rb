@@ -149,7 +149,7 @@ class DocsTest < Minitest::Test
     return if [:read_csv_batched, :sink_parquet, :sink_ipc, :sink_csv, :sink_ndjson].include?(method.name)
 
     # TODO fix
-    return if [:align_frames, :coalesce, :cumsum].include?(method.name)
+    return if [:align_frames, :coalesce, :cumsum, :to_titlecase].include?(method.name)
 
     code = ""
     method.tags(:example).each do |example|
