@@ -17,10 +17,12 @@ use polars::frame::NullStrategy;
 use polars::io::avro::AvroCompression;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
+use polars_core::utils::arrow::array::Array;
 use polars_utils::total_ord::TotalEq;
 use smartstring::alias::String as SmartString;
 
 use crate::object::OBJECT_NAME;
+use crate::rb_modules::series;
 use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
 
 pub(crate) fn slice_to_wrapped<T>(slice: &[T]) -> &[Wrap<T>] {
@@ -78,6 +80,13 @@ pub(crate) fn get_lf(obj: Value) -> RbResult<LazyFrame> {
 pub(crate) fn get_series(obj: Value) -> RbResult<Series> {
     let rbs = obj.funcall::<_, _, &RbSeries>("_s", ())?;
     Ok(rbs.series.borrow().clone())
+}
+
+pub(crate) fn to_series(s: RbSeries) -> Value {
+    let series = series();
+    series
+        .funcall::<_, _, Value>("_from_rbseries", (s,))
+        .unwrap()
 }
 
 impl TryConvert for Wrap<NullValues> {
@@ -155,8 +164,16 @@ impl IntoValue for Wrap<DataType> {
             }
             DataType::Object(_, _) => pl.const_get::<_, Value>("Object").unwrap(),
             DataType::Categorical(_, _) => pl.const_get::<_, Value>("Categorical").unwrap(),
-            DataType::Enum(_, _) => {
-                todo!()
+            DataType::Enum(rev_map, _) => {
+                // we should always have an initialized rev_map coming from rust
+                let categories = rev_map.as_ref().unwrap().get_categories();
+                let class = pl.const_get::<_, Value>("Enum").unwrap();
+                let s = Series::from_arrow("category", categories.to_boxed()).unwrap();
+                let series = to_series(s.into());
+                class
+                    .funcall::<_, _, Value>("new", (series,))
+                    .unwrap()
+                    .into()
             }
             DataType::Time => pl.const_get::<_, Value>("Time").unwrap(),
             DataType::Struct(fields) => {

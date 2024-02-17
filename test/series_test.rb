@@ -98,7 +98,7 @@ class SeriesTest < Minitest::Test
   def test_new_enum
     dtype = Polars::Enum.new(["a", "b"])
     s = Polars::Series.new([nil, "a", "b"], dtype: dtype)
-    assert_series [nil, "a", "b"], s #, dtype: dtype
+    assert_series [nil, "a", "b"], s, dtype: dtype
   end
 
   def test_new_bigdecimal
