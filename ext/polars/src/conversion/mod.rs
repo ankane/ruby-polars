@@ -608,6 +608,22 @@ impl TryConvert for Wrap<Option<IpcCompression>> {
     }
 }
 
+impl TryConvert for Wrap<IpcCompression> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "lz4" => IpcCompression::LZ4,
+            "zstd" => IpcCompression::ZSTD,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "compression must be one of {{'lz4', 'zstd'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<QuoteStyle> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match String::try_convert(ob)?.as_str() {

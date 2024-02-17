@@ -309,11 +309,11 @@ impl RbLazyFrame {
     pub fn sink_ipc(
         &self,
         path: PathBuf,
-        compression: Wrap<Option<IpcCompression>>,
+        compression: Option<Wrap<IpcCompression>>,
         maintain_order: bool,
     ) -> RbResult<()> {
         let options = IpcWriterOptions {
-            compression: compression.0,
+            compression: compression.map(|c| c.0),
             maintain_order,
         };
 
