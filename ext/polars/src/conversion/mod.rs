@@ -258,6 +258,23 @@ impl TryConvert for Wrap<DataType> {
         } else if String::try_convert(ob).is_err() {
             let name = unsafe { ob.class().name() }.into_owned();
             match name.as_str() {
+                "Polars::Int8" => DataType::Int8,
+                "Polars::Int16" => DataType::Int16,
+                "Polars::Int32" => DataType::Int32,
+                "Polars::Int64" => DataType::Int64,
+                "Polars::UInt8" => DataType::UInt8,
+                "Polars::UInt16" => DataType::UInt16,
+                "Polars::UInt32" => DataType::UInt32,
+                "Polars::UInt64" => DataType::UInt64,
+                "Polars::String" => DataType::String,
+                "Polars::Binary" => DataType::Binary,
+                "Polars::Boolean" => DataType::Boolean,
+                "Polars::Categorical" => {
+                    let ordering = ob
+                        .funcall::<_, _, Wrap<CategoricalOrdering>>("ordering", ())?
+                        .0;
+                    DataType::Categorical(None, ordering)
+                }
                 "Polars::Enum" => {
                     let categories = ob.funcall("categories", ()).unwrap();
                     let s = get_series(categories)?;
@@ -265,6 +282,12 @@ impl TryConvert for Wrap<DataType> {
                     let categories = ca.downcast_iter().next().unwrap().clone();
                     create_enum_data_type(categories)
                 }
+                "Polars::Date" => DataType::Date,
+                "Polars::Time" => DataType::Time,
+                "Polars::Float32" => DataType::Float32,
+                "Polars::Float64" => DataType::Float64,
+                "Polars::Null" => DataType::Null,
+                "Polars::Unknown" => DataType::Unknown,
                 "Polars::Duration" => {
                     let time_unit: Value = ob.funcall("time_unit", ()).unwrap();
                     let time_unit = Wrap::<TimeUnit>::try_convert(time_unit)?.0;
