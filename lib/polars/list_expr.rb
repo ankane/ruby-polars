@@ -128,7 +128,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"values" => [[1, 2, 3], [4, 5]], "n" => [2, 1]})
-    #   df.with_columns(sample: Polars.col("values").list.sample(Polars.col("n"), seed: 1))
+    #   df.with_columns(sample: Polars.col("values").list.sample(n: Polars.col("n"), seed: 1))
     #   # =>
     #   # shape: (2, 3)
     #   # ┌───────────┬─────┬───────────┐
@@ -139,7 +139,7 @@ module Polars
     #   # │ [1, 2, 3] ┆ 2   ┆ [2, 1]    │
     #   # │ [4, 5]    ┆ 1   ┆ [5]       │
     #   # └───────────┴─────┴───────────┘
-    def sample(n = nil, fraction: nil, with_replacement: false, shuffle: false, seed: nil)
+    def sample(n: nil, fraction: nil, with_replacement: false, shuffle: false, seed: nil)
       if !n.nil? && !fraction.nil?
         msg = "cannot specify both `n` and `fraction`"
         raise ArgumentError, msg

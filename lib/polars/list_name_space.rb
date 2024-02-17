@@ -118,7 +118,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("values", [[1, 2, 3], [4, 5]])
-    #   s.list.sample(Polars::Series.new("n", [2, 1]), seed: 1)
+    #   s.list.sample(n: Polars::Series.new("n", [2, 1]), seed: 1)
     #   # =>
     #   # shape: (2,)
     #   # Series: 'values' [list[i64]]
@@ -126,7 +126,7 @@ module Polars
     #   #         [2, 1]
     #   #         [5]
     #   # ]
-    def sample(n = nil, fraction: nil, with_replacement: false, shuffle: false, seed: nil)
+    def sample(n: nil, fraction: nil, with_replacement: false, shuffle: false, seed: nil)
       super
     end
 
