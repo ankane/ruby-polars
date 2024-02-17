@@ -1188,6 +1188,126 @@ module Polars
       to_integer(base: 2, strict: strict).cast(Int32, strict: strict)
     end
 
+    # Use the aho-corasick algorithm to find matches.
+    #
+    # This version determines if any of the patterns find a match.
+    #
+    # @param patterns [String]
+    #   String patterns to search.
+    # @param ascii_case_insensitive [Boolean]
+    #   Enable ASCII-aware case insensitive matching.
+    #   When this option is enabled, searching will be performed without respect
+    #   to case for ASCII letters (a-z and A-Z) only.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "lyrics": [
+    #         "Everybody wants to rule the world",
+    #         "Tell me what you want, what you really really want",
+    #         "Can you feel the love tonight"
+    #       ]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("lyrics").str.contains_any(["you", "me"]).alias("contains_any")
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌───────────────────────────────────┬──────────────┐
+    #   # │ lyrics                            ┆ contains_any │
+    #   # │ ---                               ┆ ---          │
+    #   # │ str                               ┆ bool         │
+    #   # ╞═══════════════════════════════════╪══════════════╡
+    #   # │ Everybody wants to rule the worl… ┆ false        │
+    #   # │ Tell me what you want, what you … ┆ true         │
+    #   # │ Can you feel the love tonight     ┆ true         │
+    #   # └───────────────────────────────────┴──────────────┘
+    def contains_any(patterns, ascii_case_insensitive: false)
+      patterns = Utils.parse_as_expression(patterns, str_as_lit: false, list_as_lit: false)
+      Utils.wrap_expr(
+        _rbexpr.str_contains_any(patterns, ascii_case_insensitive)
+      )
+    end
+
+    # Use the aho-corasick algorithm to replace many matches.
+    #
+    # @param patterns [String]
+    #   String patterns to search and replace.
+    # @param replace_with [String]
+    #   Strings to replace where a pattern was a match.
+    #   This can be broadcasted. So it supports many:one and many:many.
+    # @param ascii_case_insensitive [Boolean]
+    #   Enable ASCII-aware case insensitive matching.
+    #   When this option is enabled, searching will be performed without respect
+    #   to case for ASCII letters (a-z and A-Z) only.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "lyrics": [
+    #         "Everybody wants to rule the world",
+    #         "Tell me what you want, what you really really want",
+    #         "Can you feel the love tonight"
+    #       ]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("lyrics")
+    #     .str.replace_many(
+    #       ["me", "you", "they"],
+    #       ""
+    #     )
+    #     .alias("removes_pronouns")
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌───────────────────────────────────┬───────────────────────────────────┐
+    #   # │ lyrics                            ┆ removes_pronouns                  │
+    #   # │ ---                               ┆ ---                               │
+    #   # │ str                               ┆ str                               │
+    #   # ╞═══════════════════════════════════╪═══════════════════════════════════╡
+    #   # │ Everybody wants to rule the worl… ┆ Everybody wants to rule the worl… │
+    #   # │ Tell me what you want, what you … ┆ Tell  what  want, what  really r… │
+    #   # │ Can you feel the love tonight     ┆ Can  feel the love tonight        │
+    #   # └───────────────────────────────────┴───────────────────────────────────┘
+    #
+    # @example
+    #   df.with_columns(
+    #     Polars.col("lyrics")
+    #     .str.replace_many(
+    #       ["me", "you"],
+    #       ["you", "me"]
+    #     )
+    #     .alias("confusing")
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌───────────────────────────────────┬───────────────────────────────────┐
+    #   # │ lyrics                            ┆ confusing                         │
+    #   # │ ---                               ┆ ---                               │
+    #   # │ str                               ┆ str                               │
+    #   # ╞═══════════════════════════════════╪═══════════════════════════════════╡
+    #   # │ Everybody wants to rule the worl… ┆ Everybody wants to rule the worl… │
+    #   # │ Tell me what you want, what you … ┆ Tell you what me want, what me r… │
+    #   # │ Can you feel the love tonight     ┆ Can me feel the love tonight      │
+    #   # └───────────────────────────────────┴───────────────────────────────────┘
+    def replace_many(patterns, replace_with, ascii_case_insensitive: false)
+      patterns = Utils.parse_as_expression(patterns, str_as_lit: false, list_as_lit: false)
+      replace_with = Utils.parse_as_expression(
+        replace_with, str_as_lit: true, list_as_lit: false
+      )
+      Utils.wrap_expr(
+        _rbexpr.str_replace_many(
+          patterns, replace_with, ascii_case_insensitive
+        )
+      )
+    end
+
     private
 
     def _validate_format_argument(format)
