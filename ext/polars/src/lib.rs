@@ -718,11 +718,9 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("fetch", method!(RbLazyFrame::fetch, 1))?;
     class.define_method("filter", method!(RbLazyFrame::filter, 1))?;
     class.define_method("select", method!(RbLazyFrame::select, 1))?;
+    class.define_method("select_seq", method!(RbLazyFrame::select_seq, 1))?;
     class.define_method("group_by", method!(RbLazyFrame::group_by, 2))?;
-    class.define_method(
-        "group_by_rolling",
-        method!(RbLazyFrame::group_by_rolling, 6),
-    )?;
+    class.define_method("rolling", method!(RbLazyFrame::rolling, 6))?;
     class.define_method(
         "group_by_dynamic",
         method!(RbLazyFrame::group_by_dynamic, 10),
@@ -730,7 +728,12 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("with_context", method!(RbLazyFrame::with_context, 1))?;
     class.define_method("join_asof", method!(RbLazyFrame::join_asof, 11))?;
     class.define_method("join", method!(RbLazyFrame::join, 7))?;
+    class.define_method("with_column", method!(RbLazyFrame::with_column, 1))?;
     class.define_method("with_columns", method!(RbLazyFrame::with_columns, 1))?;
+    class.define_method(
+        "with_columns_seq",
+        method!(RbLazyFrame::with_columns_seq, 1),
+    )?;
     class.define_method("rename", method!(RbLazyFrame::rename, 2))?;
     class.define_method("reverse", method!(RbLazyFrame::reverse, 0))?;
     class.define_method("shift", method!(RbLazyFrame::shift, 2))?;
@@ -744,6 +747,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("median", method!(RbLazyFrame::median, 0))?;
     class.define_method("quantile", method!(RbLazyFrame::quantile, 2))?;
     class.define_method("explode", method!(RbLazyFrame::explode, 1))?;
+    class.define_method("null_count", method!(RbLazyFrame::null_count, 0))?;
     class.define_method("unique", method!(RbLazyFrame::unique, 3))?;
     class.define_method("drop_nulls", method!(RbLazyFrame::drop_nulls, 1))?;
     class.define_method("slice", method!(RbLazyFrame::slice, 2))?;

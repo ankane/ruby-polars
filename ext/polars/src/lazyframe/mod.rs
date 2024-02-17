@@ -323,6 +323,12 @@ impl RbLazyFrame {
         Ok(ldf.select(exprs).into())
     }
 
+    pub fn select_seq(&self, exprs: RArray) -> RbResult<Self> {
+        let ldf = self.ldf.clone();
+        let exprs = rb_exprs_to_exprs(exprs)?;
+        Ok(ldf.select_seq(exprs).into())
+    }
+
     pub fn group_by(&self, by: RArray, maintain_order: bool) -> RbResult<RbLazyGroupBy> {
         let ldf = self.ldf.clone();
         let by = rb_exprs_to_exprs(by)?;
@@ -336,7 +342,7 @@ impl RbLazyFrame {
         })
     }
 
-    pub fn group_by_rolling(
+    pub fn rolling(
         &self,
         index_column: &RbExpr,
         period: String,
@@ -482,9 +488,19 @@ impl RbLazyFrame {
             .into())
     }
 
+    pub fn with_column(&self, expr: &RbExpr) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.with_column(expr.inner.clone()).into()
+    }
+
     pub fn with_columns(&self, exprs: RArray) -> RbResult<Self> {
         let ldf = self.ldf.clone();
         Ok(ldf.with_columns(rb_exprs_to_exprs(exprs)?).into())
+    }
+
+    pub fn with_columns_seq(&self, exprs: RArray) -> RbResult<Self> {
+        let ldf = self.ldf.clone();
+        Ok(ldf.with_columns_seq(rb_exprs_to_exprs(exprs)?).into())
     }
 
     pub fn rename(&self, existing: Vec<String>, new: Vec<String>) -> Self {
@@ -569,6 +585,11 @@ impl RbLazyFrame {
         let ldf = self.ldf.clone();
         let column = rb_exprs_to_exprs(column)?;
         Ok(ldf.explode(column).into())
+    }
+
+    pub fn null_count(&self) -> Self {
+        let ldf = self.ldf.clone();
+        ldf.null_count().into()
     }
 
     pub fn unique(

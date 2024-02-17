@@ -967,7 +967,7 @@ module Polars
     #   df = Polars::LazyFrame.new({"dt" => dates, "a" => [3, 7, 5, 9, 2, 1]}).with_column(
     #     Polars.col("dt").str.strptime(Polars::Datetime).set_sorted
     #   )
-    #   df.group_by_rolling(index_column: "dt", period: "2d").agg(
+    #   df.rolling(index_column: "dt", period: "2d").agg(
     #     [
     #       Polars.sum("a").alias("sum_a"),
     #       Polars.min("a").alias("min_a"),
@@ -988,7 +988,7 @@ module Polars
     #   # │ 2020-01-03 19:45:32 ┆ 11    ┆ 2     ┆ 9     │
     #   # │ 2020-01-08 23:16:43 ┆ 1     ┆ 1     ┆ 1     │
     #   # └─────────────────────┴───────┴───────┴───────┘
-    def group_by_rolling(
+    def rolling(
       index_column:,
       period:,
       offset: nil,
@@ -1005,12 +1005,13 @@ module Polars
       period = Utils._timedelta_to_pl_duration(period)
       offset = Utils._timedelta_to_pl_duration(offset)
 
-      lgb = _ldf.group_by_rolling(
+      lgb = _ldf.rolling(
         index_column, period, offset, closed, rbexprs_by, check_sorted
       )
       LazyGroupBy.new(lgb)
     end
-    alias_method :groupby_rolling, :group_by_rolling
+    alias_method :group_by_rolling, :rolling
+    alias_method :groupby_rolling, :rolling
 
     # Group based on a time value (or index value of type `:i32`, `:i64`).
     #
