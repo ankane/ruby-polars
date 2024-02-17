@@ -50,24 +50,21 @@ module Polars
     #
     # @return [Boolean]
     def self.integer?
-      # TODO Change to IntegerType in 0.9.0
-      self < IntegralType
+      self < IntegerType
     end
 
     # Check whether the data type is a signed integer type.
     #
     # @return [Boolean]
     def self.signed_integer?
-      # TODO Add SignedIntegerType in 0.9.0
-      [Int8, Int16, Int32, Int64].include?(self)
+      self < SignedIntegerType
     end
 
     # Check whether the data type is an unsigned integer type.
     #
     # @return [Boolean]
     def self.unsigned_integer?
-      # TODO Add UnsignedIntegerType in 0.9.0
-      [UInt8, UInt16, UInt32, UInt64].include?(self)
+      self < UnsignedIntegerType
     end
 
     # Check whether the data type is a float type.
@@ -103,15 +100,20 @@ module Polars
   end
 
   # Base class for integral data types.
-  class IntegralType < NumericType
+  class IntegerType < NumericType
+  end
+  IntegralType = IntegerType
+
+  # Base class for signed integer data types.
+  class SignedIntegerType < IntegerType
   end
 
-  # Base class for fractional data types.
-  class FractionalType < NumericType
+  # Base class for unsigned integer data types.
+  class UnsignedIntegerType < IntegerType
   end
 
   # Base class for float data types.
-  class FloatType < FractionalType
+  class FloatType < NumericType
   end
 
   # Base class for temporal data types.
@@ -126,35 +128,35 @@ module Polars
   end
 
   # 8-bit signed integer type.
-  class Int8 < IntegralType
+  class Int8 < SignedIntegerType
   end
 
   # 16-bit signed integer type.
-  class Int16 < IntegralType
+  class Int16 < SignedIntegerType
   end
 
   # 32-bit signed integer type.
-  class Int32 < IntegralType
+  class Int32 < SignedIntegerType
   end
 
   # 64-bit signed integer type.
-  class Int64 < IntegralType
+  class Int64 < SignedIntegerType
   end
 
   # 8-bit unsigned integer type.
-  class UInt8 < IntegralType
+  class UInt8 < UnsignedIntegerType
   end
 
   # 16-bit unsigned integer type.
-  class UInt16 < IntegralType
+  class UInt16 < UnsignedIntegerType
   end
 
   # 32-bit unsigned integer type.
-  class UInt32 < IntegralType
+  class UInt32 < UnsignedIntegerType
   end
 
   # 64-bit unsigned integer type.
-  class UInt64 < IntegralType
+  class UInt64 < UnsignedIntegerType
   end
 
   # 32-bit floating point type.
@@ -168,7 +170,7 @@ module Polars
   # Decimal 128-bit type with an optional precision and non-negative scale.
   #
   # NOTE: this is an experimental work-in-progress feature and may not work as expected.
-  class Decimal < FractionalType
+  class Decimal < NumericType
     attr_reader :precision, :scale
 
     def initialize(precision, scale)
