@@ -629,6 +629,11 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "meta_is_regex_projection",
         method!(RbExpr::meta_is_regex_projection, 0),
     )?;
+    class.define_method("_meta_selector_add", method!(RbExpr::_meta_selector_add, 1))?;
+    class.define_method("_meta_selector_sub", method!(RbExpr::_meta_selector_sub, 1))?;
+    class.define_method("_meta_selector_and", method!(RbExpr::_meta_selector_and, 1))?;
+    class.define_method("_meta_as_selector", method!(RbExpr::_meta_as_selector, 0))?;
+    class.define_method("meta_tree_format", method!(RbExpr::meta_tree_format, 0))?;
 
     // name
     class.define_method("name_keep", method!(RbExpr::name_keep, 0))?;

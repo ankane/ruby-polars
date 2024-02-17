@@ -170,5 +170,53 @@ module Polars
     def undo_aliases
       Utils.wrap_expr(_rbexpr.meta_undo_aliases)
     end
+
+    # Turn this expression in a selector.
+    #
+    # @return [Expr]
+    def _as_selector
+      Utils.wrap_expr(_rbexpr._meta_as_selector)
+    end
+
+    # Add selectors.
+    #
+    # @return [Expr]
+    def _selector_add(other)
+      Utils.wrap_expr(_rbexpr._meta_selector_add(other._rbexpr))
+    end
+
+    # Subtract selectors.
+    #
+    # @return [Expr]
+    def _selector_sub(other)
+      Utils.wrap_expr(_rbexpr._meta_selector_sub(other._rbexpr))
+    end
+
+    # & selectors.
+    #
+    # @return [Expr]
+    def _selector_and(other)
+      Utils.wrap_expr(_rbexpr._meta_selector_and(other._rbexpr))
+    end
+
+    # Format the expression as a tree.
+    #
+    # @param return_as_string [Boolean]
+    #   If true, return as string rather than printing to stdout.
+    #
+    # @return [String]
+    #
+    # @example
+    #   e = (Polars.col("foo") * Polars.col("bar")).sum.over(Polars.col("ham")) / 2
+    #   e.meta.tree_format(return_as_string: true)
+    def tree_format(return_as_string: false)
+      s = _rbexpr.meta_tree_format
+      if return_as_string
+        s
+      else
+        puts s
+        nil
+      end
+    end
   end
 end
