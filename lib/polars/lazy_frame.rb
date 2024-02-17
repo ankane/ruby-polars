@@ -699,6 +699,10 @@ module Polars
       _from_rbldf(_ldf.cache)
     end
 
+    # TODO
+    # def cast
+    # end
+
     # Create an empty copy of the current LazyFrame.
     #
     # The copy has an identical schema but no data.
