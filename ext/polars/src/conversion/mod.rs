@@ -608,39 +608,6 @@ impl TryConvert for Wrap<Option<IpcCompression>> {
     }
 }
 
-impl TryConvert for Wrap<IpcCompression> {
-    fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match String::try_convert(ob)?.as_str() {
-            "lz4" => IpcCompression::LZ4,
-            "zstd" => IpcCompression::ZSTD,
-            v => {
-                return Err(RbValueError::new_err(format!(
-                    "compression must be one of {{'lz4', 'zstd'}}, got {}",
-                    v
-                )))
-            }
-        };
-        Ok(Wrap(parsed))
-    }
-}
-
-impl TryConvert for Wrap<QuoteStyle> {
-    fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match String::try_convert(ob)?.as_str() {
-            "always" => QuoteStyle::Always,
-            "necessary" => QuoteStyle::Necessary,
-            "non_numeric" => QuoteStyle::NonNumeric,
-            "never" => QuoteStyle::Never,
-            v => {
-                return Err(RbValueError::new_err(format!(
-                    "`quote_style` must be one of {{'always', 'necessary', 'non_numeric', 'never'}}, got {v}",
-                )))
-            },
-        };
-        Ok(Wrap(parsed))
-    }
-}
-
 impl TryConvert for Wrap<JoinType> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match String::try_convert(ob)?.as_str() {
@@ -817,6 +784,22 @@ impl TryConvert for Wrap<UniqueKeepStrategy> {
     }
 }
 
+impl TryConvert for Wrap<IpcCompression> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "lz4" => IpcCompression::LZ4,
+            "zstd" => IpcCompression::ZSTD,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "compression must be one of {{'lz4', 'zstd'}}, got {}",
+                    v
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<SearchSortedSide> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match String::try_convert(ob)?.as_str() {
@@ -828,6 +811,56 @@ impl TryConvert for Wrap<SearchSortedSide> {
                     "side must be one of {{'any', 'left', 'right'}}, got {v}",
                 )))
             }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<WindowMapping> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "group_to_rows" => WindowMapping::GroupsToRows,
+            "join" => WindowMapping::Join,
+            "explode" => WindowMapping::Explode,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                "`mapping_strategy` must be one of {{'group_to_rows', 'join', 'explode'}}, got {v}",
+            )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<JoinValidation> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "1:1" => JoinValidation::OneToOne,
+            "1:m" => JoinValidation::OneToMany,
+            "m:m" => JoinValidation::ManyToMany,
+            "m:1" => JoinValidation::ManyToOne,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "`validate` must be one of {{'m:m', 'm:1', '1:m', '1:1'}}, got {v}",
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<QuoteStyle> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "always" => QuoteStyle::Always,
+            "necessary" => QuoteStyle::Necessary,
+            "non_numeric" => QuoteStyle::NonNumeric,
+            "never" => QuoteStyle::Never,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "`quote_style` must be one of {{'always', 'necessary', 'non_numeric', 'never'}}, got {v}",
+                )))
+            },
         };
         Ok(Wrap(parsed))
     }
