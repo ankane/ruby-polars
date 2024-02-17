@@ -102,6 +102,7 @@ class CsvTest < Minitest::Test
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     path = temp_path
     assert_nil df.lazy.sink_csv(path)
+    assert_equal "a,b\n1,one\n2,two\n3,three\n", File.read(path)
     assert_frame df, Polars.read_csv(path)
   end
 
