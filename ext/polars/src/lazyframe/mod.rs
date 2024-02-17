@@ -306,6 +306,75 @@ impl RbLazyFrame {
         Ok(())
     }
 
+    pub fn sink_ipc(
+        &self,
+        path: PathBuf,
+        compression: Wrap<Option<IpcCompression>>,
+        maintain_order: bool,
+    ) -> RbResult<()> {
+        let options = IpcWriterOptions {
+            compression: compression.0,
+            maintain_order,
+        };
+
+        let ldf = self.ldf.clone();
+        ldf.sink_ipc(path, options).map_err(RbPolarsErr::from)?;
+        Ok(())
+    }
+
+    pub fn sink_csv(
+        &self,
+        path: PathBuf,
+        include_bom: bool,
+        include_header: bool,
+        separator: u8,
+        line_terminator: String,
+        quote_char: u8,
+        batch_size: Wrap<NonZeroUsize>,
+        datetime_format: Option<String>,
+        date_format: Option<String>,
+        time_format: Option<String>,
+        float_precision: Option<usize>,
+        null_value: Option<String>,
+        quote_style: Option<Wrap<QuoteStyle>>,
+        maintain_order: bool,
+    ) -> RbResult<()> {
+        let quote_style = quote_style.map_or(QuoteStyle::default(), |wrap| wrap.0);
+        let null_value = null_value.unwrap_or(SerializeOptions::default().null);
+
+        let serialize_options = SerializeOptions {
+            date_format,
+            time_format,
+            datetime_format,
+            float_precision,
+            separator,
+            quote_char,
+            null: null_value,
+            line_terminator,
+            quote_style,
+        };
+
+        let options = CsvWriterOptions {
+            include_bom,
+            include_header,
+            maintain_order,
+            batch_size: batch_size.0,
+            serialize_options,
+        };
+
+        let ldf = self.ldf.clone();
+        ldf.sink_csv(path, options).map_err(RbPolarsErr::from)?;
+        Ok(())
+    }
+
+    pub fn sink_json(&self, path: PathBuf, maintain_order: bool) -> RbResult<()> {
+        let options = JsonWriterOptions { maintain_order };
+
+        let ldf = self.ldf.clone();
+        ldf.sink_json(path, options).map_err(RbPolarsErr::from)?;
+        Ok(())
+    }
+
     pub fn fetch(&self, n_rows: usize) -> RbResult<RbDataFrame> {
         let ldf = self.ldf.clone();
         let df = ldf.fetch(n_rows).map_err(RbPolarsErr::from)?;
