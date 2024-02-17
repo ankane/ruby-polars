@@ -3534,6 +3534,34 @@ module Polars
       self**exponent
     end
 
+    # Method equivalent of bitwise exclusive-or operator `expr ^ other`.
+    #
+    # @param other [Object]
+    #   Integer or boolean value; accepts expression input.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"x" => [true, false, true, false], "y" => [true, true, false, false]}
+    #   )
+    #   df.with_columns(Polars.col("x").xor(Polars.col("y")).alias("x ^ y"))
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌───────┬───────┬───────┐
+    #   # │ x     ┆ y     ┆ x ^ y │
+    #   # │ ---   ┆ ---   ┆ ---   │
+    #   # │ bool  ┆ bool  ┆ bool  │
+    #   # ╞═══════╪═══════╪═══════╡
+    #   # │ true  ┆ true  ┆ false │
+    #   # │ false ┆ true  ┆ true  │
+    #   # │ true  ┆ false ┆ true  │
+    #   # │ false ┆ false ┆ false │
+    #   # └───────┴───────┴───────┘
+    def xor(other)
+      self ^ other
+    end
+
     # Check if elements of this expression are present in the other Series.
     #
     # @param other [Object]
