@@ -1,7 +1,9 @@
 ## 0.9.0 (unreleased)
 
 - Updated Polars to 0.37.0
-- Added `eq`, `eq_missing`, `ne`, `ne_missing`, and `replace` methods to `Expr`
+- Added `replace` method to `Expr`
+- Added `eq`, `eq_missing`, `ne`, and `ne_missing` methods to `Expr`
+- Added `ge`, `gt`, `le`, and `lt` methods to `Expr`
 - Added more methods to `ArrayExpr` and `ArrayNameSpace`
 - Added `schema_overrides` option to `read_database` method
 - Fixed error with `BigDecimal` objects

@@ -3094,6 +3094,138 @@ module Polars
       _from_rbexpr(_rbexpr.eq_missing(other))
     end
 
+    # Method equivalent of "greater than or equal" operator `expr >= other`.
+    #
+    # @param other [Object]
+    #     A literal or expression value to compare with.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "x" => [5.0, 4.0, Float::NAN, 2.0],
+    #       "y" => [5.0, 3.0, Float::NAN, 1.0]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("x").ge(Polars.col("y")).alias("x >= y")
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬─────┬────────┐
+    #   # │ x   ┆ y   ┆ x >= y │
+    #   # │ --- ┆ --- ┆ ---    │
+    #   # │ f64 ┆ f64 ┆ bool   │
+    #   # ╞═════╪═════╪════════╡
+    #   # │ 5.0 ┆ 5.0 ┆ true   │
+    #   # │ 4.0 ┆ 3.0 ┆ true   │
+    #   # │ NaN ┆ NaN ┆ true   │
+    #   # │ 2.0 ┆ 1.0 ┆ true   │
+    #   # └─────┴─────┴────────┘
+    def ge(other)
+      self >= other
+    end
+
+    # Method equivalent of "greater than" operator `expr > other`.
+    #
+    # @param other [Object]
+    #   A literal or expression value to compare with.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "x" => [5.0, 4.0, Float::NAN, 2.0],
+    #       "y" => [5.0, 3.0, Float::NAN, 1.0]
+    #     }
+    #   )
+    #   df.with_columns(
+    #       Polars.col("x").gt(Polars.col("y")).alias("x > y")
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬─────┬───────┐
+    #   # │ x   ┆ y   ┆ x > y │
+    #   # │ --- ┆ --- ┆ ---   │
+    #   # │ f64 ┆ f64 ┆ bool  │
+    #   # ╞═════╪═════╪═══════╡
+    #   # │ 5.0 ┆ 5.0 ┆ false │
+    #   # │ 4.0 ┆ 3.0 ┆ true  │
+    #   # │ NaN ┆ NaN ┆ false │
+    #   # │ 2.0 ┆ 1.0 ┆ true  │
+    #   # └─────┴─────┴───────┘
+    def gt(other)
+      self > other
+    end
+
+    # Method equivalent of "less than or equal" operator `expr <= other`.
+    #
+    # @param other [Object]
+    #   A literal or expression value to compare with.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "x" => [5.0, 4.0, Float::NAN, 0.5],
+    #       "y" => [5.0, 3.5, Float::NAN, 2.0]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("x").le(Polars.col("y")).alias("x <= y")
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬─────┬────────┐
+    #   # │ x   ┆ y   ┆ x <= y │
+    #   # │ --- ┆ --- ┆ ---    │
+    #   # │ f64 ┆ f64 ┆ bool   │
+    #   # ╞═════╪═════╪════════╡
+    #   # │ 5.0 ┆ 5.0 ┆ true   │
+    #   # │ 4.0 ┆ 3.5 ┆ false  │
+    #   # │ NaN ┆ NaN ┆ true   │
+    #   # │ 0.5 ┆ 2.0 ┆ true   │
+    #   # └─────┴─────┴────────┘
+    def le(other)
+      self <= other
+    end
+
+    # Method equivalent of "less than" operator `expr < other`.
+    #
+    # @param other [Object]
+    #   A literal or expression value to compare with.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "x" => [1.0, 2.0, Float::NAN, 3.0],
+    #       "y" => [2.0, 2.0, Float::NAN, 4.0]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("x").lt(Polars.col("y")).alias("x < y"),
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬─────┬───────┐
+    #   # │ x   ┆ y   ┆ x < y │
+    #   # │ --- ┆ --- ┆ ---   │
+    #   # │ f64 ┆ f64 ┆ bool  │
+    #   # ╞═════╪═════╪═══════╡
+    #   # │ 1.0 ┆ 2.0 ┆ true  │
+    #   # │ 2.0 ┆ 2.0 ┆ false │
+    #   # │ NaN ┆ NaN ┆ false │
+    #   # │ 3.0 ┆ 4.0 ┆ true  │
+    #   # └─────┴─────┴───────┘
+    def lt(other)
+      self < other
+    end
+
     # Method equivalent of inequality operator `expr != other`.
     #
     # @param other [Object]
