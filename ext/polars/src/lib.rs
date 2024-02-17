@@ -645,7 +645,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("last", function!(crate::functions::lazy::last, 0))?;
     class.define_singleton_method("cols", function!(crate::functions::lazy::cols, 1))?;
     class.define_singleton_method("fold", function!(crate::functions::lazy::fold, 3))?;
-    class.define_singleton_method("cumfold", function!(crate::functions::lazy::cumfold, 4))?;
+    class.define_singleton_method("cumfold", function!(crate::functions::lazy::cum_fold, 4))?;
     class.define_singleton_method("lit", function!(crate::functions::lazy::lit, 2))?;
     class.define_singleton_method(
         "int_range",
@@ -665,6 +665,16 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(crate::functions::lazy::spearman_rank_corr, 4),
     )?;
     class.define_singleton_method("cov", function!(crate::functions::lazy::cov, 3))?;
+    class.define_singleton_method("arctan2", function!(crate::functions::lazy::arctan2, 2))?;
+    class.define_singleton_method("arctan2d", function!(crate::functions::lazy::arctan2d, 2))?;
+    class.define_singleton_method(
+        "rolling_corr",
+        function!(crate::functions::lazy::rolling_corr, 5),
+    )?;
+    class.define_singleton_method(
+        "rolling_cov",
+        function!(crate::functions::lazy::rolling_cov, 5),
+    )?;
     class.define_singleton_method(
         "arg_sort_by",
         function!(crate::functions::lazy::arg_sort_by, 2),
@@ -676,7 +686,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_singleton_method(
         "concat_lst",
-        function!(crate::functions::lazy::concat_lst, 1),
+        function!(crate::functions::lazy::concat_list, 1),
     )?;
 
     let class = module.define_class("RbLazyFrame", ruby.class_object())?;
