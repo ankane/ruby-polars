@@ -10,6 +10,56 @@ module Polars
       self._s = series._s
     end
 
+    # Evaluate whether all boolean values in a list are true.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     [[true, true], [false, true], [false, false], [nil], [], nil],
+    #     dtype: Polars::List.new(Polars::Boolean)
+    #   )
+    #   s.list.all
+    #   # =>
+    #   # shape: (6,)
+    #   # Series: '' [bool]
+    #   # [
+    #   #         true
+    #   #         false
+    #   #         false
+    #   #         true
+    #   #         true
+    #   #         null
+    #   # ]
+    def all
+      super
+    end
+
+    # Evaluate whether any boolean value in a list is true.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     [[true, true], [false, true], [false, false], [nil], [], nil],
+    #     dtype: Polars::List.new(Polars::Boolean)
+    #   )
+    #   s.list.any
+    #   # =>
+    #   # shape: (6,)
+    #   # Series: '' [bool]
+    #   # [
+    #   #         true
+    #   #         true
+    #   #         false
+    #   #         false
+    #   #         false
+    #   #         null
+    #   # ]
+    def any
+      super
+    end
+
     # Get the length of the arrays as UInt32.
     #
     # @return [Series]
@@ -25,6 +75,58 @@ module Polars
     #   #         1
     #   # ]
     def lengths
+      super
+    end
+
+    # Drop all null values in the list.
+    #
+    # The original order of the remaining elements is preserved.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("values", [[nil, 1, nil, 2], [nil], [3, 4]])
+    #   s.list.drop_nulls
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'values' [list[i64]]
+    #   # [
+    #   #         [1, 2]
+    #   #         []
+    #   #         [3, 4]
+    #   # ]
+    def drop_nulls
+      super
+    end
+
+    # Sample from this list.
+    #
+    # @param n [Integer]
+    #   Number of items to return. Cannot be used with `fraction`. Defaults to 1 if
+    #   `fraction` is nil.
+    # @param fraction [Float]
+    #   Fraction of items to return. Cannot be used with `n`.
+    # @param with_replacement [Boolean]
+    #   Allow values to be sampled more than once.
+    # @param shuffle [Boolean]
+    #   Shuffle the order of sampled data points.
+    # @param seed [Integer]
+    #   Seed for the random number generator. If set to nil (default), a
+    #   random seed is generated for each sample operation.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("values", [[1, 2, 3], [4, 5]])
+    #   s.list.sample(Polars::Series.new("n", [2, 1]), seed: 1)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'values' [list[i64]]
+    #   # [
+    #   #         [2, 1]
+    #   #         [5]
+    #   # ]
+    def sample(n = nil, fraction: nil, with_replacement: false, shuffle: false, seed: nil)
       super
     end
 

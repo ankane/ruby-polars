@@ -5,6 +5,7 @@
 - Added `eq`, `eq_missing`, `ne`, and `ne_missing` methods to `Expr`
 - Added `ge`, `gt`, `le`, and `lt` methods to `Expr`
 - Added more methods to `ArrayExpr` and `ArrayNameSpace`
+- Added more methods to `ListExpr` and `ListNameSpace`
 - Added `schema_overrides` option to `read_database` method
 - Fixed error with `BigDecimal` objects
 
