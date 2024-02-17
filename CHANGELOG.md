@@ -1,7 +1,7 @@
 ## 0.9.0 (unreleased)
 
 - Updated Polars to 0.37.0
-- Added `sink_ndjson` method to `LazyFrame`
+- Added `sink_ipc` and `sink_ndjson` methods to `LazyFrame`
 - Added `replace` method to `Expr`
 - Added `eq`, `eq_missing`, `ne`, and `ne_missing` methods to `Expr`
 - Added `ge`, `gt`, `le`, and `lt` methods to `Expr`

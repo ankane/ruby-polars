@@ -37,4 +37,11 @@ class IpcTest < Minitest::Test
     assert output.start_with?("ARROW")
     assert_equal Encoding::BINARY, output.encoding
   end
+
+  def test_sink_ipc
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    path = temp_path
+    assert_nil df.lazy.sink_ipc(path)
+    assert_frame df, Polars.read_ipc(path)
+  end
 end
