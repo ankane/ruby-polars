@@ -85,7 +85,7 @@ module Polars
     #
     # @return [Boolean]
     def self.nested?
-      false
+      self < NestedType
     end
 
     [:numeric?, :decimal?, :integer?, :signed_integer?, :unsigned_integer?, :float?, :temporal?, :nested?].each do |v|
@@ -122,9 +122,6 @@ module Polars
 
   # Base class for nested data types.
   class NestedType < DataType
-    def self.nested?
-      true
-    end
   end
 
   # 8-bit signed integer type.
