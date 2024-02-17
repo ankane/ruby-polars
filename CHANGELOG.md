@@ -8,6 +8,7 @@
 - Added `merge_sorted` method to `DataFrame` and `LazyFrame`
 - Added more methods to `ArrayExpr` and `ArrayNameSpace`
 - Added more methods to `ListExpr` and `ListNameSpace`
+- Added more methods to `MetaExpr`
 - Added `schema_overrides` option to `read_database` method
 - Aliased `cleared` to `clear` for `DataFrame` and `LazyFrame`
 - Fixed error with `BigDecimal` objects
