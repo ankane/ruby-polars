@@ -307,7 +307,7 @@ pub fn repeat(value: &RbExpr, n: &RbExpr, dtype: Option<Wrap<DataType>>) -> RbRe
     }
 
     if let Expr::Literal(lv) = &value {
-        let av = lv.to_anyvalue().unwrap();
+        let av = lv.to_any_value().unwrap();
         // Integer inputs that fit in Int32 are parsed as such
         if let DataType::Int64 = av.dtype() {
             let int_value = av.try_extract::<i64>().unwrap();

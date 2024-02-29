@@ -1,6 +1,6 @@
 ## 0.9.0 (unreleased)
 
-- Updated Polars to 0.37.0
+- Updated Polars to 0.38.0
 - Added `Enum` type
 - Added `sink_ipc`, `sink_csv`, and `sink_ndjson` methods to `LazyFrame`
 - Added `replace` method to `Series` and `Expr`

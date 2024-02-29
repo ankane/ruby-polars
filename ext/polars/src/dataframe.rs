@@ -935,9 +935,9 @@ impl RbDataFrame {
     #[allow(clippy::too_many_arguments)]
     pub fn pivot_expr(
         &self,
-        values: Vec<String>,
         index: Vec<String>,
         columns: Vec<String>,
+        values: Option<Vec<String>>,
         maintain_order: bool,
         sort_columns: bool,
         aggregate_expr: Option<&RbExpr>,
@@ -950,9 +950,9 @@ impl RbDataFrame {
         let agg_expr = aggregate_expr.map(|aggregate_expr| aggregate_expr.inner.clone());
         let df = fun(
             &self.df.borrow(),
-            values,
             index,
             columns,
+            values,
             sort_columns,
             agg_expr,
             separator.as_deref(),
@@ -1134,7 +1134,7 @@ impl RbDataFrame {
         };
         Ok(self
             .df
-            .borrow()
+            .borrow_mut()
             .transpose(keep_names_as.as_deref(), new_col_names)
             .map_err(RbPolarsErr::from)?
             .into())

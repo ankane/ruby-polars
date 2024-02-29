@@ -18,7 +18,7 @@ use polars::io::avro::AvroCompression;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 use polars_core::utils::arrow::array::Array;
-use polars_utils::total_ord::TotalEq;
+use polars_utils::total_ord::{TotalEq, TotalHash};
 use smartstring::alias::String as SmartString;
 
 use crate::object::OBJECT_NAME;
@@ -420,6 +420,15 @@ impl PartialEq for ObjectValue {
 impl TotalEq for ObjectValue {
     fn tot_eq(&self, other: &Self) -> bool {
         self == other
+    }
+}
+
+impl TotalHash for ObjectValue {
+    fn tot_hash<H>(&self, state: &mut H)
+    where
+        H: Hasher,
+    {
+        self.hash(state);
     }
 }
 

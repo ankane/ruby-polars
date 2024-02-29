@@ -3177,9 +3177,9 @@ module Polars
 
       _from_rbdf(
         _df.pivot_expr(
-          values,
           index,
           columns,
+          values,
           maintain_order,
           sort_columns,
           aggregate_expr,

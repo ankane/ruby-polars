@@ -164,7 +164,7 @@ impl RbExpr {
         self.inner
             .clone()
             .list()
-            .take(index.inner.clone(), null_on_oob)
+            .gather(index.inner.clone(), null_on_oob)
             .into()
     }
 
