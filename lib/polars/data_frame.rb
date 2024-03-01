@@ -5181,8 +5181,8 @@ module Polars
         end
         return rbdf
       elsif data[0].is_a?(::Array)
+        first_element = data[0]
         if orient.nil? && !columns.nil?
-          first_element = data[0]
           row_types = first_element.filter_map { |value| value.class }.uniq
           if row_types.include?(Integer) && row_types.include?(Float)
             row_types.delete(Integer)
