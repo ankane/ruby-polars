@@ -455,7 +455,7 @@ class SeriesTest < Minitest::Test
   end
 
   def test_value_counts
-    s = Polars::Series.new(["a", "b", "b"])
+    s = Polars::Series.new("a", ["x", "x", "y"])
     expected = Polars::DataFrame.new({"a" => ["x", "y"], "count" => [2, 1]})
     assert_frame expected, s.value_counts.sort("a")
   end
