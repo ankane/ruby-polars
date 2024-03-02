@@ -457,7 +457,8 @@ class SeriesTest < Minitest::Test
   # TODO improve
   def test_value_counts
     s = Polars::Series.new(["a", "b", "b"])
-    assert_equal [2, 2], s.value_counts.shape
+    expected = Polars::DataFrame.new({"a" => ["x", "y"], "count" => [2, 1]})
+    assert_frame expected, s.value_counts.sort("a")
   end
 
   def test_entropy
