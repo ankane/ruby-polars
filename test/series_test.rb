@@ -454,7 +454,6 @@ class SeriesTest < Minitest::Test
     assert_equal [3, 2], s.to_dummies.shape
   end
 
-  # TODO improve
   def test_value_counts
     s = Polars::Series.new(["a", "b", "b"])
     expected = Polars::DataFrame.new({"a" => ["x", "y"], "count" => [2, 1]})
