@@ -261,6 +261,11 @@ class SeriesTest < Minitest::Test
     assert_series [true, true, false], a <= 2
   end
 
+  def test_equals_nan
+    s = Polars::Series.new([1.0, Float::NAN, Float::INFINITY])
+    assert_series [true, true, true], (s == s)
+  end
+
   def test_arithmetic
     a = Polars::Series.new([10, 20, 30])
     b = Polars::Series.new([5, 10, 15])
