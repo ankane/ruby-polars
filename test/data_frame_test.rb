@@ -531,4 +531,11 @@ class DataFrameTest < Minitest::Test
 
   def test_null_count
   end
+
+  def test_count
+    df = Polars::DataFrame.new({"a" => [1, 2, nil]})
+    # TODO update
+    assert_frame Polars::DataFrame.new({"a" => [3]}), df.select(Polars.col("a").count)
+    assert_frame Polars::DataFrame.new({"a" => [3]}), df.select(Polars.col("a").len)
+  end
 end
