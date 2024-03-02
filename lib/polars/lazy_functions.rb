@@ -509,15 +509,16 @@ module Polars
     # @note
     #   If you simply want the first encountered expression as accumulator,
     #   consider using `cumreduce`.
-    def cumfold(acc, f, exprs, include_init: false)
+    def cum_fold(acc, f, exprs, include_init: false)
       acc = Utils.expr_to_lit_or_expr(acc, str_to_lit: true)
       if exprs.is_a?(Expr)
         exprs = [exprs]
       end
 
       exprs = Utils.selection_to_rbexpr_list(exprs)
-      Utils.wrap_expr(RbExpr.cumfold(acc._rbexpr, f, exprs, include_init))
+      Utils.wrap_expr(RbExpr.cum_fold(acc._rbexpr, f, exprs, include_init))
     end
+    alias_method :cumfold, :cum_fold
 
     # def cumreduce
     # end

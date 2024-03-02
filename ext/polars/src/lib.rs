@@ -651,7 +651,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("last", function!(crate::functions::lazy::last, 0))?;
     class.define_singleton_method("cols", function!(crate::functions::lazy::cols, 1))?;
     class.define_singleton_method("fold", function!(crate::functions::lazy::fold, 3))?;
-    class.define_singleton_method("cumfold", function!(crate::functions::lazy::cum_fold, 4))?;
+    class.define_singleton_method("cum_fold", function!(crate::functions::lazy::cum_fold, 4))?;
     class.define_singleton_method("lit", function!(crate::functions::lazy::lit, 2))?;
     class.define_singleton_method(
         "int_range",
