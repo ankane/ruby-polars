@@ -399,6 +399,15 @@ class DataFrameTest < Minitest::Test
     assert_equal expected, df.join(other_df, on: [:a])
   end
 
+  def test_join_nulls
+    df1 = Polars::DataFrame.new({"a" => [1, 2, nil], "b" => [4, 4, 4]})
+    df2 = Polars::DataFrame.new({"a" => [nil, 2, 3], "c" => [5, 5, 5]})
+    df3 = df1.join(df2, on: "a", how: "inner")
+    assert_frame Polars::DataFrame.new({"a" => [2], "b" => [4], "c" => [5]}), df3
+    df4 = df1.join(df2, on: "a", how: "inner", join_nulls: true)
+    assert_frame Polars::DataFrame.new({"a" => [nil, 2], "b" => [4, 4], "c" => [5, 5]}), df4
+  end
+
   def test_with_column
   end
 

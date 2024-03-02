@@ -12,6 +12,7 @@
 - Added more methods to `MetaExpr`
 - Added more methods to `StringExpr`
 - Added `schema_overrides` option to `read_database` method
+- Added `join_nulls` option to `join` method
 - Aliased `cleared` to `clear` for `DataFrame` and `LazyFrame`
 - Fixed error with `BigDecimal` objects
 

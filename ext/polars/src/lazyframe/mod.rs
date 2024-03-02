@@ -540,6 +540,7 @@ impl RbLazyFrame {
         right_on: RArray,
         allow_parallel: bool,
         force_parallel: bool,
+        join_nulls: bool,
         how: Wrap<JoinType>,
         suffix: String,
     ) -> RbResult<Self> {
@@ -555,6 +556,7 @@ impl RbLazyFrame {
             .right_on(right_on)
             .allow_parallel(allow_parallel)
             .force_parallel(force_parallel)
+            .join_nulls(join_nulls)
             .how(how.0)
             .suffix(suffix)
             .finish()

@@ -2434,6 +2434,8 @@ module Polars
     #   Join strategy.
     # @param suffix [String]
     #   Suffix to append to columns with a duplicate name.
+    # @param join_nulls [Boolean]
+    #   Join on null values. By default null values will never produce matches.
     #
     # @return [DataFrame]
     #
@@ -2516,7 +2518,7 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ 3   ┆ 8.0 ┆ c   │
     #   # └─────┴─────┴─────┘
-    def join(other, left_on: nil, right_on: nil, on: nil, how: "inner", suffix: "_right")
+    def join(other, left_on: nil, right_on: nil, on: nil, how: "inner", suffix: "_right", join_nulls: false)
       lazy
         .join(
           other.lazy,
@@ -2525,6 +2527,7 @@ module Polars
           on: on,
           how: how,
           suffix: suffix,
+          join_nulls: join_nulls
         )
         .collect(no_optimization: true)
     end

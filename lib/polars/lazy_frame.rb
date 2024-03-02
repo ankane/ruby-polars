@@ -1729,6 +1729,8 @@ module Polars
     #   Join strategy.
     # @param suffix [String]
     #   Suffix to append to columns with a duplicate name.
+    # @param join_nulls [Boolean]
+    #   Join on null values. By default null values will never produce matches.
     # @param allow_parallel [Boolean]
     #   Allow the physical plan to optionally evaluate the computation of both
     #   DataFrames up to the join in parallel.
@@ -1824,6 +1826,7 @@ module Polars
       on: nil,
       how: "inner",
       suffix: "_right",
+      join_nulls: false,
       allow_parallel: true,
       force_parallel: false
     )
@@ -1857,6 +1860,7 @@ module Polars
           rbexprs_right,
           allow_parallel,
           force_parallel,
+          join_nulls,
           how,
           suffix,
         )
