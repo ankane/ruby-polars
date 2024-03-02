@@ -32,6 +32,17 @@ module Polars
       eql?(other) || other.is_a?(self)
     end
 
+    # Check if this DataType is the same as another DataType.
+    #
+    # @return [Boolean]
+    def ==(other)
+      if other.is_a?(Class)
+        is_a?(other)
+      else
+        eql?(other)
+      end
+    end
+
     # Check whether the data type is a numeric type.
     #
     # @return [Boolean]
@@ -92,6 +103,20 @@ module Polars
       define_method(v) do
         self.class.public_send(v)
       end
+    end
+
+    # Returns a string representing the data type.
+    #
+    # @return [String]
+    def to_s
+      self.class.name
+    end
+
+    # Returns a string representing the data type.
+    #
+    # @return [String]
+    def inspect
+      to_s
     end
   end
 
@@ -264,6 +289,9 @@ module Polars
 
   # A categorical encoding of a set of strings.
   class Categorical < DataType
+    def initialize(ordering = "physical")
+      @ordering = ordering
+    end
   end
 
   # A fixed set categorical encoding of a set of strings.
@@ -356,7 +384,7 @@ module Polars
     attr_reader :width, :inner
 
     def initialize(width, inner = nil)
-      if width.is_a?(Class) && width < DataType
+      if width.is_a?(DataType) || (width.is_a?(Class) && width < DataType)
         inner, width = width, inner
       end
       @width = width

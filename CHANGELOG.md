@@ -1,6 +1,7 @@
 ## 0.9.0 (unreleased)
 
 - Updated Polars to 0.38.1
+- Changed `dtype` and `schema` methods to always return instances of data types
 - Added `Enum` type
 - Added `sink_ipc`, `sink_csv`, and `sink_ndjson` methods to `LazyFrame`
 - Added `replace` method to `Series` and `Expr`

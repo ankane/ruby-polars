@@ -118,38 +118,79 @@ impl IntoValue for Wrap<DataType> {
         let pl = crate::rb_modules::polars();
 
         match self.0 {
-            DataType::Int8 => pl.const_get::<_, Value>("Int8").unwrap(),
-            DataType::Int16 => pl.const_get::<_, Value>("Int16").unwrap(),
-            DataType::Int32 => pl.const_get::<_, Value>("Int32").unwrap(),
-            DataType::Int64 => pl.const_get::<_, Value>("Int64").unwrap(),
-            DataType::UInt8 => pl.const_get::<_, Value>("UInt8").unwrap(),
-            DataType::UInt16 => pl.const_get::<_, Value>("UInt16").unwrap(),
-            DataType::UInt32 => pl.const_get::<_, Value>("UInt32").unwrap(),
-            DataType::UInt64 => pl.const_get::<_, Value>("UInt64").unwrap(),
-            DataType::Float32 => pl.const_get::<_, Value>("Float32").unwrap(),
-            DataType::Float64 => pl.const_get::<_, Value>("Float64").unwrap(),
+            DataType::Int8 => {
+                let class = pl.const_get::<_, Value>("Int8").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
+            DataType::Int16 => {
+                let class = pl.const_get::<_, Value>("Int16").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
+            DataType::Int32 => {
+                let class = pl.const_get::<_, Value>("Int32").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
+            DataType::Int64 => {
+                let class = pl.const_get::<_, Value>("Int64").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
+            DataType::UInt8 => {
+                let class = pl.const_get::<_, Value>("UInt8").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
+            DataType::UInt16 => {
+                let class = pl.const_get::<_, Value>("UInt16").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
+            DataType::UInt32 => {
+                let class = pl.const_get::<_, Value>("UInt32").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
+            DataType::UInt64 => {
+                let class = pl.const_get::<_, Value>("UInt64").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
+            DataType::Float32 => {
+                let class = pl.const_get::<_, Value>("Float32").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
+            DataType::Float64 => {
+                let class = pl.const_get::<_, Value>("Float64").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
             DataType::Decimal(precision, scale) => {
-                let decimal_class = pl.const_get::<_, Value>("Decimal").unwrap();
-                decimal_class
+                let class = pl.const_get::<_, Value>("Decimal").unwrap();
+                class
                     .funcall::<_, _, Value>("new", (precision, scale))
                     .unwrap()
             }
-            DataType::Boolean => pl.const_get::<_, Value>("Boolean").unwrap(),
-            DataType::String => pl.const_get::<_, Value>("String").unwrap(),
-            DataType::Binary => pl.const_get::<_, Value>("Binary").unwrap(),
+            DataType::Boolean => {
+                let class = pl.const_get::<_, Value>("Boolean").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
+            DataType::String => {
+                let class = pl.const_get::<_, Value>("String").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
+            DataType::Binary => {
+                let class = pl.const_get::<_, Value>("Binary").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
             DataType::Array(inner, size) => {
+                let class = pl.const_get::<_, Value>("Array").unwrap();
                 let inner = Wrap(*inner);
-                let list_class = pl.const_get::<_, Value>("Array").unwrap();
-                list_class
-                    .funcall::<_, _, Value>("new", (size, inner))
-                    .unwrap()
+                let args = (inner, size);
+                class.funcall::<_, _, Value>("new", args).unwrap()
             }
             DataType::List(inner) => {
+                let class = pl.const_get::<_, Value>("List").unwrap();
                 let inner = Wrap(*inner);
-                let list_class = pl.const_get::<_, Value>("List").unwrap();
-                list_class.funcall::<_, _, Value>("new", (inner,)).unwrap()
+                class.funcall::<_, _, Value>("new", (inner,)).unwrap()
             }
-            DataType::Date => pl.const_get::<_, Value>("Date").unwrap(),
+            DataType::Date => {
+                let class = pl.const_get::<_, Value>("Date").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
             DataType::Datetime(tu, tz) => {
                 let datetime_class = pl.const_get::<_, Value>("Datetime").unwrap();
                 datetime_class
@@ -162,8 +203,14 @@ impl IntoValue for Wrap<DataType> {
                     .funcall::<_, _, Value>("new", (tu.to_ascii(),))
                     .unwrap()
             }
-            DataType::Object(_, _) => pl.const_get::<_, Value>("Object").unwrap(),
-            DataType::Categorical(_, _) => pl.const_get::<_, Value>("Categorical").unwrap(),
+            DataType::Object(_, _) => {
+                let class = pl.const_get::<_, Value>("Object").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
+            DataType::Categorical(_, ordering) => {
+                let class = pl.const_get::<_, Value>("Categorical").unwrap();
+                class.funcall("new", (Wrap(ordering),)).unwrap()
+            }
             DataType::Enum(rev_map, _) => {
                 // we should always have an initialized rev_map coming from rust
                 let categories = rev_map.as_ref().unwrap().get_categories();
@@ -175,7 +222,10 @@ impl IntoValue for Wrap<DataType> {
                     .unwrap()
                     .into()
             }
-            DataType::Time => pl.const_get::<_, Value>("Time").unwrap(),
+            DataType::Time => {
+                let class = pl.const_get::<_, Value>("Time").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
             DataType::Struct(fields) => {
                 let field_class = pl.const_get::<_, Value>("Field").unwrap();
                 let iter = fields.iter().map(|fld| {
@@ -191,12 +241,28 @@ impl IntoValue for Wrap<DataType> {
                     .funcall::<_, _, Value>("new", (fields,))
                     .unwrap()
             }
-            DataType::Null => pl.const_get::<_, Value>("Null").unwrap(),
-            DataType::Unknown => pl.const_get::<_, Value>("Unknown").unwrap(),
+            DataType::Null => {
+                let class = pl.const_get::<_, Value>("Null").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
+            DataType::Unknown => {
+                let class = pl.const_get::<_, Value>("Unknown").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
             DataType::BinaryOffset => {
                 unimplemented!()
             }
         }
+    }
+}
+
+impl IntoValue for Wrap<CategoricalOrdering> {
+    fn into_value_with(self, _: &Ruby) -> Value {
+        let ordering = match self.0 {
+            CategoricalOrdering::Physical => "physical",
+            CategoricalOrdering::Lexical => "lexical",
+        };
+        ordering.into_value()
     }
 }
 

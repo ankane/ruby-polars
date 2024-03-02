@@ -2290,7 +2290,7 @@ module Polars
             Int64 => Numo::Int64,
             Float32 => Numo::SFloat,
             Float64 => Numo::DFloat
-          }.fetch(dtype).cast(to_a)
+          }.fetch(dtype.class).cast(to_a)
         elsif is_boolean
           Numo::Bit.cast(to_a)
         else
@@ -2329,7 +2329,7 @@ module Polars
     #   #         3
     #   # ]
     def set(filter, value)
-      Utils.wrap_s(_s.send("set_with_mask_#{DTYPE_TO_FFINAME.fetch(dtype)}", filter._s, value))
+      Utils.wrap_s(_s.send("set_with_mask_#{DTYPE_TO_FFINAME.fetch(dtype.class)}", filter._s, value))
     end
 
     # Set values at the index locations.
@@ -4236,7 +4236,7 @@ module Polars
     end
 
     def ffi_func(name, dtype, _s)
-      _s.method(name.sub("<>", DTYPE_TO_FFINAME.fetch(dtype))) if DTYPE_TO_FFINAME.key?(dtype)
+      _s.method(name.sub("<>", DTYPE_TO_FFINAME.fetch(dtype.class))) if DTYPE_TO_FFINAME.key?(dtype.class)
     end
 
     def _arithmetic(other, op)

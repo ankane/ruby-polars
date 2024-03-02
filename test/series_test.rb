@@ -176,8 +176,10 @@ class SeriesTest < Minitest::Test
   end
 
   def test_dtype
-    s = Polars::Series.new([1, 2, 3])
-    assert_equal Polars::Int64, s.dtype
+    s = Polars::Series.new([1, 2, 3], dtype: Polars::Int8)
+    assert_equal Polars::Int8, s.dtype
+    refute s.dtype.eql?(Polars::Int8)
+    assert_kind_of Polars::Int8, s.dtype
   end
 
   def test_flags
