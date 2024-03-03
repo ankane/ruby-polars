@@ -4461,7 +4461,7 @@ module Polars
     #   #         null
     #   # ]
     #
-    # @example A horizontal boolean or, similar to a row-wise .any():
+    # @example A horizontal boolean or, similar to a row-wise .any:
     #   df = Polars::DataFrame.new(
     #     {
     #       "a" => [false, false, true],
@@ -4584,7 +4584,7 @@ module Polars
     #   # => [{"a"=>1, "b"=>2}, {"a"=>3, "b"=>4}, {"a"=>5, "b"=>6}]
     def rows(named: false)
       if named
-        columns = columns()
+        columns = self.columns
         _df.row_tuples.map do |v|
           columns.zip(v).to_h
         end
@@ -4625,7 +4625,7 @@ module Polars
       return to_enum(:iter_rows, named: named, buffer_size: buffer_size) unless block_given?
 
       # load into the local namespace for a modest performance boost in the hot loops
-      columns = columns()
+      columns = self.columns
 
       # note: buffering rows results in a 2-4x speedup over individual calls
       # to ".row(i)", so it should only be disabled in extremely specific cases.

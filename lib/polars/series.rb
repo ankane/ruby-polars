@@ -1043,7 +1043,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("s", [1, 1, 2, 1, nil, 1, 3, 3])
-    #   s.rle_id()
+    #   s.rle_id
     #   # =>
     #   # shape: (8,)
     #   # Series: 's' [u32]

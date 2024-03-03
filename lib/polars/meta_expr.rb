@@ -114,7 +114,7 @@ module Polars
     #   e_sum_slice = Polars.sum("foo").slice(Polars.len - 10, Polars.col("bar"))
     #   e_sum_slice.meta.output_name
     #   # => "foo"
-    #   Polars.len().meta.output_name
+    #   Polars.len.meta.output_name
     #   # => "len"
     def output_name
       _rbexpr.meta_output_name
@@ -164,7 +164,7 @@ module Polars
     #   e = Polars.col("foo").alias("bar")
     #   _ = e.meta.undo_aliases.meta == Polars.col("foo")
     #   # => true
-    #   e = Polars.col("foo").sum().over("bar")
+    #   e = Polars.col("foo").sum.over("bar")
     #   _ = e.name.keep.meta.undo_aliases.meta == e
     #   # => true
     def undo_aliases

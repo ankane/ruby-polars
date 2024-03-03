@@ -308,7 +308,7 @@ module Polars
     #   end
     #
     #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => ["10", "20", "30", "40"]}).lazy
-    #   df.pipe(cast_str_to_int, col_name: "b").collect()
+    #   df.pipe(cast_str_to_int, col_name: "b").collect
     #   # =>
     #   # shape: (4, 2)
     #   # ┌─────┬─────┐

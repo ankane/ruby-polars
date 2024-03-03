@@ -95,7 +95,7 @@ module Polars
     #     },
     #     schema: {"a" => Polars::Array.new(Polars::Int64, 3)}
     #   )
-    #   df.select(Polars.col("a").arr.unique())
+    #   df.select(Polars.col("a").arr.unique)
     #   # =>
     #   # shape: (1, 1)
     #   # ┌───────────┐

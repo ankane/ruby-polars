@@ -382,7 +382,7 @@ module Polars
 
     # Sum all values.
     #
-    # Syntactic sugar for `col(name).sum()`.
+    # Syntactic sugar for `col(name).sum`.
     #
     # @param names [Array]
     #   Name(s) of the columns to use in the aggregation.
@@ -432,7 +432,7 @@ module Polars
     #   # │ 7   ┆ 11  │
     #   # └─────┴─────┘
     def sum(*names)
-      col(*names).sum()
+      col(*names).sum
     end
 
     # Get the mean value.
@@ -481,7 +481,7 @@ module Polars
 
     # Get the median value.
     #
-    # This function is syntactic sugar for `pl.col(columns).median()`.
+    # This function is syntactic sugar for `pl.col(columns).median`.
     #
     # @param columns [Array]
     #   One or more column names.
