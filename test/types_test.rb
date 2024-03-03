@@ -190,13 +190,13 @@ class TypesTest < Minitest::Test
     b = BigDecimal(v)
 
     s = Polars::Series.new([b])
-    assert_includes s.inspect, "\t#{exp}\n"
+    assert_match "\t#{exp}\n", s.inspect
     assert_equal b, s.to_a[0]
     assert_equal b, s[0]
     assert_equal scale, s.dtype.scale
 
     df = Polars::DataFrame.new([{a: b}])
-    assert_includes df.inspect, "│ #{exp} "
+    assert_match "│ #{exp} ", df.inspect
     assert_equal b, df.to_a[0]["a"]
     assert_equal scale, df.schema["a"].scale
   end
