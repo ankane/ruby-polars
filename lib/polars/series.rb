@@ -2857,7 +2857,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3])
-    #   s.apply { |x| x + 10 }
+    #   s.map_elements { |x| x + 10 }
     #   # =>
     #   # shape: (3,)
     #   # Series: 'a' [i64]
@@ -2866,7 +2866,7 @@ module Polars
     #   #         12
     #   #         13
     #   # ]
-    def apply(return_dtype: nil, skip_nulls: true, &func)
+    def map_elements(return_dtype: nil, skip_nulls: true, &func)
       if return_dtype.nil?
         pl_return_dtype = nil
       else
@@ -2874,7 +2874,8 @@ module Polars
       end
       Utils.wrap_s(_s.apply_lambda(func, pl_return_dtype, skip_nulls))
     end
-    alias_method :map, :apply
+    alias_method :map, :map_elements
+    alias_method :apply, :map_elements
 
     # Shift the values by a given period.
     #
