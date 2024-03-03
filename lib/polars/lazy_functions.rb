@@ -948,8 +948,6 @@ module Polars
 
     # Compute the Pearson's or Spearman rank correlation correlation between two columns.
     #
-    # Parameters
-    # ----------
     # @param a [Object]
     #   Column name or Expression.
     # @param b [Object]
