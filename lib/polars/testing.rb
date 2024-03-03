@@ -1,10 +1,5 @@
 module Polars
   module Testing
-    class AssertionError < StandardError; end
-
-    # Exception raised when an unsupported testing assert is made.
-    class InvalidAssert < StandardError; end
-
     # Assert that the left and right frame are equal.
     #
     # Raises a detailed `AssertionError` if the frames differ.

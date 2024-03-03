@@ -54,6 +54,11 @@ require_relative "polars/when"
 require_relative "polars/when_then"
 
 module Polars
+  class AssertionError < StandardError; end
+
+  # Exception raised when an unsupported testing assert is made.
+  class InvalidAssert < StandardError; end
+
   extend Convert
   extend Functions
   extend IO
