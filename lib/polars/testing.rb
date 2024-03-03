@@ -1,8 +1,38 @@
 module Polars
   module Testing
     class AssertionError < StandardError; end
+
+    # Exception raised when an unsupported testing assert is made.
     class InvalidAssert < StandardError; end
 
+    # Assert that the left and right frame are equal.
+    #
+    # Raises a detailed `AssertionError` if the frames differ.
+    # This function is intended for use in unit tests.
+    #
+    # @param left [Object]
+    #   The first DataFrame or LazyFrame to compare.
+    # @param right [Object]
+    #   The second DataFrame or LazyFrame to compare.
+    # @param check_row_order [Boolean]
+    #   Require row order to match.
+    # @param check_column_order [Boolean]
+    #   Require column order to match.
+    # @param check_dtype [Boolean]
+    #   Require data types to match.
+    # @param check_exact [Boolean]
+    #   Require float values to match exactly. If set to `false`, values are considered
+    #   equal when within tolerance of each other (see `rtol` and `atol`).
+    #   Only affects columns with a Float data type.
+    # @param rtol [Float]
+    #   Relative tolerance for inexact checking. Fraction of values in `right`.
+    # @param atol [Float]
+    #   Absolute tolerance for inexact checking.
+    # @param categorical_as_str [Boolean]
+    #   Cast categorical columns to string before comparing. Enabling this helps
+    #   compare columns that do not share the same string cache.
+    #
+    # @return [Object]
     def assert_frame_equal(
       left,
       right,
@@ -61,6 +91,33 @@ module Polars
       end
     end
 
+    # Assert that the left and right Series are equal.
+    #
+    # Raises a detailed `AssertionError` if the Series differ.
+    # This function is intended for use in unit tests.
+    #
+    # @param left [Object]
+    #   The first Series to compare.
+    # @param right [Object]
+    #   The second Series to compare.
+    # @param check_dtype [Boolean]
+    #   Require data types to match.
+    # @param check_names [Boolean]
+    #   Require names to match.
+    # @param check_exact [Boolean]
+    #   Require float values to match exactly. If set to `false`, values are considered
+    #   equal when within tolerance of each other (see `rtol` and `atol`).
+    #   Only affects columns with a Float data type.
+    # @param rtol [Float]
+    #   Relative tolerance for inexact checking, given as a fraction of the values in
+    #   `right`.
+    # @param atol [Float]
+    #   Absolute tolerance for inexact checking.
+    # @param categorical_as_str [Boolean]
+    #   Cast categorical columns to string before comparing. Enabling this helps
+    #   compare columns that do not share the same string cache.
+    #
+    # @return [Object]
     def assert_series_equal(
       left,
       right,

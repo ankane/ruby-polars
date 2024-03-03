@@ -117,6 +117,10 @@ class DocsTest < Minitest::Test
     assert_docs Polars::StructNameSpace
   end
 
+  def test_testing
+    assert_docs Polars::Testing
+  end
+
   def assert_docs(cls)
     @@once ||= begin
       require "yard"
