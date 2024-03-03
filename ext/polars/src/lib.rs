@@ -22,6 +22,7 @@ use dataframe::RbDataFrame;
 use error::{RbPolarsErr, RbTypeError, RbValueError};
 use expr::rb_exprs_to_exprs;
 use expr::RbExpr;
+use functions::string_cache::RbStringCacheHolder;
 use functions::whenthen::{RbThen, RbWhen};
 use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
@@ -1044,6 +1045,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("get_tables", method!(RbSQLContext::get_tables, 0))?;
     class.define_method("register", method!(RbSQLContext::register, 2))?;
     class.define_method("unregister", method!(RbSQLContext::unregister, 1))?;
+
+    // string cache
+    let class = module.define_class("RbStringCacheHolder", ruby.class_object())?;
+    class.define_singleton_method("new", function!(RbStringCacheHolder::new, 0))?;
 
     Ok(())
 }
