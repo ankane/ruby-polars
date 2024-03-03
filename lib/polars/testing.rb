@@ -27,7 +27,7 @@ module Polars
     #   Cast categorical columns to string before comparing. Enabling this helps
     #   compare columns that do not share the same string cache.
     #
-    # @return [Object]
+    # @return [nil]
     def assert_frame_equal(
       left,
       right,
@@ -112,7 +112,7 @@ module Polars
     #   Cast categorical columns to string before comparing. Enabling this helps
     #   compare columns that do not share the same string cache.
     #
-    # @return [Object]
+    # @return [nil]
     def assert_frame_not_equal(
       left,
       right,
@@ -170,7 +170,7 @@ module Polars
     #   Cast categorical columns to string before comparing. Enabling this helps
     #   compare columns that do not share the same string cache.
     #
-    # @return [Object]
+    # @return [nil]
     def assert_series_equal(
       left,
       right,
@@ -237,7 +237,7 @@ module Polars
     #   Cast categorical columns to string before comparing. Enabling this helps
     #   compare columns that do not share the same string cache.
     #
-    # @return [Object]
+    # @return [nil]
     def assert_series_not_equal(
       left,
       right,
