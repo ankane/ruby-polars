@@ -397,7 +397,7 @@ module Polars
       end
 
       # Only do inexact checking for float types
-      if check_exact || !left.dtype.is_float || !right.dtype.is_float
+      if check_exact || !left.dtype.float? || !right.dtype.float?
         raise_assertion_error(
           "Series", "exact value mismatch", left.to_a, right.to_a
         )
@@ -496,7 +496,7 @@ module Polars
         return false
       end
 
-      (FLOAT_DTYPES & unpack_dtypes(left)) && (FLOAT_DTYPES & unpack_dtypes(right))
+      left.float? && right.float?
     end
 
     def raise_assertion_error(objects, detail, left, right)
