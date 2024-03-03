@@ -731,34 +731,98 @@ module Polars
 
     # Get the first `n` rows.
     #
+    # This function is syntactic sugar for `col(column).head(n)`.
+    #
     # @param column [Object]
-    #   Column name or Series.
+    #   Column name.
     # @param n [Integer]
     #   Number of rows to return.
     #
-    # @return [Object]
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 3],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.head("a"))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 8   │
+    #   # │ 3   │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.head("a", 2))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 8   │
+    #   # └─────┘
     def head(column, n = 10)
-      if column.is_a?(Series)
-        column.head(n)
-      else
-        col(column).head(n)
-      end
+      col(column).head(n)
     end
 
     # Get the last `n` rows.
     #
+    # This function is syntactic sugar for `col(column).tail(n)`.
+    #
     # @param column [Object]
-    #   Column name or Series.
+    #   Column name.
     # @param n [Integer]
     #   Number of rows to return.
     #
-    # @return [Object]
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 3],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.tail("a"))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 8   │
+    #   # │ 3   │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.tail("a", 2))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 8   │
+    #   # │ 3   │
+    #   # └─────┘
     def tail(column, n = 10)
-      if column.is_a?(Series)
-        column.tail(n)
-      else
-        col(column).tail(n)
-      end
+      col(column).tail(n)
     end
 
     # Return an expression representing a literal value.
