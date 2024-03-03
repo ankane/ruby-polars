@@ -716,12 +716,10 @@ module Polars
     #   # │ --- ┆ --- │
     #   # │ u32 ┆ u32 │
     #   # ╞═════╪═════╡
-    #   # │ 3   ┆ 3   │
+    #   # │ 3   ┆ 2   │
     #   # └─────┴─────┘
     def count
-      warn "`Expr#count` will exclude null values in 0.9.0. Use `Expr#length` instead."
-      # _from_rbexpr(_rbexpr.count)
-      _from_rbexpr(_rbexpr.len)
+      _from_rbexpr(_rbexpr.count)
     end
 
     # Count the number of values in this expression.

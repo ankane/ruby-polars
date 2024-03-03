@@ -2077,11 +2077,9 @@ module Polars
     # @example
     #   s = Polars::Series.new("a", [1, 2, nil])
     #   s.count
-    #   # => 3
+    #   # => 2
     def count
-      warn "`Series#count` will exclude null values in 0.9.0. Use `Series#length` instead."
-      # len - null_count
-      len
+      len - null_count
     end
 
     # Return the number of elements in the Series.

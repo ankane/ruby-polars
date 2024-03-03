@@ -222,7 +222,7 @@ class GuideTest < Minitest::Test
         Polars.col("B").sum.alias("B_sum"),
         Polars.sum("B").alias("B_sum2"),
         Polars.first("fruits").alias("fruits_first"),
-        Polars.count,
+        Polars.len,
         Polars.col("B").shift.alias("B_shifted")
       ]).explode("B_shifted")
 

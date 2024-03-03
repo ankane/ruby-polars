@@ -415,7 +415,7 @@ module Polars
     #   # │ Banana ┆ 2     │
     #   # └────────┴───────┘
     def count
-      agg(Polars.count)
+      agg(Polars.len.alias("count"))
     end
 
     # Reduce the groups to the mean values.

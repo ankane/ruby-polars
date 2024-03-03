@@ -3167,8 +3167,11 @@ module Polars
           aggregate_expr = Polars.element.median._rbexpr
         when "last"
           aggregate_expr = Polars.element.last._rbexpr
+        when "len"
+          aggregate_expr = Polars.len._rbexpr
         when "count"
-          aggregate_expr = Polars.count._rbexpr
+          warn "`aggregate_function: \"count\"` input for `pivot` is deprecated. Use `aggregate_function: \"len\"` instead."
+          aggregate_expr = Polars.len._rbexpr
         else
           raise ArgumentError, "Argument aggregate fn: '#{aggregate_fn}' was not expected."
         end
