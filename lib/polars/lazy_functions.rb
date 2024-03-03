@@ -946,6 +946,84 @@ module Polars
     end
     alias_method :cumsum, :cum_sum
 
+    # Compute the Pearson's or Spearman rank correlation correlation between two columns.
+    #
+    # Parameters
+    # ----------
+    # @param a [Object]
+    #   Column name or Expression.
+    # @param b [Object]
+    #   Column name or Expression.
+    # @param ddof [Integer]
+    #   "Delta Degrees of Freedom": the divisor used in the calculation is N - ddof,
+    #   where N represents the number of elements.
+    #   By default ddof is 1.
+    # @param method ["pearson", "spearman"]
+    #   Correlation method.
+    # @param propagate_nans [Boolean]
+    #   If `true` any `NaN` encountered will lead to `NaN` in the output.
+    #   Defaults to `False` where `NaN` are regarded as larger than any finite number
+    #   and thus lead to the highest rank.
+    #
+    # @return [Expr]
+    #
+    # @example Pearson's correlation:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 3],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.corr("a", "b"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 0.544705 │
+    #   # └──────────┘
+    #
+    # @example Spearman rank correlation:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 3],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.corr("a", "b", method: "spearman"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 0.5 │
+    #   # └─────┘
+    def corr(
+      a,
+      b,
+      method: "pearson",
+      ddof: 1,
+      propagate_nans: false
+    )
+      a = Utils.parse_as_expression(a)
+      b = Utils.parse_as_expression(b)
+
+      if method == "pearson"
+        Utils.wrap_expr(RbExpr.pearson_corr(a, b, ddof))
+      elsif method == "spearman"
+        Utils.wrap_expr(RbExpr.spearman_rank_corr(a, b, ddof, propagate_nans))
+      else
+        msg = "method must be one of {{'pearson', 'spearman'}}, got #{method}"
+        raise ArgumentError, msg
+      end
+    end
+
     # Compute the spearman rank correlation between two columns.
     #
     # Missing data will be excluded from the computation.
@@ -963,13 +1041,7 @@ module Polars
     #
     # @return [Expr]
     def spearman_rank_corr(a, b, ddof: 1, propagate_nans: false)
-      if Utils.strlike?(a)
-        a = col(a)
-      end
-      if Utils.strlike?(b)
-        b = col(b)
-      end
-      Utils.wrap_expr(RbExpr.spearman_rank_corr(a._rbexpr, b._rbexpr, ddof, propagate_nans))
+      corr(a, b, method: "spearman", ddof: ddof, propagate_nans: propagate_nans)
     end
 
     # Compute the pearson's correlation between two columns.
@@ -983,13 +1055,7 @@ module Polars
     #
     # @return [Expr]
     def pearson_corr(a, b, ddof: 1)
-      if Utils.strlike?(a)
-        a = col(a)
-      end
-      if Utils.strlike?(b)
-        b = col(b)
-      end
-      Utils.wrap_expr(RbExpr.pearson_corr(a._rbexpr, b._rbexpr, ddof))
+      corr(a, b, method: "pearson", ddof: ddof)
     end
 
     # Compute the covariance between two columns/ expressions.
