@@ -8,4 +8,11 @@ class StringCacheTest < Minitest::Test
     end
     refute Polars.using_string_cache
   end
+
+  def test_no_block
+    error = assert_raises(LocalJumpError) do
+      Polars::StringCache.new
+    end
+    assert_equal "no block given", error.message
+  end
 end
