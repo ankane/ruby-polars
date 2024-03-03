@@ -500,7 +500,7 @@ module Polars
     end
 
     def raise_assertion_error(objects, detail, left, right)
-      msg = "#{objects} are different (#{detail})\n[left]: #{left}\n[right]: #{right}"
+      msg = "#{objects} are different (#{detail})\n[left]:  #{left}\n[right]: #{right}"
       raise AssertionError, msg
     end
   end
