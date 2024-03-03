@@ -1574,7 +1574,7 @@ module Polars
     # @return [Expr]
     def concat_list(exprs)
       exprs = Utils.selection_to_rbexpr_list(exprs)
-      Utils.wrap_expr(Plr.concat_lst(exprs))
+      Utils.wrap_expr(Plr.concat_list(exprs))
     end
 
     # Collect multiple LazyFrames at the same time.

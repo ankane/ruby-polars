@@ -556,7 +556,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("arg_sort_by", function!(functions::lazy::arg_sort_by, 2))?;
     class.define_singleton_method("when", function!(functions::whenthen::when, 1))?;
     class.define_singleton_method("concat_str", function!(functions::lazy::concat_str, 3))?;
-    class.define_singleton_method("concat_lst", function!(functions::lazy::concat_list, 1))?;
+    class.define_singleton_method("concat_list", function!(functions::lazy::concat_list, 1))?;
     class.define_singleton_method(
         "all_horizontal",
         function!(functions::aggregation::all_horizontal, 1),
