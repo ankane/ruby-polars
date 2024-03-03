@@ -1,5 +1,7 @@
 ## 0.9.0 (unreleased)
 
+See the [upgrade guide](https://docs.pola.rs/releases/upgrade/0.20/)
+
 - Updated Polars to 0.38.1
 - Changed `dtype` and `schema` methods to always return instances of data types
 - Added `Enum` type
