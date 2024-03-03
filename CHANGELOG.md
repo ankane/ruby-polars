@@ -16,6 +16,7 @@ See the [upgrade guide](https://docs.pola.rs/releases/upgrade/0.20/)
 - Added `ge`, `gt`, `le`, and `lt` methods to `Series` and `Expr`
 - Added `merge_sorted` method to `DataFrame` and `LazyFrame`
 - Added more methods to `ArrayExpr` and `ArrayNameSpace`
+- Added more methods to `CatExpr` and `CatNameSpace`
 - Added more methods to `ListExpr` and `ListNameSpace`
 - Added more methods to `MetaExpr`
 - Added more methods to `StringExpr`
