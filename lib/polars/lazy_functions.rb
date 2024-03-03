@@ -342,36 +342,25 @@ module Polars
       Utils.wrap_expr(RbExpr.lit(value, allow_object))
     end
 
-    # Cumulatively sum values in a column/Series, or horizontally across list of columns/expressions.
+    # Cumulatively sum all values.
     #
-    # @param column [Object]
-    #   Column(s) to be used in aggregation.
+    # Syntactic sugar for `col(names).cum_sum`.
     #
-    # @return [Object]
+    # @param names [Object]
+    #   Name(s) of the columns to use in the aggregation.
+    #
+    # @return [Expr]
     #
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "a" => [1, 2],
-    #       "b" => [3, 4],
-    #       "c" => [5, 6]
+    #       "a" => [1, 2, 3],
+    #       "b" => [4, 5, 6]
     #     }
     #   )
+    #   df.select(Polars.cum_sum("a"))
     #   # =>
-    #   # shape: (2, 3)
-    #   # ┌─────┬─────┬─────┐
-    #   # │ a   ┆ b   ┆ c   │
-    #   # │ --- ┆ --- ┆ --- │
-    #   # │ i64 ┆ i64 ┆ i64 │
-    #   # ╞═════╪═════╪═════╡
-    #   # │ 1   ┆ 3   ┆ 5   │
-    #   # │ 2   ┆ 4   ┆ 6   │
-    #   # └─────┴─────┴─────┘
-    #
-    # @example Cumulatively sum a column by name:
-    #   df.select(Polars.cumsum("a"))
-    #   # =>
-    #   # shape: (2, 1)
+    #   # shape: (3, 1)
     #   # ┌─────┐
     #   # │ a   │
     #   # │ --- │
@@ -379,29 +368,12 @@ module Polars
     #   # ╞═════╡
     #   # │ 1   │
     #   # │ 3   │
+    #   # │ 6   │
     #   # └─────┘
-    #
-    # @example Cumulatively sum a list of columns/expressions horizontally:
-    #   df.with_column(Polars.cumsum(["a", "c"]))
-    #   # =>
-    #   # shape: (2, 4)
-    #   # ┌─────┬─────┬─────┬───────────┐
-    #   # │ a   ┆ b   ┆ c   ┆ cumsum    │
-    #   # │ --- ┆ --- ┆ --- ┆ ---       │
-    #   # │ i64 ┆ i64 ┆ i64 ┆ struct[2] │
-    #   # ╞═════╪═════╪═════╪═══════════╡
-    #   # │ 1   ┆ 3   ┆ 5   ┆ {1,6}     │
-    #   # │ 2   ┆ 4   ┆ 6   ┆ {2,8}     │
-    #   # └─────┴─────┴─────┴───────────┘
-    def cumsum(column)
-      if column.is_a?(Series)
-        column.cumsum
-      elsif Utils.strlike?(column)
-        col(column).cumsum
-      else
-        cumfold(lit(0).cast(:u32), ->(a, b) { a + b }, column).alias("cumsum")
-      end
+    def cum_sum(*names)
+      col(*names).cum_sum
     end
+    alias_method :cumsum, :cum_sum
 
     # Compute the spearman rank correlation between two columns.
     #
