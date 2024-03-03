@@ -1,4 +1,4 @@
-## 0.9.0 (unreleased)
+## 0.9.0 (2024-03-03)
 
 See the [upgrade guide](https://docs.pola.rs/releases/upgrade/0.20/)
 
