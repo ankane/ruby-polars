@@ -1800,42 +1800,55 @@ module Polars
       end
     end
 
-    # Folds the expressions from left to right, keeping the first non-null value.
+    # Folds the columns from left to right, keeping the first non-null value.
     #
-    # @param exprs [Object]
-    #   Expressions to coalesce.
+    # @param exprs [Array]
+    #   Columns to coalesce. Accepts expression input. Strings are parsed as column
+    #   names, other non-expression inputs are parsed as literals.
+    # @param more_exprs [Hash]
+    #   Additional columns to coalesce, specified as positional arguments.
     #
     # @return [Expr]
     #
     # @example
     #   df = Polars::DataFrame.new(
-    #     [
-    #       [nil, 1.0, 1.0],
-    #       [nil, 2.0, 2.0],
-    #       [nil, nil, 3.0],
-    #       [nil, nil, nil]
-    #     ],
-    #     columns: [["a", :f64], ["b", :f64], ["c", :f64]]
+    #     {
+    #       "a" => [1, nil, nil, nil],
+    #       "b" => [1, 2, nil, nil],
+    #       "c" => [5, nil, 3, nil]
+    #     }
     #   )
-    #   df.with_column(Polars.coalesce(["a", "b", "c", 99.9]).alias("d"))
+    #   df.with_columns(Polars.coalesce(["a", "b", "c", 10]).alias("d"))
+    #   # =>
+    #   # shape: (4, 4)
+    #   # ┌──────┬──────┬──────┬─────┐
+    #   # │ a    ┆ b    ┆ c    ┆ d   │
+    #   # │ ---  ┆ ---  ┆ ---  ┆ --- │
+    #   # │ i64  ┆ i64  ┆ i64  ┆ i64 │
+    #   # ╞══════╪══════╪══════╪═════╡
+    #   # │ 1    ┆ 1    ┆ 5    ┆ 1   │
+    #   # │ null ┆ 2    ┆ null ┆ 2   │
+    #   # │ null ┆ null ┆ 3    ┆ 3   │
+    #   # │ null ┆ null ┆ null ┆ 10  │
+    #   # └──────┴──────┴──────┴─────┘
+    #
+    # @example
+    #   df.with_columns(Polars.coalesce(Polars.col(["a", "b", "c"]), 10.0).alias("d"))
     #   # =>
     #   # shape: (4, 4)
     #   # ┌──────┬──────┬──────┬──────┐
     #   # │ a    ┆ b    ┆ c    ┆ d    │
     #   # │ ---  ┆ ---  ┆ ---  ┆ ---  │
-    #   # │ f64  ┆ f64  ┆ f64  ┆ f64  │
+    #   # │ i64  ┆ i64  ┆ i64  ┆ f64  │
     #   # ╞══════╪══════╪══════╪══════╡
-    #   # │ null ┆ 1.0  ┆ 1.0  ┆ 1.0  │
-    #   # │ null ┆ 2.0  ┆ 2.0  ┆ 2.0  │
-    #   # │ null ┆ null ┆ 3.0  ┆ 3.0  │
-    #   # │ null ┆ null ┆ null ┆ 99.9 │
+    #   # │ 1    ┆ 1    ┆ 5    ┆ 1.0  │
+    #   # │ null ┆ 2    ┆ null ┆ 2.0  │
+    #   # │ null ┆ null ┆ 3    ┆ 3.0  │
+    #   # │ null ┆ null ┆ null ┆ 10.0 │
     #   # └──────┴──────┴──────┴──────┘
     def coalesce(exprs, *more_exprs)
-      exprs = Utils.selection_to_rbexpr_list(exprs)
-      if more_exprs.any?
-        exprs.concat(Utils.selection_to_rbexpr_list(more_exprs))
-      end
-      Utils.wrap_expr(Plr.coalesce_exprs(exprs))
+      exprs = Utils.parse_as_list_of_expressions(exprs, *more_exprs)
+      Utils.wrap_expr(Plr.coalesce(exprs))
     end
 
     # Utility function that parses an epoch timestamp (or Unix time) to Polars Date(time).

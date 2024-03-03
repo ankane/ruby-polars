@@ -582,7 +582,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(functions::aggregation::mean_horizontal, 1),
     )?;
     class.define_singleton_method("as_struct", function!(functions::lazy::as_struct, 1))?;
-    class.define_singleton_method("coalesce_exprs", function!(functions::lazy::coalesce, 1))?;
+    class.define_singleton_method("coalesce", function!(functions::lazy::coalesce, 1))?;
     class.define_singleton_method("arg_where", function!(functions::lazy::arg_where, 1))?;
     class.define_singleton_method(
         "concat_lf_diagonal",
