@@ -611,45 +611,122 @@ module Polars
 
     # Get the first value.
     #
-    # @return [Object]
-    def first(column = nil)
-      if column.nil?
+    # @param columns [Array]
+    #   One or more column names. If not provided (default), returns an expression
+    #   to take the first column of the context instead.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 3],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "baz"]
+    #     }
+    #   )
+    #   df.select(Polars.first)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 8   │
+    #   # │ 3   │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.first("b"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ b   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 4   │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.first("a", "c"))
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ c   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ str │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ foo │
+    #   # └─────┴─────┘
+    def first(*columns)
+      if columns.empty?
         return Utils.wrap_expr(RbExpr.first)
       end
 
-      if column.is_a?(Series)
-        if column.len > 0
-          column[0]
-        else
-          raise IndexError, "The series is empty, so no first value can be returned."
-        end
-      else
-        col(column).first
-      end
+      col(*columns).first
     end
 
     # Get the last value.
     #
-    # Depending on the input type this function does different things:
+    # @param columns [Array]
+    #   One or more column names. If set to `nil` (default), returns an expression
+    #   to take the last column of the context instead.
     #
-    # - nil -> expression to take last column of a context.
-    # - String -> syntactic sugar for `Polars.col(..).last`
-    # - Series -> Take last value in `Series`
+    # @return [Expr]
     #
-    # @return [Object]
-    def last(column = nil)
-      if column.nil?
-        return Utils.wrap_expr(_last)
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 3],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "baz"]
+    #     }
+    #   )
+    #   df.select(Polars.last)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ c   │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ foo │
+    #   # │ bar │
+    #   # │ baz │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.last("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 3   │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.last("b", "c"))
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ b   ┆ c   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ str │
+    #   # ╞═════╪═════╡
+    #   # │ 2   ┆ baz │
+    #   # └─────┴─────┘
+    def last(*columns)
+      if columns.empty?
+        return Utils.wrap_expr(RbExpr.last)
       end
 
-      if column.is_a?(Series)
-        if column.len > 0
-          return column[-1]
-        else
-          raise IndexError, "The series is empty, so no last value can be returned"
-        end
-      end
-      col(column).last
+      col(*columns).last
     end
 
     # Get the first `n` rows.
