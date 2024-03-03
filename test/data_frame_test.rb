@@ -470,6 +470,9 @@ class DataFrameTest < Minitest::Test
   end
 
   def test_with_columns
+    df = Polars::DataFrame.new({"a" => [1, 2]}).with_columns(nil)
+    expected = Polars::DataFrame.new({"a" => [1, 2], "literal" => [nil, nil]})
+    assert_frame expected, df
   end
 
   def test_n_chunks
