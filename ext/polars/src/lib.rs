@@ -48,47 +48,6 @@ type RbResult<T> = Result<T, Error>;
 #[magnus::init]
 fn init(ruby: &Ruby) -> RbResult<()> {
     let module = define_module("Polars")?;
-    module.define_singleton_method("_rb_duration", function!(functions::lazy::duration, 9))?;
-    module.define_singleton_method("_ipc_schema", function!(functions::io::read_ipc_schema, 1))?;
-    module.define_singleton_method(
-        "_parquet_schema",
-        function!(functions::io::read_parquet_schema, 1),
-    )?;
-    module.define_singleton_method("_collect_all", function!(functions::lazy::collect_all, 1))?;
-    module.define_singleton_method("_rb_date_range", function!(functions::range::date_range, 6))?;
-    module.define_singleton_method(
-        "_dtype_str_repr",
-        function!(functions::misc::dtype_str_repr, 1),
-    )?;
-    module.define_singleton_method("_get_idx_type", function!(functions::meta::get_idx_type, 0))?;
-    module.define_singleton_method(
-        "_threadpool_size",
-        function!(functions::meta::threadpool_size, 0),
-    )?;
-    module.define_singleton_method(
-        "_enable_string_cache",
-        function!(functions::string_cache::enable_string_cache, 0),
-    )?;
-    module.define_singleton_method(
-        "_disable_string_cache",
-        function!(functions::string_cache::disable_string_cache, 0),
-    )?;
-    module.define_singleton_method(
-        "_using_string_cache",
-        function!(functions::string_cache::using_string_cache, 0),
-    )?;
-    module.define_singleton_method(
-        "_set_float_fmt",
-        function!(functions::meta::set_float_fmt, 1),
-    )?;
-    module.define_singleton_method(
-        "_get_float_fmt",
-        function!(functions::meta::get_float_fmt, 0),
-    )?;
-    module.define_singleton_method(
-        "_set_random_seed",
-        function!(functions::random::set_random_seed, 1),
-    )?;
 
     let class = module.define_class("RbBatchedCsv", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbBatchedCsv::new, -1))?;
@@ -642,6 +601,47 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method(
         "concat_series",
         function!(functions::eager::concat_series, 1),
+    )?;
+    class.define_singleton_method("duration", function!(functions::lazy::duration, 9))?;
+    class.define_singleton_method("ipc_schema", function!(functions::io::read_ipc_schema, 1))?;
+    class.define_singleton_method(
+        "parquet_schema",
+        function!(functions::io::read_parquet_schema, 1),
+    )?;
+    class.define_singleton_method("collect_all", function!(functions::lazy::collect_all, 1))?;
+    class.define_singleton_method("date_range", function!(functions::range::date_range, 6))?;
+    class.define_singleton_method(
+        "dtype_str_repr",
+        function!(functions::misc::dtype_str_repr, 1),
+    )?;
+    class.define_singleton_method("get_idx_type", function!(functions::meta::get_idx_type, 0))?;
+    class.define_singleton_method(
+        "threadpool_size",
+        function!(functions::meta::threadpool_size, 0),
+    )?;
+    class.define_singleton_method(
+        "enable_string_cache",
+        function!(functions::string_cache::enable_string_cache, 0),
+    )?;
+    class.define_singleton_method(
+        "disable_string_cache",
+        function!(functions::string_cache::disable_string_cache, 0),
+    )?;
+    class.define_singleton_method(
+        "using_string_cache",
+        function!(functions::string_cache::using_string_cache, 0),
+    )?;
+    class.define_singleton_method(
+        "set_float_fmt",
+        function!(functions::meta::set_float_fmt, 1),
+    )?;
+    class.define_singleton_method(
+        "get_float_fmt",
+        function!(functions::meta::get_float_fmt, 0),
+    )?;
+    class.define_singleton_method(
+        "set_random_seed",
+        function!(functions::random::set_random_seed, 1),
     )?;
 
     let class = module.define_class("RbLazyFrame", ruby.class_object())?;

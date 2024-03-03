@@ -178,7 +178,7 @@ module Polars
       stop_rbexpr = Utils.parse_as_expression(stop)
 
       result = Utils.wrap_expr(
-        _rb_date_range(start_rbexpr, stop_rbexpr, interval, closed, time_unit, time_zone)
+        Plr.date_range(start_rbexpr, stop_rbexpr, interval, closed, time_unit, time_zone)
       )
 
       result = result.alias(name.to_s)

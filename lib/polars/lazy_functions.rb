@@ -1457,7 +1457,7 @@ module Polars
       end
 
       Utils.wrap_expr(
-        _rb_duration(
+        Plr.duration(
           weeks,
           days,
           hours,
@@ -1640,7 +1640,7 @@ module Polars
         prepared << ldf
       end
 
-      out = _collect_all(prepared)
+      out = Plr.collect_all(prepared)
 
       # wrap the rbdataframes into dataframe
       result = out.map { |rbdf| Utils.wrap_df(rbdf) }

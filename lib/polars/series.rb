@@ -4154,7 +4154,7 @@ module Polars
     end
 
     def _pos_idxs(idxs)
-      idx_type = Polars._get_idx_type
+      idx_type = Plr.get_idx_type
 
       if idxs.is_a?(Series)
         if idxs.dtype == idx_type

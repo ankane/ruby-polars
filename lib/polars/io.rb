@@ -842,7 +842,7 @@ module Polars
         source = Utils.normalise_filepath(source)
       end
 
-      _ipc_schema(source)
+      Plr.ipc_schema(source)
     end
 
     # Get a schema of the Parquet file without reading data.
@@ -856,7 +856,7 @@ module Polars
         source = Utils.normalise_filepath(source)
       end
 
-      _parquet_schema(source)
+      Plr.parquet_schema(source)
     end
 
     private

@@ -21,7 +21,7 @@ module Polars
       "POLARS_VERBOSE"
     ]
 
-    POLARS_CFG_DIRECT_VARS = {"set_fmt_float" => Polars.method(:_get_float_fmt)}
+    POLARS_CFG_DIRECT_VARS = {"set_fmt_float" => Plr.method(:get_float_fmt)}
 
     # Initialize a Config object instance for context manager usage.
     def initialize(restore_defaults: false, **options)
@@ -163,7 +163,7 @@ module Polars
     #
     # @return [Config]
     def self.set_fmt_float(fmt = "mixed")
-      Polars._set_float_fmt(fmt)
+      Plr.set_float_fmt(fmt)
       self
     end
 
