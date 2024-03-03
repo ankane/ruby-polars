@@ -49,124 +49,63 @@ type RbResult<T> = Result<T, Error>;
 fn init(ruby: &Ruby) -> RbResult<()> {
     let module = define_module("Polars")?;
     module.define_singleton_method(
-        "_dtype_cols",
-        function!(crate::functions::lazy::dtype_cols2, 1),
-    )?;
-    module.define_singleton_method(
         "_concat_lf_diagonal",
-        function!(crate::functions::lazy::concat_lf_diagonal, 4),
+        function!(functions::lazy::concat_lf_diagonal, 4),
     )?;
-    module.define_singleton_method(
-        "_rb_duration",
-        function!(crate::functions::lazy::duration, 9),
-    )?;
-    module.define_singleton_method(
-        "_concat_df",
-        function!(crate::functions::eager::concat_df, 1),
-    )?;
-    module.define_singleton_method(
-        "_concat_lf",
-        function!(crate::functions::lazy::concat_lf, 4),
-    )?;
+    module.define_singleton_method("_rb_duration", function!(functions::lazy::duration, 9))?;
+    module.define_singleton_method("_concat_df", function!(functions::eager::concat_df, 1))?;
+    module.define_singleton_method("_concat_lf", function!(functions::lazy::concat_lf, 4))?;
     module.define_singleton_method(
         "_concat_df_diagonal",
-        function!(crate::functions::eager::concat_df_diagonal, 1),
+        function!(functions::eager::concat_df_diagonal, 1),
     )?;
     module.define_singleton_method(
         "_concat_df_horizontal",
-        function!(crate::functions::eager::concat_df_horizontal, 1),
+        function!(functions::eager::concat_df_horizontal, 1),
     )?;
     module.define_singleton_method(
         "_concat_series",
-        function!(crate::functions::eager::concat_series, 1),
+        function!(functions::eager::concat_series, 1),
     )?;
-    module.define_singleton_method(
-        "_ipc_schema",
-        function!(crate::functions::io::read_ipc_schema, 1),
-    )?;
+    module.define_singleton_method("_ipc_schema", function!(functions::io::read_ipc_schema, 1))?;
     module.define_singleton_method(
         "_parquet_schema",
-        function!(crate::functions::io::read_parquet_schema, 1),
+        function!(functions::io::read_parquet_schema, 1),
     )?;
-    module.define_singleton_method(
-        "_collect_all",
-        function!(crate::functions::lazy::collect_all, 1),
-    )?;
-    module.define_singleton_method(
-        "_rb_date_range",
-        function!(crate::functions::range::date_range, 6),
-    )?;
-    module.define_singleton_method(
-        "_coalesce_exprs",
-        function!(crate::functions::lazy::coalesce, 1),
-    )?;
-    module.define_singleton_method(
-        "_all_horizontal",
-        function!(crate::functions::aggregation::all_horizontal, 1),
-    )?;
-    module.define_singleton_method(
-        "_any_horizontal",
-        function!(crate::functions::aggregation::any_horizontal, 1),
-    )?;
-    module.define_singleton_method(
-        "_max_horizontal",
-        function!(crate::functions::aggregation::max_horizontal, 1),
-    )?;
-    module.define_singleton_method(
-        "_min_horizontal",
-        function!(crate::functions::aggregation::min_horizontal, 1),
-    )?;
-    module.define_singleton_method(
-        "_sum_horizontal",
-        function!(crate::functions::aggregation::sum_horizontal, 1),
-    )?;
-    module.define_singleton_method(
-        "_mean_horizontal",
-        function!(crate::functions::aggregation::mean_horizontal, 1),
-    )?;
+    module.define_singleton_method("_collect_all", function!(functions::lazy::collect_all, 1))?;
+    module.define_singleton_method("_rb_date_range", function!(functions::range::date_range, 6))?;
     module.define_singleton_method(
         "_dtype_str_repr",
-        function!(crate::functions::misc::dtype_str_repr, 1),
+        function!(functions::misc::dtype_str_repr, 1),
     )?;
-    module.define_singleton_method(
-        "_as_struct",
-        function!(crate::functions::lazy::as_struct, 1),
-    )?;
-    module.define_singleton_method(
-        "_arg_where",
-        function!(crate::functions::lazy::arg_where, 1),
-    )?;
-    module.define_singleton_method(
-        "_get_idx_type",
-        function!(crate::functions::meta::get_idx_type, 0),
-    )?;
+    module.define_singleton_method("_get_idx_type", function!(functions::meta::get_idx_type, 0))?;
     module.define_singleton_method(
         "_threadpool_size",
-        function!(crate::functions::meta::threadpool_size, 0),
+        function!(functions::meta::threadpool_size, 0),
     )?;
     module.define_singleton_method(
         "_enable_string_cache",
-        function!(crate::functions::string_cache::enable_string_cache, 0),
+        function!(functions::string_cache::enable_string_cache, 0),
     )?;
     module.define_singleton_method(
         "_disable_string_cache",
-        function!(crate::functions::string_cache::disable_string_cache, 0),
+        function!(functions::string_cache::disable_string_cache, 0),
     )?;
     module.define_singleton_method(
         "_using_string_cache",
-        function!(crate::functions::string_cache::using_string_cache, 0),
+        function!(functions::string_cache::using_string_cache, 0),
     )?;
     module.define_singleton_method(
         "_set_float_fmt",
-        function!(crate::functions::meta::set_float_fmt, 1),
+        function!(functions::meta::set_float_fmt, 1),
     )?;
     module.define_singleton_method(
         "_get_float_fmt",
-        function!(crate::functions::meta::get_float_fmt, 0),
+        function!(functions::meta::get_float_fmt, 0),
     )?;
     module.define_singleton_method(
         "_set_random_seed",
-        function!(crate::functions::random::set_random_seed, 1),
+        function!(functions::random::set_random_seed, 1),
     )?;
 
     let class = module.define_class("RbBatchedCsv", ruby.class_object())?;
@@ -649,56 +588,61 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("name_to_uppercase", method!(RbExpr::name_to_uppercase, 0))?;
 
     // maybe add to different class
-    class.define_singleton_method("col", function!(crate::functions::lazy::col, 1))?;
-    class.define_singleton_method("len", function!(crate::functions::lazy::len, 0))?;
-    class.define_singleton_method("first", function!(crate::functions::lazy::first, 0))?;
-    class.define_singleton_method("last", function!(crate::functions::lazy::last, 0))?;
-    class.define_singleton_method("cols", function!(crate::functions::lazy::cols, 1))?;
-    class.define_singleton_method("fold", function!(crate::functions::lazy::fold, 3))?;
-    class.define_singleton_method("cum_fold", function!(crate::functions::lazy::cum_fold, 4))?;
-    class.define_singleton_method("lit", function!(crate::functions::lazy::lit, 2))?;
-    class.define_singleton_method(
-        "int_range",
-        function!(crate::functions::range::int_range, 4),
-    )?;
-    class.define_singleton_method(
-        "int_ranges",
-        function!(crate::functions::range::int_ranges, 4),
-    )?;
-    class.define_singleton_method("repeat", function!(crate::functions::lazy::repeat, 3))?;
-    class.define_singleton_method(
-        "pearson_corr",
-        function!(crate::functions::lazy::pearson_corr, 3),
-    )?;
+    let class = module.define_module("Plr")?;
+    class.define_singleton_method("dtype_cols", function!(functions::lazy::dtype_cols2, 1))?;
+    class.define_singleton_method("col", function!(functions::lazy::col, 1))?;
+    class.define_singleton_method("len", function!(functions::lazy::len, 0))?;
+    class.define_singleton_method("first", function!(functions::lazy::first, 0))?;
+    class.define_singleton_method("last", function!(functions::lazy::last, 0))?;
+    class.define_singleton_method("cols", function!(functions::lazy::cols, 1))?;
+    class.define_singleton_method("fold", function!(functions::lazy::fold, 3))?;
+    class.define_singleton_method("cum_fold", function!(functions::lazy::cum_fold, 4))?;
+    class.define_singleton_method("lit", function!(functions::lazy::lit, 2))?;
+    class.define_singleton_method("int_range", function!(functions::range::int_range, 4))?;
+    class.define_singleton_method("int_ranges", function!(functions::range::int_ranges, 4))?;
+    class.define_singleton_method("repeat", function!(functions::lazy::repeat, 3))?;
+    class.define_singleton_method("pearson_corr", function!(functions::lazy::pearson_corr, 3))?;
     class.define_singleton_method(
         "spearman_rank_corr",
-        function!(crate::functions::lazy::spearman_rank_corr, 4),
+        function!(functions::lazy::spearman_rank_corr, 4),
     )?;
-    class.define_singleton_method("sql_expr", function!(crate::functions::lazy::sql_expr, 1))?;
-    class.define_singleton_method("cov", function!(crate::functions::lazy::cov, 3))?;
-    class.define_singleton_method("arctan2", function!(crate::functions::lazy::arctan2, 2))?;
-    class.define_singleton_method("arctan2d", function!(crate::functions::lazy::arctan2d, 2))?;
+    class.define_singleton_method("sql_expr", function!(functions::lazy::sql_expr, 1))?;
+    class.define_singleton_method("cov", function!(functions::lazy::cov, 3))?;
+    class.define_singleton_method("arctan2", function!(functions::lazy::arctan2, 2))?;
+    class.define_singleton_method("arctan2d", function!(functions::lazy::arctan2d, 2))?;
+    class.define_singleton_method("rolling_corr", function!(functions::lazy::rolling_corr, 5))?;
+    class.define_singleton_method("rolling_cov", function!(functions::lazy::rolling_cov, 5))?;
+    class.define_singleton_method("arg_sort_by", function!(functions::lazy::arg_sort_by, 2))?;
+    class.define_singleton_method("when", function!(functions::whenthen::when, 1))?;
+    class.define_singleton_method("concat_str", function!(functions::lazy::concat_str, 3))?;
+    class.define_singleton_method("concat_lst", function!(functions::lazy::concat_list, 1))?;
     class.define_singleton_method(
-        "rolling_corr",
-        function!(crate::functions::lazy::rolling_corr, 5),
-    )?;
-    class.define_singleton_method(
-        "rolling_cov",
-        function!(crate::functions::lazy::rolling_cov, 5),
-    )?;
-    class.define_singleton_method(
-        "arg_sort_by",
-        function!(crate::functions::lazy::arg_sort_by, 2),
-    )?;
-    class.define_singleton_method("when", function!(crate::functions::whenthen::when, 1))?;
-    class.define_singleton_method(
-        "concat_str",
-        function!(crate::functions::lazy::concat_str, 3),
+        "all_horizontal",
+        function!(functions::aggregation::all_horizontal, 1),
     )?;
     class.define_singleton_method(
-        "concat_lst",
-        function!(crate::functions::lazy::concat_list, 1),
+        "any_horizontal",
+        function!(functions::aggregation::any_horizontal, 1),
     )?;
+    class.define_singleton_method(
+        "max_horizontal",
+        function!(functions::aggregation::max_horizontal, 1),
+    )?;
+    class.define_singleton_method(
+        "min_horizontal",
+        function!(functions::aggregation::min_horizontal, 1),
+    )?;
+    class.define_singleton_method(
+        "sum_horizontal",
+        function!(functions::aggregation::sum_horizontal, 1),
+    )?;
+    class.define_singleton_method(
+        "mean_horizontal",
+        function!(functions::aggregation::mean_horizontal, 1),
+    )?;
+    class.define_singleton_method("as_struct", function!(functions::lazy::as_struct, 1))?;
+    class.define_singleton_method("coalesce_exprs", function!(functions::lazy::coalesce, 1))?;
+    class.define_singleton_method("arg_where", function!(functions::lazy::arg_where, 1))?;
 
     let class = module.define_class("RbLazyFrame", ruby.class_object())?;
     class.define_singleton_method("read_json", function!(RbLazyFrame::read_json, 1))?;

@@ -8,11 +8,11 @@ module Polars
         if Utils.strlike?(name)
           names_str = [name]
           names_str.concat(more_names)
-          return Utils.wrap_expr(RbExpr.cols(names_str.map(&:to_s)))
+          return Utils.wrap_expr(Plr.cols(names_str.map(&:to_s)))
         elsif Utils.is_polars_dtype(name)
           dtypes = [name]
           dtypes.concat(more_names)
-          return Utils.wrap_expr(_dtype_cols(dtypes))
+          return Utils.wrap_expr(Plr.dtype_cols(dtypes))
         else
           msg = "invalid input for `col`\n\nExpected `str` or `DataType`, got #{name.class.name}."
           raise TypeError, msg
@@ -20,20 +20,20 @@ module Polars
       end
 
       if Utils.strlike?(name)
-        Utils.wrap_expr(RbExpr.col(name.to_s))
+        Utils.wrap_expr(Plr.col(name.to_s))
       elsif Utils.is_polars_dtype(name)
-        Utils.wrap_expr(_dtype_cols([name]))
+        Utils.wrap_expr(Plr.dtype_cols([name]))
       elsif name.is_a?(::Array)
         names = Array(name)
         if names.empty?
-          return Utils.wrap_expr(RbExpr.cols(names))
+          return Utils.wrap_expr(Plr.cols(names))
         end
 
         item = names[0]
         if Utils.strlike?(item)
-          Utils.wrap_expr(RbExpr.cols(names.map(&:to_s)))
+          Utils.wrap_expr(Plr.cols(names.map(&:to_s)))
         elsif Utils.is_polars_dtype(item)
-          Utils.wrap_expr(_dtype_cols(names))
+          Utils.wrap_expr(Plr.dtype_cols(names))
         else
           msg = "invalid input for `col`\n\nExpected iterable of type `str` or `DataType`, got iterable of type #{item.class.name}."
           raise TypeError, msg
@@ -114,7 +114,7 @@ module Polars
     def count(*columns)
       if columns.empty?
         warn "`Polars.count` is deprecated. Use `Polars.length` instead."
-        return Utils.wrap_expr(RbExpr.len._alias("count"))
+        return Utils.wrap_expr(Plr.len._alias("count"))
       end
 
       col(*columns).count
@@ -194,7 +194,7 @@ module Polars
     #   # │ 2     ┆ null ┆ null ┆ foo │
     #   # └───────┴──────┴──────┴─────┘
     def len
-      Utils.wrap_expr(RbExpr.len)
+      Utils.wrap_expr(Plr.len)
     end
     alias_method :length, :len
 
@@ -719,7 +719,7 @@ module Polars
     #   # └─────┴─────┘
     def first(*columns)
       if columns.empty?
-        return Utils.wrap_expr(RbExpr.first)
+        return Utils.wrap_expr(Plr.first)
       end
 
       col(*columns).first
@@ -779,7 +779,7 @@ module Polars
     #   # └─────┴─────┘
     def last(*columns)
       if columns.empty?
-        return Utils.wrap_expr(RbExpr.last)
+        return Utils.wrap_expr(Plr.last)
       end
 
       col(*columns).last
@@ -899,7 +899,7 @@ module Polars
       elsif value.is_a?(Polars::Series)
         name = value.name
         value = value._s
-        e = Utils.wrap_expr(RbExpr.lit(value, allow_object))
+        e = Utils.wrap_expr(Plr.lit(value, allow_object))
         if name == ""
           return e
         end
@@ -907,10 +907,10 @@ module Polars
       elsif (defined?(Numo::NArray) && value.is_a?(Numo::NArray)) || value.is_a?(::Array)
         return lit(Series.new("", value))
       elsif dtype
-        return Utils.wrap_expr(RbExpr.lit(value, allow_object)).cast(dtype)
+        return Utils.wrap_expr(Plr.lit(value, allow_object)).cast(dtype)
       end
 
-      Utils.wrap_expr(RbExpr.lit(value, allow_object))
+      Utils.wrap_expr(Plr.lit(value, allow_object))
     end
 
     # Cumulatively sum all values.
@@ -1015,9 +1015,9 @@ module Polars
       b = Utils.parse_as_expression(b)
 
       if method == "pearson"
-        Utils.wrap_expr(RbExpr.pearson_corr(a, b, ddof))
+        Utils.wrap_expr(Plr.pearson_corr(a, b, ddof))
       elsif method == "spearman"
-        Utils.wrap_expr(RbExpr.spearman_rank_corr(a, b, ddof, propagate_nans))
+        Utils.wrap_expr(Plr.spearman_rank_corr(a, b, ddof, propagate_nans))
       else
         msg = "method must be one of {{'pearson', 'spearman'}}, got #{method}"
         raise ArgumentError, msg
@@ -1092,7 +1092,7 @@ module Polars
     def cov(a, b, ddof: 1)
       a = Utils.parse_as_expression(a)
       b = Utils.parse_as_expression(b)
-      Utils.wrap_expr(RbExpr.cov(a, b, ddof))
+      Utils.wrap_expr(Plr.cov(a, b, ddof))
     end
 
     # def map
@@ -1111,7 +1111,7 @@ module Polars
       end
 
       exprs = Utils.selection_to_rbexpr_list(exprs)
-      Utils.wrap_expr(RbExpr.fold(acc._rbexpr, f, exprs))
+      Utils.wrap_expr(Plr.fold(acc._rbexpr, f, exprs))
     end
 
     # def reduce
@@ -1144,7 +1144,7 @@ module Polars
       end
 
       exprs = Utils.selection_to_rbexpr_list(exprs)
-      Utils.wrap_expr(RbExpr.cum_fold(acc._rbexpr, f, exprs, include_init))
+      Utils.wrap_expr(Plr.cum_fold(acc._rbexpr, f, exprs, include_init))
     end
     alias_method :cumfold, :cum_fold
 
@@ -1354,7 +1354,7 @@ module Polars
       stop = Utils.parse_as_expression(stop)
       dtype ||= Int64
       dtype = dtype.to_s if dtype.is_a?(Symbol)
-      result = Utils.wrap_expr(RbExpr.int_range(start, stop, step, dtype)).alias("arange")
+      result = Utils.wrap_expr(Plr.int_range(start, stop, step, dtype)).alias("arange")
 
       if eager
         return select(result).to_series
@@ -1384,7 +1384,7 @@ module Polars
         reverse = [reverse] * exprs.length
       end
       exprs = Utils.selection_to_rbexpr_list(exprs)
-      Utils.wrap_expr(RbExpr.arg_sort_by(exprs, reverse))
+      Utils.wrap_expr(Plr.arg_sort_by(exprs, reverse))
     end
     alias_method :argsort_by, :arg_sort_by
 
@@ -1515,7 +1515,7 @@ module Polars
     #   # └─────┴──────┴──────┴───────────────┘
     def concat_str(exprs, sep: "", ignore_nulls: false)
       exprs = Utils.selection_to_rbexpr_list(exprs)
-      return Utils.wrap_expr(RbExpr.concat_str(exprs, sep, ignore_nulls))
+      return Utils.wrap_expr(Plr.concat_str(exprs, sep, ignore_nulls))
     end
 
     # Format expressions as a string.
@@ -1576,7 +1576,7 @@ module Polars
     # @return [Expr]
     def concat_list(exprs)
       exprs = Utils.selection_to_rbexpr_list(exprs)
-      Utils.wrap_expr(RbExpr.concat_lst(exprs))
+      Utils.wrap_expr(Plr.concat_lst(exprs))
     end
 
     # Collect multiple LazyFrames at the same time.
@@ -1706,7 +1706,7 @@ module Polars
         Polars.select(struct(exprs, eager: false)).to_series
       end
       exprs = Utils.selection_to_rbexpr_list(exprs)
-      Utils.wrap_expr(_as_struct(exprs))
+      Utils.wrap_expr(Plr.as_struct(exprs))
     end
 
     # Repeat a single value n times.
@@ -1731,7 +1731,7 @@ module Polars
       end
 
       value = Utils.parse_as_expression(value, str_as_lit: true)
-      expr = Utils.wrap_expr(RbExpr.repeat(value, n._rbexpr, dtype))
+      expr = Utils.wrap_expr(Plr.repeat(value, n._rbexpr, dtype))
       if !name.nil?
         expr = expr.alias(name)
       end
@@ -1772,7 +1772,7 @@ module Polars
         condition.to_frame.select(arg_where(Polars.col(condition.name))).to_series
       else
         condition = Utils.expr_to_lit_or_expr(condition, str_to_lit: true)
-        Utils.wrap_expr(_arg_where(condition._rbexpr))
+        Utils.wrap_expr(Plr.arg_where(condition._rbexpr))
       end
     end
 
@@ -1811,7 +1811,7 @@ module Polars
       if more_exprs.any?
         exprs.concat(Utils.selection_to_rbexpr_list(more_exprs))
       end
-      Utils.wrap_expr(_coalesce_exprs(exprs))
+      Utils.wrap_expr(Plr.coalesce_exprs(exprs))
     end
 
     # Utility function that parses an epoch timestamp (or Unix time) to Polars Date(time).
@@ -1893,7 +1893,7 @@ module Polars
     #   # └─────┴─────┴─────────┘
     def when(expr)
       expr = Utils.expr_to_lit_or_expr(expr)
-      pw = RbExpr.when(expr._rbexpr)
+      pw = Plr.when(expr._rbexpr)
       When.new(pw)
     end
 
@@ -1930,7 +1930,7 @@ module Polars
     #   # └───────┴───────┴─────┴───────┘
     def all_horizontal(*exprs)
       rbexprs = Utils.parse_as_list_of_expressions(*exprs)
-      Utils.wrap_expr(_all_horizontal(rbexprs))
+      Utils.wrap_expr(Plr.all_horizontal(rbexprs))
     end
 
     # Compute the bitwise OR horizontally across columns.
@@ -1966,7 +1966,7 @@ module Polars
     #   # └───────┴───────┴─────┴───────┘
     def any_horizontal(*exprs)
       rbexprs = Utils.parse_as_list_of_expressions(*exprs)
-      Utils.wrap_expr(_any_horizontal(rbexprs))
+      Utils.wrap_expr(Plr.any_horizontal(rbexprs))
     end
 
     # Get the maximum value horizontally across columns.
@@ -1999,7 +1999,7 @@ module Polars
     #   # └─────┴──────┴─────┴─────┘
     def max_horizontal(*exprs)
       rbexprs = Utils.parse_as_list_of_expressions(*exprs)
-      Utils.wrap_expr(_max_horizontal(rbexprs))
+      Utils.wrap_expr(Plr.max_horizontal(rbexprs))
     end
 
     # Get the minimum value horizontally across columns.
@@ -2032,7 +2032,7 @@ module Polars
     #   # └─────┴──────┴─────┴─────┘
     def min_horizontal(*exprs)
       rbexprs = Utils.parse_as_list_of_expressions(*exprs)
-      Utils.wrap_expr(_min_horizontal(rbexprs))
+      Utils.wrap_expr(Plr.min_horizontal(rbexprs))
     end
 
     # Sum all values horizontally across columns.
@@ -2065,7 +2065,7 @@ module Polars
     #   # └─────┴──────┴─────┴─────┘
     def sum_horizontal(*exprs)
       rbexprs = Utils.parse_as_list_of_expressions(*exprs)
-      Utils.wrap_expr(_sum_horizontal(rbexprs))
+      Utils.wrap_expr(Plr.sum_horizontal(rbexprs))
     end
 
     # Compute the mean of all values horizontally across columns.
@@ -2098,7 +2098,7 @@ module Polars
     #   # └─────┴──────┴─────┴──────┘
     def mean_horizontal(*exprs)
       rbexprs = Utils.parse_as_list_of_expressions(*exprs)
-      Utils.wrap_expr(_mean_horizontal(rbexprs))
+      Utils.wrap_expr(Plr.mean_horizontal(rbexprs))
     end
 
     # Cumulatively sum all values horizontally across columns.
@@ -2177,9 +2177,9 @@ module Polars
     #   # └─────┴─────┴───────┘
     def sql_expr(sql)
       if sql.is_a?(::String)
-        Utils.wrap_expr(RbExpr.sql_expr(sql))
+        Utils.wrap_expr(Plr.sql_expr(sql))
       else
-        sql.map { |q| Utils.wrap_expr(RbExpr.sql_expr(q)) }
+        sql.map { |q| Utils.wrap_expr(Plr.sql_expr(q)) }
       end
     end
   end
