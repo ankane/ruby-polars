@@ -4,6 +4,26 @@ use crate::{RbResult, RbSeries, RbValueError};
 use magnus::{IntoValue, Value};
 
 impl RbSeries {
+    pub fn any(&self, ignore_nulls: bool) -> RbResult<Option<bool>> {
+        let binding = self.series.borrow();
+        let s = binding.bool().map_err(RbPolarsErr::from)?;
+        Ok(if ignore_nulls {
+            Some(s.any())
+        } else {
+            s.any_kleene()
+        })
+    }
+
+    pub fn all(&self, ignore_nulls: bool) -> RbResult<Option<bool>> {
+        let binding = self.series.borrow();
+        let s = binding.bool().map_err(RbPolarsErr::from)?;
+        Ok(if ignore_nulls {
+            Some(s.all())
+        } else {
+            s.all_kleene()
+        })
+    }
+
     pub fn arg_max(&self) -> Option<usize> {
         self.series.borrow().arg_max()
     }

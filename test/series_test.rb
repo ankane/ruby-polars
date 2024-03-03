@@ -354,6 +354,8 @@ class SeriesTest < Minitest::Test
     refute Polars::Series.new([true, true, false]).all?
     refute Polars::Series.new([1, 2, 3]).all?(&:even?)
     assert Polars::Series.new([2, 4, 6]).all?(&:even?)
+    assert Polars::Series.new([true, nil]).all?
+    refute Polars::Series.new([true, nil]).all?(ignore_nulls: false)
   end
 
   def test_none

@@ -18,6 +18,7 @@ See the [upgrade guide](https://docs.pola.rs/releases/upgrade/0.20/)
 - Added more methods to `StringExpr`
 - Added `schema_overrides` option to `read_database` method
 - Added `join_nulls` option to `join` method
+- Added `ignore_nulls` option to `any` and `all` methods
 - Aliased `cleared` to `clear` for `DataFrame` and `LazyFrame`
 - Fixed error with `BigDecimal` objects
 

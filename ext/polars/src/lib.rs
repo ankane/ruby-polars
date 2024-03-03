@@ -846,6 +846,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("rem", method!(RbSeries::rem, 1))?;
     class.define_method("sort", method!(RbSeries::sort, 2))?;
     class.define_method("value_counts", method!(RbSeries::value_counts, 1))?;
+    class.define_method("any", method!(RbSeries::any, 1))?;
+    class.define_method("all", method!(RbSeries::all, 1))?;
     class.define_method("arg_min", method!(RbSeries::arg_min, 0))?;
     class.define_method("arg_max", method!(RbSeries::arg_max, 0))?;
     class.define_method("take_with_series", method!(RbSeries::take_with_series, 1))?;

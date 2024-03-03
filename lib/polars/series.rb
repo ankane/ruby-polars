@@ -531,11 +531,11 @@ module Polars
     # Check if any boolean value in the column is `true`.
     #
     # @return [Boolean]
-    def any?(&block)
+    def any?(ignore_nulls: true, &block)
       if block_given?
-        apply(&block).any?
+        apply(skip_nulls: ignore_nulls, &block).any?
       else
-        to_frame.select(Polars.col(name).any).to_series[0]
+        _s.any(ignore_nulls)
       end
     end
     alias_method :any, :any?
@@ -543,11 +543,11 @@ module Polars
     # Check if all boolean values in the column are `true`.
     #
     # @return [Boolean]
-    def all?(&block)
+    def all?(ignore_nulls: true, &block)
       if block_given?
-        apply(&block).all?
+        apply(skip_nulls: ignore_nulls, &block).all?
       else
-        to_frame.select(Polars.col(name).all).to_series[0]
+        _s.all(ignore_nulls)
       end
     end
     alias_method :all, :all?
