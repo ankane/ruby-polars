@@ -1,18 +1,23 @@
 module Polars
   # @private
+  # Base class for all Polars errors.
   class Error < StandardError; end
 
+  # @private
   # Exception raised when an unsupported testing assert is made.
   class InvalidAssert < Error; end
 
   # @private
+  # Exception raised when the number of returned rows does not match expectation.
   class RowsException < Error; end
 
   # @private
-  class TooManyRowsReturned < RowsException; end
+  # Exception raised when no rows are returned, but at least one row is expected.
+  class NoRowsReturned < RowsException; end
 
   # @private
-  class NoRowsReturned < RowsException; end
+  # Exception raised when more rows than expected are returned.
+  class TooManyRowsReturned < RowsException; end
 
   # @private
   class AssertionError < Error; end
