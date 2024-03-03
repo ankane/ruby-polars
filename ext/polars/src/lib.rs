@@ -643,6 +643,38 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(functions::meta::get_float_fmt, 0),
     )?;
     class.define_singleton_method(
+        "set_float_precision",
+        function!(functions::meta::set_float_precision, 1),
+    )?;
+    class.define_singleton_method(
+        "get_float_precision",
+        function!(functions::meta::get_float_precision, 0),
+    )?;
+    class.define_singleton_method(
+        "set_thousands_separator",
+        function!(functions::meta::set_thousands_separator, 1),
+    )?;
+    class.define_singleton_method(
+        "get_thousands_separator",
+        function!(functions::meta::get_thousands_separator, 0),
+    )?;
+    class.define_singleton_method(
+        "set_decimal_separator",
+        function!(functions::meta::set_decimal_separator, 1),
+    )?;
+    class.define_singleton_method(
+        "get_decimal_separator",
+        function!(functions::meta::get_decimal_separator, 0),
+    )?;
+    class.define_singleton_method(
+        "set_trim_decimal_zeros",
+        function!(functions::meta::set_trim_decimal_zeros, 1),
+    )?;
+    class.define_singleton_method(
+        "get_trim_decimal_zeros",
+        function!(functions::meta::get_trim_decimal_zeros, 0),
+    )?;
+    class.define_singleton_method(
         "set_random_seed",
         function!(functions::random::set_random_seed, 1),
     )?;
