@@ -44,5 +44,29 @@ module Polars
     def set_ordering(ordering)
       Utils.wrap_expr(_rbexpr.cat_set_ordering(ordering))
     end
+
+    # Get the categories stored in this data type.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::Series.new(
+    #     "cats", ["foo", "bar", "foo", "foo", "ham"], dtype: Polars::Categorical
+    #   ).to_frame
+    #   df.select(Polars.col("cats").cat.get_categories)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ cats │
+    #   # │ ---  │
+    #   # │ str  │
+    #   # ╞══════╡
+    #   # │ foo  │
+    #   # │ bar  │
+    #   # │ ham  │
+    #   # └──────┘
+    def get_categories
+      Utils.wrap_expr(_rbexpr.cat_get_categories)
+    end
   end
 end

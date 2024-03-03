@@ -46,5 +46,24 @@ module Polars
     def set_ordering(ordering)
       super
     end
+
+    # Get the categories stored in this data type.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(["foo", "bar", "foo", "foo", "ham"], dtype: Polars::Categorical)
+    #   s.cat.get_categories
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "foo"
+    #   #         "bar"
+    #   #         "ham"
+    #   # ]
+    def get_categories
+      super
+    end
   end
 end
