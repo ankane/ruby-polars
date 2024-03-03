@@ -12,5 +12,12 @@ module Polars
     def get_dummies(df, columns: nil)
       df.to_dummies(columns: columns)
     end
+
+    # Aggregate to list.
+    #
+    # @return [Expr]
+    def to_list(name)
+      col(name).list
+    end
   end
 end

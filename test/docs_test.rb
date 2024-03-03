@@ -69,10 +69,6 @@ class DocsTest < Minitest::Test
     assert_docs Polars::LazyFrame
   end
 
-  def test_lazy_functions
-    assert_docs Polars::LazyFunctions
-  end
-
   def test_lazy_group_by
     assert_docs Polars::LazyGroupBy
   end

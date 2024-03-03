@@ -46,7 +46,6 @@ require_relative "polars/functions/range/int_range"
 require_relative "polars/group_by"
 require_relative "polars/io"
 require_relative "polars/lazy_frame"
-require_relative "polars/lazy_functions"
 require_relative "polars/lazy_group_by"
 require_relative "polars/list_expr"
 require_relative "polars/list_name_space"
@@ -70,5 +69,4 @@ module Polars
   extend Convert
   extend Functions
   extend IO
-  extend LazyFunctions
 end
