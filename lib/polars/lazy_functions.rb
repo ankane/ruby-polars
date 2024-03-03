@@ -1515,7 +1515,7 @@ module Polars
     #   # └─────┴──────┴──────┴───────────────┘
     def concat_str(exprs, sep: "", ignore_nulls: false)
       exprs = Utils.selection_to_rbexpr_list(exprs)
-      return Utils.wrap_expr(Plr.concat_str(exprs, sep, ignore_nulls))
+      Utils.wrap_expr(Plr.concat_str(exprs, sep, ignore_nulls))
     end
 
     # Format expressions as a string.
