@@ -3,29 +3,44 @@ module Polars
     # Return an expression representing a column in a DataFrame.
     #
     # @return [Expr]
-    def col(name)
-      if name.is_a?(Series)
-        name = name.to_a
+    def col(name, *more_names)
+      if more_names.any?
+        if Utils.strlike?(name)
+          names_str = [name]
+          names_str.concat(more_names)
+          return Utils.wrap_expr(RbExpr.cols(names_str.map(&:to_s)))
+        elsif Utils.is_polars_dtype(name)
+          dtypes = [name]
+          dtypes.concat(more_names)
+          return Utils.wrap_expr(_dtype_cols(dtypes))
+        else
+          msg = "invalid input for `col`\n\nExpected `str` or `DataType`, got #{name.class.name}."
+          raise TypeError, msg
+        end
       end
 
-      if name.is_a?(Class) && name < DataType
-        name = [name]
-      end
-
-      if name.is_a?(DataType)
+      if Utils.strlike?(name)
+        Utils.wrap_expr(RbExpr.col(name.to_s))
+      elsif Utils.is_polars_dtype(name)
         Utils.wrap_expr(_dtype_cols([name]))
       elsif name.is_a?(::Array)
-        if name.length == 0 || Utils.strlike?(name[0])
-          name = name.map { |v| v.is_a?(Symbol) ? v.to_s : v }
-          Utils.wrap_expr(RbExpr.cols(name))
-        elsif Utils.is_polars_dtype(name[0])
-          Utils.wrap_expr(_dtype_cols(name))
+        names = Array(name)
+        if names.empty?
+          return Utils.wrap_expr(RbExpr.cols(names))
+        end
+
+        item = names[0]
+        if Utils.strlike?(item)
+          Utils.wrap_expr(RbExpr.cols(names.map(&:to_s)))
+        elsif Utils.is_polars_dtype(item)
+          Utils.wrap_expr(_dtype_cols(names))
         else
-          raise ArgumentError, "Expected list values to be all `str` or all `DataType`"
+          msg = "invalid input for `col`\n\nExpected iterable of type `str` or `DataType`, got iterable of type #{item.class.name}."
+          raise TypeError, msg
         end
       else
-        name = name.to_s if name.is_a?(Symbol)
-        Utils.wrap_expr(RbExpr.col(name))
+        msg = "invalid input for `col`\n\nExpected `str` or `DataType`, got #{name.class.name}."
+        raise TypeError, msg
       end
     end
 
@@ -153,46 +168,167 @@ module Polars
 
     # Get the maximum value.
     #
-    # @param column [Object]
-    #   Column(s) to be used in aggregation.
+    # Syntactic sugar for `col(names).max`.
     #
-    # @return [Expr, Object]
-    def max(column)
-      if column.is_a?(Series)
-        column.max
-      else
-        col(column).max
-      end
+    # @param names [Array]
+    #   Name(s) of the columns to use in the aggregation.
+    #
+    # @return [Expr]
+    #
+    # @example Get the maximum value of a column.
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 3],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.max("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 8   │
+    #   # └─────┘
+    #
+    # @example Get the maximum value of multiple columns.
+    #   df.select(Polars.max("^a|b$"))
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 8   ┆ 5   │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df.select(Polars.max("a", "b"))
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 8   ┆ 5   │
+    #   # └─────┴─────┘
+    def max(*names)
+      col(*names).max
     end
 
     # Get the minimum value.
     #
-    # @param column [Object]
-    #   Column(s) to be used in aggregation.
+    # Syntactic sugar for `col(names).min`.
     #
-    # @return [Expr, Object]
-    def min(column)
-      if column.is_a?(Series)
-        column.min
-      else
-        col(column).min
-      end
+    # @param names [Array]
+    #   Name(s) of the columns to use in the aggregation.
+    #
+    # @return [Expr]
+    #
+    # @example Get the minimum value of a column.
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 3],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.min("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # └─────┘
+    #
+    # @example Get the minimum value of multiple columns.
+    #   df.select(Polars.min("^a|b$"))
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 2   │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df.select(Polars.min("a", "b"))
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 2   │
+    #   # └─────┴─────┘
+    def min(*names)
+      col(*names).min
     end
 
-    # Sum values in a column/Series, or horizontally across list of columns/expressions.
+    # Sum all values.
     #
-    # @return [Object]
-    def sum(column)
-      if column.is_a?(Series)
-        column.sum
-      elsif Utils.strlike?(column)
-        col(column.to_s).sum
-      elsif column.is_a?(::Array)
-        exprs = Utils.selection_to_rbexpr_list(column)
-        Utils.wrap_expr(_sum_horizontal(exprs))
-      else
-        fold(lit(0).cast(:u32), ->(a, b) { a + b }, column).alias("sum")
-      end
+    # Syntactic sugar for `col(name).sum()`.
+    #
+    # @param names [Array]
+    #   Name(s) of the columns to use in the aggregation.
+    #
+    # @return [Expr]
+    #
+    # @example Sum a column.
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2],
+    #       "b" => [3, 4],
+    #       "c" => [5, 6]
+    #     }
+    #   )
+    #   df.select(Polars.sum("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 3   │
+    #   # └─────┘
+    #
+    # @example Sum multiple columns.
+    #   df.select(Polars.sum("a", "c"))
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ c   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 3   ┆ 11  │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df.select(Polars.sum("^.*[bc]$"))
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ b   ┆ c   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 7   ┆ 11  │
+    #   # └─────┴─────┘
+    def sum(*names)
+      col(*names).sum()
     end
 
     # Get the mean value.
@@ -495,15 +631,36 @@ module Polars
     # def cumreduce
     # end
 
-    # Evaluate columnwise or elementwise with a bitwise OR operation.
+    # Evaluate a bitwise OR operation.
+    #
+    # Syntactic sugar for `col(names).any`.
+    #
+    # @param names [Array]
+    #   Name(s) of the columns to use in the aggregation.
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default).
     #
     # @return [Expr]
-    def any(name)
-      if Utils.strlike?(name)
-        col(name).any
-      else
-        fold(lit(false), ->(a, b) { a.cast(:bool) | b.cast(:bool) }, name).alias("any")
-      end
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [true, false, true],
+    #       "b" => [false, false, false]
+    #     }
+    #   )
+    #   df.select(Polars.any("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ bool │
+    #   # ╞══════╡
+    #   # │ true │
+    #   # └──────┘
+    def any(*names, ignore_nulls: true)
+      col(*names).any(drop_nulls: ignore_nulls)
     end
 
     # Exclude certain columns from a wildcard/regex selection.
@@ -569,38 +726,53 @@ module Polars
       col("*").exclude(columns)
     end
 
-    # Do one of two things.
+    # Either return an expression representing all columns, or evaluate a bitwise AND operation.
     #
-    # * function can do a columnwise or elementwise AND operation
-    # * a wildcard column selection
+    # If no arguments are passed, this function is syntactic sugar for `col("*")`.
+    # Otherwise, this function is syntactic sugar for `col(names).all`.
     #
-    # @param name [Object]
-    #   If given this function will apply a bitwise & on the columns.
+    # @param names [Array]
+    #   Name(s) of the columns to use in the aggregation.
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default).
     #
     # @return [Expr]
     #
-    # @example Sum all columns
+    # @example Selecting all columns.
     #   df = Polars::DataFrame.new(
-    #     {"a" => [1, 2, 3], "b" => ["hello", "foo", "bar"], "c" => [1, 1, 1]}
+    #     {
+    #       "a" => [true, false, true],
+    #       "b" => [false, false, false]
+    #     }
     #   )
     #   df.select(Polars.all.sum)
     #   # =>
-    #   # shape: (1, 3)
-    #   # ┌─────┬──────┬─────┐
-    #   # │ a   ┆ b    ┆ c   │
-    #   # │ --- ┆ ---  ┆ --- │
-    #   # │ i64 ┆ str  ┆ i64 │
-    #   # ╞═════╪══════╪═════╡
-    #   # │ 6   ┆ null ┆ 3   │
-    #   # └─────┴──────┴─────┘
-    def all(name = nil)
-      if name.nil?
-        col("*")
-      elsif Utils.strlike?(name)
-        col(name).all
-      else
-        raise Todo
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ u32 ┆ u32 │
+    #   # ╞═════╪═════╡
+    #   # │ 2   ┆ 0   │
+    #   # └─────┴─────┘
+    #
+    # @example Evaluate bitwise AND for a column.
+    #   df.select(Polars.all("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌───────┐
+    #   # │ a     │
+    #   # │ ---   │
+    #   # │ bool  │
+    #   # ╞═══════╡
+    #   # │ false │
+    #   # └───────┘
+    def all(*names, ignore_nulls: true)
+      if names.empty?
+        return col("*")
       end
+
+      col(*names).all(drop_nulls: ignore_nulls)
     end
 
     # Syntactic sugar for `Polars.col("foo").agg_groups`.
