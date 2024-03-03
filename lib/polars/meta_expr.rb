@@ -127,9 +127,9 @@ module Polars
     # @example
     #   e = Polars.col("foo").alias("bar")
     #   first = e.meta.pop[0]
-    #   first.meta == Polars.col("foo")
+    #   _ = first.meta == Polars.col("foo")
     #   # => true
-    #   first.meta == Polars.col("bar")
+    #   _ = first.meta == Polars.col("bar")
     #   # => false
     def pop
       _rbexpr.meta_pop.map { |e| Utils.wrap_expr(e) }
@@ -162,10 +162,10 @@ module Polars
     #
     # @example
     #   e = Polars.col("foo").alias("bar")
-    #   e.meta.undo_aliases.meta == Polars.col("foo")
+    #   _ = e.meta.undo_aliases.meta == Polars.col("foo")
     #   # => true
     #   e = Polars.col("foo").sum().over("bar")
-    #   e.name.keep.meta.undo_aliases.meta == e
+    #   _ = e.name.keep.meta.undo_aliases.meta == e
     #   # => true
     def undo_aliases
       Utils.wrap_expr(_rbexpr.meta_undo_aliases)
