@@ -35,10 +35,12 @@ class User < ActiveRecord::Base
 end
 
 class Minitest::Test
-  def assert_series(exp, act, dtype: nil)
+  include Polars::Testing
+
+  def assert_series(exp, act, dtype: nil, **options)
     assert_kind_of Polars::Series, act
     if exp.is_a?(Polars::Series)
-      assert exp.series_equal(act, null_equal: true)
+      assert_series_equal(exp, act, **options)
     elsif exp.any? { |e| e.is_a?(Float) && e.nan? }
       assert exp.zip(act.to_a).all? { |e, a| e.nan? ? a.nan? : e == a }
     else
@@ -47,11 +49,11 @@ class Minitest::Test
     assert_equal dtype, act.dtype if dtype
   end
 
-  def assert_frame(exp, act)
+  def assert_frame(exp, act, **options)
     if exp.is_a?(Hash)
       assert_equal exp.transform_keys(&:to_s), act.to_h(as_series: false)
     else
-      assert exp.frame_equal(act)
+      assert_frame_equal(exp, act, **options)
     end
   end
 

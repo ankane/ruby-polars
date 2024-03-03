@@ -39,7 +39,7 @@ module Polars
       if other.is_a?(Class)
         is_a?(other)
       else
-        eql?(other)
+        other.instance_of?(self.class)
       end
     end
 
