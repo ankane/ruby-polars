@@ -127,6 +127,8 @@ module Polars
   # Base class for integral data types.
   class IntegerType < NumericType
   end
+
+  # @private
   IntegralType = IntegerType
 
   # Base class for signed integer data types.
@@ -223,6 +225,7 @@ module Polars
   class String < DataType
   end
 
+  # @private
   # Allow Utf8 as an alias for String
   Utf8 = String
 
