@@ -15,7 +15,7 @@ pub fn using_string_cache() -> bool {
 }
 
 #[magnus::wrap(class = "Polars::RbStringCacheHolder")]
-pub struct RbStringCacheHolder;
+pub struct RbStringCacheHolder {}
 
 impl RbStringCacheHolder {
     pub fn hold() -> RbResult<Value> {
