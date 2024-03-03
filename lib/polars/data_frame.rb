@@ -622,7 +622,7 @@ module Polars
         # select single column
         # df["foo"]
         if item.is_a?(::String) || item.is_a?(Symbol)
-          return Utils.wrap_s(_df.column(item.to_s))
+          return Utils.wrap_s(_df.get_column(item.to_s))
         end
 
         # df[idx]

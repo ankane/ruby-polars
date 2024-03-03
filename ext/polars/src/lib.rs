@@ -228,7 +228,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "get_column_index",
         method!(RbDataFrame::get_column_index, 1),
     )?;
-    class.define_method("column", method!(RbDataFrame::column, 1))?;
+    class.define_method("get_column", method!(RbDataFrame::get_column, 1))?;
     class.define_method("select", method!(RbDataFrame::select, 1))?;
     class.define_method("take", method!(RbDataFrame::take, 1))?;
     class.define_method(

@@ -807,12 +807,11 @@ impl RbDataFrame {
         self.df.borrow().get_column_index(&name)
     }
 
-    // TODO remove clone
-    pub fn column(&self, name: String) -> RbResult<RbSeries> {
+    pub fn get_column(&self, name: String) -> RbResult<RbSeries> {
         self.df
             .borrow()
             .column(&name)
-            .map(|v| v.clone().into())
+            .map(|s| RbSeries::new(s.clone()))
             .map_err(RbPolarsErr::from)
     }
 
