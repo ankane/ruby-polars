@@ -53,27 +53,27 @@ module Polars
       first = items[0]
       if first.is_a?(DataFrame)
         if how == "vertical"
-          out = Utils.wrap_df(_concat_df(items))
+          out = Utils.wrap_df(Plr.concat_df(items))
         elsif how == "diagonal"
-          out = Utils.wrap_df(_concat_df_diagonal(items))
+          out = Utils.wrap_df(Plr.concat_df_diagonal(items))
         elsif how == "horizontal"
-          out = Utils.wrap_df(_concat_df_horizontal(items))
+          out = Utils.wrap_df(Plr.concat_df_horizontal(items))
         else
           raise ArgumentError, "how must be one of {{'vertical', 'diagonal', 'horizontal'}}, got #{how}"
         end
       elsif first.is_a?(LazyFrame)
         if how == "vertical"
-          return Utils.wrap_ldf(_concat_lf(items, rechunk, parallel, false))
+          return Utils.wrap_ldf(Plr.concat_lf(items, rechunk, parallel, false))
         elsif how == "vertical_relaxed"
-          return Utils.wrap_ldf(_concat_lf(items, rechunk, parallel, true))
+          return Utils.wrap_ldf(Plr.concat_lf(items, rechunk, parallel, true))
         elsif how == "diagonal"
-          return Utils.wrap_ldf(_concat_lf_diagonal(items, rechunk, parallel, false))
+          return Utils.wrap_ldf(Plr.concat_lf_diagonal(items, rechunk, parallel, false))
         else
           raise ArgumentError, "Lazy only allows 'vertical', 'vertical_relaxed', and 'diagonal' concat strategy."
         end
       elsif first.is_a?(Series)
         # TODO
-        out = Utils.wrap_s(_concat_series(items))
+        out = Utils.wrap_s(Plr.concat_series(items))
       elsif first.is_a?(Expr)
         out = first
         items[1..-1].each do |e|

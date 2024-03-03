@@ -48,25 +48,7 @@ type RbResult<T> = Result<T, Error>;
 #[magnus::init]
 fn init(ruby: &Ruby) -> RbResult<()> {
     let module = define_module("Polars")?;
-    module.define_singleton_method(
-        "_concat_lf_diagonal",
-        function!(functions::lazy::concat_lf_diagonal, 4),
-    )?;
     module.define_singleton_method("_rb_duration", function!(functions::lazy::duration, 9))?;
-    module.define_singleton_method("_concat_df", function!(functions::eager::concat_df, 1))?;
-    module.define_singleton_method("_concat_lf", function!(functions::lazy::concat_lf, 4))?;
-    module.define_singleton_method(
-        "_concat_df_diagonal",
-        function!(functions::eager::concat_df_diagonal, 1),
-    )?;
-    module.define_singleton_method(
-        "_concat_df_horizontal",
-        function!(functions::eager::concat_df_horizontal, 1),
-    )?;
-    module.define_singleton_method(
-        "_concat_series",
-        function!(functions::eager::concat_series, 1),
-    )?;
     module.define_singleton_method("_ipc_schema", function!(functions::io::read_ipc_schema, 1))?;
     module.define_singleton_method(
         "_parquet_schema",
@@ -643,6 +625,24 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("as_struct", function!(functions::lazy::as_struct, 1))?;
     class.define_singleton_method("coalesce_exprs", function!(functions::lazy::coalesce, 1))?;
     class.define_singleton_method("arg_where", function!(functions::lazy::arg_where, 1))?;
+    class.define_singleton_method(
+        "concat_lf_diagonal",
+        function!(functions::lazy::concat_lf_diagonal, 4),
+    )?;
+    class.define_singleton_method("concat_df", function!(functions::eager::concat_df, 1))?;
+    class.define_singleton_method("concat_lf", function!(functions::lazy::concat_lf, 4))?;
+    class.define_singleton_method(
+        "concat_df_diagonal",
+        function!(functions::eager::concat_df_diagonal, 1),
+    )?;
+    class.define_singleton_method(
+        "concat_df_horizontal",
+        function!(functions::eager::concat_df_horizontal, 1),
+    )?;
+    class.define_singleton_method(
+        "concat_series",
+        function!(functions::eager::concat_series, 1),
+    )?;
 
     let class = module.define_class("RbLazyFrame", ruby.class_object())?;
     class.define_singleton_method("read_json", function!(RbLazyFrame::read_json, 1))?;
