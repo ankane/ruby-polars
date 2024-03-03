@@ -942,16 +942,35 @@ module Polars
     #   Column name or Expression.
     # @param b [Object]
     #   Column name or Expression.
+    # @param ddof [Integer]
+    #   "Delta Degrees of Freedom": the divisor used in the calculation is N - ddof,
+    #   where N represents the number of elements.
+    #   By default ddof is 1.
     #
     # @return [Expr]
-    def cov(a, b)
-      if Utils.strlike?(a)
-        a = col(a)
-      end
-      if Utils.strlike?(b)
-        b = col(b)
-      end
-      Utils.wrap_expr(RbExpr.cov(a._rbexpr, b._rbexpr))
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 3],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.cov("a", "b"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 3.0 │
+    #   # └─────┘
+    def cov(a, b, ddof: 1)
+      a = Utils.parse_as_expression(a)
+      b = Utils.parse_as_expression(b)
+      Utils.wrap_expr(RbExpr.cov(a, b, ddof))
     end
 
     # def map
