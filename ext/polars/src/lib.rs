@@ -801,6 +801,12 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "can_fast_explode_flag",
         method!(RbSeries::can_fast_explode_flag, 0),
     )?;
+    class.define_method(
+        "cat_uses_lexical_ordering",
+        method!(RbSeries::cat_uses_lexical_ordering, 0),
+    )?;
+    class.define_method("cat_is_local", method!(RbSeries::cat_is_local, 0))?;
+    class.define_method("cat_to_local", method!(RbSeries::cat_to_local, 0))?;
     class.define_method("estimated_size", method!(RbSeries::estimated_size, 0))?;
     class.define_method("get_fmt", method!(RbSeries::get_fmt, 2))?;
     class.define_method("rechunk", method!(RbSeries::rechunk, 1))?;

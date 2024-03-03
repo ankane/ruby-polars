@@ -74,6 +74,24 @@ impl RbSeries {
         }
     }
 
+    pub fn cat_uses_lexical_ordering(&self) -> RbResult<bool> {
+        let binding = self.series.borrow();
+        let ca = binding.categorical().map_err(RbPolarsErr::from)?;
+        Ok(ca.uses_lexical_ordering())
+    }
+
+    pub fn cat_is_local(&self) -> RbResult<bool> {
+        let binding = self.series.borrow();
+        let ca = binding.categorical().map_err(RbPolarsErr::from)?;
+        Ok(ca.get_rev_map().is_local())
+    }
+
+    pub fn cat_to_local(&self) -> RbResult<Self> {
+        let binding = self.series.borrow();
+        let ca = binding.categorical().map_err(RbPolarsErr::from)?;
+        Ok(ca.to_local().into_series().into())
+    }
+
     pub fn estimated_size(&self) -> usize {
         self.series.borrow().estimated_size()
     }
