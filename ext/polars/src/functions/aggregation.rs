@@ -33,3 +33,9 @@ pub fn sum_horizontal(exprs: RArray) -> RbResult<RbExpr> {
     let e = dsl::sum_horizontal(exprs).map_err(RbPolarsErr::from)?;
     Ok(e.into())
 }
+
+pub fn mean_horizontal(exprs: RArray) -> RbResult<RbExpr> {
+    let exprs = rb_exprs_to_exprs(exprs)?;
+    let e = dsl::mean_horizontal(exprs).map_err(RbPolarsErr::from)?;
+    Ok(e.into())
+}

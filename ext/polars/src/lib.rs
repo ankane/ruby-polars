@@ -121,6 +121,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(crate::functions::aggregation::sum_horizontal, 1),
     )?;
     module.define_singleton_method(
+        "_mean_horizontal",
+        function!(crate::functions::aggregation::mean_horizontal, 1),
+    )?;
+    module.define_singleton_method(
         "_dtype_str_repr",
         function!(crate::functions::misc::dtype_str_repr, 1),
     )?;
