@@ -493,28 +493,28 @@ class SeriesTest < Minitest::Test
     assert_equal 1, s.n_chunks
   end
 
-  def test_cumsum
+  def test_cum_sum
     s = Polars::Series.new([1, 2, 3])
-    assert_series [1, 3, 6], s.cumsum
-    assert_series [6, 5, 3], s.cumsum(reverse: true)
+    assert_series [1, 3, 6], s.cum_sum
+    assert_series [6, 5, 3], s.cum_sum(reverse: true)
   end
 
-  def test_cummin
+  def test_cum_min
     s = Polars::Series.new([1, 2, 3])
-    assert_series [1, 1, 1], s.cummin
-    assert_series [1, 2, 3], s.cummin(reverse: true)
+    assert_series [1, 1, 1], s.cum_min
+    assert_series [1, 2, 3], s.cum_min(reverse: true)
   end
 
-  def test_cummax
+  def test_cum_max
     s = Polars::Series.new([1, 2, 3])
-    assert_series [1, 2, 3], s.cummax
-    assert_series [3, 3, 3], s.cummax(reverse: true)
+    assert_series [1, 2, 3], s.cum_max
+    assert_series [3, 3, 3], s.cum_max(reverse: true)
   end
 
-  def test_cumprod
+  def test_cum_prod
     s = Polars::Series.new([1, 2, 3])
-    assert_series [1, 2, 6], s.cumprod
-    assert_series [6, 6, 3], s.cumprod(reverse: true)
+    assert_series [1, 2, 6], s.cum_prod
+    assert_series [6, 6, 3], s.cum_prod(reverse: true)
   end
 
   def test_limit
