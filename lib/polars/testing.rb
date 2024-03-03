@@ -1,6 +1,7 @@
 module Polars
   module Testing
     class AssertionError < StandardError; end
+    class InvalidAssert < StandardError; end
 
     def assert_frame_equal(
       left,
@@ -49,13 +50,12 @@ module Polars
             atol: atol,
             categorical_as_str: categorical_as_str
           )
-        rescue AssertionError => exc
+        rescue AssertionError
           raise_assertion_error(
             objects,
             "value mismatch for column #{c.inspect}",
             s_left.to_a,
-            s_right.to_a,
-            cause: exc
+            s_right.to_a
           )
         end
       end
@@ -137,11 +137,11 @@ module Polars
       if left_schema.keys != right_schema.keys
         if (left_not_right = right_schema.keys - left_schema.keys).any?
           msg = "columns #{left_not_right.inspect} in left #{objects[..-1]}, but not in right"
-          raise msg
+          raise AssertionError, msg
         else
           right_not_left = right_schema.keys - left_schema.keys
           msg = "columns #{right_not_left.inspect} in right #{objects[..-1]}, but not in left"
-          raise msg
+          raise AssertionError, msg
         end
       end
 
@@ -167,9 +167,9 @@ module Polars
       begin
         left = left.sort(by)
         right = right.sort(by)
-      rescue ComputeError
+      rescue
         msg = "cannot set `check_row_order: false` on frame with unsortable columns"
-        raise msg
+        raise InvalidAssert, msg
       end
       [left, right]
     end
@@ -194,13 +194,12 @@ module Polars
       # Determine unequal elements
       begin
         unequal = left.ne_missing(right)
-      rescue ComputeError => exc
+      rescue
         raise_assertion_error(
           "Series",
           "incompatible data types",
           left.dtype,
-          right.dtype,
-          cause: exc
+          right.dtype
         )
       end
 
@@ -215,13 +214,12 @@ module Polars
             atol: atol,
             categorical_as_str: categorical_as_str
           )
-        rescue AssertionError => exc
+        rescue AssertionError
           raise_assertion_error(
             "Series",
             "nested value mismatch",
             left.to_a,
-            right.to_a,
-            cause: exc
+            right.to_a
           )
         else
           return
@@ -336,7 +334,7 @@ module Polars
       (FLOAT_DTYPES & unpack_dtypes(left)) && (FLOAT_DTYPES & unpack_dtypes(right))
     end
 
-    def raise_assertion_error(objects, detail, left, right, cause: nil)
+    def raise_assertion_error(objects, detail, left, right)
       msg = "#{objects} are different (#{detail})\n[left]: #{left}\n[right]: #{right}"
       raise AssertionError, msg
     end
