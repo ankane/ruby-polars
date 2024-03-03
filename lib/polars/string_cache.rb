@@ -1,4 +1,5 @@
 module Polars
+  # @private
   # Context manager for enabling and disabling the global string cache.
   class StringCache
     def initialize
