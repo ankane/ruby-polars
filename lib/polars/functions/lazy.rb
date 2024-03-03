@@ -1020,5 +1020,295 @@ module Polars
       Utils.wrap_expr(Plr.arg_sort_by(exprs, reverse))
     end
     alias_method :argsort_by, :arg_sort_by
+
+    # Collect multiple LazyFrames at the same time.
+    #
+    # This runs all the computation graphs in parallel on Polars threadpool.
+    #
+    # @param lazy_frames [Boolean]
+    #   A list of LazyFrames to collect.
+    # @param type_coercion [Boolean]
+    #   Do type coercion optimization.
+    # @param predicate_pushdown [Boolean]
+    #   Do predicate pushdown optimization.
+    # @param projection_pushdown [Boolean]
+    #   Do projection pushdown optimization.
+    # @param simplify_expression [Boolean]
+    #   Run simplify expressions optimization.
+    # @param string_cache [Boolean]
+    #   This argument is deprecated and will be ignored
+    # @param no_optimization [Boolean]
+    #   Turn off optimizations.
+    # @param slice_pushdown [Boolean]
+    #   Slice pushdown optimization.
+    # @param common_subplan_elimination [Boolean]
+    #   Will try to cache branching subplans that occur on self-joins or unions.
+    # @param allow_streaming [Boolean]
+    #   Run parts of the query in a streaming fashion (this is in an alpha state)
+    #
+    # @return [Array]
+    def collect_all(
+      lazy_frames,
+      type_coercion: true,
+      predicate_pushdown: true,
+      projection_pushdown: true,
+      simplify_expression: true,
+      string_cache: false,
+      no_optimization: false,
+      slice_pushdown: true,
+      common_subplan_elimination: true,
+      allow_streaming: false
+    )
+      if no_optimization
+        predicate_pushdown = false
+        projection_pushdown = false
+        slice_pushdown = false
+        common_subplan_elimination = false
+      end
+
+      prepared = []
+
+      lazy_frames.each do |lf|
+        ldf = lf._ldf.optimization_toggle(
+          type_coercion,
+          predicate_pushdown,
+          projection_pushdown,
+          simplify_expression,
+          slice_pushdown,
+          common_subplan_elimination,
+          allow_streaming,
+          false
+        )
+        prepared << ldf
+      end
+
+      out = Plr.collect_all(prepared)
+
+      # wrap the rbdataframes into dataframe
+      result = out.map { |rbdf| Utils.wrap_df(rbdf) }
+
+      result
+    end
+
+    # Run polars expressions without a context.
+    #
+    # This is syntactic sugar for running `df.select` on an empty DataFrame.
+    #
+    # @param exprs [Array]
+    #   Column(s) to select, specified as positional arguments.
+    #   Accepts expression input. Strings are parsed as column names,
+    #   other non-expression inputs are parsed as literals.
+    # @param named_exprs [Hash]
+    #   Additional columns to select, specified as keyword arguments.
+    #   The columns will be renamed to the keyword used.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   foo = Polars::Series.new("foo", [1, 2, 3])
+    #   bar = Polars::Series.new("bar", [3, 2, 1])
+    #   Polars.select(min: Polars.min_horizontal(foo, bar))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ min │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 2   │
+    #   # │ 1   │
+    #   # └─────┘
+    def select(*exprs, **named_exprs)
+      DataFrame.new([]).select(*exprs, **named_exprs)
+    end
+
+    # Return indices where `condition` evaluates `true`.
+    #
+    # @param condition [Expr]
+    #   Boolean expression to evaluate
+    # @param eager [Boolean]
+    #   Whether to apply this function eagerly (as opposed to lazily).
+    #
+    # @return [Expr, Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4, 5]})
+    #   df.select(
+    #     [
+    #       Polars.arg_where(Polars.col("a") % 2 == 0)
+    #     ]
+    #   ).to_series
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [u32]
+    #   # [
+    #   #         1
+    #   #         3
+    #   # ]
+    def arg_where(condition, eager: false)
+      if eager
+        if !condition.is_a?(Series)
+          raise ArgumentError, "expected 'Series' in 'arg_where' if 'eager: true', got #{condition.class.name}"
+        end
+        condition.to_frame.select(arg_where(Polars.col(condition.name))).to_series
+      else
+        condition = Utils.expr_to_lit_or_expr(condition, str_to_lit: true)
+        Utils.wrap_expr(Plr.arg_where(condition._rbexpr))
+      end
+    end
+
+    # Folds the columns from left to right, keeping the first non-null value.
+    #
+    # @param exprs [Array]
+    #   Columns to coalesce. Accepts expression input. Strings are parsed as column
+    #   names, other non-expression inputs are parsed as literals.
+    # @param more_exprs [Hash]
+    #   Additional columns to coalesce, specified as positional arguments.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, nil, nil, nil],
+    #       "b" => [1, 2, nil, nil],
+    #       "c" => [5, nil, 3, nil]
+    #     }
+    #   )
+    #   df.with_columns(Polars.coalesce(["a", "b", "c", 10]).alias("d"))
+    #   # =>
+    #   # shape: (4, 4)
+    #   # ┌──────┬──────┬──────┬─────┐
+    #   # │ a    ┆ b    ┆ c    ┆ d   │
+    #   # │ ---  ┆ ---  ┆ ---  ┆ --- │
+    #   # │ i64  ┆ i64  ┆ i64  ┆ i64 │
+    #   # ╞══════╪══════╪══════╪═════╡
+    #   # │ 1    ┆ 1    ┆ 5    ┆ 1   │
+    #   # │ null ┆ 2    ┆ null ┆ 2   │
+    #   # │ null ┆ null ┆ 3    ┆ 3   │
+    #   # │ null ┆ null ┆ null ┆ 10  │
+    #   # └──────┴──────┴──────┴─────┘
+    #
+    # @example
+    #   df.with_columns(Polars.coalesce(Polars.col(["a", "b", "c"]), 10.0).alias("d"))
+    #   # =>
+    #   # shape: (4, 4)
+    #   # ┌──────┬──────┬──────┬──────┐
+    #   # │ a    ┆ b    ┆ c    ┆ d    │
+    #   # │ ---  ┆ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ i64  ┆ f64  │
+    #   # ╞══════╪══════╪══════╪══════╡
+    #   # │ 1    ┆ 1    ┆ 5    ┆ 1.0  │
+    #   # │ null ┆ 2    ┆ null ┆ 2.0  │
+    #   # │ null ┆ null ┆ 3    ┆ 3.0  │
+    #   # │ null ┆ null ┆ null ┆ 10.0 │
+    #   # └──────┴──────┴──────┴──────┘
+    def coalesce(exprs, *more_exprs)
+      exprs = Utils.parse_as_list_of_expressions(exprs, *more_exprs)
+      Utils.wrap_expr(Plr.coalesce(exprs))
+    end
+
+    # Utility function that parses an epoch timestamp (or Unix time) to Polars Date(time).
+    #
+    # Depending on the `unit` provided, this function will return a different dtype:
+    # - unit: "d" returns pl.Date
+    # - unit: "s" returns pl.Datetime["us"] (pl.Datetime's default)
+    # - unit: "ms" returns pl.Datetime["ms"]
+    # - unit: "us" returns pl.Datetime["us"]
+    # - unit: "ns" returns pl.Datetime["ns"]
+    #
+    # @param column [Object]
+    #     Series or expression to parse integers to pl.Datetime.
+    # @param unit [String]
+    #     The unit of the timesteps since epoch time.
+    # @param eager [Boolean]
+    #     If eager evaluation is `true`, a Series is returned instead of an Expr.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"timestamp" => [1666683077, 1666683099]}).lazy
+    #   df.select(Polars.from_epoch(Polars.col("timestamp"), unit: "s")).collect
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────────────────────┐
+    #   # │ timestamp           │
+    #   # │ ---                 │
+    #   # │ datetime[μs]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2022-10-25 07:31:17 │
+    #   # │ 2022-10-25 07:31:39 │
+    #   # └─────────────────────┘
+    def from_epoch(column, unit: "s", eager: false)
+      if Utils.strlike?(column)
+        column = col(column)
+      elsif !column.is_a?(Series) && !column.is_a?(Expr)
+        column = Series.new(column)
+      end
+
+      if unit == "d"
+        expr = column.cast(Date)
+      elsif unit == "s"
+        expr = (column.cast(Int64) * 1_000_000).cast(Datetime.new("us"))
+      elsif Utils::DTYPE_TEMPORAL_UNITS.include?(unit)
+        expr = column.cast(Datetime.new(unit))
+      else
+        raise ArgumentError, "'unit' must be one of {{'ns', 'us', 'ms', 's', 'd'}}, got '#{unit}'."
+      end
+
+      if eager
+        if !column.is_a?(Series)
+          raise ArgumentError, "expected Series or Array if eager: true, got #{column.class.name}"
+        else
+          column.to_frame.select(expr).to_series
+        end
+      else
+        expr
+      end
+    end
+
+    # Parse one or more SQL expressions to polars expression(s).
+    #
+    # @param sql [Object]
+    #   One or more SQL expressions.
+    #
+    # @return [Expr]
+    #
+    # @example Parse a single SQL expression:
+    #   df = Polars::DataFrame.new({"a" => [2, 1]})
+    #   expr = Polars.sql_expr("MAX(a)")
+    #   df.select(expr)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 2   │
+    #   # └─────┘
+    #
+    # @example Parse multiple SQL expressions:
+    #   df.with_columns(
+    #     *Polars.sql_expr(["POWER(a,a) AS a_a", "CAST(a AS TEXT) AS a_txt"])
+    #   )
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬───────┐
+    #   # │ a   ┆ a_a ┆ a_txt │
+    #   # │ --- ┆ --- ┆ ---   │
+    #   # │ i64 ┆ f64 ┆ str   │
+    #   # ╞═════╪═════╪═══════╡
+    #   # │ 2   ┆ 4.0 ┆ 2     │
+    #   # │ 1   ┆ 1.0 ┆ 1     │
+    #   # └─────┴─────┴───────┘
+    def sql_expr(sql)
+      if sql.is_a?(::String)
+        Utils.wrap_expr(Plr.sql_expr(sql))
+      else
+        sql.map { |q| Utils.wrap_expr(Plr.sql_expr(q)) }
+      end
+    end
   end
 end
