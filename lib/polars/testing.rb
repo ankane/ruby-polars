@@ -91,6 +91,64 @@ module Polars
       end
     end
 
+    # Assert that the left and right frame are **not** equal.
+    #
+    # This function is intended for use in unit tests.
+    #
+    # @param left [Object]
+    #   The first DataFrame or LazyFrame to compare.
+    # @param right [Object]
+    #   The second DataFrame or LazyFrame to compare.
+    # @param check_row_order [Boolean]
+    #   Require row order to match.
+    # @param check_column_order [Boolean]
+    #   Require column order to match.
+    # @param check_dtype [Boolean]
+    #   Require data types to match.
+    # @param check_exact [Boolean]
+    #   Require float values to match exactly. If set to `false`, values are considered
+    #   equal when within tolerance of each other (see `rtol` and `atol`).
+    #   Only affects columns with a Float data type.
+    # @param rtol [Float]
+    #   Relative tolerance for inexact checking. Fraction of values in `right`.
+    # @param atol [Float]
+    #   Absolute tolerance for inexact checking.
+    # @param categorical_as_str [Boolean]
+    #   Cast categorical columns to string before comparing. Enabling this helps
+    #   compare columns that do not share the same string cache.
+    #
+    # @return [Object]
+    def assert_frame_not_equal(
+      left,
+      right,
+      check_row_order: true,
+      check_column_order: true,
+      check_dtype: true,
+      check_exact: false,
+      rtol: 1e-5,
+      atol: 1e-8,
+      categorical_as_str: false
+    )
+      begin
+        assert_frame_equal(
+          left,
+          right,
+          check_column_order: check_column_order,
+          check_row_order: check_row_order,
+          check_dtype: check_dtype,
+          check_exact: check_exact,
+          rtol: rtol,
+          atol: atol,
+          categorical_as_str: categorical_as_str
+        )
+      rescue AssertionError
+        return
+      end
+
+      msg = "frames are equal"
+      raise AssertionError, msg
+    end
+
     # Assert that the left and right Series are equal.
     #
     # Raises a detailed `AssertionError` if the Series differ.
@@ -157,6 +215,61 @@ module Polars
         atol: atol,
         categorical_as_str: categorical_as_str
       )
+    end
+
+    # Assert that the left and right Series are **not** equal.
+    #
+    # This function is intended for use in unit tests.
+    #
+    # @param left [Object]
+    #   The first Series to compare.
+    # @param right [Object]
+    #   The second Series to compare.
+    # @param check_dtype [Boolean]
+    #   Require data types to match.
+    # @param check_names [Boolean]
+    #   Require names to match.
+    # @param check_exact [Boolean]
+    #   Require float values to match exactly. If set to `false`, values are considered
+    #   equal when within tolerance of each other (see `rtol` and `atol`).
+    #   Only affects columns with a Float data type.
+    # @param rtol [Float]
+    #   Relative tolerance for inexact checking, given as a fraction of the values in
+    #   `right`.
+    # @param atol [Float]
+    #   Absolute tolerance for inexact checking.
+    # @param categorical_as_str [Boolean]
+    #   Cast categorical columns to string before comparing. Enabling this helps
+    #   compare columns that do not share the same string cache.
+    #
+    # @return [Object]
+    def assert_series_not_equal(
+      left,
+      right,
+      check_dtype: true,
+      check_names: true,
+      check_exact: false,
+      rtol: 1e-5,
+      atol: 1e-8,
+      categorical_as_str: false
+    )
+      begin
+        assert_series_equal(
+          left,
+          right,
+          check_dtype: check_dtype,
+          check_names: check_names,
+          check_exact: check_exact,
+          rtol: rtol,
+          atol: atol,
+          categorical_as_str: categorical_as_str
+        )
+      rescue AssertionError
+        return
+      end
+
+      msg = "Series are equal"
+      raise AssertionError, msg
     end
 
     private
