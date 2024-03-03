@@ -1650,9 +1650,35 @@ module Polars
 
     # Run polars expressions without a context.
     #
+    # This is syntactic sugar for running `df.select` on an empty DataFrame.
+    #
+    # @param exprs [Array]
+    #   Column(s) to select, specified as positional arguments.
+    #   Accepts expression input. Strings are parsed as column names,
+    #   other non-expression inputs are parsed as literals.
+    # @param named_exprs [Hash]
+    #   Additional columns to select, specified as keyword arguments.
+    #   The columns will be renamed to the keyword used.
+    #
     # @return [DataFrame]
-    def select(exprs)
-      DataFrame.new([]).select(exprs)
+    #
+    # @example
+    #   foo = Polars::Series.new("foo", [1, 2, 3])
+    #   bar = Polars::Series.new("bar", [3, 2, 1])
+    #   Polars.select(min: Polars.min_horizontal(foo, bar))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ min │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 2   │
+    #   # │ 1   │
+    #   # └─────┘
+    def select(*exprs, **named_exprs)
+      DataFrame.new([]).select(*exprs, **named_exprs)
     end
 
     # Collect several columns into a Series of dtype Struct.
