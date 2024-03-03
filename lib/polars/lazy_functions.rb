@@ -250,24 +250,80 @@ module Polars
 
     # Get the standard deviation.
     #
-    # @return [Object]
+    # This function is syntactic sugar for `col(column).std(ddof: ddof)`.
+    #
+    # @param column [Object]
+    #   Column name.
+    # @param ddof [Integer]
+    #   “Delta Degrees of Freedom”: the divisor used in the calculation is N - ddof,
+    #   where N represents the number of elements.
+    #   By default ddof is 1.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 3],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.std("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 3.605551 │
+    #   # └──────────┘
+    #
+    # @example
+    #   df["a"].std
+    #   # => 3.605551275463989
     def std(column, ddof: 1)
-      if column.is_a?(Series)
-        column.std(ddof: ddof)
-      else
-        col(column).std(ddof: ddof)
-      end
+      col(column).std(ddof: ddof)
     end
 
     # Get the variance.
     #
-    # @return [Object]
+    # This function is syntactic sugar for `col(column).var(ddof: ddof)`.
+    #
+    # @param column [Object]
+    #   Column name.
+    # @param ddof [Integer]
+    #   “Delta Degrees of Freedom”: the divisor used in the calculation is N - ddof,
+    #   where N represents the number of elements.
+    #   By default ddof is 1.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 3],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.var("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ f64  │
+    #   # ╞══════╡
+    #   # │ 13.0 │
+    #   # └──────┘
+    #
+    # @example
+    #   df["a"].var
+    #   # => 13.0
     def var(column, ddof: 1)
-      if column.is_a?(Series)
-        column.var(ddof: ddof)
-      else
-        col(column).var(ddof: ddof)
-      end
+      col(column).var(ddof: ddof)
     end
 
     # Get the maximum value.
