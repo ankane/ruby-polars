@@ -1791,7 +1791,7 @@ module Polars
     def arg_where(condition, eager: false)
       if eager
         if !condition.is_a?(Series)
-          raise ArgumentError, "expected 'Series' in 'arg_where' if 'eager=True', got #{condition.class.name}"
+          raise ArgumentError, "expected 'Series' in 'arg_where' if 'eager: true', got #{condition.class.name}"
         end
         condition.to_frame.select(arg_where(Polars.col(condition.name))).to_series
       else
