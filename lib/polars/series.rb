@@ -1255,7 +1255,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3])
-    #   s.cumsum
+    #   s.cum_sum
     #   # =>
     #   # shape: (3,)
     #   # Series: 'a' [i64]
@@ -1264,9 +1264,10 @@ module Polars
     #   #         3
     #   #         6
     #   # ]
-    def cumsum(reverse: false)
+    def cum_sum(reverse: false)
       super
     end
+    alias_method :cumsum, :cum_sum
 
     # Get an array with the cumulative min computed at every element.
     #
@@ -1277,7 +1278,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [3, 5, 1])
-    #   s.cummin
+    #   s.cum_min
     #   # =>
     #   # shape: (3,)
     #   # Series: 'a' [i64]
@@ -1286,9 +1287,10 @@ module Polars
     #   #         3
     #   #         1
     #   # ]
-    def cummin(reverse: false)
+    def cum_min(reverse: false)
       super
     end
+    alias_method :cummin, :cum_min
 
     # Get an array with the cumulative max computed at every element.
     #
@@ -1299,7 +1301,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [3, 5, 1])
-    #   s.cummax
+    #   s.cum_max
     #   # =>
     #   # shape: (3,)
     #   # Series: 'a' [i64]
@@ -1308,9 +1310,10 @@ module Polars
     #   #         5
     #   #         5
     #   # ]
-    def cummax(reverse: false)
+    def cum_max(reverse: false)
       super
     end
+    alias_method :cummax, :cum_max
 
     # Get an array with the cumulative product computed at every element.
     #
@@ -1325,7 +1328,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3])
-    #   s.cumprod
+    #   s.cum_prod
     #   # =>
     #   # shape: (3,)
     #   # Series: 'a' [i64]
@@ -1334,9 +1337,10 @@ module Polars
     #   #         2
     #   #         6
     #   # ]
-    def cumprod(reverse: false)
+    def cum_prod(reverse: false)
       super
     end
+    alias_method :cumprod, :cum_prod
 
     # Get the first `n` rows.
     #
