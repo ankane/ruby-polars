@@ -614,7 +614,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "dtype_str_repr",
         function!(functions::misc::dtype_str_repr, 1),
     )?;
-    class.define_singleton_method("get_idx_type", function!(functions::meta::get_idx_type, 0))?;
+    class.define_singleton_method(
+        "get_index_type",
+        function!(functions::meta::get_index_type, 0),
+    )?;
     class.define_singleton_method(
         "threadpool_size",
         function!(functions::meta::threadpool_size, 0),

@@ -7,7 +7,7 @@ use polars_core::POOL;
 use crate::conversion::Wrap;
 use crate::{RbResult, RbValueError};
 
-pub fn get_idx_type() -> Value {
+pub fn get_index_type() -> Value {
     Wrap(IDX_DTYPE).into_value()
 }
 
