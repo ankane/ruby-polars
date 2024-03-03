@@ -537,4 +537,13 @@ class DataFrameTest < Minitest::Test
     assert_frame Polars::DataFrame.new({"a" => [2]}), df.select(Polars.col("a").count)
     assert_frame Polars::DataFrame.new({"a" => [3]}), df.select(Polars.col("a").len)
   end
+
+  def test_replace
+    data = {"a" => [1, 2, 2, 3], "b" => [1.5, 2.5, 5.0, 1.0]}
+    df = Polars::DataFrame.new(data, schema: {"a" => Polars::Int8, "b" => Polars::Float64})
+    expected = Polars::DataFrame.new({"a" => [1, 100, 100, 3]})
+    assert_frame expected, df.select(Polars.col("a").replace({2 => 100}))
+    expected = Polars::DataFrame.new({"a" => [1.5, 100.0, 100.0, 1.0]})
+    assert_frame expected, df.select(Polars.col("a").replace({2 => 100}, default: Polars.col("b")))
+  end
 end
