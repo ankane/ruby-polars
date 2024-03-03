@@ -322,3 +322,8 @@ pub fn repeat(value: &RbExpr, n: &RbExpr, dtype: Option<Wrap<DataType>>) -> RbRe
 pub fn spearman_rank_corr(a: &RbExpr, b: &RbExpr, ddof: u8, propagate_nans: bool) -> RbExpr {
     dsl::spearman_rank_corr(a.inner.clone(), b.inner.clone(), ddof, propagate_nans).into()
 }
+
+pub fn sql_expr(sql: String) -> RbResult<RbExpr> {
+    let expr = polars::sql::sql_expr(&sql).map_err(RbPolarsErr::from)?;
+    Ok(expr.into())
+}

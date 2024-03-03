@@ -674,6 +674,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "spearman_rank_corr",
         function!(crate::functions::lazy::spearman_rank_corr, 4),
     )?;
+    class.define_singleton_method("sql_expr", function!(crate::functions::lazy::sql_expr, 1))?;
     class.define_singleton_method("cov", function!(crate::functions::lazy::cov, 3))?;
     class.define_singleton_method("arctan2", function!(crate::functions::lazy::arctan2, 2))?;
     class.define_singleton_method("arctan2d", function!(crate::functions::lazy::arctan2d, 2))?;

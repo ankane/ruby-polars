@@ -2139,5 +2139,48 @@ module Polars
       )
     end
     alias_method :cumsum_horizontal, :cum_sum_horizontal
+
+    # Parse one or more SQL expressions to polars expression(s).
+    #
+    # @param sql [Object]
+    #   One or more SQL expressions.
+    #
+    # @return [Expr]
+    #
+    # @example Parse a single SQL expression:
+    #   df = Polars::DataFrame.new({"a" => [2, 1]})
+    #   expr = Polars.sql_expr("MAX(a)")
+    #   df.select(expr)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 2   │
+    #   # └─────┘
+    #
+    # @example Parse multiple SQL expressions:
+    #   df.with_columns(
+    #     *Polars.sql_expr(["POWER(a,a) AS a_a", "CAST(a AS TEXT) AS a_txt"])
+    #   )
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬───────┐
+    #   # │ a   ┆ a_a ┆ a_txt │
+    #   # │ --- ┆ --- ┆ ---   │
+    #   # │ i64 ┆ f64 ┆ str   │
+    #   # ╞═════╪═════╪═══════╡
+    #   # │ 2   ┆ 4.0 ┆ 2     │
+    #   # │ 1   ┆ 1.0 ┆ 1     │
+    #   # └─────┴─────┴───────┘
+    def sql_expr(sql)
+      if sql.is_a?(::String)
+        Utils.wrap_expr(RbExpr.sql_expr(sql))
+      else
+        sql.map { |q| Utils.wrap_expr(RbExpr.sql_expr(q)) }
+      end
+    end
   end
 end
