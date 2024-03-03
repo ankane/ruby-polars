@@ -9,6 +9,7 @@ See the [upgrade guide](https://docs.pola.rs/releases/upgrade/0.20/)
 - Added `Testing` module
 - Added methods for horizontal aggregations
 - Added `sql_expr` method
+- Added `arctan2` and `arctan2d` methods
 - Added `sink_ipc`, `sink_csv`, and `sink_ndjson` methods to `LazyFrame`
 - Added `replace` method to `Series` and `Expr`
 - Added `eq`, `eq_missing`, `ne`, and `ne_missing` methods to `Series` and `Expr`

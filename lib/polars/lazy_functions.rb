@@ -1149,6 +1149,96 @@ module Polars
     # def cumreduce
     # end
 
+    # Compute two argument arctan in radians.
+    #
+    # Returns the angle (in radians) in the plane between the
+    # positive x-axis and the ray from the origin to (x,y).
+    #
+    # @param y [Object]
+    #   Column name or Expression.
+    # @param x [Object]
+    #   Column name or Expression.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   twoRootTwo = Math.sqrt(2) / 2
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "y" => [twoRootTwo, -twoRootTwo, twoRootTwo, -twoRootTwo],
+    #       "x" => [twoRootTwo, twoRootTwo, -twoRootTwo, -twoRootTwo]
+    #     }
+    #   )
+    #   df.select(
+    #     Polars.arctan2d("y", "x").alias("atan2d"), Polars.arctan2("y", "x").alias("atan2")
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌────────┬───────────┐
+    #   # │ atan2d ┆ atan2     │
+    #   # │ ---    ┆ ---       │
+    #   # │ f64    ┆ f64       │
+    #   # ╞════════╪═══════════╡
+    #   # │ 45.0   ┆ 0.785398  │
+    #   # │ -45.0  ┆ -0.785398 │
+    #   # │ 135.0  ┆ 2.356194  │
+    #   # │ -135.0 ┆ -2.356194 │
+    #   # └────────┴───────────┘
+    def arctan2(y, x)
+      if Utils.strlike?(y)
+        y = col(y)
+      end
+      if Utils.strlike?(x)
+        x = col(x)
+      end
+      Utils.wrap_expr(Plr.arctan2(y._rbexpr, x._rbexpr))
+    end
+
+    # Compute two argument arctan in degrees.
+    #
+    # Returns the angle (in degrees) in the plane between the positive x-axis
+    # and the ray from the origin to (x,y).
+    #
+    # @param y [Object]
+    #   Column name or Expression.
+    # @param x [Object]
+    #   Column name or Expression.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   twoRootTwo = Math.sqrt(2) / 2
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "y" => [twoRootTwo, -twoRootTwo, twoRootTwo, -twoRootTwo],
+    #       "x" => [twoRootTwo, twoRootTwo, -twoRootTwo, -twoRootTwo]
+    #     }
+    #   )
+    #   df.select(
+    #     Polars.arctan2d("y", "x").alias("atan2d"), Polars.arctan2("y", "x").alias("atan2")
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌────────┬───────────┐
+    #   # │ atan2d ┆ atan2     │
+    #   # │ ---    ┆ ---       │
+    #   # │ f64    ┆ f64       │
+    #   # ╞════════╪═══════════╡
+    #   # │ 45.0   ┆ 0.785398  │
+    #   # │ -45.0  ┆ -0.785398 │
+    #   # │ 135.0  ┆ 2.356194  │
+    #   # │ -135.0 ┆ -2.356194 │
+    #   # └────────┴───────────┘
+    def arctan2d(y, x)
+      if Utils.strlike?(y)
+        y = col(y)
+      end
+      if Utils.strlike?(x)
+        x = col(x)
+      end
+      Utils.wrap_expr(Plr.arctan2d(y._rbexpr, x._rbexpr))
+    end
+
     # Evaluate a bitwise OR operation.
     #
     # Syntactic sugar for `col(names).any`.
