@@ -381,30 +381,34 @@ module Polars
 
   # Nested list/array type.
   class Array < NestedType
-    attr_reader :width, :inner
+    attr_reader :inner, :width
 
-    def initialize(width, inner = nil)
+    def initialize(inner, width)
       if width.is_a?(DataType) || (width.is_a?(Class) && width < DataType)
         inner, width = width, inner
       end
-      @width = width
       @inner = Utils.rb_type_to_dtype(inner) if inner
+      @width = width
     end
 
-    # TODO check width?
     def ==(other)
       if other.eql?(Array)
         true
       elsif other.is_a?(Array)
-        @inner.nil? || other.inner.nil? || @inner == other.inner
+        if @width != other.width
+          false
+        elsif @inner.nil? || other.inner.nil?
+          true
+        else
+          @inner == other.inner
+        end
       else
         false
       end
     end
 
-    # TODO add width?
     def to_s
-      "#{self.class.name}(#{inner})"
+      "#{self.class.name}(#{inner}, width: #{width.inspect})"
     end
   end
 

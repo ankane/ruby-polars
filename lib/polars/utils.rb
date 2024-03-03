@@ -187,7 +187,7 @@ module Polars
       begin
         map_rb_type_to_dtype(data_type)
       rescue TypeError
-        raise ArgumentError, "Conversion of Ruby data type #{data_type} to Polars data type not implemented."
+        raise ArgumentError, "Conversion of Ruby data type #{data_type.inspect} to Polars data type not implemented."
       end
     end
 

@@ -4351,7 +4351,7 @@ module Polars
 
       if !dtype.nil? && ![List, Struct, Unknown].include?(dtype) && Utils.is_polars_dtype(dtype) && ruby_dtype.nil?
         if dtype == Array && !dtype.is_a?(Array) && value.is_a?(::Array)
-          dtype = Array.new(value.size)
+          dtype = Array.new(nil, value.size)
         end
 
         constructor = polars_type_to_constructor(dtype)
