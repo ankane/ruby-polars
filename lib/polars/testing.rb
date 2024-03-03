@@ -261,7 +261,7 @@ module Polars
     )
       # compare nested lists element-wise
       if _comparing_lists(left.dtype, right.dtype)
-        left.right.zip do |s1, s2|
+        left.zip(right) do |s1, s2|
           if s1.nil? || s2.nil?
             raise_assertion_error("Series", "nested value mismatch", s1, s2)
           end
