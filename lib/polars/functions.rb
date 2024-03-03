@@ -10,7 +10,6 @@ module Polars
     #
     # @return [DataFrame]
     def get_dummies(df, columns: nil)
-      warn "`get_dummies` is deprecated in favor of `df.to_dummies`"
       df.to_dummies(columns: columns)
     end
 
@@ -18,7 +17,6 @@ module Polars
     #
     # @return [Expr]
     def to_list(name)
-      warn "`list` is deprecated in favor of `implode`"
       col(name).list
     end
 
@@ -39,7 +37,6 @@ module Polars
     #
     # @return [Expr]
     def spearman_rank_corr(a, b, ddof: 1, propagate_nans: false)
-      warn "`spearman_rank_corr` is deprecated in favor of `corr(..., method: \"spearman\")`"
       corr(a, b, method: "spearman", ddof: ddof, propagate_nans: propagate_nans)
     end
 
@@ -54,7 +51,6 @@ module Polars
     #
     # @return [Expr]
     def pearson_corr(a, b, ddof: 1)
-      warn "`pearson_corr` is deprecated in favor of `corr(..., method: \"pearson\")`"
       corr(a, b, method: "pearson", ddof: ddof)
     end
   end
