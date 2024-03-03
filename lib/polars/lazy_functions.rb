@@ -120,6 +120,38 @@ module Polars
       col(*columns).count
     end
 
+    # Return the cumulative count of the non-null values in the column.
+    #
+    # This function is syntactic sugar for `col(columns).cum_count`.
+    #
+    # If no arguments are passed, returns the cumulative count of a context.
+    # Rows containing null values count towards the result.
+    #
+    # @param columns [Array]
+    #   Name(s) of the columns to use.
+    # @param reverse [Boolean]
+    #   Reverse the operation.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, nil], "b" => [3, nil, nil]})
+    #   df.select(Polars.cum_count("a"))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 2   │
+    #   # │ 2   │
+    #   # └─────┘
+    def cum_count(*columns, reverse: false)
+      col(*columns).cum_count(reverse: reverse)
+    end
+
     # Return the number of rows in the context.
     #
     # This is similar to `COUNT(*)` in SQL.
