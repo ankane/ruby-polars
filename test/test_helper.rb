@@ -50,11 +50,8 @@ class Minitest::Test
   end
 
   def assert_frame(exp, act, **options)
-    if exp.is_a?(Hash)
-      assert_equal exp.transform_keys(&:to_s), act.to_h(as_series: false)
-    else
-      assert_frame_equal(exp, act, **options)
-    end
+    exp = Polars::DataFrame.new(exp) if exp.is_a?(Hash)
+    assert_frame_equal(exp, act, **options)
   end
 
   def assert_expr(act)

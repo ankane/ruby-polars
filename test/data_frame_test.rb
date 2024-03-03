@@ -519,7 +519,7 @@ class DataFrameTest < Minitest::Test
 
   def test_median
     df = Polars::DataFrame.new({"a" => [1, 2, 5], "b" => ["one", "two", "three"]})
-    assert_frame ({"a" => [2], "b" => [nil]}), df.median
+    assert_frame ({"a" => [2], "b" => [nil]}), df.median, check_dtype: false
   end
 
   def test_drop_in_place
