@@ -2069,7 +2069,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"a" => [1, 1, 2]})
-    #   df.select(Polars.col("a").approx_unique)
+    #   df.select(Polars.col("a").approx_n_unique)
     #   # =>
     #   # shape: (1, 1)
     #   # ┌─────┐
@@ -2079,9 +2079,10 @@ module Polars
     #   # ╞═════╡
     #   # │ 2   │
     #   # └─────┘
-    def approx_unique
+    def approx_n_unique
       _from_rbexpr(_rbexpr.approx_n_unique)
     end
+    alias_method :approx_unique, :approx_n_unique
 
     # Count null values.
     #

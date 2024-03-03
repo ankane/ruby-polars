@@ -333,42 +333,176 @@ module Polars
 
     # Get the mean value.
     #
-    # @return [Expr, Float]
-    def mean(column)
-      if column.is_a?(Series)
-        column.mean
-      else
-        col(column).mean
-      end
-    end
-
-    # Get the mean value.
+    # This function is syntactic sugar for `col(columns).mean`.
     #
-    # @return [Expr, Float]
-    def avg(column)
-      mean(column)
+    # @param columns [Array]
+    #   One or more column names.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 3],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.mean("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 4.0 │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.mean("a", "b"))
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬──────────┐
+    #   # │ a   ┆ b        │
+    #   # │ --- ┆ ---      │
+    #   # │ f64 ┆ f64      │
+    #   # ╞═════╪══════════╡
+    #   # │ 4.0 ┆ 3.666667 │
+    #   # └─────┴──────────┘
+    def mean(*columns)
+      col(*columns).mean
     end
+    alias_method :avg, :mean
 
     # Get the median value.
     #
-    # @return [Object]
-    def median(column)
-      if column.is_a?(Series)
-        column.median
-      else
-        col(column).median
-      end
+    # This function is syntactic sugar for `pl.col(columns).median()`.
+    #
+    # @param columns [Array]
+    #   One or more column names.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 3],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.median("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 3.0 │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.median("a", "b"))
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ f64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 3.0 ┆ 4.0 │
+    #   # └─────┴─────┘
+    def median(*columns)
+      col(*columns).median
     end
 
     # Count unique values.
     #
-    # @return [Object]
-    def n_unique(column)
-      if column.is_a?(Series)
-        column.n_unique
-      else
-        col(column).n_unique
-      end
+    # This function is syntactic sugar for `col(columns).n_unique`.
+    #
+    # @param columns [Array]
+    #   One or more column names.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 1],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.n_unique("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 2   │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.n_unique("b", "c"))
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ b   ┆ c   │
+    #   # │ --- ┆ --- │
+    #   # │ u32 ┆ u32 │
+    #   # ╞═════╪═════╡
+    #   # │ 3   ┆ 2   │
+    #   # └─────┴─────┘
+    def n_unique(*columns)
+      col(*columns).n_unique
+    end
+
+    # Approximate count of unique values.
+    #
+    # This function is syntactic sugar for `col(columns).approx_n_unique`, and
+    # uses the HyperLogLog++ algorithm for cardinality estimation.
+    #
+    # @param columns [Array]
+    #   One or more column names.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 1],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.approx_n_unique("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 2   │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.approx_n_unique("b", "c"))
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ b   ┆ c   │
+    #   # │ --- ┆ --- │
+    #   # │ u32 ┆ u32 │
+    #   # ╞═════╪═════╡
+    #   # │ 3   ┆ 2   │
+    #   # └─────┴─────┘
+    def approx_n_unique(*columns)
+      col(*columns).approx_n_unique
     end
 
     # Get the first value.
