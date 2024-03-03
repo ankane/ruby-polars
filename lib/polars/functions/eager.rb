@@ -76,5 +76,107 @@ module Polars
         out
       end
     end
+
+    # Align a sequence of frames using the uique values from one or more columns as a key.
+    #
+    # Frames that do not contain the given key values have rows injected (with nulls
+    # filling the non-key columns), and each resulting frame is sorted by the key.
+    #
+    # The original column order of input frames is not changed unless ``select`` is
+    # specified (in which case the final column order is determined from that).
+    #
+    # Note that this does not result in a joined frame - you receive the same number
+    # of frames back that you passed in, but each is now aligned by key and has
+    # the same number of rows.
+    #
+    # @param frames [Array]
+    #   Sequence of DataFrames or LazyFrames.
+    # @param on [Object]
+    #   One or more columns whose unique values will be used to align the frames.
+    # @param select [Object]
+    #   Optional post-alignment column select to constrain and/or order
+    #   the columns returned from the newly aligned frames.
+    # @param reverse [Object]
+    #   Sort the alignment column values in descending order; can be a single
+    #   boolean or a list of booleans associated with each column in `on`.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df1 = Polars::DataFrame.new(
+    #     {
+    #       "dt" => [Date.new(2022, 9, 1), Date.new(2022, 9, 2), Date.new(2022, 9, 3)],
+    #       "x" => [3.5, 4.0, 1.0],
+    #       "y" => [10.0, 2.5, 1.5]
+    #     }
+    #   )
+    #   df2 = Polars::DataFrame.new(
+    #     {
+    #       "dt" => [Date.new(2022, 9, 2), Date.new(2022, 9, 3), Date.new(2022, 9, 1)],
+    #       "x" => [8.0, 1.0, 3.5],
+    #       "y" => [1.5, 12.0, 5.0]
+    #     }
+    #   )
+    #   df3 = Polars::DataFrame.new(
+    #     {
+    #       "dt" => [Date.new(2022, 9, 3), Date.new(2022, 9, 2)],
+    #       "x" => [2.0, 5.0],
+    #       "y" => [2.5, 2.0]
+    #     }
+    #   )
+    #   af1, af2, af3 = Polars.align_frames(
+    #     df1, df2, df3, on: "dt", select: ["x", "y"]
+    #   )
+    #   (af1 * af2 * af3).fill_null(0).select(Polars.sum(Polars.col("*")).alias("dot"))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌───────┐
+    #   # │ dot   │
+    #   # │ ---   │
+    #   # │ f64   │
+    #   # ╞═══════╡
+    #   # │ 0.0   │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 167.5 │
+    #   # ├╌╌╌╌╌╌╌┤
+    #   # │ 47.0  │
+    #   # └───────┘
+    def align_frames(
+      *frames,
+      on:,
+      select: nil,
+      reverse: false
+    )
+      if frames.empty?
+        return []
+      elsif frames.map(&:class).uniq.length != 1
+        raise TypeError, "Input frames must be of a consistent type (all LazyFrame or all DataFrame)"
+      end
+
+      # establish the superset of all "on" column values, sort, and cache
+      eager = frames[0].is_a?(DataFrame)
+      alignment_frame = (
+        concat(frames.map { |df| df.lazy.select(on) })
+          .unique(maintain_order: false)
+          .sort(on, reverse: reverse)
+      )
+      alignment_frame = (
+        eager ? alignment_frame.collect.lazy : alignment_frame.cache
+      )
+      # finally, align all frames
+      aligned_frames =
+        frames.map do |df|
+          alignment_frame.join(
+            df.lazy,
+            on: alignment_frame.columns,
+            how: "left"
+          ).select(df.columns)
+        end
+      if !select.nil?
+        aligned_frames = aligned_frames.map { |df| df.select(select) }
+      end
+
+      eager ? aligned_frames.map(&:collect) : aligned_frames
+    end
   end
 end

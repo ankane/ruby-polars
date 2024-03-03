@@ -766,5 +766,259 @@ module Polars
       b = Utils.parse_as_expression(b)
       Utils.wrap_expr(Plr.cov(a, b, ddof))
     end
+
+    # def map
+    # end
+
+    # def apply
+    # end
+
+    # Accumulate over multiple columns horizontally/row wise with a left fold.
+    #
+    # @return [Expr]
+    def fold(acc, f, exprs)
+      acc = Utils.expr_to_lit_or_expr(acc, str_to_lit: true)
+      if exprs.is_a?(Expr)
+        exprs = [exprs]
+      end
+
+      exprs = Utils.selection_to_rbexpr_list(exprs)
+      Utils.wrap_expr(Plr.fold(acc._rbexpr, f, exprs))
+    end
+
+    # def reduce
+    # end
+
+    # Cumulatively accumulate over multiple columns horizontally/row wise with a left fold.
+    #
+    # Every cumulative result is added as a separate field in a Struct column.
+    #
+    # @param acc [Object]
+    #   Accumulator Expression. This is the value that will be initialized when the fold
+    #   starts. For a sum this could for instance be lit(0).
+    # @param f [Object]
+    #   Function to apply over the accumulator and the value.
+    #   Fn(acc, value) -> new_value
+    # @param exprs [Object]
+    #   Expressions to aggregate over. May also be a wildcard expression.
+    # @param include_init [Boolean]
+    #   Include the initial accumulator state as struct field.
+    #
+    # @return [Object]
+    #
+    # @note
+    #   If you simply want the first encountered expression as accumulator,
+    #   consider using `cumreduce`.
+    def cum_fold(acc, f, exprs, include_init: false)
+      acc = Utils.expr_to_lit_or_expr(acc, str_to_lit: true)
+      if exprs.is_a?(Expr)
+        exprs = [exprs]
+      end
+
+      exprs = Utils.selection_to_rbexpr_list(exprs)
+      Utils.wrap_expr(Plr.cum_fold(acc._rbexpr, f, exprs, include_init))
+    end
+    alias_method :cumfold, :cum_fold
+
+    # def cum_reduce
+    # end
+
+    # Compute two argument arctan in radians.
+    #
+    # Returns the angle (in radians) in the plane between the
+    # positive x-axis and the ray from the origin to (x,y).
+    #
+    # @param y [Object]
+    #   Column name or Expression.
+    # @param x [Object]
+    #   Column name or Expression.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   twoRootTwo = Math.sqrt(2) / 2
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "y" => [twoRootTwo, -twoRootTwo, twoRootTwo, -twoRootTwo],
+    #       "x" => [twoRootTwo, twoRootTwo, -twoRootTwo, -twoRootTwo]
+    #     }
+    #   )
+    #   df.select(
+    #     Polars.arctan2d("y", "x").alias("atan2d"), Polars.arctan2("y", "x").alias("atan2")
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌────────┬───────────┐
+    #   # │ atan2d ┆ atan2     │
+    #   # │ ---    ┆ ---       │
+    #   # │ f64    ┆ f64       │
+    #   # ╞════════╪═══════════╡
+    #   # │ 45.0   ┆ 0.785398  │
+    #   # │ -45.0  ┆ -0.785398 │
+    #   # │ 135.0  ┆ 2.356194  │
+    #   # │ -135.0 ┆ -2.356194 │
+    #   # └────────┴───────────┘
+    def arctan2(y, x)
+      if Utils.strlike?(y)
+        y = col(y)
+      end
+      if Utils.strlike?(x)
+        x = col(x)
+      end
+      Utils.wrap_expr(Plr.arctan2(y._rbexpr, x._rbexpr))
+    end
+
+    # Compute two argument arctan in degrees.
+    #
+    # Returns the angle (in degrees) in the plane between the positive x-axis
+    # and the ray from the origin to (x,y).
+    #
+    # @param y [Object]
+    #   Column name or Expression.
+    # @param x [Object]
+    #   Column name or Expression.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   twoRootTwo = Math.sqrt(2) / 2
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "y" => [twoRootTwo, -twoRootTwo, twoRootTwo, -twoRootTwo],
+    #       "x" => [twoRootTwo, twoRootTwo, -twoRootTwo, -twoRootTwo]
+    #     }
+    #   )
+    #   df.select(
+    #     Polars.arctan2d("y", "x").alias("atan2d"), Polars.arctan2("y", "x").alias("atan2")
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌────────┬───────────┐
+    #   # │ atan2d ┆ atan2     │
+    #   # │ ---    ┆ ---       │
+    #   # │ f64    ┆ f64       │
+    #   # ╞════════╪═══════════╡
+    #   # │ 45.0   ┆ 0.785398  │
+    #   # │ -45.0  ┆ -0.785398 │
+    #   # │ 135.0  ┆ 2.356194  │
+    #   # │ -135.0 ┆ -2.356194 │
+    #   # └────────┴───────────┘
+    def arctan2d(y, x)
+      if Utils.strlike?(y)
+        y = col(y)
+      end
+      if Utils.strlike?(x)
+        x = col(x)
+      end
+      Utils.wrap_expr(Plr.arctan2d(y._rbexpr, x._rbexpr))
+    end
+
+    # Exclude certain columns from a wildcard/regex selection.
+    #
+    # @param columns [Object]
+    #   Column(s) to exclude from selection
+    #   This can be:
+    #
+    #   - a column name, or multiple column names
+    #   - a regular expression starting with `^` and ending with `$`
+    #   - a dtype or multiple dtypes
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "aa" => [1, 2, 3],
+    #       "ba" => ["a", "b", nil],
+    #       "cc" => [nil, 2.5, 1.5]
+    #     }
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬──────┬──────┐
+    #   # │ aa  ┆ ba   ┆ cc   │
+    #   # │ --- ┆ ---  ┆ ---  │
+    #   # │ i64 ┆ str  ┆ f64  │
+    #   # ╞═════╪══════╪══════╡
+    #   # │ 1   ┆ a    ┆ null │
+    #   # │ 2   ┆ b    ┆ 2.5  │
+    #   # │ 3   ┆ null ┆ 1.5  │
+    #   # └─────┴──────┴──────┘
+    #
+    # @example Exclude by column name(s):
+    #   df.select(Polars.exclude("ba"))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬──────┐
+    #   # │ aa  ┆ cc   │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ f64  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ null │
+    #   # │ 2   ┆ 2.5  │
+    #   # │ 3   ┆ 1.5  │
+    #   # └─────┴──────┘
+    #
+    # @example Exclude by regex, e.g. removing all columns whose names end with the letter "a":
+    #   df.select(Polars.exclude("^.*a$"))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ cc   │
+    #   # │ ---  │
+    #   # │ f64  │
+    #   # ╞══════╡
+    #   # │ null │
+    #   # │ 2.5  │
+    #   # │ 1.5  │
+    #   # └──────┘
+    def exclude(columns)
+      col("*").exclude(columns)
+    end
+
+    # Syntactic sugar for `Polars.col("foo").agg_groups`.
+    #
+    # @return [Object]
+    def groups(column)
+      col(column).agg_groups
+    end
+
+    # Syntactic sugar for `Polars.col("foo").quantile(...)`.
+    #
+    # @param column [String]
+    #   Column name.
+    # @param quantile [Float]
+    #   Quantile between 0.0 and 1.0.
+    # @param interpolation ["nearest", "higher", "lower", "midpoint", "linear"]
+    #   Interpolation method.
+    #
+    # @return [Expr]
+    def quantile(column, quantile, interpolation: "nearest")
+      col(column).quantile(quantile, interpolation: interpolation)
+    end
+
+    # Find the indexes that would sort the columns.
+    #
+    # Argsort by multiple columns. The first column will be used for the ordering.
+    # If there are duplicates in the first column, the second column will be used to
+    # determine the ordering and so on.
+    #
+    # @param exprs [Object]
+    #   Columns use to determine the ordering.
+    # @param reverse [Boolean]
+    #   Default is ascending.
+    #
+    # @return [Expr]
+    def arg_sort_by(exprs, reverse: false)
+      if !exprs.is_a?(::Array)
+        exprs = [exprs]
+      end
+      if reverse == true || reverse == false
+        reverse = [reverse] * exprs.length
+      end
+      exprs = Utils.selection_to_rbexpr_list(exprs)
+      Utils.wrap_expr(Plr.arg_sort_by(exprs, reverse))
+    end
+    alias_method :argsort_by, :arg_sort_by
   end
 end
