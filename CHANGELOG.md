@@ -8,6 +8,7 @@ See the [upgrade guide](https://docs.pola.rs/releases/upgrade/0.20/)
 - Added `Enum` type
 - Added `Testing` module
 - Added `arctan2`, `arctan2d`, `set_random_seed`, and `sql_expr` methods to `Polars`
+- Added `enable_string_cache`, `disable_string_cache`, and `using_string_cache` to `Polars`
 - Added methods for horizontal aggregations to `Polars`
 - Added `sink_ipc`, `sink_csv`, and `sink_ndjson` methods to `LazyFrame`
 - Added `replace` method to `Series` and `Expr`
