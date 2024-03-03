@@ -7,10 +7,8 @@ See the [upgrade guide](https://docs.pola.rs/releases/upgrade/0.20/)
 - Changed `dtype` and `schema` methods to always return instances of data types
 - Added `Enum` type
 - Added `Testing` module
-- Added methods for horizontal aggregations
-- Added `sql_expr` method
-- Added `arctan2` and `arctan2d` methods
-- Added `set_random_seed` method
+- Added `arctan2`, `arctan2d`, `set_random_seed`, and `sql_expr` methods to `Polars`
+- Added methods for horizontal aggregations to `Polars`
 - Added `sink_ipc`, `sink_csv`, and `sink_ndjson` methods to `LazyFrame`
 - Added `replace` method to `Series` and `Expr`
 - Added `eq`, `eq_missing`, `ne`, and `ne_missing` methods to `Series` and `Expr`
