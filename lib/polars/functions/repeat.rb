@@ -12,6 +12,28 @@ module Polars
     #   Only used in `eager` mode. As expression, use `alias`.
     #
     # @return [Object]
+    #
+    # @example Construct a column with a repeated value in a lazy context.
+    #   Polars.select(Polars.repeat("z", 3)).to_series
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'repeat' [str]
+    #   # [
+    #   #         "z"
+    #   #         "z"
+    #   #         "z"
+    #   # ]
+    #
+    # @example Generate a Series directly by setting `eager: true`.
+    #   Polars.repeat(3, 3, dtype: Polars::Int8, eager: true)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'repeat' [i8]
+    #   # [
+    #   #         3
+    #   #         3
+    #   #         3
+    #   # ]
     def repeat(value, n, dtype: nil, eager: false, name: nil)
       if !name.nil?
         warn "the `name` argument is deprecated. Use the `alias` method instead."
