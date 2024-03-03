@@ -8,7 +8,7 @@ module Polars
     #   A non-negative integer < 2**64 used to seed the internal global
     #   random number generator.
     #
-    # @return [Object]
+    # @return [nil]
     def set_random_seed(seed)
       Plr.set_random_seed(seed)
     end
