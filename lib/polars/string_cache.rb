@@ -1,14 +1,9 @@
 module Polars
-  # @private
   # Context manager for enabling and disabling the global string cache.
   class StringCache
-    def initialize
-      raise Todo
-
+    def initialize(&block)
       @string_cache = RbStringCacheHolder.new
-      yield
-      # TODO fix
-      @string_cache = nil
+      @string_cache.hold(&block)
     end
   end
 

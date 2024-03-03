@@ -151,9 +151,6 @@ class DocsTest < Minitest::Test
     # TODO fix
     return if [:align_frames, :coalesce, :cum_sum_horizontal, :cumsum_horizontal, :to_titlecase].include?(method.name)
 
-    # TODO fix string cache
-    return if [:is_local, :to_local].include?(method.name)
-
     code = ""
     method.tags(:example).each do |example|
       # use variables from previous examples

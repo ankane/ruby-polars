@@ -1049,6 +1049,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     // string cache
     let class = module.define_class("RbStringCacheHolder", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbStringCacheHolder::new, 0))?;
+    class.define_method("hold", method!(RbStringCacheHolder::hold, 0))?;
 
     Ok(())
 }

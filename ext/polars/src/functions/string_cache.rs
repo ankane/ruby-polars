@@ -1,3 +1,5 @@
+use crate::RbResult;
+use magnus::{RArray, Ruby, Value};
 use polars_core::StringCacheHolder;
 
 pub fn enable_string_cache() {
@@ -13,14 +15,15 @@ pub fn using_string_cache() -> bool {
 }
 
 #[magnus::wrap(class = "Polars::RbStringCacheHolder")]
-pub struct RbStringCacheHolder {
-    _inner: StringCacheHolder,
-}
+pub struct RbStringCacheHolder;
 
 impl RbStringCacheHolder {
     pub fn new() -> Self {
-        Self {
-            _inner: StringCacheHolder::hold(),
-        }
+        Self {}
+    }
+
+    pub fn hold(&self) -> RbResult<Value> {
+        let _hold = StringCacheHolder::hold();
+        Ruby::get().unwrap().yield_splat(RArray::new())
     }
 }
