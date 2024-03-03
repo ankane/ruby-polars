@@ -205,6 +205,49 @@ module Polars
       col(name).list
     end
 
+    # Aggregate all column values into a list.
+    #
+    # This function is syntactic sugar for `col(name).implode`.
+    #
+    # @param columns [Array]
+    #   One or more column names.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3],
+    #       "b" => [9, 8, 7],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.implode("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌───────────┐
+    #   # │ a         │
+    #   # │ ---       │
+    #   # │ list[i64] │
+    #   # ╞═══════════╡
+    #   # │ [1, 2, 3] │
+    #   # └───────────┘
+    #
+    # @example
+    #   df.select(Polars.implode("b", "c"))
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌───────────┬───────────────────────┐
+    #   # │ b         ┆ c                     │
+    #   # │ ---       ┆ ---                   │
+    #   # │ list[i64] ┆ list[str]             │
+    #   # ╞═══════════╪═══════════════════════╡
+    #   # │ [9, 8, 7] ┆ ["foo", "bar", "foo"] │
+    #   # └───────────┴───────────────────────┘
+    def implode(*columns)
+      col(*columns).implode
+    end
+
     # Get the standard deviation.
     #
     # @return [Object]
