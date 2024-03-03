@@ -68,27 +68,56 @@ module Polars
       col("")
     end
 
-    # Count the number of values in this column/context.
+    # Return the number of non-null values in the column.
     #
-    # @param column [String, Series, nil]
-    #     If dtype is:
+    # This function is syntactic sugar for `col(columns).count`.
     #
-    #     * `Series` : count the values in the series.
-    #     * `String` : count the values in this column.
-    #     * `None` : count the number of values in this context.
+    # Calling this function without any arguments returns the number of rows in the
+    # context. **This way of using the function is deprecated.** Please use `len`
+    # instead.
     #
-    # @return [Expr, Integer]
-    def count(column = nil)
-      if column.nil?
+    # @param columns [Array]
+    #   One or more column names.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, nil],
+    #       "b" => [3, nil, nil],
+    #       "c" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.count("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 2   │
+    #   # └─────┘
+    #
+    # @example Return the number of non-null values in multiple columns.
+    #   df.select(Polars.count("b", "c"))
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ b   ┆ c   │
+    #   # │ --- ┆ --- │
+    #   # │ u32 ┆ u32 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 3   │
+    #   # └─────┴─────┘
+    def count(*columns)
+      if columns.empty?
         warn "`Polars.count` is deprecated. Use `Polars.length` instead."
         return Utils.wrap_expr(RbExpr.len._alias("count"))
       end
 
-      if column.is_a?(Series)
-        column.len
-      else
-        col(column).count
-      end
+      col(*columns).count
     end
 
     # Return the number of rows in the context.
