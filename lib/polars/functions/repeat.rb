@@ -11,7 +11,7 @@ module Polars
     # @param name [String]
     #   Only used in `eager` mode. As expression, use `alias`.
     #
-    # @return [Expr]
+    # @return [Object]
     def repeat(value, n, dtype: nil, eager: false, name: nil)
       if !name.nil?
         warn "the `name` argument is deprecated. Use the `alias` method instead."
@@ -32,44 +32,91 @@ module Polars
       expr
     end
 
-    # Return a new Series of given length and type, filled with ones.
+    # Construct a column of length `n` filled with ones.
+    #
+    # This is syntactic sugar for the `repeat` function.
     #
     # @param n [Integer]
-    #   Number of elements in the `Series`
-    # @param dtype [Symbol]
-    #   DataType of the elements, defaults to `:f64`
+    #   Length of the resulting column.
+    # @param dtype [Object]
+    #   Data type of the resulting column. Defaults to Float64.
+    # @param eager [Boolean]
+    #   Evaluate immediately and return a `Series`. If set to `false`,
+    #   return an expression instead.
     #
-    # @return [Series]
+    # @return [Object]
     #
-    # @note
-    #   In the lazy API you should probably not use this, but use `lit(1)`
-    #   instead.
-    def ones(n, dtype: nil)
-      s = Series.new([1.0])
-      if dtype
-        s = s.cast(dtype)
+    # @example
+    #   Polars.ones(3, dtype: Polars::Int8, eager: true)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'ones' [i8]
+    #   # [
+    #   #         1
+    #   #         1
+    #   #         1
+    #   # ]
+    def ones(n, dtype: nil, eager: true)
+      if (zero = _one_or_zero_by_dtype(1, dtype)).nil?
+        msg = "invalid dtype for `ones`; found #{dtype}"
+        raise TypeError, msg
       end
-      s.new_from_index(0, n)
+
+      repeat(zero, n, dtype: dtype, eager: eager).alias("ones")
     end
 
-    # Return a new Series of given length and type, filled with zeros.
+    # Construct a column of length `n` filled with zeros.
+    #
+    # This is syntactic sugar for the `repeat` function.
     #
     # @param n [Integer]
-    #   Number of elements in the `Series`
-    # @param dtype [Symbol]
-    #   DataType of the elements, defaults to `:f64`
+    #   Length of the resulting column.
+    # @param dtype [Object]
+    #   Data type of the resulting column. Defaults to Float64.
+    # @param eager [Boolean]
+    #   Evaluate immediately and return a `Series`. If set to `false`,
+    #   return an expression instead.
     #
-    # @return [Series]
+    # @return [Object]
     #
-    # @note
-    #   In the lazy API you should probably not use this, but use `lit(0)`
-    #   instead.
-    def zeros(n, dtype: nil)
-      s = Series.new([0.0])
-      if dtype
-        s = s.cast(dtype)
+    # @example
+    #   Polars.zeros(3, dtype: Polars::Int8, eager: true)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'zeros' [i8]
+    #   # [
+    #   #         0
+    #   #         0
+    #   #         0
+    #   # ]
+    def zeros(n, dtype: nil, eager: true)
+      if (zero = _one_or_zero_by_dtype(0, dtype)).nil?
+        msg = "invalid dtype for `zeros`; found #{dtype}"
+        raise TypeError, msg
       end
-      s.new_from_index(0, n)
+
+      repeat(zero, n, dtype: dtype, eager: eager).alias("zeros")
+    end
+
+    private
+
+    def _one_or_zero_by_dtype(value, dtype)
+      if dtype.integer?
+        value
+      elsif dtype.float?
+        value.to_f
+      elsif dtype == Boolean
+        value != 0
+      elsif dtype == Utf8
+        value.to_s
+      elsif dtype == Decimal
+        Decimal(value.to_s)
+      elsif [List, Array].include?(dtype)
+        arr_width = dtype.respond_to?(:width) ? dtype.width : 1
+        [_one_or_zero_by_dtype(value, dtype.inner)] * arr_width
+      else
+        nil
+      end
     end
   end
 end
