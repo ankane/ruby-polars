@@ -1,3 +1,7 @@
+## 0.9.1 (unreleased)
+
+- Added support for writing JSON to string
+
 ## 0.9.0 (2024-03-03)
 
 See the [upgrade guide](https://docs.pola.rs/releases/upgrade/0.20/)

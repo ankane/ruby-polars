@@ -814,8 +814,6 @@ module Polars
 
     # Serialize to JSON representation.
     #
-    # @return [nil]
-    #
     # @param file [String]
     #   File path to which the result should be written.
     # @param pretty [Boolean]
@@ -823,17 +821,45 @@ module Polars
     # @param row_oriented [Boolean]
     #   Write to row oriented json. This is slower, but more common.
     #
-    # @see #write_ndjson
+    # @return [nil]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8]
+    #     }
+    #   )
+    #   df.write_json
+    #   # => "{\"columns\":[{\"name\":\"foo\",\"datatype\":\"Int64\",\"bit_settings\":\"\",\"values\":[1,2,3]},{\"name\":\"bar\",\"datatype\":\"Int64\",\"bit_settings\":\"\",\"values\":[6,7,8]}]}"
+    #
+    # @example
+    #   df.write_json(row_oriented: true)
+    #   # => "[{\"foo\":1,\"bar\":6},{\"foo\":2,\"bar\":7},{\"foo\":3,\"bar\":8}]"
     def write_json(
-      file,
+      file = nil,
       pretty: false,
       row_oriented: false
     )
       if Utils.pathlike?(file)
         file = Utils.normalise_filepath(file)
       end
+      to_string_io = !file.nil? && file.is_a?(StringIO)
+      if file.nil? || to_string_io
+        buf = StringIO.new
+        buf.set_encoding(Encoding::BINARY)
+        _df.write_json(buf, pretty, row_oriented)
+        json_bytes = buf.string
 
-      _df.write_json(file, pretty, row_oriented)
+        json_str = json_bytes.force_encoding(Encoding::UTF_8)
+        if to_string_io
+          file.write(json_str)
+        else
+          return json_str
+        end
+      else
+        _df.write_json(file, pretty, row_oriented)
+      end
       nil
     end
 
@@ -843,12 +869,36 @@ module Polars
     #   File path to which the result should be written.
     #
     # @return [nil]
-    def write_ndjson(file)
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8]
+    #     }
+    #   )
+    #   df.write_ndjson()
+    #   # => "{\"foo\":1,\"bar\":6}\n{\"foo\":2,\"bar\":7}\n{\"foo\":3,\"bar\":8}\n"
+    def write_ndjson(file = nil)
       if Utils.pathlike?(file)
         file = Utils.normalise_filepath(file)
       end
+      to_string_io = !file.nil? && file.is_a?(StringIO)
+      if file.nil? || to_string_io
+        buf = StringIO.new
+        buf.set_encoding(Encoding::BINARY)
+        _df.write_ndjson(buf)
+        json_bytes = buf.string
 
-      _df.write_ndjson(file)
+        json_str = json_bytes.force_encoding(Encoding::UTF_8)
+        if to_string_io
+          file.write(json_str)
+        else
+          return json_str
+        end
+      else
+        _df.write_ndjson(file)
+      end
       nil
     end
 
