@@ -16,7 +16,7 @@ use std::num::NonZeroUsize;
 use std::ops::Deref;
 
 use crate::conversion::*;
-use crate::file::{get_file_like, get_mmap_bytes_reader};
+use crate::file::{get_either_file, get_file_like, get_mmap_bytes_reader, EitherRustRubyFile};
 use crate::map::dataframe::{
     apply_lambda_unknown, apply_lambda_with_bool_out_type, apply_lambda_with_primitive_out_type,
     apply_lambda_with_utf8_out_type,
@@ -213,19 +213,34 @@ impl RbDataFrame {
         use_statistics: bool,
         rechunk: bool,
     ) -> RbResult<Self> {
+        use EitherRustRubyFile::*;
+
         let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
-        let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
-        let df = ParquetReader::new(mmap_bytes_r)
-            .with_projection(projection)
-            .with_columns(columns)
-            .read_parallel(parallel.0)
-            .with_n_rows(n_rows)
-            .with_row_index(row_index)
-            .set_low_memory(low_memory)
-            .use_statistics(use_statistics)
-            .set_rechunk(rechunk)
-            .finish()
-            .map_err(RbPolarsErr::from)?;
+        let result = match get_either_file(rb_f, false)? {
+            Rb(f) => {
+                let buf = f.as_buffer();
+                ParquetReader::new(buf)
+                    .with_projection(projection)
+                    .with_columns(columns)
+                    .read_parallel(parallel.0)
+                    .with_n_rows(n_rows)
+                    .with_row_index(row_index)
+                    .set_low_memory(low_memory)
+                    .use_statistics(use_statistics)
+                    .set_rechunk(rechunk)
+                    .finish()
+            }
+            Rust(f) => ParquetReader::new(f.into_inner())
+                .with_projection(projection)
+                .with_columns(columns)
+                .read_parallel(parallel.0)
+                .with_n_rows(n_rows)
+                .with_row_index(row_index)
+                .use_statistics(use_statistics)
+                .set_rechunk(rechunk)
+                .finish(),
+        };
+        let df = result.map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
     }
 
