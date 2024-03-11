@@ -1,5 +1,6 @@
 ## 0.9.1 (unreleased)
 
+- Updated Polars to 0.38.2
 - Added support for writing JSON to string
 
 ## 0.9.0 (2024-03-03)
