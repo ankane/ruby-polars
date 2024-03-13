@@ -324,6 +324,6 @@ pub fn spearman_rank_corr(a: &RbExpr, b: &RbExpr, ddof: u8, propagate_nans: bool
 }
 
 pub fn sql_expr(sql: String) -> RbResult<RbExpr> {
-    let expr = polars::sql::sql_expr(&sql).map_err(RbPolarsErr::from)?;
+    let expr = polars::sql::sql_expr(sql).map_err(RbPolarsErr::from)?;
     Ok(expr.into())
 }

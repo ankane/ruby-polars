@@ -326,6 +326,7 @@ impl RbLazyFrame {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn sink_csv(
         &self,
         path: PathBuf,

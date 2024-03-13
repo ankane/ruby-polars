@@ -217,10 +217,7 @@ impl IntoValue for Wrap<DataType> {
                 let class = pl.const_get::<_, Value>("Enum").unwrap();
                 let s = Series::from_arrow("category", categories.to_boxed()).unwrap();
                 let series = to_series(s.into());
-                class
-                    .funcall::<_, _, Value>("new", (series,))
-                    .unwrap()
-                    .into()
+                class.funcall::<_, _, Value>("new", (series,)).unwrap()
             }
             DataType::Time => {
                 let class = pl.const_get::<_, Value>("Time").unwrap();
@@ -1066,7 +1063,7 @@ impl TryConvert for Wrap<NonZeroUsize> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let v = usize::try_convert(ob)?;
         NonZeroUsize::new(v)
-            .map(|v| Wrap(v))
+            .map(Wrap)
             .ok_or(RbValueError::new_err("must be non-zero".into()))
     }
 }
