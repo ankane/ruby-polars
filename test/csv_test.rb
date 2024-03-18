@@ -22,8 +22,6 @@ class CsvTest < Minitest::Test
   end
 
   def test_read_csv_io
-    require "stringio"
-
     io = StringIO.new(File.binread("test/support/data.csv"))
     df = Polars.read_csv(io)
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})

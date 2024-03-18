@@ -22,8 +22,6 @@ class ParquetTest < Minitest::Test
   end
 
   def test_read_parquet_io
-    require "stringio"
-
     io = StringIO.new(File.binread("test/support/data.parquet"))
     df = Polars.read_parquet(io)
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
@@ -59,8 +57,6 @@ class ParquetTest < Minitest::Test
   end
 
   def test_write_parquet_io
-    require "stringio"
-
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     io = StringIO.new
     df.write_parquet(io)
