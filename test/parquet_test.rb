@@ -13,6 +13,14 @@ class ParquetTest < Minitest::Test
     assert_frame expected, df
   end
 
+  def test_read_parquet_pathname
+    require "pathname"
+
+    df = Polars.read_parquet(Pathname.new("test/support/data.parquet"))
+    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_frame expected, df
+  end
+
   def test_read_parquet_io
     require "stringio"
 
@@ -41,6 +49,13 @@ class ParquetTest < Minitest::Test
   def test_write_parquet
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_nil df.write_parquet(temp_path)
+  end
+
+  def test_write_parquet_pathname
+    require "pathname"
+
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_nil df.write_parquet(Pathname.new(temp_path))
   end
 
   def test_write_parquet_io

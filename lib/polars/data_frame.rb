@@ -1060,7 +1060,7 @@ module Polars
 
     # Write to Apache Parquet file.
     #
-    # @param file [String, StringIO]
+    # @param file [String, Pathname, StringIO]
     #   File path to which the file should be written.
     # @param compression ["lz4", "uncompressed", "snappy", "gzip", "lzo", "brotli", "zstd"]
     #   Choose "zstd" for good compression performance.

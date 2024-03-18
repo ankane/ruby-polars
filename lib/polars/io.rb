@@ -520,7 +520,7 @@ module Polars
 
     # Read into a DataFrame from a parquet file.
     #
-    # @param source [Object]
+    # @param source [String, Pathname, StringIO]
     #   Path to a file or a file-like object.
     # @param columns [Object]
     #   Columns to select. Accepts a list of column indices (starting at zero) or a list
