@@ -136,6 +136,7 @@ impl RbDataFrame {
         let row_index = Option::<(String, IdxSize)>::try_convert(arguments[22])?;
         let sample_size = usize::try_convert(arguments[23])?;
         let eol_char = String::try_convert(arguments[24])?;
+        let truncate_ragged_lines = bool::try_convert(arguments[25])?;
         // end arguments
 
         let null_values = null_values.map(|w| w.0);
@@ -178,6 +179,7 @@ impl RbDataFrame {
             .with_separator(separator.as_bytes()[0])
             .with_skip_rows(skip_rows)
             .with_ignore_errors(ignore_errors)
+            .truncate_ragged_lines(truncate_ragged_lines)
             .with_projection(projection)
             .with_rechunk(rechunk)
             .with_chunk_size(chunk_size)

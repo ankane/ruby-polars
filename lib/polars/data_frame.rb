@@ -79,6 +79,7 @@ module Polars
       dtypes: nil,
       null_values: nil,
       ignore_errors: false,
+      truncate_ragged_lines: false,
       parse_dates: false,
       n_threads: nil,
       infer_schema_length: 100,
@@ -140,6 +141,7 @@ module Polars
           dtypes: dtypes_dict,
           null_values: null_values,
           ignore_errors: ignore_errors,
+          truncate_ragged_lines: truncate_ragged_lines,
           infer_schema_length: infer_schema_length,
           n_rows: n_rows,
           low_memory: low_memory,
@@ -186,7 +188,8 @@ module Polars
           skip_rows_after_header,
           Utils._prepare_row_count_args(row_count_name, row_count_offset),
           sample_size,
-          eol_char
+          eol_char,
+          truncate_ragged_lines
         )
       )
     end

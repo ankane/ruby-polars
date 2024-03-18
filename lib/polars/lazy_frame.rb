@@ -38,6 +38,7 @@ module Polars
       dtypes: nil,
       null_values: nil,
       ignore_errors: false,
+      truncate_ragged_lines: false,
       cache: true,
       with_column_names: nil,
       infer_schema_length: 100,
@@ -81,7 +82,8 @@ module Polars
           encoding,
           Utils._prepare_row_count_args(row_count_name, row_count_offset),
           parse_dates,
-          eol_char
+          eol_char,
+          truncate_ragged_lines
         )
       )
     end

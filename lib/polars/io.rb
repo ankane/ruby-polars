@@ -38,6 +38,8 @@ module Polars
     #   Try to keep reading lines if some lines yield errors.
     #   First try `infer_schema_length: 0` to read all columns as
     #   `:str` to check which values might cause an issue.
+    # @param truncate_ragged_lines [Boolean]
+    #   Truncate lines that are longer than the schema.
     # @param parse_dates [Boolean]
     #   Try to automatically parse dates. If this does not succeed,
     #   the column remains of data type `:str`.
@@ -100,6 +102,7 @@ module Polars
       dtypes: nil,
       null_values: nil,
       ignore_errors: false,
+      truncate_ragged_lines: false,
       parse_dates: false,
       n_threads: nil,
       infer_schema_length: 100,
@@ -149,6 +152,7 @@ module Polars
           dtypes: dtypes,
           null_values: null_values,
           ignore_errors: ignore_errors,
+          truncate_ragged_lines: truncate_ragged_lines,
           parse_dates: parse_dates,
           n_threads: n_threads,
           infer_schema_length: infer_schema_length,
@@ -208,6 +212,8 @@ module Polars
     #   Try to keep reading lines if some lines yield errors.
     #   First try `infer_schema_length: 0` to read all columns as
     #   `:str` to check which values might cause an issue.
+    # @param truncate_ragged_lines [Boolean]
+    #   Truncate lines that are longer than the schema.
     # @param cache [Boolean]
     #   Cache the result after reading.
     # @param with_column_names [Object]
@@ -251,6 +257,7 @@ module Polars
       dtypes: nil,
       null_values: nil,
       ignore_errors: false,
+      truncate_ragged_lines: false,
       cache: true,
       with_column_names: nil,
       infer_schema_length: 100,
@@ -282,6 +289,7 @@ module Polars
         dtypes: dtypes,
         null_values: null_values,
         ignore_errors: ignore_errors,
+        truncate_ragged_lines: truncate_ragged_lines,
         cache: cache,
         with_column_names: with_column_names,
         infer_schema_length: infer_schema_length,
@@ -716,6 +724,8 @@ module Polars
     #   Try to keep reading lines if some lines yield errors.
     #   First try `infer_schema_length: 0` to read all columns as
     #   `:str` to check which values might cause an issue.
+    # @param truncate_ragged_lines [Boolean]
+    #   Truncate lines that are longer than the schema.
     # @param parse_dates [Boolean]
     #   Try to automatically parse dates. If this does not succeed,
     #   the column remains of data type `:str`.
@@ -775,6 +785,7 @@ module Polars
       dtypes: nil,
       null_values: nil,
       ignore_errors: false,
+      truncate_ragged_lines: false,
       parse_dates: false,
       n_threads: nil,
       infer_schema_length: 100,
@@ -814,6 +825,7 @@ module Polars
         dtypes: dtypes,
         null_values: null_values,
         ignore_errors: ignore_errors,
+        truncate_ragged_lines: truncate_ragged_lines,
         parse_dates: parse_dates,
         n_threads: n_threads,
         infer_schema_length: infer_schema_length,

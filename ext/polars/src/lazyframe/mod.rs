@@ -100,6 +100,7 @@ impl RbLazyFrame {
         let row_index = Option::<(String, IdxSize)>::try_convert(arguments[17])?;
         let try_parse_dates = bool::try_convert(arguments[18])?;
         let eol_char = String::try_convert(arguments[19])?;
+        let truncate_ragged_lines = bool::try_convert(arguments[20])?;
         // end arguments
 
         let null_values = null_values.map(|w| w.0);
@@ -120,6 +121,7 @@ impl RbLazyFrame {
             .with_separator(separator)
             .has_header(has_header)
             .with_ignore_errors(ignore_errors)
+            .truncate_ragged_lines(truncate_ragged_lines)
             .with_skip_rows(skip_rows)
             .with_n_rows(n_rows)
             .with_cache(cache)

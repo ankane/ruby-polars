@@ -14,6 +14,7 @@ module Polars
       dtypes: nil,
       null_values: nil,
       ignore_errors: false,
+      truncate_ragged_lines: false,
       parse_dates: false,
       n_threads: nil,
       infer_schema_length: 100,
@@ -75,7 +76,8 @@ module Polars
         skip_rows_after_header,
         Utils._prepare_row_count_args(row_count_name, row_count_offset),
         sample_size,
-        eol_char
+        eol_char,
+        truncate_ragged_lines
       )
       self.new_columns = new_columns
     end
