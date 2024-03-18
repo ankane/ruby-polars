@@ -13,6 +13,23 @@ class JsonTest < Minitest::Test
     assert_frame expected, df
   end
 
+  def test_read_json_pathname
+    require "pathname"
+
+    df = Polars.read_json(Pathname.new("test/support/data.json"))
+    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_frame expected, df
+  end
+
+  def test_read_json_io
+    require "stringio"
+
+    io = StringIO.new(File.binread("test/support/data.json"))
+    df = Polars.read_json(io)
+    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_frame expected, df
+  end
+
   def test_write_json
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     path = temp_path
@@ -29,6 +46,23 @@ class JsonTest < Minitest::Test
 
   def test_read_ndjson
     df = Polars.read_ndjson("test/support/data.ndjson")
+    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_frame expected, df
+  end
+
+  def test_read_ndjson_pathname
+    require "pathname"
+
+    df = Polars.read_ndjson(Pathname.new("test/support/data.ndjson"))
+    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_frame expected, df
+  end
+
+  def test_read_ndjson_io
+    require "stringio"
+
+    io = StringIO.new(File.binread("test/support/data.ndjson"))
+    df = Polars.read_ndjson(io)
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_frame expected, df
   end
