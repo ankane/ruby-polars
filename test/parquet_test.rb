@@ -43,6 +43,16 @@ class ParquetTest < Minitest::Test
     assert_nil df.write_parquet(temp_path)
   end
 
+  def test_write_parquet_io
+    require "stringio"
+
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    io = StringIO.new
+    df.write_parquet(io)
+    io.rewind
+    assert_frame df, Polars.read_parquet(io)
+  end
+
   def test_write_parquet_struct
     df = Polars::DataFrame.new({"a" => [{"f1" => 1}, {"f1" => 2}]})
     assert_nil df.write_parquet(temp_path)

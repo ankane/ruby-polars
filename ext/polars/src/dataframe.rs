@@ -603,7 +603,13 @@ impl RbDataFrame {
                 .finish(&mut self.df.borrow_mut())
                 .map_err(RbPolarsErr::from)?;
         } else {
-            todo!();
+            let buf = get_file_like(rb_f, true)?;
+            ParquetWriter::new(buf)
+                .with_compression(compression)
+                .with_statistics(statistics)
+                .with_row_group_size(row_group_size)
+                .finish(&mut self.df.borrow_mut())
+                .map_err(RbPolarsErr::from)?;
         }
 
         Ok(())

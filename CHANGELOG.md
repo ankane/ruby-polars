@@ -2,6 +2,7 @@
 
 - Updated Polars to 0.38.2
 - Added support for writing JSON to string
+- Added support for writing Parquet to StringIO
 
 ## 0.9.0 (2024-03-03)
 
