@@ -591,6 +591,7 @@ impl RbDataFrame {
         compression_level: Option<i32>,
         statistics: bool,
         row_group_size: Option<usize>,
+        data_page_size: Option<usize>,
     ) -> RbResult<()> {
         let compression = parse_parquet_compression(&compression, compression_level)?;
 
@@ -600,6 +601,7 @@ impl RbDataFrame {
                 .with_compression(compression)
                 .with_statistics(statistics)
                 .with_row_group_size(row_group_size)
+                .with_data_page_size(data_page_size)
                 .finish(&mut self.df.borrow_mut())
                 .map_err(RbPolarsErr::from)?;
         } else {
@@ -608,6 +610,7 @@ impl RbDataFrame {
                 .with_compression(compression)
                 .with_statistics(statistics)
                 .with_row_group_size(row_group_size)
+                .with_data_page_size(data_page_size)
                 .finish(&mut self.df.borrow_mut())
                 .map_err(RbPolarsErr::from)?;
         }

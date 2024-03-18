@@ -1060,7 +1060,7 @@ module Polars
 
     # Write to Apache Parquet file.
     #
-    # @param file [String]
+    # @param file [String, StringIO]
     #   File path to which the file should be written.
     # @param compression ["lz4", "uncompressed", "snappy", "gzip", "lzo", "brotli", "zstd"]
     #   Choose "zstd" for good compression performance.
@@ -1077,10 +1077,9 @@ module Polars
     # @param statistics [Boolean]
     #   Write statistics to the parquet headers. This requires extra compute.
     # @param row_group_size [Integer, nil]
-    #   Size of the row groups in number of rows.
-    #   If `nil` (default), the chunks of the DataFrame are
-    #   used. Writing in smaller chunks may reduce memory pressure and improve
-    #   writing speeds.
+    #   Size of the row groups in number of rows. Defaults to 512^2 rows.
+    # @param data_page_size [Integer, nil]
+    #   Size of the data page in bytes. Defaults to 1024^2 bytes.
     #
     # @return [nil]
     def write_parquet(
@@ -1088,7 +1087,8 @@ module Polars
       compression: "zstd",
       compression_level: nil,
       statistics: false,
-      row_group_size: nil
+      row_group_size: nil,
+      data_page_size: nil
     )
       if compression.nil?
         compression = "uncompressed"
@@ -1098,7 +1098,7 @@ module Polars
       end
 
       _df.write_parquet(
-        file, compression, compression_level, statistics, row_group_size
+        file, compression, compression_level, statistics, row_group_size, data_page_size
       )
     end
 
