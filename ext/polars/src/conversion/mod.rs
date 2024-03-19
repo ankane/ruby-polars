@@ -782,6 +782,21 @@ impl TryConvert for Wrap<ListToStructWidthStrategy> {
     }
 }
 
+impl TryConvert for Wrap<NonExistent> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "null" => NonExistent::Null,
+            "raise" => NonExistent::Raise,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "`non_existent` must be one of {{'null', 'raise'}}, got {v}",
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<NullBehavior> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match String::try_convert(ob)?.as_str() {

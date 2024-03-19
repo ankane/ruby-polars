@@ -910,8 +910,14 @@ module Polars
     # Different from `with_time_zone`, this will also modify
     # the underlying timestamp.
     #
-    # @param tz [String]
-    #   Time zone for the `Datetime` Series.
+    # @param time_zone [String]
+    #     Time zone for the `Datetime` Series. Pass `nil` to unset time zone.
+    # @param use_earliest [Boolean]
+    #     Determine how to deal with ambiguous datetimes.
+    # @param ambiguous [String]
+    #     Determine how to deal with ambiguous datetimes.
+    # @param non_existent [String]
+    #     Determine how to deal with non-existent datetimes.
     #
     # @return [Series]
     #
@@ -982,7 +988,7 @@ module Polars
     #   #         1585717200
     #   #         1588309200
     #   # ]
-    def replace_time_zone(tz)
+    def replace_time_zone(time_zone, use_earliest: nil, ambiguous: "raise", non_existent: "raise")
       super
     end
 

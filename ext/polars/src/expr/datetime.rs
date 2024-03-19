@@ -37,11 +37,16 @@ impl RbExpr {
         self.inner.clone().dt().cast_time_unit(tu.0).into()
     }
 
-    pub fn dt_replace_time_zone(&self, time_zone: Option<String>, ambiguous: &Self) -> Self {
+    pub fn dt_replace_time_zone(
+        &self,
+        time_zone: Option<String>,
+        ambiguous: &Self,
+        non_existent: Wrap<NonExistent>,
+    ) -> Self {
         self.inner
             .clone()
             .dt()
-            .replace_time_zone(time_zone, ambiguous.inner.clone())
+            .replace_time_zone(time_zone, ambiguous.inner.clone(), non_existent.0)
             .into()
     }
 

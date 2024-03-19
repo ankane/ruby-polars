@@ -1,6 +1,6 @@
 ## 0.9.1 (unreleased)
 
-- Updated Polars to 0.38.2
+- Updated Polars to 0.38.3
 - Added support for writing JSON to string
 - Added support for writing Parquet to `StringIO`
 - Added `data_page_size` option to `write_parquet` method

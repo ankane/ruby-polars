@@ -406,7 +406,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("dt_cast_time_unit", method!(RbExpr::dt_cast_time_unit, 1))?;
     class.define_method(
         "dt_replace_time_zone",
-        method!(RbExpr::dt_replace_time_zone, 2),
+        method!(RbExpr::dt_replace_time_zone, 3),
     )?;
     class.define_method("dt_truncate", method!(RbExpr::dt_truncate, 2))?;
     class.define_method("dt_month_start", method!(RbExpr::dt_month_start, 0))?;

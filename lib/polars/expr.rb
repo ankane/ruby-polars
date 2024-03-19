@@ -3933,7 +3933,7 @@ module Polars
       min_periods: nil,
       center: false,
       by: nil,
-      closed: "left"
+      closed: nil
     )
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
@@ -4022,7 +4022,7 @@ module Polars
       min_periods: nil,
       center: false,
       by: nil,
-      closed: "left"
+      closed: nil
     )
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
@@ -4111,7 +4111,7 @@ module Polars
       min_periods: nil,
       center: false,
       by: nil,
-      closed: "left"
+      closed: nil
     )
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
@@ -4200,7 +4200,7 @@ module Polars
       min_periods: nil,
       center: false,
       by: nil,
-      closed: "left"
+      closed: nil
     )
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
@@ -4289,7 +4289,7 @@ module Polars
       min_periods: nil,
       center: false,
       by: nil,
-      closed: "left",
+      closed: nil,
       ddof: 1,
       warn_if_unsorted: true
     )
@@ -4380,7 +4380,7 @@ module Polars
       min_periods: nil,
       center: false,
       by: nil,
-      closed: "left",
+      closed: nil,
       ddof: 1,
       warn_if_unsorted: true
     )
@@ -4467,7 +4467,7 @@ module Polars
       min_periods: nil,
       center: false,
       by: nil,
-      closed: "left",
+      closed: nil,
       warn_if_unsorted: true
     )
       window_size, min_periods = _prepare_rolling_window_args(
@@ -4559,7 +4559,7 @@ module Polars
       min_periods: nil,
       center: false,
       by: nil,
-      closed: "left",
+      closed: nil,
       warn_if_unsorted: true
     )
       window_size, min_periods = _prepare_rolling_window_args(

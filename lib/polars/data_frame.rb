@@ -1134,7 +1134,7 @@ module Polars
     #   df.estimated_size
     #   # => 25888898
     #   df.estimated_size("mb")
-    #   # => 26.702880859375
+    #   # => 17.0601749420166
     def estimated_size(unit = "b")
       sz = _df.estimated_size
       Utils.scale_bytes(sz, to: unit)
