@@ -179,7 +179,6 @@ impl RbDataFrame {
             .with_separator(separator.as_bytes()[0])
             .with_skip_rows(skip_rows)
             .with_ignore_errors(ignore_errors)
-            .truncate_ragged_lines(truncate_ragged_lines)
             .with_projection(projection)
             .with_rechunk(rechunk)
             .with_chunk_size(chunk_size)
@@ -198,6 +197,7 @@ impl RbDataFrame {
             .with_skip_rows_after_header(skip_rows_after_header)
             .with_row_index(row_index)
             .sample_size(sample_size)
+            .truncate_ragged_lines(truncate_ragged_lines)
             .finish()
             .map_err(RbPolarsErr::from)?;
         Ok(df.into())

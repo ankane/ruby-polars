@@ -121,7 +121,6 @@ impl RbLazyFrame {
             .with_separator(separator)
             .has_header(has_header)
             .with_ignore_errors(ignore_errors)
-            .truncate_ragged_lines(truncate_ragged_lines)
             .with_skip_rows(skip_rows)
             .with_n_rows(n_rows)
             .with_cache(cache)
@@ -135,7 +134,8 @@ impl RbLazyFrame {
             .with_encoding(encoding.0)
             .with_row_index(row_index)
             .with_try_parse_dates(try_parse_dates)
-            .with_null_values(null_values);
+            .with_null_values(null_values)
+            .truncate_ragged_lines(truncate_ragged_lines);
 
         if let Some(_lambda) = with_schema_modify {
             todo!();

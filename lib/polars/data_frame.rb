@@ -141,7 +141,6 @@ module Polars
           dtypes: dtypes_dict,
           null_values: null_values,
           ignore_errors: ignore_errors,
-          truncate_ragged_lines: truncate_ragged_lines,
           infer_schema_length: infer_schema_length,
           n_rows: n_rows,
           low_memory: low_memory,
@@ -149,7 +148,8 @@ module Polars
           skip_rows_after_header: skip_rows_after_header,
           row_count_name: row_count_name,
           row_count_offset: row_count_offset,
-          eol_char: eol_char
+          eol_char: eol_char,
+          truncate_ragged_lines: truncate_ragged_lines
         )
         if columns.nil?
           return _from_rbdf(scan.collect._df)

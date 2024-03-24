@@ -38,8 +38,6 @@ module Polars
     #   Try to keep reading lines if some lines yield errors.
     #   First try `infer_schema_length: 0` to read all columns as
     #   `:str` to check which values might cause an issue.
-    # @param truncate_ragged_lines [Boolean]
-    #   Truncate lines that are longer than the schema.
     # @param parse_dates [Boolean]
     #   Try to automatically parse dates. If this does not succeed,
     #   the column remains of data type `:str`.
@@ -82,6 +80,8 @@ module Polars
     #   allocation needed.
     # @param eol_char [String]
     #   Single byte end of line character.
+    # @param truncate_ragged_lines [Boolean]
+    #   Truncate lines that are longer than the schema.
     #
     # @return [DataFrame]
     #
@@ -152,7 +152,6 @@ module Polars
           dtypes: dtypes,
           null_values: null_values,
           ignore_errors: ignore_errors,
-          truncate_ragged_lines: truncate_ragged_lines,
           parse_dates: parse_dates,
           n_threads: n_threads,
           infer_schema_length: infer_schema_length,
@@ -165,7 +164,8 @@ module Polars
           row_count_name: row_count_name,
           row_count_offset: row_count_offset,
           sample_size: sample_size,
-          eol_char: eol_char
+          eol_char: eol_char,
+          truncate_ragged_lines: truncate_ragged_lines
         )
       end
 
@@ -212,8 +212,6 @@ module Polars
     #   Try to keep reading lines if some lines yield errors.
     #   First try `infer_schema_length: 0` to read all columns as
     #   `:str` to check which values might cause an issue.
-    # @param truncate_ragged_lines [Boolean]
-    #   Truncate lines that are longer than the schema.
     # @param cache [Boolean]
     #   Cache the result after reading.
     # @param with_column_names [Object]
@@ -245,6 +243,8 @@ module Polars
     #   the column remains of data type `:str`.
     # @param eol_char [String]
     #   Single byte end of line character.
+    # @param truncate_ragged_lines [Boolean]
+    #   Truncate lines that are longer than the schema.
     #
     # @return [LazyFrame]
     def scan_csv(
@@ -289,7 +289,6 @@ module Polars
         dtypes: dtypes,
         null_values: null_values,
         ignore_errors: ignore_errors,
-        truncate_ragged_lines: truncate_ragged_lines,
         cache: cache,
         with_column_names: with_column_names,
         infer_schema_length: infer_schema_length,
@@ -302,6 +301,7 @@ module Polars
         row_count_offset: row_count_offset,
         parse_dates: parse_dates,
         eol_char: eol_char,
+        truncate_ragged_lines: truncate_ragged_lines
       )
     end
 
@@ -724,8 +724,6 @@ module Polars
     #   Try to keep reading lines if some lines yield errors.
     #   First try `infer_schema_length: 0` to read all columns as
     #   `:str` to check which values might cause an issue.
-    # @param truncate_ragged_lines [Boolean]
-    #   Truncate lines that are longer than the schema.
     # @param parse_dates [Boolean]
     #   Try to automatically parse dates. If this does not succeed,
     #   the column remains of data type `:str`.
@@ -765,6 +763,8 @@ module Polars
     #   allocation needed.
     # @param eol_char [String]
     #   Single byte end of line character.
+    # @param truncate_ragged_lines [Boolean]
+    #   Truncate lines that are longer than the schema.
     #
     # @return [BatchedCsvReader]
     #
@@ -825,7 +825,6 @@ module Polars
         dtypes: dtypes,
         null_values: null_values,
         ignore_errors: ignore_errors,
-        truncate_ragged_lines: truncate_ragged_lines,
         parse_dates: parse_dates,
         n_threads: n_threads,
         infer_schema_length: infer_schema_length,
@@ -839,7 +838,8 @@ module Polars
         row_count_offset: row_count_offset,
         sample_size: sample_size,
         eol_char: eol_char,
-        new_columns: new_columns
+        new_columns: new_columns,
+        truncate_ragged_lines: truncate_ragged_lines
       )
     end
 

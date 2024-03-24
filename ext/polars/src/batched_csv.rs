@@ -93,7 +93,6 @@ impl RbBatchedCsv {
             .with_separator(separator.as_bytes()[0])
             .with_skip_rows(skip_rows)
             .with_ignore_errors(ignore_errors)
-            .truncate_ragged_lines(truncate_ragged_lines)
             .with_projection(projection)
             .with_rechunk(rechunk)
             .with_chunk_size(chunk_size)
@@ -109,7 +108,8 @@ impl RbBatchedCsv {
             .with_end_of_line_char(eol_char)
             .with_skip_rows_after_header(skip_rows_after_header)
             .with_row_index(row_index)
-            .sample_size(sample_size);
+            .sample_size(sample_size)
+            .truncate_ragged_lines(truncate_ragged_lines);
 
         let reader = if low_memory {
             let reader = reader
