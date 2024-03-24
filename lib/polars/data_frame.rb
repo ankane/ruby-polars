@@ -91,7 +91,8 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0,
       sample_size: 1024,
-      eol_char: "\n"
+      eol_char: "\n",
+      truncate_ragged_lines: false
     )
       if Utils.pathlike?(file)
         path = Utils.normalise_filepath(file)
@@ -147,7 +148,8 @@ module Polars
           skip_rows_after_header: skip_rows_after_header,
           row_count_name: row_count_name,
           row_count_offset: row_count_offset,
-          eol_char: eol_char
+          eol_char: eol_char,
+          truncate_ragged_lines: truncate_ragged_lines
         )
         if columns.nil?
           return _from_rbdf(scan.collect._df)
@@ -186,7 +188,8 @@ module Polars
           skip_rows_after_header,
           Utils._prepare_row_count_args(row_count_name, row_count_offset),
           sample_size,
-          eol_char
+          eol_char,
+          truncate_ragged_lines
         )
       )
     end

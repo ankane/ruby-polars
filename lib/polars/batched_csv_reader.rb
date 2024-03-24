@@ -27,7 +27,8 @@ module Polars
       row_count_offset: 0,
       sample_size: 1024,
       eol_char: "\n",
-      new_columns: nil
+      new_columns: nil,
+      truncate_ragged_lines: false
     )
       if Utils.pathlike?(file)
         path = Utils.normalise_filepath(file)
@@ -75,7 +76,8 @@ module Polars
         skip_rows_after_header,
         Utils._prepare_row_count_args(row_count_name, row_count_offset),
         sample_size,
-        eol_char
+        eol_char,
+        truncate_ragged_lines
       )
       self.new_columns = new_columns
     end

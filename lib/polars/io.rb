@@ -80,6 +80,8 @@ module Polars
     #   allocation needed.
     # @param eol_char [String]
     #   Single byte end of line character.
+    # @param truncate_ragged_lines [Boolean]
+    #   Truncate lines that are longer than the schema.
     #
     # @return [DataFrame]
     #
@@ -113,7 +115,8 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0,
       sample_size: 1024,
-      eol_char: "\n"
+      eol_char: "\n",
+      truncate_ragged_lines: false
     )
       Utils._check_arg_is_1byte("sep", sep, false)
       Utils._check_arg_is_1byte("comment_char", comment_char, false)
@@ -161,7 +164,8 @@ module Polars
           row_count_name: row_count_name,
           row_count_offset: row_count_offset,
           sample_size: sample_size,
-          eol_char: eol_char
+          eol_char: eol_char,
+          truncate_ragged_lines: truncate_ragged_lines
         )
       end
 
@@ -239,6 +243,8 @@ module Polars
     #   the column remains of data type `:str`.
     # @param eol_char [String]
     #   Single byte end of line character.
+    # @param truncate_ragged_lines [Boolean]
+    #   Truncate lines that are longer than the schema.
     #
     # @return [LazyFrame]
     def scan_csv(
@@ -262,7 +268,8 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0,
       parse_dates: false,
-      eol_char: "\n"
+      eol_char: "\n",
+      truncate_ragged_lines: false
     )
       Utils._check_arg_is_1byte("sep", sep, false)
       Utils._check_arg_is_1byte("comment_char", comment_char, false)
@@ -294,6 +301,7 @@ module Polars
         row_count_offset: row_count_offset,
         parse_dates: parse_dates,
         eol_char: eol_char,
+        truncate_ragged_lines: truncate_ragged_lines
       )
     end
 
@@ -755,6 +763,8 @@ module Polars
     #   allocation needed.
     # @param eol_char [String]
     #   Single byte end of line character.
+    # @param truncate_ragged_lines [Boolean]
+    #   Truncate lines that are longer than the schema.
     #
     # @return [BatchedCsvReader]
     #
@@ -787,7 +797,8 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0,
       sample_size: 1024,
-      eol_char: "\n"
+      eol_char: "\n",
+      truncate_ragged_lines: false
     )
       projection, columns = Utils.handle_projection_columns(columns)
 
@@ -827,7 +838,8 @@ module Polars
         row_count_offset: row_count_offset,
         sample_size: sample_size,
         eol_char: eol_char,
-        new_columns: new_columns
+        new_columns: new_columns,
+        truncate_ragged_lines: truncate_ragged_lines
       )
     end
 

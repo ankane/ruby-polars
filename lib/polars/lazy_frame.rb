@@ -49,7 +49,8 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0,
       parse_dates: false,
-      eol_char: "\n"
+      eol_char: "\n",
+      truncate_ragged_lines: true
     )
       dtype_list = nil
       if !dtypes.nil?
@@ -81,7 +82,8 @@ module Polars
           encoding,
           Utils._prepare_row_count_args(row_count_name, row_count_offset),
           parse_dates,
-          eol_char
+          eol_char,
+          truncate_ragged_lines
         )
       )
     end

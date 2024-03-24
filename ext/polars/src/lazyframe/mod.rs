@@ -100,6 +100,7 @@ impl RbLazyFrame {
         let row_index = Option::<(String, IdxSize)>::try_convert(arguments[17])?;
         let try_parse_dates = bool::try_convert(arguments[18])?;
         let eol_char = String::try_convert(arguments[19])?;
+        let truncate_ragged_lines = bool::try_convert(arguments[20])?;
         // end arguments
 
         let null_values = null_values.map(|w| w.0);
@@ -133,7 +134,8 @@ impl RbLazyFrame {
             .with_encoding(encoding.0)
             .with_row_index(row_index)
             .with_try_parse_dates(try_parse_dates)
-            .with_null_values(null_values);
+            .with_null_values(null_values)
+            .truncate_ragged_lines(truncate_ragged_lines);
 
         if let Some(_lambda) = with_schema_modify {
             todo!();
