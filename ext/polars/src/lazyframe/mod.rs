@@ -107,7 +107,6 @@ impl RbLazyFrame {
         let quote_char = quote_char.map(|s| s.as_bytes()[0]);
         let separator = separator.as_bytes()[0];
         let eol_char = eol_char.as_bytes()[0];
-
         let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
 
         let overwrite_dtype = overwrite_dtype.map(|overwrite_dtype| {
@@ -125,6 +124,7 @@ impl RbLazyFrame {
             .with_n_rows(n_rows)
             .with_cache(cache)
             .with_dtype_overwrite(overwrite_dtype.as_ref())
+            // TODO add with_schema
             .low_memory(low_memory)
             .with_comment_prefix(comment_prefix.as_deref())
             .with_quote_char(quote_char)
@@ -135,6 +135,7 @@ impl RbLazyFrame {
             .with_row_index(row_index)
             .with_try_parse_dates(try_parse_dates)
             .with_null_values(null_values)
+            // TODO add with_missing_is_null
             .truncate_ragged_lines(truncate_ragged_lines);
 
         if let Some(_lambda) = with_schema_modify {
