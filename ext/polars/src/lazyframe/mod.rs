@@ -115,6 +115,7 @@ impl RbLazyFrame {
                 .map(|(name, dtype)| Field::new(&name, dtype.0))
                 .collect::<Schema>()
         });
+
         let r = LazyCsvReader::new(path)
             .with_infer_schema_length(infer_schema_length)
             .with_separator(separator)
