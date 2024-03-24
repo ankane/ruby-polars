@@ -4,6 +4,7 @@
 - Added support for writing JSON to string
 - Added support for writing Parquet to `StringIO`
 - Added `data_page_size` option to `write_parquet` method
+- Added `truncate_ragged_lines` option to `read_csv`, `read_csv_batched`, and `scan_csv` methods
 
 ## 0.9.0 (2024-03-03)
 
