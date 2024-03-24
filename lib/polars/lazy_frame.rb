@@ -38,7 +38,6 @@ module Polars
       dtypes: nil,
       null_values: nil,
       ignore_errors: false,
-      truncate_ragged_lines: false,
       cache: true,
       with_column_names: nil,
       infer_schema_length: 100,
@@ -50,7 +49,8 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0,
       parse_dates: false,
-      eol_char: "\n"
+      eol_char: "\n",
+      truncate_ragged_lines: true
     )
       dtype_list = nil
       if !dtypes.nil?

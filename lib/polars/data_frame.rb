@@ -79,7 +79,6 @@ module Polars
       dtypes: nil,
       null_values: nil,
       ignore_errors: false,
-      truncate_ragged_lines: false,
       parse_dates: false,
       n_threads: nil,
       infer_schema_length: 100,
@@ -92,7 +91,8 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0,
       sample_size: 1024,
-      eol_char: "\n"
+      eol_char: "\n",
+      truncate_ragged_lines: false
     )
       if Utils.pathlike?(file)
         path = Utils.normalise_filepath(file)
