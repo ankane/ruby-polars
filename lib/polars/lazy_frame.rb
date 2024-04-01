@@ -1839,7 +1839,7 @@ module Polars
       if how == "cross"
         return _from_rbldf(
           _ldf.join(
-            other._ldf, [], [], allow_parallel, force_parallel, how, suffix
+            other._ldf, [], [], allow_parallel, join_nulls, force_parallel, how, suffix
           )
         )
       end

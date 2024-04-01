@@ -430,6 +430,13 @@ class DataFrameTest < Minitest::Test
     assert_frame expected, df4
   end
 
+  def test_join_cross
+    df1 = Polars::DataFrame.new({a: [1, 2]})
+    df2 = Polars::DataFrame.new({b: ["three", "four"]})
+    expected = Polars::DataFrame.new({a: [1, 1, 2, 2], b: ["three", "four", "three", "four"]})
+    assert_frame expected, df1.join(df2, how: "cross")
+  end
+
   def test_with_column
   end
 

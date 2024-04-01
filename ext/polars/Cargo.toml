@@ -34,6 +34,7 @@ features = [
     "binary_encoding",
     "concat_str",
     "cov",
+    "cross_join",
     "cse",
     "csv",
     "cum_agg",

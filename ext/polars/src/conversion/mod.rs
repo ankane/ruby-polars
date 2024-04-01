@@ -737,8 +737,7 @@ impl TryConvert for Wrap<JoinType> {
             "outer_coalesce" => JoinType::Outer { coalesce: true },
             "semi" => JoinType::Semi,
             "anti" => JoinType::Anti,
-            // #[cfg(feature = "cross_join")]
-            // "cross" => JoinType::Cross,
+            "cross" => JoinType::Cross,
             v => {
                 return Err(RbValueError::new_err(format!(
                 "how must be one of {{'inner', 'left', 'outer', 'semi', 'anti', 'cross'}}, got {}",

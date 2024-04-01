@@ -3,6 +3,7 @@
 - Updated Polars to 0.38.3
 - Added support for writing JSON to string
 - Added support for writing Parquet to `StringIO`
+- Added support for cross joins
 - Added `data_page_size` option to `write_parquet` method
 - Added `truncate_ragged_lines` option to `read_csv`, `read_csv_batched`, and `scan_csv` methods
 - Added precompiled gem for Linux x86-64 MUSL
