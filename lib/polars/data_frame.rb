@@ -2864,11 +2864,19 @@ module Polars
       if columns.is_a?(::Array)
         df = clone
         columns.each do |n|
-          df._df.drop_in_place(n)
+          if df._df.has_column?(n)
+            df._df.drop_in_place(n)
+          else
+            puts "Warning: Attempt to drop non-existent column '#{column_name}' ignored."
+          end
         end
         df
       else
-        _from_rbdf(_df.drop(columns))
+        if _df.has_column?(columns)
+          _from_rbdf(_df.drop(columns))
+        else
+          puts "Warning: Attempt to drop non-existent column '#{columns}' ignored."
+        end
       end
     end
 
