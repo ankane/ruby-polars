@@ -132,9 +132,23 @@ class DocsTest < Minitest::Test
           raise "Missing docs (#{method.name})"
         end
 
+        assert_params(method)
         assert_return(method)
         assert_examples(method, cls)
       end
+    end
+  end
+
+  def assert_params(method)
+    actual = method.tags(:param).map(&:name)
+    expected = method.parameters.map(&:first).map { |v| v.gsub("*", "").gsub(":", "") }.reject { |v| v.start_with?("&") }
+    missing = expected - actual
+    extra = actual - expected
+    if missing.any? && actual.any?
+      puts "Missing @param tags (#{method}) #{missing}"
+    end
+    if extra.any? && expected.any?
+      puts "Extra @param tags (#{method}) #{extra}"
     end
   end
 
