@@ -2861,16 +2861,36 @@ module Polars
     #   # │ 2   ┆ 7.0 │
     #   # │ 3   ┆ 8.0 │
     #   # └─────┴─────┘
-    def drop(columns)
-      if columns.is_a?(::Array)
-        df = clone
-        columns.each do |n|
-          df._df.drop_in_place(n)
-        end
-        df
-      else
-        _from_rbdf(_df.drop(columns))
-      end
+    #
+    # @example Drop multiple columns by passing a list of column names.
+    #   df.drop(["bar", "ham"])
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 2   │
+    #   # │ 3   │
+    #   # └─────┘
+    #
+    # @example Use positional arguments to drop multiple columns.
+    #   df.drop("foo", "ham")
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ bar │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 6.0 │
+    #   # │ 7.0 │
+    #   # │ 8.0 │
+    #   # └─────┘
+    def drop(*columns)
+      lazy.drop(*columns).collect(_eager: true)
     end
 
     # Drop in place.

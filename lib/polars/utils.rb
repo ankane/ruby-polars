@@ -364,5 +364,25 @@ module Polars
         end
       end
     end
+
+    def self._expand_selectors(frame, *items)
+      items_iter = _parse_inputs_as_iterable(items)
+
+      expanded = []
+      items_iter.each do |item|
+        if is_selector(item)
+          selector_cols = expand_selector(frame, item)
+          expanded.concat(selector_cols)
+        else
+          expanded << item
+        end
+      end
+      expanded
+    end
+
+    # TODO
+    def self.is_selector(obj)
+      false
+    end
   end
 end
