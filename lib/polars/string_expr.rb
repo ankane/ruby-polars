@@ -1354,6 +1354,7 @@ module Polars
     #   # │ null ┆ null   │
     #   # └──────┴────────┘
     def to_integer(base: 10, strict: true)
+      base = Utils.parse_as_expression(base, str_as_lit: false)
       Utils.wrap_expr(_rbexpr.str_to_integer(base, strict))
     end
 

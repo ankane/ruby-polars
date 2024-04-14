@@ -267,7 +267,7 @@ impl RbExpr {
     pub fn sort_with(&self, descending: bool, nulls_last: bool) -> Self {
         self.clone()
             .inner
-            .sort_with(SortOptions {
+            .sort(SortOptions {
                 descending,
                 nulls_last,
                 multithreaded: true,
@@ -323,9 +323,28 @@ impl RbExpr {
         self.clone().inner.gather(idx.inner.clone()).into()
     }
 
-    pub fn sort_by(&self, by: RArray, reverse: Vec<bool>) -> RbResult<Self> {
+    pub fn sort_by(
+        &self,
+        by: RArray,
+        descending: Vec<bool>,
+        nulls_last: bool,
+        multithreaded: bool,
+        maintain_order: bool,
+    ) -> RbResult<Self> {
         let by = rb_exprs_to_exprs(by)?;
-        Ok(self.clone().inner.sort_by(by, reverse).into())
+        Ok(self
+            .clone()
+            .inner
+            .sort_by(
+                by,
+                SortMultipleOptions {
+                    descending,
+                    nulls_last,
+                    multithreaded,
+                    maintain_order,
+                },
+            )
+            .into())
     }
 
     pub fn backward_fill(&self, limit: FillNullLimit) -> Self {

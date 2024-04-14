@@ -353,9 +353,9 @@ module Polars
     #   # │ [4, 5, 6]     ┆ -2  ┆ 5    │
     #   # │ [7, 8, 9]     ┆ 4   ┆ null │
     #   # └───────────────┴─────┴──────┘
-    def get(index)
+    def get(index, null_on_oob: true)
       index = Utils.parse_as_expression(index)
-      Utils.wrap_expr(_rbexpr.arr_get(index))
+      Utils.wrap_expr(_rbexpr.arr_get(index, null_on_oob))
     end
 
     # Get the first value of the sub-arrays.

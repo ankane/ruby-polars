@@ -59,8 +59,12 @@ impl RbExpr {
         self.inner.clone().arr().arg_max().into()
     }
 
-    pub fn arr_get(&self, index: &RbExpr) -> Self {
-        self.inner.clone().arr().get(index.inner.clone()).into()
+    pub fn arr_get(&self, index: &RbExpr, null_on_oob: bool) -> Self {
+        self.inner
+            .clone()
+            .arr()
+            .get(index.inner.clone(), null_on_oob)
+            .into()
     }
 
     pub fn arr_join(&self, separator: &RbExpr, ignore_nulls: bool) -> Self {

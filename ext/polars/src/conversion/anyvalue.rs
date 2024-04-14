@@ -3,8 +3,8 @@ use magnus::{
     class, prelude::*, r_hash::ForEach, Float, Integer, IntoValue, RArray, RHash, RString, Ruby,
     TryConvert, Value,
 };
-use polars::frame::row::any_values_to_dtype;
 use polars::prelude::*;
+use polars_core::utils::any_values_to_supertype_and_n_dtypes;
 
 use super::{struct_dict, ObjectValue, Wrap};
 
@@ -120,7 +120,8 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
                     avs.push(Wrap::<AnyValue>::try_convert(item?)?.0)
                 }
 
-                let (dtype, _n_types) = any_values_to_dtype(&avs).map_err(RbPolarsErr::from)?;
+                let (dtype, _n_types) =
+                    any_values_to_supertype_and_n_dtypes(&avs).map_err(RbPolarsErr::from)?;
 
                 // push the rest
                 avs.reserve(list.len());

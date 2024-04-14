@@ -265,9 +265,9 @@ pub fn apply_lambda_with_rows_output<'a>(
                         // to the row. Before we mutate the row buf again, the reference is dropped.
                         // we only cannot prove it to the compiler.
                         // we still do this because it saves a Vec allocation in a hot loop.
-                        unsafe { &*ptr }
+                        Ok(unsafe { &*ptr })
                     }
-                    None => &null_row,
+                    None => Ok(&null_row),
                 }
             }
             Err(e) => panic!("ruby function failed {}", e),
@@ -277,22 +277,30 @@ pub fn apply_lambda_with_rows_output<'a>(
     // first rows for schema inference
     let mut buf = Vec::with_capacity(inference_size);
     buf.push(first_value);
-    buf.extend((&mut row_iter).take(inference_size).cloned());
-    let schema = rows_to_schema_first_non_null(&buf, Some(50));
+    for v in (&mut row_iter).take(inference_size) {
+        buf.push(v?.clone());
+    }
+
+    let schema = rows_to_schema_first_non_null(&buf, Some(50))?;
 
     if init_null_count > 0 {
         // Safety: we know the iterators size
         let iter = unsafe {
             (0..init_null_count)
-                .map(|_| &null_row)
-                .chain(buf.iter())
+                .map(|_| Ok(&null_row))
+                .chain(buf.iter().map(Ok))
                 .chain(row_iter)
                 .trust_my_length(df.height())
         };
-        DataFrame::from_rows_iter_and_schema(iter, &schema)
+        DataFrame::try_from_rows_iter_and_schema(iter, &schema)
     } else {
         // Safety: we know the iterators size
-        let iter = unsafe { buf.iter().chain(row_iter).trust_my_length(df.height()) };
-        DataFrame::from_rows_iter_and_schema(iter, &schema)
+        let iter = unsafe {
+            buf.iter()
+                .map(Ok)
+                .chain(row_iter)
+                .trust_my_length(df.height())
+        };
+        DataFrame::try_from_rows_iter_and_schema(iter, &schema)
     }
 }

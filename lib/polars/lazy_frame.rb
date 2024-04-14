@@ -105,6 +105,7 @@ module Polars
       _from_rbldf(
         RbLazyFrame.new_from_parquet(
           file,
+          [],
           n_rows,
           cache,
           parallel,
@@ -112,7 +113,8 @@ module Polars
           Utils._prepare_row_count_args(row_count_name, row_count_offset),
           low_memory,
           use_statistics,
-          hive_partitioning
+          hive_partitioning,
+          nil
         )
       )
     end
@@ -402,16 +404,16 @@ module Polars
     #   # │ 2   ┆ 7.0 ┆ b   │
     #   # │ 1   ┆ 6.0 ┆ a   │
     #   # └─────┴─────┴─────┘
-    def sort(by, reverse: false, nulls_last: false, maintain_order: false)
+    def sort(by, reverse: false, nulls_last: false, maintain_order: false, multithreaded: true)
       if by.is_a?(::String)
-        return _from_rbldf(_ldf.sort(by, reverse, nulls_last, maintain_order))
+        return _from_rbldf(_ldf.sort(by, reverse, nulls_last, maintain_order, multithreaded))
       end
       if Utils.bool?(reverse)
         reverse = [reverse]
       end
 
       by = Utils.selection_to_rbexpr_list(by)
-      _from_rbldf(_ldf.sort_by_exprs(by, reverse, nulls_last, maintain_order))
+      _from_rbldf(_ldf.sort_by_exprs(by, reverse, nulls_last, maintain_order, multithreaded))
     end
 
     # def profile
@@ -1525,12 +1527,13 @@ module Polars
     #     closed: "right"
     #   ).agg(Polars.col("A").alias("A_agg_list"))
     #   # =>
-    #   # shape: (3, 4)
+    #   # shape: (4, 4)
     #   # ┌─────────────────┬─────────────────┬─────┬─────────────────┐
     #   # │ _lower_boundary ┆ _upper_boundary ┆ idx ┆ A_agg_list      │
     #   # │ ---             ┆ ---             ┆ --- ┆ ---             │
     #   # │ i64             ┆ i64             ┆ i64 ┆ list[str]       │
     #   # ╞═════════════════╪═════════════════╪═════╪═════════════════╡
+    #   # │ -2              ┆ 1               ┆ -2  ┆ ["A", "A"]      │
     #   # │ 0               ┆ 3               ┆ 0   ┆ ["A", "B", "B"] │
     #   # │ 2               ┆ 5               ┆ 2   ┆ ["B", "B", "C"] │
     #   # │ 4               ┆ 7               ┆ 4   ┆ ["C"]           │
@@ -1893,16 +1896,16 @@ module Polars
     #   ).collect
     #   # =>
     #   # shape: (4, 6)
-    #   # ┌─────┬──────┬───────┬──────┬──────┬───────┐
-    #   # │ a   ┆ b    ┆ c     ┆ a^2  ┆ b/2  ┆ not c │
-    #   # │ --- ┆ ---  ┆ ---   ┆ ---  ┆ ---  ┆ ---   │
-    #   # │ i64 ┆ f64  ┆ bool  ┆ f64  ┆ f64  ┆ bool  │
-    #   # ╞═════╪══════╪═══════╪══════╪══════╪═══════╡
-    #   # │ 1   ┆ 0.5  ┆ true  ┆ 1.0  ┆ 0.25 ┆ false │
-    #   # │ 2   ┆ 4.0  ┆ true  ┆ 4.0  ┆ 2.0  ┆ false │
-    #   # │ 3   ┆ 10.0 ┆ false ┆ 9.0  ┆ 5.0  ┆ true  │
-    #   # │ 4   ┆ 13.0 ┆ true  ┆ 16.0 ┆ 6.5  ┆ false │
-    #   # └─────┴──────┴───────┴──────┴──────┴───────┘
+    #   # ┌─────┬──────┬───────┬─────┬──────┬───────┐
+    #   # │ a   ┆ b    ┆ c     ┆ a^2 ┆ b/2  ┆ not c │
+    #   # │ --- ┆ ---  ┆ ---   ┆ --- ┆ ---  ┆ ---   │
+    #   # │ i64 ┆ f64  ┆ bool  ┆ i64 ┆ f64  ┆ bool  │
+    #   # ╞═════╪══════╪═══════╪═════╪══════╪═══════╡
+    #   # │ 1   ┆ 0.5  ┆ true  ┆ 1   ┆ 0.25 ┆ false │
+    #   # │ 2   ┆ 4.0  ┆ true  ┆ 4   ┆ 2.0  ┆ false │
+    #   # │ 3   ┆ 10.0 ┆ false ┆ 9   ┆ 5.0  ┆ true  │
+    #   # │ 4   ┆ 13.0 ┆ true  ┆ 16  ┆ 6.5  ┆ false │
+    #   # └─────┴──────┴───────┴─────┴──────┴───────┘
     def with_columns(*exprs, **named_exprs)
       structify = ENV.fetch("POLARS_AUTO_STRUCTIFY", "0") != "0"
       rbexprs = Utils.parse_as_list_of_expressions(*exprs, **named_exprs, __structify: structify)
@@ -1967,26 +1970,26 @@ module Polars
     #   # ┌─────┬─────┬───────────┐
     #   # │ a   ┆ b   ┆ b_squared │
     #   # │ --- ┆ --- ┆ ---       │
-    #   # │ i64 ┆ i64 ┆ f64       │
+    #   # │ i64 ┆ i64 ┆ i64       │
     #   # ╞═════╪═════╪═══════════╡
-    #   # │ 1   ┆ 2   ┆ 4.0       │
-    #   # │ 3   ┆ 4   ┆ 16.0      │
-    #   # │ 5   ┆ 6   ┆ 36.0      │
+    #   # │ 1   ┆ 2   ┆ 4         │
+    #   # │ 3   ┆ 4   ┆ 16        │
+    #   # │ 5   ┆ 6   ┆ 36        │
     #   # └─────┴─────┴───────────┘
     #
     # @example
     #   df.with_column(Polars.col("a") ** 2).collect
     #   # =>
     #   # shape: (3, 2)
-    #   # ┌──────┬─────┐
-    #   # │ a    ┆ b   │
-    #   # │ ---  ┆ --- │
-    #   # │ f64  ┆ i64 │
-    #   # ╞══════╪═════╡
-    #   # │ 1.0  ┆ 2   │
-    #   # │ 9.0  ┆ 4   │
-    #   # │ 25.0 ┆ 6   │
-    #   # └──────┴─────┘
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 2   │
+    #   # │ 9   ┆ 4   │
+    #   # │ 25  ┆ 6   │
+    #   # └─────┴─────┘
     def with_column(column)
       with_columns([column])
     end

@@ -244,12 +244,12 @@ impl RbExpr {
             .into()
     }
 
-    pub fn str_to_integer(&self, base: u32, strict: bool) -> Self {
+    pub fn str_to_integer(&self, base: &Self, strict: bool) -> Self {
         self.inner
             .clone()
             .str()
-            .to_integer(base, strict)
-            .with_fmt("str.parse_int")
+            .to_integer(base.inner.clone(), strict)
+            .with_fmt("str.to_integer")
             .into()
     }
 

@@ -213,7 +213,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arg_min", method!(RbExpr::arg_min, 0))?;
     class.define_method("search_sorted", method!(RbExpr::search_sorted, 2))?;
     class.define_method("gather", method!(RbExpr::gather, 1))?;
-    class.define_method("sort_by", method!(RbExpr::sort_by, 2))?;
+    class.define_method("sort_by", method!(RbExpr::sort_by, 5))?;
     class.define_method("backward_fill", method!(RbExpr::backward_fill, 1))?;
     class.define_method("forward_fill", method!(RbExpr::forward_fill, 1))?;
     class.define_method("shift", method!(RbExpr::shift, 2))?;
@@ -312,7 +312,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arr_reverse", method!(RbExpr::arr_reverse, 0))?;
     class.define_method("arr_arg_min", method!(RbExpr::arr_arg_min, 0))?;
     class.define_method("arr_arg_max", method!(RbExpr::arr_arg_max, 0))?;
-    class.define_method("arr_get", method!(RbExpr::arr_get, 1))?;
+    class.define_method("arr_get", method!(RbExpr::arr_get, 2))?;
     class.define_method("arr_join", method!(RbExpr::arr_join, 2))?;
     class.define_method("arr_contains", method!(RbExpr::arr_contains, 1))?;
     class.define_method("arr_count_matches", method!(RbExpr::arr_count_matches, 1))?;
@@ -448,7 +448,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("list_sort", method!(RbExpr::list_sort, 1))?;
     class.define_method("list_reverse", method!(RbExpr::list_reverse, 0))?;
     class.define_method("list_unique", method!(RbExpr::list_unique, 1))?;
-    class.define_method("list_get", method!(RbExpr::list_get, 1))?;
+    class.define_method("list_get", method!(RbExpr::list_get, 2))?;
     class.define_method("list_join", method!(RbExpr::list_join, 2))?;
     class.define_method("list_arg_min", method!(RbExpr::list_arg_min, 0))?;
     class.define_method("list_arg_max", method!(RbExpr::list_arg_max, 0))?;
@@ -554,7 +554,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("arctan2d", function!(functions::lazy::arctan2d, 2))?;
     class.define_singleton_method("rolling_corr", function!(functions::lazy::rolling_corr, 5))?;
     class.define_singleton_method("rolling_cov", function!(functions::lazy::rolling_cov, 5))?;
-    class.define_singleton_method("arg_sort_by", function!(functions::lazy::arg_sort_by, 2))?;
+    class.define_singleton_method("arg_sort_by", function!(functions::lazy::arg_sort_by, 5))?;
     class.define_singleton_method("when", function!(functions::whenthen::when, 1))?;
     class.define_singleton_method("concat_str", function!(functions::lazy::concat_str, 3))?;
     class.define_singleton_method("concat_list", function!(functions::lazy::concat_list, 1))?;
@@ -689,7 +689,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("new_from_csv", function!(RbLazyFrame::new_from_csv, -1))?;
     class.define_singleton_method(
         "new_from_parquet",
-        function!(RbLazyFrame::new_from_parquet, 9),
+        function!(RbLazyFrame::new_from_parquet, 11),
     )?;
     class.define_singleton_method("new_from_ipc", function!(RbLazyFrame::new_from_ipc, 6))?;
     class.define_method("write_json", method!(RbLazyFrame::write_json, 1))?;
@@ -702,8 +702,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "optimization_toggle",
         method!(RbLazyFrame::optimization_toggle, 9),
     )?;
-    class.define_method("sort", method!(RbLazyFrame::sort, 4))?;
-    class.define_method("sort_by_exprs", method!(RbLazyFrame::sort_by_exprs, 4))?;
+    class.define_method("sort", method!(RbLazyFrame::sort, 5))?;
+    class.define_method("sort_by_exprs", method!(RbLazyFrame::sort_by_exprs, 5))?;
     class.define_method("cache", method!(RbLazyFrame::cache, 0))?;
     class.define_method("collect", method!(RbLazyFrame::collect, 0))?;
     class.define_method("sink_parquet", method!(RbLazyFrame::sink_parquet, 7))?;
@@ -835,7 +835,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("mul", method!(RbSeries::mul, 1))?;
     class.define_method("div", method!(RbSeries::div, 1))?;
     class.define_method("rem", method!(RbSeries::rem, 1))?;
-    class.define_method("sort", method!(RbSeries::sort, 2))?;
+    class.define_method("sort", method!(RbSeries::sort, 3))?;
     class.define_method("value_counts", method!(RbSeries::value_counts, 1))?;
     class.define_method("any", method!(RbSeries::any, 1))?;
     class.define_method("all", method!(RbSeries::all, 1))?;

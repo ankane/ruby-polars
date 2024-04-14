@@ -1155,13 +1155,13 @@ module Polars
     #   s.cumulative_eval(Polars.element.first - Polars.element.last ** 2)
     #   # =>
     #   # shape: (5,)
-    #   # Series: 'values' [f64]
+    #   # Series: 'values' [i64]
     #   # [
-    #   #         0.0
-    #   #         -3.0
-    #   #         -8.0
-    #   #         -15.0
-    #   #         -24.0
+    #   #         0
+    #   #         -3
+    #   #         -8
+    #   #         -15
+    #   #         -24
     #   # ]
     def cumulative_eval(expr, min_periods: 1, parallel: false)
       super
@@ -1567,12 +1567,12 @@ module Polars
     #   #         2
     #   #         1
     #   # ]
-    def sort(reverse: false, nulls_last: false, in_place: false)
+    def sort(reverse: false, nulls_last: false, multithreaded: true, in_place: false)
       if in_place
-        self._s = _s.sort(reverse, nulls_last)
+        self._s = _s.sort(reverse, nulls_last, multithreaded)
         self
       else
-        Utils.wrap_s(_s.sort(reverse, nulls_last))
+        Utils.wrap_s(_s.sort(reverse, nulls_last, multithreaded))
       end
     end
 

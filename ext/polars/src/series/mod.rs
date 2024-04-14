@@ -233,8 +233,18 @@ impl RbSeries {
         }
     }
 
-    pub fn sort(&self, descending: bool, nulls_last: bool) -> Self {
-        (self.series.borrow_mut().sort(descending, nulls_last)).into()
+    pub fn sort(&self, descending: bool, nulls_last: bool, multithreaded: bool) -> RbResult<Self> {
+        Ok(self
+            .series
+            .borrow_mut()
+            .sort(
+                SortOptions::default()
+                    .with_order_descending(descending)
+                    .with_nulls_last(nulls_last)
+                    .with_multithreaded(multithreaded),
+            )
+            .map_err(RbPolarsErr::from)?
+            .into())
     }
 
     pub fn value_counts(&self, sorted: bool) -> RbResult<RbDataFrame> {

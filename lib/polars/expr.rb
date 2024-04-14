@@ -1544,16 +1544,14 @@ module Polars
     #   # │ one   │
     #   # │ two   │
     #   # └───────┘
-    def sort_by(by, reverse: false)
-      if !by.is_a?(::Array)
-        by = [by]
-      end
+    def sort_by(by, *more_by, reverse: false, nulls_last: false, multithreaded: true, maintain_order: false)
+      by = Utils.parse_as_list_of_expressions(by, *more_by)
       if !reverse.is_a?(::Array)
         reverse = [reverse]
+      elsif by.length != reverse.length
+        raise ArgumentError, "the length of `reverse` (#{reverse.length}) does not match the length of `by` (#{by.length})"
       end
-      by = Utils.selection_to_rbexpr_list(by)
-
-      _from_rbexpr(_rbexpr.sort_by(by, reverse))
+      _from_rbexpr(_rbexpr.sort_by(by, reverse, nulls_last, multithreaded, maintain_order))
     end
 
     # Take values by index.
@@ -3515,20 +3513,23 @@ module Polars
     # @return [Expr]
     #
     # @example
-    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4]})
-    #   df.select(Polars.col("foo").pow(3))
+    #   df = Polars::DataFrame.new({"x" => [1, 2, 4, 8]})
+    #   df.with_columns(
+    #     Polars.col("x").pow(3).alias("cube"),
+    #     Polars.col("x").pow(Polars.col("x").log(2)).alias("x ** xlog2")
+    #   )
     #   # =>
-    #   # shape: (4, 1)
-    #   # ┌──────┐
-    #   # │ foo  │
-    #   # │ ---  │
-    #   # │ f64  │
-    #   # ╞══════╡
-    #   # │ 1.0  │
-    #   # │ 8.0  │
-    #   # │ 27.0 │
-    #   # │ 64.0 │
-    #   # └──────┘
+    #   # shape: (4, 3)
+    #   # ┌─────┬──────┬────────────┐
+    #   # │ x   ┆ cube ┆ x ** xlog2 │
+    #   # │ --- ┆ ---  ┆ ---        │
+    #   # │ i64 ┆ i64  ┆ f64        │
+    #   # ╞═════╪══════╪════════════╡
+    #   # │ 1   ┆ 1    ┆ 1.0        │
+    #   # │ 2   ┆ 8    ┆ 2.0        │
+    #   # │ 4   ┆ 64   ┆ 16.0       │
+    #   # │ 8   ┆ 512  ┆ 512.0      │
+    #   # └─────┴──────┴────────────┘
     def pow(exponent)
       self**exponent
     end
@@ -5711,13 +5712,13 @@ module Polars
     #   # ┌────────┐
     #   # │ values │
     #   # │ ---    │
-    #   # │ f64    │
+    #   # │ i64    │
     #   # ╞════════╡
-    #   # │ 0.0    │
-    #   # │ -3.0   │
-    #   # │ -8.0   │
-    #   # │ -15.0  │
-    #   # │ -24.0  │
+    #   # │ 0      │
+    #   # │ -3     │
+    #   # │ -8     │
+    #   # │ -15    │
+    #   # │ -24    │
     #   # └────────┘
     def cumulative_eval(expr, min_periods: 1, parallel: false)
       _from_rbexpr(

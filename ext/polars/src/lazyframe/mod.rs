@@ -1,5 +1,5 @@
 use magnus::{IntoValue, RArray, RHash, TryConvert, Value};
-use polars::io::RowIndex;
+use polars::io::{HiveOptions, RowIndex};
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
 use std::cell::RefCell;
@@ -148,7 +148,8 @@ impl RbLazyFrame {
 
     #[allow(clippy::too_many_arguments)]
     pub fn new_from_parquet(
-        path: String,
+        path: Option<PathBuf>,
+        paths: Vec<PathBuf>,
         n_rows: Option<usize>,
         cache: bool,
         parallel: Wrap<ParallelStrategy>,
@@ -157,21 +158,43 @@ impl RbLazyFrame {
         low_memory: bool,
         use_statistics: bool,
         hive_partitioning: bool,
+        hive_schema: Option<Wrap<Schema>>,
     ) -> RbResult<Self> {
+        let parallel = parallel.0;
+        let hive_schema = hive_schema.map(|s| Arc::new(s.0));
+
+        let first_path = if let Some(path) = &path {
+            path
+        } else {
+            paths
+                .first()
+                .ok_or_else(|| RbValueError::new_err("expected a path argument".to_string()))?
+        };
+
         let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
+        let hive_options = HiveOptions {
+            enabled: hive_partitioning,
+            schema: hive_schema,
+        };
+
         let args = ScanArgsParquet {
             n_rows,
             cache,
-            parallel: parallel.0,
+            parallel,
             rechunk,
             row_index,
             low_memory,
-            // TODO support cloud options
             cloud_options: None,
             use_statistics,
-            hive_partitioning,
+            hive_options,
         };
-        let lf = LazyFrame::scan_parquet(path, args).map_err(RbPolarsErr::from)?;
+
+        let lf = if path.is_some() {
+            LazyFrame::scan_parquet(first_path, args)
+        } else {
+            LazyFrame::scan_parquet_files(Arc::from(paths), args)
+        }
+        .map_err(RbPolarsErr::from)?;
         Ok(lf.into())
     }
 
@@ -189,7 +212,8 @@ impl RbLazyFrame {
             cache,
             rechunk,
             row_index,
-            memmap: memory_map,
+            memory_map,
+            cloud_options: None,
         };
         let lf = LazyFrame::scan_ipc(path, args).map_err(RbPolarsErr::from)?;
         Ok(lf.into())
@@ -246,17 +270,18 @@ impl RbLazyFrame {
     pub fn sort(
         &self,
         by_column: String,
-        reverse: bool,
+        descending: bool,
         nulls_last: bool,
         maintain_order: bool,
+        multithreaded: bool,
     ) -> Self {
         let ldf = self.ldf.clone();
         ldf.sort(
-            &by_column,
-            SortOptions {
-                descending: reverse,
+            [&by_column],
+            SortMultipleOptions {
+                descending: vec![descending],
                 nulls_last,
-                multithreaded: true,
+                multithreaded,
                 maintain_order,
             },
         )
@@ -265,15 +290,24 @@ impl RbLazyFrame {
 
     pub fn sort_by_exprs(
         &self,
-        by_column: RArray,
-        reverse: Vec<bool>,
+        by: RArray,
+        descending: Vec<bool>,
         nulls_last: bool,
         maintain_order: bool,
+        multithreaded: bool,
     ) -> RbResult<Self> {
         let ldf = self.ldf.clone();
-        let exprs = rb_exprs_to_exprs(by_column)?;
+        let exprs = rb_exprs_to_exprs(by)?;
         Ok(ldf
-            .sort_by_exprs(exprs, reverse, nulls_last, maintain_order)
+            .sort_by_exprs(
+                exprs,
+                SortMultipleOptions {
+                    descending,
+                    nulls_last,
+                    maintain_order,
+                    multithreaded,
+                },
+            )
             .into())
     }
 
@@ -432,7 +466,7 @@ impl RbLazyFrame {
         let closed_window = closed.0;
         let ldf = self.ldf.clone();
         let by = rb_exprs_to_exprs(by)?;
-        let lazy_gb = ldf.group_by_rolling(
+        let lazy_gb = ldf.rolling(
             index_column.inner.clone(),
             by,
             RollingGroupOptions {

@@ -55,9 +55,24 @@ pub fn rolling_cov(
     .into()
 }
 
-pub fn arg_sort_by(by: RArray, descending: Vec<bool>) -> RbResult<RbExpr> {
+pub fn arg_sort_by(
+    by: RArray,
+    descending: Vec<bool>,
+    nulls_last: bool,
+    multithreaded: bool,
+    maintain_order: bool,
+) -> RbResult<RbExpr> {
     let by = rb_exprs_to_exprs(by)?;
-    Ok(dsl::arg_sort_by(by, &descending).into())
+    Ok(dsl::arg_sort_by(
+        by,
+        SortMultipleOptions {
+            descending,
+            nulls_last,
+            multithreaded,
+            maintain_order,
+        },
+    )
+    .into())
 }
 
 pub fn arg_where(condition: &RbExpr) -> RbExpr {

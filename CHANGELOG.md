@@ -1,6 +1,6 @@
-## 0.9.1 (unreleased)
+## 0.10.0 (unreleased)
 
-- Updated Polars to 0.38.3
+- Updated Polars to 0.39.0
 - Added support for writing JSON to string
 - Added support for writing Parquet to `StringIO`
 - Added support for cross joins

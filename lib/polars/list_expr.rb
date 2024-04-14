@@ -365,6 +365,10 @@ module Polars
     #
     # @param index [Integer]
     #   Index to return per sublist
+    # @param null_on_oob [Boolean]
+    #   Behavior if an index is out of bounds:
+    #   true -> set as null
+    #   false -> raise an error
     #
     # @return [Expr]
     #
@@ -382,9 +386,9 @@ module Polars
     #   # │ null │
     #   # │ 1    │
     #   # └──────┘
-    def get(index)
+    def get(index, null_on_oob: true)
       index = Utils.parse_as_expression(index)
-      Utils.wrap_expr(_rbexpr.list_get(index))
+      Utils.wrap_expr(_rbexpr.list_get(index, null_on_oob))
     end
 
     # Get the value by index in the sublists.

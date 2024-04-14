@@ -15,14 +15,14 @@ ahash = "0.8"
 chrono = "0.4"
 either = "1.8"
 magnus = "0.6"
-polars-core = "=0.38.3"
-polars-parquet = "=0.38.3"
-polars-utils = "=0.38.3"
+polars-core = "=0.39.0"
+polars-parquet = "=0.39.0"
+polars-utils = "=0.39.0"
 serde_json = "1"
 smartstring = "1"
 
 [dependencies.polars]
-version = "=0.38.3"
+version = "=0.39.0"
 features = [
     "abs",
     "approx_unique",
