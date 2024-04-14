@@ -433,4 +433,5 @@ cd polars-ruby
 bundle install
 bundle exec rake compile
 bundle exec rake test
+bundle exec rake test:docs
 ```
