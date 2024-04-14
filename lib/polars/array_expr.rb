@@ -333,6 +333,10 @@ module Polars
     #
     # @param index [Integer]
     #   Index to return per sub-array
+    # @param null_on_oob [Boolean]
+    #   Behavior if an index is out of bounds:
+    #   true -> set as null
+    #   false -> raise an error
     #
     # @return [Expr]
     #
