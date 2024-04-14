@@ -3646,6 +3646,8 @@ module Polars
     #     on the order that the values occur in the Series.
     # @param reverse [Boolean]
     #   Reverse the operation.
+    # @param seed [Integer]
+    #   If `method: "random"`, use this as seed.
     #
     # @return [Series]
     #
@@ -3676,7 +3678,7 @@ module Polars
     #   #         2
     #   #         5
     #   # ]
-    def rank(method: "average", reverse: false)
+    def rank(method: "average", reverse: false, seed: nil)
       super
     end
 

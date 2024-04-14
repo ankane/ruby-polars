@@ -4731,6 +4731,8 @@ module Polars
     #     on the order that the values occur in the Series.
     # @param reverse [Boolean]
     #   Reverse the operation.
+    # @param seed [Integer]
+    #   If `method: "random"`, use this as seed.
     #
     # @return [Expr]
     #
