@@ -2003,7 +2003,7 @@ module Polars
     # @return [LazyFrame]
     def drop(*columns)
       drop_cols = Utils._expand_selectors(self, *columns)
-      self._from_rbldf(_ldf.drop(drop_cols))
+      _from_rbldf(_ldf.drop(drop_cols))
     end
 
     # Rename column names.
