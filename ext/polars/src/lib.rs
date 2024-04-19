@@ -23,7 +23,7 @@ use error::{RbPolarsErr, RbTypeError, RbValueError};
 use expr::rb_exprs_to_exprs;
 use expr::RbExpr;
 use functions::string_cache::RbStringCacheHolder;
-use functions::whenthen::{RbThen, RbWhen};
+use functions::whenthen::{RbChainedThen, RbChainedWhen, RbThen, RbWhen};
 use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
 use magnus::{define_module, function, method, prelude::*, Error, Ruby};
@@ -1032,11 +1032,20 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     // extra
     class.define_method("extend_constant", method!(RbSeries::extend_constant, 2))?;
 
+    // when then
     let class = module.define_class("RbWhen", ruby.class_object())?;
-    class.define_method("_then", method!(RbWhen::then, 1))?;
+    class.define_method("then", method!(RbWhen::then, 1))?;
 
-    let class = module.define_class("RbWhenThen", ruby.class_object())?;
-    class.define_method("otherwise", method!(RbThen::overwise, 1))?;
+    let class = module.define_class("RbThen", ruby.class_object())?;
+    class.define_method("when", method!(RbThen::when, 1))?;
+    class.define_method("otherwise", method!(RbThen::otherwise, 1))?;
+
+    let class = module.define_class("RbChainedWhen", ruby.class_object())?;
+    class.define_method("then", method!(RbChainedWhen::then, 1))?;
+
+    let class = module.define_class("RbChainedThen", ruby.class_object())?;
+    class.define_method("when", method!(RbChainedThen::when, 1))?;
+    class.define_method("otherwise", method!(RbChainedThen::otherwise, 1))?;
 
     // sql
     let class = module.define_class("RbSQLContext", ruby.class_object())?;

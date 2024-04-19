@@ -63,8 +63,7 @@ require_relative "polars/struct_name_space"
 require_relative "polars/testing"
 require_relative "polars/utils"
 require_relative "polars/version"
-require_relative "polars/when"
-require_relative "polars/when_then"
+require_relative "polars/whenthen"
 
 module Polars
   extend Convert

@@ -384,5 +384,39 @@ module Polars
     def self.is_selector(obj)
       false
     end
+
+    def self.parse_predicates_constraints_as_expression(*predicates, **constraints)
+      all_predicates = _parse_positional_inputs(predicates)
+
+      if constraints.any?
+        constraint_predicates = _parse_constraints(constraints)
+        all_predicates.concat(constraint_predicates)
+      end
+
+      _combine_predicates(all_predicates)
+    end
+
+    def self._parse_constraints(constraints)
+      constraints.map do |name, value|
+        Polars.col(name).eq(value)._rbexpr
+      end
+    end
+
+    def self._combine_predicates(predicates)
+      if !predicates.any?
+        msg = "at least one predicate or constraint must be provided"
+        raise TypeError, msg
+      end
+
+      if predicates.length == 1
+        return predicates[0]
+      end
+
+      Plr.all_horizontal(predicates)
+    end
+
+    def self.parse_when_inputs(*predicates, **constraints)
+      parse_predicates_constraints_as_expression(*predicates, **constraints)
+    end
   end
 end
