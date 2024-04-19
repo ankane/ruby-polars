@@ -145,10 +145,10 @@ class DocsTest < Minitest::Test
     missing = expected - actual
     extra = actual - expected
     if missing.any? && actual.any?
-      puts "Missing @param tags (#{method}) #{missing}"
+      # puts "Missing @param tags (#{method}) #{missing}"
     end
     if extra.any? && expected.any?
-      puts "Extra @param tags (#{method}) #{extra}"
+      # puts "Extra @param tags (#{method}) #{extra}"
     end
   end
 
