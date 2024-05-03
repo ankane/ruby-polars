@@ -1,4 +1,4 @@
-## 0.10.0 (unreleased)
+## 0.10.0 (2024-05-02)
 
 - Updated Polars to 0.39.2
 - Added support for writing JSON to string
