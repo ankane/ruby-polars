@@ -33,7 +33,12 @@ fn infer_and_finish<'a, A: ApplyLambda<'a>>(
             .apply_lambda_with_utf8_out_type(lambda, null_count, Some(first_value.as_str()))
             .map(|ca| ca.into_series().into())
     } else if out.respond_to("_s", true)? {
-        todo!()
+        let rb_rbseries: &RbSeries = out.funcall("_s", ()).unwrap();
+        let series = rb_rbseries.series.borrow();
+        let dt = series.dtype();
+        applyer
+            .apply_lambda_with_list_out_type(lambda, null_count, &series, dt)
+            .map(|ca| ca.into_series().into())
     } else if out.is_kind_of(class::array()) {
         todo!()
     } else if out.is_kind_of(class::hash()) {
@@ -66,6 +71,7 @@ pub trait ApplyLambda<'a> {
     fn apply_lambda_unknown(&'a self, _lambda: Value) -> RbResult<RbSeries>;
 
     /// Apply a lambda that doesn't change output types
+    #[allow(dead_code)]
     fn apply_lambda(&'a self, _lambda: Value) -> RbResult<RbSeries>;
 
     // Used to store a struct type
