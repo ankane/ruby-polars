@@ -25,12 +25,12 @@ module Polars
       @check_sorted = check_sorted
     end
 
-    def agg(aggs)
+    def agg(*aggs, **named_aggs)
       @df.lazy
         .group_by_rolling(
           index_column: @time_column, period: @period, offset: @offset, closed: @closed, by: @by, check_sorted: @check_sorted
         )
-        .agg(aggs)
+        .agg(*aggs, **named_aggs)
         .collect(no_optimization: true, string_cache: false)
     end
   end

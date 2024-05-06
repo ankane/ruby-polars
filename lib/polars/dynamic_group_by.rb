@@ -32,7 +32,7 @@ module Polars
       @start_by = start_by
     end
 
-    def agg(aggs)
+    def agg(*aggs, **named_aggs)
       @df.lazy
         .group_by_dynamic(
           @time_column,
@@ -45,7 +45,7 @@ module Polars
           by: @by,
           start_by: @start_by
         )
-        .agg(aggs)
+        .agg(*aggs, **named_aggs)
         .collect(no_optimization: true, string_cache: false)
     end
   end

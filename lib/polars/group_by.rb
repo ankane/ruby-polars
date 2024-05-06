@@ -106,39 +106,104 @@ module Polars
     #   _dataframe_class._from_rbdf(_df.group_by_apply(by, f))
     # end
 
-    # Use multiple aggregations on columns.
+    # Compute aggregations for each group of a group by operation.
     #
-    # This can be combined with complete lazy API and is considered idiomatic polars.
-    #
-    # @param aggs [Object]
-    #   Single / multiple aggregation expression(s).
+    # @param aggs [Array]
+    #   Aggregations to compute for each group of the group by operation,
+    #   specified as positional arguments.
+    #   Accepts expression input. Strings are parsed as column names.
+    # @param named_aggs [Hash]
+    #   Additional aggregations, specified as keyword arguments.
+    #   The resulting columns will be renamed to the keyword used.
     #
     # @return [DataFrame]
     #
-    # @example
+    # @example Compute the aggregation of the columns for each group.
     #   df = Polars::DataFrame.new(
-    #     {"foo" => ["one", "two", "two", "one", "two"], "bar" => [5, 3, 2, 4, 1]}
+    #     {
+    #       "a" => ["a", "b", "a", "b", "c"],
+    #       "b" => [1, 2, 1, 3, 3],
+    #       "c" => [5, 4, 3, 2, 1]
+    #     }
     #   )
-    #   df.group_by("foo", maintain_order: true).agg(
-    #     [
-    #       Polars.sum("bar").suffix("_sum"),
-    #       Polars.col("bar").sort.tail(2).sum.suffix("_tail_sum")
-    #     ]
+    #   df.group_by("a").agg(Polars.col("b"), Polars.col("c"))
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬───────────┬───────────┐
+    #   # │ a   ┆ b         ┆ c         │
+    #   # │ --- ┆ ---       ┆ ---       │
+    #   # │ str ┆ list[i64] ┆ list[i64] │
+    #   # ╞═════╪═══════════╪═══════════╡
+    #   # │ a   ┆ [1, 1]    ┆ [5, 3]    │
+    #   # │ b   ┆ [2, 3]    ┆ [4, 2]    │
+    #   # │ c   ┆ [3]       ┆ [1]       │
+    #   # └─────┴───────────┴───────────┘
+    #
+    # @example Compute the sum of a column for each group.
+    #   df.group_by("a").agg(Polars.col("b").sum)
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ str ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ a   ┆ 2   │
+    #   # │ b   ┆ 5   │
+    #   # │ c   ┆ 3   │
+    #   # └─────┴─────┘
+    #
+    # @example Compute multiple aggregates at once by passing a list of expressions.
+    #   df.group_by("a").agg([Polars.sum("b"), Polars.mean("c")])
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ a   ┆ b   ┆ c   │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ f64 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ c   ┆ 3   ┆ 1.0 │
+    #   # │ a   ┆ 2   ┆ 4.0 │
+    #   # │ b   ┆ 5   ┆ 3.0 │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example Or use positional arguments to compute multiple aggregations in the same way.
+    #   df.group_by("a").agg(
+    #     Polars.sum("b").name.suffix("_sum"),
+    #     (Polars.col("c") ** 2).mean.name.suffix("_mean_squared")
     #   )
     #   # =>
-    #   # shape: (2, 3)
-    #   # ┌─────┬─────────┬──────────────┐
-    #   # │ foo ┆ bar_sum ┆ bar_tail_sum │
-    #   # │ --- ┆ ---     ┆ ---          │
-    #   # │ str ┆ i64     ┆ i64          │
-    #   # ╞═════╪═════════╪══════════════╡
-    #   # │ one ┆ 9       ┆ 9            │
-    #   # │ two ┆ 6       ┆ 5            │
-    #   # └─────┴─────────┴──────────────┘
-    def agg(aggs)
+    #   # shape: (3, 3)
+    #   # ┌─────┬───────┬────────────────┐
+    #   # │ a   ┆ b_sum ┆ c_mean_squared │
+    #   # │ --- ┆ ---   ┆ ---            │
+    #   # │ str ┆ i64   ┆ f64            │
+    #   # ╞═════╪═══════╪════════════════╡
+    #   # │ a   ┆ 2     ┆ 17.0           │
+    #   # │ c   ┆ 3     ┆ 1.0            │
+    #   # │ b   ┆ 5     ┆ 10.0           │
+    #   # └─────┴───────┴────────────────┘
+    #
+    # @example Use keyword arguments to easily name your expression inputs.
+    #   df.group_by("a").agg(
+    #     b_sum: Polars.sum("b"),
+    #     c_mean_squared: (Polars.col("c") ** 2).mean
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬───────┬────────────────┐
+    #   # │ a   ┆ b_sum ┆ c_mean_squared │
+    #   # │ --- ┆ ---   ┆ ---            │
+    #   # │ str ┆ i64   ┆ f64            │
+    #   # ╞═════╪═══════╪════════════════╡
+    #   # │ a   ┆ 2     ┆ 17.0           │
+    #   # │ c   ┆ 3     ┆ 1.0            │
+    #   # │ b   ┆ 5     ┆ 10.0           │
+    #   # └─────┴───────┴────────────────┘
+    def agg(*aggs, **named_aggs)
       @df.lazy
         .group_by(@by, maintain_order: @maintain_order)
-        .agg(aggs)
+        .agg(*aggs, **named_aggs)
         .collect(no_optimization: true)
     end
 

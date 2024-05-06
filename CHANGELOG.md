@@ -1,3 +1,7 @@
+## 0.10.1 (unreleased)
+
+- Added support for keyword arguments to `agg` methods
+
 ## 0.10.0 (2024-05-02)
 
 - Updated Polars to 0.39.2
