@@ -418,5 +418,12 @@ module Polars
     def self.parse_when_inputs(*predicates, **constraints)
       parse_predicates_constraints_as_expression(*predicates, **constraints)
     end
+
+    def self.parse_interval_argument(interval)
+      if interval.include?(" ")
+        interval = interval.gsub(" ", "")
+      end
+      interval.downcase
+    end
   end
 end

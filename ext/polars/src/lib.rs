@@ -611,6 +611,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_singleton_method("collect_all", function!(functions::lazy::collect_all, 1))?;
     class.define_singleton_method("date_range", function!(functions::range::date_range, 6))?;
+    class.define_singleton_method("date_ranges", function!(functions::range::date_ranges, 6))?;
     class.define_singleton_method(
         "dtype_str_repr",
         function!(functions::misc::dtype_str_repr, 1),

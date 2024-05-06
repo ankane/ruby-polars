@@ -1,5 +1,6 @@
 ## 0.10.1 (unreleased)
 
+- Added `date_ranges` method to `Polars`
 - Added support for keyword arguments to `agg` methods
 - Aliased `apply` to `map_rows` for `DataFrame`
 
