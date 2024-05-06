@@ -1081,7 +1081,7 @@ impl RbDataFrame {
         df.into()
     }
 
-    pub fn apply(
+    pub fn map_rows(
         &self,
         lambda: Value,
         output_type: Option<Wrap<DataType>>,

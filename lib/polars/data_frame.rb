@@ -2620,7 +2620,7 @@ module Polars
     #   df = Polars::DataFrame.new({"foo" => [1, 2, 3], "bar" => [-1, 5, 8]})
     #
     # @example Return a DataFrame by mapping each row to a tuple:
-    #   df.apply { |t| [t[0] * 2, t[1] * 3] }
+    #   df.map_rows { |t| [t[0] * 2, t[1] * 3] }
     #   # =>
     #   # shape: (3, 2)
     #   # ┌──────────┬──────────┐
@@ -2634,7 +2634,7 @@ module Polars
     #   # └──────────┴──────────┘
     #
     # @example Return a Series by mapping each row to a scalar:
-    #   df.apply { |t| t[0] * 2 + t[1] }
+    #   df.map_rows { |t| t[0] * 2 + t[1] }
     #   # =>
     #   # shape: (3, 1)
     #   # ┌───────┐
@@ -2646,14 +2646,15 @@ module Polars
     #   # │ 9     │
     #   # │ 14    │
     #   # └───────┘
-    def apply(return_dtype: nil, inference_size: 256, &f)
-      out, is_df = _df.apply(f, return_dtype, inference_size)
+    def map_rows(return_dtype: nil, inference_size: 256, &f)
+      out, is_df = _df.map_rows(f, return_dtype, inference_size)
       if is_df
         _from_rbdf(out)
       else
         _from_rbdf(Utils.wrap_s(out).to_frame._df)
       end
     end
+    alias_method :apply, :map_rows
 
     # Return a new DataFrame with the column added or replaced.
     #

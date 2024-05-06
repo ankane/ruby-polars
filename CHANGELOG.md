@@ -1,6 +1,7 @@
 ## 0.10.1 (unreleased)
 
 - Added support for keyword arguments to `agg` methods
+- Aliased `apply` to `map_rows` for `DataFrame`
 
 ## 0.10.0 (2024-05-02)
 
