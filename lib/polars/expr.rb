@@ -2764,6 +2764,9 @@ module Polars
     #   Dtype of the output Series.
     # @param agg_list [Boolean]
     #   Aggregate list.
+    # @param is_elementwise [Boolean]
+    #   If set to true this can run in the streaming engine, but may yield
+    #   incorrect results in group-by. Ensure you know what you are doing!
     #
     # @return [Expr]
     #
@@ -2784,12 +2787,21 @@ module Polars
     #   # ╞══════╪════════╡
     #   # │ 1    ┆ 0      │
     #   # └──────┴────────┘
-    # def map(return_dtype: nil, agg_list: false, &f)
+    # def map_batches(return_dtype: nil, agg_list: false, is_elementwise: false, &f)
     #   if !return_dtype.nil?
     #     return_dtype = Utils.rb_type_to_dtype(return_dtype)
     #   end
-    #   _from_rbexpr(_rbexpr.map(f, return_dtype, agg_list))
+    #   _from_rbexpr(
+    #     _rbexpr.map_batches(
+    #       # TODO _map_batches_wrapper
+    #       f,
+    #       return_dtype,
+    #       agg_list,
+    #       is_elementwise
+    #     )
+    #   )
     # end
+    # alias_method :map, :map_batches
 
     # Apply a custom/user-defined function (UDF) in a GroupBy or Projection context.
     #
@@ -2831,7 +2843,7 @@ module Polars
     #
     # @example In a selection context, the function is applied by row.
     #   df.with_column(
-    #     Polars.col("a").apply { |x| x * 2 }.alias("a_times_2")
+    #     Polars.col("a").map_elements { |x| x * 2 }.alias("a_times_2")
     #   )
     #   # =>
     #   # shape: (4, 3)
@@ -2851,7 +2863,7 @@ module Polars
     #     .group_by("b", maintain_order: true)
     #     .agg(
     #       [
-    #         Polars.col("a").apply { |x| x.sum }
+    #         Polars.col("a").map_elements { |x| x.sum }
     #       ]
     #     )
     #     .collect
@@ -2866,12 +2878,23 @@ module Polars
     #   # │ b   ┆ 2   │
     #   # │ c   ┆ 4   │
     #   # └─────┴─────┘
-    # def apply(return_dtype: nil, &f)
-    #   wrap_f = lambda do |x|
-    #     x.apply(return_dtype: return_dtype, &f)
+    # def map_elements(
+    #   return_dtype: nil,
+    #   skip_nulls: true,
+    #   pass_name: false,
+    #   strategy: "thread_local",
+    #   &f
+    # )
+    #   if pass_name
+    #     raise Todo
+    #   else
+    #     wrap_f = lambda do |x|
+    #       x.map_elements(return_dtype: return_dtype, skip_nulls: skip_nulls, &f)
+    #     end
     #   end
-    #   map(agg_list: true, return_dtype: return_dtype, &wrap_f)
+    #   map_batches(agg_list: true, return_dtype: return_dtype, &wrap_f)
     # end
+    # alias_method :apply, :map_elements
 
     # Explode a list or utf8 Series. This means that every item is expanded to a new
     # row.

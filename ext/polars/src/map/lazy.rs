@@ -12,6 +12,7 @@ pub fn map_single(
     _lambda: Value,
     output_type: Option<Wrap<DataType>>,
     agg_list: bool,
+    is_elementwise: bool,
 ) -> RbExpr {
     let output_type = output_type.map(|wrap| wrap.0);
 

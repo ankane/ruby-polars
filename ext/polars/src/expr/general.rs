@@ -609,8 +609,14 @@ impl RbExpr {
         self.inner.clone().shrink_dtype().into()
     }
 
-    pub fn map(&self, lambda: Value, output_type: Option<Wrap<DataType>>, agg_list: bool) -> Self {
-        map_single(self, lambda, output_type, agg_list)
+    pub fn map_batches(
+        &self,
+        lambda: Value,
+        output_type: Option<Wrap<DataType>>,
+        agg_list: bool,
+        is_elementwise: bool,
+    ) -> Self {
+        map_single(self, lambda, output_type, agg_list, is_elementwise)
     }
 
     pub fn dot(&self, other: &Self) -> Self {

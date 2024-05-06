@@ -415,7 +415,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("dt_dst_offset", method!(RbExpr::dt_dst_offset, 0))?;
     class.define_method("dt_round", method!(RbExpr::dt_round, 2))?;
     class.define_method("dt_combine", method!(RbExpr::dt_combine, 2))?;
-    class.define_method("map", method!(RbExpr::map, 3))?;
+    class.define_method("map_batches", method!(RbExpr::map_batches, 4))?;
     class.define_method("dot", method!(RbExpr::dot, 1))?;
     class.define_method("reinterpret", method!(RbExpr::reinterpret, 1))?;
     class.define_method("mode", method!(RbExpr::mode, 0))?;
