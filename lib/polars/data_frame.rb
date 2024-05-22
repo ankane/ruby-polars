@@ -46,17 +46,6 @@ module Polars
       df
     end
 
-    # @private
-    def self._from_hashes(data, infer_schema_length: 100, schema: nil, schema_overrides: nil)
-      rbdf = RbDataFrame.from_hashes(data, schema, schema_overrides, false, infer_schema_length)
-      _from_rbdf(rbdf)
-    end
-
-    # @private
-    def self._from_hash(data, schema: nil, schema_overrides: nil)
-      _from_rbdf(hash_to_rbdf(data, schema: schema, schema_overrides: schema_overrides))
-    end
-
     # Get the shape of the DataFrame.
     #
     # @return [Array]
