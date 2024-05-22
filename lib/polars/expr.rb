@@ -4377,6 +4377,505 @@ module Polars
       )
     end
 
+    # Compute a rolling standard deviation based on another column.
+    #
+    # @param by [String]
+    #   This column must be of dtype Datetime or Date.
+    # @param window_size [String]
+    #   The length of the window. Can be a dynamic temporal
+    #   size indicated by a timedelta or the following string language:
+    #
+    #   - 1ns   (1 nanosecond)
+    #   - 1us   (1 microsecond)
+    #   - 1ms   (1 millisecond)
+    #   - 1s    (1 second)
+    #   - 1m    (1 minute)
+    #   - 1h    (1 hour)
+    #   - 1d    (1 calendar day)
+    #   - 1w    (1 calendar week)
+    #   - 1mo   (1 calendar month)
+    #   - 1q    (1 calendar quarter)
+    #   - 1y    (1 calendar year)
+    #
+    #   By "calendar day", we mean the corresponding time on the next day
+    #   (which may not be 24 hours, due to daylight savings). Similarly for
+    #   "calendar week", "calendar month", "calendar quarter", and
+    #   "calendar year".
+    # @param min_periods [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result.
+    # @param closed ['left', 'right', 'both', 'none']
+    #   Define which sides of the temporal interval are closed (inclusive),
+    #   defaults to `'right'`.
+    # @param ddof [Integer]
+    #   "Delta Degrees of Freedom": The divisor for a length N window is N - ddof
+    # @param warn_if_unsorted [Boolean]
+    #   Warn if data is not known to be sorted by `by` column.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   If you want to compute multiple aggregation statistics over the same dynamic
+    #   window, consider using `rolling` - this method can cache the window size
+    #   computation.
+    #
+    # @example Create a DataFrame with a datetime column and a row number column
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 2)
+    #   df_temporal = Polars::DataFrame.new(
+    #       {"date" => Polars.datetime_range(start, stop, "1h", eager: true)}
+    #   ).with_row_index
+    #   # =>
+    #   # shape: (25, 2)
+    #   # ┌───────┬─────────────────────┐
+    #   # │ index ┆ date                │
+    #   # │ ---   ┆ ---                 │
+    #   # │ u32   ┆ datetime[ns]        │
+    #   # ╞═══════╪═════════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 │
+    #   # │ …     ┆ …                   │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 │
+    #   # └───────┴─────────────────────┘
+    #
+    # @example Compute the rolling std with the temporal windows closed on the right (default)
+    #   df_temporal.with_columns(
+    #     rolling_row_std: Polars.col("index").rolling_std_by("date", "2h")
+    #   )
+    #   # =>
+    #   # shape: (25, 3)
+    #   # ┌───────┬─────────────────────┬─────────────────┐
+    #   # │ index ┆ date                ┆ rolling_row_std │
+    #   # │ ---   ┆ ---                 ┆ ---             │
+    #   # │ u32   ┆ datetime[ns]        ┆ f64             │
+    #   # ╞═══════╪═════════════════════╪═════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 ┆ null            │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 ┆ 0.707107        │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 ┆ 0.707107        │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 ┆ 0.707107        │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 ┆ 0.707107        │
+    #   # │ …     ┆ …                   ┆ …               │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 ┆ 0.707107        │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 ┆ 0.707107        │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 ┆ 0.707107        │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 ┆ 0.707107        │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 ┆ 0.707107        │
+    #   # └───────┴─────────────────────┴─────────────────┘
+    #
+    # @example Compute the rolling std with the closure of windows on both sides
+    #   df_temporal.with_columns(
+    #     rolling_row_std: Polars.col("index").rolling_std_by(
+    #       "date", "2h", closed: "both"
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (25, 3)
+    #   # ┌───────┬─────────────────────┬─────────────────┐
+    #   # │ index ┆ date                ┆ rolling_row_std │
+    #   # │ ---   ┆ ---                 ┆ ---             │
+    #   # │ u32   ┆ datetime[ns]        ┆ f64             │
+    #   # ╞═══════╪═════════════════════╪═════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 ┆ null            │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 ┆ 0.707107        │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 ┆ 1.0             │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 ┆ 1.0             │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 ┆ 1.0             │
+    #   # │ …     ┆ …                   ┆ …               │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 ┆ 1.0             │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 ┆ 1.0             │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 ┆ 1.0             │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 ┆ 1.0             │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 ┆ 1.0             │
+    #   # └───────┴─────────────────────┴─────────────────┘
+    def rolling_std_by(
+      by,
+      window_size,
+      min_periods: 1,
+      closed: "right",
+      ddof: 1,
+      warn_if_unsorted: nil
+    )
+      window_size = _prepare_rolling_by_window_args(window_size)
+      by = Utils.parse_as_expression(by)
+      _from_rbexpr(
+        _rbexpr.rolling_std_by(
+          by,
+          window_size,
+          min_periods,
+          closed,
+          ddof
+        )
+      )
+    end
+
+    # Compute a rolling variance based on another column.
+    #
+    # @param by [String]
+    #   This column must be of dtype Datetime or Date.
+    # @param window_size [String]
+    #   The length of the window. Can be a dynamic temporal
+    #   size indicated by a timedelta or the following string language:
+    #
+    #   - 1ns   (1 nanosecond)
+    #   - 1us   (1 microsecond)
+    #   - 1ms   (1 millisecond)
+    #   - 1s    (1 second)
+    #   - 1m    (1 minute)
+    #   - 1h    (1 hour)
+    #   - 1d    (1 calendar day)
+    #   - 1w    (1 calendar week)
+    #   - 1mo   (1 calendar month)
+    #   - 1q    (1 calendar quarter)
+    #   - 1y    (1 calendar year)
+    #
+    #   By "calendar day", we mean the corresponding time on the next day
+    #   (which may not be 24 hours, due to daylight savings). Similarly for
+    #   "calendar week", "calendar month", "calendar quarter", and
+    #   "calendar year".
+    # @param min_periods [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result.
+    # @param closed ['left', 'right', 'both', 'none']
+    #   Define which sides of the temporal interval are closed (inclusive),
+    #   defaults to `'right'`.
+    # @param ddof [Integer]
+    #   "Delta Degrees of Freedom": The divisor for a length N window is N - ddof
+    # @param warn_if_unsorted [Boolean]
+    #   Warn if data is not known to be sorted by `by` column.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   If you want to compute multiple aggregation statistics over the same dynamic
+    #   window, consider using `rolling` - this method can cache the window size
+    #   computation.
+    #
+    # @example Create a DataFrame with a datetime column and a row number column
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 2)
+    #   df_temporal = Polars::DataFrame.new(
+    #       {"date" => Polars.datetime_range(start, stop, "1h", eager: true)}
+    #   ).with_row_index
+    #   # =>
+    #   # shape: (25, 2)
+    #   # ┌───────┬─────────────────────┐
+    #   # │ index ┆ date                │
+    #   # │ ---   ┆ ---                 │
+    #   # │ u32   ┆ datetime[ns]        │
+    #   # ╞═══════╪═════════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 │
+    #   # │ …     ┆ …                   │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 │
+    #   # └───────┴─────────────────────┘
+    #
+    # @example Compute the rolling var with the temporal windows closed on the right (default)
+    #   df_temporal.with_columns(
+    #     rolling_row_var: Polars.col("index").rolling_var_by("date", "2h")
+    #   )
+    #   # =>
+    #   # shape: (25, 3)
+    #   # ┌───────┬─────────────────────┬─────────────────┐
+    #   # │ index ┆ date                ┆ rolling_row_var │
+    #   # │ ---   ┆ ---                 ┆ ---             │
+    #   # │ u32   ┆ datetime[ns]        ┆ f64             │
+    #   # ╞═══════╪═════════════════════╪═════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 ┆ null            │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 ┆ 0.5             │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 ┆ 0.5             │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 ┆ 0.5             │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 ┆ 0.5             │
+    #   # │ …     ┆ …                   ┆ …               │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 ┆ 0.5             │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 ┆ 0.5             │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 ┆ 0.5             │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 ┆ 0.5             │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 ┆ 0.5             │
+    #   # └───────┴─────────────────────┴─────────────────┘
+    #
+    # @example Compute the rolling var with the closure of windows on both sides
+    #   df_temporal.with_columns(
+    #     rolling_row_var: Polars.col("index").rolling_var_by(
+    #       "date", "2h", closed: "both"
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (25, 3)
+    #   # ┌───────┬─────────────────────┬─────────────────┐
+    #   # │ index ┆ date                ┆ rolling_row_var │
+    #   # │ ---   ┆ ---                 ┆ ---             │
+    #   # │ u32   ┆ datetime[ns]        ┆ f64             │
+    #   # ╞═══════╪═════════════════════╪═════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 ┆ null            │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 ┆ 0.5             │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 ┆ 1.0             │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 ┆ 1.0             │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 ┆ 1.0             │
+    #   # │ …     ┆ …                   ┆ …               │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 ┆ 1.0             │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 ┆ 1.0             │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 ┆ 1.0             │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 ┆ 1.0             │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 ┆ 1.0             │
+    #   # └───────┴─────────────────────┴─────────────────┘
+    def rolling_var_by(
+      by,
+      window_size,
+      min_periods: 1,
+      closed: "right",
+      ddof: 1,
+      warn_if_unsorted: nil
+    )
+      window_size = _prepare_rolling_by_window_args(window_size)
+      by = Utils.parse_as_expression(by)
+      _from_rbexpr(
+        _rbexpr.rolling_var_by(
+          by,
+          window_size,
+          min_periods,
+          closed,
+          ddof
+        )
+      )
+    end
+
+    # Compute a rolling median based on another column.
+    #
+    # @param by [String]
+    #     This column must be of dtype Datetime or Date.
+    # @param window_size [String]
+    #   The length of the window. Can be a dynamic temporal
+    #   size indicated by a timedelta or the following string language:
+    #
+    #   - 1ns   (1 nanosecond)
+    #   - 1us   (1 microsecond)
+    #   - 1ms   (1 millisecond)
+    #   - 1s    (1 second)
+    #   - 1m    (1 minute)
+    #   - 1h    (1 hour)
+    #   - 1d    (1 calendar day)
+    #   - 1w    (1 calendar week)
+    #   - 1mo   (1 calendar month)
+    #   - 1q    (1 calendar quarter)
+    #   - 1y    (1 calendar year)
+    #
+    #   By "calendar day", we mean the corresponding time on the next day
+    #   (which may not be 24 hours, due to daylight savings). Similarly for
+    #   "calendar week", "calendar month", "calendar quarter", and
+    #   "calendar year".
+    # @param min_periods [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result.
+    # @param closed ['left', 'right', 'both', 'none']
+    #   Define which sides of the temporal interval are closed (inclusive),
+    #   defaults to `'right'`.
+    # @param warn_if_unsorted [Boolean]
+    #   Warn if data is not known to be sorted by `by` column.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   If you want to compute multiple aggregation statistics over the same dynamic
+    #   window, consider using `rolling` - this method can cache the window size
+    #   computation.
+    #
+    # @example Create a DataFrame with a datetime column and a row number column
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 2)
+    #   df_temporal = Polars::DataFrame.new(
+    #     {"date" => Polars.datetime_range(start, stop, "1h", eager: true)}
+    #   ).with_row_index
+    #   # =>
+    #   # shape: (25, 2)
+    #   # ┌───────┬─────────────────────┐
+    #   # │ index ┆ date                │
+    #   # │ ---   ┆ ---                 │
+    #   # │ u32   ┆ datetime[ns]        │
+    #   # ╞═══════╪═════════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 │
+    #   # │ …     ┆ …                   │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 │
+    #   # └───────┴─────────────────────┘
+    #
+    # @example Compute the rolling median with the temporal windows closed on the right:
+    #   df_temporal.with_columns(
+    #     rolling_row_median: Polars.col("index").rolling_median_by(
+    #       "date", "2h"
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (25, 3)
+    #   # ┌───────┬─────────────────────┬────────────────────┐
+    #   # │ index ┆ date                ┆ rolling_row_median │
+    #   # │ ---   ┆ ---                 ┆ ---                │
+    #   # │ u32   ┆ datetime[ns]        ┆ f64                │
+    #   # ╞═══════╪═════════════════════╪════════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 ┆ 0.0                │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 ┆ 0.5                │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 ┆ 1.5                │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 ┆ 2.5                │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 ┆ 3.5                │
+    #   # │ …     ┆ …                   ┆ …                  │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 ┆ 19.5               │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 ┆ 20.5               │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 ┆ 21.5               │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 ┆ 22.5               │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 ┆ 23.5               │
+    #   # └───────┴─────────────────────┴────────────────────┘
+    def rolling_median_by(
+      by,
+      window_size,
+      min_periods: 1,
+      closed: "right",
+      warn_if_unsorted: nil
+    )
+      window_size = _prepare_rolling_by_window_args(window_size)
+      by = Utils.parse_as_expression(by)
+      _from_rbexpr(
+        _rbexpr.rolling_median_by(by, window_size, min_periods, closed)
+      )
+    end
+
+    # Compute a rolling quantile based on another column.
+    #
+    # @param by [String]
+    #   This column must be of dtype Datetime or Date.
+    # @param quantile [Float]
+    #   Quantile between 0.0 and 1.0.
+    # @param interpolation ['nearest', 'higher', 'lower', 'midpoint', 'linear']
+    #   Interpolation method.
+    # @param window_size  [String]
+    #   The length of the window. Can be a dynamic
+    #   temporal size indicated by a timedelta or the following string language:
+    #
+    #   - 1ns   (1 nanosecond)
+    #   - 1us   (1 microsecond)
+    #   - 1ms   (1 millisecond)
+    #   - 1s    (1 second)
+    #   - 1m    (1 minute)
+    #   - 1h    (1 hour)
+    #   - 1d    (1 calendar day)
+    #   - 1w    (1 calendar week)
+    #   - 1mo   (1 calendar month)
+    #   - 1q    (1 calendar quarter)
+    #   - 1y    (1 calendar year)
+    #
+    #   By "calendar day", we mean the corresponding time on the next day
+    #   (which may not be 24 hours, due to daylight savings). Similarly for
+    #   "calendar week", "calendar month", "calendar quarter", and
+    #   "calendar year".
+    # @param min_periods [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result.
+    # @param closed ['left', 'right', 'both', 'none']
+    #   Define which sides of the temporal interval are closed (inclusive),
+    #   defaults to `'right'`.
+    # @param warn_if_unsorted [Boolean]
+    #   Warn if data is not known to be sorted by `by` column.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   If you want to compute multiple aggregation statistics over the same dynamic
+    #   window, consider using `rolling` - this method can cache the window size
+    #   computation.
+    #
+    # @example Create a DataFrame with a datetime column and a row number column
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 2)
+    #   df_temporal = Polars::DataFrame.new(
+    #       {"date" => Polars.datetime_range(start, stop, "1h", eager: true)}
+    #   ).with_row_index
+    #   # =>
+    #   # shape: (25, 2)
+    #   # ┌───────┬─────────────────────┐
+    #   # │ index ┆ date                │
+    #   # │ ---   ┆ ---                 │
+    #   # │ u32   ┆ datetime[ns]        │
+    #   # ╞═══════╪═════════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 │
+    #   # │ …     ┆ …                   │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 │
+    #   # └───────┴─────────────────────┘
+    #
+    # @example Compute the rolling quantile with the temporal windows closed on the right:
+    #   df_temporal.with_columns(
+    #     rolling_row_quantile: Polars.col("index").rolling_quantile_by(
+    #       "date", "2h", quantile: 0.3
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (25, 3)
+    #   # ┌───────┬─────────────────────┬──────────────────────┐
+    #   # │ index ┆ date                ┆ rolling_row_quantile │
+    #   # │ ---   ┆ ---                 ┆ ---                  │
+    #   # │ u32   ┆ datetime[ns]        ┆ f64                  │
+    #   # ╞═══════╪═════════════════════╪══════════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 ┆ 0.0                  │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 ┆ 0.0                  │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 ┆ 1.0                  │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 ┆ 2.0                  │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 ┆ 3.0                  │
+    #   # │ …     ┆ …                   ┆ …                    │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 ┆ 19.0                 │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 ┆ 20.0                 │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 ┆ 21.0                 │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 ┆ 22.0                 │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 ┆ 23.0                 │
+    #   # └───────┴─────────────────────┴──────────────────────┘
+    def rolling_quantile_by(
+      by,
+      window_size,
+      quantile:,
+      interpolation: "nearest",
+      min_periods: 1,
+      closed: "right",
+      warn_if_unsorted: nil
+    )
+      window_size = _prepare_rolling_by_window_args(window_size)
+      by = Utils.parse_as_expression(by)
+      _from_rbexpr(
+        _rbexpr.rolling_quantile_by(
+          by,
+          quantile,
+          interpolation,
+          window_size,
+          min_periods,
+          closed,
+        )
+      )
+    end
+
     # Apply a rolling min (moving min) over the values in this array.
     #
     # A window of length `window_size` will traverse the array. The values that fill
@@ -4462,8 +4961,8 @@ module Polars
       if !by.nil?
         Utils.validate_rolling_by_aggs_arguments(weights, center: center)
         return rolling_min_by(
-          by: by,
-          window_size: window_size,
+          by,
+          window_size,
           min_periods: min_periods,
           closed: closed || "right",
           warn_if_unsorted: warn_if_unsorted
@@ -4562,8 +5061,8 @@ module Polars
       if !by.nil?
         Utils.validate_rolling_by_aggs_arguments(weights, center: center)
         return rolling_max_by(
-          by: by,
-          window_size: window_size,
+          by,
+          window_size,
           min_periods: min_periods,
           closed: closed || "right",
           warn_if_unsorted: warn_if_unsorted
@@ -4662,8 +5161,8 @@ module Polars
       if !by.nil?
         Utils.validate_rolling_by_aggs_arguments(weights, center: center)
         return rolling_mean_by(
-          by: by,
-          window_size: window_size,
+          by,
+          window_size,
           min_periods: min_periods,
           closed: closed || "right",
           warn_if_unsorted: warn_if_unsorted
@@ -4762,8 +5261,8 @@ module Polars
       if !by.nil?
         Utils.validate_rolling_by_aggs_arguments(weights, center: center)
         return rolling_sum_by(
-          by: by,
-          window_size: window_size,
+          by,
+          window_size,
           min_periods: min_periods,
           closed: closed || "right",
           warn_if_unsorted: warn_if_unsorted
@@ -4864,8 +5363,8 @@ module Polars
       if !by.nil?
         Utils.validate_rolling_by_aggs_arguments(weights, center: center)
         return rolling_std_by(
-          by: by,
-          window_size: window_size,
+          by,
+          window_size,
           min_periods: min_periods,
           closed: closed || "right",
           ddof: ddof,
@@ -4967,8 +5466,8 @@ module Polars
       if !by.nil?
         Utils.validate_rolling_by_aggs_arguments(weights, center: center)
         return rolling_var_by(
-          by: by,
-          window_size: window_size,
+          by,
+          window_size,
           min_periods: min_periods,
           closed: closed || "right",
           ddof: ddof,
@@ -5065,8 +5564,8 @@ module Polars
       if !by.nil?
         Utils.validate_rolling_by_aggs_arguments(weights, center: center)
         return rolling_median_by(
-          by: by,
-          window_size: window_size,
+          by,
+          window_size,
           min_periods: min_periods,
           closed: closed || "right",
           warn_if_unsorted: warn_if_unsorted
@@ -5168,12 +5667,12 @@ module Polars
       if !by.nil?
         Utils.validate_rolling_by_aggs_arguments(weights, center: center)
         return rolling_quantile_by(
-          quantile,
-          by: by,
-          window_size: window_size,
+          by,
+          window_size,
           min_periods: min_periods,
           closed: closed || "right",
-          warn_if_unsorted: warn_if_unsorted
+          warn_if_unsorted: warn_if_unsorted,
+          quantile: quantile
         )
       end
       window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
