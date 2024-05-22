@@ -87,30 +87,6 @@ module Polars
       )
     end
 
-    # @private
-    def self._scan_ndjson(
-      file,
-      infer_schema_length: nil,
-      batch_size: nil,
-      n_rows: nil,
-      low_memory: false,
-      rechunk: true,
-      row_count_name: nil,
-      row_count_offset: 0
-    )
-      _from_rbldf(
-        RbLazyFrame.new_from_ndjson(
-          file,
-          infer_schema_length,
-          batch_size,
-          n_rows,
-          low_memory,
-          rechunk,
-          Utils._prepare_row_count_args(row_count_name, row_count_offset)
-        )
-      )
-    end
-
     # def self.from_json
     # end
 

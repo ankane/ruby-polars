@@ -7,7 +7,12 @@ module Polars
     #
     # @return [DataFrame]
     def read_ndjson(source)
-      DataFrame._read_ndjson(source)
+      if Utils.pathlike?(source)
+        source = Utils.normalize_filepath(source)
+      end
+
+      rbdf = RbDataFrame.read_ndjson(source)
+      Utils.wrap_df(rbdf)
     end
 
     # Lazily read from a newline delimited JSON file.
@@ -48,16 +53,17 @@ module Polars
         source = Utils.normalize_filepath(source)
       end
 
-      LazyFrame._scan_ndjson(
-        source,
-        infer_schema_length: infer_schema_length,
-        batch_size: batch_size,
-        n_rows: n_rows,
-        low_memory: low_memory,
-        rechunk: rechunk,
-        row_count_name: row_count_name,
-        row_count_offset: row_count_offset,
-      )
+      rblf =
+        RbLazyFrame.new_from_ndjson(
+          source,
+          infer_schema_length,
+          batch_size,
+          n_rows,
+          low_memory,
+          rechunk,
+          Utils._prepare_row_count_args(row_count_name, row_count_offset)
+        )
+      Utils.wrap_ldf(rblf)
     end
   end
 end

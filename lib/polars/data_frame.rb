@@ -147,15 +147,6 @@ module Polars
       )
     end
 
-    # @private
-    def self._read_ndjson(file)
-      if Utils.pathlike?(file)
-        file = Utils.normalize_filepath(file)
-      end
-
-      _from_rbdf(RbDataFrame.read_ndjson(file))
-    end
-
     # Get the shape of the DataFrame.
     #
     # @return [Array]
