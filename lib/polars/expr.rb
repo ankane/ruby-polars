@@ -3983,6 +3983,400 @@ module Polars
       )
     end
 
+    # Apply a rolling max based on another column.
+    #
+    # @param by [String]
+    #   This column must be of dtype Datetime or Date.
+    # @param window_size [String]
+    #   The length of the window. Can be a dynamic temporal
+    #   size indicated by a timedelta or the following string language:
+    #
+    #   - 1ns   (1 nanosecond)
+    #   - 1us   (1 microsecond)
+    #   - 1ms   (1 millisecond)
+    #   - 1s    (1 second)
+    #   - 1m    (1 minute)
+    #   - 1h    (1 hour)
+    #   - 1d    (1 calendar day)
+    #   - 1w    (1 calendar week)
+    #   - 1mo   (1 calendar month)
+    #   - 1q    (1 calendar quarter)
+    #   - 1y    (1 calendar year)
+    #
+    #   By "calendar day", we mean the corresponding time on the next day
+    #   (which may not be 24 hours, due to daylight savings). Similarly for
+    #   "calendar week", "calendar month", "calendar quarter", and
+    #   "calendar year".
+    # @param min_periods [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result.
+    # @param closed ['left', 'right', 'both', 'none']
+    #   Define which sides of the temporal interval are closed (inclusive),
+    #   defaults to `'right'`.
+    # @param warn_if_unsorted [Boolean]
+    #   Warn if data is not known to be sorted by `by` column.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   If you want to compute multiple aggregation statistics over the same dynamic
+    #   window, consider using `rolling` - this method can cache the window size
+    #   computation.
+    #
+    # @example Create a DataFrame with a datetime column and a row number column
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 2)
+    #   df_temporal = Polars::DataFrame.new(
+    #       {"date" => Polars.datetime_range(start, stop, "1h", eager: true)}
+    #   ).with_row_index
+    #   # =>
+    #   # shape: (25, 2)
+    #   # ┌───────┬─────────────────────┐
+    #   # │ index ┆ date                │
+    #   # │ ---   ┆ ---                 │
+    #   # │ u32   ┆ datetime[ns]        │
+    #   # ╞═══════╪═════════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 │
+    #   # │ …     ┆ …                   │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 │
+    #   # └───────┴─────────────────────┘
+    #
+    # @example Compute the rolling max with the temporal windows closed on the right (default)
+    #   df_temporal.with_columns(
+    #     rolling_row_max: Polars.col("index").rolling_max_by("date", "2h")
+    #   )
+    #   # =>
+    #   # shape: (25, 3)
+    #   # ┌───────┬─────────────────────┬─────────────────┐
+    #   # │ index ┆ date                ┆ rolling_row_max │
+    #   # │ ---   ┆ ---                 ┆ ---             │
+    #   # │ u32   ┆ datetime[ns]        ┆ u32             │
+    #   # ╞═══════╪═════════════════════╪═════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 ┆ 0               │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 ┆ 1               │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 ┆ 2               │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 ┆ 3               │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 ┆ 4               │
+    #   # │ …     ┆ …                   ┆ …               │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 ┆ 20              │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 ┆ 21              │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 ┆ 22              │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 ┆ 23              │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 ┆ 24              │
+    #   # └───────┴─────────────────────┴─────────────────┘
+    #
+    # @example Compute the rolling max with the closure of windows on both sides
+    #   df_temporal.with_columns(
+    #     rolling_row_max: Polars.col("index").rolling_max_by(
+    #       "date", "2h", closed: "both"
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (25, 3)
+    #   # ┌───────┬─────────────────────┬─────────────────┐
+    #   # │ index ┆ date                ┆ rolling_row_max │
+    #   # │ ---   ┆ ---                 ┆ ---             │
+    #   # │ u32   ┆ datetime[ns]        ┆ u32             │
+    #   # ╞═══════╪═════════════════════╪═════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 ┆ 0               │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 ┆ 1               │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 ┆ 2               │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 ┆ 3               │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 ┆ 4               │
+    #   # │ …     ┆ …                   ┆ …               │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 ┆ 20              │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 ┆ 21              │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 ┆ 22              │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 ┆ 23              │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 ┆ 24              │
+    #   # └───────┴─────────────────────┴─────────────────┘
+    def rolling_max_by(
+      by,
+      window_size,
+      min_periods: 1,
+      closed: "right",
+      warn_if_unsorted: nil
+    )
+      window_size = _prepare_rolling_by_window_args(window_size)
+      by = Utils.parse_as_expression(by)
+      _from_rbexpr(
+        _rbexpr.rolling_max_by(by, window_size, min_periods, closed)
+      )
+    end
+
+    # Apply a rolling mean based on another column.
+    #
+    # @param by [String]
+    #   This column must be of dtype Datetime or Date.
+    # @param window_size [String]
+    #   The length of the window. Can be a dynamic temporal
+    #   size indicated by a timedelta or the following string language:
+    #
+    #   - 1ns   (1 nanosecond)
+    #   - 1us   (1 microsecond)
+    #   - 1ms   (1 millisecond)
+    #   - 1s    (1 second)
+    #   - 1m    (1 minute)
+    #   - 1h    (1 hour)
+    #   - 1d    (1 calendar day)
+    #   - 1w    (1 calendar week)
+    #   - 1mo   (1 calendar month)
+    #   - 1q    (1 calendar quarter)
+    #   - 1y    (1 calendar year)
+    #
+    #   By "calendar day", we mean the corresponding time on the next day
+    #   (which may not be 24 hours, due to daylight savings). Similarly for
+    #   "calendar week", "calendar month", "calendar quarter", and
+    #   "calendar year".
+    # @param min_periods [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result.
+    # @param closed ['left', 'right', 'both', 'none']
+    #   Define which sides of the temporal interval are closed (inclusive),
+    #   defaults to `'right'`.
+    # @param warn_if_unsorted [Boolean]
+    #   Warn if data is not known to be sorted by `by` column.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   If you want to compute multiple aggregation statistics over the same dynamic
+    #   window, consider using `rolling` - this method can cache the window size
+    #   computation.
+    #
+    # @example Create a DataFrame with a datetime column and a row number column
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 2)
+    #   df_temporal = Polars::DataFrame.new(
+    #       {"date" => Polars.datetime_range(start, stop, "1h", eager: true)}
+    #   ).with_row_index
+    #   # =>
+    #   # shape: (25, 2)
+    #   # ┌───────┬─────────────────────┐
+    #   # │ index ┆ date                │
+    #   # │ ---   ┆ ---                 │
+    #   # │ u32   ┆ datetime[ns]        │
+    #   # ╞═══════╪═════════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 │
+    #   # │ …     ┆ …                   │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 │
+    #   # └───────┴─────────────────────┘
+    #
+    # @example Compute the rolling mean with the temporal windows closed on the right (default)
+    #   df_temporal.with_columns(
+    #     rolling_row_mean: Polars.col("index").rolling_mean_by(
+    #       "date", "2h"
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (25, 3)
+    #   # ┌───────┬─────────────────────┬──────────────────┐
+    #   # │ index ┆ date                ┆ rolling_row_mean │
+    #   # │ ---   ┆ ---                 ┆ ---              │
+    #   # │ u32   ┆ datetime[ns]        ┆ f64              │
+    #   # ╞═══════╪═════════════════════╪══════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 ┆ 0.0              │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 ┆ 0.5              │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 ┆ 1.5              │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 ┆ 2.5              │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 ┆ 3.5              │
+    #   # │ …     ┆ …                   ┆ …                │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 ┆ 19.5             │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 ┆ 20.5             │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 ┆ 21.5             │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 ┆ 22.5             │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 ┆ 23.5             │
+    #   # └───────┴─────────────────────┴──────────────────┘
+    #
+    # @example Compute the rolling mean with the closure of windows on both sides
+    #   df_temporal.with_columns(
+    #     rolling_row_mean: Polars.col("index").rolling_mean_by(
+    #       "date", "2h", closed: "both"
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (25, 3)
+    #   # ┌───────┬─────────────────────┬──────────────────┐
+    #   # │ index ┆ date                ┆ rolling_row_mean │
+    #   # │ ---   ┆ ---                 ┆ ---              │
+    #   # │ u32   ┆ datetime[ns]        ┆ f64              │
+    #   # ╞═══════╪═════════════════════╪══════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 ┆ 0.0              │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 ┆ 0.5              │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 ┆ 1.0              │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 ┆ 2.0              │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 ┆ 3.0              │
+    #   # │ …     ┆ …                   ┆ …                │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 ┆ 19.0             │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 ┆ 20.0             │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 ┆ 21.0             │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 ┆ 22.0             │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 ┆ 23.0             │
+    #   # └───────┴─────────────────────┴──────────────────┘
+    def rolling_mean_by(
+      by,
+      window_size,
+      min_periods: 1,
+      closed: "right",
+      warn_if_unsorted: nil
+    )
+      window_size = _prepare_rolling_by_window_args(window_size)
+      by = Utils.parse_as_expression(by)
+      _from_rbexpr(
+        _rbexpr.rolling_mean_by(
+          by,
+          window_size,
+          min_periods,
+          closed
+        )
+      )
+    end
+
+    # Apply a rolling sum based on another column.
+    #
+    # @param by [String]
+    #   This column must of dtype `{Date, Datetime}`
+    # @param window_size [String]
+    #   The length of the window. Can be a dynamic temporal
+    #   size indicated by a timedelta or the following string language:
+    #
+    #   - 1ns   (1 nanosecond)
+    #   - 1us   (1 microsecond)
+    #   - 1ms   (1 millisecond)
+    #   - 1s    (1 second)
+    #   - 1m    (1 minute)
+    #   - 1h    (1 hour)
+    #   - 1d    (1 calendar day)
+    #   - 1w    (1 calendar week)
+    #   - 1mo   (1 calendar month)
+    #   - 1q    (1 calendar quarter)
+    #   - 1y    (1 calendar year)
+    #
+    #   By "calendar day", we mean the corresponding time on the next day
+    #   (which may not be 24 hours, due to daylight savings). Similarly for
+    #   "calendar week", "calendar month", "calendar quarter", and
+    #   "calendar year".
+    # @param min_periods [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result.
+    # @param closed ['left', 'right', 'both', 'none']
+    #   Define which sides of the temporal interval are closed (inclusive),
+    #   defaults to `'right'`.
+    # @param warn_if_unsorted [Boolean]
+    #   Warn if data is not known to be sorted by `by` column.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   If you want to compute multiple aggregation statistics over the same dynamic
+    #   window, consider using `rolling` - this method can cache the window size
+    #   computation.
+    #
+    # @example Create a DataFrame with a datetime column and a row number column
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 2)
+    #   df_temporal = Polars::DataFrame.new(
+    #       {"date" => Polars.datetime_range(start, stop, "1h", eager: true)}
+    #   ).with_row_index
+    #   # =>
+    #   # shape: (25, 2)
+    #   # ┌───────┬─────────────────────┐
+    #   # │ index ┆ date                │
+    #   # │ ---   ┆ ---                 │
+    #   # │ u32   ┆ datetime[ns]        │
+    #   # ╞═══════╪═════════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 │
+    #   # │ …     ┆ …                   │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 │
+    #   # └───────┴─────────────────────┘
+    #
+    # @example Compute the rolling sum with the temporal windows closed on the right (default)
+    #   df_temporal.with_columns(
+    #     rolling_row_sum: Polars.col("index").rolling_sum_by("date", "2h")
+    #   )
+    #   # =>
+    #   # shape: (25, 3)
+    #   # ┌───────┬─────────────────────┬─────────────────┐
+    #   # │ index ┆ date                ┆ rolling_row_sum │
+    #   # │ ---   ┆ ---                 ┆ ---             │
+    #   # │ u32   ┆ datetime[ns]        ┆ u32             │
+    #   # ╞═══════╪═════════════════════╪═════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 ┆ 0               │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 ┆ 1               │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 ┆ 3               │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 ┆ 5               │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 ┆ 7               │
+    #   # │ …     ┆ …                   ┆ …               │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 ┆ 39              │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 ┆ 41              │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 ┆ 43              │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 ┆ 45              │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 ┆ 47              │
+    #   # └───────┴─────────────────────┴─────────────────┘
+    #
+    # @example Compute the rolling sum with the closure of windows on both sides
+    #   df_temporal.with_columns(
+    #     rolling_row_sum: Polars.col("index").rolling_sum_by(
+    #       "date", "2h", closed: "both"
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (25, 3)
+    #   # ┌───────┬─────────────────────┬─────────────────┐
+    #   # │ index ┆ date                ┆ rolling_row_sum │
+    #   # │ ---   ┆ ---                 ┆ ---             │
+    #   # │ u32   ┆ datetime[ns]        ┆ u32             │
+    #   # ╞═══════╪═════════════════════╪═════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 ┆ 0               │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 ┆ 1               │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 ┆ 3               │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 ┆ 6               │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 ┆ 9               │
+    #   # │ …     ┆ …                   ┆ …               │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 ┆ 57              │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 ┆ 60              │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 ┆ 63              │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 ┆ 66              │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 ┆ 69              │
+    #   # └───────┴─────────────────────┴─────────────────┘
+    def rolling_sum_by(
+      by,
+      window_size,
+      min_periods: 1,
+      closed: "right",
+      warn_if_unsorted: nil
+    )
+      window_size = _prepare_rolling_by_window_args(window_size)
+      by = Utils.parse_as_expression(by)
+      _from_rbexpr(
+        _rbexpr.rolling_sum_by(by, window_size, min_periods, closed)
+      )
+    end
+
     # Apply a rolling min (moving min) over the values in this array.
     #
     # A window of length `window_size` will traverse the array. The values that fill
