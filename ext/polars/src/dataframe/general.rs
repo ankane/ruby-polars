@@ -26,6 +26,15 @@ impl RbDataFrame {
         self.df.borrow().estimated_size()
     }
 
+    pub fn dtype_strings(&self) -> Vec<String> {
+        self.df
+            .borrow()
+            .get_columns()
+            .iter()
+            .map(|s| format!("{}", s.dtype()))
+            .collect()
+    }
+
     pub fn add(&self, s: &RbSeries) -> RbResult<Self> {
         let df = (&*self.df.borrow() + &*s.series.borrow()).map_err(RbPolarsErr::from)?;
         Ok(df.into())
