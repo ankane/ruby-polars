@@ -115,7 +115,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("get_column", method!(RbDataFrame::get_column, 1))?;
     class.define_method("select", method!(RbDataFrame::select, 1))?;
-    class.define_method("take", method!(RbDataFrame::take, 1))?;
+    class.define_method("take", method!(RbDataFrame::gather, 1))?;
     class.define_method(
         "take_with_series",
         method!(RbDataFrame::take_with_series, 1),
@@ -134,7 +134,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("melt", method!(RbDataFrame::melt, 4))?;
     class.define_method("pivot_expr", method!(RbDataFrame::pivot_expr, 7))?;
     class.define_method("partition_by", method!(RbDataFrame::partition_by, 3))?;
-    class.define_method("shift", method!(RbDataFrame::shift, 1))?;
     class.define_method("lazy", method!(RbDataFrame::lazy, 0))?;
     class.define_method("mean_horizontal", method!(RbDataFrame::mean_horizontal, 1))?;
     class.define_method("max_horizontal", method!(RbDataFrame::max_horizontal, 0))?;

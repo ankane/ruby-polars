@@ -253,7 +253,7 @@ impl RbDataFrame {
         Ok(RbDataFrame::new(df))
     }
 
-    pub fn take(&self, indices: Vec<IdxSize>) -> RbResult<Self> {
+    pub fn gather(&self, indices: Vec<IdxSize>) -> RbResult<Self> {
         let indices = IdxCa::from_vec("", indices);
         let df = self.df.borrow().take(&indices).map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
@@ -402,10 +402,6 @@ impl RbDataFrame {
         }
         .map_err(RbPolarsErr::from)?;
         Ok(RArray::from_iter(out.into_iter().map(RbDataFrame::new)))
-    }
-
-    pub fn shift(&self, periods: i64) -> Self {
-        self.df.borrow().shift(periods).into()
     }
 
     pub fn lazy(&self) -> RbLazyFrame {
