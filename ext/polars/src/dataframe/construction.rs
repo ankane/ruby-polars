@@ -1,5 +1,5 @@
 use magnus::{prelude::*, r_hash::ForEach, RArray, RHash, Symbol, Value};
-use polars::frame::row::{rows_to_schema_supertypes, Row};
+use polars::frame::row::{rows_to_schema_supertypes, rows_to_supertypes, Row};
 use polars::prelude::*;
 
 use super::*;
@@ -12,16 +12,16 @@ impl RbDataFrame {
         infer_schema_length: Option<usize>,
         schema: Option<Wrap<Schema>>,
     ) -> RbResult<Self> {
-        let mut rows = Vec::with_capacity(rb_rows.len());
+        let mut data = Vec::with_capacity(rb_rows.len());
         for v in rb_rows.each() {
             let rb_row = RArray::try_convert(v?)?;
             let mut row = Vec::with_capacity(rb_row.len());
             for val in rb_row.each() {
                 row.push(Wrap::<AnyValue>::try_convert(val?)?.0);
             }
-            rows.push(Row(row));
+            data.push(Row(row));
         }
-        finish_from_rows(rows, infer_schema_length, schema.map(|wrap| wrap.0), None)
+        finish_from_rows(data, infer_schema_length, schema.map(|wrap| wrap.0), None)
     }
 
     pub fn from_hashes(
@@ -30,25 +30,19 @@ impl RbDataFrame {
         schema: Option<Wrap<Schema>>,
         schema_overrides: Option<Wrap<Schema>>,
     ) -> RbResult<Self> {
+        let schema_overrides = schema_overrides.map(|wrap| wrap.0);
+
         let mut schema_columns = PlIndexSet::new();
         if let Some(s) = &schema {
             schema_columns.extend(s.0.iter_names().map(|n| n.to_string()))
         }
         let (rows, names) = dicts_to_rows(&dicts, infer_schema_length, schema_columns)?;
 
-        let mut schema_overrides_by_idx: Vec<(usize, DataType)> = Vec::new();
-        if let Some(overrides) = schema_overrides {
-            for (idx, name) in names.iter().enumerate() {
-                if let Some(dtype) = overrides.0.get(name) {
-                    schema_overrides_by_idx.push((idx, dtype.clone()));
-                }
-            }
-        }
         let rbdf = finish_from_rows(
             rows,
             infer_schema_length,
             schema.map(|wrap| wrap.0),
-            Some(schema_overrides_by_idx),
+            schema_overrides,
         )?;
 
         unsafe {
@@ -75,50 +69,69 @@ fn finish_from_rows(
     rows: Vec<Row>,
     infer_schema_length: Option<usize>,
     schema: Option<Schema>,
-    schema_overrides_by_idx: Option<Vec<(usize, DataType)>>,
+    schema_overrides: Option<Schema>,
 ) -> RbResult<RbDataFrame> {
     // Object builder must be registered
     crate::on_startup::register_object_builder();
 
-    let mut final_schema =
-        rows_to_schema_supertypes(&rows, infer_schema_length.map(|n| std::cmp::max(1, n)))
-            .map_err(RbPolarsErr::from)?;
+    let mut schema = if let Some(mut schema) = schema {
+        resolve_schema_overrides(&mut schema, schema_overrides);
+        update_schema_from_rows(&mut schema, &rows, infer_schema_length)?;
+        schema
+    } else {
+        rows_to_schema_supertypes(&rows, infer_schema_length).map_err(RbPolarsErr::from)?
+    };
 
-    // Erase scale from inferred decimals.
-    for dtype in final_schema.iter_dtypes_mut() {
+    // TODO: Remove this step when Decimals are supported properly.
+    // Erasing the decimal precision/scale here will just require us to infer it again later.
+    // https://github.com/pola-rs/polars/issues/14427
+    erase_decimal_precision_scale(&mut schema);
+
+    let df = DataFrame::from_rows_and_schema(&rows, &schema).map_err(RbPolarsErr::from)?;
+    Ok(df.into())
+}
+
+fn update_schema_from_rows(
+    schema: &mut Schema,
+    rows: &[Row],
+    infer_schema_length: Option<usize>,
+) -> RbResult<()> {
+    let schema_is_complete = schema.iter_dtypes().all(|dtype| dtype.is_known());
+    if schema_is_complete {
+        return Ok(());
+    }
+
+    // TODO: Only infer dtypes for columns with an unknown dtype
+    let inferred_dtypes =
+        rows_to_supertypes(rows, infer_schema_length).map_err(RbPolarsErr::from)?;
+    let inferred_dtypes_slice = inferred_dtypes.as_slice();
+
+    for (i, dtype) in schema.iter_dtypes_mut().enumerate() {
+        if !dtype.is_known() {
+            *dtype = inferred_dtypes_slice.get(i).ok_or_else(|| {
+                polars_err!(SchemaMismatch: "the number of columns in the schema does not match the data")
+            })
+            .map_err(RbPolarsErr::from)?
+            .clone();
+        }
+    }
+    Ok(())
+}
+
+fn resolve_schema_overrides(schema: &mut Schema, schema_overrides: Option<Schema>) {
+    if let Some(overrides) = schema_overrides {
+        for (name, dtype) in overrides.into_iter() {
+            schema.set_dtype(name.as_str(), dtype);
+        }
+    }
+}
+
+fn erase_decimal_precision_scale(schema: &mut Schema) {
+    for dtype in schema.iter_dtypes_mut() {
         if let DataType::Decimal(_, _) = dtype {
             *dtype = DataType::Decimal(None, None)
         }
     }
-
-    // Integrate explicit/inferred schema.
-    if let Some(schema) = schema {
-        for (i, (name, dtype)) in schema.into_iter().enumerate() {
-            if let Some((name_, dtype_)) = final_schema.get_at_index_mut(i) {
-                *name_ = name;
-
-                // If schema dtype is Unknown, overwrite with inferred datatype.
-                if !matches!(dtype, DataType::Unknown(_)) {
-                    *dtype_ = dtype;
-                }
-            } else {
-                final_schema.with_column(name, dtype);
-            }
-        }
-    }
-
-    // Optional per-field overrides; these supersede default/inferred dtypes.
-    if let Some(overrides) = schema_overrides_by_idx {
-        for (i, dtype) in overrides {
-            if let Some((_, dtype_)) = final_schema.get_at_index_mut(i) {
-                if !matches!(dtype, DataType::Unknown(_)) {
-                    *dtype_ = dtype;
-                }
-            }
-        }
-    }
-    let df = DataFrame::from_rows_and_schema(&rows, &final_schema).map_err(RbPolarsErr::from)?;
-    Ok(df.into())
 }
 
 fn dicts_to_rows(
