@@ -48,7 +48,7 @@ module Polars
       rechunk: true
     )
       _prepare_file_arg(source) do |data|
-        DataFrame._read_parquet(
+        _read_parquet_impl(
           data,
           columns: columns,
           n_rows: n_rows,
@@ -60,6 +60,62 @@ module Polars
           rechunk: rechunk
         )
       end
+    end
+
+    # @private
+    def _read_parquet_impl(
+      source,
+      columns: nil,
+      n_rows: nil,
+      parallel: "auto",
+      row_count_name: nil,
+      row_count_offset: 0,
+      low_memory: false,
+      use_statistics: true,
+      rechunk: true
+    )
+      if Utils.pathlike?(source)
+        source = Utils.normalize_filepath(source)
+      end
+      if columns.is_a?(::String)
+        columns = [columns]
+      end
+
+      if source.is_a?(::String) && source.include?("*") && Utils.local_file?(source)
+        scan =
+          scan_parquet(
+            source,
+            n_rows: n_rows,
+            rechunk: true,
+            parallel: parallel,
+            row_count_name: row_count_name,
+            row_count_offset: row_count_offset,
+            low_memory: low_memory
+          )
+
+        if columns.nil?
+          return scan.collect
+        elsif Utils.is_str_sequence(columns, allow_str: false)
+          return scan.select(columns).collect
+        else
+          raise ArgumentError, "cannot use glob patterns and integer based projection as `columns` argument; Use columns: Array[String]"
+        end
+      end
+
+      projection, columns = Utils.handle_projection_columns(columns)
+      rbdf =
+        RbDataFrame.read_parquet(
+          source,
+          columns,
+          projection,
+          n_rows,
+          parallel,
+          Utils._prepare_row_count_args(row_count_name, row_count_offset),
+          low_memory,
+          use_statistics,
+          rechunk
+        )
+      Utils.wrap_df(rbdf)
     end
 
     # Get a schema of the Parquet file without reading data.
@@ -120,7 +176,7 @@ module Polars
         source = Utils.normalize_filepath(source)
       end
 
-      LazyFrame._scan_parquet(
+      _scan_parquet_impl(
         source,
         n_rows:n_rows,
         cache: cache,
@@ -132,6 +188,39 @@ module Polars
         low_memory: low_memory,
         glob: glob
       )
+    end
+
+    # @private
+    def _scan_parquet_impl(
+      file,
+      n_rows: nil,
+      cache: true,
+      parallel: "auto",
+      rechunk: true,
+      row_count_name: nil,
+      row_count_offset: 0,
+      storage_options: nil,
+      low_memory: false,
+      use_statistics: true,
+      hive_partitioning: true,
+      glob: true
+    )
+      rblf =
+        RbLazyFrame.new_from_parquet(
+          file,
+          [],
+          n_rows,
+          cache,
+          parallel,
+          rechunk,
+          Utils._prepare_row_count_args(row_count_name, row_count_offset),
+          low_memory,
+          use_statistics,
+          hive_partitioning,
+          nil,
+          glob
+        )
+      Utils.wrap_ldf(rblf)
     end
   end
 end

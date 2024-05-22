@@ -36,7 +36,7 @@ module Polars
     )
       storage_options ||= {}
       _prepare_file_arg(source, **storage_options) do |data|
-        DataFrame._read_ipc(
+        _read_ipc_impl(
           data,
           columns: columns,
           n_rows: n_rows,
@@ -46,6 +46,40 @@ module Polars
           memory_map: memory_map
         )
       end
+    end
+
+    # @private
+    def _read_ipc_impl(
+      file,
+      columns: nil,
+      n_rows: nil,
+      row_count_name: nil,
+      row_count_offset: 0,
+      rechunk: true,
+      memory_map: true
+    )
+      if Utils.pathlike?(file)
+        file = Utils.normalize_filepath(file)
+      end
+      if columns.is_a?(::String)
+        columns = [columns]
+      end
+
+      if file.is_a?(::String) && file.include?("*")
+        raise Todo
+      end
+
+      projection, columns = Utils.handle_projection_columns(columns)
+      rbdf =
+        RbDataFrame.read_ipc(
+          file,
+          columns,
+          projection,
+          n_rows,
+          Utils._prepare_row_count_args(row_count_name, row_count_offset),
+          memory_map
+        )
+      Utils.wrap_df(rbdf)
     end
 
     # Get a schema of the IPC file without reading data.
@@ -98,7 +132,7 @@ module Polars
       storage_options: nil,
       memory_map: true
     )
-      LazyFrame._scan_ipc(
+      _scan_ipc_impl(
         source,
         n_rows: n_rows,
         cache: cache,
@@ -108,6 +142,33 @@ module Polars
         storage_options: storage_options,
         memory_map: memory_map
       )
+    end
+
+    # @private
+    def _scan_ipc_impl(
+      file,
+      n_rows: nil,
+      cache: true,
+      rechunk: true,
+      row_count_name: nil,
+      row_count_offset: 0,
+      storage_options: nil,
+      memory_map: true
+    )
+      if Utils.pathlike?(file)
+        file = Utils.normalize_filepath(file)
+      end
+
+      rblf =
+        RbLazyFrame.new_from_ipc(
+          file,
+          n_rows,
+          cache,
+          rechunk,
+          Utils._prepare_row_count_args(row_count_name, row_count_offset),
+          memory_map
+        )
+      Utils.wrap_ldf(rblf)
     end
   end
 end

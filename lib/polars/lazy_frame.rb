@@ -27,66 +27,6 @@ module Polars
       ldf
     end
 
-    # @private
-    def self._scan_parquet(
-      file,
-      n_rows: nil,
-      cache: true,
-      parallel: "auto",
-      rechunk: true,
-      row_count_name: nil,
-      row_count_offset: 0,
-      storage_options: nil,
-      low_memory: false,
-      use_statistics: true,
-      hive_partitioning: true,
-      glob: true
-    )
-      _from_rbldf(
-        RbLazyFrame.new_from_parquet(
-          file,
-          [],
-          n_rows,
-          cache,
-          parallel,
-          rechunk,
-          Utils._prepare_row_count_args(row_count_name, row_count_offset),
-          low_memory,
-          use_statistics,
-          hive_partitioning,
-          nil,
-          glob
-        )
-      )
-    end
-
-    # @private
-    def self._scan_ipc(
-      file,
-      n_rows: nil,
-      cache: true,
-      rechunk: true,
-      row_count_name: nil,
-      row_count_offset: 0,
-      storage_options: nil,
-      memory_map: true
-    )
-      if Utils.pathlike?(file)
-        file = Utils.normalize_filepath(file)
-      end
-
-      _from_rbldf(
-        RbLazyFrame.new_from_ipc(
-          file,
-          n_rows,
-          cache,
-          rechunk,
-          Utils._prepare_row_count_args(row_count_name, row_count_offset),
-          memory_map
-        )
-      )
-    end
-
     # def self.from_json
     # end
 
