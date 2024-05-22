@@ -28,67 +28,6 @@ module Polars
     end
 
     # @private
-    def self._scan_csv(
-      file,
-      has_header: true,
-      sep: ",",
-      comment_char: nil,
-      quote_char: '"',
-      skip_rows: 0,
-      dtypes: nil,
-      null_values: nil,
-      ignore_errors: false,
-      cache: true,
-      with_column_names: nil,
-      infer_schema_length: 100,
-      n_rows: nil,
-      encoding: "utf8",
-      low_memory: false,
-      rechunk: true,
-      skip_rows_after_header: 0,
-      row_count_name: nil,
-      row_count_offset: 0,
-      parse_dates: false,
-      eol_char: "\n",
-      truncate_ragged_lines: true
-    )
-      dtype_list = nil
-      if !dtypes.nil?
-        dtype_list = []
-        dtypes.each do |k, v|
-          dtype_list << [k, Utils.rb_type_to_dtype(v)]
-        end
-      end
-      processed_null_values = Utils._process_null_values(null_values)
-
-      _from_rbldf(
-        RbLazyFrame.new_from_csv(
-          file,
-          sep,
-          has_header,
-          ignore_errors,
-          skip_rows,
-          n_rows,
-          cache,
-          dtype_list,
-          low_memory,
-          comment_char,
-          quote_char,
-          processed_null_values,
-          infer_schema_length,
-          with_column_names,
-          rechunk,
-          skip_rows_after_header,
-          encoding,
-          Utils._prepare_row_count_args(row_count_name, row_count_offset),
-          parse_dates,
-          eol_char,
-          truncate_ragged_lines
-        )
-      )
-    end
-
-    # @private
     def self._scan_parquet(
       file,
       n_rows: nil,
