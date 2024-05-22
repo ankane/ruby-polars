@@ -13,7 +13,7 @@ module Polars
     # @return [DataFrame]
     def read_avro(source, columns: nil, n_rows: nil)
       if Utils.pathlike?(source)
-        source = Utils.normalise_filepath(source)
+        source = Utils.normalize_filepath(source)
       end
       projection, column_names = Utils.handle_projection_columns(columns)
 

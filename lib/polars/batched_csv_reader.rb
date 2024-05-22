@@ -34,7 +34,7 @@ module Polars
       decimal_comma: false
     )
       if Utils.pathlike?(file)
-        path = Utils.normalise_filepath(file)
+        path = Utils.normalize_filepath(file)
       end
 
       dtype_list = nil

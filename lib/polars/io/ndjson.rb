@@ -45,7 +45,7 @@ module Polars
       row_count_offset: 0
     )
       if Utils.pathlike?(source)
-        source = Utils.normalise_filepath(source)
+        source = Utils.normalize_filepath(source)
       end
 
       LazyFrame._scan_ndjson(

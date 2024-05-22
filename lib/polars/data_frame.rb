@@ -70,7 +70,7 @@ module Polars
       rechunk: true
     )
       if Utils.pathlike?(source)
-        source = Utils.normalise_filepath(source)
+        source = Utils.normalize_filepath(source)
       end
       if columns.is_a?(::String)
         columns = [columns]
@@ -124,7 +124,7 @@ module Polars
       memory_map: true
     )
       if Utils.pathlike?(file)
-        file = Utils.normalise_filepath(file)
+        file = Utils.normalize_filepath(file)
       end
       if columns.is_a?(::String)
         columns = [columns]
@@ -148,18 +148,9 @@ module Polars
     end
 
     # @private
-    def self._read_json(file)
-      if Utils.pathlike?(file)
-        file = Utils.normalise_filepath(file)
-      end
-
-      _from_rbdf(RbDataFrame.read_json(file))
-    end
-
-    # @private
     def self._read_ndjson(file)
       if Utils.pathlike?(file)
-        file = Utils.normalise_filepath(file)
+        file = Utils.normalize_filepath(file)
       end
 
       _from_rbdf(RbDataFrame.read_ndjson(file))
@@ -699,7 +690,7 @@ module Polars
       row_oriented: false
     )
       if Utils.pathlike?(file)
-        file = Utils.normalise_filepath(file)
+        file = Utils.normalize_filepath(file)
       end
       to_string_io = !file.nil? && file.is_a?(StringIO)
       if file.nil? || to_string_io
@@ -738,7 +729,7 @@ module Polars
     #   # => "{\"foo\":1,\"bar\":6}\n{\"foo\":2,\"bar\":7}\n{\"foo\":3,\"bar\":8}\n"
     def write_ndjson(file = nil)
       if Utils.pathlike?(file)
-        file = Utils.normalise_filepath(file)
+        file = Utils.normalize_filepath(file)
       end
       to_string_io = !file.nil? && file.is_a?(StringIO)
       if file.nil? || to_string_io
@@ -845,7 +836,7 @@ module Polars
       end
 
       if Utils.pathlike?(file)
-        file = Utils.normalise_filepath(file)
+        file = Utils.normalize_filepath(file)
       end
 
       _df.write_csv(
@@ -883,7 +874,7 @@ module Polars
         compression = "uncompressed"
       end
       if Utils.pathlike?(file)
-        file = Utils.normalise_filepath(file)
+        file = Utils.normalize_filepath(file)
       end
 
       _df.write_avro(file, compression)
@@ -904,7 +895,7 @@ module Polars
         file.set_encoding(Encoding::BINARY)
       end
       if Utils.pathlike?(file)
-        file = Utils.normalise_filepath(file)
+        file = Utils.normalize_filepath(file)
       end
 
       if compression.nil?
@@ -951,7 +942,7 @@ module Polars
         compression = "uncompressed"
       end
       if Utils.pathlike?(file)
-        file = Utils.normalise_filepath(file)
+        file = Utils.normalize_filepath(file)
       end
 
       _df.write_parquet(

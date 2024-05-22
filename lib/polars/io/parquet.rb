@@ -70,7 +70,7 @@ module Polars
     # @return [Hash]
     def read_parquet_schema(source)
       if Utils.pathlike?(source)
-        source = Utils.normalise_filepath(source)
+        source = Utils.normalize_filepath(source)
       end
 
       Plr.parquet_schema(source)
@@ -117,7 +117,7 @@ module Polars
       low_memory: false
     )
       if Utils.pathlike?(source)
-        source = Utils.normalise_filepath(source)
+        source = Utils.normalize_filepath(source)
       end
 
       LazyFrame._scan_parquet(

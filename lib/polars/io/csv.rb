@@ -209,7 +209,7 @@ module Polars
       glob: true
     )
       if Utils.pathlike?(file)
-        path = Utils.normalise_filepath(file)
+        path = Utils.normalize_filepath(file)
       else
         path = nil
         # if defined?(StringIO) && file.is_a?(StringIO)
@@ -587,7 +587,7 @@ module Polars
       Utils._check_arg_is_1byte("quote_char", quote_char, true)
 
       if Utils.pathlike?(source)
-        source = Utils.normalise_filepath(source)
+        source = Utils.normalize_filepath(source)
       end
 
       _scan_csv_impl(

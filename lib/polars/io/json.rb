@@ -7,7 +7,12 @@ module Polars
     #
     # @return [DataFrame]
     def read_json(source)
-      DataFrame._read_json(source)
+      if Utils.pathlike?(source)
+        source = Utils.normalize_filepath(source)
+      end
+
+      rbdf = RbDataFrame.read_json(source)
+      Utils.wrap_df(rbdf)
     end
   end
 end
