@@ -114,15 +114,6 @@ module Polars
     end
 
     # @private
-    def self._read_avro(file, columns: nil, n_rows: nil)
-      if Utils.pathlike?(file)
-        file = Utils.normalise_filepath(file)
-      end
-      projection, columns = Utils.handle_projection_columns(columns)
-      _from_rbdf(RbDataFrame.read_avro(file, columns, projection, n_rows))
-    end
-
-    # @private
     def self._read_ipc(
       file,
       columns: nil,

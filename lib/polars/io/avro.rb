@@ -15,8 +15,10 @@ module Polars
       if Utils.pathlike?(source)
         source = Utils.normalise_filepath(source)
       end
+      projection, column_names = Utils.handle_projection_columns(columns)
 
-      DataFrame._read_avro(source, n_rows: n_rows, columns: columns)
+      rbdf = RbDataFrame.read_avro(source, column_names, projection, n_rows)
+      Utils.wrap_df(rbdf)
     end
   end
 end
