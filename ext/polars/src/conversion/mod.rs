@@ -7,7 +7,7 @@ use std::num::NonZeroUsize;
 
 use magnus::{
     class, exception, prelude::*, r_hash::ForEach, value::Opaque, IntoValue, Module, RArray, RHash,
-    Ruby, Symbol, TryConvert, Value,
+    Ruby, TryConvert, Value,
 };
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
@@ -548,57 +548,6 @@ impl Default for ObjectValue {
             inner: Ruby::get().unwrap().qnil().as_value().into(),
         }
     }
-}
-
-pub(crate) fn dicts_to_rows(
-    records: &Value,
-    infer_schema_len: Option<usize>,
-    schema_columns: PlIndexSet<String>,
-) -> RbResult<(Vec<Row>, Vec<String>)> {
-    let infer_schema_len = infer_schema_len.map(|n| std::cmp::max(1, n));
-    let (dicts, len) = get_rbseq(*records)?;
-
-    let key_names = {
-        if !schema_columns.is_empty() {
-            schema_columns
-        } else {
-            let mut inferred_keys = PlIndexSet::new();
-            for d in dicts.each().take(infer_schema_len.unwrap_or(usize::MAX)) {
-                let d = d?;
-                let d = RHash::try_convert(d)?;
-
-                d.foreach(|name: Value, _value: Value| {
-                    if let Some(v) = Symbol::from_value(name) {
-                        inferred_keys.insert(v.name()?.into());
-                    } else {
-                        inferred_keys.insert(String::try_convert(name)?);
-                    };
-                    Ok(ForEach::Continue)
-                })?;
-            }
-            inferred_keys
-        }
-    };
-
-    let mut rows = Vec::with_capacity(len);
-
-    for d in dicts.each() {
-        let d = d?;
-        let d = RHash::try_convert(d)?;
-
-        let mut row = Vec::with_capacity(key_names.len());
-
-        for k in key_names.iter() {
-            // TODO improve performance
-            let val = match d.get(k.clone()).or_else(|| d.get(Symbol::new(k))) {
-                None => AnyValue::Null,
-                Some(val) => Wrap::<AnyValue>::try_convert(val)?.0,
-            };
-            row.push(val)
-        }
-        rows.push(Row(row))
-    }
-    Ok((rows, key_names.into_iter().collect()))
 }
 
 impl TryConvert for Wrap<AsofStrategy> {
