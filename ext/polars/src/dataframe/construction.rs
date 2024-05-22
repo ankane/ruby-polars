@@ -1,11 +1,10 @@
-use magnus::{prelude::*, r_hash::ForEach, RArray, RHash, Value};
+use magnus::{prelude::*, RArray, Value};
 use polars::frame::row::{rows_to_schema_supertypes, Row};
 use polars::prelude::*;
 
 use super::*;
 use crate::conversion::*;
-use crate::rb_modules;
-use crate::{RbPolarsErr, RbResult, RbSeries};
+use crate::{RbPolarsErr, RbResult};
 
 impl RbDataFrame {
     pub fn from_rows(
@@ -69,18 +68,6 @@ impl RbDataFrame {
         }
 
         Ok(rbdf)
-    }
-
-    pub fn read_hash(data: RHash) -> RbResult<Self> {
-        let mut cols: Vec<Series> = Vec::new();
-        data.foreach(|name: String, values: Value| {
-            let obj: Value = rb_modules::series().funcall("new", (name, values))?;
-            let rbseries = obj.funcall::<_, _, &RbSeries>("_s", ())?;
-            cols.push(rbseries.series.borrow().clone());
-            Ok(ForEach::Continue)
-        })?;
-        let df = DataFrame::new(cols).map_err(RbPolarsErr::from)?;
-        Ok(df.into())
     }
 }
 
