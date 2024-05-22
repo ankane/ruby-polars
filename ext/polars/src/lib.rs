@@ -5,6 +5,7 @@ mod error;
 mod expr;
 mod file;
 mod functions;
+mod interop;
 mod lazyframe;
 mod lazygroupby;
 mod map;
