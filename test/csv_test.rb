@@ -61,7 +61,7 @@ class CsvTest < Minitest::Test
     error = assert_raises(RuntimeError) do
       Polars.read_csv("test/support/*.csv")
     end
-    assert_match "lengths don't match", error.message
+    assert_match "schema lengths differ", error.message
   end
 
   def test_read_csv_batched

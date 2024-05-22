@@ -425,5 +425,32 @@ module Polars
       end
       interval.downcase
     end
+
+    def self.validate_rolling_by_aggs_arguments(weights, center:)
+      if !weights.nil?
+        msg = "`weights` is not supported in `rolling_*(..., by=...)` expression"
+        raise InvalidOperationError, msg
+      end
+      if center
+        msg = "`center=True` is not supported in `rolling_*(..., by=...)` expression"
+        raise InvalidOperationError, msg
+      end
+    end
+
+    def self.validate_rolling_aggs_arguments(window_size, closed)
+      if window_size.is_a?(::String)
+        begin
+          window_size = window_size.delete_suffix("i").to_i
+        rescue
+          msg = "Expected a string of the form 'ni', where `n` is a positive integer, got: #{window_size}"
+          raise InvalidOperationError, msg
+        end
+      end
+      if !closed.nil?
+        msg = "`closed` is not supported in `rolling_*(...)` expression"
+        raise InvalidOperationError, msg
+      end
+      window_size
+    end
   end
 end

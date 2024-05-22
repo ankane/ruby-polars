@@ -70,7 +70,7 @@ impl RbDataFrame {
                     *name_ = name;
 
                     // If schema dtype is Unknown, overwrite with inferred datatype.
-                    if !matches!(dtype, DataType::Unknown) {
+                    if !matches!(dtype, DataType::Unknown(_)) {
                         *dtype_ = dtype;
                     }
                 } else {
@@ -83,7 +83,7 @@ impl RbDataFrame {
         if let Some(overrides) = schema_overrides_by_idx {
             for (i, dtype) in overrides {
                 if let Some((_, dtype_)) = final_schema.get_at_index_mut(i) {
-                    if !matches!(dtype, DataType::Unknown) {
+                    if !matches!(dtype, DataType::Unknown(_)) {
                         *dtype_ = dtype;
                     }
                 }
@@ -131,19 +131,24 @@ impl RbDataFrame {
         let comment_prefix = Option::<String>::try_convert(arguments[17])?;
         let quote_char = Option::<String>::try_convert(arguments[18])?;
         let null_values = Option::<Wrap<NullValues>>::try_convert(arguments[19])?;
-        let try_parse_dates = bool::try_convert(arguments[20])?;
-        let skip_rows_after_header = usize::try_convert(arguments[21])?;
-        let row_index = Option::<(String, IdxSize)>::try_convert(arguments[22])?;
-        let sample_size = usize::try_convert(arguments[23])?;
-        let eol_char = String::try_convert(arguments[24])?;
-        let truncate_ragged_lines = bool::try_convert(arguments[25])?;
+        let missing_utf8_is_empty_string = bool::try_convert(arguments[20])?;
+        let try_parse_dates = bool::try_convert(arguments[21])?;
+        let skip_rows_after_header = usize::try_convert(arguments[22])?;
+        let row_index = Option::<(String, IdxSize)>::try_convert(arguments[23])?;
+        let sample_size = usize::try_convert(arguments[24])?;
+        let eol_char = String::try_convert(arguments[25])?;
+        let raise_if_empty = bool::try_convert(arguments[26])?;
+        let truncate_ragged_lines = bool::try_convert(arguments[27])?;
+        let decimal_comma = bool::try_convert(arguments[28])?;
+        let schema = Option::<Wrap<Schema>>::try_convert(arguments[29])?;
         // end arguments
 
         let null_values = null_values.map(|w| w.0);
         let eol_char = eol_char.as_bytes()[0];
-
-        let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
-
+        let row_index = row_index.map(|(name, offset)| RowIndex {
+            name: Arc::from(name.as_str()),
+            offset,
+        });
         let quote_char = if let Some(s) = quote_char {
             if s.is_empty() {
                 None
@@ -172,32 +177,40 @@ impl RbDataFrame {
         });
 
         let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
-        let df = CsvReader::new(mmap_bytes_r)
-            .infer_schema(infer_schema_length)
-            .has_header(has_header)
+        let df = CsvReadOptions::default()
+            .with_path(path)
+            .with_infer_schema_length(infer_schema_length)
+            .with_has_header(has_header)
             .with_n_rows(n_rows)
-            .with_separator(separator.as_bytes()[0])
             .with_skip_rows(skip_rows)
             .with_ignore_errors(ignore_errors)
-            .with_projection(projection)
+            .with_projection(projection.map(Arc::new))
             .with_rechunk(rechunk)
             .with_chunk_size(chunk_size)
-            .with_encoding(encoding.0)
-            .with_columns(columns)
+            .with_columns(columns.map(Arc::new))
             .with_n_threads(n_threads)
-            .with_path(path)
-            .with_dtypes(overwrite_dtype.map(Arc::new))
-            .with_dtypes_slice(overwrite_dtype_slice.as_deref())
-            .low_memory(low_memory)
-            .with_comment_prefix(comment_prefix.as_deref())
-            .with_null_values(null_values)
-            .with_try_parse_dates(try_parse_dates)
-            .with_quote_char(quote_char)
-            .with_end_of_line_char(eol_char)
+            .with_schema_overwrite(overwrite_dtype.map(Arc::new))
+            .with_dtype_overwrite(overwrite_dtype_slice.map(Arc::new))
+            .with_schema(schema.map(|schema| Arc::new(schema.0)))
+            .with_low_memory(low_memory)
             .with_skip_rows_after_header(skip_rows_after_header)
             .with_row_index(row_index)
-            .sample_size(sample_size)
-            .truncate_ragged_lines(truncate_ragged_lines)
+            .with_sample_size(sample_size)
+            .with_raise_if_empty(raise_if_empty)
+            .with_parse_options(
+                CsvParseOptions::default()
+                    .with_separator(separator.as_bytes()[0])
+                    .with_encoding(encoding.0)
+                    .with_missing_is_null(!missing_utf8_is_empty_string)
+                    .with_comment_prefix(comment_prefix.as_deref())
+                    .with_null_values(null_values)
+                    .with_try_parse_dates(try_parse_dates)
+                    .with_quote_char(quote_char)
+                    .with_eol_char(eol_char)
+                    .with_truncate_ragged_lines(truncate_ragged_lines)
+                    .with_decimal_comma(decimal_comma),
+            )
+            .into_reader_with_file_handle(mmap_bytes_r)
             .finish()
             .map_err(RbPolarsErr::from)?;
         Ok(df.into())
@@ -217,7 +230,10 @@ impl RbDataFrame {
     ) -> RbResult<Self> {
         use EitherRustRubyFile::*;
 
-        let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
+        let row_index = row_index.map(|(name, offset)| RowIndex {
+            name: Arc::from(name.as_str()),
+            offset,
+        });
         let result = match get_either_file(rb_f, false)? {
             Rb(f) => {
                 let buf = f.as_buffer();
@@ -252,16 +268,22 @@ impl RbDataFrame {
         projection: Option<Vec<usize>>,
         n_rows: Option<usize>,
         row_index: Option<(String, IdxSize)>,
-        memory_map: bool,
+        _memory_map: bool,
     ) -> RbResult<Self> {
-        let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
+        let row_index = row_index.map(|(name, offset)| RowIndex {
+            name: Arc::from(name.as_str()),
+            offset,
+        });
         let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
+
+        // TODO fix
+        let mmap_path = None;
         let df = IpcReader::new(mmap_bytes_r)
             .with_projection(projection)
             .with_columns(columns)
             .with_n_rows(n_rows)
             .with_row_index(row_index)
-            .memory_mapped(memory_map)
+            .memory_mapped(mmap_path)
             .finish()
             .map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
@@ -701,7 +723,9 @@ impl RbDataFrame {
     }
 
     pub fn rechunk(&self) -> Self {
-        self.df.borrow().agg_chunks().into()
+        let mut df = self.df.borrow_mut().clone();
+        df.as_single_chunk_par();
+        df.into()
     }
 
     pub fn to_s(&self) -> String {

@@ -256,6 +256,7 @@ module Polars
       skip_rows: 0,
       dtypes: nil,
       null_values: nil,
+      missing_utf8_is_empty_string: false,
       ignore_errors: false,
       cache: true,
       with_column_names: nil,
@@ -269,7 +270,10 @@ module Polars
       row_count_offset: 0,
       parse_dates: false,
       eol_char: "\n",
-      truncate_ragged_lines: false
+      raise_if_empty: true,
+      truncate_ragged_lines: false,
+      decimal_comma: false,
+      glob: true
     )
       Utils._check_arg_is_1byte("sep", sep, false)
       Utils._check_arg_is_1byte("comment_char", comment_char, false)
@@ -386,6 +390,7 @@ module Polars
       n_rows: nil,
       cache: true,
       parallel: "auto",
+      glob: true,
       rechunk: true,
       row_count_name: nil,
       row_count_offset: 0,
@@ -405,7 +410,8 @@ module Polars
         row_count_name: row_count_name,
         row_count_offset: row_count_offset,
         storage_options: storage_options,
-        low_memory: low_memory
+        low_memory: low_memory,
+        glob: glob
       )
     end
 
@@ -784,6 +790,7 @@ module Polars
       skip_rows: 0,
       dtypes: nil,
       null_values: nil,
+      missing_utf8_is_empty_string: false,
       ignore_errors: false,
       parse_dates: false,
       n_threads: nil,
@@ -798,7 +805,9 @@ module Polars
       row_count_offset: 0,
       sample_size: 1024,
       eol_char: "\n",
-      truncate_ragged_lines: false
+      raise_if_empty: true,
+      truncate_ragged_lines: false,
+      decimal_comma: false
     )
       projection, columns = Utils.handle_projection_columns(columns)
 
@@ -824,6 +833,7 @@ module Polars
         skip_rows: skip_rows,
         dtypes: dtypes,
         null_values: null_values,
+        missing_utf8_is_empty_string: missing_utf8_is_empty_string,
         ignore_errors: ignore_errors,
         parse_dates: parse_dates,
         n_threads: n_threads,
@@ -839,7 +849,9 @@ module Polars
         sample_size: sample_size,
         eol_char: eol_char,
         new_columns: new_columns,
-        truncate_ragged_lines: truncate_ragged_lines
+        raise_if_empty: raise_if_empty,
+        truncate_ragged_lines: truncate_ragged_lines,
+        decimal_comma: decimal_comma
       )
     end
 

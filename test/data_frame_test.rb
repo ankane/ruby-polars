@@ -420,14 +420,6 @@ class DataFrameTest < Minitest::Test
         "R2" => [7, nil, 8, 9]
       })
     assert_frame expected, df3.sort("L1", nulls_last: true)
-    expected =
-      Polars::DataFrame.new({
-        "L1" => ["a", "c", "d", "b"],
-        "L2" => [1, 3, nil, 2],
-        "R2" => [7, 8, 9, nil]
-      })
-    df4 = df1.join(df2, on: "L1", how: "outer_coalesce")
-    assert_frame expected, df4
   end
 
   def test_join_cross

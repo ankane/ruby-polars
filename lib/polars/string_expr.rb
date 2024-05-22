@@ -840,6 +840,7 @@ module Polars
     #   # │ true     │
     #   # └──────────┘
     def json_path_match(json_path)
+      json_path = Utils.parse_as_expression(json_path, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_json_path_match(json_path))
     end
 
@@ -1018,15 +1019,15 @@ module Polars
     #   )
     #   # =>
     #   # shape: (3, 3)
-    #   # ┌───────────────────────────────────┬───────────────────────┬──────────┐
-    #   # │ url                               ┆ captures              ┆ name     │
-    #   # │ ---                               ┆ ---                   ┆ ---      │
-    #   # │ str                               ┆ struct[2]             ┆ str      │
-    #   # ╞═══════════════════════════════════╪═══════════════════════╪══════════╡
-    #   # │ http://vote.com/ballon_dor?candi… ┆ {"messi","python"}    ┆ MESSI    │
-    #   # │ http://vote.com/ballon_dor?candi… ┆ {"weghorst","polars"} ┆ WEGHORST │
-    #   # │ http://vote.com/ballon_dor?error… ┆ {null,null}           ┆ null     │
-    #   # └───────────────────────────────────┴───────────────────────┴──────────┘
+    #   # ┌─────────────────────────────────┬───────────────────────┬──────────┐
+    #   # │ url                             ┆ captures              ┆ name     │
+    #   # │ ---                             ┆ ---                   ┆ ---      │
+    #   # │ str                             ┆ struct[2]             ┆ str      │
+    #   # ╞═════════════════════════════════╪═══════════════════════╪══════════╡
+    #   # │ http://vote.com/ballon_dor?can… ┆ {"messi","python"}    ┆ MESSI    │
+    #   # │ http://vote.com/ballon_dor?can… ┆ {"weghorst","polars"} ┆ WEGHORST │
+    #   # │ http://vote.com/ballon_dor?err… ┆ {null,null}           ┆ null     │
+    #   # └─────────────────────────────────┴───────────────────────┴──────────┘
     def extract_groups(pattern)
       Utils.wrap_expr(_rbexpr.str_extract_groups(pattern))
     end
@@ -1418,15 +1419,15 @@ module Polars
     #   )
     #   # =>
     #   # shape: (3, 2)
-    #   # ┌───────────────────────────────────┬──────────────┐
-    #   # │ lyrics                            ┆ contains_any │
-    #   # │ ---                               ┆ ---          │
-    #   # │ str                               ┆ bool         │
-    #   # ╞═══════════════════════════════════╪══════════════╡
-    #   # │ Everybody wants to rule the worl… ┆ false        │
-    #   # │ Tell me what you want, what you … ┆ true         │
-    #   # │ Can you feel the love tonight     ┆ true         │
-    #   # └───────────────────────────────────┴──────────────┘
+    #   # ┌─────────────────────────────────┬──────────────┐
+    #   # │ lyrics                          ┆ contains_any │
+    #   # │ ---                             ┆ ---          │
+    #   # │ str                             ┆ bool         │
+    #   # ╞═════════════════════════════════╪══════════════╡
+    #   # │ Everybody wants to rule the wo… ┆ false        │
+    #   # │ Tell me what you want, what yo… ┆ true         │
+    #   # │ Can you feel the love tonight   ┆ true         │
+    #   # └─────────────────────────────────┴──────────────┘
     def contains_any(patterns, ascii_case_insensitive: false)
       patterns = Utils.parse_as_expression(patterns, str_as_lit: false, list_as_lit: false)
       Utils.wrap_expr(
@@ -1468,15 +1469,15 @@ module Polars
     #   )
     #   # =>
     #   # shape: (3, 2)
-    #   # ┌───────────────────────────────────┬───────────────────────────────────┐
-    #   # │ lyrics                            ┆ removes_pronouns                  │
-    #   # │ ---                               ┆ ---                               │
-    #   # │ str                               ┆ str                               │
-    #   # ╞═══════════════════════════════════╪═══════════════════════════════════╡
-    #   # │ Everybody wants to rule the worl… ┆ Everybody wants to rule the worl… │
-    #   # │ Tell me what you want, what you … ┆ Tell  what  want, what  really r… │
-    #   # │ Can you feel the love tonight     ┆ Can  feel the love tonight        │
-    #   # └───────────────────────────────────┴───────────────────────────────────┘
+    #   # ┌─────────────────────────────────┬─────────────────────────────────┐
+    #   # │ lyrics                          ┆ removes_pronouns                │
+    #   # │ ---                             ┆ ---                             │
+    #   # │ str                             ┆ str                             │
+    #   # ╞═════════════════════════════════╪═════════════════════════════════╡
+    #   # │ Everybody wants to rule the wo… ┆ Everybody wants to rule the wo… │
+    #   # │ Tell me what you want, what yo… ┆ Tell  what  want, what  really… │
+    #   # │ Can you feel the love tonight   ┆ Can  feel the love tonight      │
+    #   # └─────────────────────────────────┴─────────────────────────────────┘
     #
     # @example
     #   df.with_columns(
@@ -1489,15 +1490,15 @@ module Polars
     #   )
     #   # =>
     #   # shape: (3, 2)
-    #   # ┌───────────────────────────────────┬───────────────────────────────────┐
-    #   # │ lyrics                            ┆ confusing                         │
-    #   # │ ---                               ┆ ---                               │
-    #   # │ str                               ┆ str                               │
-    #   # ╞═══════════════════════════════════╪═══════════════════════════════════╡
-    #   # │ Everybody wants to rule the worl… ┆ Everybody wants to rule the worl… │
-    #   # │ Tell me what you want, what you … ┆ Tell you what me want, what me r… │
-    #   # │ Can you feel the love tonight     ┆ Can me feel the love tonight      │
-    #   # └───────────────────────────────────┴───────────────────────────────────┘
+    #   # ┌─────────────────────────────────┬─────────────────────────────────┐
+    #   # │ lyrics                          ┆ confusing                       │
+    #   # │ ---                             ┆ ---                             │
+    #   # │ str                             ┆ str                             │
+    #   # ╞═════════════════════════════════╪═════════════════════════════════╡
+    #   # │ Everybody wants to rule the wo… ┆ Everybody wants to rule the wo… │
+    #   # │ Tell me what you want, what yo… ┆ Tell you what me want, what me… │
+    #   # │ Can you feel the love tonight   ┆ Can me feel the love tonight    │
+    #   # └─────────────────────────────────┴─────────────────────────────────┘
     def replace_many(patterns, replace_with, ascii_case_insensitive: false)
       patterns = Utils.parse_as_expression(patterns, str_as_lit: false, list_as_lit: false)
       replace_with = Utils.parse_as_expression(

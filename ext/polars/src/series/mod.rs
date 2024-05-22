@@ -442,7 +442,7 @@ impl RbSeries {
 
                     RArray::from_iter(NullIter { iter, n }).into_value()
                 }
-                DataType::Unknown => {
+                DataType::Unknown(_) => {
                     panic!("to_a not implemented for unknown")
                 }
                 DataType::BinaryOffset => {

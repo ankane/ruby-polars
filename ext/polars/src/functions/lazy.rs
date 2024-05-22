@@ -130,6 +130,7 @@ pub fn concat_lf(
             rechunk,
             parallel,
             to_supertypes,
+            ..Default::default()
         },
     )
     .map_err(RbPolarsErr::from)?;
@@ -198,6 +199,7 @@ pub fn concat_lf_diagonal(
             rechunk,
             parallel,
             to_supertypes,
+            ..Default::default()
         },
     )
     .map_err(RbPolarsErr::from)?;

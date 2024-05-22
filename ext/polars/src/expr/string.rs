@@ -259,39 +259,18 @@ impl RbExpr {
         infer_schema_len: Option<usize>,
     ) -> Self {
         let dtype = dtype.map(|wrap| wrap.0);
-
-        let output_type = match dtype.clone() {
-            Some(dtype) => GetOutput::from_type(dtype),
-            None => GetOutput::from_type(DataType::Unknown),
-        };
-
-        let function = move |s: Series| {
-            let ca = s.str()?;
-            match ca.json_decode(dtype.clone(), infer_schema_len) {
-                Ok(ca) => Ok(Some(ca.into_series())),
-                Err(e) => Err(PolarsError::ComputeError(format!("{e:?}").into())),
-            }
-        };
-
-        self.clone()
-            .inner
-            .map(function, output_type)
-            .with_fmt("str.json_decode")
+        self.inner
+            .clone()
+            .str()
+            .json_decode(dtype, infer_schema_len)
             .into()
     }
 
-    pub fn str_json_path_match(&self, pat: String) -> Self {
-        let function = move |s: Series| {
-            let ca = s.str()?;
-            match ca.json_path_match(&pat) {
-                Ok(ca) => Ok(Some(ca.into_series())),
-                Err(e) => Err(PolarsError::ComputeError(format!("{:?}", e).into())),
-            }
-        };
-        self.clone()
-            .inner
-            .map(function, GetOutput::from_type(DataType::String))
-            .with_fmt("str.json_path_match")
+    pub fn str_json_path_match(&self, pat: &Self) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .json_path_match(pat.inner.clone())
             .into()
     }
 

@@ -1345,9 +1345,9 @@ module Polars
     #   # │ 3     ┆ 4        │
     #   # │ 2     ┆ 98       │
     #   # └───────┴──────────┘
-    def top_k(k: 5)
+    def top_k(k: 5, nulls_last: false, multithreaded: true)
       k = Utils.parse_as_expression(k)
-      _from_rbexpr(_rbexpr.top_k(k))
+      _from_rbexpr(_rbexpr.top_k(k, nulls_last, multithreaded))
     end
 
     # Return the `k` smallest elements.
@@ -1384,9 +1384,9 @@ module Polars
     #   # │ 3     ┆ 4        │
     #   # │ 2     ┆ 98       │
     #   # └───────┴──────────┘
-    def bottom_k(k: 5)
+    def bottom_k(k: 5, nulls_last: false, multithreaded: true)
       k = Utils.parse_as_expression(k)
-      _from_rbexpr(_rbexpr.bottom_k(k))
+      _from_rbexpr(_rbexpr.bottom_k(k, nulls_last, multithreaded))
     end
 
     # Get the index values that would sort this column.
@@ -3880,6 +3880,109 @@ module Polars
       _from_rbexpr(_rbexpr.interpolate(method))
     end
 
+    # Apply a rolling min based on another column.
+    #
+    # @param by [String]
+    #   This column must be of dtype Datetime or Date.
+    # @param window_size [String]
+    #   The length of the window. Can be a dynamic temporal
+    #   size indicated by a timedelta or the following string language:
+    #
+    #   - 1ns   (1 nanosecond)
+    #   - 1us   (1 microsecond)
+    #   - 1ms   (1 millisecond)
+    #   - 1s    (1 second)
+    #   - 1m    (1 minute)
+    #   - 1h    (1 hour)
+    #   - 1d    (1 calendar day)
+    #   - 1w    (1 calendar week)
+    #   - 1mo   (1 calendar month)
+    #   - 1q    (1 calendar quarter)
+    #   - 1y    (1 calendar year)
+    #
+    #   By "calendar day", we mean the corresponding time on the next day
+    #   (which may not be 24 hours, due to daylight savings). Similarly for
+    #   "calendar week", "calendar month", "calendar quarter", and
+    #   "calendar year".
+    # @param min_periods [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result.
+    # @param closed ['left', 'right', 'both', 'none']
+    #   Define which sides of the temporal interval are closed (inclusive),
+    #   defaults to `'right'`.
+    # @param warn_if_unsorted [Boolean]
+    #   Warn if data is not known to be sorted by `by` column.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   If you want to compute multiple aggregation statistics over the same dynamic
+    #   window, consider using `rolling` - this method can cache the window size
+    #   computation.
+    #
+    # @example Create a DataFrame with a datetime column and a row number column
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 2)
+    #   df_temporal = Polars::DataFrame.new(
+    #     {"date" => Polars.datetime_range(start, stop, "1h", eager: true)}
+    #   ).with_row_index
+    #   # =>
+    #   # shape: (25, 2)
+    #   # ┌───────┬─────────────────────┐
+    #   # │ index ┆ date                │
+    #   # │ ---   ┆ ---                 │
+    #   # │ u32   ┆ datetime[ns]        │
+    #   # ╞═══════╪═════════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 │
+    #   # │ …     ┆ …                   │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 │
+    #   # └───────┴─────────────────────┘
+    #
+    # @example Compute the rolling min with the temporal windows closed on the right (default)
+    #   df_temporal.with_columns(
+    #     rolling_row_min: Polars.col("index").rolling_min_by("date", "2h")
+    #   )
+    #   # =>
+    #   # shape: (25, 3)
+    #   # ┌───────┬─────────────────────┬─────────────────┐
+    #   # │ index ┆ date                ┆ rolling_row_min │
+    #   # │ ---   ┆ ---                 ┆ ---             │
+    #   # │ u32   ┆ datetime[ns]        ┆ u32             │
+    #   # ╞═══════╪═════════════════════╪═════════════════╡
+    #   # │ 0     ┆ 2001-01-01 00:00:00 ┆ 0               │
+    #   # │ 1     ┆ 2001-01-01 01:00:00 ┆ 0               │
+    #   # │ 2     ┆ 2001-01-01 02:00:00 ┆ 1               │
+    #   # │ 3     ┆ 2001-01-01 03:00:00 ┆ 2               │
+    #   # │ 4     ┆ 2001-01-01 04:00:00 ┆ 3               │
+    #   # │ …     ┆ …                   ┆ …               │
+    #   # │ 20    ┆ 2001-01-01 20:00:00 ┆ 19              │
+    #   # │ 21    ┆ 2001-01-01 21:00:00 ┆ 20              │
+    #   # │ 22    ┆ 2001-01-01 22:00:00 ┆ 21              │
+    #   # │ 23    ┆ 2001-01-01 23:00:00 ┆ 22              │
+    #   # │ 24    ┆ 2001-01-02 00:00:00 ┆ 23              │
+    #   # └───────┴─────────────────────┴─────────────────┘
+    def rolling_min_by(
+      by,
+      window_size,
+      min_periods: 1,
+      closed: "right",
+      warn_if_unsorted: nil
+    )
+      window_size = _prepare_rolling_by_window_args(window_size)
+      by = Utils.parse_as_expression(by)
+      _from_rbexpr(
+        _rbexpr.rolling_min_by(by, window_size, min_periods, closed)
+      )
+    end
+
     # Apply a rolling min (moving min) over the values in this array.
     #
     # A window of length `window_size` will traverse the array. The values that fill
@@ -3962,9 +4065,20 @@ module Polars
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
       )
+      if !by.nil?
+        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
+        return rolling_min_by(
+          by: by,
+          window_size: window_size,
+          min_periods: min_periods,
+          closed: closed || "right",
+          warn_if_unsorted: warn_if_unsorted
+        )
+      end
+      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_min(
-          window_size, weights, min_periods, center, by, closed
+          window_size, weights, min_periods, center
         )
       )
     end
@@ -4051,9 +4165,20 @@ module Polars
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
       )
+      if !by.nil?
+        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
+        return rolling_max_by(
+          by: by,
+          window_size: window_size,
+          min_periods: min_periods,
+          closed: closed || "right",
+          warn_if_unsorted: warn_if_unsorted
+        )
+      end
+      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_max(
-          window_size, weights, min_periods, center, by, closed
+          window_size, weights, min_periods, center
         )
       )
     end
@@ -4140,9 +4265,20 @@ module Polars
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
       )
+      if !by.nil?
+        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
+        return rolling_mean_by(
+          by: by,
+          window_size: window_size,
+          min_periods: min_periods,
+          closed: closed || "right",
+          warn_if_unsorted: warn_if_unsorted
+        )
+      end
+      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_mean(
-          window_size, weights, min_periods, center, by, closed
+          window_size, weights, min_periods, center
         )
       )
     end
@@ -4229,9 +4365,20 @@ module Polars
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
       )
+      if !by.nil?
+        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
+        return rolling_sum_by(
+          by: by,
+          window_size: window_size,
+          min_periods: min_periods,
+          closed: closed || "right",
+          warn_if_unsorted: warn_if_unsorted
+        )
+      end
+      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_sum(
-          window_size, weights, min_periods, center, by, closed
+          window_size, weights, min_periods, center
         )
       )
     end
@@ -4320,9 +4467,21 @@ module Polars
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
       )
+      if !by.nil?
+        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
+        return rolling_std_by(
+          by: by,
+          window_size: window_size,
+          min_periods: min_periods,
+          closed: closed || "right",
+          ddof: ddof,
+          warn_if_unsorted: warn_if_unsorted
+        )
+      end
+      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_std(
-          window_size, weights, min_periods, center, by, closed, ddof, warn_if_unsorted
+          window_size, weights, min_periods, center, ddof
         )
       )
     end
@@ -4411,9 +4570,21 @@ module Polars
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
       )
+      if !by.nil?
+        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
+        return rolling_var_by(
+          by: by,
+          window_size: window_size,
+          min_periods: min_periods,
+          closed: closed || "right",
+          ddof: ddof,
+          warn_if_unsorted: warn_if_unsorted
+        )
+      end
+      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_var(
-          window_size, weights, min_periods, center, by, closed, ddof, warn_if_unsorted
+          window_size, weights, min_periods, center, ddof
         )
       )
     end
@@ -4497,9 +4668,20 @@ module Polars
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
       )
+      if !by.nil?
+        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
+        return rolling_median_by(
+          by: by,
+          window_size: window_size,
+          min_periods: min_periods,
+          closed: closed || "right",
+          warn_if_unsorted: warn_if_unsorted
+        )
+      end
+      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_median(
-          window_size, weights, min_periods, center, by, closed, warn_if_unsorted
+          window_size, weights, min_periods, center
         )
       )
     end
@@ -4589,9 +4771,21 @@ module Polars
       window_size, min_periods = _prepare_rolling_window_args(
         window_size, min_periods
       )
+      if !by.nil?
+        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
+        return rolling_quantile_by(
+          quantile,
+          by: by,
+          window_size: window_size,
+          min_periods: min_periods,
+          closed: closed || "right",
+          warn_if_unsorted: warn_if_unsorted
+        )
+      end
+      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_quantile(
-          quantile, interpolation, window_size, weights, min_periods, center, by, closed, warn_if_unsorted
+          quantile, interpolation, window_size, weights, min_periods, center
         )
       )
     end
@@ -6123,6 +6317,10 @@ module Polars
         min_periods = 1
       end
       [window_size, min_periods]
+    end
+
+    def _prepare_rolling_by_window_args(window_size)
+      window_size
     end
   end
 end

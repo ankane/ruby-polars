@@ -48,7 +48,7 @@ impl RbLazyFrame {
         // in this scope
         let json = unsafe { std::mem::transmute::<&'_ str, &'static str>(json.as_str()) };
 
-        let lp = serde_json::from_str::<LogicalPlan>(json)
+        let lp = serde_json::from_str::<DslPlan>(json)
             .map_err(|err| RbValueError::new_err(format!("{:?}", err)))?;
         Ok(LazyFrame::from(lp).into())
     }
@@ -63,7 +63,10 @@ impl RbLazyFrame {
         row_index: Option<(String, IdxSize)>,
     ) -> RbResult<Self> {
         let batch_size = batch_size.map(|v| v.0);
-        let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
+        let row_index = row_index.map(|(name, offset)| RowIndex {
+            name: Arc::from(name.as_str()),
+            offset,
+        });
 
         let lf = LazyJsonLineReader::new(path)
             .with_infer_schema_length(infer_schema_length)
@@ -107,7 +110,10 @@ impl RbLazyFrame {
         let quote_char = quote_char.map(|s| s.as_bytes()[0]);
         let separator = separator.as_bytes()[0];
         let eol_char = eol_char.as_bytes()[0];
-        let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
+        let row_index = row_index.map(|(name, offset)| RowIndex {
+            name: Arc::from(name.as_str()),
+            offset,
+        });
 
         let overwrite_dtype = overwrite_dtype.map(|overwrite_dtype| {
             overwrite_dtype
@@ -119,17 +125,17 @@ impl RbLazyFrame {
         let r = LazyCsvReader::new(path)
             .with_infer_schema_length(infer_schema_length)
             .with_separator(separator)
-            .has_header(has_header)
+            .with_has_header(has_header)
             .with_ignore_errors(ignore_errors)
             .with_skip_rows(skip_rows)
             .with_n_rows(n_rows)
             .with_cache(cache)
-            .with_dtype_overwrite(overwrite_dtype.as_ref())
+            .with_dtype_overwrite(overwrite_dtype.map(Arc::new))
             // TODO add with_schema
-            .low_memory(low_memory)
+            .with_low_memory(low_memory)
             .with_comment_prefix(comment_prefix.as_deref())
             .with_quote_char(quote_char)
-            .with_end_of_line_char(eol_char)
+            .with_eol_char(eol_char)
             .with_rechunk(rechunk)
             .with_skip_rows_after_header(skip_rows_after_header)
             .with_encoding(encoding.0)
@@ -137,7 +143,7 @@ impl RbLazyFrame {
             .with_try_parse_dates(try_parse_dates)
             .with_null_values(null_values)
             // TODO add with_missing_is_null
-            .truncate_ragged_lines(truncate_ragged_lines);
+            .with_truncate_ragged_lines(truncate_ragged_lines);
 
         if let Some(_lambda) = with_schema_modify {
             todo!();
@@ -159,6 +165,7 @@ impl RbLazyFrame {
         use_statistics: bool,
         hive_partitioning: bool,
         hive_schema: Option<Wrap<Schema>>,
+        glob: bool,
     ) -> RbResult<Self> {
         let parallel = parallel.0;
         let hive_schema = hive_schema.map(|s| Arc::new(s.0));
@@ -171,7 +178,10 @@ impl RbLazyFrame {
                 .ok_or_else(|| RbValueError::new_err("expected a path argument".to_string()))?
         };
 
-        let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
+        let row_index = row_index.map(|(name, offset)| RowIndex {
+            name: Arc::from(name.as_str()),
+            offset,
+        });
         let hive_options = HiveOptions {
             enabled: hive_partitioning,
             schema: hive_schema,
@@ -187,6 +197,7 @@ impl RbLazyFrame {
             cloud_options: None,
             use_statistics,
             hive_options,
+            glob,
         };
 
         let lf = if path.is_some() {
@@ -206,7 +217,11 @@ impl RbLazyFrame {
         row_index: Option<(String, IdxSize)>,
         memory_map: bool,
     ) -> RbResult<Self> {
-        let row_index = row_index.map(|(name, offset)| RowIndex { name, offset });
+        let row_index = row_index.map(|(name, offset)| RowIndex {
+            name: Arc::from(name.as_str()),
+            offset,
+        });
+
         let args = ScanArgsIpc {
             n_rows,
             cache,
@@ -226,8 +241,11 @@ impl RbLazyFrame {
         Ok(())
     }
 
-    pub fn describe_plan(&self) -> String {
-        self.ldf.describe_plan()
+    pub fn describe_plan(&self) -> RbResult<String> {
+        self.ldf
+            .describe_plan()
+            .map_err(RbPolarsErr::from)
+            .map_err(Into::into)
     }
 
     pub fn describe_optimized_plan(&self) -> RbResult<String> {
@@ -641,58 +659,56 @@ impl RbLazyFrame {
         ldf.fill_nan(fill_value.inner.clone()).into()
     }
 
-    pub fn min(&self) -> RbResult<Self> {
+    pub fn min(&self) -> Self {
         let ldf = self.ldf.clone();
-        let out = ldf.min().map_err(RbPolarsErr::from)?;
-        Ok(out.into())
+        let out = ldf.min();
+        out.into()
     }
 
-    pub fn max(&self) -> RbResult<Self> {
+    pub fn max(&self) -> Self {
         let ldf = self.ldf.clone();
-        let out = ldf.max().map_err(RbPolarsErr::from)?;
-        Ok(out.into())
+        let out = ldf.max();
+        out.into()
     }
 
-    pub fn sum(&self) -> RbResult<Self> {
+    pub fn sum(&self) -> Self {
         let ldf = self.ldf.clone();
-        let out = ldf.sum().map_err(RbPolarsErr::from)?;
-        Ok(out.into())
+        let out = ldf.sum();
+        out.into()
     }
 
-    pub fn mean(&self) -> RbResult<Self> {
+    pub fn mean(&self) -> Self {
         let ldf = self.ldf.clone();
-        let out = ldf.mean().map_err(RbPolarsErr::from)?;
-        Ok(out.into())
+        let out = ldf.mean();
+        out.into()
     }
 
-    pub fn std(&self, ddof: u8) -> RbResult<Self> {
+    pub fn std(&self, ddof: u8) -> Self {
         let ldf = self.ldf.clone();
-        let out = ldf.std(ddof).map_err(RbPolarsErr::from)?;
-        Ok(out.into())
+        let out = ldf.std(ddof);
+        out.into()
     }
 
-    pub fn var(&self, ddof: u8) -> RbResult<Self> {
+    pub fn var(&self, ddof: u8) -> Self {
         let ldf = self.ldf.clone();
-        let out = ldf.var(ddof).map_err(RbPolarsErr::from)?;
-        Ok(out.into())
+        let out = ldf.var(ddof);
+        out.into()
     }
 
-    pub fn median(&self) -> RbResult<Self> {
+    pub fn median(&self) -> Self {
         let ldf = self.ldf.clone();
-        let out = ldf.median().map_err(RbPolarsErr::from)?;
-        Ok(out.into())
+        let out = ldf.median();
+        out.into()
     }
 
     pub fn quantile(
         &self,
         quantile: &RbExpr,
         interpolation: Wrap<QuantileInterpolOptions>,
-    ) -> RbResult<Self> {
+    ) -> Self {
         let ldf = self.ldf.clone();
-        let out = ldf
-            .quantile(quantile.inner.clone(), interpolation.0)
-            .map_err(RbPolarsErr::from)?;
-        Ok(out.into())
+        let out = ldf.quantile(quantile.inner.clone(), interpolation.0);
+        out.into()
     }
 
     pub fn explode(&self, column: RArray) -> RbResult<Self> {

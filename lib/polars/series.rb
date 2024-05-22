@@ -1594,7 +1594,7 @@ module Polars
     #   #         4
     #   #         3
     #   # ]
-    def top_k(k: 5)
+    def top_k(k: 5, nulls_last: false, multithreaded: true)
       super
     end
 
@@ -1616,7 +1616,7 @@ module Polars
     #   #         2
     #   #         3
     #   # ]
-    def bottom_k(k: 5)
+    def bottom_k(k: 5, nulls_last: false, multithreaded: true)
       super
     end
 

@@ -72,12 +72,14 @@ module Polars
       file,
       has_header: true,
       columns: nil,
-      sep: str = ",",
+      sep: ",",
       comment_char: nil,
       quote_char: '"',
       skip_rows: 0,
       dtypes: nil,
+      schema: nil,
       null_values: nil,
+      missing_utf8_is_empty_string: false,
       ignore_errors: false,
       parse_dates: false,
       n_threads: nil,
@@ -92,7 +94,10 @@ module Polars
       row_count_offset: 0,
       sample_size: 1024,
       eol_char: "\n",
-      truncate_ragged_lines: false
+      raise_if_empty: true,
+      truncate_ragged_lines: false,
+      decimal_comma: false,
+      glob: true
     )
       if Utils.pathlike?(file)
         path = Utils.normalise_filepath(file)
@@ -140,6 +145,7 @@ module Polars
           skip_rows: skip_rows,
           dtypes: dtypes_dict,
           null_values: null_values,
+          missing_utf8_is_empty_string: missing_utf8_is_empty_string,
           ignore_errors: ignore_errors,
           infer_schema_length: infer_schema_length,
           n_rows: n_rows,
@@ -149,7 +155,9 @@ module Polars
           row_count_name: row_count_name,
           row_count_offset: row_count_offset,
           eol_char: eol_char,
-          truncate_ragged_lines: truncate_ragged_lines
+          truncate_ragged_lines: truncate_ragged_lines,
+          decimal_comma: decimal_comma,
+          glob: glob
         )
         if columns.nil?
           return _from_rbdf(scan.collect._df)
@@ -184,12 +192,16 @@ module Polars
           comment_char,
           quote_char,
           processed_null_values,
+          missing_utf8_is_empty_string,
           parse_dates,
           skip_rows_after_header,
           Utils._prepare_row_count_args(row_count_name, row_count_offset),
           sample_size,
           eol_char,
-          truncate_ragged_lines
+          raise_if_empty,
+          truncate_ragged_lines,
+          decimal_comma,
+          schema
         )
       )
     end
@@ -1838,16 +1850,16 @@ module Polars
     #   df.with_row_index
     #   # =>
     #   # shape: (3, 3)
-    #   # ┌────────┬─────┬─────┐
-    #   # │ row_nr ┆ a   ┆ b   │
-    #   # │ ---    ┆ --- ┆ --- │
-    #   # │ u32    ┆ i64 ┆ i64 │
-    #   # ╞════════╪═════╪═════╡
-    #   # │ 0      ┆ 1   ┆ 2   │
-    #   # │ 1      ┆ 3   ┆ 4   │
-    #   # │ 2      ┆ 5   ┆ 6   │
-    #   # └────────┴─────┴─────┘
-    def with_row_index(name: "row_nr", offset: 0)
+    #   # ┌───────┬─────┬─────┐
+    #   # │ index ┆ a   ┆ b   │
+    #   # │ ---   ┆ --- ┆ --- │
+    #   # │ u32   ┆ i64 ┆ i64 │
+    #   # ╞═══════╪═════╪═════╡
+    #   # │ 0     ┆ 1   ┆ 2   │
+    #   # │ 1     ┆ 3   ┆ 4   │
+    #   # │ 2     ┆ 5   ┆ 6   │
+    #   # └───────┴─────┴─────┘
+    def with_row_index(name: "index", offset: 0)
       _from_rbdf(_df.with_row_index(name, offset))
     end
     alias_method :with_row_count, :with_row_index
@@ -2136,16 +2148,16 @@ module Polars
     #   )
     #   # =>
     #   # shape: (4, 3)
-    #   # ┌─────────────────────┬────────────┬───────────────────────────────────┐
-    #   # │ time                ┆ time_count ┆ time_agg_list                     │
-    #   # │ ---                 ┆ ---        ┆ ---                               │
-    #   # │ datetime[μs]        ┆ u32        ┆ list[datetime[μs]]                │
-    #   # ╞═════════════════════╪════════════╪═══════════════════════════════════╡
-    #   # │ 2021-12-16 00:00:00 ┆ 2          ┆ [2021-12-16 00:00:00, 2021-12-16… │
-    #   # │ 2021-12-16 01:00:00 ┆ 2          ┆ [2021-12-16 01:00:00, 2021-12-16… │
-    #   # │ 2021-12-16 02:00:00 ┆ 2          ┆ [2021-12-16 02:00:00, 2021-12-16… │
-    #   # │ 2021-12-16 03:00:00 ┆ 1          ┆ [2021-12-16 03:00:00]             │
-    #   # └─────────────────────┴────────────┴───────────────────────────────────┘
+    #   # ┌─────────────────────┬────────────┬─────────────────────────────────┐
+    #   # │ time                ┆ time_count ┆ time_agg_list                   │
+    #   # │ ---                 ┆ ---        ┆ ---                             │
+    #   # │ datetime[μs]        ┆ u32        ┆ list[datetime[μs]]              │
+    #   # ╞═════════════════════╪════════════╪═════════════════════════════════╡
+    #   # │ 2021-12-16 00:00:00 ┆ 2          ┆ [2021-12-16 00:00:00, 2021-12-… │
+    #   # │ 2021-12-16 01:00:00 ┆ 2          ┆ [2021-12-16 01:00:00, 2021-12-… │
+    #   # │ 2021-12-16 02:00:00 ┆ 2          ┆ [2021-12-16 02:00:00, 2021-12-… │
+    #   # │ 2021-12-16 03:00:00 ┆ 1          ┆ [2021-12-16 03:00:00]           │
+    #   # └─────────────────────┴────────────┴─────────────────────────────────┘
     #
     # @example When closed="both" the time values at the window boundaries belong to 2 groups.
     #   df.group_by_dynamic("time", every: "1h", closed: "both").agg(
@@ -3775,7 +3787,7 @@ module Polars
     #   # ┌─────────┐
     #   # │ literal │
     #   # │ ---     │
-    #   # │ i64     │
+    #   # │ i32     │
     #   # ╞═════════╡
     #   # │ 0       │
     #   # │ 0       │

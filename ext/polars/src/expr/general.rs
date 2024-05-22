@@ -288,12 +288,28 @@ impl RbExpr {
             .into()
     }
 
-    pub fn top_k(&self, k: &Self) -> Self {
-        self.inner.clone().top_k(k.inner.clone()).into()
+    pub fn top_k(&self, k: &Self, nulls_last: bool, multithreaded: bool) -> Self {
+        self.inner
+            .clone()
+            .top_k(
+                k.inner.clone(),
+                SortOptions::default()
+                    .with_nulls_last(nulls_last)
+                    .with_maintain_order(multithreaded),
+            )
+            .into()
     }
 
-    pub fn bottom_k(&self, k: &Self) -> Self {
-        self.inner.clone().bottom_k(k.inner.clone()).into()
+    pub fn bottom_k(&self, k: &Self, nulls_last: bool, multithreaded: bool) -> Self {
+        self.inner
+            .clone()
+            .bottom_k(
+                k.inner.clone(),
+                SortOptions::default()
+                    .with_nulls_last(nulls_last)
+                    .with_maintain_order(multithreaded),
+            )
+            .into()
     }
 
     pub fn peak_min(&self) -> Self {

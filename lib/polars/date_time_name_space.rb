@@ -66,6 +66,8 @@ module Polars
       if !out.nil?
         if s.dtype == Date
           return Utils._to_ruby_date(out.to_i)
+        elsif [Datetime, Duration, Time].include?(s.dtype)
+          return out
         else
           return Utils._to_ruby_datetime(out.to_i, s.time_unit)
         end
@@ -93,10 +95,12 @@ module Polars
     #   # => 2001-01-02 00:00:00 UTC
     def mean
       s = Utils.wrap_s(_s)
-      out = s.mean.to_i
+      out = s.mean
       if !out.nil?
         if s.dtype == Date
           return Utils._to_ruby_date(out.to_i)
+        elsif [Datetime, Duration, Time].include?(s.dtype)
+          return out
         else
           return Utils._to_ruby_datetime(out.to_i, s.time_unit)
         end

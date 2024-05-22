@@ -446,10 +446,10 @@ class SeriesTest < Minitest::Test
     assert_in_delta 2, s.quantile(0.5)
     assert_in_delta 3, s.quantile(1)
 
-    error = assert_raises(ArgumentError) do
+    error = assert_raises(RuntimeError) do
       Polars::Series.new([1, 2, 3]).quantile(2)
     end
-    assert_equal "invalid quantile", error.message
+    assert_equal "quantile should be between 0.0 and 1.0", error.message
   end
 
   # TODO improve

@@ -215,6 +215,7 @@ module Polars
         offset = "0ns"
       end
 
+      every = Utils.parse_as_expression(every, str_as_lit: true)
       Utils.wrap_expr(
         _rbexpr.dt_round(
           Utils._timedelta_to_pl_duration(every),

@@ -55,3 +55,35 @@ pub fn date_ranges(
     let time_unit = time_unit.map(|x| x.0);
     dsl::date_ranges(start, end, every, closed, time_unit, time_zone).into()
 }
+
+pub fn datetime_range(
+    start: &RbExpr,
+    end: &RbExpr,
+    every: String,
+    closed: Wrap<ClosedWindow>,
+    time_unit: Option<Wrap<TimeUnit>>,
+    time_zone: Option<TimeZone>,
+) -> RbExpr {
+    let start = start.inner.clone();
+    let end = end.inner.clone();
+    let every = Duration::parse(&every);
+    let closed = closed.0;
+    let time_unit = time_unit.map(|x| x.0);
+    dsl::datetime_range(start, end, every, closed, time_unit, time_zone).into()
+}
+
+pub fn datetime_ranges(
+    start: &RbExpr,
+    end: &RbExpr,
+    every: String,
+    closed: Wrap<ClosedWindow>,
+    time_unit: Option<Wrap<TimeUnit>>,
+    time_zone: Option<TimeZone>,
+) -> RbExpr {
+    let start = start.inner.clone();
+    let end = end.inner.clone();
+    let every = Duration::parse(&every);
+    let closed = closed.0;
+    let time_unit = time_unit.map(|x| x.0);
+    dsl::datetime_ranges(start, end, every, closed, time_unit, time_zone).into()
+}

@@ -74,8 +74,12 @@ impl RbExpr {
         self.inner.clone().dt().dst_offset().into()
     }
 
-    pub fn dt_round(&self, every: String, offset: String) -> Self {
-        self.inner.clone().dt().round(&every, &offset).into()
+    pub fn dt_round(&self, every: &Self, offset: String) -> Self {
+        self.inner
+            .clone()
+            .dt()
+            .round(every.inner.clone(), &offset)
+            .into()
     }
 
     pub fn dt_combine(&self, time: &Self, time_unit: Wrap<TimeUnit>) -> Self {

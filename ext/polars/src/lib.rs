@@ -205,8 +205,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("cast", method!(RbExpr::cast, 2))?;
     class.define_method("sort_with", method!(RbExpr::sort_with, 2))?;
     class.define_method("arg_sort", method!(RbExpr::arg_sort, 2))?;
-    class.define_method("top_k", method!(RbExpr::top_k, 1))?;
-    class.define_method("bottom_k", method!(RbExpr::bottom_k, 1))?;
+    class.define_method("top_k", method!(RbExpr::top_k, 3))?;
+    class.define_method("bottom_k", method!(RbExpr::bottom_k, 3))?;
     class.define_method("peak_min", method!(RbExpr::peak_min, 0))?;
     class.define_method("peak_max", method!(RbExpr::peak_max, 0))?;
     class.define_method("arg_max", method!(RbExpr::arg_max, 0))?;
@@ -421,14 +421,25 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("mode", method!(RbExpr::mode, 0))?;
     class.define_method("exclude", method!(RbExpr::exclude, 1))?;
     class.define_method("interpolate", method!(RbExpr::interpolate, 1))?;
-    class.define_method("rolling_sum", method!(RbExpr::rolling_sum, 6))?;
-    class.define_method("rolling_min", method!(RbExpr::rolling_min, 6))?;
-    class.define_method("rolling_max", method!(RbExpr::rolling_max, 6))?;
-    class.define_method("rolling_mean", method!(RbExpr::rolling_mean, 6))?;
-    class.define_method("rolling_std", method!(RbExpr::rolling_std, 8))?;
-    class.define_method("rolling_var", method!(RbExpr::rolling_var, 8))?;
-    class.define_method("rolling_median", method!(RbExpr::rolling_median, 7))?;
-    class.define_method("rolling_quantile", method!(RbExpr::rolling_quantile, 9))?;
+    class.define_method("rolling_sum", method!(RbExpr::rolling_sum, 4))?;
+    class.define_method("rolling_sum_by", method!(RbExpr::rolling_sum_by, 4))?;
+    class.define_method("rolling_min", method!(RbExpr::rolling_min, 4))?;
+    class.define_method("rolling_min_by", method!(RbExpr::rolling_min_by, 4))?;
+    class.define_method("rolling_max", method!(RbExpr::rolling_max, 4))?;
+    class.define_method("rolling_max_by", method!(RbExpr::rolling_max_by, 4))?;
+    class.define_method("rolling_mean", method!(RbExpr::rolling_mean, 4))?;
+    class.define_method("rolling_mean_by", method!(RbExpr::rolling_mean_by, 4))?;
+    class.define_method("rolling_std", method!(RbExpr::rolling_std, 5))?;
+    class.define_method("rolling_std_by", method!(RbExpr::rolling_std_by, 5))?;
+    class.define_method("rolling_var", method!(RbExpr::rolling_var, 5))?;
+    class.define_method("rolling_var_by", method!(RbExpr::rolling_var_by, 5))?;
+    class.define_method("rolling_median", method!(RbExpr::rolling_median, 4))?;
+    class.define_method("rolling_median_by", method!(RbExpr::rolling_median_by, 4))?;
+    class.define_method("rolling_quantile", method!(RbExpr::rolling_quantile, 6))?;
+    class.define_method(
+        "rolling_quantile_by",
+        method!(RbExpr::rolling_quantile_by, 6),
+    )?;
     class.define_method("rolling_skew", method!(RbExpr::rolling_skew, 2))?;
     class.define_method("lower_bound", method!(RbExpr::lower_bound, 0))?;
     class.define_method("upper_bound", method!(RbExpr::upper_bound, 0))?;
@@ -613,6 +624,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("date_range", function!(functions::range::date_range, 6))?;
     class.define_singleton_method("date_ranges", function!(functions::range::date_ranges, 6))?;
     class.define_singleton_method(
+        "datetime_range",
+        function!(functions::range::datetime_range, 6),
+    )?;
+    class.define_singleton_method(
+        "datetime_ranges",
+        function!(functions::range::datetime_ranges, 6),
+    )?;
+    class.define_singleton_method(
         "dtype_str_repr",
         function!(functions::misc::dtype_str_repr, 1),
     )?;
@@ -690,7 +709,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("new_from_csv", function!(RbLazyFrame::new_from_csv, -1))?;
     class.define_singleton_method(
         "new_from_parquet",
-        function!(RbLazyFrame::new_from_parquet, 11),
+        function!(RbLazyFrame::new_from_parquet, 12),
     )?;
     class.define_singleton_method("new_from_ipc", function!(RbLazyFrame::new_from_ipc, 6))?;
     class.define_method("write_json", method!(RbLazyFrame::write_json, 1))?;

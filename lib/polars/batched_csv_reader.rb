@@ -13,6 +13,7 @@ module Polars
       skip_rows: 0,
       dtypes: nil,
       null_values: nil,
+      missing_utf8_is_empty_string: false,
       ignore_errors: false,
       parse_dates: false,
       n_threads: nil,
@@ -28,7 +29,9 @@ module Polars
       sample_size: 1024,
       eol_char: "\n",
       new_columns: nil,
-      truncate_ragged_lines: false
+      raise_if_empty: true,
+      truncate_ragged_lines: false,
+      decimal_comma: false
     )
       if Utils.pathlike?(file)
         path = Utils.normalise_filepath(file)
@@ -72,12 +75,15 @@ module Polars
         comment_char,
         quote_char,
         processed_null_values,
+        missing_utf8_is_empty_string,
         parse_dates,
         skip_rows_after_header,
         Utils._prepare_row_count_args(row_count_name, row_count_offset),
         sample_size,
         eol_char,
-        truncate_ragged_lines
+        raise_if_empty,
+        truncate_ragged_lines,
+        decimal_comma
       )
       self.new_columns = new_columns
     end

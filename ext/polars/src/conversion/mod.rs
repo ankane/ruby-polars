@@ -18,6 +18,7 @@ use polars::io::avro::AvroCompression;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 use polars_core::utils::arrow::array::Array;
+use polars_core::utils::materialize_dyn_int;
 use polars_utils::total_ord::{TotalEq, TotalHash};
 use smartstring::alias::String as SmartString;
 
@@ -154,7 +155,7 @@ impl IntoValue for Wrap<DataType> {
                 let class = pl.const_get::<_, Value>("Float32").unwrap();
                 class.funcall("new", ()).unwrap()
             }
-            DataType::Float64 => {
+            DataType::Float64 | DataType::Unknown(UnknownKind::Float) => {
                 let class = pl.const_get::<_, Value>("Float64").unwrap();
                 class.funcall("new", ()).unwrap()
             }
@@ -168,7 +169,7 @@ impl IntoValue for Wrap<DataType> {
                 let class = pl.const_get::<_, Value>("Boolean").unwrap();
                 class.funcall("new", ()).unwrap()
             }
-            DataType::String => {
+            DataType::String | DataType::Unknown(UnknownKind::Str) => {
                 let class = pl.const_get::<_, Value>("String").unwrap();
                 class.funcall("new", ()).unwrap()
             }
@@ -242,7 +243,10 @@ impl IntoValue for Wrap<DataType> {
                 let class = pl.const_get::<_, Value>("Null").unwrap();
                 class.funcall("new", ()).unwrap()
             }
-            DataType::Unknown => {
+            DataType::Unknown(UnknownKind::Int(v)) => {
+                Wrap(materialize_dyn_int(v).dtype()).into_value()
+            }
+            DataType::Unknown(_) => {
                 let class = pl.const_get::<_, Value>("Unknown").unwrap();
                 class.funcall("new", ()).unwrap()
             }
@@ -310,7 +314,7 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Object" => DataType::Object(OBJECT_NAME, None),
                 "Polars::List" => DataType::List(Box::new(DataType::Null)),
                 "Polars::Null" => DataType::Null,
-                "Polars::Unknown" => DataType::Unknown,
+                "Polars::Unknown" => DataType::Unknown(Default::default()),
                 dt => {
                     return Err(RbValueError::new_err(format!(
                         "{dt} is not a correct polars DataType.",
@@ -350,7 +354,7 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Float32" => DataType::Float32,
                 "Polars::Float64" => DataType::Float64,
                 "Polars::Null" => DataType::Null,
-                "Polars::Unknown" => DataType::Unknown,
+                "Polars::Unknown" => DataType::Unknown(Default::default()),
                 "Polars::Duration" => {
                     let time_unit: Value = ob.funcall("time_unit", ()).unwrap();
                     let time_unit = Wrap::<TimeUnit>::try_convert(time_unit)?.0;
@@ -410,7 +414,7 @@ impl TryConvert for Wrap<DataType> {
                 "obj" => DataType::Object(OBJECT_NAME, None),
                 "list" => DataType::List(Box::new(DataType::Boolean)),
                 "null" => DataType::Null,
-                "unk" => DataType::Unknown,
+                "unk" => DataType::Unknown(Default::default()),
                 _ => {
                     return Err(RbValueError::new_err(format!(
                         "{} is not a supported DataType.",
@@ -733,8 +737,8 @@ impl TryConvert for Wrap<JoinType> {
         let parsed = match String::try_convert(ob)?.as_str() {
             "inner" => JoinType::Inner,
             "left" => JoinType::Left,
-            "outer" => JoinType::Outer { coalesce: false },
-            "outer_coalesce" => JoinType::Outer { coalesce: true },
+            "outer" => JoinType::Outer,
+            "outer_coalesce" => JoinType::Outer,
             "semi" => JoinType::Semi,
             "anti" => JoinType::Anti,
             "cross" => JoinType::Cross,
