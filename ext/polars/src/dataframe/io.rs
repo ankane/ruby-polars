@@ -233,6 +233,31 @@ impl RbDataFrame {
         Ok(RbDataFrame::new(df))
     }
 
+    pub fn read_ipc_stream(
+        rb_f: Value,
+        columns: Option<Vec<String>>,
+        projection: Option<Vec<usize>>,
+        n_rows: Option<usize>,
+        row_index: Option<(String, IdxSize)>,
+        rechunk: bool,
+    ) -> RbResult<Self> {
+        let row_index = row_index.map(|(name, offset)| RowIndex {
+            name: Arc::from(name.as_str()),
+            offset,
+        });
+        // rb_f = read_if_bytesio(rb_f);
+        let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
+        let df = IpcStreamReader::new(mmap_bytes_r)
+            .with_projection(projection)
+            .with_columns(columns)
+            .with_n_rows(n_rows)
+            .with_row_index(row_index)
+            .set_rechunk(rechunk)
+            .finish()
+            .map_err(RbPolarsErr::from)?;
+        Ok(RbDataFrame::new(df))
+    }
+
     pub fn read_avro(
         rb_f: Value,
         columns: Option<Vec<String>>,

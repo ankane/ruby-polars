@@ -2,6 +2,7 @@
 
 - Updated Polars to 0.40.0
 - Added `date_ranges` method to `Polars`
+- Added `read_ipc_stream` method to `Polars`
 - Added `write_ipc_stream` to `DataFrame`
 - Added `flags` method to `DataFrame`
 - Added support for keyword arguments to `agg` methods

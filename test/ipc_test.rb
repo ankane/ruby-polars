@@ -42,6 +42,7 @@ class IpcTest < Minitest::Test
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     output = df.write_ipc_stream(nil)
     assert_equal Encoding::BINARY, output.encoding
+    assert_equal df, Polars.read_ipc_stream(StringIO.new(output))
   end
 
   def test_sink_ipc
