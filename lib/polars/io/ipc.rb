@@ -87,10 +87,7 @@ module Polars
     # See "Streaming format" on https://arrow.apache.org/docs/python/ipc.html.
     #
     # @param source [Object]
-    #   Path to a file or a file-like object (by "file-like object" we refer to objects
-    #   that have a `read()` method, such as a file handler like the builtin `open`
-    #   function, or a `BytesIO` instance). If `fsspec` is installed, it will be used
-    #   to open remote files.
+    #   Path to a file or a file-like object.
     # @param columns [Array]
     #   Columns to select. Accepts a list of column indices (starting at zero) or a list
     #   of column names.
