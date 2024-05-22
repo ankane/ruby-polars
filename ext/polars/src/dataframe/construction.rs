@@ -21,55 +21,38 @@ impl RbDataFrame {
             }
             data.push(Row(row));
         }
-        finish_from_rows(data, infer_schema_length, schema.map(|wrap| wrap.0), None)
+        let schema = schema.map(|wrap| wrap.0);
+        finish_from_rows(data, schema, None, infer_schema_length)
     }
 
     pub fn from_hashes(
-        dicts: Value,
-        infer_schema_length: Option<usize>,
+        data: Value,
         schema: Option<Wrap<Schema>>,
         schema_overrides: Option<Wrap<Schema>>,
+        strict: bool,
+        infer_schema_length: Option<usize>,
     ) -> RbResult<Self> {
+        let schema = schema.map(|wrap| wrap.0);
         let schema_overrides = schema_overrides.map(|wrap| wrap.0);
 
-        let mut schema_columns = PlIndexSet::new();
-        if let Some(s) = &schema {
-            schema_columns.extend(s.0.iter_names().map(|n| n.to_string()))
-        }
-        let (rows, names) = dicts_to_rows(&dicts, infer_schema_length, schema_columns)?;
+        let names = get_schema_names(&data, schema.as_ref(), infer_schema_length)?;
+        let rows = dicts_to_rows(&data, &names, strict)?;
 
-        let rbdf = finish_from_rows(
-            rows,
-            infer_schema_length,
-            schema.map(|wrap| wrap.0),
-            schema_overrides,
-        )?;
+        let schema = schema.or_else(|| {
+            Some(columns_names_to_empty_schema(
+                names.iter().map(String::as_str),
+            ))
+        });
 
-        unsafe {
-            rbdf.df
-                .borrow_mut()
-                .get_columns_mut()
-                .iter_mut()
-                .zip(&names)
-                .for_each(|(s, name)| {
-                    s.rename(name);
-                });
-        }
-        let length = names.len();
-        if names.into_iter().collect::<PlHashSet<_>>().len() != length {
-            let err = PolarsError::SchemaMismatch("duplicate column names found".into());
-            Err(RbPolarsErr::from(err))?;
-        }
-
-        Ok(rbdf)
+        finish_from_rows(rows, schema, schema_overrides, infer_schema_length)
     }
 }
 
 fn finish_from_rows(
     rows: Vec<Row>,
-    infer_schema_length: Option<usize>,
     schema: Option<Schema>,
     schema_overrides: Option<Schema>,
+    infer_schema_length: Option<usize>,
 ) -> RbResult<RbDataFrame> {
     // Object builder must be registered
     crate::on_startup::register_object_builder();
@@ -134,45 +117,25 @@ fn erase_decimal_precision_scale(schema: &mut Schema) {
     }
 }
 
-fn dicts_to_rows(
-    records: &Value,
-    infer_schema_len: Option<usize>,
-    schema_columns: PlIndexSet<String>,
-) -> RbResult<(Vec<Row>, Vec<String>)> {
-    let infer_schema_len = infer_schema_len.map(|n| std::cmp::max(1, n));
-    let (dicts, len) = get_rbseq(*records)?;
+fn columns_names_to_empty_schema<'a, I>(column_names: I) -> Schema
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    let fields = column_names
+        .into_iter()
+        .map(|c| Field::new(c, DataType::Unknown(Default::default())));
+    Schema::from_iter(fields)
+}
 
-    let key_names = {
-        if !schema_columns.is_empty() {
-            schema_columns
-        } else {
-            let mut inferred_keys = PlIndexSet::new();
-            for d in dicts.each().take(infer_schema_len.unwrap_or(usize::MAX)) {
-                let d = d?;
-                let d = RHash::try_convert(d)?;
-
-                d.foreach(|name: Value, _value: Value| {
-                    if let Some(v) = Symbol::from_value(name) {
-                        inferred_keys.insert(v.name()?.into());
-                    } else {
-                        inferred_keys.insert(String::try_convert(name)?);
-                    };
-                    Ok(ForEach::Continue)
-                })?;
-            }
-            inferred_keys
-        }
-    };
-
+fn dicts_to_rows<'a>(data: &Value, names: &'a [String], _strict: bool) -> RbResult<Vec<Row<'a>>> {
+    let (data, len) = get_rbseq(*data)?;
     let mut rows = Vec::with_capacity(len);
-
-    for d in dicts.each() {
+    for d in data.each() {
         let d = d?;
         let d = RHash::try_convert(d)?;
 
-        let mut row = Vec::with_capacity(key_names.len());
-
-        for k in key_names.iter() {
+        let mut row = Vec::with_capacity(names.len());
+        for k in names.iter() {
             // TODO improve performance
             let val = match d.get(k.clone()).or_else(|| d.get(Symbol::new(k))) {
                 None => AnyValue::Null,
@@ -182,5 +145,42 @@ fn dicts_to_rows(
         }
         rows.push(Row(row))
     }
-    Ok((rows, key_names.into_iter().collect()))
+    Ok(rows)
+}
+
+fn get_schema_names(
+    data: &Value,
+    schema: Option<&Schema>,
+    infer_schema_length: Option<usize>,
+) -> RbResult<Vec<String>> {
+    if let Some(schema) = schema {
+        Ok(schema.iter_names().map(|n| n.to_string()).collect())
+    } else {
+        infer_schema_names_from_data(data, infer_schema_length)
+    }
+}
+
+fn infer_schema_names_from_data(
+    data: &Value,
+    infer_schema_length: Option<usize>,
+) -> RbResult<Vec<String>> {
+    let (data, data_len) = get_rbseq(*data)?;
+    let infer_schema_length = infer_schema_length
+        .map(|n| std::cmp::max(1, n))
+        .unwrap_or(data_len);
+
+    let mut names = PlIndexSet::new();
+    for d in data.each().take(infer_schema_length) {
+        let d = d?;
+        let d = RHash::try_convert(d)?;
+        d.foreach(|name: Value, _value: Value| {
+            if let Some(v) = Symbol::from_value(name) {
+                names.insert(v.name()?.into());
+            } else {
+                names.insert(String::try_convert(name)?);
+            };
+            Ok(ForEach::Continue)
+        })?;
+    }
+    Ok(names.into_iter().collect())
 }

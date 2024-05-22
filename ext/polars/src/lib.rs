@@ -61,8 +61,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("read_parquet", function!(RbDataFrame::read_parquet, 9))?;
     class.define_singleton_method("read_ipc", function!(RbDataFrame::read_ipc, 6))?;
     class.define_singleton_method("read_avro", function!(RbDataFrame::read_avro, 4))?;
-    class.define_singleton_method("read_rows", function!(RbDataFrame::from_rows, 3))?;
-    class.define_singleton_method("read_hashes", function!(RbDataFrame::from_hashes, 4))?;
+    class.define_singleton_method("from_rows", function!(RbDataFrame::from_rows, 3))?;
+    class.define_singleton_method("from_hashes", function!(RbDataFrame::from_hashes, 5))?;
     class.define_singleton_method("read_json", function!(RbDataFrame::read_json, 1))?;
     class.define_singleton_method("read_ndjson", function!(RbDataFrame::read_ndjson, 1))?;
     class.define_method("estimated_size", method!(RbDataFrame::estimated_size, 0))?;
