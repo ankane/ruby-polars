@@ -631,6 +631,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "datetime_ranges",
         function!(functions::range::datetime_ranges, 6),
     )?;
+    class.define_singleton_method("time_range", function!(functions::range::time_range, 4))?;
+    class.define_singleton_method("time_ranges", function!(functions::range::time_ranges, 4))?;
     class.define_singleton_method(
         "dtype_str_repr",
         function!(functions::misc::dtype_str_repr, 1),
