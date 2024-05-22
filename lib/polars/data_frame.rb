@@ -803,6 +803,47 @@ module Polars
       return_bytes ? file.string : nil
     end
 
+    # Write to Arrow IPC record batch stream.
+    #
+    # See "Streaming format" in https://arrow.apache.org/docs/python/ipc.html.
+    #
+    # @param file [Object]
+    #   Path or writable file-like object to which the IPC record batch data will
+    #   be written. If set to `None`, the output is returned as a BytesIO object.
+    # @param compression ['uncompressed', 'lz4', 'zstd']
+    #   Compression method. Defaults to "uncompressed".
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3, 4, 5],
+    #       "bar" => [6, 7, 8, 9, 10],
+    #       "ham" => ["a", "b", "c", "d", "e"]
+    #     }
+    #   )
+    #   df.write_ipc_stream("new_file.arrow")
+    def write_ipc_stream(
+      file,
+      compression: "uncompressed"
+    )
+      return_bytes = file.nil?
+      if return_bytes
+        file = StringIO.new
+        file.set_encoding(Encoding::BINARY)
+      elsif Utils.pathlike?(file)
+        file = Utils.normalize_filepath(file)
+      end
+
+      if compression.nil?
+        compression = "uncompressed"
+      end
+
+      _df.write_ipc_stream(file, compression)
+      return_bytes ? file.string : nil
+    end
+
     # Write to Apache Parquet file.
     #
     # @param file [String, Pathname, StringIO]

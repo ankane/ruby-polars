@@ -72,6 +72,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("write_ndjson", method!(RbDataFrame::write_ndjson, 1))?;
     class.define_method("write_csv", method!(RbDataFrame::write_csv, 10))?;
     class.define_method("write_ipc", method!(RbDataFrame::write_ipc, 2))?;
+    class.define_method(
+        "write_ipc_stream",
+        method!(RbDataFrame::write_ipc_stream, 2),
+    )?;
     class.define_method("row_tuple", method!(RbDataFrame::row_tuple, 1))?;
     class.define_method("row_tuples", method!(RbDataFrame::row_tuples, 0))?;
     class.define_method("to_numo", method!(RbDataFrame::to_numo, 0))?;

@@ -38,6 +38,12 @@ class IpcTest < Minitest::Test
     assert_equal Encoding::BINARY, output.encoding
   end
 
+  def test_write_ipc_stream
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    output = df.write_ipc_stream(nil)
+    assert_equal Encoding::BINARY, output.encoding
+  end
+
   def test_sink_ipc
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     path = temp_path

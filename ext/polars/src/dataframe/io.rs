@@ -390,6 +390,28 @@ impl RbDataFrame {
         Ok(())
     }
 
+    pub fn write_ipc_stream(
+        &self,
+        rb_f: Value,
+        compression: Wrap<Option<IpcCompression>>,
+    ) -> RbResult<()> {
+        if let Ok(s) = String::try_convert(rb_f) {
+            let f = std::fs::File::create(s).unwrap();
+            IpcStreamWriter::new(f)
+                .with_compression(compression.0)
+                .finish(&mut self.df.borrow_mut())
+                .map_err(RbPolarsErr::from)?
+        } else {
+            let mut buf = get_file_like(rb_f, true)?;
+
+            IpcStreamWriter::new(&mut buf)
+                .with_compression(compression.0)
+                .finish(&mut self.df.borrow_mut())
+                .map_err(RbPolarsErr::from)?;
+        }
+        Ok(())
+    }
+
     pub fn write_avro(
         &self,
         rb_f: Value,
