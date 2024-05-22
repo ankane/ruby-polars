@@ -2,6 +2,7 @@
 
 - Updated Polars to 0.40.0
 - Added `date_ranges` method to `Polars`
+- Added `flags` method to `DataFrame`
 - Added support for keyword arguments to `agg` methods
 - Aliased `apply` to `map_rows` for `DataFrame`
 - Changed default `name` for `with_row_index` from `row_nr` to `index`

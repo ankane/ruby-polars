@@ -154,6 +154,13 @@ module Polars
       _df.dtypes
     end
 
+    # Get flags that are set on the columns of this DataFrame.
+    #
+    # @return [Hash]
+    def flags
+      self.columns.to_h { |name| [name, self[name].flags] }
+    end
+
     # Get the schema.
     #
     # @return [Hash]

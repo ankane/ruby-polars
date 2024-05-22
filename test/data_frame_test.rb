@@ -140,6 +140,11 @@ class DataFrameTest < Minitest::Test
     assert_equal [Polars::Int64, Polars::String], df.dtypes
   end
 
+  def test_flags
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert df.flags
+  end
+
   def test_schema
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     expected = {"a" => Polars::Int64, "b" => Polars::String}
