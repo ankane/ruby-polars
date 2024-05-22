@@ -158,7 +158,7 @@ module Polars
     #
     # @return [Hash]
     def flags
-      self.columns.to_h { |name| [name, self[name].flags] }
+      columns.to_h { |name| [name, self[name].flags] }
     end
 
     # Get the schema.
