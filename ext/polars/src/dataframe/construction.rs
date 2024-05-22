@@ -8,7 +8,7 @@ use crate::rb_modules;
 use crate::{RbPolarsErr, RbResult, RbSeries};
 
 impl RbDataFrame {
-    pub fn read_rows(
+    pub fn from_rows(
         rb_rows: RArray,
         infer_schema_length: Option<usize>,
         schema: Option<Wrap<Schema>>,
@@ -25,7 +25,7 @@ impl RbDataFrame {
         finish_from_rows(rows, infer_schema_length, schema.map(|wrap| wrap.0), None)
     }
 
-    pub fn read_hashes(
+    pub fn from_hashes(
         dicts: Value,
         infer_schema_length: Option<usize>,
         schema: Option<Wrap<Schema>>,
@@ -130,7 +130,6 @@ fn finish_from_rows(
             }
         }
     }
-    let df =
-        DataFrame::from_rows_and_schema(&rows, &final_schema).map_err(RbPolarsErr::from)?;
+    let df = DataFrame::from_rows_and_schema(&rows, &final_schema).map_err(RbPolarsErr::from)?;
     Ok(df.into())
 }
