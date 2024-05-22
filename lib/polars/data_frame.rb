@@ -1785,10 +1785,7 @@ module Polars
     #   # │ 3   ┆ 8   ┆ c   │
     #   # └─────┴─────┴─────┘
     def drop_nulls(subset: nil)
-      if subset.is_a?(::String)
-        subset = [subset]
-      end
-      _from_rbdf(_df.drop_nulls(subset))
+      lazy.drop_nulls(subset: subset).collect(_eager: true)
     end
 
     # Offers a structured way to apply a sequence of user-defined functions (UDFs).

@@ -121,7 +121,7 @@ impl RbDataFrame {
         df.into()
     }
 
-    pub fn to_s(&self) -> String {
+    pub fn as_str(&self) -> String {
         format!("{}", self.df.borrow())
     }
 
@@ -172,15 +172,6 @@ impl RbDataFrame {
         self.df.borrow().width()
     }
 
-    pub fn hstack_mut(&self, columns: RArray) -> RbResult<()> {
-        let columns = to_series_collection(columns)?;
-        self.df
-            .borrow_mut()
-            .hstack_mut(&columns)
-            .map_err(RbPolarsErr::from)?;
-        Ok(())
-    }
-
     pub fn hstack(&self, columns: RArray) -> RbResult<Self> {
         let columns = to_series_collection(columns)?;
         let df = self
@@ -191,18 +182,11 @@ impl RbDataFrame {
         Ok(df.into())
     }
 
-    pub fn extend(&self, df: &RbDataFrame) -> RbResult<()> {
+    pub fn hstack_mut(&self, columns: RArray) -> RbResult<()> {
+        let columns = to_series_collection(columns)?;
         self.df
             .borrow_mut()
-            .extend(&df.df.borrow())
-            .map_err(RbPolarsErr::from)?;
-        Ok(())
-    }
-
-    pub fn vstack_mut(&self, df: &RbDataFrame) -> RbResult<()> {
-        self.df
-            .borrow_mut()
-            .vstack_mut(&df.df.borrow())
+            .hstack_mut(&columns)
             .map_err(RbPolarsErr::from)?;
         Ok(())
     }
@@ -216,6 +200,22 @@ impl RbDataFrame {
         Ok(df.into())
     }
 
+    pub fn vstack_mut(&self, df: &RbDataFrame) -> RbResult<()> {
+        self.df
+            .borrow_mut()
+            .vstack_mut(&df.df.borrow())
+            .map_err(RbPolarsErr::from)?;
+        Ok(())
+    }
+
+    pub fn extend(&self, df: &RbDataFrame) -> RbResult<()> {
+        self.df
+            .borrow_mut()
+            .extend(&df.df.borrow())
+            .map_err(RbPolarsErr::from)?;
+        Ok(())
+    }
+
     pub fn drop_in_place(&self, name: String) -> RbResult<RbSeries> {
         let s = self
             .df
@@ -223,20 +223,6 @@ impl RbDataFrame {
             .drop_in_place(&name)
             .map_err(RbPolarsErr::from)?;
         Ok(RbSeries::new(s))
-    }
-
-    pub fn drop_nulls(&self, subset: Option<Vec<String>>) -> RbResult<Self> {
-        let df = self
-            .df
-            .borrow()
-            .drop_nulls(subset.as_ref().map(|s| s.as_ref()))
-            .map_err(RbPolarsErr::from)?;
-        Ok(df.into())
-    }
-
-    pub fn drop(&self, name: String) -> RbResult<Self> {
-        let df = self.df.borrow().drop(&name).map_err(RbPolarsErr::from)?;
-        Ok(RbDataFrame::new(df))
     }
 
     pub fn select_at_idx(&self, idx: usize) -> Option<RbSeries> {

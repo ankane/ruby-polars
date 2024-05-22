@@ -90,7 +90,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("sample_n", method!(RbDataFrame::sample_n, 4))?;
     class.define_method("sample_frac", method!(RbDataFrame::sample_frac, 4))?;
     class.define_method("rechunk", method!(RbDataFrame::rechunk, 0))?;
-    class.define_method("to_s", method!(RbDataFrame::to_s, 0))?;
+    class.define_method("to_s", method!(RbDataFrame::as_str, 0))?;
     class.define_method("get_columns", method!(RbDataFrame::get_columns, 0))?;
     class.define_method("columns", method!(RbDataFrame::columns, 0))?;
     class.define_method(
@@ -108,8 +108,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("vstack_mut", method!(RbDataFrame::vstack_mut, 1))?;
     class.define_method("vstack", method!(RbDataFrame::vstack, 1))?;
     class.define_method("drop_in_place", method!(RbDataFrame::drop_in_place, 1))?;
-    class.define_method("drop_nulls", method!(RbDataFrame::drop_nulls, 1))?;
-    class.define_method("drop", method!(RbDataFrame::drop, 1))?;
     class.define_method("select_at_idx", method!(RbDataFrame::select_at_idx, 1))?;
     class.define_method(
         "get_column_index",
