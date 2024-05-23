@@ -1,8 +1,8 @@
-# Polars Ruby
+# Ruby Polars
 
 :fire: Blazingly fast DataFrames for Ruby, powered by [Polars](https://github.com/pola-rs/polars)
 
-[![Build Status](https://github.com/ankane/polars-ruby/actions/workflows/build.yml/badge.svg)](https://github.com/ankane/polars-ruby/actions)
+[![Build Status](https://github.com/ankane/ruby-polars/actions/workflows/build.yml/badge.svg)](https://github.com/ankane/ruby-polars/actions)
 
 ## Installation
 
@@ -420,16 +420,16 @@ View the [changelog](CHANGELOG.md)
 
 Everyone is encouraged to help improve this project. Here are a few ways you can help:
 
-- [Report bugs](https://github.com/ankane/polars-ruby/issues)
-- Fix bugs and [submit pull requests](https://github.com/ankane/polars-ruby/pulls)
+- [Report bugs](https://github.com/ankane/ruby-polars/issues)
+- Fix bugs and [submit pull requests](https://github.com/ankane/ruby-polars/pulls)
 - Write, clarify, or fix documentation
 - Suggest or add new features
 
 To get started with development:
 
 ```sh
-git clone https://github.com/ankane/polars-ruby.git
-cd polars-ruby
+git clone https://github.com/ankane/ruby-polars.git
+cd ruby-polars
 bundle install
 bundle exec rake compile
 bundle exec rake test

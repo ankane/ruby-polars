@@ -4,7 +4,7 @@ Gem::Specification.new do |spec|
   spec.name          = "polars-df"
   spec.version       = Polars::VERSION
   spec.summary       = "Blazingly fast DataFrames for Ruby"
-  spec.homepage      = "https://github.com/ankane/polars-ruby"
+  spec.homepage      = "https://github.com/ankane/ruby-polars"
   spec.license       = "MIT"
 
   spec.author        = "Andrew Kane"
