@@ -1,6 +1,6 @@
 [package]
 name = "polars"
-version = "0.10.0"
+version = "0.11.0"
 license = "MIT"
 authors = ["Andrew Kane <andrew@ankane.org>"]
 edition = "2021"

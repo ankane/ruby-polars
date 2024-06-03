@@ -1,4 +1,4 @@
-## 0.11.0 (unreleased)
+## 0.11.0 (2024-06-02)
 
 - Updated Polars to 0.40.0
 - Added `date_ranges` method to `Polars`
