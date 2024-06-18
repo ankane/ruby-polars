@@ -98,11 +98,11 @@ module Polars
     def self._to_ruby_datetime(value, time_unit = "ns", time_zone = nil)
       if time_zone.nil? || time_zone == ""
         if time_unit == "ns"
-          return ::Time.at(value / 1000000000, value % 1000000000, :nsec).utc
+          ::Time.at(value / 1000000000, value % 1000000000, :nsec).utc
         elsif time_unit == "us"
-          return ::Time.at(value / 1000000, value % 1000000, :usec).utc
+          ::Time.at(value / 1000000, value % 1000000, :usec).utc
         elsif time_unit == "ms"
-          return ::Time.at(value / 1000, value % 1000, :millisecond).utc
+          ::Time.at(value / 1000, value % 1000, :millisecond).utc
         else
           raise ArgumentError, "time_unit must be one of {{'ns', 'us', 'ms'}}, got #{time_unit}"
         end

@@ -271,9 +271,9 @@ module Polars
 
     def _assert_correct_input_type(left, right)
       if left.is_a?(DataFrame) && right.is_a?(DataFrame)
-        return false
+        false
       elsif left.is_a?(LazyFrame) && right.is_a?(DataFrame)
-        return true
+        true
       else
         raise_assertion_error(
           "inputs",
