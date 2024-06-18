@@ -4370,11 +4370,11 @@ module Polars
             rbseries = rbseries.cast(dtype, true)
           end
         end
-        return rbseries
+        rbseries
       elsif dtype == Struct
         struct_schema = dtype.is_a?(Struct) ? dtype.to_schema : nil
         empty = {}
-        return DataFrame.sequence_to_rbdf(
+        DataFrame.sequence_to_rbdf(
           values.map { |v| v.nil? ? empty : v },
           schema: struct_schema,
           orient: "row",
@@ -4405,7 +4405,7 @@ module Polars
           else
             s = Utils.wrap_s(rb_series).dt.cast_time_unit(time_unit)
           end
-          return s._s
+          s._s
         elsif defined?(Numo::NArray) && value.is_a?(Numo::NArray) && value.shape.length == 1
           raise Todo
         elsif ruby_dtype == ::Array
@@ -4419,11 +4419,11 @@ module Polars
             end
             return srs
           end
-          return sequence_from_anyvalue_or_object(name, values)
+          sequence_from_anyvalue_or_object(name, values)
         elsif ruby_dtype == Series
-          return RbSeries.new_series_list(name, values.map(&:_s), strict)
+          RbSeries.new_series_list(name, values.map(&:_s), strict)
         elsif ruby_dtype == RbSeries
-          return RbSeries.new_series_list(name, values, strict)
+          RbSeries.new_series_list(name, values, strict)
         else
           constructor =
             if value.is_a?(::String)
