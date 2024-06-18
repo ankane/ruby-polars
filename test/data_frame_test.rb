@@ -24,7 +24,7 @@ class DataFrameTest < Minitest::Test
   def test_new_array_series
     df = Polars::DataFrame.new([
       Polars::Series.new("a", [1, 2, 3]),
-      Polars::Series.new("b", ["one", "two", "three"]),
+      Polars::Series.new("b", ["one", "two", "three"])
     ])
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_frame expected, df

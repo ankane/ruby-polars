@@ -178,7 +178,7 @@ module Polars
 
       _scan_parquet_impl(
         source,
-        n_rows:n_rows,
+        n_rows: n_rows,
         cache: cache,
         parallel: parallel,
         rechunk: rechunk,

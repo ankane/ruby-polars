@@ -135,7 +135,7 @@ class GuideTest < Minitest::Test
       "fruits" => ["banana", "banana", "apple", "apple", "banana"],
       "B" => [5, 4, 3, 2, 1],
       "cars" => ["beetle", "audi", "beetle", "beetle", "beetle"],
-      "optional" => [28, 300, nil, 2, -30],
+      "optional" => [28, 300, nil, 2, -30]
     })
     output df
 
@@ -171,7 +171,7 @@ class GuideTest < Minitest::Test
 
     output df.select([
       Polars.col("A").filter(Polars.col("fruits").str.contains("^b.*")).sum,
-      (Polars.col("B").filter(Polars.col("cars").str.contains("^b.*")).sum * Polars.col("B").sum).alias("some_compute()"),
+      (Polars.col("B").filter(Polars.col("cars").str.contains("^b.*")).sum * Polars.col("B").sum).alias("some_compute()")
     ])
 
     some_var = 1
@@ -243,12 +243,12 @@ class GuideTest < Minitest::Test
 
     output df.group_by("fruits")
       .agg([
-        Polars.col("B").filter(Polars.col("B") > 1).implode.keep_name,
+        Polars.col("B").filter(Polars.col("B") > 1).implode.keep_name
       ])
 
     output df.group_by("fruits")
       .agg([
-        Polars.col("B").filter(Polars.col("B") > 1).mean,
+        Polars.col("B").filter(Polars.col("B") > 1).mean
       ])
 
     output df.group_by("fruits")
@@ -283,7 +283,7 @@ class GuideTest < Minitest::Test
     df = Polars::DataFrame.new({
       "id" => [1, 2, 3],
       "color" => ["blue", "red", "green"],
-      "size" => ["small", "medium", "large"],
+      "size" => ["small", "medium", "large"]
     })
     output df
 

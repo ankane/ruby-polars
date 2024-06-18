@@ -222,7 +222,7 @@ module Polars
       if !dtypes.nil?
         if dtypes.is_a?(Hash)
           dtype_list = []
-          dtypes.each do|k, v|
+          dtypes.each do |k, v|
             dtype_list << [k, Utils.rb_type_to_dtype(v)]
           end
         elsif dtypes.is_a?(::Array)

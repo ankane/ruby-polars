@@ -237,7 +237,7 @@ module Polars
       exprs_wrapped = rbexprs.map { |e| Utils.wrap_expr(e) }
 
       # (Expr): use u32 as that will not cast to float as eagerly
-      Polars.cum_fold(Polars.lit(0).cast(UInt32), -> (a, b) { a + b }, exprs_wrapped).alias(
+      Polars.cum_fold(Polars.lit(0).cast(UInt32), ->(a, b) { a + b }, exprs_wrapped).alias(
         "cum_sum"
       )
     end
