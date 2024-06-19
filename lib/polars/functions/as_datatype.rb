@@ -93,22 +93,32 @@ module Polars
 
     # Collect several columns into a Series of dtype Struct.
     #
-    # @param exprs [Object]
-    #   Columns/Expressions to collect into a Struct
+    # @param exprs [Array]
+    #   Column(s) to collect into a struct column, specified as positional arguments.
+    #   Accepts expression input. Strings are parsed as column names,
+    #   other non-expression inputs are parsed as literals.
+    # @param schema [Hash]
+    #   Optional schema that explicitly defines the struct field dtypes. If no columns
+    #   or expressions are provided, schema keys are used to define columns.
     # @param eager [Boolean]
-    #   Evaluate immediately
+    #   Evaluate immediately and return a `Series`. If set to `false` (default),
+    #   return an expression instead.
+    # @param named_exprs [Hash]
+    #   Additional columns to collect into the struct column, specified as keyword
+    #   arguments. The columns will be renamed to the keyword used.
     #
     # @return [Object]
     #
     # @example
-    #   Polars::DataFrame.new(
+    #   df = Polars::DataFrame.new(
     #     {
     #       "int" => [1, 2],
     #       "str" => ["a", "b"],
     #       "bool" => [true, nil],
     #       "list" => [[1, 2], [3]],
     #     }
-    #   ).select([Polars.struct(Polars.all).alias("my_struct")])
+    #   )
+    #   df.select([Polars.struct(Polars.all).alias("my_struct")])
     #   # =>
     #   # shape: (2, 1)
     #   # ┌─────────────────────┐
@@ -120,29 +130,44 @@ module Polars
     #   # │ {2,"b",null,[3]}    │
     #   # └─────────────────────┘
     #
-    # @example Only collect specific columns as a struct:
-    #   df = Polars::DataFrame.new(
-    #     {"a" => [1, 2, 3, 4], "b" => ["one", "two", "three", "four"], "c" => [9, 8, 7, 6]}
-    #   )
-    #   df.with_column(Polars.struct(Polars.col(["a", "b"])).alias("a_and_b"))
+    # @example Collect selected columns into a struct by either passing a list of columns, or by specifying each column as a positional argument.
+    #   df.select(Polars.struct("int", false).alias("my_struct"))
     #   # =>
-    #   # shape: (4, 4)
-    #   # ┌─────┬───────┬─────┬─────────────┐
-    #   # │ a   ┆ b     ┆ c   ┆ a_and_b     │
-    #   # │ --- ┆ ---   ┆ --- ┆ ---         │
-    #   # │ i64 ┆ str   ┆ i64 ┆ struct[2]   │
-    #   # ╞═════╪═══════╪═════╪═════════════╡
-    #   # │ 1   ┆ one   ┆ 9   ┆ {1,"one"}   │
-    #   # │ 2   ┆ two   ┆ 8   ┆ {2,"two"}   │
-    #   # │ 3   ┆ three ┆ 7   ┆ {3,"three"} │
-    #   # │ 4   ┆ four  ┆ 6   ┆ {4,"four"}  │
-    #   # └─────┴───────┴─────┴─────────────┘
-    def struct(exprs, eager: false)
-      if eager
-        Polars.select(struct(exprs, eager: false)).to_series
+    #   # shape: (2, 1)
+    #   # ┌───────────┐
+    #   # │ my_struct │
+    #   # │ ---       │
+    #   # │ struct[2] │
+    #   # ╞═══════════╡
+    #   # │ {1,false} │
+    #   # │ {2,false} │
+    #   # └───────────┘
+    #
+    # @example Use keyword arguments to easily name each struct field.
+    #   df.select(Polars.struct(p: "int", q: "bool").alias("my_struct")).schema
+    #   # =>
+    #   # {"my_struct"=>Polars::Struct([Polars::Field("p", Polars::Int64)
+    #   # Polars::Field("q", Polars::Boolean)])}
+    def struct(*exprs, schema: nil, eager: false, **named_exprs)
+      rbexprs = Utils.parse_as_list_of_expressions(*exprs, **named_exprs)
+      expr = Utils.wrap_expr(Plr.as_struct(rbexprs))
+
+      if !schema.nil? && !schema.empty?
+        if !exprs.any?
+          # no columns or expressions provided; create one from schema keys
+          expr =
+            Utils.wrap_expr(
+              Plr.as_struct(Utils.parse_as_list_of_expressions(schema.keys))
+            )
+          expr = expr.cast(Struct.new(schema), strict: false)
+        end
       end
-      exprs = Utils.selection_to_rbexpr_list(exprs)
-      Utils.wrap_expr(Plr.as_struct(exprs))
+
+      if eager
+        Polars.select(expr).to_series
+      else
+        expr
+      end
     end
 
     # Horizontally concat Utf8 Series in linear time. Non-Utf8 columns are cast to Utf8.

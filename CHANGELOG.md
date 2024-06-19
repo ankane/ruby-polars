@@ -1,3 +1,7 @@
+## 0.11.1 (unreleased)
+
+- Improved `struct` method
+
 ## 0.11.0 (2024-06-02)
 
 - Updated Polars to 0.40.0
