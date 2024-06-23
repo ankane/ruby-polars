@@ -683,8 +683,8 @@ module Polars
       ddof: 1,
       propagate_nans: false
     )
-      a = Utils.parse_as_expression(a)
-      b = Utils.parse_as_expression(b)
+      a = Utils.parse_into_expression(a)
+      b = Utils.parse_into_expression(b)
 
       if method == "pearson"
         Utils.wrap_expr(Plr.pearson_corr(a, b, ddof))
@@ -728,8 +728,8 @@ module Polars
     #   # │ 3.0 │
     #   # └─────┘
     def cov(a, b, ddof: 1)
-      a = Utils.parse_as_expression(a)
-      b = Utils.parse_as_expression(b)
+      a = Utils.parse_into_expression(a)
+      b = Utils.parse_into_expression(b)
       Utils.wrap_expr(Plr.cov(a, b, ddof))
     end
 

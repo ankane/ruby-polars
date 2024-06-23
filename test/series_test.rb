@@ -637,7 +637,7 @@ class SeriesTest < Minitest::Test
 
   def test_is_datelike
     assert Polars::Series.new([Date.today]).is_datelike
-    assert Polars.date_range(DateTime.new(2020), DateTime.new(2023), "1y").is_datelike
+    assert Polars.datetime_range(DateTime.new(2020), DateTime.new(2023), "1y", eager: true).is_datelike
     refute Polars::Series.new([1]).is_datelike
   end
 

@@ -34,8 +34,8 @@ module Polars
         start = 0
       end
 
-      start = Utils.parse_as_expression(start)
-      stop = Utils.parse_as_expression(stop)
+      start = Utils.parse_into_expression(start)
+      stop = Utils.parse_into_expression(stop)
       dtype ||= Int64
       dtype = dtype.to_s if dtype.is_a?(Symbol)
       result = Utils.wrap_expr(Plr.int_range(start, stop, step, dtype)).alias("arange")

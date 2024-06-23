@@ -10,25 +10,23 @@ module Polars
       period,
       offset,
       closed,
-      by,
-      check_sorted
+      group_by
     )
-      period = Utils._timedelta_to_pl_duration(period)
-      offset = Utils._timedelta_to_pl_duration(offset)
+      period = Utils.parse_as_duration_string(period)
+      offset = Utils.parse_as_duration_string(offset)
 
       @df = df
       @time_column = index_column
       @period = period
       @offset = offset
       @closed = closed
-      @by = by
-      @check_sorted = check_sorted
+      @group_by = group_by
     end
 
     def agg(*aggs, **named_aggs)
       @df.lazy
         .group_by_rolling(
-          index_column: @time_column, period: @period, offset: @offset, closed: @closed, by: @by, check_sorted: @check_sorted
+          index_column: @time_column, period: @period, offset: @offset, closed: @closed, by: @group_by
         )
         .agg(*aggs, **named_aggs)
         .collect(no_optimization: true, string_cache: false)

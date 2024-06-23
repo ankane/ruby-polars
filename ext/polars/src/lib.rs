@@ -60,12 +60,15 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("read_csv", function!(RbDataFrame::read_csv, -1))?;
     class.define_singleton_method("read_parquet", function!(RbDataFrame::read_parquet, 9))?;
     class.define_singleton_method("read_ipc", function!(RbDataFrame::read_ipc, 6))?;
-    class.define_singleton_method("read_ipc_stream", function!(RbDataFrame::read_ipc_stream, 6))?;
+    class.define_singleton_method(
+        "read_ipc_stream",
+        function!(RbDataFrame::read_ipc_stream, 6),
+    )?;
     class.define_singleton_method("read_avro", function!(RbDataFrame::read_avro, 4))?;
     class.define_singleton_method("from_rows", function!(RbDataFrame::from_rows, 3))?;
     class.define_singleton_method("from_hashes", function!(RbDataFrame::from_hashes, 5))?;
-    class.define_singleton_method("read_json", function!(RbDataFrame::read_json, 1))?;
-    class.define_singleton_method("read_ndjson", function!(RbDataFrame::read_ndjson, 1))?;
+    class.define_singleton_method("read_json", function!(RbDataFrame::read_json, 4))?;
+    class.define_singleton_method("read_ndjson", function!(RbDataFrame::read_ndjson, 4))?;
     class.define_method("estimated_size", method!(RbDataFrame::estimated_size, 0))?;
     class.define_method("dtype_strings", method!(RbDataFrame::dtype_strings, 0))?;
     class.define_method("write_avro", method!(RbDataFrame::write_avro, 2))?;
@@ -135,7 +138,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("equals", method!(RbDataFrame::equals, 2))?;
     class.define_method("with_row_index", method!(RbDataFrame::with_row_index, 2))?;
     class.define_method("_clone", method!(RbDataFrame::clone, 0))?;
-    class.define_method("melt", method!(RbDataFrame::melt, 4))?;
+    class.define_method("unpivot", method!(RbDataFrame::unpivot, 4))?;
     class.define_method("pivot_expr", method!(RbDataFrame::pivot_expr, 7))?;
     class.define_method("partition_by", method!(RbDataFrame::partition_by, 3))?;
     class.define_method("lazy", method!(RbDataFrame::lazy, 0))?;
@@ -149,7 +152,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("shrink_to_fit", method!(RbDataFrame::shrink_to_fit, 0))?;
     class.define_method("hash_rows", method!(RbDataFrame::hash_rows, 4))?;
     class.define_method("transpose", method!(RbDataFrame::transpose, 2))?;
-    class.define_method("upsample", method!(RbDataFrame::upsample, 5))?;
+    class.define_method("upsample", method!(RbDataFrame::upsample, 4))?;
     class.define_method("to_struct", method!(RbDataFrame::to_struct, 1))?;
     class.define_method("unnest", method!(RbDataFrame::unnest, 1))?;
     class.define_method("clear", method!(RbDataFrame::clear, 0))?;
@@ -202,14 +205,16 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("agg_groups", method!(RbExpr::agg_groups, 0))?;
     class.define_method("count", method!(RbExpr::count, 0))?;
     class.define_method("len", method!(RbExpr::len, 0))?;
-    class.define_method("value_counts", method!(RbExpr::value_counts, 2))?;
+    class.define_method("value_counts", method!(RbExpr::value_counts, 4))?;
     class.define_method("unique_counts", method!(RbExpr::unique_counts, 0))?;
     class.define_method("null_count", method!(RbExpr::null_count, 0))?;
     class.define_method("cast", method!(RbExpr::cast, 2))?;
     class.define_method("sort_with", method!(RbExpr::sort_with, 2))?;
     class.define_method("arg_sort", method!(RbExpr::arg_sort, 2))?;
-    class.define_method("top_k", method!(RbExpr::top_k, 3))?;
-    class.define_method("bottom_k", method!(RbExpr::bottom_k, 3))?;
+    class.define_method("top_k", method!(RbExpr::top_k, 1))?;
+    class.define_method("top_k_by", method!(RbExpr::top_k_by, 3))?;
+    class.define_method("bottom_k", method!(RbExpr::bottom_k, 1))?;
+    class.define_method("bottom_k_by", method!(RbExpr::bottom_k_by, 3))?;
     class.define_method("peak_min", method!(RbExpr::peak_min, 0))?;
     class.define_method("peak_max", method!(RbExpr::peak_max, 0))?;
     class.define_method("arg_max", method!(RbExpr::arg_max, 0))?;
@@ -290,7 +295,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_strip_prefix", method!(RbExpr::str_strip_prefix, 1))?;
     class.define_method("str_strip_suffix", method!(RbExpr::str_strip_suffix, 1))?;
     class.define_method("str_slice", method!(RbExpr::str_slice, 2))?;
-    class.define_method("str_explode", method!(RbExpr::str_explode, 0))?;
     class.define_method("str_to_uppercase", method!(RbExpr::str_to_uppercase, 0))?;
     class.define_method("str_to_lowercase", method!(RbExpr::str_to_lowercase, 0))?;
     class.define_method("str_len_bytes", method!(RbExpr::str_len_bytes, 0))?;
@@ -364,24 +368,24 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("list_len", method!(RbExpr::list_len, 0))?;
     class.define_method("list_contains", method!(RbExpr::list_contains, 1))?;
     class.define_method("list_count_matches", method!(RbExpr::list_count_matches, 1))?;
-    class.define_method("year", method!(RbExpr::dt_year, 0))?;
+    class.define_method("dt_year", method!(RbExpr::dt_year, 0))?;
     class.define_method("dt_is_leap_year", method!(RbExpr::dt_is_leap_year, 0))?;
-    class.define_method("iso_year", method!(RbExpr::dt_iso_year, 0))?;
-    class.define_method("quarter", method!(RbExpr::dt_quarter, 0))?;
-    class.define_method("month", method!(RbExpr::dt_month, 0))?;
-    class.define_method("week", method!(RbExpr::dt_week, 0))?;
-    class.define_method("weekday", method!(RbExpr::dt_weekday, 0))?;
-    class.define_method("day", method!(RbExpr::dt_day, 0))?;
-    class.define_method("ordinal_day", method!(RbExpr::dt_ordinal_day, 0))?;
+    class.define_method("dt_iso_year", method!(RbExpr::dt_iso_year, 0))?;
+    class.define_method("dt_quarter", method!(RbExpr::dt_quarter, 0))?;
+    class.define_method("dt_month", method!(RbExpr::dt_month, 0))?;
+    class.define_method("dt_week", method!(RbExpr::dt_week, 0))?;
+    class.define_method("dt_weekday", method!(RbExpr::dt_weekday, 0))?;
+    class.define_method("dt_day", method!(RbExpr::dt_day, 0))?;
+    class.define_method("dt_ordinal_day", method!(RbExpr::dt_ordinal_day, 0))?;
     class.define_method("dt_time", method!(RbExpr::dt_time, 0))?;
     class.define_method("dt_date", method!(RbExpr::dt_date, 0))?;
     class.define_method("dt_datetime", method!(RbExpr::dt_datetime, 0))?;
-    class.define_method("hour", method!(RbExpr::dt_hour, 0))?;
-    class.define_method("minute", method!(RbExpr::dt_minute, 0))?;
-    class.define_method("second", method!(RbExpr::dt_second, 0))?;
-    class.define_method("millisecond", method!(RbExpr::dt_millisecond, 0))?;
-    class.define_method("microsecond", method!(RbExpr::dt_microsecond, 0))?;
-    class.define_method("nanosecond", method!(RbExpr::dt_nanosecond, 0))?;
+    class.define_method("dt_hour", method!(RbExpr::dt_hour, 0))?;
+    class.define_method("dt_minute", method!(RbExpr::dt_minute, 0))?;
+    class.define_method("dt_second", method!(RbExpr::dt_second, 0))?;
+    class.define_method("dt_millisecond", method!(RbExpr::dt_millisecond, 0))?;
+    class.define_method("dt_microsecond", method!(RbExpr::dt_microsecond, 0))?;
+    class.define_method("dt_nanosecond", method!(RbExpr::dt_nanosecond, 0))?;
     class.define_method("dt_total_days", method!(RbExpr::dt_total_days, 0))?;
     class.define_method("dt_total_hours", method!(RbExpr::dt_total_hours, 0))?;
     class.define_method("dt_total_minutes", method!(RbExpr::dt_total_minutes, 0))?;
@@ -398,7 +402,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "dt_total_milliseconds",
         method!(RbExpr::dt_total_milliseconds, 0),
     )?;
-    class.define_method("timestamp", method!(RbExpr::dt_timestamp, 1))?;
+    class.define_method("dt_timestamp", method!(RbExpr::dt_timestamp, 1))?;
+    class.define_method("dt_to_string", method!(RbExpr::dt_to_string, 1))?;
     class.define_method("dt_offset_by", method!(RbExpr::dt_offset_by, 1))?;
     class.define_method("dt_epoch_seconds", method!(RbExpr::dt_epoch_seconds, 0))?;
     class.define_method("dt_with_time_unit", method!(RbExpr::dt_with_time_unit, 1))?;
@@ -411,12 +416,12 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "dt_replace_time_zone",
         method!(RbExpr::dt_replace_time_zone, 3),
     )?;
-    class.define_method("dt_truncate", method!(RbExpr::dt_truncate, 2))?;
+    class.define_method("dt_truncate", method!(RbExpr::dt_truncate, 1))?;
     class.define_method("dt_month_start", method!(RbExpr::dt_month_start, 0))?;
     class.define_method("dt_month_end", method!(RbExpr::dt_month_end, 0))?;
     class.define_method("dt_base_utc_offset", method!(RbExpr::dt_base_utc_offset, 0))?;
     class.define_method("dt_dst_offset", method!(RbExpr::dt_dst_offset, 0))?;
-    class.define_method("dt_round", method!(RbExpr::dt_round, 2))?;
+    class.define_method("dt_round", method!(RbExpr::dt_round, 1))?;
     class.define_method("dt_combine", method!(RbExpr::dt_combine, 2))?;
     class.define_method("map_batches", method!(RbExpr::map_batches, 4))?;
     class.define_method("dot", method!(RbExpr::dot, 1))?;
@@ -479,8 +484,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("pct_change", method!(RbExpr::pct_change, 1))?;
     class.define_method("skew", method!(RbExpr::skew, 1))?;
     class.define_method("kurtosis", method!(RbExpr::kurtosis, 2))?;
-    class.define_method("str_concat", method!(RbExpr::str_concat, 2))?;
-    class.define_method("cat_set_ordering", method!(RbExpr::cat_set_ordering, 1))?;
+    class.define_method("str_join", method!(RbExpr::str_join, 2))?;
     class.define_method("cat_get_categories", method!(RbExpr::cat_get_categories, 0))?;
     class.define_method("reshape", method!(RbExpr::reshape, 1))?;
     class.define_method("cum_count", method!(RbExpr::cum_count, 1))?;
@@ -512,7 +516,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("entropy", method!(RbExpr::entropy, 2))?;
     class.define_method("_hash", method!(RbExpr::hash, 4))?;
     class.define_method("set_sorted_flag", method!(RbExpr::set_sorted_flag, 1))?;
-    class.define_method("replace", method!(RbExpr::replace, 4))?;
+    class.define_method("replace", method!(RbExpr::replace, 2))?;
+    class.define_method("replace_strict", method!(RbExpr::replace_strict, 4))?;
 
     // meta
     class.define_method("meta_pop", method!(RbExpr::meta_pop, 0))?;
@@ -624,8 +629,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(functions::io::read_parquet_schema, 1),
     )?;
     class.define_singleton_method("collect_all", function!(functions::lazy::collect_all, 1))?;
-    class.define_singleton_method("date_range", function!(functions::range::date_range, 6))?;
-    class.define_singleton_method("date_ranges", function!(functions::range::date_ranges, 6))?;
+    class.define_singleton_method("date_range", function!(functions::range::date_range, 4))?;
+    class.define_singleton_method("date_ranges", function!(functions::range::date_ranges, 4))?;
     class.define_singleton_method(
         "datetime_range",
         function!(functions::range::datetime_range, 6),
@@ -740,10 +745,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("select", method!(RbLazyFrame::select, 1))?;
     class.define_method("select_seq", method!(RbLazyFrame::select_seq, 1))?;
     class.define_method("group_by", method!(RbLazyFrame::group_by, 2))?;
-    class.define_method("rolling", method!(RbLazyFrame::rolling, 6))?;
+    class.define_method("rolling", method!(RbLazyFrame::rolling, 5))?;
     class.define_method(
         "group_by_dynamic",
-        method!(RbLazyFrame::group_by_dynamic, 10),
+        method!(RbLazyFrame::group_by_dynamic, 9),
     )?;
     class.define_method("with_context", method!(RbLazyFrame::with_context, 1))?;
     class.define_method("join_asof", method!(RbLazyFrame::join_asof, 11))?;
@@ -772,16 +777,13 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("drop_nulls", method!(RbLazyFrame::drop_nulls, 1))?;
     class.define_method("slice", method!(RbLazyFrame::slice, 2))?;
     class.define_method("tail", method!(RbLazyFrame::tail, 1))?;
-    class.define_method("melt", method!(RbLazyFrame::melt, 5))?;
+    class.define_method("unpivot", method!(RbLazyFrame::unpivot, 5))?;
     class.define_method("with_row_index", method!(RbLazyFrame::with_row_index, 2))?;
     class.define_method("drop", method!(RbLazyFrame::drop, 1))?;
     class.define_method("cast_all", method!(RbLazyFrame::cast_all, 2))?;
     class.define_method("_clone", method!(RbLazyFrame::clone, 0))?;
-    class.define_method("columns", method!(RbLazyFrame::columns, 0))?;
-    class.define_method("dtypes", method!(RbLazyFrame::dtypes, 0))?;
-    class.define_method("schema", method!(RbLazyFrame::schema, 0))?;
+    class.define_method("collect_schema", method!(RbLazyFrame::collect_schema, 0))?;
     class.define_method("unnest", method!(RbLazyFrame::unnest, 1))?;
-    class.define_method("width", method!(RbLazyFrame::width, 0))?;
     class.define_method("count", method!(RbLazyFrame::count, 0))?;
     class.define_method("merge_sorted", method!(RbLazyFrame::merge_sorted, 2))?;
 
@@ -803,8 +805,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("new_opt_f32", function!(RbSeries::new_opt_f32, 3))?;
     class.define_singleton_method("new_opt_f64", function!(RbSeries::new_opt_f64, 3))?;
     class.define_singleton_method(
-        "new_from_anyvalues",
-        function!(RbSeries::new_from_anyvalues, 3),
+        "new_from_any_values",
+        function!(RbSeries::new_from_any_values, 3),
     )?;
     class.define_singleton_method("new_str", function!(RbSeries::new_str, 3))?;
     class.define_singleton_method("new_binary", function!(RbSeries::new_binary, 3))?;
@@ -861,7 +863,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("div", method!(RbSeries::div, 1))?;
     class.define_method("rem", method!(RbSeries::rem, 1))?;
     class.define_method("sort", method!(RbSeries::sort, 3))?;
-    class.define_method("value_counts", method!(RbSeries::value_counts, 1))?;
+    class.define_method("value_counts", method!(RbSeries::value_counts, 4))?;
+    class.define_method("slice", method!(RbSeries::slice, 2))?;
     class.define_method("any", method!(RbSeries::any, 1))?;
     class.define_method("all", method!(RbSeries::all, 1))?;
     class.define_method("arg_min", method!(RbSeries::arg_min, 0))?;

@@ -6,12 +6,23 @@ module Polars
     #   Path to a file or a file-like object.
     #
     # @return [DataFrame]
-    def read_ndjson(source)
+    def read_ndjson(
+      source,
+      schema: nil,
+      schema_overrides: nil,
+      ignore_errors: false
+    )
       if Utils.pathlike?(source)
         source = Utils.normalize_filepath(source)
       end
 
-      rbdf = RbDataFrame.read_ndjson(source)
+      rbdf =
+        RbDataFrame.read_ndjson(
+          source,
+          ignore_errors,
+          schema,
+          schema_overrides
+        )
       Utils.wrap_df(rbdf)
     end
 
@@ -41,7 +52,7 @@ module Polars
     # @return [LazyFrame]
     def scan_ndjson(
       source,
-      infer_schema_length: 100,
+      infer_schema_length: N_INFER_DEFAULT,
       batch_size: 1024,
       n_rows: nil,
       low_memory: false,

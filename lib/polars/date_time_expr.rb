@@ -15,13 +15,11 @@ module Polars
     #
     # @param every [String]
     #   Every interval start and period length
-    # @param offset [String]
-    #   Offset the window
     #
     # @return [Expr]
     #
     # @note
-    #   The `every` and `offset` argument are created with the
+    #   The `every` argument is created with the
     #   the following small string formatting language:
     #
     #   1ns  # 1 nanosecond
@@ -38,17 +36,22 @@ module Polars
     #   eg: 3d12h4m25s  # 3 days, 12 hours, 4 minutes, and 25 seconds
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 2)
-    #   df = Polars.date_range(
-    #     start, stop, "225m", name: "dates"
-    #   ).to_frame
+    #   df = (
+    #     Polars.datetime_range(
+    #       DateTime.new(2001, 1, 1),
+    #       DateTime.new(2001, 1, 2),
+    #       "225m",
+    #       eager: true
+    #     )
+    #     .alias("datetime")
+    #     .to_frame
+    #   )
     #   # =>
     #   # shape: (7, 1)
     #   # ┌─────────────────────┐
-    #   # │ dates               │
+    #   # │ datetime            │
     #   # │ ---                 │
-    #   # │ datetime[μs]        │
+    #   # │ datetime[ns]        │
     #   # ╞═════════════════════╡
     #   # │ 2001-01-01 00:00:00 │
     #   # │ 2001-01-01 03:45:00 │
@@ -60,13 +63,13 @@ module Polars
     #   # └─────────────────────┘
     #
     # @example
-    #   df.select(Polars.col("dates").dt.truncate("1h"))
+    #   df.select(Polars.col("datetime").dt.truncate("1h"))
     #   # =>
     #   # shape: (7, 1)
     #   # ┌─────────────────────┐
-    #   # │ dates               │
+    #   # │ datetime            │
     #   # │ ---                 │
-    #   # │ datetime[μs]        │
+    #   # │ datetime[ns]        │
     #   # ╞═════════════════════╡
     #   # │ 2001-01-01 00:00:00 │
     #   # │ 2001-01-01 03:00:00 │
@@ -78,16 +81,20 @@ module Polars
     #   # └─────────────────────┘
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 1, 1)
-    #   df = Polars.date_range(start, stop, "10m", name: "dates").to_frame
-    #   df.select(["dates", Polars.col("dates").dt.truncate("30m").alias("truncate")])
+    #   df = (
+    #     Polars.datetime_range(
+    #       DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 1, 1), "10m", eager: true
+    #     )
+    #     .alias("datetime")
+    #     .to_frame
+    #   )
+    #   df.select(["datetime", Polars.col("datetime").dt.truncate("30m").alias("truncate")])
     #   # =>
     #   # shape: (7, 2)
     #   # ┌─────────────────────┬─────────────────────┐
-    #   # │ dates               ┆ truncate            │
+    #   # │ datetime            ┆ truncate            │
     #   # │ ---                 ┆ ---                 │
-    #   # │ datetime[μs]        ┆ datetime[μs]        │
+    #   # │ datetime[ns]        ┆ datetime[ns]        │
     #   # ╞═════════════════════╪═════════════════════╡
     #   # │ 2001-01-01 00:00:00 ┆ 2001-01-01 00:00:00 │
     #   # │ 2001-01-01 00:10:00 ┆ 2001-01-01 00:00:00 │
@@ -97,22 +104,13 @@ module Polars
     #   # │ 2001-01-01 00:50:00 ┆ 2001-01-01 00:30:00 │
     #   # │ 2001-01-01 01:00:00 ┆ 2001-01-01 01:00:00 │
     #   # └─────────────────────┴─────────────────────┘
-    def truncate(every, offset: nil, use_earliest: nil)
-      if offset.nil?
-        offset = "0ns"
-      end
-
+    def truncate(every)
       if !every.is_a?(Expr)
-        every = Utils._timedelta_to_pl_duration(every)
+        every = Utils.parse_as_duration_string(every)
       end
-      every = Utils.parse_as_expression(every, str_as_lit: true)
 
-      Utils.wrap_expr(
-        _rbexpr.dt_truncate(
-          every,
-          Utils._timedelta_to_pl_duration(offset),
-        )
-      )
+      every = Utils.parse_into_expression(every, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.dt_truncate(every))
     end
 
     # Divide the date/datetime range into buckets.
@@ -124,8 +122,6 @@ module Polars
     #
     # @param every [String]
     #   Every interval start and period length
-    # @param offset [String]
-    #   Offset the window
     #
     # @return [Expr]
     #
@@ -151,56 +147,48 @@ module Polars
     #   change without it being considered a breaking change.
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 2)
-    #   df = Polars.date_range(
-    #     start, stop, "225m", name: "dates"
-    #   ).to_frame
-    #   # =>
-    #   # shape: (7, 1)
-    #   # ┌─────────────────────┐
-    #   # │ dates               │
-    #   # │ ---                 │
-    #   # │ datetime[μs]        │
-    #   # ╞═════════════════════╡
-    #   # │ 2001-01-01 00:00:00 │
-    #   # │ 2001-01-01 03:45:00 │
-    #   # │ 2001-01-01 07:30:00 │
-    #   # │ 2001-01-01 11:15:00 │
-    #   # │ 2001-01-01 15:00:00 │
-    #   # │ 2001-01-01 18:45:00 │
-    #   # │ 2001-01-01 22:30:00 │
-    #   # └─────────────────────┘
-    #
-    # @example
-    #   df.select(Polars.col("dates").dt.round("1h"))
-    #   # =>
-    #   # shape: (7, 1)
-    #   # ┌─────────────────────┐
-    #   # │ dates               │
-    #   # │ ---                 │
-    #   # │ datetime[μs]        │
-    #   # ╞═════════════════════╡
-    #   # │ 2001-01-01 00:00:00 │
-    #   # │ 2001-01-01 04:00:00 │
-    #   # │ 2001-01-01 08:00:00 │
-    #   # │ 2001-01-01 11:00:00 │
-    #   # │ 2001-01-01 15:00:00 │
-    #   # │ 2001-01-01 19:00:00 │
-    #   # │ 2001-01-01 23:00:00 │
-    #   # └─────────────────────┘
-    #
-    # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 1, 1)
-    #   df = Polars.date_range(start, stop, "10m", name: "dates").to_frame
-    #   df.select(["dates", Polars.col("dates").dt.round("30m").alias("round")])
+    #   df = (
+    #     Polars.datetime_range(
+    #       DateTime.new(2001, 1, 1),
+    #       DateTime.new(2001, 1, 2),
+    #       "225m",
+    #       eager: true
+    #     )
+    #     .alias("datetime")
+    #     .to_frame
+    #   )
+    #   df.with_columns(Polars.col("datetime").dt.round("1h").alias("round"))
     #   # =>
     #   # shape: (7, 2)
     #   # ┌─────────────────────┬─────────────────────┐
-    #   # │ dates               ┆ round               │
+    #   # │ datetime            ┆ round               │
     #   # │ ---                 ┆ ---                 │
-    #   # │ datetime[μs]        ┆ datetime[μs]        │
+    #   # │ datetime[ns]        ┆ datetime[ns]        │
+    #   # ╞═════════════════════╪═════════════════════╡
+    #   # │ 2001-01-01 00:00:00 ┆ 2001-01-01 00:00:00 │
+    #   # │ 2001-01-01 03:45:00 ┆ 2001-01-01 04:00:00 │
+    #   # │ 2001-01-01 07:30:00 ┆ 2001-01-01 08:00:00 │
+    #   # │ 2001-01-01 11:15:00 ┆ 2001-01-01 11:00:00 │
+    #   # │ 2001-01-01 15:00:00 ┆ 2001-01-01 15:00:00 │
+    #   # │ 2001-01-01 18:45:00 ┆ 2001-01-01 19:00:00 │
+    #   # │ 2001-01-01 22:30:00 ┆ 2001-01-01 23:00:00 │
+    #   # └─────────────────────┴─────────────────────┘
+    #
+    # @example
+    #   df = (
+    #     Polars.datetime_range(
+    #       DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 1, 1), "10m", eager: true
+    #     )
+    #     .alias("datetime")
+    #     .to_frame
+    #   )
+    #   df.with_columns(Polars.col("datetime").dt.round("30m").alias("round"))
+    #   # =>
+    #   # shape: (7, 2)
+    #   # ┌─────────────────────┬─────────────────────┐
+    #   # │ datetime            ┆ round               │
+    #   # │ ---                 ┆ ---                 │
+    #   # │ datetime[ns]        ┆ datetime[ns]        │
     #   # ╞═════════════════════╪═════════════════════╡
     #   # │ 2001-01-01 00:00:00 ┆ 2001-01-01 00:00:00 │
     #   # │ 2001-01-01 00:10:00 ┆ 2001-01-01 00:00:00 │
@@ -210,18 +198,9 @@ module Polars
     #   # │ 2001-01-01 00:50:00 ┆ 2001-01-01 01:00:00 │
     #   # │ 2001-01-01 01:00:00 ┆ 2001-01-01 01:00:00 │
     #   # └─────────────────────┴─────────────────────┘
-    def round(every, offset: nil)
-      if offset.nil?
-        offset = "0ns"
-      end
-
-      every = Utils.parse_as_expression(every, str_as_lit: true)
-      Utils.wrap_expr(
-        _rbexpr.dt_round(
-          Utils._timedelta_to_pl_duration(every),
-          Utils._timedelta_to_pl_duration(offset)
-        )
-      )
+    def round(every)
+      every = Utils.parse_into_expression(every, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.dt_round(every))
     end
 
     # Create a naive Datetime from an existing Date/Datetime expression and a Time.
@@ -243,6 +222,48 @@ module Polars
       Utils.wrap_expr(_rbexpr.dt_combine(time._rbexpr, time_unit))
     end
 
+    # Convert a Date/Time/Datetime column into a String column with the given format.
+    #
+    # Similar to `cast(Polars::String)`, but this method allows you to customize the
+    # formatting of the resulting string.
+    #
+    # @param format [String]
+    #   Format to use, refer to the `chrono strftime documentation
+    #   <https://docs.rs/chrono/latest/chrono/format/strftime/index.html>`_
+    #   for specification. Example: `"%y-%m-%d"`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "datetime" => [
+    #         DateTime.new(2020, 3, 1),
+    #         DateTime.new(2020, 4, 1),
+    #         DateTime.new(2020, 5, 1)
+    #       ]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("datetime")
+    #     .dt.to_string("%Y/%m/%d %H:%M:%S")
+    #     .alias("datetime_string")
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────────────────────┬─────────────────────┐
+    #   # │ datetime            ┆ datetime_string     │
+    #   # │ ---                 ┆ ---                 │
+    #   # │ datetime[ns]        ┆ str                 │
+    #   # ╞═════════════════════╪═════════════════════╡
+    #   # │ 2020-03-01 00:00:00 ┆ 2020/03/01 00:00:00 │
+    #   # │ 2020-04-01 00:00:00 ┆ 2020/04/01 00:00:00 │
+    #   # │ 2020-05-01 00:00:00 ┆ 2020/05/01 00:00:00 │
+    #   # └─────────────────────┴─────────────────────┘
+    def to_string(format)
+      Utils.wrap_expr(_rbexpr.dt_to_string(format))
+    end
+
     # Format Date/datetime with a formatting rule.
     #
     # See [chrono strftime/strptime](https://docs.rs/chrono/latest/chrono/format/strftime/index.html).
@@ -261,38 +282,26 @@ module Polars
     # @return [Expr]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2002, 7, 1)
-    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "180d")})
+    #   df = Polars::DataFrame.new(
+    #     {"date" => [Date.new(1977, 1, 1), Date.new(1978, 1, 1), Date.new(1979, 1, 1)]}
+    #   )
+    #   df.with_columns(
+    #     calendar_year: Polars.col("date").dt.year,
+    #     iso_year: Polars.col("date").dt.iso_year
+    #   )
     #   # =>
-    #   # shape: (4, 1)
-    #   # ┌─────────────────────┐
-    #   # │ date                │
-    #   # │ ---                 │
-    #   # │ datetime[μs]        │
-    #   # ╞═════════════════════╡
-    #   # │ 2001-01-01 00:00:00 │
-    #   # │ 2001-06-30 00:00:00 │
-    #   # │ 2001-12-27 00:00:00 │
-    #   # │ 2002-06-25 00:00:00 │
-    #   # └─────────────────────┘
-    #
-    # @example
-    #   df.select(Polars.col("date").dt.year)
-    #   # =>
-    #   # shape: (4, 1)
-    #   # ┌──────┐
-    #   # │ date │
-    #   # │ ---  │
-    #   # │ i32  │
-    #   # ╞══════╡
-    #   # │ 2001 │
-    #   # │ 2001 │
-    #   # │ 2001 │
-    #   # │ 2002 │
-    #   # └──────┘
+    #   # shape: (3, 3)
+    #   # ┌────────────┬───────────────┬──────────┐
+    #   # │ date       ┆ calendar_year ┆ iso_year │
+    #   # │ ---        ┆ ---           ┆ ---      │
+    #   # │ date       ┆ i32           ┆ i32      │
+    #   # ╞════════════╪═══════════════╪══════════╡
+    #   # │ 1977-01-01 ┆ 1977          ┆ 1976     │
+    #   # │ 1978-01-01 ┆ 1978          ┆ 1977     │
+    #   # │ 1979-01-01 ┆ 1979          ┆ 1979     │
+    #   # └────────────┴───────────────┴──────────┘
     def year
-      Utils.wrap_expr(_rbexpr.year)
+      Utils.wrap_expr(_rbexpr.dt_year)
     end
 
     # Determine whether the year of the underlying date is a leap year.
@@ -302,23 +311,23 @@ module Polars
     # @return [Expr]
     #
     # @example
-    #   start = DateTime.new(2000, 1, 1)
-    #   stop = DateTime.new(2002, 1, 1)
     #   df = Polars::DataFrame.new(
-    #     {"date" => Polars.date_range(start, stop, "1y")}
+    #     {"date" => [Date.new(2000, 1, 1), Date.new(2001, 1, 1), Date.new(2002, 1, 1)]}
     #   )
-    #   df.select(Polars.col("date").dt.is_leap_year)
+    #   df.with_columns(
+    #     leap_year: Polars.col("date").dt.is_leap_year
+    #   )
     #   # =>
-    #   # shape: (3, 1)
-    #   # ┌───────┐
-    #   # │ date  │
-    #   # │ ---   │
-    #   # │ bool  │
-    #   # ╞═══════╡
-    #   # │ true  │
-    #   # │ false │
-    #   # │ false │
-    #   # └───────┘
+    #   # shape: (3, 2)
+    #   # ┌────────────┬───────────┐
+    #   # │ date       ┆ leap_year │
+    #   # │ ---        ┆ ---       │
+    #   # │ date       ┆ bool      │
+    #   # ╞════════════╪═══════════╡
+    #   # │ 2000-01-01 ┆ true      │
+    #   # │ 2001-01-01 ┆ false     │
+    #   # │ 2002-01-01 ┆ false     │
+    #   # └────────────┴───────────┘
     def is_leap_year
       Utils.wrap_expr(_rbexpr.dt_is_leap_year)
     end
@@ -331,8 +340,29 @@ module Polars
     # This may not correspond with the calendar year.
     #
     # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"date" => [Date.new(1977, 1, 1), Date.new(1978, 1, 1), Date.new(1979, 1, 1)]}
+    #   )
+    #   df.select(
+    #     "date",
+    #     Polars.col("date").dt.year.alias("calendar_year"),
+    #     Polars.col("date").dt.iso_year.alias("iso_year")
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────────┬───────────────┬──────────┐
+    #   # │ date       ┆ calendar_year ┆ iso_year │
+    #   # │ ---        ┆ ---           ┆ ---      │
+    #   # │ date       ┆ i32           ┆ i32      │
+    #   # ╞════════════╪═══════════════╪══════════╡
+    #   # │ 1977-01-01 ┆ 1977          ┆ 1976     │
+    #   # │ 1978-01-01 ┆ 1978          ┆ 1977     │
+    #   # │ 1979-01-01 ┆ 1979          ┆ 1979     │
+    #   # └────────────┴───────────────┴──────────┘
     def iso_year
-      Utils.wrap_expr(_rbexpr.iso_year)
+      Utils.wrap_expr(_rbexpr.dt_iso_year)
     end
 
     # Extract quarter from underlying Date representation.
@@ -344,36 +374,23 @@ module Polars
     # @return [Expr]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2002, 6, 1)
-    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "180d")})
+    #   df = Polars::DataFrame.new(
+    #     {"date" => [Date.new(2001, 1, 1), Date.new(2001, 6, 30), Date.new(2001, 12, 27)]}
+    #   )
+    #   df.with_columns(Polars.col("date").dt.quarter.alias("quarter"))
     #   # =>
-    #   # shape: (3, 1)
-    #   # ┌─────────────────────┐
-    #   # │ date                │
-    #   # │ ---                 │
-    #   # │ datetime[μs]        │
-    #   # ╞═════════════════════╡
-    #   # │ 2001-01-01 00:00:00 │
-    #   # │ 2001-06-30 00:00:00 │
-    #   # │ 2001-12-27 00:00:00 │
-    #   # └─────────────────────┘
-    #
-    # @example
-    #   df.select(Polars.col("date").dt.quarter)
-    #   # =>
-    #   # shape: (3, 1)
-    #   # ┌──────┐
-    #   # │ date │
-    #   # │ ---  │
-    #   # │ i8   │
-    #   # ╞══════╡
-    #   # │ 1    │
-    #   # │ 2    │
-    #   # │ 4    │
-    #   # └──────┘
+    #   # shape: (3, 2)
+    #   # ┌────────────┬─────────┐
+    #   # │ date       ┆ quarter │
+    #   # │ ---        ┆ ---     │
+    #   # │ date       ┆ i8      │
+    #   # ╞════════════╪═════════╡
+    #   # │ 2001-01-01 ┆ 1       │
+    #   # │ 2001-06-30 ┆ 2       │
+    #   # │ 2001-12-27 ┆ 4       │
+    #   # └────────────┴─────────┘
     def quarter
-      Utils.wrap_expr(_rbexpr.quarter)
+      Utils.wrap_expr(_rbexpr.dt_quarter)
     end
 
     # Extract month from underlying Date representation.
@@ -386,36 +403,23 @@ module Polars
     # @return [Expr]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 4, 1)
-    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "31d")})
+    #   df = Polars::DataFrame.new(
+    #     {"date" => [Date.new(2001, 1, 1), Date.new(2001, 6, 30), Date.new(2001, 12, 27)]}
+    #   )
+    #   df.with_columns(Polars.col("date").dt.month.alias("month"))
     #   # =>
-    #   # shape: (3, 1)
-    #   # ┌─────────────────────┐
-    #   # │ date                │
-    #   # │ ---                 │
-    #   # │ datetime[μs]        │
-    #   # ╞═════════════════════╡
-    #   # │ 2001-01-01 00:00:00 │
-    #   # │ 2001-02-01 00:00:00 │
-    #   # │ 2001-03-04 00:00:00 │
-    #   # └─────────────────────┘
-    #
-    # @example
-    #   df.select(Polars.col("date").dt.month)
-    #   # =>
-    #   # shape: (3, 1)
-    #   # ┌──────┐
-    #   # │ date │
-    #   # │ ---  │
-    #   # │ i8   │
-    #   # ╞══════╡
-    #   # │ 1    │
-    #   # │ 2    │
-    #   # │ 3    │
-    #   # └──────┘
+    #   # shape: (3, 2)
+    #   # ┌────────────┬───────┐
+    #   # │ date       ┆ month │
+    #   # │ ---        ┆ ---   │
+    #   # │ date       ┆ i8    │
+    #   # ╞════════════╪═══════╡
+    #   # │ 2001-01-01 ┆ 1     │
+    #   # │ 2001-06-30 ┆ 6     │
+    #   # │ 2001-12-27 ┆ 12    │
+    #   # └────────────┴───────┘
     def month
-      Utils.wrap_expr(_rbexpr.month)
+      Utils.wrap_expr(_rbexpr.dt_month)
     end
 
     # Extract the week from the underlying Date representation.
@@ -428,36 +432,23 @@ module Polars
     # @return [Expr]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 4, 1)
-    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "31d")})
+    #   df = Polars::DataFrame.new(
+    #     {"date" => [Date.new(2001, 1, 1), Date.new(2001, 6, 30), Date.new(2001, 12, 27)]}
+    #   )
+    #   df.with_columns(Polars.col("date").dt.week.alias("week"))
     #   # =>
-    #   # shape: (3, 1)
-    #   # ┌─────────────────────┐
-    #   # │ date                │
-    #   # │ ---                 │
-    #   # │ datetime[μs]        │
-    #   # ╞═════════════════════╡
-    #   # │ 2001-01-01 00:00:00 │
-    #   # │ 2001-02-01 00:00:00 │
-    #   # │ 2001-03-04 00:00:00 │
-    #   # └─────────────────────┘
-    #
-    # @example
-    #   df.select(Polars.col("date").dt.week)
-    #   # =>
-    #   # shape: (3, 1)
-    #   # ┌──────┐
-    #   # │ date │
-    #   # │ ---  │
-    #   # │ i8   │
-    #   # ╞══════╡
-    #   # │ 1    │
-    #   # │ 5    │
-    #   # │ 9    │
-    #   # └──────┘
+    #   # shape: (3, 2)
+    #   # ┌────────────┬──────┐
+    #   # │ date       ┆ week │
+    #   # │ ---        ┆ ---  │
+    #   # │ date       ┆ i8   │
+    #   # ╞════════════╪══════╡
+    #   # │ 2001-01-01 ┆ 1    │
+    #   # │ 2001-06-30 ┆ 26   │
+    #   # │ 2001-12-27 ┆ 52   │
+    #   # └────────────┴──────┘
     def week
-      Utils.wrap_expr(_rbexpr.week)
+      Utils.wrap_expr(_rbexpr.dt_week)
     end
 
     # Extract the week day from the underlying Date representation.
@@ -469,42 +460,32 @@ module Polars
     # @return [Expr]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 9)
-    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "3d")})
-    #   # =>
-    #   # shape: (3, 1)
-    #   # ┌─────────────────────┐
-    #   # │ date                │
-    #   # │ ---                 │
-    #   # │ datetime[μs]        │
-    #   # ╞═════════════════════╡
-    #   # │ 2001-01-01 00:00:00 │
-    #   # │ 2001-01-04 00:00:00 │
-    #   # │ 2001-01-07 00:00:00 │
-    #   # └─────────────────────┘
-    #
-    # @example
-    #   df.select(
-    #     [
-    #       Polars.col("date").dt.weekday.alias("weekday"),
-    #       Polars.col("date").dt.day.alias("day_of_month"),
-    #       Polars.col("date").dt.ordinal_day.alias("day_of_year")
-    #     ]
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => Polars.date_range(
+    #         Date.new(2001, 12, 22), Date.new(2001, 12, 25), eager: true
+    #       )
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("date").dt.weekday.alias("weekday"),
+    #     Polars.col("date").dt.day.alias("day_of_month"),
+    #     Polars.col("date").dt.ordinal_day.alias("day_of_year")
     #   )
     #   # =>
-    #   # shape: (3, 3)
-    #   # ┌─────────┬──────────────┬─────────────┐
-    #   # │ weekday ┆ day_of_month ┆ day_of_year │
-    #   # │ ---     ┆ ---          ┆ ---         │
-    #   # │ i8      ┆ i8           ┆ i16         │
-    #   # ╞═════════╪══════════════╪═════════════╡
-    #   # │ 1       ┆ 1            ┆ 1           │
-    #   # │ 4       ┆ 4            ┆ 4           │
-    #   # │ 7       ┆ 7            ┆ 7           │
-    #   # └─────────┴──────────────┴─────────────┘
+    #   # shape: (4, 4)
+    #   # ┌────────────┬─────────┬──────────────┬─────────────┐
+    #   # │ date       ┆ weekday ┆ day_of_month ┆ day_of_year │
+    #   # │ ---        ┆ ---     ┆ ---          ┆ ---         │
+    #   # │ date       ┆ i8      ┆ i8           ┆ i16         │
+    #   # ╞════════════╪═════════╪══════════════╪═════════════╡
+    #   # │ 2001-12-22 ┆ 6       ┆ 22           ┆ 356         │
+    #   # │ 2001-12-23 ┆ 7       ┆ 23           ┆ 357         │
+    #   # │ 2001-12-24 ┆ 1       ┆ 24           ┆ 358         │
+    #   # │ 2001-12-25 ┆ 2       ┆ 25           ┆ 359         │
+    #   # └────────────┴─────────┴──────────────┴─────────────┘
     def weekday
-      Utils.wrap_expr(_rbexpr.weekday)
+      Utils.wrap_expr(_rbexpr.dt_weekday)
     end
 
     # Extract day from underlying Date representation.
@@ -517,42 +498,32 @@ module Polars
     # @return [Expr]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 9)
-    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "3d")})
-    #   # =>
-    #   # shape: (3, 1)
-    #   # ┌─────────────────────┐
-    #   # │ date                │
-    #   # │ ---                 │
-    #   # │ datetime[μs]        │
-    #   # ╞═════════════════════╡
-    #   # │ 2001-01-01 00:00:00 │
-    #   # │ 2001-01-04 00:00:00 │
-    #   # │ 2001-01-07 00:00:00 │
-    #   # └─────────────────────┘
-    #
-    # @example
-    #   df.select(
-    #     [
-    #       Polars.col("date").dt.weekday.alias("weekday"),
-    #       Polars.col("date").dt.day.alias("day_of_month"),
-    #       Polars.col("date").dt.ordinal_day.alias("day_of_year")
-    #     ]
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => Polars.date_range(
+    #         Date.new(2001, 12, 22), Date.new(2001, 12, 25), eager: true
+    #       )
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("date").dt.weekday.alias("weekday"),
+    #     Polars.col("date").dt.day.alias("day_of_month"),
+    #     Polars.col("date").dt.ordinal_day.alias("day_of_year")
     #   )
     #   # =>
-    #   # shape: (3, 3)
-    #   # ┌─────────┬──────────────┬─────────────┐
-    #   # │ weekday ┆ day_of_month ┆ day_of_year │
-    #   # │ ---     ┆ ---          ┆ ---         │
-    #   # │ i8      ┆ i8           ┆ i16         │
-    #   # ╞═════════╪══════════════╪═════════════╡
-    #   # │ 1       ┆ 1            ┆ 1           │
-    #   # │ 4       ┆ 4            ┆ 4           │
-    #   # │ 7       ┆ 7            ┆ 7           │
-    #   # └─────────┴──────────────┴─────────────┘
+    #   # shape: (4, 4)
+    #   # ┌────────────┬─────────┬──────────────┬─────────────┐
+    #   # │ date       ┆ weekday ┆ day_of_month ┆ day_of_year │
+    #   # │ ---        ┆ ---     ┆ ---          ┆ ---         │
+    #   # │ date       ┆ i8      ┆ i8           ┆ i16         │
+    #   # ╞════════════╪═════════╪══════════════╪═════════════╡
+    #   # │ 2001-12-22 ┆ 6       ┆ 22           ┆ 356         │
+    #   # │ 2001-12-23 ┆ 7       ┆ 23           ┆ 357         │
+    #   # │ 2001-12-24 ┆ 1       ┆ 24           ┆ 358         │
+    #   # │ 2001-12-25 ┆ 2       ┆ 25           ┆ 359         │
+    #   # └────────────┴─────────┴──────────────┴─────────────┘
     def day
-      Utils.wrap_expr(_rbexpr.day)
+      Utils.wrap_expr(_rbexpr.dt_day)
     end
 
     # Extract ordinal day from underlying Date representation.
@@ -565,42 +536,32 @@ module Polars
     # @return [Expr]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 9)
-    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "3d")})
-    #   # =>
-    #   # shape: (3, 1)
-    #   # ┌─────────────────────┐
-    #   # │ date                │
-    #   # │ ---                 │
-    #   # │ datetime[μs]        │
-    #   # ╞═════════════════════╡
-    #   # │ 2001-01-01 00:00:00 │
-    #   # │ 2001-01-04 00:00:00 │
-    #   # │ 2001-01-07 00:00:00 │
-    #   # └─────────────────────┘
-    #
-    # @example
-    #   df.select(
-    #     [
-    #       Polars.col("date").dt.weekday.alias("weekday"),
-    #       Polars.col("date").dt.day.alias("day_of_month"),
-    #       Polars.col("date").dt.ordinal_day.alias("day_of_year")
-    #     ]
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => Polars.date_range(
+    #         Date.new(2001, 12, 22), Date.new(2001, 12, 25), eager: true
+    #       )
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("date").dt.weekday.alias("weekday"),
+    #     Polars.col("date").dt.day.alias("day_of_month"),
+    #     Polars.col("date").dt.ordinal_day.alias("day_of_year")
     #   )
     #   # =>
-    #   # shape: (3, 3)
-    #   # ┌─────────┬──────────────┬─────────────┐
-    #   # │ weekday ┆ day_of_month ┆ day_of_year │
-    #   # │ ---     ┆ ---          ┆ ---         │
-    #   # │ i8      ┆ i8           ┆ i16         │
-    #   # ╞═════════╪══════════════╪═════════════╡
-    #   # │ 1       ┆ 1            ┆ 1           │
-    #   # │ 4       ┆ 4            ┆ 4           │
-    #   # │ 7       ┆ 7            ┆ 7           │
-    #   # └─────────┴──────────────┴─────────────┘
+    #   # shape: (4, 4)
+    #   # ┌────────────┬─────────┬──────────────┬─────────────┐
+    #   # │ date       ┆ weekday ┆ day_of_month ┆ day_of_year │
+    #   # │ ---        ┆ ---     ┆ ---          ┆ ---         │
+    #   # │ date       ┆ i8      ┆ i8           ┆ i16         │
+    #   # ╞════════════╪═════════╪══════════════╪═════════════╡
+    #   # │ 2001-12-22 ┆ 6       ┆ 22           ┆ 356         │
+    #   # │ 2001-12-23 ┆ 7       ┆ 23           ┆ 357         │
+    #   # │ 2001-12-24 ┆ 1       ┆ 24           ┆ 358         │
+    #   # │ 2001-12-25 ┆ 2       ┆ 25           ┆ 359         │
+    #   # └────────────┴─────────┴──────────────┴─────────────┘
     def ordinal_day
-      Utils.wrap_expr(_rbexpr.ordinal_day)
+      Utils.wrap_expr(_rbexpr.dt_ordinal_day)
     end
 
     # Time
@@ -633,36 +594,34 @@ module Polars
     # @return [Expr]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 2)
-    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "12h")})
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "datetime" => [
+    #         Time.utc(1978, 1, 1, 1, 1, 1, 0),
+    #         Time.utc(2024, 10, 13, 5, 30, 14, 500_000),
+    #         Time.utc(2065, 1, 1, 10, 20, 30, 60_000)
+    #       ]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("datetime").dt.hour.alias("hour"),
+    #     Polars.col("datetime").dt.minute.alias("minute"),
+    #     Polars.col("datetime").dt.second.alias("second"),
+    #     Polars.col("datetime").dt.millisecond.alias("millisecond")
+    #   )
     #   # =>
-    #   # shape: (3, 1)
-    #   # ┌─────────────────────┐
-    #   # │ date                │
-    #   # │ ---                 │
-    #   # │ datetime[μs]        │
-    #   # ╞═════════════════════╡
-    #   # │ 2001-01-01 00:00:00 │
-    #   # │ 2001-01-01 12:00:00 │
-    #   # │ 2001-01-02 00:00:00 │
-    #   # └─────────────────────┘
-    #
-    # @example
-    #   df.select(Polars.col("date").dt.hour)
-    #   # =>
-    #   # shape: (3, 1)
-    #   # ┌──────┐
-    #   # │ date │
-    #   # │ ---  │
-    #   # │ i8   │
-    #   # ╞══════╡
-    #   # │ 0    │
-    #   # │ 12   │
-    #   # │ 0    │
-    #   # └──────┘
+    #   # shape: (3, 5)
+    #   # ┌─────────────────────────┬──────┬────────┬────────┬─────────────┐
+    #   # │ datetime                ┆ hour ┆ minute ┆ second ┆ millisecond │
+    #   # │ ---                     ┆ ---  ┆ ---    ┆ ---    ┆ ---         │
+    #   # │ datetime[ns]            ┆ i8   ┆ i8     ┆ i8     ┆ i32         │
+    #   # ╞═════════════════════════╪══════╪════════╪════════╪═════════════╡
+    #   # │ 1978-01-01 01:01:01     ┆ 1    ┆ 1      ┆ 1      ┆ 0           │
+    #   # │ 2024-10-13 05:30:14.500 ┆ 5    ┆ 30     ┆ 14     ┆ 500         │
+    #   # │ 2065-01-01 10:20:30.060 ┆ 10   ┆ 20     ┆ 30     ┆ 60          │
+    #   # └─────────────────────────┴──────┴────────┴────────┴─────────────┘
     def hour
-      Utils.wrap_expr(_rbexpr.hour)
+      Utils.wrap_expr(_rbexpr.dt_hour)
     end
 
     # Extract minutes from underlying DateTime representation.
@@ -674,36 +633,34 @@ module Polars
     # @return [Expr]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 1, 0, 4, 0)
-    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "2m")})
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "datetime" => [
+    #         Time.utc(1978, 1, 1, 1, 1, 1, 0),
+    #         Time.utc(2024, 10, 13, 5, 30, 14, 500_000),
+    #         Time.utc(2065, 1, 1, 10, 20, 30, 60_000)
+    #       ]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("datetime").dt.hour.alias("hour"),
+    #     Polars.col("datetime").dt.minute.alias("minute"),
+    #     Polars.col("datetime").dt.second.alias("second"),
+    #     Polars.col("datetime").dt.millisecond.alias("millisecond")
+    #   )
     #   # =>
-    #   # shape: (3, 1)
-    #   # ┌─────────────────────┐
-    #   # │ date                │
-    #   # │ ---                 │
-    #   # │ datetime[μs]        │
-    #   # ╞═════════════════════╡
-    #   # │ 2001-01-01 00:00:00 │
-    #   # │ 2001-01-01 00:02:00 │
-    #   # │ 2001-01-01 00:04:00 │
-    #   # └─────────────────────┘
-    #
-    # @example
-    #   df.select(Polars.col("date").dt.minute)
-    #   # =>
-    #   # shape: (3, 1)
-    #   # ┌──────┐
-    #   # │ date │
-    #   # │ ---  │
-    #   # │ i8   │
-    #   # ╞══════╡
-    #   # │ 0    │
-    #   # │ 2    │
-    #   # │ 4    │
-    #   # └──────┘
+    #   # shape: (3, 5)
+    #   # ┌─────────────────────────┬──────┬────────┬────────┬─────────────┐
+    #   # │ datetime                ┆ hour ┆ minute ┆ second ┆ millisecond │
+    #   # │ ---                     ┆ ---  ┆ ---    ┆ ---    ┆ ---         │
+    #   # │ datetime[ns]            ┆ i8   ┆ i8     ┆ i8     ┆ i32         │
+    #   # ╞═════════════════════════╪══════╪════════╪════════╪═════════════╡
+    #   # │ 1978-01-01 01:01:01     ┆ 1    ┆ 1      ┆ 1      ┆ 0           │
+    #   # │ 2024-10-13 05:30:14.500 ┆ 5    ┆ 30     ┆ 14     ┆ 500         │
+    #   # │ 2065-01-01 10:20:30.060 ┆ 10   ┆ 20     ┆ 30     ┆ 60          │
+    #   # └─────────────────────────┴──────┴────────┴────────┴─────────────┘
     def minute
-      Utils.wrap_expr(_rbexpr.minute)
+      Utils.wrap_expr(_rbexpr.dt_minute)
     end
 
     # Extract seconds from underlying DateTime representation.
@@ -719,87 +676,52 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "date" => Polars.date_range(
-    #         DateTime.new(2001, 1, 1, 0, 0, 0.456789),
-    #         DateTime.new(2001, 1, 1, 0, 0, 6),
-    #         "2s654321us"
-    #       )
+    #       "datetime" => [
+    #         Time.utc(1978, 1, 1, 1, 1, 1, 0),
+    #         Time.utc(2024, 10, 13, 5, 30, 14, 500_000),
+    #         Time.utc(2065, 1, 1, 10, 20, 30, 60_000)
+    #       ]
     #     }
     #   )
-    #   # =>
-    #   # shape: (3, 1)
-    #   # ┌────────────────────────────┐
-    #   # │ date                       │
-    #   # │ ---                        │
-    #   # │ datetime[μs]               │
-    #   # ╞════════════════════════════╡
-    #   # │ 2001-01-01 00:00:00.456789 │
-    #   # │ 2001-01-01 00:00:03.111110 │
-    #   # │ 2001-01-01 00:00:05.765431 │
-    #   # └────────────────────────────┘
-    #
-    # @example
-    #   df.select(Polars.col("date").dt.second.alias("secs"))
-    #   # =>
-    #   # shape: (3, 1)
-    #   # ┌──────┐
-    #   # │ secs │
-    #   # │ ---  │
-    #   # │ i8   │
-    #   # ╞══════╡
-    #   # │ 0    │
-    #   # │ 3    │
-    #   # │ 5    │
-    #   # └──────┘
-    #
-    #   df.select(Polars.col("date").dt.second(fractional: true).alias("secs"))
-    #   # =>
-    #   # shape: (3, 1)
-    #   # ┌──────────┐
-    #   # │ secs     │
-    #   # │ ---      │
-    #   # │ f64      │
-    #   # ╞══════════╡
-    #   # │ 0.456789 │
-    #   # │ 3.11111  │
-    #   # │ 5.765431 │
-    #   # └──────────┘
-    #
-    # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 1, 0, 0, 4)
-    #   df = Polars::DataFrame.new(
-    #     {"date" => Polars.date_range(start, stop, "2s")}
+    #   df.with_columns(
+    #     Polars.col("datetime").dt.hour.alias("hour"),
+    #     Polars.col("datetime").dt.minute.alias("minute"),
+    #     Polars.col("datetime").dt.second.alias("second"),
+    #     Polars.col("datetime").dt.millisecond.alias("millisecond")
     #   )
     #   # =>
-    #   # shape: (3, 1)
-    #   # ┌─────────────────────┐
-    #   # │ date                │
-    #   # │ ---                 │
-    #   # │ datetime[μs]        │
-    #   # ╞═════════════════════╡
-    #   # │ 2001-01-01 00:00:00 │
-    #   # │ 2001-01-01 00:00:02 │
-    #   # │ 2001-01-01 00:00:04 │
-    #   # └─────────────────────┘
+    #   # shape: (3, 5)
+    #   # ┌─────────────────────────┬──────┬────────┬────────┬─────────────┐
+    #   # │ datetime                ┆ hour ┆ minute ┆ second ┆ millisecond │
+    #   # │ ---                     ┆ ---  ┆ ---    ┆ ---    ┆ ---         │
+    #   # │ datetime[ns]            ┆ i8   ┆ i8     ┆ i8     ┆ i32         │
+    #   # ╞═════════════════════════╪══════╪════════╪════════╪═════════════╡
+    #   # │ 1978-01-01 01:01:01     ┆ 1    ┆ 1      ┆ 1      ┆ 0           │
+    #   # │ 2024-10-13 05:30:14.500 ┆ 5    ┆ 30     ┆ 14     ┆ 500         │
+    #   # │ 2065-01-01 10:20:30.060 ┆ 10   ┆ 20     ┆ 30     ┆ 60          │
+    #   # └─────────────────────────┴──────┴────────┴────────┴─────────────┘
     #
     # @example
-    #   df.select(Polars.col("date").dt.second)
+    #   df.with_columns(
+    #     Polars.col("datetime").dt.hour.alias("hour"),
+    #     Polars.col("datetime").dt.minute.alias("minute"),
+    #     Polars.col("datetime").dt.second(fractional: true).alias("second")
+    #   )
     #   # =>
-    #   # shape: (3, 1)
-    #   # ┌──────┐
-    #   # │ date │
-    #   # │ ---  │
-    #   # │ i8   │
-    #   # ╞══════╡
-    #   # │ 0    │
-    #   # │ 2    │
-    #   # │ 4    │
-    #   # └──────┘
+    #   # shape: (3, 4)
+    #   # ┌─────────────────────────┬──────┬────────┬────────┐
+    #   # │ datetime                ┆ hour ┆ minute ┆ second │
+    #   # │ ---                     ┆ ---  ┆ ---    ┆ ---    │
+    #   # │ datetime[ns]            ┆ i8   ┆ i8     ┆ f64    │
+    #   # ╞═════════════════════════╪══════╪════════╪════════╡
+    #   # │ 1978-01-01 01:01:01     ┆ 1    ┆ 1      ┆ 1.0    │
+    #   # │ 2024-10-13 05:30:14.500 ┆ 5    ┆ 30     ┆ 14.5   │
+    #   # │ 2065-01-01 10:20:30.060 ┆ 10   ┆ 20     ┆ 30.06  │
+    #   # └─────────────────────────┴──────┴────────┴────────┘
     def second(fractional: false)
-      sec = Utils.wrap_expr(_rbexpr.second)
+      sec = Utils.wrap_expr(_rbexpr.dt_second)
       if fractional
-        sec + (Utils.wrap_expr(_rbexpr.nanosecond) / Utils.lit(1_000_000_000.0))
+        sec + (Utils.wrap_expr(_rbexpr.dt_nanosecond) / Utils.lit(1_000_000_000.0))
       else
         sec
       end
@@ -811,7 +733,7 @@ module Polars
     #
     # @return [Expr]
     def millisecond
-      Utils.wrap_expr(_rbexpr.millisecond)
+      Utils.wrap_expr(_rbexpr.dt_millisecond)
     end
 
     # Extract microseconds from underlying DateTime representation.
@@ -820,7 +742,7 @@ module Polars
     #
     # @return [Expr]
     def microsecond
-      Utils.wrap_expr(_rbexpr.microsecond)
+      Utils.wrap_expr(_rbexpr.dt_microsecond)
     end
 
     # Extract nanoseconds from underlying DateTime representation.
@@ -829,81 +751,79 @@ module Polars
     #
     # @return [Expr]
     def nanosecond
-      Utils.wrap_expr(_rbexpr.nanosecond)
+      Utils.wrap_expr(_rbexpr.dt_nanosecond)
     end
 
     # Get the time passed since the Unix EPOCH in the give time unit.
     #
-    # @param tu ["us", "ns", "ms", "s", "d"]
+    # @param time_unit ["us", "ns", "ms", "s", "d"]
     #   Time unit.
     #
     # @return [Expr]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 3)
-    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "1d")})
-    #   df.select(
-    #     [
-    #       Polars.col("date"),
-    #       Polars.col("date").dt.epoch.alias("epoch_ns"),
-    #       Polars.col("date").dt.epoch("s").alias("epoch_s")
-    #     ]
+    #   df = (
+    #     Polars.date_range(Date.new(2001, 1, 1), Date.new(2001, 1, 3), eager: true)
+    #     .alias("date")
+    #     .to_frame
+    #   )
+    #   df.with_columns(
+    #     Polars.col("date").dt.epoch.alias("epoch_ns"),
+    #     Polars.col("date").dt.epoch("s").alias("epoch_s")
     #   )
     #   # =>
     #   # shape: (3, 3)
-    #   # ┌─────────────────────┬─────────────────┬───────────┐
-    #   # │ date                ┆ epoch_ns        ┆ epoch_s   │
-    #   # │ ---                 ┆ ---             ┆ ---       │
-    #   # │ datetime[μs]        ┆ i64             ┆ i64       │
-    #   # ╞═════════════════════╪═════════════════╪═══════════╡
-    #   # │ 2001-01-01 00:00:00 ┆ 978307200000000 ┆ 978307200 │
-    #   # │ 2001-01-02 00:00:00 ┆ 978393600000000 ┆ 978393600 │
-    #   # │ 2001-01-03 00:00:00 ┆ 978480000000000 ┆ 978480000 │
-    #   # └─────────────────────┴─────────────────┴───────────┘
-    def epoch(tu = "us")
-      if Utils::DTYPE_TEMPORAL_UNITS.include?(tu)
-        timestamp(tu)
-      elsif tu == "s"
+    #   # ┌────────────┬─────────────────┬───────────┐
+    #   # │ date       ┆ epoch_ns        ┆ epoch_s   │
+    #   # │ ---        ┆ ---             ┆ ---       │
+    #   # │ date       ┆ i64             ┆ i64       │
+    #   # ╞════════════╪═════════════════╪═══════════╡
+    #   # │ 2001-01-01 ┆ 978307200000000 ┆ 978307200 │
+    #   # │ 2001-01-02 ┆ 978393600000000 ┆ 978393600 │
+    #   # │ 2001-01-03 ┆ 978480000000000 ┆ 978480000 │
+    #   # └────────────┴─────────────────┴───────────┘
+    def epoch(time_unit = "us")
+      if Utils::DTYPE_TEMPORAL_UNITS.include?(time_unit)
+        timestamp(time_unit)
+      elsif time_unit == "s"
         Utils.wrap_expr(_rbexpr.dt_epoch_seconds)
-      elsif tu == "d"
+      elsif time_unit == "d"
         Utils.wrap_expr(_rbexpr).cast(:date).cast(:i32)
       else
-        raise ArgumentError, "tu must be one of {{'ns', 'us', 'ms', 's', 'd'}}, got #{tu}"
+        raise ArgumentError, "time_unit must be one of {'ns', 'us', 'ms', 's', 'd'}, got #{time_unit.inspect}"
       end
     end
 
     # Return a timestamp in the given time unit.
     #
-    # @param tu ["us", "ns", "ms"]
+    # @param time_unit ["us", "ns", "ms"]
     #   Time unit.
     #
     # @return [Expr]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 3)
-    #   df = Polars::DataFrame.new({"date" => Polars.date_range(start, stop, "1d")})
-    #   df.select(
-    #     [
-    #       Polars.col("date"),
-    #       Polars.col("date").dt.timestamp.alias("timestamp_ns"),
-    #       Polars.col("date").dt.timestamp("ms").alias("timestamp_ms")
-    #     ]
+    #   df = (
+    #     Polars.date_range(Date.new(2001, 1, 1), Date.new(2001, 1, 3), eager: true)
+    #     .alias("date")
+    #     .to_frame
+    #   )
+    #   df.with_columns(
+    #     Polars.col("date").dt.timestamp.alias("timestamp_us"),
+    #     Polars.col("date").dt.timestamp("ms").alias("timestamp_ms")
     #   )
     #   # =>
     #   # shape: (3, 3)
-    #   # ┌─────────────────────┬─────────────────┬──────────────┐
-    #   # │ date                ┆ timestamp_ns    ┆ timestamp_ms │
-    #   # │ ---                 ┆ ---             ┆ ---          │
-    #   # │ datetime[μs]        ┆ i64             ┆ i64          │
-    #   # ╞═════════════════════╪═════════════════╪══════════════╡
-    #   # │ 2001-01-01 00:00:00 ┆ 978307200000000 ┆ 978307200000 │
-    #   # │ 2001-01-02 00:00:00 ┆ 978393600000000 ┆ 978393600000 │
-    #   # │ 2001-01-03 00:00:00 ┆ 978480000000000 ┆ 978480000000 │
-    #   # └─────────────────────┴─────────────────┴──────────────┘
-    def timestamp(tu = "us")
-      Utils.wrap_expr(_rbexpr.timestamp(tu))
+    #   # ┌────────────┬─────────────────┬──────────────┐
+    #   # │ date       ┆ timestamp_us    ┆ timestamp_ms │
+    #   # │ ---        ┆ ---             ┆ ---          │
+    #   # │ date       ┆ i64             ┆ i64          │
+    #   # ╞════════════╪═════════════════╪══════════════╡
+    #   # │ 2001-01-01 ┆ 978307200000000 ┆ 978307200000 │
+    #   # │ 2001-01-02 ┆ 978393600000000 ┆ 978393600000 │
+    #   # │ 2001-01-03 ┆ 978480000000000 ┆ 978480000000 │
+    #   # └────────────┴─────────────────┴──────────────┘
+    def timestamp(time_unit = "us")
+      Utils.wrap_expr(_rbexpr.dt_timestamp(time_unit))
     end
 
     # Set time unit of a Series of dtype Datetime or Duration.
@@ -911,43 +831,17 @@ module Polars
     # This does not modify underlying data, and should be used to fix an incorrect
     # time unit.
     #
-    # @param tu ["ns", "us", "ms"]
+    # @param time_unit ["ns", "us", "ms"]
     #   Time unit for the `Datetime` Series.
     #
     # @return [Expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "date" => Polars.date_range(
-    #         DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 3), "1d", time_unit: "ns"
-    #       )
-    #     }
-    #   )
-    #   df.select(
-    #     [
-    #       Polars.col("date"),
-    #       Polars.col("date").dt.with_time_unit("us").alias("tu_us")
-    #     ]
-    #   )
-    #   # =>
-    #   # shape: (3, 2)
-    #   # ┌─────────────────────┬───────────────────────┐
-    #   # │ date                ┆ tu_us                 │
-    #   # │ ---                 ┆ ---                   │
-    #   # │ datetime[ns]        ┆ datetime[μs]          │
-    #   # ╞═════════════════════╪═══════════════════════╡
-    #   # │ 2001-01-01 00:00:00 ┆ +32971-04-28 00:00:00 │
-    #   # │ 2001-01-02 00:00:00 ┆ +32974-01-22 00:00:00 │
-    #   # │ 2001-01-03 00:00:00 ┆ +32976-10-18 00:00:00 │
-    #   # └─────────────────────┴───────────────────────┘
-    def with_time_unit(tu)
-      Utils.wrap_expr(_rbexpr.dt_with_time_unit(tu))
+    def with_time_unit(time_unit)
+      Utils.wrap_expr(_rbexpr.dt_with_time_unit(time_unit))
     end
 
     # Cast the underlying data to another time unit. This may lose precision.
     #
-    # @param tu ["ns", "us", "ms"]
+    # @param time_unit ["ns", "us", "ms"]
     #   Time unit for the `Datetime` Series.
     #
     # @return [Expr]
@@ -955,8 +849,8 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "date" => Polars.date_range(
-    #         DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 3), "1d"
+    #       "date" => Polars.datetime_range(
+    #         DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 3), "1d", eager: true
     #       )
     #     }
     #   )
@@ -972,19 +866,19 @@ module Polars
     #   # ┌─────────────────────┬─────────────────────┬─────────────────────┐
     #   # │ date                ┆ tu_ms               ┆ tu_ns               │
     #   # │ ---                 ┆ ---                 ┆ ---                 │
-    #   # │ datetime[μs]        ┆ datetime[ms]        ┆ datetime[ns]        │
+    #   # │ datetime[ns]        ┆ datetime[ms]        ┆ datetime[ns]        │
     #   # ╞═════════════════════╪═════════════════════╪═════════════════════╡
     #   # │ 2001-01-01 00:00:00 ┆ 2001-01-01 00:00:00 ┆ 2001-01-01 00:00:00 │
     #   # │ 2001-01-02 00:00:00 ┆ 2001-01-02 00:00:00 ┆ 2001-01-02 00:00:00 │
     #   # │ 2001-01-03 00:00:00 ┆ 2001-01-03 00:00:00 ┆ 2001-01-03 00:00:00 │
     #   # └─────────────────────┴─────────────────────┴─────────────────────┘
-    def cast_time_unit(tu)
-      Utils.wrap_expr(_rbexpr.dt_cast_time_unit(tu))
+    def cast_time_unit(time_unit)
+      Utils.wrap_expr(_rbexpr.dt_cast_time_unit(time_unit))
     end
 
     # Set time zone for a Series of type Datetime.
     #
-    # @param tz [String]
+    # @param time_zone [String]
     #   Time zone for the `Datetime` Series.
     #
     # @return [Expr]
@@ -992,11 +886,12 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "date" => Polars.date_range(
+    #       "date" => Polars.datetime_range(
     #         DateTime.new(2020, 3, 1),
     #         DateTime.new(2020, 5, 1),
     #         "1mo",
-    #         time_zone: "UTC"
+    #         time_zone: "UTC",
+    #         eager: true
     #       )
     #     }
     #   )
@@ -1013,14 +908,14 @@ module Polars
     #   # ┌─────────────────────────┬─────────────────────────────┐
     #   # │ date                    ┆ London                      │
     #   # │ ---                     ┆ ---                         │
-    #   # │ datetime[μs, UTC]       ┆ datetime[μs, Europe/London] │
+    #   # │ datetime[ns, UTC]       ┆ datetime[ns, Europe/London] │
     #   # ╞═════════════════════════╪═════════════════════════════╡
     #   # │ 2020-03-01 00:00:00 UTC ┆ 2020-03-01 00:00:00 GMT     │
     #   # │ 2020-04-01 00:00:00 UTC ┆ 2020-04-01 01:00:00 BST     │
     #   # │ 2020-05-01 00:00:00 UTC ┆ 2020-05-01 01:00:00 BST     │
     #   # └─────────────────────────┴─────────────────────────────┘
-    def convert_time_zone(tz)
-      Utils.wrap_expr(_rbexpr.dt_convert_time_zone(tz))
+    def convert_time_zone(time_zone)
+      Utils.wrap_expr(_rbexpr.dt_convert_time_zone(time_zone))
     end
 
     # Cast time zone for a Series of type Datetime.
@@ -1051,8 +946,8 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "date" => Polars.date_range(
-    #         DateTime.new(2020, 3, 1), DateTime.new(2020, 5, 1), "1mo"
+    #       "date" => Polars.datetime_range(
+    #         DateTime.new(2020, 3, 1), DateTime.new(2020, 5, 1), "1mo", eager: true
     #       )
     #     }
     #   )
@@ -1067,7 +962,7 @@ module Polars
     #   # ┌─────────────────────┬───────────┐
     #   # │ date                ┆ days_diff │
     #   # │ ---                 ┆ ---       │
-    #   # │ datetime[μs]        ┆ i64       │
+    #   # │ datetime[ns]        ┆ i64       │
     #   # ╞═════════════════════╪═══════════╡
     #   # │ 2020-03-01 00:00:00 ┆ null      │
     #   # │ 2020-04-01 00:00:00 ┆ 31        │
@@ -1085,8 +980,8 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "date" => Polars.date_range(
-    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 4), "1d"
+    #       "date" => Polars.datetime_range(
+    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 4), "1d", eager: true
     #       )
     #     }
     #   )
@@ -1101,7 +996,7 @@ module Polars
     #   # ┌─────────────────────┬────────────┐
     #   # │ date                ┆ hours_diff │
     #   # │ ---                 ┆ ---        │
-    #   # │ datetime[μs]        ┆ i64        │
+    #   # │ datetime[ns]        ┆ i64        │
     #   # ╞═════════════════════╪════════════╡
     #   # │ 2020-01-01 00:00:00 ┆ null       │
     #   # │ 2020-01-02 00:00:00 ┆ 24         │
@@ -1120,8 +1015,8 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "date" => Polars.date_range(
-    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 4), "1d"
+    #       "date" => Polars.datetime_range(
+    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 4), "1d", eager: true
     #       )
     #     }
     #   )
@@ -1136,7 +1031,7 @@ module Polars
     #   # ┌─────────────────────┬──────────────┐
     #   # │ date                ┆ minutes_diff │
     #   # │ ---                 ┆ ---          │
-    #   # │ datetime[μs]        ┆ i64          │
+    #   # │ datetime[ns]        ┆ i64          │
     #   # ╞═════════════════════╪══════════════╡
     #   # │ 2020-01-01 00:00:00 ┆ null         │
     #   # │ 2020-01-02 00:00:00 ┆ 1440         │
@@ -1155,8 +1050,8 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "date" => Polars.date_range(
-    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 4, 0), "1m"
+    #       "date" => Polars.datetime_range(
+    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 4, 0), "1m", eager: true
     #       )
     #     }
     #   )
@@ -1171,7 +1066,7 @@ module Polars
     #   # ┌─────────────────────┬──────────────┐
     #   # │ date                ┆ seconds_diff │
     #   # │ ---                 ┆ ---          │
-    #   # │ datetime[μs]        ┆ i64          │
+    #   # │ datetime[ns]        ┆ i64          │
     #   # ╞═════════════════════╪══════════════╡
     #   # │ 2020-01-01 00:00:00 ┆ null         │
     #   # │ 2020-01-01 00:01:00 ┆ 60           │
@@ -1191,8 +1086,8 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "date" => Polars.date_range(
-    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1), "1ms"
+    #       "date" => Polars.datetime_range(
+    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1), "1ms", eager: true
     #       )
     #     }
     #   )
@@ -1207,7 +1102,7 @@ module Polars
     #   # ┌─────────────────────────┬───────────────────┐
     #   # │ date                    ┆ milliseconds_diff │
     #   # │ ---                     ┆ ---               │
-    #   # │ datetime[μs]            ┆ i64               │
+    #   # │ datetime[ns]            ┆ i64               │
     #   # ╞═════════════════════════╪═══════════════════╡
     #   # │ 2020-01-01 00:00:00     ┆ null              │
     #   # │ 2020-01-01 00:00:00.001 ┆ 1                 │
@@ -1233,8 +1128,8 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "date" => Polars.date_range(
-    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1), "1ms"
+    #       "date" => Polars.datetime_range(
+    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1), "1ms", eager: true
     #       )
     #     }
     #   )
@@ -1249,7 +1144,7 @@ module Polars
     #   # ┌─────────────────────────┬───────────────────┐
     #   # │ date                    ┆ microseconds_diff │
     #   # │ ---                     ┆ ---               │
-    #   # │ datetime[μs]            ┆ i64               │
+    #   # │ datetime[ns]            ┆ i64               │
     #   # ╞═════════════════════════╪═══════════════════╡
     #   # │ 2020-01-01 00:00:00     ┆ null              │
     #   # │ 2020-01-01 00:00:00.001 ┆ 1000              │
@@ -1275,8 +1170,8 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "date" => Polars.date_range(
-    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1), "1ms"
+    #       "date" => Polars.datetime_range(
+    #         DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1), "1ms", eager: true
     #       )
     #     }
     #   )
@@ -1291,7 +1186,7 @@ module Polars
     #   # ┌─────────────────────────┬──────────────────┐
     #   # │ date                    ┆ nanoseconds_diff │
     #   # │ ---                     ┆ ---              │
-    #   # │ datetime[μs]            ┆ i64              │
+    #   # │ datetime[ns]            ┆ i64              │
     #   # ╞═════════════════════════╪══════════════════╡
     #   # │ 2020-01-01 00:00:00     ┆ null             │
     #   # │ 2020-01-01 00:00:00.001 ┆ 1000000          │
@@ -1336,8 +1231,8 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "dates" => Polars.date_range(
-    #         DateTime.new(2000, 1, 1), DateTime.new(2005, 1, 1), "1y"
+    #       "dates" => Polars.datetime_range(
+    #         DateTime.new(2000, 1, 1), DateTime.new(2005, 1, 1), "1y", eager: true
     #       )
     #     }
     #   )
@@ -1352,7 +1247,7 @@ module Polars
     #   # ┌─────────────────────┬─────────────────────┐
     #   # │ date_plus_1y        ┆ date_min            │
     #   # │ ---                 ┆ ---                 │
-    #   # │ datetime[μs]        ┆ datetime[μs]        │
+    #   # │ datetime[ns]        ┆ datetime[ns]        │
     #   # ╞═════════════════════╪═════════════════════╡
     #   # │ 2001-01-01 00:00:00 ┆ 1998-11-01 00:00:00 │
     #   # │ 2002-01-01 00:00:00 ┆ 1999-11-01 00:00:00 │
@@ -1362,7 +1257,7 @@ module Polars
     #   # │ 2006-01-01 00:00:00 ┆ 2003-11-01 00:00:00 │
     #   # └─────────────────────┴─────────────────────┘
     def offset_by(by)
-      by = Utils.parse_as_expression(by, str_as_lit: true)
+      by = Utils.parse_into_expression(by, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.dt_offset_by(by))
     end
 
@@ -1373,10 +1268,11 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "dates" => Polars.date_range(
+    #       "dates" => Polars.datetime_range(
     #         DateTime.new(2000, 1, 15, 2),
     #         DateTime.new(2000, 12, 15, 2),
-    #         "1mo"
+    #         "1mo",
+    #         eager: true
     #       )
     #     }
     #   )
@@ -1386,7 +1282,7 @@ module Polars
     #   # ┌─────────────────────┐
     #   # │ dates               │
     #   # │ ---                 │
-    #   # │ datetime[μs]        │
+    #   # │ datetime[ns]        │
     #   # ╞═════════════════════╡
     #   # │ 2000-01-01 02:00:00 │
     #   # │ 2000-02-01 02:00:00 │
@@ -1411,10 +1307,11 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "dates" => Polars.date_range(
+    #       "dates" => Polars.datetime_range(
     #         DateTime.new(2000, 1, 15, 2),
     #         DateTime.new(2000, 12, 15, 2),
-    #         "1mo"
+    #         "1mo",
+    #         eager: true
     #       )
     #     }
     #   )
@@ -1424,7 +1321,7 @@ module Polars
     #   # ┌─────────────────────┐
     #   # │ dates               │
     #   # │ ---                 │
-    #   # │ datetime[μs]        │
+    #   # │ datetime[ns]        │
     #   # ╞═════════════════════╡
     #   # │ 2000-01-31 02:00:00 │
     #   # │ 2000-02-29 02:00:00 │
@@ -1440,6 +1337,62 @@ module Polars
     #   # └─────────────────────┘
     def month_end
       Utils.wrap_expr(_rbexpr.dt_month_end)
+    end
+
+    # Base offset from UTC.
+    #
+    # This is usually constant for all datetimes in a given time zone, but
+    # may vary in the rare case that a country switches time zone, like
+    # Samoa (Apia) did at the end of 2011.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "ts" => [DateTime.new(2011, 12, 29), DateTime.new(2012, 1, 1)],
+    #     }
+    #   )
+    #   df = df.with_columns(Polars.col("ts").dt.replace_time_zone("Pacific/Apia"))
+    #   df.with_columns(Polars.col("ts").dt.base_utc_offset.alias("base_utc_offset"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────────────────────────┬─────────────────┐
+    #   # │ ts                         ┆ base_utc_offset │
+    #   # │ ---                        ┆ ---             │
+    #   # │ datetime[ns, Pacific/Apia] ┆ duration[ms]    │
+    #   # ╞════════════════════════════╪═════════════════╡
+    #   # │ 2011-12-29 00:00:00 -10    ┆ -11h            │
+    #   # │ 2012-01-01 00:00:00 +14    ┆ 13h             │
+    #   # └────────────────────────────┴─────────────────┘
+    def base_utc_offset
+      Utils.wrap_expr(_rbexpr.dt_base_utc_offset)
+    end
+
+    # Additional offset currently in effect (typically due to daylight saving time).
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "ts" => [DateTime.new(2020, 10, 25), DateTime.new(2020, 10, 26)],
+    #     }
+    #   )
+    #   df = df.with_columns(Polars.col("ts").dt.replace_time_zone("Europe/London"))
+    #   df.with_columns(Polars.col("ts").dt.dst_offset.alias("dst_offset"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────────────────────────────┬──────────────┐
+    #   # │ ts                          ┆ dst_offset   │
+    #   # │ ---                         ┆ ---          │
+    #   # │ datetime[ns, Europe/London] ┆ duration[ms] │
+    #   # ╞═════════════════════════════╪══════════════╡
+    #   # │ 2020-10-25 00:00:00 BST     ┆ 1h           │
+    #   # │ 2020-10-26 00:00:00 GMT     ┆ 0ms          │
+    #   # └─────────────────────────────┴──────────────┘
+    def dst_offset
+      Utils.wrap_expr(_rbexpr.dt_dst_offset)
     end
   end
 end

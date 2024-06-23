@@ -36,8 +36,23 @@ module Polars
       nil
     end
 
+    def self.parse_as_duration_string(td)
+      if td.nil? || td.is_a?(::String)
+        return td
+      end
+      _timedelta_to_duration_string(td)
+    end
+
     def self._timedelta_to_pl_duration(td)
       td
+    end
+
+    def self.negate_duration_string(duration)
+      if duration.start_with?("-")
+        duration[1..]
+      else
+        "-#{duration}"
+      end
     end
 
     def self._datetime_to_pl_timestamp(dt, time_unit)
@@ -298,7 +313,7 @@ module Polars
 
     def self._parse_positional_inputs(inputs, structify: false)
       inputs_iter = _parse_inputs_as_iterable(inputs)
-      inputs_iter.map { |e| parse_as_expression(e, structify: structify) }
+      inputs_iter.map { |e| parse_into_expression(e, structify: structify) }
     end
 
     def self._parse_inputs_as_iterable(inputs)
@@ -315,26 +330,28 @@ module Polars
 
     def self._parse_named_inputs(named_inputs, structify: false)
       named_inputs.map do |name, input|
-        parse_as_expression(input, structify: structify)._alias(name.to_s)
+        parse_into_expression(input, structify: structify)._alias(name.to_s)
       end
     end
 
-    def self.parse_as_expression(input, str_as_lit: false, list_as_lit: true, structify: false, dtype: nil)
+    def self.parse_into_expression(
+      input,
+      str_as_lit: false,
+      list_as_series: false,
+      structify: false,
+      dtype: nil
+    )
       if input.is_a?(Expr)
         expr = input
+        if structify
+          expr = _structify_expression(expr)
+        end
       elsif input.is_a?(::String) && !str_as_lit
-        expr = Polars.col(input)
-        structify = false
-      elsif input.is_a?(::Array) && !list_as_lit
-        expr = Polars.lit(Series.new(input), dtype: dtype)
-        structify = false
+        expr = F.col(input)
+      elsif input.is_a?(::Array) && list_as_series
+        expr = F.lit(Series.new(input), dtype: dtype)
       else
-        expr = Polars.lit(input, dtype: dtype)
-        structify = false
-      end
-
-      if structify
-        raise Todo
+        expr = F.lit(input, dtype: dtype)
       end
 
       expr._rbexpr
@@ -385,7 +402,7 @@ module Polars
       false
     end
 
-    def self.parse_predicates_constraints_as_expression(*predicates, **constraints)
+    def self.parse_predicates_constraints_into_expression(*predicates, **constraints)
       all_predicates = _parse_positional_inputs(predicates)
 
       if constraints.any?
@@ -413,10 +430,6 @@ module Polars
       end
 
       Plr.all_horizontal(predicates)
-    end
-
-    def self.parse_when_inputs(*predicates, **constraints)
-      parse_predicates_constraints_as_expression(*predicates, **constraints)
     end
 
     def self.parse_interval_argument(interval)
@@ -451,6 +464,15 @@ module Polars
         raise InvalidOperationError, msg
       end
       window_size
+    end
+
+    def self.extend_bool(value, n_match, value_name, match_name)
+      values = bool?(value) ? [value] * n_match : value
+      if n_match != values.length
+        msg = "the length of `#{value_name}` (#{values.length}) does not match the length of `#{match_name}` (#{n_match})"
+        raise ValueError, msg
+      end
+      values
     end
   end
 end

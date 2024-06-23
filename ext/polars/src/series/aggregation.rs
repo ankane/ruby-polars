@@ -54,7 +54,8 @@ impl RbSeries {
                     .as_any_value(),
             )
             .into_value()),
-            DataType::Datetime(_, _) | DataType::Duration(_) | DataType::Time => {
+            // For non-numeric output types we require mean_reduce.
+            dt if dt.is_temporal() => {
                 Ok(Wrap(self.series.borrow().mean_reduce().as_any_value()).into_value())
             }
             _ => Ok(self.series.borrow().mean().into_value()),
@@ -73,7 +74,8 @@ impl RbSeries {
                     .as_any_value(),
             )
             .into_value()),
-            DataType::Datetime(_, _) | DataType::Duration(_) | DataType::Time => Ok(Wrap(
+            // For non-numeric output types we require median_reduce.
+            dt if dt.is_temporal() => Ok(Wrap(
                 self.series
                     .borrow()
                     .median_reduce()

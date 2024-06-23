@@ -358,7 +358,7 @@ module Polars
     #   # │ [7, 8, 9]     ┆ 4   ┆ null │
     #   # └───────────────┴─────┴──────┘
     def get(index, null_on_oob: true)
-      index = Utils.parse_as_expression(index)
+      index = Utils.parse_into_expression(index)
       Utils.wrap_expr(_rbexpr.arr_get(index, null_on_oob))
     end
 
@@ -446,7 +446,7 @@ module Polars
     #   # │ ["x", "y"]    ┆ _         ┆ x_y  │
     #   # └───────────────┴───────────┴──────┘
     def join(separator, ignore_nulls: true)
-      separator = Utils.parse_as_expression(separator, str_as_lit: true)
+      separator = Utils.parse_into_expression(separator, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.arr_join(separator, ignore_nulls))
     end
 
@@ -502,7 +502,7 @@ module Polars
     #   # │ ["a", "c"]    ┆ true     │
     #   # └───────────────┴──────────┘
     def contains(item)
-      item = Utils.parse_as_expression(item, str_as_lit: true)
+      item = Utils.parse_into_expression(item, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.arr_contains(item))
     end
 
@@ -530,7 +530,7 @@ module Polars
     #   # │ [2, 2]        ┆ 2              │
     #   # └───────────────┴────────────────┘
     def count_matches(element)
-      element = Utils.parse_as_expression(element, str_as_lit: true)
+      element = Utils.parse_into_expression(element, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.arr_count_matches(element))
     end
   end

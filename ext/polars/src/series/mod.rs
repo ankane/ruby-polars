@@ -247,13 +247,24 @@ impl RbSeries {
             .into())
     }
 
-    pub fn value_counts(&self, sorted: bool) -> RbResult<RbDataFrame> {
-        let df = self
+    pub fn value_counts(
+        &self,
+        sort: bool,
+        parallel: bool,
+        name: String,
+        normalize: bool,
+    ) -> RbResult<RbDataFrame> {
+        let out = self
             .series
             .borrow()
-            .value_counts(true, sorted)
+            .value_counts(sort, parallel, name, normalize)
             .map_err(RbPolarsErr::from)?;
-        Ok(df.into())
+        Ok(out.into())
+    }
+
+    pub fn slice(&self, offset: i64, length: Option<usize>) -> Self {
+        let length = length.unwrap_or_else(|| self.series.borrow().len());
+        self.series.borrow().slice(offset, length).into()
     }
 
     pub fn take_with_series(&self, indices: &RbSeries) -> RbResult<Self> {

@@ -1,6 +1,12 @@
-## 0.11.1 (unreleased)
+## 0.12.0 (unreleased)
 
+- Updated Polars to 0.41.0
 - Improved `struct` method
+- Aliased `melt` to `unpivot` for `DataFrame` and `LazyFrame`
+- Changed signature of `pivot` and `melt` methods
+- Changed signature of `date_range` and `date_ranges` methods
+- Removed `explode` method from `StringExpr` (use `split("").explode` instead)
+- Removed `set_ordering` method from `CatExpr`
 
 ## 0.11.0 (2024-06-02)
 

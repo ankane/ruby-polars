@@ -1017,18 +1017,18 @@ module Polars
     #   s.rle.struct.unnest
     #   # =>
     #   # shape: (6, 2)
-    #   # ┌─────────┬────────┐
-    #   # │ lengths ┆ values │
-    #   # │ ---     ┆ ---    │
-    #   # │ i32     ┆ i64    │
-    #   # ╞═════════╪════════╡
-    #   # │ 2       ┆ 1      │
-    #   # │ 1       ┆ 2      │
-    #   # │ 1       ┆ 1      │
-    #   # │ 1       ┆ null   │
-    #   # │ 1       ┆ 1      │
-    #   # │ 2       ┆ 3      │
-    #   # └─────────┴────────┘
+    #   # ┌─────┬───────┐
+    #   # │ len ┆ value │
+    #   # │ --- ┆ ---   │
+    #   # │ u32 ┆ i64   │
+    #   # ╞═════╪═══════╡
+    #   # │ 2   ┆ 1     │
+    #   # │ 1   ┆ 2     │
+    #   # │ 1   ┆ 1     │
+    #   # │ 1   ┆ null  │
+    #   # │ 1   ┆ 1     │
+    #   # │ 2   ┆ 3     │
+    #   # └─────┴───────┘
     def rle
       super
     end
@@ -1082,8 +1082,24 @@ module Polars
     #   # │ 2   ┆ 2      │
     #   # │ 3   ┆ 1      │
     #   # └─────┴────────┘
-    def value_counts(sort: false)
-      Utils.wrap_df(_s.value_counts(sort))
+    def value_counts(
+      sort: false,
+      parallel: false,
+      name: nil,
+      normalize: false
+    )
+      if name.nil?
+        if normalize
+          name = "proportion"
+        else
+          name = "count"
+        end
+      end
+      DataFrame._from_rbdf(
+        self._s.value_counts(
+          sort, parallel, name, normalize
+        )
+      )
     end
 
     # Return a count of the unique values in the order of appearance.
@@ -1386,7 +1402,7 @@ module Polars
     #   #         3
     #   # ]
     def slice(offset, length = nil)
-      super
+      self.class._from_rbseries(_s.slice(offset, length))
     end
 
     # Append a Series to this one.
@@ -1594,7 +1610,7 @@ module Polars
     #   #         4
     #   #         3
     #   # ]
-    def top_k(k: 5, nulls_last: false, multithreaded: true)
+    def top_k(k: 5)
       super
     end
 
@@ -1616,7 +1632,7 @@ module Polars
     #   #         2
     #   #         3
     #   # ]
-    def bottom_k(k: 5, nulls_last: false, multithreaded: true)
+    def bottom_k(k: 5)
       super
     end
 
@@ -3883,33 +3899,20 @@ module Polars
     #   #         200
     #   # ]
     #
-    # @example Passing a mapping with replacements is also supported as syntactic sugar. Specify a default to set all values that were not matched.
+    # @example Passing a mapping with replacements is also supported as syntactic sugar.
     #   mapping = {2 => 100, 3 => 200}
-    #   s.replace(mapping, default: -1)
+    #   s.replace(mapping)
     #   # =>
     #   # shape: (4,)
     #   # Series: '' [i64]
     #   # [
-    #   #         -1
+    #   #         1
     #   #         100
     #   #         100
     #   #         200
     #   # ]
     #
-    # @example The default can be another Series.
-    #   default = Polars::Series.new([2.5, 5.0, 7.5, 10.0])
-    #   s.replace(2, 100, default: default)
-    #   # =>
-    #   # shape: (4,)
-    #   # Series: '' [f64]
-    #   # [
-    #   #         2.5
-    #   #         100.0
-    #   #         100.0
-    #   #         10.0
-    #   # ]
-    #
-    # @example Replacing by values of a different data type sets the return type based on a combination of the `new` data type and either the original data type or the default data type if it was set.
+    # @example The original data type is preserved when replacing by values of a different data type.
     #   s = Polars::Series.new(["x", "y", "z"])
     #   mapping = {"x" => 1, "y" => 2, "z" => 3}
     #   s.replace(mapping)
@@ -3920,28 +3923,6 @@ module Polars
     #   #         "1"
     #   #         "2"
     #   #         "3"
-    #   # ]
-    #
-    # @example
-    #   s.replace(mapping, default: nil)
-    #   # =>
-    #   # shape: (3,)
-    #   # Series: '' [i64]
-    #   # [
-    #   #         1
-    #   #         2
-    #   #         3
-    #   # ]
-    #
-    # @example Set the `return_dtype` parameter to control the resulting data type directly.
-    #   s.replace(mapping, return_dtype: Polars::UInt8)
-    #   # =>
-    #   # shape: (3,)
-    #   # Series: '' [u8]
-    #   # [
-    #   #         1
-    #   #         2
-    #   #         3
     #   # ]
     def replace(old, new = Expr::NO_DEFAULT, default: Expr::NO_DEFAULT, return_dtype: nil)
       super
@@ -4399,7 +4380,7 @@ module Polars
           # TODO
           time_unit = nil
 
-          rb_series = RbSeries.new_from_anyvalues(name, values, strict)
+          rb_series = RbSeries.new_from_any_values(name, values, strict)
           if time_unit.nil?
             s = Utils.wrap_s(rb_series)
           else
@@ -4444,7 +4425,7 @@ module Polars
     end
 
     def sequence_from_anyvalue_or_object(name, values)
-      RbSeries.new_from_anyvalues(name, values, true)
+      RbSeries.new_from_any_values(name, values, true)
     rescue
       RbSeries.new_object(name, values, false)
     end
@@ -4461,10 +4442,10 @@ module Polars
       UInt32 => RbSeries.method(:new_opt_u32),
       UInt64 => RbSeries.method(:new_opt_u64),
       Decimal => RbSeries.method(:new_decimal),
-      Date => RbSeries.method(:new_from_anyvalues),
-      Datetime => RbSeries.method(:new_from_anyvalues),
-      Duration => RbSeries.method(:new_from_anyvalues),
-      Time => RbSeries.method(:new_from_anyvalues),
+      Date => RbSeries.method(:new_from_any_values),
+      Datetime => RbSeries.method(:new_from_any_values),
+      Duration => RbSeries.method(:new_from_any_values),
+      Time => RbSeries.method(:new_from_any_values),
       Boolean => RbSeries.method(:new_opt_bool),
       Utf8 => RbSeries.method(:new_str),
       Object => RbSeries.method(:new_object),

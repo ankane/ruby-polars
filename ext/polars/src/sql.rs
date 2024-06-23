@@ -37,7 +37,9 @@ impl RbSQLContext {
     }
 
     pub fn register(&self, name: String, lf: &RbLazyFrame) {
-        self.context.borrow_mut().register(&name, lf.ldf.clone())
+        self.context
+            .borrow_mut()
+            .register(&name, lf.ldf.borrow().clone())
     }
 
     pub fn unregister(&self, name: String) {

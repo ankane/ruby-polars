@@ -4,7 +4,7 @@ use polars_core::prelude::*;
 use crate::conversion::{slice_extract_wrapped, vec_extract_wrapped, Wrap};
 use crate::prelude::ObjectValue;
 use crate::series::to_series_collection;
-use crate::{RbPolarsErr, RbResult, RbSeries, RbValueError};
+use crate::{RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
 
 impl RbSeries {
     pub fn new_opt_bool(name: String, obj: RArray, strict: bool) -> RbResult<RbSeries> {
@@ -98,12 +98,25 @@ fn vec_wrap_any_value<'s>(arr: RArray) -> RbResult<Vec<Wrap<AnyValue<'s>>>> {
 }
 
 impl RbSeries {
-    pub fn new_from_anyvalues(name: String, val: RArray, strict: bool) -> RbResult<Self> {
-        let val = vec_wrap_any_value(val)?;
-        let avs = slice_extract_wrapped(&val);
+    pub fn new_from_any_values(name: String, values: RArray, strict: bool) -> RbResult<Self> {
+        let any_values_result = vec_wrap_any_value(values);
         // from anyvalues is fallible
-        let s = Series::from_any_values(&name, avs, strict).map_err(RbPolarsErr::from)?;
-        Ok(s.into())
+        let result = any_values_result.and_then(|avs| {
+            let avs = slice_extract_wrapped(&avs);
+            let s = Series::from_any_values(&name, avs, strict).map_err(|e| {
+                RbTypeError::new_err(format!(
+                    "{e}\n\nHint: Try setting `strict: false` to allow passing data with mixed types."
+                ))
+            })?;
+            Ok(s.into())
+        });
+
+        // Fall back to Object type for non-strict construction.
+        if !strict && result.is_err() {
+            return Self::new_object(name, values, strict);
+        }
+
+        result
     }
 
     pub fn new_str(name: String, val: Wrap<StringChunked>, _strict: bool) -> Self {
@@ -163,15 +176,8 @@ impl RbSeries {
         }
     }
 
-    pub fn new_decimal(name: String, val: RArray, strict: bool) -> RbResult<Self> {
-        let val = vec_wrap_any_value(val)?;
-        // TODO: do we have to respect 'strict' here? it's possible if we want to
-        let avs = slice_extract_wrapped(&val);
-        // create a fake dtype with a placeholder "none" scale, to be inferred later
-        let dtype = DataType::Decimal(None, None);
-        let s = Series::from_any_values_and_dtype(&name, avs, &dtype, strict)
-            .map_err(RbPolarsErr::from)?;
-        Ok(s.into())
+    pub fn new_decimal(name: String, values: RArray, strict: bool) -> RbResult<Self> {
+        Self::new_from_any_values(name, values, strict)
     }
 
     pub fn repeat(

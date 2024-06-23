@@ -1,11 +1,9 @@
 use magnus::{prelude::*, RString, Value};
 use polars::io::avro::AvroCompression;
-use polars::io::mmap::ReaderBytes;
 use polars::io::RowIndex;
 use polars::prelude::*;
 use std::io::{BufWriter, Cursor};
 use std::num::NonZeroUsize;
-use std::ops::Deref;
 
 use super::*;
 use crate::conversion::*;
@@ -93,7 +91,7 @@ impl RbDataFrame {
             .with_projection(projection.map(Arc::new))
             .with_rechunk(rechunk)
             .with_chunk_size(chunk_size)
-            .with_columns(columns.map(Arc::new))
+            .with_columns(columns.map(Arc::from))
             .with_n_threads(n_threads)
             .with_schema_overwrite(overwrite_dtype.map(Arc::new))
             .with_dtype_overwrite(overwrite_dtype_slice.map(Arc::new))
@@ -168,41 +166,53 @@ impl RbDataFrame {
         Ok(RbDataFrame::new(df))
     }
 
-    pub fn read_json(rb_f: Value) -> RbResult<Self> {
-        // memmap the file first
+    pub fn read_json(
+        rb_f: Value,
+        infer_schema_length: Option<usize>,
+        schema: Option<Wrap<Schema>>,
+        schema_overrides: Option<Wrap<Schema>>,
+    ) -> RbResult<Self> {
         let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
-        let mmap_read: ReaderBytes = (&mmap_bytes_r).into();
-        let bytes = mmap_read.deref();
 
-        // Happy path is our column oriented json as that is most performant
-        // on failure we try
-        match serde_json::from_slice::<DataFrame>(bytes) {
-            Ok(df) => Ok(df.into()),
-            // try arrow json reader instead
-            // this is row oriented
-            Err(e) => {
-                let msg = format!("{e}");
-                if msg.contains("successful parse invalid data") {
-                    let e = RbPolarsErr::from(PolarsError::ComputeError(msg.into()));
-                    Err(e)
-                } else {
-                    let out = JsonReader::new(mmap_bytes_r)
-                        .with_json_format(JsonFormat::Json)
-                        .finish()
-                        .map_err(|e| RbPolarsErr::other(format!("{:?}", e)))?;
-                    Ok(out.into())
-                }
-            }
+        let mut builder = JsonReader::new(mmap_bytes_r)
+            .with_json_format(JsonFormat::Json)
+            .infer_schema_len(infer_schema_length.and_then(NonZeroUsize::new));
+
+        if let Some(schema) = schema {
+            builder = builder.with_schema(Arc::new(schema.0));
         }
+
+        if let Some(schema) = schema_overrides.as_ref() {
+            builder = builder.with_schema_overwrite(&schema.0);
+        }
+
+        let out = builder.finish().map_err(RbPolarsErr::from)?;
+        Ok(out.into())
     }
 
-    pub fn read_ndjson(rb_f: Value) -> RbResult<Self> {
+    pub fn read_ndjson(
+        rb_f: Value,
+        ignore_errors: bool,
+        schema: Option<Wrap<Schema>>,
+        schema_overrides: Option<Wrap<Schema>>,
+    ) -> RbResult<Self> {
         let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
 
-        let out = JsonReader::new(mmap_bytes_r)
+        let mut builder = JsonReader::new(mmap_bytes_r)
             .with_json_format(JsonFormat::JsonLines)
+            .with_ignore_errors(ignore_errors);
+
+        if let Some(schema) = schema {
+            builder = builder.with_schema(Arc::new(schema.0));
+        }
+
+        if let Some(schema) = schema_overrides.as_ref() {
+            builder = builder.with_schema_overwrite(&schema.0);
+        }
+
+        let out = builder
             .finish()
-            .map_err(|e| RbPolarsErr::other(format!("{:?}", e)))?;
+            .map_err(|e| RbPolarsErr::other(format!("{e}")))?;
         Ok(out.into())
     }
 
@@ -335,7 +345,7 @@ impl RbDataFrame {
         rb_f: Value,
         compression: String,
         compression_level: Option<i32>,
-        statistics: bool,
+        statistics: Wrap<StatisticsOptions>,
         row_group_size: Option<usize>,
         data_page_size: Option<usize>,
     ) -> RbResult<()> {
@@ -345,7 +355,7 @@ impl RbDataFrame {
             let f = std::fs::File::create(s).unwrap();
             ParquetWriter::new(f)
                 .with_compression(compression)
-                .with_statistics(statistics)
+                .with_statistics(statistics.0)
                 .with_row_group_size(row_group_size)
                 .with_data_page_size(data_page_size)
                 .finish(&mut self.df.borrow_mut())
@@ -354,7 +364,7 @@ impl RbDataFrame {
             let buf = get_file_like(rb_f, true)?;
             ParquetWriter::new(buf)
                 .with_compression(compression)
-                .with_statistics(statistics)
+                .with_statistics(statistics.0)
                 .with_row_group_size(row_group_size)
                 .with_data_page_size(data_page_size)
                 .finish(&mut self.df.borrow_mut())

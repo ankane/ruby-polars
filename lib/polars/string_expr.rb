@@ -331,7 +331,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [1, nil, 2]})
-    #   df.select(Polars.col("foo").str.concat("-"))
+    #   df.select(Polars.col("foo").str.join("-"))
     #   # =>
     #   # shape: (1, 1)
     #   # ┌─────┐
@@ -344,7 +344,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [1, nil, 2]})
-    #   df.select(Polars.col("foo").str.concat("-", ignore_nulls: false))
+    #   df.select(Polars.col("foo").str.join("-", ignore_nulls: false))
     #   # =>
     #   # shape: (1, 1)
     #   # ┌──────┐
@@ -354,9 +354,10 @@ module Polars
     #   # ╞══════╡
     #   # │ null │
     #   # └──────┘
-    def concat(delimiter = "-", ignore_nulls: true)
-      Utils.wrap_expr(_rbexpr.str_concat(delimiter, ignore_nulls))
+    def join(delimiter = "-", ignore_nulls: true)
+      Utils.wrap_expr(_rbexpr.str_join(delimiter, ignore_nulls))
     end
+    alias_method :concat, :join
 
     # Transform to uppercase variant.
     #
@@ -446,7 +447,7 @@ module Polars
     #   # │ both  │
     #   # └───────┘
     def strip_chars(characters = nil)
-      characters = Utils.parse_as_expression(characters, str_as_lit: true)
+      characters = Utils.parse_into_expression(characters, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_strip_chars(characters))
     end
     alias_method :strip, :strip_chars
@@ -473,7 +474,7 @@ module Polars
     #   # │ both   │
     #   # └────────┘
     def strip_chars_start(characters = nil)
-      characters = Utils.parse_as_expression(characters, str_as_lit: true)
+      characters = Utils.parse_into_expression(characters, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_strip_chars_start(characters))
     end
     alias_method :lstrip, :strip_chars_start
@@ -500,7 +501,7 @@ module Polars
     #   # │  both │
     #   # └───────┘
     def strip_chars_end(characters = nil)
-      characters = Utils.parse_as_expression(characters, str_as_lit: true)
+      characters = Utils.parse_into_expression(characters, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_strip_chars_end(characters))
     end
     alias_method :rstrip, :strip_chars_end
@@ -530,7 +531,7 @@ module Polars
     #   # │ bar       ┆ bar      │
     #   # └───────────┴──────────┘
     def strip_prefix(prefix)
-      prefix = Utils.parse_as_expression(prefix, str_as_lit: true)
+      prefix = Utils.parse_into_expression(prefix, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_strip_prefix(prefix))
     end
 
@@ -560,7 +561,7 @@ module Polars
     #   # │ bar       ┆          │
     #   # └───────────┴──────────┘
     def strip_suffix(suffix)
-      suffix = Utils.parse_as_expression(suffix, str_as_lit: true)
+      suffix = Utils.parse_into_expression(suffix, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_strip_suffix(suffix))
     end
 
@@ -654,7 +655,7 @@ module Polars
     #   # │ null   ┆ null   │
     #   # └────────┴────────┘
     def zfill(length)
-      length = Utils.parse_as_expression(length)
+      length = Utils.parse_into_expression(length)
       Utils.wrap_expr(_rbexpr.str_zfill(length))
     end
 
@@ -840,7 +841,7 @@ module Polars
     #   # │ true     │
     #   # └──────────┘
     def json_path_match(json_path)
-      json_path = Utils.parse_as_expression(json_path, str_as_lit: true)
+      json_path = Utils.parse_into_expression(json_path, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_json_path_match(json_path))
     end
 
@@ -940,7 +941,7 @@ module Polars
     #   # │ 678 │
     #   # └─────┘
     def extract(pattern, group_index: 1)
-      pattern = Utils.parse_as_expression(pattern, str_as_lit: true)
+      pattern = Utils.parse_into_expression(pattern, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_extract(pattern, group_index))
     end
 
@@ -1057,7 +1058,7 @@ module Polars
     #   # │ 6            │
     #   # └──────────────┘
     def count_matches(pattern, literal: false)
-      pattern = Utils.parse_as_expression(pattern, str_as_lit: true)
+      pattern = Utils.parse_into_expression(pattern, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_count_matches(pattern, literal))
     end
     alias_method :count_match, :count_matches
@@ -1086,12 +1087,11 @@ module Polars
     #   # │ ["foo", "bar", "baz"] │
     #   # └───────────────────────┘
     def split(by, inclusive: false)
-      by = Utils.parse_as_expression(by, str_as_lit: true)
+      by = Utils.parse_into_expression(by, str_as_lit: true)
       if inclusive
-        Utils.wrap_expr(_rbexpr.str_split_inclusive(by))
-      else
-        Utils.wrap_expr(_rbexpr.str_split(by))
+        return Utils.wrap_expr(_rbexpr.str_split_inclusive(by))
       end
+      Utils.wrap_expr(_rbexpr.str_split(by))
     end
 
     # Split the string by a substring using `n` splits.
@@ -1129,7 +1129,7 @@ module Polars
     #   # │ {"d","4"}   │
     #   # └─────────────┘
     def split_exact(by, n, inclusive: false)
-      by = Utils.parse_as_expression(by, str_as_lit: true)
+      by = Utils.parse_into_expression(by, str_as_lit: true)
       if inclusive
         Utils.wrap_expr(_rbexpr.str_split_exact_inclusive(by, n))
       else
@@ -1166,7 +1166,7 @@ module Polars
     #   # │ {"foo","bar baz"} │
     #   # └───────────────────┘
     def splitn(by, n)
-      by = Utils.parse_as_expression(by, str_as_lit: true)
+      by = Utils.parse_into_expression(by, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_splitn(by, n))
     end
 
@@ -1282,34 +1282,9 @@ module Polars
     #   # │ dragonfruit ┆ uit      │
     #   # └─────────────┴──────────┘
     def slice(offset, length = nil)
-      offset = Utils.parse_as_expression(offset)
-      length = Utils.parse_as_expression(length)
+      offset = Utils.parse_into_expression(offset)
+      length = Utils.parse_into_expression(length)
       Utils.wrap_expr(_rbexpr.str_slice(offset, length))
-    end
-
-    # Returns a column with a separate row for every string character.
-    #
-    # @return [Expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new({"a": ["foo", "bar"]})
-    #   df.select(Polars.col("a").str.explode)
-    #   # =>
-    #   # shape: (6, 1)
-    #   # ┌─────┐
-    #   # │ a   │
-    #   # │ --- │
-    #   # │ str │
-    #   # ╞═════╡
-    #   # │ f   │
-    #   # │ o   │
-    #   # │ o   │
-    #   # │ b   │
-    #   # │ a   │
-    #   # │ r   │
-    #   # └─────┘
-    def explode
-      Utils.wrap_expr(_rbexpr.str_explode)
     end
 
     # Convert an Utf8 column into an Int64 column with base radix.
@@ -1355,7 +1330,7 @@ module Polars
     #   # │ null ┆ null   │
     #   # └──────┴────────┘
     def to_integer(base: 10, strict: true)
-      base = Utils.parse_as_expression(base, str_as_lit: false)
+      base = Utils.parse_into_expression(base, str_as_lit: false)
       Utils.wrap_expr(_rbexpr.str_to_integer(base, strict))
     end
 
@@ -1429,7 +1404,7 @@ module Polars
     #   # │ Can you feel the love tonight   ┆ true         │
     #   # └─────────────────────────────────┴──────────────┘
     def contains_any(patterns, ascii_case_insensitive: false)
-      patterns = Utils.parse_as_expression(patterns, str_as_lit: false, list_as_lit: false)
+      patterns = Utils.parse_into_expression(patterns, str_as_lit: false, list_as_series: true)
       Utils.wrap_expr(
         _rbexpr.str_contains_any(patterns, ascii_case_insensitive)
       )
@@ -1500,9 +1475,9 @@ module Polars
     #   # │ Can you feel the love tonight   ┆ Can me feel the love tonight    │
     #   # └─────────────────────────────────┴─────────────────────────────────┘
     def replace_many(patterns, replace_with, ascii_case_insensitive: false)
-      patterns = Utils.parse_as_expression(patterns, str_as_lit: false, list_as_lit: false)
-      replace_with = Utils.parse_as_expression(
-        replace_with, str_as_lit: true, list_as_lit: false
+      patterns = Utils.parse_into_expression(patterns, str_as_lit: false, list_as_series: true)
+      replace_with = Utils.parse_into_expression(
+        replace_with, str_as_lit: true, list_as_series: true
       )
       Utils.wrap_expr(
         _rbexpr.str_replace_many(

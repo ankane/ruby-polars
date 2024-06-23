@@ -4,11 +4,11 @@ use crate::conversion::Wrap;
 use crate::{RbExpr, RbPolarsErr, RbResult};
 
 impl RbExpr {
-    pub fn str_concat(&self, delimiter: String, ignore_nulls: bool) -> Self {
+    pub fn str_join(&self, delimiter: String, ignore_nulls: bool) -> Self {
         self.inner
             .clone()
             .str()
-            .concat(&delimiter, ignore_nulls)
+            .join(&delimiter, ignore_nulls)
             .into()
     }
 
@@ -113,10 +113,6 @@ impl RbExpr {
             .str()
             .slice(start.inner.clone(), length.inner.clone())
             .into()
-    }
-
-    pub fn str_explode(&self) -> Self {
-        self.inner.clone().str().explode().into()
     }
 
     pub fn str_to_uppercase(&self) -> Self {

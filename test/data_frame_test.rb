@@ -416,7 +416,7 @@ class DataFrameTest < Minitest::Test
   def test_join_outer
     df1 = Polars::DataFrame.new({"L1" => ["a", "b", "c"], "L2" => [1, 2, 3]})
     df2 = Polars::DataFrame.new({"L1" => ["a", "c", "d"], "R2" => [7, 8, 9]})
-    df3 = df1.join(df2, on: "L1", how: "outer")
+    df3 = df1.join(df2, on: "L1", how: "full")
     expected =
       Polars::DataFrame.new({
         "L1" => ["a", "b", "c", nil],
@@ -548,7 +548,7 @@ class DataFrameTest < Minitest::Test
   def test_replace
     data = {"a" => [1, 2, 2, 3], "b" => [1.5, 2.5, 5.0, 1.0]}
     df = Polars::DataFrame.new(data, schema: {"a" => Polars::Int8, "b" => Polars::Float64})
-    expected = Polars::DataFrame.new({"a" => [1, 100, 100, 3]})
+    expected = Polars::DataFrame.new({"a" => [1, 100, 100, 3]}, schema: {"a" => Polars::Int8})
     assert_frame expected, df.select(Polars.col("a").replace({2 => 100}))
     expected = Polars::DataFrame.new({"a" => [1.5, 100.0, 100.0, 1.0]})
     assert_frame expected, df.select(Polars.col("a").replace({2 => 100}, default: Polars.col("b")))

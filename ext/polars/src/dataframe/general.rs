@@ -341,22 +341,22 @@ impl RbDataFrame {
         RbDataFrame::new(self.df.borrow().clone())
     }
 
-    pub fn melt(
+    pub fn unpivot(
         &self,
-        id_vars: Vec<String>,
-        value_vars: Vec<String>,
+        on: Vec<String>,
+        index: Vec<String>,
         value_name: Option<String>,
         variable_name: Option<String>,
     ) -> RbResult<Self> {
-        let args = MeltArgs {
-            id_vars: strings_to_smartstrings(id_vars),
-            value_vars: strings_to_smartstrings(value_vars),
+        let args = UnpivotArgs {
+            on: strings_to_smartstrings(on),
+            index: strings_to_smartstrings(index),
             value_name: value_name.map(|s| s.into()),
             variable_name: variable_name.map(|s| s.into()),
             streamable: false,
         };
 
-        let df = self.df.borrow().melt2(args).map_err(RbPolarsErr::from)?;
+        let df = self.df.borrow().unpivot2(args).map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
     }
 
@@ -569,23 +569,16 @@ impl RbDataFrame {
         by: Vec<String>,
         index_column: String,
         every: String,
-        offset: String,
         stable: bool,
     ) -> RbResult<Self> {
         let out = if stable {
-            self.df.borrow().upsample_stable(
-                by,
-                &index_column,
-                Duration::parse(&every),
-                Duration::parse(&offset),
-            )
+            self.df
+                .borrow()
+                .upsample_stable(by, &index_column, Duration::parse(&every))
         } else {
-            self.df.borrow().upsample(
-                by,
-                &index_column,
-                Duration::parse(&every),
-                Duration::parse(&offset),
-            )
+            self.df
+                .borrow()
+                .upsample(by, &index_column, Duration::parse(&every))
         };
         let out = out.map_err(RbPolarsErr::from)?;
         Ok(out.into())

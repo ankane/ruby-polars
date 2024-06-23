@@ -7,7 +7,7 @@ use std::num::NonZeroUsize;
 
 use magnus::{
     class, exception, prelude::*, r_hash::ForEach, value::Opaque, IntoValue, Module, RArray, RHash,
-    Ruby, TryConvert, Value,
+    Ruby, Symbol, TryConvert, Value,
 };
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
@@ -75,7 +75,7 @@ pub(crate) fn get_df(obj: Value) -> RbResult<DataFrame> {
 
 pub(crate) fn get_lf(obj: Value) -> RbResult<LazyFrame> {
     let rbdf = obj.funcall::<_, _, &RbLazyFrame>("_ldf", ())?;
-    Ok(rbdf.ldf.clone())
+    Ok(rbdf.ldf.borrow().clone())
 }
 
 pub(crate) fn get_series(obj: Value) -> RbResult<Series> {
@@ -427,6 +427,31 @@ impl TryConvert for Wrap<DataType> {
     }
 }
 
+impl TryConvert for Wrap<StatisticsOptions> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let mut statistics = StatisticsOptions::empty();
+
+        let dict = RHash::try_convert(ob)?;
+        dict.foreach(|key: Symbol, val: bool| {
+            match key.name()?.as_ref() {
+                "min" => statistics.min_value = val,
+                "max" => statistics.max_value = val,
+                "distinct_count" => statistics.distinct_count = val,
+                "null_count" => statistics.null_count = val,
+                _ => {
+                    return Err(RbTypeError::new_err(format!(
+                        "'{key}' is not a valid statistic option",
+                    )))
+                }
+            }
+            Ok(ForEach::Continue)
+        })
+        .unwrap();
+
+        Ok(Wrap(statistics))
+    }
+}
+
 impl<'s> TryConvert for Wrap<Row<'s>> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let mut vals: Vec<Wrap<AnyValue<'s>>> = Vec::new();
@@ -686,14 +711,13 @@ impl TryConvert for Wrap<JoinType> {
         let parsed = match String::try_convert(ob)?.as_str() {
             "inner" => JoinType::Inner,
             "left" => JoinType::Left,
-            "outer" => JoinType::Outer,
-            "outer_coalesce" => JoinType::Outer,
+            "full" => JoinType::Full,
             "semi" => JoinType::Semi,
             "anti" => JoinType::Anti,
             "cross" => JoinType::Cross,
             v => {
                 return Err(RbValueError::new_err(format!(
-                "how must be one of {{'inner', 'left', 'outer', 'semi', 'anti', 'cross'}}, got {}",
+                "how must be one of {{'inner', 'left', 'full', 'semi', 'anti', 'cross'}}, got {}",
                 v
             )))
             }

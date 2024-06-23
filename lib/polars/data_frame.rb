@@ -622,7 +622,7 @@ module Polars
     #       "bar" => [6, 7, 8]
     #     }
     #   )
-    #   df.write_ndjson()
+    #   df.write_ndjson
     #   # => "{\"foo\":1,\"bar\":6}\n{\"foo\":2,\"bar\":7}\n{\"foo\":3,\"bar\":8}\n"
     def write_ndjson(file = nil)
       if Utils.pathlike?(file)
@@ -881,6 +881,24 @@ module Polars
       end
       if Utils.pathlike?(file)
         file = Utils.normalize_filepath(file)
+      end
+
+      if statistics == true
+        statistics = {
+          min: true,
+          max: true,
+          distinct_count: false,
+          null_count: true
+        }
+      elsif statistics == false
+        statistics = {}
+      elsif statistics == "full"
+        statistics = {
+          min: true,
+          max: true,
+          distinct_count: true,
+          null_count: true
+        }
       end
 
       _df.write_parquet(
@@ -1724,12 +1742,6 @@ module Polars
     #   Define whether the temporal window interval is closed or not.
     # @param by [Object]
     #   Also group by this column/these columns.
-    # @param check_sorted [Boolean]
-    #   When the `by` argument is given, polars can not check sortedness
-    #   by the metadata and has to do a full scan on the index column to
-    #   verify data is sorted. This is expensive. If you are sure the
-    #   data within the by groups is sorted, you can set this to `false`.
-    #   Doing so incorrectly will lead to incorrect output
     #
     # @return [RollingGroupBy]
     #
@@ -1745,7 +1757,7 @@ module Polars
     #   df = Polars::DataFrame.new({"dt" => dates, "a" => [3, 7, 5, 9, 2, 1]}).with_column(
     #     Polars.col("dt").str.strptime(Polars::Datetime).set_sorted
     #   )
-    #   df.group_by_rolling(index_column: "dt", period: "2d").agg(
+    #   df.rolling(index_column: "dt", period: "2d").agg(
     #     [
     #       Polars.sum("a").alias("sum_a"),
     #       Polars.min("a").alias("min_a"),
@@ -1766,17 +1778,17 @@ module Polars
     #   # │ 2020-01-03 19:45:32 ┆ 11    ┆ 2     ┆ 9     │
     #   # │ 2020-01-08 23:16:43 ┆ 1     ┆ 1     ┆ 1     │
     #   # └─────────────────────┴───────┴───────┴───────┘
-    def group_by_rolling(
+    def rolling(
       index_column:,
       period:,
       offset: nil,
       closed: "right",
-      by: nil,
-      check_sorted: true
+      by: nil
     )
-      RollingGroupBy.new(self, index_column, period, offset, closed, by, check_sorted)
+      RollingGroupBy.new(self, index_column, period, offset, closed, by)
     end
-    alias_method :groupby_rolling, :group_by_rolling
+    alias_method :groupby_rolling, :rolling
+    alias_method :group_by_rolling, :rolling
 
     # Group based on a time value (or index value of type `:i32`, `:i64`).
     #
@@ -1846,10 +1858,12 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "time" => Polars.date_range(
+    #       "time" => Polars.datetime_range(
     #         DateTime.new(2021, 12, 16),
     #         DateTime.new(2021, 12, 16, 3),
-    #         "30m"
+    #         "30m",
+    #         time_unit: "us",
+    #         eager: true
     #       ),
     #       "n" => 0..6
     #     }
@@ -1948,10 +1962,12 @@ module Polars
     # @example Dynamic group bys can also be combined with grouping on normal keys.
     #   df = Polars::DataFrame.new(
     #     {
-    #       "time" => Polars.date_range(
+    #       "time" => Polars.datetime_range(
     #         DateTime.new(2021, 12, 16),
     #         DateTime.new(2021, 12, 16, 3),
-    #         "30m"
+    #         "30m",
+    #         time_unit: "us",
+    #         eager: true
     #       ),
     #       "groups" => ["a", "a", "a", "b", "b", "a", "a"]
     #     }
@@ -2038,8 +2054,6 @@ module Polars
     #   Note that this column has to be sorted for the output to make sense.
     # @param every [String]
     #   interval will start 'every' duration
-    # @param offset [String]
-    #   change the start of the date_range by this offset.
     # @param by [Object]
     #   First group by these columns and then upsample for every group
     # @param maintain_order [Boolean]
@@ -2099,7 +2113,6 @@ module Polars
     def upsample(
       time_column:,
       every:,
-      offset: nil,
       by: nil,
       maintain_order: false
     )
@@ -2109,15 +2122,11 @@ module Polars
       if by.is_a?(::String)
         by = [by]
       end
-      if offset.nil?
-        offset = "0ns"
-      end
 
-      every = Utils._timedelta_to_pl_duration(every)
-      offset = Utils._timedelta_to_pl_duration(offset)
+      every = Utils.parse_as_duration_string(every)
 
       _from_rbdf(
-        _df.upsample(by, time_column, every, offset, maintain_order)
+        _df.upsample(by, time_column, every, maintain_order)
       )
     end
 
@@ -2264,7 +2273,7 @@ module Polars
     #   Name(s) of the right join column(s).
     # @param on [Object]
     #   Name(s) of the join columns in both DataFrames.
-    # @param how ["inner", "left", "outer", "semi", "anti", "cross"]
+    # @param how ["inner", "left", "full", "semi", "anti", "cross"]
     #   Join strategy.
     # @param suffix [String]
     #   Suffix to append to columns with a duplicate name.
@@ -2300,7 +2309,7 @@ module Polars
     #   # └─────┴─────┴─────┴───────┘
     #
     # @example
-    #   df.join(other_df, on: "ham", how: "outer")
+    #   df.join(other_df, on: "ham", how: "full")
     #   # =>
     #   # shape: (4, 5)
     #   # ┌──────┬──────┬──────┬───────┬───────────┐
@@ -2957,9 +2966,9 @@ module Polars
     #   arguments contains multiple columns as well
     # @param index [Object]
     #   One or multiple keys to group by
-    # @param columns [Object]
+    # @param on [Object]
     #   Columns whose values will be used as the header of the output DataFrame
-    # @param aggregate_fn ["first", "sum", "max", "min", "mean", "median", "last", "count"]
+    # @param aggregate_function ["first", "sum", "max", "min", "mean", "median", "last", "count"]
     #   A predefined aggregate function str or an expression.
     # @param maintain_order [Object]
     #   Sort the grouped keys so that the output order is predictable.
@@ -2971,66 +2980,62 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "foo" => ["one", "one", "one", "two", "two", "two"],
-    #       "bar" => ["A", "B", "C", "A", "B", "C"],
+    #       "foo" => ["one", "one", "two", "two", "one", "two"],
+    #       "bar" => ["y", "y", "y", "x", "x", "x"],
     #       "baz" => [1, 2, 3, 4, 5, 6]
     #     }
     #   )
-    #   df.pivot(values: "baz", index: "foo", columns: "bar")
+    #   df.pivot("bar", index: "foo", values: "baz", aggregate_function: "sum")
     #   # =>
-    #   # shape: (2, 4)
-    #   # ┌─────┬─────┬─────┬─────┐
-    #   # │ foo ┆ A   ┆ B   ┆ C   │
-    #   # │ --- ┆ --- ┆ --- ┆ --- │
-    #   # │ str ┆ i64 ┆ i64 ┆ i64 │
-    #   # ╞═════╪═════╪═════╪═════╡
-    #   # │ one ┆ 1   ┆ 2   ┆ 3   │
-    #   # │ two ┆ 4   ┆ 5   ┆ 6   │
-    #   # └─────┴─────┴─────┴─────┘
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ y   ┆ x   │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ one ┆ 3   ┆ 5   │
+    #   # │ two ┆ 3   ┆ 10  │
+    #   # └─────┴─────┴─────┘
     def pivot(
-      values:,
+      on,
       index:,
-      columns:,
-      aggregate_fn: "first",
+      values:,
+      aggregate_function: nil,
       maintain_order: true,
       sort_columns: false,
       separator: "_"
     )
-      if values.is_a?(::String)
-        values = [values]
-      end
-      if index.is_a?(::String)
-        index = [index]
-      end
-      if columns.is_a?(::String)
-        columns = [columns]
+      index = Utils._expand_selectors(self, index)
+      on = Utils._expand_selectors(self, on)
+      if !values.nil?
+        values = Utils._expand_selectors(self, values)
       end
 
-      if aggregate_fn.is_a?(::String)
-        case aggregate_fn
+      if aggregate_function.is_a?(::String)
+        case aggregate_function
         when "first"
-          aggregate_expr = Polars.element.first._rbexpr
+          aggregate_expr = F.element.first._rbexpr
         when "sum"
-          aggregate_expr = Polars.element.sum._rbexpr
+          aggregate_expr = F.element.sum._rbexpr
         when "max"
-          aggregate_expr = Polars.element.max._rbexpr
+          aggregate_expr = F.element.max._rbexpr
         when "min"
-          aggregate_expr = Polars.element.min._rbexpr
+          aggregate_expr = F.element.min._rbexpr
         when "mean"
-          aggregate_expr = Polars.element.mean._rbexpr
+          aggregate_expr = F.element.mean._rbexpr
         when "median"
-          aggregate_expr = Polars.element.median._rbexpr
+          aggregate_expr = F.element.median._rbexpr
         when "last"
-          aggregate_expr = Polars.element.last._rbexpr
+          aggregate_expr = F.element.last._rbexpr
         when "len"
-          aggregate_expr = Polars.len._rbexpr
+          aggregate_expr = F.len._rbexpr
         when "count"
           warn "`aggregate_function: \"count\"` input for `pivot` is deprecated. Use `aggregate_function: \"len\"` instead."
-          aggregate_expr = Polars.len._rbexpr
+          aggregate_expr = F.len._rbexpr
         else
           raise ArgumentError, "Argument aggregate fn: '#{aggregate_fn}' was not expected."
         end
-      elsif aggregate_fn.nil?
+      elsif aggregate_function.nil?
         aggregate_expr = nil
       else
         aggregate_expr = aggregate_function._rbexpr
@@ -3038,8 +3043,8 @@ module Polars
 
       _from_rbdf(
         _df.pivot_expr(
+          on,
           index,
-          columns,
           values,
           maintain_order,
           sort_columns,
@@ -3054,18 +3059,18 @@ module Polars
     # Optionally leaves identifiers set.
     #
     # This function is useful to massage a DataFrame into a format where one or more
-    # columns are identifier variables (id_vars), while all other columns, considered
-    # measured variables (value_vars), are "unpivoted" to the row axis, leaving just
+    # columns are identifier variables (index) while all other columns, considered
+    # measured variables (on), are "unpivoted" to the row axis leaving just
     # two non-identifier columns, 'variable' and 'value'.
     #
-    # @param id_vars [Object]
-    #   Columns to use as identifier variables.
-    # @param value_vars [Object]
-    #   Values to use as identifier variables.
-    #   If `value_vars` is empty all columns that are not in `id_vars` will be used.
-    # @param variable_name [String]
-    #   Name to give to the `value` column. Defaults to "variable"
-    # @param value_name [String]
+    # @param on [Object]
+    #   Column(s) or selector(s) to use as values variables; if `on`
+    #   is empty all columns that are not in `index` will be used.
+    # @param index [Object]
+    #   Column(s) or selector(s) to use as identifier variables.
+    # @param variable_name [Object]
+    #   Name to give to the `variable` column. Defaults to "variable"
+    # @param value_name [Object]
     #   Name to give to the `value` column. Defaults to "value"
     #
     # @return [DataFrame]
@@ -3078,7 +3083,7 @@ module Polars
     #       "c" => [2, 4, 6]
     #     }
     #   )
-    #   df.melt(id_vars: "a", value_vars: ["b", "c"])
+    #   df.unpivot(Polars::Selectors.numeric, index: "a")
     #   # =>
     #   # shape: (6, 3)
     #   # ┌─────┬──────────┬───────┐
@@ -3093,23 +3098,13 @@ module Polars
     #   # │ y   ┆ c        ┆ 4     │
     #   # │ z   ┆ c        ┆ 6     │
     #   # └─────┴──────────┴───────┘
-    def melt(id_vars: nil, value_vars: nil, variable_name: nil, value_name: nil)
-      if value_vars.is_a?(::String)
-        value_vars = [value_vars]
-      end
-      if id_vars.is_a?(::String)
-        id_vars = [id_vars]
-      end
-      if value_vars.nil?
-        value_vars = []
-      end
-      if id_vars.nil?
-        id_vars = []
-      end
-      _from_rbdf(
-        _df.melt(id_vars, value_vars, value_name, variable_name)
-      )
+    def unpivot(on, index: nil, variable_name: nil, value_name: nil)
+      on = on.nil? ? [] : Utils._expand_selectors(self, on)
+      index = index.nil? ? [] : Utils._expand_selectors(self, index)
+
+      _from_rbdf(_df.unpivot(on, index, value_name, variable_name))
     end
+    alias_method :melt, :unpivot
 
     # Unstack a long table to a wide form without doing an aggregation.
     #

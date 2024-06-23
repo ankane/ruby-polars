@@ -23,9 +23,9 @@ module Polars
     # @return [Object]
     #
     # @example
-    #   s = Polars.date_range(DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 3), "1d")
+    #   s = Polars::Series.new([Date.new(2001, 1, 1), Date.new(2001, 1, 2), Date.new(2001, 1, 3)])
     #   s.dt.min
-    #   # => 2001-01-01 00:00:00 UTC
+    #   # => Mon, 01 Jan 2001
     def min
       Utils.wrap_s(_s).min
     end
@@ -35,9 +35,9 @@ module Polars
     # @return [Object]
     #
     # @example
-    #   s = Polars.date_range(DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 3), "1d")
+    #   s = Polars::Series.new([Date.new(2001, 1, 1), Date.new(2001, 1, 2), Date.new(2001, 1, 3)])
     #   s.dt.max
-    #   # => 2001-01-03 00:00:00 UTC
+    #   # => Wed, 03 Jan 2001
     def max
       Utils.wrap_s(_s).max
     end
@@ -47,10 +47,12 @@ module Polars
     # @return [Object]
     #
     # @example
-    #   date = Polars.date_range(DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 3), "1d")
+    #   date = Polars.datetime_range(
+    #     DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 3), "1d", eager: true
+    #   ).alias("datetime")
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [datetime[μs]]
+    #   # Series: 'datetime' [datetime[ns]]
     #   # [
     #   #         2001-01-01 00:00:00
     #   #         2001-01-02 00:00:00
@@ -61,18 +63,7 @@ module Polars
     #   date.dt.median
     #   # => 2001-01-02 00:00:00 UTC
     def median
-      s = Utils.wrap_s(_s)
-      out = s.median
-      if !out.nil?
-        if s.dtype == Date
-          return Utils._to_ruby_date(out.to_i)
-        elsif [Datetime, Duration, Time].include?(s.dtype)
-          return out
-        else
-          return Utils._to_ruby_datetime(out.to_i, s.time_unit)
-        end
-      end
-      nil
+      _s.median
     end
 
     # Return mean as Ruby object.
@@ -80,32 +71,48 @@ module Polars
     # @return [Object]
     #
     # @example
-    #   date = Polars.date_range(DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 3), "1d")
-    #   # =>
-    #   # shape: (3,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-02 00:00:00
-    #   #         2001-01-03 00:00:00
-    #   # ]
+    #   s = Polars::Series.new([Date.new(2001, 1, 1), Date.new(2001, 1, 2)])
+    #   s.dt.mean
+    #   # => 2001-01-01 12:00:00 UTC
     #
     # @example
-    #   date.dt.mean
+    #   s = Polars::Series.new(
+    #     [DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 2), DateTime.new(2001, 1, 3)]
+    #   )
+    #   s.dt.mean
     #   # => 2001-01-02 00:00:00 UTC
     def mean
-      s = Utils.wrap_s(_s)
-      out = s.mean
-      if !out.nil?
-        if s.dtype == Date
-          return Utils._to_ruby_date(out.to_i)
-        elsif [Datetime, Duration, Time].include?(s.dtype)
-          return out
-        else
-          return Utils._to_ruby_datetime(out.to_i, s.time_unit)
-        end
-      end
-      nil
+      _s.mean
+    end
+
+    # Convert a Date/Time/Datetime column into a String column with the given format.
+    #
+    # Similar to `cast(Polars::String)`, but this method allows you to customize the
+    # formatting of the resulting string.
+    #
+    # @param format [String]
+    #   Format to use, refer to the `chrono strftime documentation
+    #   <https://docs.rs/chrono/latest/chrono/format/strftime/index.html>`_
+    #   for specification. Example: `"%y-%m-%d"`.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     "datetime",
+    #     [DateTime.new(2020, 3, 1), DateTime.new(2020, 4, 1), DateTime.new(2020, 5, 1)],
+    #   )
+    #   s.dt.to_string("%Y/%m/%d")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'datetime' [str]
+    #   # [
+    #   #         "2020/03/01"
+    #   #         "2020/04/01"
+    #   #         "2020/05/01"
+    #   # ]
+    def to_string(format)
+      super
     end
 
     # Format Date/datetime with a formatting rule.
@@ -115,29 +122,18 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 4)
-    #   date = Polars.date_range(start, stop, "1d")
+    #   s = Polars::Series.new(
+    #     "datetime",
+    #     [DateTime.new(2020, 3, 1), DateTime.new(2020, 4, 1), DateTime.new(2020, 5, 1)]
+    #   )
+    #   s.dt.strftime("%Y/%m/%d")
     #   # =>
-    #   # shape: (4,)
-    #   # Series: '' [datetime[μs]]
+    #   # shape: (3,)
+    #   # Series: 'datetime' [str]
     #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-02 00:00:00
-    #   #         2001-01-03 00:00:00
-    #   #         2001-01-04 00:00:00
-    #   # ]
-    #
-    # @example
-    #   date.dt.strftime("%Y-%m-%d")
-    #   # =>
-    #   # shape: (4,)
-    #   # Series: '' [str]
-    #   # [
-    #   #         "2001-01-01"
-    #   #         "2001-01-02"
-    #   #         "2001-01-03"
-    #   #         "2001-01-04"
+    #   #         "2020/03/01"
+    #   #         "2020/04/01"
+    #   #         "2020/05/01"
     #   # ]
     def strftime(fmt)
       super
@@ -152,22 +148,11 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2002, 1, 1)
-    #   date = Polars.date_range(start, stop, "1y")
+    #   s = Polars::Series.new("date", [Date.new(2001, 1, 1), Date.new(2002, 1, 1)])
+    #   s.dt.year
     #   # =>
     #   # shape: (2,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2002-01-01 00:00:00
-    #   # ]
-    #
-    # @example
-    #   date.dt.year
-    #   # =>
-    #   # shape: (2,)
-    #   # Series: '' [i32]
+    #   # Series: 'date' [i32]
     #   # [
     #   #         2001
     #   #         2002
@@ -207,24 +192,13 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 4, 1)
-    #   date = Polars.date_range(start, stop, "1mo")
-    #   # =>
-    #   # shape: (4,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-02-01 00:00:00
-    #   #         2001-03-01 00:00:00
-    #   #         2001-04-01 00:00:00
-    #   # ]
-    #
-    # @example
+    #   date = Polars.date_range(
+    #     Date.new(2001, 1, 1), Date.new(2001, 4, 1), "1mo", eager: true
+    #   ).alias("date")
     #   date.dt.quarter
     #   # =>
     #   # shape: (4,)
-    #   # Series: '' [i8]
+    #   # Series: 'date' [i8]
     #   # [
     #   #         1
     #   #         1
@@ -245,24 +219,13 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 4, 1)
-    #   date = Polars.date_range(start, stop, "1mo")
-    #   # =>
-    #   # shape: (4,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-02-01 00:00:00
-    #   #         2001-03-01 00:00:00
-    #   #         2001-04-01 00:00:00
-    #   # ]
-    #
-    # @example
+    #   date = Polars.date_range(
+    #     Date.new(2001, 1, 1), Date.new(2001, 4, 1), "1mo", eager: true
+    #   ).alias("date")
     #   date.dt.month
     #   # =>
     #   # shape: (4,)
-    #   # Series: '' [i8]
+    #   # Series: 'date' [i8]
     #   # [
     #   #         1
     #   #         2
@@ -283,24 +246,13 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 4, 1)
-    #   date = Polars.date_range(start, stop, "1mo")
-    #   # =>
-    #   # shape: (4,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-02-01 00:00:00
-    #   #         2001-03-01 00:00:00
-    #   #         2001-04-01 00:00:00
-    #   # ]
-    #
-    # @example
+    #   date = Polars.date_range(
+    #     Date.new(2001, 1, 1), Date.new(2001, 4, 1), "1mo", eager: true
+    #   ).alias("date")
     #   date.dt.week
     #   # =>
     #   # shape: (4,)
-    #   # Series: '' [i8]
+    #   # Series: 'date' [i8]
     #   # [
     #   #         1
     #   #         5
@@ -320,27 +272,13 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 7)
-    #   date = Polars.date_range(start, stop, "1d")
+    #   s = Polars.date_range(Date.new(2001, 1, 1), Date.new(2001, 1, 7), eager: true).alias(
+    #     "date"
+    #   )
+    #   s.dt.weekday
     #   # =>
     #   # shape: (7,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-02 00:00:00
-    #   #         2001-01-03 00:00:00
-    #   #         2001-01-04 00:00:00
-    #   #         2001-01-05 00:00:00
-    #   #         2001-01-06 00:00:00
-    #   #         2001-01-07 00:00:00
-    #   # ]
-    #
-    # @example
-    #   date.dt.weekday
-    #   # =>
-    #   # shape: (7,)
-    #   # Series: '' [i8]
+    #   # Series: 'date' [i8]
     #   # [
     #   #         1
     #   #         2
@@ -364,25 +302,13 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 9)
-    #   date = Polars.date_range(start, stop, "2d")
+    #   s = Polars.date_range(
+    #     Date.new(2001, 1, 1), Date.new(2001, 1, 9), "2d", eager: true
+    #   ).alias("date")
+    #   s.dt.day
     #   # =>
     #   # shape: (5,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-03 00:00:00
-    #   #         2001-01-05 00:00:00
-    #   #         2001-01-07 00:00:00
-    #   #         2001-01-09 00:00:00
-    #   # ]
-    #
-    # @example
-    #   date.dt.day
-    #   # =>
-    #   # shape: (5,)
-    #   # Series: '' [i8]
+    #   # Series: 'date' [i8]
     #   # [
     #   #         1
     #   #         3
@@ -404,23 +330,13 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 3, 1)
-    #   date = Polars.date_range(start, stop, "1mo")
+    #   s = Polars.date_range(
+    #     Date.new(2001, 1, 1), Date.new(2001, 3, 1), "1mo", eager: true
+    #   ).alias("date")
+    #   s.dt.ordinal_day
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-02-01 00:00:00
-    #   #         2001-03-01 00:00:00
-    #   # ]
-    #
-    # @example
-    #   date.dt.ordinal_day
-    #   # =>
-    #   # shape: (3,)
-    #   # Series: '' [i16]
+    #   # Series: 'date' [i16]
     #   # [
     #   #         1
     #   #         32
@@ -441,22 +357,11 @@ module Polars
     # @example
     #   start = DateTime.new(2001, 1, 1)
     #   stop = DateTime.new(2001, 1, 1, 3)
-    #   date = Polars.date_range(start, stop, "1h")
-    #   # =>
-    #   # shape: (4,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 01:00:00
-    #   #         2001-01-01 02:00:00
-    #   #         2001-01-01 03:00:00
-    #   # ]
-    #
-    # @example
+    #   date = Polars.datetime_range(start, stop, "1h", eager: true).alias("datetime")
     #   date.dt.hour
     #   # =>
     #   # shape: (4,)
-    #   # Series: '' [i8]
+    #   # Series: 'datetime' [i8]
     #   # [
     #   #         0
     #   #         1
@@ -478,21 +383,11 @@ module Polars
     # @example
     #   start = DateTime.new(2001, 1, 1)
     #   stop = DateTime.new(2001, 1, 1, 0, 4, 0)
-    #   date = Polars.date_range(start, stop, "2m")
-    #   # =>
-    #   # shape: (3,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 00:02:00
-    #   #         2001-01-01 00:04:00
-    #   # ]
-    #
-    # @example
+    #   date = Polars.datetime_range(start, stop, "2m", eager: true).alias("datetime")
     #   date.dt.minute
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [i8]
+    #   # Series: 'datetime' [i8]
     #   # [
     #   #         0
     #   #         2
@@ -515,27 +410,11 @@ module Polars
     # @example
     #   start = DateTime.new(2001, 1, 1)
     #   stop = DateTime.new(2001, 1, 1, 0, 0, 4)
-    #   date = Polars.date_range(start, stop, "500ms")
-    #   # =>
-    #   # shape: (9,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 00:00:00.500
-    #   #         2001-01-01 00:00:01
-    #   #         2001-01-01 00:00:01.500
-    #   #         2001-01-01 00:00:02
-    #   #         2001-01-01 00:00:02.500
-    #   #         2001-01-01 00:00:03
-    #   #         2001-01-01 00:00:03.500
-    #   #         2001-01-01 00:00:04
-    #   # ]
-    #
-    # @example
+    #   date = Polars.datetime_range(start, stop, "500ms", eager: true).alias("datetime")
     #   date.dt.second
     #   # =>
     #   # shape: (9,)
-    #   # Series: '' [i8]
+    #   # Series: 'datetime' [i8]
     #   # [
     #   #         0
     #   #         0
@@ -552,7 +431,7 @@ module Polars
     #   date.dt.second(fractional: true)
     #   # =>
     #   # shape: (9,)
-    #   # Series: '' [f64]
+    #   # Series: 'datetime' [f64]
     #   # [
     #   #         0.0
     #   #         0.5
@@ -577,27 +456,11 @@ module Polars
     # @example
     #   start = DateTime.new(2001, 1, 1)
     #   stop = DateTime.new(2001, 1, 1, 0, 0, 4)
-    #   date = Polars.date_range(start, stop, "500ms")
-    #   # =>
-    #   # shape: (9,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 00:00:00.500
-    #   #         2001-01-01 00:00:01
-    #   #         2001-01-01 00:00:01.500
-    #   #         2001-01-01 00:00:02
-    #   #         2001-01-01 00:00:02.500
-    #   #         2001-01-01 00:00:03
-    #   #         2001-01-01 00:00:03.500
-    #   #         2001-01-01 00:00:04
-    #   # ]
-    #
-    # @example
+    #   date = Polars.datetime_range(start, stop, "500ms", eager: true).alias("datetime")
     #   date.dt.millisecond
     #   # =>
     #   # shape: (9,)
-    #   # Series: '' [i32]
+    #   # Series: 'datetime' [i32]
     #   # [
     #   #         0
     #   #         500
@@ -622,27 +485,11 @@ module Polars
     # @example
     #   start = DateTime.new(2001, 1, 1)
     #   stop = DateTime.new(2001, 1, 1, 0, 0, 4)
-    #   date = Polars.date_range(start, stop, "500ms")
-    #   # =>
-    #   # shape: (9,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 00:00:00.500
-    #   #         2001-01-01 00:00:01
-    #   #         2001-01-01 00:00:01.500
-    #   #         2001-01-01 00:00:02
-    #   #         2001-01-01 00:00:02.500
-    #   #         2001-01-01 00:00:03
-    #   #         2001-01-01 00:00:03.500
-    #   #         2001-01-01 00:00:04
-    #   # ]
-    #
-    # @example
+    #   date = Polars.datetime_range(start, stop, "500ms", eager: true).alias("datetime")
     #   date.dt.microsecond
     #   # =>
     #   # shape: (9,)
-    #   # Series: '' [i32]
+    #   # Series: 'datetime' [i32]
     #   # [
     #   #         0
     #   #         500000
@@ -667,27 +514,11 @@ module Polars
     # @example
     #   start = DateTime.new(2001, 1, 1)
     #   stop = DateTime.new(2001, 1, 1, 0, 0, 4)
-    #   date = Polars.date_range(start, stop, "500ms")
-    #   # =>
-    #   # shape: (9,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 00:00:00.500
-    #   #         2001-01-01 00:00:01
-    #   #         2001-01-01 00:00:01.500
-    #   #         2001-01-01 00:00:02
-    #   #         2001-01-01 00:00:02.500
-    #   #         2001-01-01 00:00:03
-    #   #         2001-01-01 00:00:03.500
-    #   #         2001-01-01 00:00:04
-    #   # ]
-    #
-    # @example
+    #   date = Polars.datetime_range(start, stop, "500ms", eager: true).alias("datetime")
     #   date.dt.nanosecond
     #   # =>
     #   # shape: (9,)
-    #   # Series: '' [i32]
+    #   # Series: 'datetime' [i32]
     #   # [
     #   #         0
     #   #         500000000
@@ -705,7 +536,7 @@ module Polars
 
     # Return a timestamp in the given time unit.
     #
-    # @param tu ["us", "ns", "ms"]
+    # @param time_unit ["us", "ns", "ms"]
     #   Time unit.
     #
     # @return [Series]
@@ -713,10 +544,10 @@ module Polars
     # @example
     #   start = DateTime.new(2001, 1, 1)
     #   stop = DateTime.new(2001, 1, 3)
-    #   date = Polars.date_range(start, stop, "1d")
+    #   date = Polars.datetime_range(start, stop, "1d", eager: true).alias("datetime")
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [datetime[μs]]
+    #   # Series: 'datetime' [datetime[ns]]
     #   # [
     #   #         2001-01-01 00:00:00
     #   #         2001-01-02 00:00:00
@@ -744,13 +575,13 @@ module Polars
     #   #         978393600000000000
     #   #         978480000000000000
     #   # ]
-    def timestamp(tu = "us")
+    def timestamp(time_unit = "us")
       super
     end
 
     # Get the time passed since the Unix EPOCH in the give time unit.
     #
-    # @param tu ["us", "ns", "ms", "s", "d"]
+    # @param time_unit ["us", "ns", "ms", "s", "d"]
     #   Time unit.
     #
     # @return [Series]
@@ -758,10 +589,10 @@ module Polars
     # @example
     #   start = DateTime.new(2001, 1, 1)
     #   stop = DateTime.new(2001, 1, 3)
-    #   date = Polars.date_range(start, stop, "1d")
+    #   date = Polars.datetime_range(start, stop, "1d", eager: true).alias("datetime")
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [datetime[μs]]
+    #   # Series: 'datetime' [datetime[ns]]
     #   # [
     #   #         2001-01-01 00:00:00
     #   #         2001-01-02 00:00:00
@@ -789,7 +620,7 @@ module Polars
     #   #         978393600
     #   #         978480000
     #   # ]
-    def epoch(tu = "us")
+    def epoch(time_unit = "us")
       super
     end
 
@@ -798,7 +629,7 @@ module Polars
     # This does not modify underlying data, and should be used to fix an incorrect
     # time unit.
     #
-    # @param tu ["ns", "us", "ms"]
+    # @param time_unit ["ns", "us", "ms"]
     #   Time unit for the `Datetime` Series.
     #
     # @return [Series]
@@ -806,10 +637,10 @@ module Polars
     # @example
     #   start = DateTime.new(2001, 1, 1)
     #   stop = DateTime.new(2001, 1, 3)
-    #   date = Polars.date_range(start, stop, "1d", time_unit: "ns")
+    #   date = Polars.datetime_range(start, stop, "1d", time_unit: "ns", eager: true).alias("datetime")
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [datetime[ns]]
+    #   # Series: 'datetime' [datetime[ns]]
     #   # [
     #   #         2001-01-01 00:00:00
     #   #         2001-01-02 00:00:00
@@ -826,13 +657,13 @@ module Polars
     #   #         +32974-01-22 00:00:00
     #   #         +32976-10-18 00:00:00
     #   # ]
-    def with_time_unit(tu)
+    def with_time_unit(time_unit)
       super
     end
 
     # Cast the underlying data to another time unit. This may lose precision.
     #
-    # @param tu ["ns", "us", "ms"]
+    # @param time_unit ["ns", "us", "ms"]
     #   Time unit for the `Datetime` Series.
     #
     # @return [Series]
@@ -840,10 +671,10 @@ module Polars
     # @example
     #   start = DateTime.new(2001, 1, 1)
     #   stop = DateTime.new(2001, 1, 3)
-    #   date = Polars.date_range(start, stop, "1d")
+    #   date = Polars.datetime_range(start, stop, "1d", eager: true).alias("datetime")
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [datetime[μs]]
+    #   # Series: 'datetime' [datetime[ns]]
     #   # [
     #   #         2001-01-01 00:00:00
     #   #         2001-01-02 00:00:00
@@ -871,13 +702,13 @@ module Polars
     #   #         2001-01-02 00:00:00
     #   #         2001-01-03 00:00:00
     #   # ]
-    def cast_time_unit(tu)
+    def cast_time_unit(time_unit)
       super
     end
 
     # Set time zone a Series of type Datetime.
     #
-    # @param tz [String]
+    # @param time_zone [String]
     #   Time zone for the `Datetime` Series.
     #
     # @return [Series]
@@ -885,10 +716,10 @@ module Polars
     # @example
     #   start = DateTime.new(2020, 3, 1)
     #   stop = DateTime.new(2020, 5, 1)
-    #   date = Polars.date_range(start, stop, "1mo", time_zone: "UTC")
+    #   date = Polars.datetime_range(start, stop, "1mo", time_zone: "UTC", eager: true).alias("datetime")
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [datetime[μs, UTC]]
+    #   # Series: 'datetime' [datetime[ns, UTC]]
     #   # [
     #   #         2020-03-01 00:00:00 UTC
     #   #         2020-04-01 00:00:00 UTC
@@ -899,13 +730,13 @@ module Polars
     #   date.dt.convert_time_zone("Europe/London").alias("London")
     #   # =>
     #   # shape: (3,)
-    #   # Series: 'London' [datetime[μs, Europe/London]]
+    #   # Series: 'London' [datetime[ns, Europe/London]]
     #   # [
     #   #         2020-03-01 00:00:00 GMT
     #   #         2020-04-01 01:00:00 BST
     #   #         2020-05-01 01:00:00 BST
     #   # ]
-    def convert_time_zone(tz)
+    def convert_time_zone(time_zone)
       super
     end
 
@@ -928,10 +759,10 @@ module Polars
     # @example
     #   start = DateTime.new(2020, 3, 1)
     #   stop = DateTime.new(2020, 5, 1)
-    #   date = Polars.date_range(start, stop, "1mo", time_zone: "UTC")
+    #   date = Polars.datetime_range(start, stop, "1mo", time_zone: "UTC", eager: true).alias("datetime")
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [datetime[μs, UTC]]
+    #   # Series: 'datetime' [datetime[ns, UTC]]
     #   # [
     #   #         2020-03-01 00:00:00 UTC
     #   #         2020-04-01 00:00:00 UTC
@@ -942,7 +773,7 @@ module Polars
     #   date.dt.epoch("s")
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [i64]
+    #   # Series: 'datetime' [i64]
     #   # [
     #   #         1583020800
     #   #         1585699200
@@ -953,7 +784,7 @@ module Polars
     #   date = date.dt.convert_time_zone("Europe/London").alias("London")
     #   # =>
     #   # shape: (3,)
-    #   # Series: 'London' [datetime[μs, Europe/London]]
+    #   # Series: 'London' [datetime[ns, Europe/London]]
     #   # [
     #   #         2020-03-01 00:00:00 GMT
     #   #         2020-04-01 01:00:00 BST
@@ -975,7 +806,7 @@ module Polars
     #   date = date.dt.replace_time_zone("America/New_York").alias("NYC")
     #   # =>
     #   # shape: (3,)
-    #   # Series: 'NYC' [datetime[μs, America/New_York]]
+    #   # Series: 'NYC' [datetime[ns, America/New_York]]
     #   # [
     #   #         2020-03-01 00:00:00 EST
     #   #         2020-04-01 01:00:00 EDT
@@ -1014,39 +845,32 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   date = Polars.date_range(DateTime.new(2020, 3, 1), DateTime.new(2020, 5, 1), "1mo")
+    #   date = Polars.datetime_range(
+    #     Time.utc(2020, 3, 1), Time.utc(2020, 5, 1), "1mo", eager: true
+    #   ).alias("datetime")
+    #   date.diff.dt.total_days
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [datetime[μs]]
-    #   # [
-    #   #         2020-03-01 00:00:00
-    #   #         2020-04-01 00:00:00
-    #   #         2020-05-01 00:00:00
-    #   # ]
-    #
-    # @example
-    #   date.diff.dt.days
-    #   # =>
-    #   # shape: (3,)
-    #   # Series: '' [i64]
+    #   # Series: 'datetime' [i64]
     #   # [
     #   #         null
     #   #         31
     #   #         30
     #   # ]
-    def days
+    def total_days
       super
     end
+    alias_method :days, :total_days
 
     # Extract the hours from a Duration type.
     #
     # @return [Series]
     #
     # @example
-    #   date = Polars.date_range(DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 4), "1d")
+    #   date = Polars.datetime_range(DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 4), "1d", time_unit: "us", eager: true).alias("datetime")
     #   # =>
     #   # shape: (4,)
-    #   # Series: '' [datetime[μs]]
+    #   # Series: 'datetime' [datetime[μs]]
     #   # [
     #   #         2020-01-01 00:00:00
     #   #         2020-01-02 00:00:00
@@ -1055,29 +879,30 @@ module Polars
     #   # ]
     #
     # @example
-    #   date.diff.dt.hours
+    #   date.diff.dt.total_hours
     #   # =>
     #   # shape: (4,)
-    #   # Series: '' [i64]
+    #   # Series: 'datetime' [i64]
     #   # [
     #   #         null
     #   #         24
     #   #         24
     #   #         24
     #   # ]
-    def hours
+    def total_hours
       super
     end
+    alias_method :hours, :total_hours
 
     # Extract the minutes from a Duration type.
     #
     # @return [Series]
     #
     # @example
-    #   date = Polars.date_range(DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 4), "1d")
+    #   date = Polars.datetime_range(DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 4), "1d", time_unit: "us", eager: true).alias("datetime")
     #   # =>
     #   # shape: (4,)
-    #   # Series: '' [datetime[μs]]
+    #   # Series: 'datetime' [datetime[μs]]
     #   # [
     #   #         2020-01-01 00:00:00
     #   #         2020-01-02 00:00:00
@@ -1086,31 +911,32 @@ module Polars
     #   # ]
     #
     # @example
-    #   date.diff.dt.minutes
+    #   date.diff.dt.total_minutes
     #   # =>
     #   # shape: (4,)
-    #   # Series: '' [i64]
+    #   # Series: 'datetime' [i64]
     #   # [
     #   #         null
     #   #         1440
     #   #         1440
     #   #         1440
     #   # ]
-    def minutes
+    def total_minutes
       super
     end
+    alias_method :minutes, :total_minutes
 
     # Extract the seconds from a Duration type.
     #
     # @return [Series]
     #
     # @example
-    #   date = Polars.date_range(
-    #     DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 4, 0), "1m"
-    #   )
+    #   date = Polars.datetime_range(
+    #     DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 4, 0), "1m", time_unit: "us", eager: true
+    #   ).alias("datetime")
     #   # =>
     #   # shape: (5,)
-    #   # Series: '' [datetime[μs]]
+    #   # Series: 'datetime' [datetime[μs]]
     #   # [
     #   #         2020-01-01 00:00:00
     #   #         2020-01-01 00:01:00
@@ -1120,10 +946,10 @@ module Polars
     #   # ]
     #
     # @example
-    #   date.diff.dt.seconds
+    #   date.diff.dt.total_seconds
     #   # =>
     #   # shape: (5,)
-    #   # Series: '' [i64]
+    #   # Series: 'datetime' [i64]
     #   # [
     #   #         null
     #   #         60
@@ -1131,21 +957,22 @@ module Polars
     #   #         60
     #   #         60
     #   # ]
-    def seconds
+    def total_seconds
       super
     end
+    alias_method :seconds, :total_seconds
 
     # Extract the milliseconds from a Duration type.
     #
     # @return [Series]
     #
     # @example
-    #   date = Polars.date_range(
-    #     DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1, 0), "1ms"
-    #   )[0..2]
+    #   date = Polars.datetime_range(
+    #     DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1, 0), "1ms", time_unit: "us", eager: true
+    #   ).alias("datetime")[0..2]
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [datetime[μs]]
+    #   # Series: 'datetime' [datetime[μs]]
     #   # [
     #   #         2020-01-01 00:00:00
     #   #         2020-01-01 00:00:00.001
@@ -1153,30 +980,31 @@ module Polars
     #   # ]
     #
     # @example
-    #   date.diff.dt.milliseconds
+    #   date.diff.dt.total_milliseconds
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [i64]
+    #   # Series: 'datetime' [i64]
     #   # [
     #   #         null
     #   #         1
     #   #         1
     #   # ]
-    def milliseconds
+    def total_milliseconds
       super
     end
+    alias_method :milliseconds, :total_milliseconds
 
     # Extract the microseconds from a Duration type.
     #
     # @return [Series]
     #
     # @example
-    #   date = Polars.date_range(
-    #     DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1, 0), "1ms"
-    #   )[0..2]
+    #   date = Polars.datetime_range(
+    #     DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1, 0), "1ms", time_unit: "us", eager: true
+    #   ).alias("datetime")[0..2]
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [datetime[μs]]
+    #   # Series: 'datetime' [datetime[μs]]
     #   # [
     #   #         2020-01-01 00:00:00
     #   #         2020-01-01 00:00:00.001
@@ -1184,30 +1012,31 @@ module Polars
     #   # ]
     #
     # @example
-    #   date.diff.dt.microseconds
+    #   date.diff.dt.total_microseconds
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [i64]
+    #   # Series: 'datetime' [i64]
     #   # [
     #   #         null
     #   #         1000
     #   #         1000
     #   # ]
-    def microseconds
+    def total_microseconds
       super
     end
+    alias_method :microseconds, :total_microseconds
 
     # Extract the nanoseconds from a Duration type.
     #
     # @return [Series]
     #
     # @example
-    #   date = Polars.date_range(
-    #     DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1, 0), "1ms"
-    #   )[0..2]
+    #   date = Polars.datetime_range(
+    #     DateTime.new(2020, 1, 1), DateTime.new(2020, 1, 1, 0, 0, 1, 0), "1ms", time_unit: "us", eager: true
+    #   ).alias("datetime")[0..2]
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [datetime[μs]]
+    #   # Series: 'datetime' [datetime[μs]]
     #   # [
     #   #         2020-01-01 00:00:00
     #   #         2020-01-01 00:00:00.001
@@ -1215,18 +1044,19 @@ module Polars
     #   # ]
     #
     # @example
-    #   date.diff.dt.nanoseconds
+    #   date.diff.dt.total_nanoseconds
     #   # =>
     #   # shape: (3,)
-    #   # Series: '' [i64]
+    #   # Series: 'datetime' [i64]
     #   # [
     #   #         null
     #   #         1000000
     #   #         1000000
     #   # ]
-    def nanoseconds
+    def total_nanoseconds
       super
     end
+    alias_method :nanoseconds, :total_nanoseconds
 
     # Offset this date by a relative time offset.
     #
@@ -1252,10 +1082,12 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   dates = Polars.date_range(DateTime.new(2000, 1, 1), DateTime.new(2005, 1, 1), "1y")
+    #   dates = Polars.datetime_range(
+    #     DateTime.new(2000, 1, 1), DateTime.new(2005, 1, 1), "1y", eager: true
+    #   ).alias("datetime")
     #   # =>
     #   # shape: (6,)
-    #   # Series: '' [datetime[μs]]
+    #   # Series: 'datetime' [datetime[ns]]
     #   # [
     #   #         2000-01-01 00:00:00
     #   #         2001-01-01 00:00:00
@@ -1269,7 +1101,7 @@ module Polars
     #   dates.dt.offset_by("1y").alias("date_plus_1y")
     #   # =>
     #   # shape: (6,)
-    #   # Series: 'date_plus_1y' [datetime[μs]]
+    #   # Series: 'date_plus_1y' [datetime[ns]]
     #   # [
     #   #         2001-01-01 00:00:00
     #   #         2002-01-01 00:00:00
@@ -1283,7 +1115,7 @@ module Polars
     #   dates.dt.offset_by("-1y2mo").alias("date_minus_1y_2mon")
     #   # =>
     #   # shape: (6,)
-    #   # Series: 'date_minus_1y_2mon' [datetime[μs]]
+    #   # Series: 'date_minus_1y_2mon' [datetime[ns]]
     #   # [
     #   #         1998-11-01 00:00:00
     #   #         1999-11-01 00:00:00
@@ -1318,79 +1150,9 @@ module Polars
     #
     # @param every [String]
     #   Every interval start and period length.
-    # @param offset [String]
-    #   Offset the window.
     #
     # @return [Series]
-    #
-    # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 2)
-    #   s = Polars.date_range(start, stop, "165m", name: "dates")
-    #   # =>
-    #   # shape: (9,)
-    #   # Series: 'dates' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 02:45:00
-    #   #         2001-01-01 05:30:00
-    #   #         2001-01-01 08:15:00
-    #   #         2001-01-01 11:00:00
-    #   #         2001-01-01 13:45:00
-    #   #         2001-01-01 16:30:00
-    #   #         2001-01-01 19:15:00
-    #   #         2001-01-01 22:00:00
-    #   # ]
-    #
-    # @example
-    #   s.dt.truncate("1h")
-    #   # =>
-    #   # shape: (9,)
-    #   # Series: 'dates' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 02:00:00
-    #   #         2001-01-01 05:00:00
-    #   #         2001-01-01 08:00:00
-    #   #         2001-01-01 11:00:00
-    #   #         2001-01-01 13:00:00
-    #   #         2001-01-01 16:00:00
-    #   #         2001-01-01 19:00:00
-    #   #         2001-01-01 22:00:00
-    #   # ]
-    #
-    # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 1, 1)
-    #   s = Polars.date_range(start, stop, "10m", name: "dates")
-    #   # =>
-    #   # shape: (7,)
-    #   # Series: 'dates' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 00:10:00
-    #   #         2001-01-01 00:20:00
-    #   #         2001-01-01 00:30:00
-    #   #         2001-01-01 00:40:00
-    #   #         2001-01-01 00:50:00
-    #   #         2001-01-01 01:00:00
-    #   # ]
-    #
-    # @example
-    #   s.dt.truncate("30m")
-    #   # =>
-    #   # shape: (7,)
-    #   # Series: 'dates' [datetime[μs]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 00:30:00
-    #   #         2001-01-01 00:30:00
-    #   #         2001-01-01 00:30:00
-    #   #         2001-01-01 01:00:00
-    #   # ]
-    def truncate(every, offset: nil, use_earliest: nil)
+    def truncate(every)
       super
     end
 
@@ -1419,69 +1181,108 @@ module Polars
     #
     # @param every [String]
     #   Every interval start and period length.
-    # @param offset [String]
-    #   Offset the window.
     #
     # @return [Series]
     #
     # @note
     #   This functionality is currently experimental and may
     #   change without it being considered a breaking change.
+    def round(every)
+      super
+    end
+
+    # Roll backward to the first day of the month.
+    #
+    # @return [Series]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 2)
-    #   s = Polars.date_range(start, stop, "165m", name: "dates")
+    #   s = Polars.datetime_range(
+    #     DateTime.new(2000, 1, 2, 2), DateTime.new(2000, 4, 2, 2), "1mo", time_unit: "us", eager: true
+    #   ).alias("datetime")
+    #   s.dt.month_start
     #   # =>
-    #   # shape: (9,)
-    #   # Series: 'dates' [datetime[μs]]
+    #   # shape: (4,)
+    #   # Series: 'datetime' [datetime[μs]]
     #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 02:45:00
-    #   #         2001-01-01 05:30:00
-    #   #         2001-01-01 08:15:00
-    #   #         2001-01-01 11:00:00
-    #   #         2001-01-01 13:45:00
-    #   #         2001-01-01 16:30:00
-    #   #         2001-01-01 19:15:00
-    #   #         2001-01-01 22:00:00
+    #   #         2000-01-01 02:00:00
+    #   #         2000-02-01 02:00:00
+    #   #         2000-03-01 02:00:00
+    #   #         2000-04-01 02:00:00
     #   # ]
+    def month_start
+      super
+    end
+
+    # Roll forward to the last day of the month.
+    #
+    # @return [Series]
     #
     # @example
-    #   s.dt.round("1h")
+    #   s = Polars.datetime_range(
+    #     DateTime.new(2000, 1, 2, 2), DateTime.new(2000, 4, 2, 2), "1mo", time_unit: "us", eager: true
+    #   ).alias("datetime")
+    #   s.dt.month_end
     #   # =>
-    #   # shape: (9,)
-    #   # Series: 'dates' [datetime[μs]]
+    #   # shape: (4,)
+    #   # Series: 'datetime' [datetime[μs]]
     #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 03:00:00
-    #   #         2001-01-01 06:00:00
-    #   #         2001-01-01 08:00:00
-    #   #         2001-01-01 11:00:00
-    #   #         2001-01-01 14:00:00
-    #   #         2001-01-01 17:00:00
-    #   #         2001-01-01 19:00:00
-    #   #         2001-01-01 22:00:00
+    #   #         2000-01-31 02:00:00
+    #   #         2000-02-29 02:00:00
+    #   #         2000-03-31 02:00:00
+    #   #         2000-04-30 02:00:00
     #   # ]
+    def month_end
+      super
+    end
+
+    # Base offset from UTC.
+    #
+    # This is usually constant for all datetimes in a given time zone, but
+    # may vary in the rare case that a country switches time zone, like
+    # Samoa (Apia) did at the end of 2011.
+    #
+    # @return [Series]
     #
     # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 1, 1)
-    #   s = Polars.date_range(start, stop, "10m", name: "dates")
-    #   s.dt.round("30m")
+    #   s = Polars.datetime_range(
+    #     DateTime.new(2011, 12, 29),
+    #     DateTime.new(2012, 1, 1),
+    #     "2d",
+    #     time_zone: "Pacific/Apia",
+    #     eager: true,
+    #   ).alias("datetime")
+    #   s.dt.base_utc_offset
     #   # =>
-    #   # shape: (7,)
-    #   # Series: 'dates' [datetime[μs]]
+    #   # shape: (2,)
+    #   # Series: 'datetime' [duration[ms]]
     #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-01 00:30:00
-    #   #         2001-01-01 00:30:00
-    #   #         2001-01-01 00:30:00
-    #   #         2001-01-01 01:00:00
-    #   #         2001-01-01 01:00:00
+    #   #         -11h
+    #   #         13h
     #   # ]
-    def round(every, offset: nil)
+    def base_utc_offset
+      super
+    end
+
+    # Additional offset currently in effect (typically due to daylight saving time).
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars.datetime_range(
+    #     DateTime.new(2020, 10, 25),
+    #     DateTime.new(2020, 10, 26),
+    #     time_zone: "Europe/London",
+    #     eager: true,
+    #   ).alias("datetime")
+    #   s.dt.dst_offset
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'datetime' [duration[ms]]
+    #   # [
+    #   #         1h
+    #   #         0ms
+    #   # ]
+    def dst_offset
       super
     end
   end

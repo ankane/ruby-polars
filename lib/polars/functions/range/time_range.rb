@@ -56,8 +56,8 @@ module Polars
         raise Todo
       end
 
-      start_rbexpr = Utils.parse_as_expression(start)
-      end_rbexpr = Utils.parse_as_expression(stop)
+      start_rbexpr = Utils.parse_into_expression(start)
+      end_rbexpr = Utils.parse_into_expression(stop)
 
       result = Utils.wrap_expr(Plr.time_range(start_rbexpr, end_rbexpr, interval, closed))
 
@@ -126,8 +126,8 @@ module Polars
         raise Todo
       end
 
-      start_rbexpr = Utils.parse_as_expression(start)
-      end_rbexpr = Utils.parse_as_expression(stop)
+      start_rbexpr = Utils.parse_into_expression(start)
+      end_rbexpr = Utils.parse_into_expression(stop)
 
       result = Utils.wrap_expr(Plr.time_ranges(start_rbexpr, end_rbexpr, interval, closed))
 

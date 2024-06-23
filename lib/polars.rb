@@ -77,4 +77,10 @@ module Polars
   extend Convert
   extend Functions
   extend IO
+
+  # @private
+  F = self
+
+  # @private
+  N_INFER_DEFAULT = 100
 end

@@ -27,33 +27,27 @@ pub fn int_ranges(start: &RbExpr, end: &RbExpr, step: &RbExpr, dtype: Wrap<DataT
 pub fn date_range(
     start: &RbExpr,
     end: &RbExpr,
-    every: String,
+    interval: String,
     closed: Wrap<ClosedWindow>,
-    time_unit: Option<Wrap<TimeUnit>>,
-    time_zone: Option<TimeZone>,
 ) -> RbExpr {
     let start = start.inner.clone();
     let end = end.inner.clone();
-    let every = Duration::parse(&every);
+    let interval = Duration::parse(&interval);
     let closed = closed.0;
-    let time_unit = time_unit.map(|x| x.0);
-    dsl::date_range(start, end, every, closed, time_unit, time_zone).into()
+    dsl::date_range(start, end, interval, closed).into()
 }
 
 pub fn date_ranges(
     start: &RbExpr,
     end: &RbExpr,
-    every: String,
+    interval: String,
     closed: Wrap<ClosedWindow>,
-    time_unit: Option<Wrap<TimeUnit>>,
-    time_zone: Option<TimeZone>,
 ) -> RbExpr {
     let start = start.inner.clone();
     let end = end.inner.clone();
-    let every = Duration::parse(&every);
+    let interval = Duration::parse(&interval);
     let closed = closed.0;
-    let time_unit = time_unit.map(|x| x.0);
-    dsl::date_ranges(start, end, every, closed, time_unit, time_zone).into()
+    dsl::date_ranges(start, end, interval, closed).into()
 }
 
 pub fn datetime_range(

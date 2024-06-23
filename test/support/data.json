@@ -1,1 +1,1 @@
-{"columns":[{"name":"a","datatype":"Int64","values":[1,2,3]},{"name":"b","datatype":"String","values":["one","two","three"]}]}
+[{"a":1,"b":"one"},{"a":2,"b":"two"},{"a":3,"b":"three"}]

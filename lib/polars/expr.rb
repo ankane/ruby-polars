@@ -1252,12 +1252,12 @@ module Polars
     #   df = Polars::DataFrame.new(
     #     {
     #       "group" => [
-    #           "one",
-    #           "one",
-    #           "one",
-    #           "two",
-    #           "two",
-    #           "two"
+    #         "one",
+    #         "one",
+    #         "one",
+    #         "two",
+    #         "two",
+    #         "two"
     #       ],
     #       "value" => [1, 98, 2, 3, 99, 4]
     #     }
@@ -1345,9 +1345,9 @@ module Polars
     #   # │ 3     ┆ 4        │
     #   # │ 2     ┆ 98       │
     #   # └───────┴──────────┘
-    def top_k(k: 5, nulls_last: false, multithreaded: true)
-      k = Utils.parse_as_expression(k)
-      _from_rbexpr(_rbexpr.top_k(k, nulls_last, multithreaded))
+    def top_k(k: 5)
+      k = Utils.parse_into_expression(k)
+      _from_rbexpr(_rbexpr.top_k(k))
     end
 
     # Return the `k` smallest elements.
@@ -1384,9 +1384,9 @@ module Polars
     #   # │ 3     ┆ 4        │
     #   # │ 2     ┆ 98       │
     #   # └───────┴──────────┘
-    def bottom_k(k: 5, nulls_last: false, multithreaded: true)
-      k = Utils.parse_as_expression(k)
-      _from_rbexpr(_rbexpr.bottom_k(k, nulls_last, multithreaded))
+    def bottom_k(k: 5)
+      k = Utils.parse_into_expression(k)
+      _from_rbexpr(_rbexpr.bottom_k(k))
     end
 
     # Get the index values that would sort this column.
@@ -1546,12 +1546,13 @@ module Polars
     #   # └───────┘
     def sort_by(by, *more_by, reverse: false, nulls_last: false, multithreaded: true, maintain_order: false)
       by = Utils.parse_as_list_of_expressions(by, *more_by)
-      if !reverse.is_a?(::Array)
-        reverse = [reverse]
-      elsif by.length != reverse.length
-        raise ArgumentError, "the length of `reverse` (#{reverse.length}) does not match the length of `by` (#{by.length})"
-      end
-      _from_rbexpr(_rbexpr.sort_by(by, reverse, nulls_last, multithreaded, maintain_order))
+      reverse = Utils.extend_bool(reverse, by.length, "reverse", "by")
+      nulls_last = Utils.extend_bool(nulls_last, by.length, "nulls_last", "by")
+      _from_rbexpr(
+        _rbexpr.sort_by(
+          by, reverse, nulls_last, multithreaded, maintain_order
+        )
+      )
     end
 
     # Take values by index.
@@ -1622,9 +1623,9 @@ module Polars
     #   # └──────┘
     def shift(n = 1, fill_value: nil)
       if !fill_value.nil?
-        fill_value = Utils.parse_as_expression(fill_value, str_as_lit: true)
+        fill_value = Utils.parse_into_expression(fill_value, str_as_lit: true)
       end
-      n = Utils.parse_as_expression(n)
+      n = Utils.parse_into_expression(n)
       _from_rbexpr(_rbexpr.shift(n, fill_value))
     end
 
@@ -2515,17 +2516,17 @@ module Polars
     #   ).unnest("cut")
     #   # =>
     #   # shape: (5, 3)
-    #   # ┌─────┬──────┬────────────┐
-    #   # │ foo ┆ brk  ┆ foo_bin    │
-    #   # │ --- ┆ ---  ┆ ---        │
-    #   # │ i64 ┆ f64  ┆ cat        │
-    #   # ╞═════╪══════╪════════════╡
-    #   # │ -2  ┆ -1.0 ┆ (-inf, -1] │
-    #   # │ -1  ┆ -1.0 ┆ (-inf, -1] │
-    #   # │ 0   ┆ 1.0  ┆ (-1, 1]    │
-    #   # │ 1   ┆ 1.0  ┆ (-1, 1]    │
-    #   # │ 2   ┆ inf  ┆ (1, inf]   │
-    #   # └─────┴──────┴────────────┘
+    #   # ┌─────┬────────────┬────────────┐
+    #   # │ foo ┆ breakpoint ┆ category   │
+    #   # │ --- ┆ ---        ┆ ---        │
+    #   # │ i64 ┆ f64        ┆ cat        │
+    #   # ╞═════╪════════════╪════════════╡
+    #   # │ -2  ┆ -1.0       ┆ (-inf, -1] │
+    #   # │ -1  ┆ -1.0       ┆ (-inf, -1] │
+    #   # │ 0   ┆ 1.0        ┆ (-1, 1]    │
+    #   # │ 1   ┆ 1.0        ┆ (-1, 1]    │
+    #   # │ 2   ┆ inf        ┆ (1, inf]   │
+    #   # └─────┴────────────┴────────────┘
     def cut(breaks, labels: nil, left_closed: false, include_breaks: false)
       _from_rbexpr(_rbexpr.cut(breaks, labels, left_closed, include_breaks))
     end
@@ -2596,17 +2597,17 @@ module Polars
     #   ).unnest("qcut")
     #   # =>
     #   # shape: (5, 3)
-    #   # ┌─────┬──────┬────────────┐
-    #   # │ foo ┆ brk  ┆ foo_bin    │
-    #   # │ --- ┆ ---  ┆ ---        │
-    #   # │ i64 ┆ f64  ┆ cat        │
-    #   # ╞═════╪══════╪════════════╡
-    #   # │ -2  ┆ -1.0 ┆ (-inf, -1] │
-    #   # │ -1  ┆ -1.0 ┆ (-inf, -1] │
-    #   # │ 0   ┆ 1.0  ┆ (-1, 1]    │
-    #   # │ 1   ┆ 1.0  ┆ (-1, 1]    │
-    #   # │ 2   ┆ inf  ┆ (1, inf]   │
-    #   # └─────┴──────┴────────────┘
+    #   # ┌─────┬────────────┬────────────┐
+    #   # │ foo ┆ breakpoint ┆ category   │
+    #   # │ --- ┆ ---        ┆ ---        │
+    #   # │ i64 ┆ f64        ┆ cat        │
+    #   # ╞═════╪════════════╪════════════╡
+    #   # │ -2  ┆ -1.0       ┆ (-inf, -1] │
+    #   # │ -1  ┆ -1.0       ┆ (-inf, -1] │
+    #   # │ 0   ┆ 1.0        ┆ (-1, 1]    │
+    #   # │ 1   ┆ 1.0        ┆ (-1, 1]    │
+    #   # │ 2   ┆ inf        ┆ (1, inf]   │
+    #   # └─────┴────────────┴────────────┘
     def qcut(quantiles, labels: nil, left_closed: false, allow_duplicates: false, include_breaks: false)
       if quantiles.is_a?(Integer)
         rbexpr = _rbexpr.qcut_uniform(
@@ -2630,18 +2631,18 @@ module Polars
     #   df.select(Polars.col("s").rle).unnest("s")
     #   # =>
     #   # shape: (6, 2)
-    #   # ┌─────────┬────────┐
-    #   # │ lengths ┆ values │
-    #   # │ ---     ┆ ---    │
-    #   # │ i32     ┆ i64    │
-    #   # ╞═════════╪════════╡
-    #   # │ 2       ┆ 1      │
-    #   # │ 1       ┆ 2      │
-    #   # │ 1       ┆ 1      │
-    #   # │ 1       ┆ null   │
-    #   # │ 1       ┆ 1      │
-    #   # │ 2       ┆ 3      │
-    #   # └─────────┴────────┘
+    #   # ┌─────┬───────┐
+    #   # │ len ┆ value │
+    #   # │ --- ┆ ---   │
+    #   # │ u32 ┆ i64   │
+    #   # ╞═════╪═══════╡
+    #   # │ 2   ┆ 1     │
+    #   # │ 1   ┆ 2     │
+    #   # │ 1   ┆ 1     │
+    #   # │ 1   ┆ null  │
+    #   # │ 1   ┆ 1     │
+    #   # │ 2   ┆ 3     │
+    #   # └─────┴───────┘
     def rle
       _from_rbexpr(_rbexpr.rle)
     end
@@ -3104,7 +3105,7 @@ module Polars
     #   # │ null ┆ null ┆ null   ┆ true           │
     #   # └──────┴──────┴────────┴────────────────┘
     def eq_missing(other)
-      other = Utils.parse_as_expression(other, str_as_lit: true)
+      other = Utils.parse_into_expression(other, str_as_lit: true)
       _from_rbexpr(_rbexpr.eq_missing(other))
     end
 
@@ -3308,7 +3309,7 @@ module Polars
     #   # │ null ┆ null ┆ null   ┆ false          │
     #   # └──────┴──────┴────────┴────────────────┘
     def ne_missing(other)
-      other = Utils.parse_as_expression(other, str_as_lit: true)
+      other = Utils.parse_into_expression(other, str_as_lit: true)
       _from_rbexpr(_rbexpr.neq_missing(other))
     end
 
@@ -3977,7 +3978,7 @@ module Polars
       warn_if_unsorted: nil
     )
       window_size = _prepare_rolling_by_window_args(window_size)
-      by = Utils.parse_as_expression(by)
+      by = Utils.parse_into_expression(by)
       _from_rbexpr(
         _rbexpr.rolling_min_by(by, window_size, min_periods, closed)
       )
@@ -4106,7 +4107,7 @@ module Polars
       warn_if_unsorted: nil
     )
       window_size = _prepare_rolling_by_window_args(window_size)
-      by = Utils.parse_as_expression(by)
+      by = Utils.parse_into_expression(by)
       _from_rbexpr(
         _rbexpr.rolling_max_by(by, window_size, min_periods, closed)
       )
@@ -4237,7 +4238,7 @@ module Polars
       warn_if_unsorted: nil
     )
       window_size = _prepare_rolling_by_window_args(window_size)
-      by = Utils.parse_as_expression(by)
+      by = Utils.parse_into_expression(by)
       _from_rbexpr(
         _rbexpr.rolling_mean_by(
           by,
@@ -4371,7 +4372,7 @@ module Polars
       warn_if_unsorted: nil
     )
       window_size = _prepare_rolling_by_window_args(window_size)
-      by = Utils.parse_as_expression(by)
+      by = Utils.parse_into_expression(by)
       _from_rbexpr(
         _rbexpr.rolling_sum_by(by, window_size, min_periods, closed)
       )
@@ -4503,7 +4504,7 @@ module Polars
       warn_if_unsorted: nil
     )
       window_size = _prepare_rolling_by_window_args(window_size)
-      by = Utils.parse_as_expression(by)
+      by = Utils.parse_into_expression(by)
       _from_rbexpr(
         _rbexpr.rolling_std_by(
           by,
@@ -4641,7 +4642,7 @@ module Polars
       warn_if_unsorted: nil
     )
       window_size = _prepare_rolling_by_window_args(window_size)
-      by = Utils.parse_as_expression(by)
+      by = Utils.parse_into_expression(by)
       _from_rbexpr(
         _rbexpr.rolling_var_by(
           by,
@@ -4752,7 +4753,7 @@ module Polars
       warn_if_unsorted: nil
     )
       window_size = _prepare_rolling_by_window_args(window_size)
-      by = Utils.parse_as_expression(by)
+      by = Utils.parse_into_expression(by)
       _from_rbexpr(
         _rbexpr.rolling_median_by(by, window_size, min_periods, closed)
       )
@@ -4863,7 +4864,7 @@ module Polars
       warn_if_unsorted: nil
     )
       window_size = _prepare_rolling_by_window_args(window_size)
-      by = Utils.parse_as_expression(by)
+      by = Utils.parse_into_expression(by)
       _from_rbexpr(
         _rbexpr.rolling_quantile_by(
           by,
@@ -5947,7 +5948,7 @@ module Polars
     #   # │ 12   ┆ 0.0        │
     #   # └──────┴────────────┘
     def pct_change(n: 1)
-      n = Utils.parse_as_expression(n)
+      n = Utils.parse_into_expression(n)
       _from_rbexpr(_rbexpr.pct_change(n))
     end
 
@@ -6041,10 +6042,10 @@ module Polars
     #   # └──────┴─────────────┘
     def clip(lower_bound, upper_bound)
       if !lower_bound.nil?
-        lower_bound = Utils.parse_as_expression(lower_bound, str_as_lit: true)
+        lower_bound = Utils.parse_into_expression(lower_bound, str_as_lit: true)
       end
       if !upper_bound.nil?
-        upper_bound = Utils.parse_as_expression(upper_bound, str_as_lit: true)
+        upper_bound = Utils.parse_into_expression(upper_bound, str_as_lit: true)
       end
       _from_rbexpr(_rbexpr.clip(lower_bound, upper_bound))
     end
@@ -6431,18 +6432,38 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4, 5, 6, 7, 8, 9]})
-    #   df.select(Polars.col("foo").reshape([3, 3]))
+    #   square = df.select(Polars.col("foo").reshape([3, 3]))
     #   # =>
     #   # shape: (3, 1)
-    #   # ┌───────────┐
-    #   # │ foo       │
-    #   # │ ---       │
-    #   # │ list[i64] │
-    #   # ╞═══════════╡
-    #   # │ [1, 2, 3] │
-    #   # │ [4, 5, 6] │
-    #   # │ [7, 8, 9] │
-    #   # └───────────┘
+    #   # ┌───────────────┐
+    #   # │ foo           │
+    #   # │ ---           │
+    #   # │ array[i64, 3] │
+    #   # ╞═══════════════╡
+    #   # │ [1, 2, 3]     │
+    #   # │ [4, 5, 6]     │
+    #   # │ [7, 8, 9]     │
+    #   # └───────────────┘
+    #
+    # @example
+    #   square.select(Polars.col("foo").reshape([9]))
+    #   # =>
+    #   # shape: (9, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 2   │
+    #   # │ 3   │
+    #   # │ 4   │
+    #   # │ 5   │
+    #   # │ 6   │
+    #   # │ 7   │
+    #   # │ 8   │
+    #   # │ 9   │
+    #   # └─────┘
     def reshape(dims)
       _from_rbexpr(_rbexpr.reshape(dims))
     end
@@ -6518,14 +6539,14 @@ module Polars
       end
 
       if !n.nil? && frac.nil?
-        n = Utils.parse_as_expression(n)
+        n = Utils.parse_into_expression(n)
         return _from_rbexpr(_rbexpr.sample_n(n, with_replacement, shuffle, seed))
       end
 
       if frac.nil?
         frac = 1.0
       end
-      frac = Utils.parse_as_expression(frac)
+      frac = Utils.parse_into_expression(frac)
       _from_rbexpr(
         _rbexpr.sample_frac(frac, with_replacement, shuffle, seed)
       )
@@ -6658,11 +6679,17 @@ module Polars
 
     # Count all unique values and create a struct mapping value to count.
     #
-    # @param multithreaded [Boolean]
-    #   Better to turn this off in the aggregation context, as it can lead to
-    #   contention.
     # @param sort [Boolean]
-    #   Ensure the output is sorted from most values to least.
+    #   Sort the output by count in descending order.
+    #   If set to `false` (default), the order of the output is random.
+    # @param parallel [Boolean]
+    #   Execute the computation in parallel.
+    # @param name [String]
+    #   Give the resulting count column a specific name;
+    #   if `normalize` is true defaults to "count",
+    #   otherwise defaults to "proportion".
+    # @param normalize [Boolean]
+    #   If true gives relative frequencies of the unique values
     #
     # @return [Expr]
     #
@@ -6688,8 +6715,22 @@ module Polars
     #   # │ {"b",2}   │
     #   # │ {"a",1}   │
     #   # └───────────┘
-    def value_counts(multithreaded: false, sort: false)
-      _from_rbexpr(_rbexpr.value_counts(multithreaded, sort))
+    def value_counts(
+      sort: false,
+      parallel: false,
+      name: nil,
+      normalize: false
+    )
+      if name.nil?
+        if normalize
+          name = "proportion"
+        else
+          name = "count"
+        end
+      end
+      _from_rbexpr(
+        _rbexpr.value_counts(sort, parallel, name, normalize)
+      )
     end
 
     # Return a count of the unique values in the order of appearance.
@@ -7064,6 +7105,10 @@ module Polars
     #   # │ 3   ┆ 1.0 ┆ 10.0     │
     #   # └─────┴─────┴──────────┘
     def replace(old, new = NO_DEFAULT, default: NO_DEFAULT, return_dtype: nil)
+      if !default.eql?(NO_DEFAULT)
+        return replace_strict(old, new, default: default, return_dtype: return_dtype)
+      end
+
       if new.eql?(NO_DEFAULT) && old.is_a?(Hash)
         new = Series.new(old.values)
         old = Series.new(old.keys)
@@ -7076,17 +7121,164 @@ module Polars
         end
       end
 
-      old = Utils.parse_as_expression(old, str_as_lit: true)
-      new = Utils.parse_as_expression(new, str_as_lit: true)
+      old = Utils.parse_into_expression(old, str_as_lit: true)
+      new = Utils.parse_into_expression(new, str_as_lit: true)
 
-      default =
-        if default.eql?(NO_DEFAULT)
-          nil
-        else
-          Utils.parse_as_expression(default, str_as_lit: true)
-        end
+      result = _from_rbexpr(_rbexpr.replace(old, new))
 
-      _from_rbexpr(_rbexpr.replace(old, new, default, return_dtype))
+      if !return_dtype.nil?
+        result = result.cast(return_dtype)
+      end
+
+      result
+    end
+
+    # Replace all values by different values.
+    #
+    # @param old [Object]
+    #   Value or sequence of values to replace.
+    #   Accepts expression input. Sequences are parsed as Series,
+    #   other non-expression inputs are parsed as literals.
+    #   Also accepts a mapping of values to their replacement as syntactic sugar for
+    #   `replace_all(old: Series.new(mapping.keys), new: Serie.new(mapping.values))`.
+    # @param new [Object]
+    #   Value or sequence of values to replace by.
+    #   Accepts expression input. Sequences are parsed as Series,
+    #   other non-expression inputs are parsed as literals.
+    #   Length must match the length of `old` or have length 1.
+    # @param default [Object]
+    #   Set values that were not replaced to this value. If no default is specified,
+    #   (default), an error is raised if any values were not replaced.
+    #   Accepts expression input. Non-expression inputs are parsed as literals.
+    # @param return_dtype [Object]
+    #   The data type of the resulting expression. If set to `nil` (default),
+    #   the data type is determined automatically based on the other inputs.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   The global string cache must be enabled when replacing categorical values.
+    #
+    # @example Replace values by passing sequences to the `old` and `new` parameters.
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 2, 3]})
+    #   df.with_columns(
+    #     replaced: Polars.col("a").replace_strict([1, 2, 3], [100, 200, 300])
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬──────────┐
+    #   # │ a   ┆ replaced │
+    #   # │ --- ┆ ---      │
+    #   # │ i64 ┆ i64      │
+    #   # ╞═════╪══════════╡
+    #   # │ 1   ┆ 100      │
+    #   # │ 2   ┆ 200      │
+    #   # │ 2   ┆ 200      │
+    #   # │ 3   ┆ 300      │
+    #   # └─────┴──────────┘
+    #
+    # @example By default, an error is raised if any non-null values were not replaced. Specify a default to set all values that were not matched.
+    #   mapping = {2 => 200, 3 => 300}
+    #   df.with_columns(replaced: Polars.col("a").replace_strict(mapping, default: -1))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬──────────┐
+    #   # │ a   ┆ replaced │
+    #   # │ --- ┆ ---      │
+    #   # │ i64 ┆ i64      │
+    #   # ╞═════╪══════════╡
+    #   # │ 1   ┆ -1       │
+    #   # │ 2   ┆ 200      │
+    #   # │ 2   ┆ 200      │
+    #   # │ 3   ┆ 300      │
+    #   # └─────┴──────────┘
+    #
+    # @example Replacing by values of a different data type sets the return type based on a combination of the `new` data type and the `default` data type.
+    #   df = Polars::DataFrame.new({"a" => ["x", "y", "z"]})
+    #   mapping = {"x" => 1, "y" => 2, "z" => 3}
+    #   df.with_columns(replaced: Polars.col("a").replace_strict(mapping))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬──────────┐
+    #   # │ a   ┆ replaced │
+    #   # │ --- ┆ ---      │
+    #   # │ str ┆ i64      │
+    #   # ╞═════╪══════════╡
+    #   # │ x   ┆ 1        │
+    #   # │ y   ┆ 2        │
+    #   # │ z   ┆ 3        │
+    #   # └─────┴──────────┘
+    #
+    # @example
+    #   df.with_columns(replaced: Polars.col("a").replace_strict(mapping, default: "x"))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬──────────┐
+    #   # │ a   ┆ replaced │
+    #   # │ --- ┆ ---      │
+    #   # │ str ┆ str      │
+    #   # ╞═════╪══════════╡
+    #   # │ x   ┆ 1        │
+    #   # │ y   ┆ 2        │
+    #   # │ z   ┆ 3        │
+    #   # └─────┴──────────┘
+    #
+    # @example Set the `return_dtype` parameter to control the resulting data type directly.
+    #   df.with_columns(
+    #     replaced: Polars.col("a").replace_strict(mapping, return_dtype: Polars::UInt8)
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬──────────┐
+    #   # │ a   ┆ replaced │
+    #   # │ --- ┆ ---      │
+    #   # │ str ┆ u8       │
+    #   # ╞═════╪══════════╡
+    #   # │ x   ┆ 1        │
+    #   # │ y   ┆ 2        │
+    #   # │ z   ┆ 3        │
+    #   # └─────┴──────────┘
+    #
+    # @example Expression input is supported for all parameters.
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 2, 3], "b" => [1.5, 2.5, 5.0, 1.0]})
+    #   df.with_columns(
+    #     replaced: Polars.col("a").replace_strict(
+    #       Polars.col("a").max,
+    #       Polars.col("b").sum,
+    #       default: Polars.col("b")
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬─────┬──────────┐
+    #   # │ a   ┆ b   ┆ replaced │
+    #   # │ --- ┆ --- ┆ ---      │
+    #   # │ i64 ┆ f64 ┆ f64      │
+    #   # ╞═════╪═════╪══════════╡
+    #   # │ 1   ┆ 1.5 ┆ 1.5      │
+    #   # │ 2   ┆ 2.5 ┆ 2.5      │
+    #   # │ 2   ┆ 5.0 ┆ 5.0      │
+    #   # │ 3   ┆ 1.0 ┆ 10.0     │
+    #   # └─────┴─────┴──────────┘
+    def replace_strict(
+      old,
+      new = NO_DEFAULT,
+      default: NO_DEFAULT,
+      return_dtype: nil
+    )
+      if new.eql?(NO_DEFAULT) && old.is_a?(Hash)
+        new = Series.new(old.values)
+        old = Series.new(old.keys)
+      end
+
+      old = Utils.parse_into_expression(old, str_as_lit: true, list_as_series: true)
+      new = Utils.parse_into_expression(new, str_as_lit: true, list_as_series: true)
+
+      default = default.eql?(NO_DEFAULT) ? nil : Utils.parse_into_expression(default, str_as_lit: true)
+
+      _from_rbexpr(
+        _rbexpr.replace_strict(old, new, default, return_dtype)
+      )
     end
 
     # Create an object namespace of all list related methods.

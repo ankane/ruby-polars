@@ -15,14 +15,14 @@ ahash = "0.8"
 chrono = "0.4"
 either = "1.8"
 magnus = "0.6"
-polars-core = "=0.40.0"
-polars-parquet = "=0.40.0"
-polars-utils = "=0.40.0"
+polars-core = "=0.41.0"
+polars-parquet = "=0.41.0"
+polars-utils = "=0.41.0"
 serde_json = "1"
 smartstring = "1"
 
 [dependencies.polars]
-version = "=0.40.0"
+version = "=0.41.0"
 features = [
     "abs",
     "approx_unique",
@@ -41,7 +41,6 @@ features = [
     "cumulative_eval",
     "cutqcut",
     "dataframe_arithmetic",
-    "date_offset",
     "diagonal_concat",
     "diff",
     "dot_product",
@@ -74,6 +73,9 @@ features = [
     "meta",
     "mode",
     "moment",
+    "month_start",
+    "month_end",
+    "offset_by",
     "object",
     "parquet",
     "partition_by",

@@ -233,7 +233,7 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   Polars::Series.new([1, nil, 2]).str.concat("-")
+    #   Polars::Series.new([1, nil, 2]).str.join("-")
     #   # =>
     #   # shape: (1,)
     #   # Series: '' [str]
@@ -242,16 +242,17 @@ module Polars
     #   # ]
     #
     # @example
-    #   Polars::Series.new([1, nil, 2]).str.concat("-", ignore_nulls: false)
+    #   Polars::Series.new([1, nil, 2]).str.join("-", ignore_nulls: false)
     #   # =>
     #   # shape: (1,)
     #   # Series: '' [str]
     #   # [
     #   #         null
     #   # ]
-    def concat(delimiter = "-", ignore_nulls: true)
+    def join(delimiter = "-", ignore_nulls: true)
       super
     end
+    alias_method :concat, :join
 
     # Check if strings in Series contain a substring that matches a regex.
     #

@@ -50,12 +50,8 @@ impl RbExpr {
             .into()
     }
 
-    pub fn dt_truncate(&self, every: &Self, offset: String) -> Self {
-        self.inner
-            .clone()
-            .dt()
-            .truncate(every.inner.clone(), offset)
-            .into()
+    pub fn dt_truncate(&self, every: &Self) -> Self {
+        self.inner.clone().dt().truncate(every.inner.clone()).into()
     }
 
     pub fn dt_month_start(&self) -> Self {
@@ -74,12 +70,8 @@ impl RbExpr {
         self.inner.clone().dt().dst_offset().into()
     }
 
-    pub fn dt_round(&self, every: &Self, offset: String) -> Self {
-        self.inner
-            .clone()
-            .dt()
-            .round(every.inner.clone(), &offset)
-            .into()
+    pub fn dt_round(&self, every: &Self) -> Self {
+        self.inner.clone().dt().round(every.inner.clone()).into()
     }
 
     pub fn dt_combine(&self, time: &Self, time_unit: Wrap<TimeUnit>) -> Self {

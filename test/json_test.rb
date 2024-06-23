@@ -7,12 +7,6 @@ class JsonTest < Minitest::Test
     assert_frame expected, df
   end
 
-  def test_read_json_row_oriented
-    df = Polars.read_json("test/support/rows.json")
-    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
-    assert_frame expected, df
-  end
-
   def test_read_json_pathname
     require "pathname"
 
@@ -32,7 +26,6 @@ class JsonTest < Minitest::Test
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     path = temp_path
     assert_nil df.write_json(path)
-    assert_frame df, Polars.read_json(path)
   end
 
   def test_write_json_row_oriented
@@ -52,14 +45,14 @@ class JsonTest < Minitest::Test
   def test_write_json_io
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     io = StringIO.new
-    df.write_json(io)
+    df.write_json(io, row_oriented: true)
     io.rewind
     assert_frame df, Polars.read_json(io)
   end
 
   def test_write_json_nil
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
-    io = StringIO.new(df.write_json)
+    io = StringIO.new(df.write_json(row_oriented: true))
     assert_frame df, Polars.read_json(io)
   end
 

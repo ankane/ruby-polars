@@ -43,7 +43,7 @@ module Polars
         n = lit(n)
       end
 
-      value = Utils.parse_as_expression(value, str_as_lit: true)
+      value = Utils.parse_into_expression(value, str_as_lit: true)
       expr = Utils.wrap_expr(Plr.repeat(value, n._rbexpr, dtype))
       if !name.nil?
         expr = expr.alias(name)

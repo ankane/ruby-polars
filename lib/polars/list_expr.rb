@@ -146,7 +146,7 @@ module Polars
       end
 
       if !fraction.nil?
-        fraction = Utils.parse_as_expression(fraction)
+        fraction = Utils.parse_into_expression(fraction)
         return Utils.wrap_expr(
           _rbexpr.list_sample_fraction(
             fraction, with_replacement, shuffle, seed
@@ -155,7 +155,7 @@ module Polars
       end
 
       n = 1 if n.nil?
-      n = Utils.parse_as_expression(n)
+      n = Utils.parse_into_expression(n)
       Utils.wrap_expr(_rbexpr.list_sample_n(n, with_replacement, shuffle, seed))
     end
 
@@ -387,7 +387,7 @@ module Polars
     #   # │ 1    │
     #   # └──────┘
     def get(index, null_on_oob: true)
-      index = Utils.parse_as_expression(index)
+      index = Utils.parse_into_expression(index)
       Utils.wrap_expr(_rbexpr.list_get(index, null_on_oob))
     end
 
@@ -530,7 +530,7 @@ module Polars
     #   # │ x y   │
     #   # └───────┘
     def join(separator, ignore_nulls: true)
-      separator = Utils.parse_as_expression(separator, str_as_lit: true)
+      separator = Utils.parse_into_expression(separator, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.list_join(separator, ignore_nulls))
     end
 
@@ -625,7 +625,7 @@ module Polars
     #   #         [null, 10, 2]
     #   # ]
     def shift(n = 1)
-      n = Utils.parse_as_expression(n)
+      n = Utils.parse_into_expression(n)
       Utils.wrap_expr(_rbexpr.list_shift(n))
     end
 
@@ -694,7 +694,7 @@ module Polars
     #   #         [2, 1]
     #   # ]
     def tail(n = 5)
-      n = Utils.parse_as_expression(n)
+      n = Utils.parse_into_expression(n)
       Utils.wrap_expr(_rbexpr.list_tail(n))
     end
 

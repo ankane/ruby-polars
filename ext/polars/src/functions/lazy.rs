@@ -58,7 +58,7 @@ pub fn rolling_cov(
 pub fn arg_sort_by(
     by: RArray,
     descending: Vec<bool>,
-    nulls_last: bool,
+    nulls_last: Vec<bool>,
     multithreaded: bool,
     maintain_order: bool,
 ) -> RbResult<RbExpr> {
@@ -100,7 +100,7 @@ pub fn collect_all(lfs: RArray) -> RbResult<RArray> {
         .collect::<RbResult<Vec<&RbLazyFrame>>>()?;
 
     Ok(RArray::from_iter(lfs.iter().map(|lf| {
-        let df = lf.ldf.clone().collect().unwrap();
+        let df = lf.ldf.borrow().clone().collect().unwrap();
         RbDataFrame::new(df)
     })))
 }

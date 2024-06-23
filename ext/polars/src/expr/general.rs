@@ -239,10 +239,10 @@ impl RbExpr {
         self.inner.clone().len().into()
     }
 
-    pub fn value_counts(&self, multithreaded: bool, sorted: bool) -> Self {
+    pub fn value_counts(&self, sort: bool, parallel: bool, name: String, normalize: bool) -> Self {
         self.inner
             .clone()
-            .value_counts(multithreaded, sorted)
+            .value_counts(sort, parallel, name, normalize)
             .into()
     }
 
@@ -288,28 +288,30 @@ impl RbExpr {
             .into()
     }
 
-    pub fn top_k(&self, k: &Self, nulls_last: bool, multithreaded: bool) -> Self {
-        self.inner
-            .clone()
-            .top_k(
-                k.inner.clone(),
-                SortOptions::default()
-                    .with_nulls_last(nulls_last)
-                    .with_maintain_order(multithreaded),
-            )
-            .into()
+    pub fn top_k(&self, k: &Self) -> Self {
+        self.inner.clone().top_k(k.inner.clone()).into()
     }
 
-    pub fn bottom_k(&self, k: &Self, nulls_last: bool, multithreaded: bool) -> Self {
-        self.inner
+    pub fn top_k_by(&self, by: RArray, k: &Self, reverse: Vec<bool>) -> RbResult<Self> {
+        let by = rb_exprs_to_exprs(by)?;
+        Ok(self
+            .inner
             .clone()
-            .bottom_k(
-                k.inner.clone(),
-                SortOptions::default()
-                    .with_nulls_last(nulls_last)
-                    .with_maintain_order(multithreaded),
-            )
-            .into()
+            .top_k_by(k.inner.clone(), by, reverse)
+            .into())
+    }
+
+    pub fn bottom_k(&self, k: &Self) -> Self {
+        self.inner.clone().bottom_k(k.inner.clone()).into()
+    }
+
+    pub fn bottom_k_by(&self, by: RArray, k: &Self, reverse: Vec<bool>) -> RbResult<Self> {
+        let by = rb_exprs_to_exprs(by)?;
+        Ok(self
+            .inner
+            .clone()
+            .bottom_k_by(k.inner.clone(), by, reverse)
+            .into())
     }
 
     pub fn peak_min(&self) -> Self {
@@ -343,7 +345,7 @@ impl RbExpr {
         &self,
         by: RArray,
         descending: Vec<bool>,
-        nulls_last: bool,
+        nulls_last: Vec<bool>,
         multithreaded: bool,
         maintain_order: bool,
     ) -> RbResult<Self> {
@@ -704,7 +706,7 @@ impl RbExpr {
     }
 
     pub fn reshape(&self, dims: Vec<i64>) -> Self {
-        self.inner.clone().reshape(&dims).into()
+        self.inner.clone().reshape(&dims, NestedType::Array).into()
     }
 
     pub fn cum_count(&self, reverse: bool) -> Self {
@@ -712,14 +714,7 @@ impl RbExpr {
     }
 
     pub fn to_physical(&self) -> Self {
-        self.inner
-            .clone()
-            .map(
-                |s| Ok(Some(s.to_physical_repr().into_owned())),
-                GetOutput::map_dtype(|dt| dt.to_physical()),
-            )
-            .with_fmt("to_physical")
-            .into()
+        self.inner.clone().to_physical().into()
     }
 
     pub fn shuffle(&self, seed: Option<u64>) -> Self {
@@ -855,7 +850,14 @@ impl RbExpr {
         self.inner.clone().set_sorted_flag(is_sorted).into()
     }
 
-    pub fn replace(
+    pub fn replace(&self, old: &Self, new: &Self) -> Self {
+        self.inner
+            .clone()
+            .replace(old.inner.clone(), new.inner.clone())
+            .into()
+    }
+
+    pub fn replace_strict(
         &self,
         old: &Self,
         new: &Self,
@@ -864,7 +866,7 @@ impl RbExpr {
     ) -> Self {
         self.inner
             .clone()
-            .replace(
+            .replace_strict(
                 old.inner.clone(),
                 new.inner.clone(),
                 default.map(|e| e.inner.clone()),

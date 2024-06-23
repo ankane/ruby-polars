@@ -89,7 +89,7 @@ module Polars
     #   # │ 4   ┆ 0   ┆ 99  │
     #   # └─────┴─────┴─────┘
     def when(*predicates, **constraints)
-      condition = Utils.parse_when_inputs(*predicates, **constraints)
+      condition = Utils.parse_predicates_constraints_into_expression(*predicates, **constraints)
       When.new(Plr.when(condition))
     end
   end

@@ -8,7 +8,7 @@ module Polars
     end
 
     def then(statement)
-      statement_rbexpr = Utils.parse_as_expression(statement)
+      statement_rbexpr = Utils.parse_into_expression(statement)
       Then.new(_when.then(statement_rbexpr))
     end
   end
@@ -30,12 +30,12 @@ module Polars
     end
 
     def when(*predicates, **constraints)
-      condition_rbexpr = Utils.parse_when_inputs(*predicates, **constraints)
+      condition_rbexpr = Utils.parse_predicates_constraints_into_expression(*predicates, **constraints)
       ChainedWhen.new(_then.when(condition_rbexpr))
     end
 
     def otherwise(statement)
-      statement_rbexpr = Utils.parse_as_expression(statement)
+      statement_rbexpr = Utils.parse_into_expression(statement)
       Utils.wrap_expr(_then.otherwise(statement_rbexpr))
     end
   end
@@ -49,7 +49,7 @@ module Polars
     end
 
     def then(statement)
-      statement_rbexpr = Utils.parse_as_expression(statement)
+      statement_rbexpr = Utils.parse_into_expression(statement)
       ChainedThen.new(_chained_when.then(statement_rbexpr))
     end
   end
@@ -71,12 +71,12 @@ module Polars
     end
 
     def when(*predicates, **constraints)
-      condition_rbexpr = Utils.parse_when_inputs(*predicates, **constraints)
+      condition_rbexpr = Utils.parse_predicates_constraints_into_expression(*predicates, **constraints)
       ChainedWhen.new(_chained_then.when(condition_rbexpr))
     end
 
     def otherwise(statement)
-      statement_rbexpr = Utils.parse_as_expression(statement)
+      statement_rbexpr = Utils.parse_into_expression(statement)
       Utils.wrap_expr(_chained_then.otherwise(statement_rbexpr))
     end
   end

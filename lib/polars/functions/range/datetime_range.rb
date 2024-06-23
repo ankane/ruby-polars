@@ -63,8 +63,8 @@ module Polars
         time_unit = "ns"
       end
 
-      start_rbexpr = Utils.parse_as_expression(start)
-      end_rbexpr = Utils.parse_as_expression(stop)
+      start_rbexpr = Utils.parse_into_expression(start)
+      end_rbexpr = Utils.parse_into_expression(stop)
       result = Utils.wrap_expr(
         Plr.datetime_range(
           start_rbexpr, end_rbexpr, interval, closed, time_unit, time_zone
@@ -130,8 +130,8 @@ module Polars
         time_unit = "ns"
       end
 
-      start_rbexpr = Utils.parse_as_expression(start)
-      end_rbexpr = Utils.parse_as_expression(stop)
+      start_rbexpr = Utils.parse_into_expression(start)
+      end_rbexpr = Utils.parse_into_expression(stop)
 
       result = Utils.wrap_expr(
         Plr.datetime_ranges(

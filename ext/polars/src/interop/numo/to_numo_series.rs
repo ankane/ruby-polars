@@ -1,4 +1,5 @@
 use magnus::{class, prelude::*, Module, RArray, RClass, RModule, Value};
+use polars::series::BitRepr;
 use polars_core::prelude::*;
 
 use crate::error::RbPolarsErr;
@@ -23,7 +24,7 @@ impl RbSeries {
                     .funcall("cast", (np_arr,))
             }
             dt if dt.is_numeric() => {
-                if s.bit_repr_is_large() {
+                if let Some(BitRepr::Large(_)) = s.bit_repr() {
                     let s = s.cast(&DataType::Float64).unwrap();
                     let ca = s.f64().unwrap();
                     // TODO make more efficient

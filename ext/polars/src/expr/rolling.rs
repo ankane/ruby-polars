@@ -85,7 +85,7 @@ impl RbExpr {
         center: bool,
     ) -> Self {
         let options = RollingOptionsFixedWindow {
-            window_size: window_size,
+            window_size,
             weights,
             min_periods,
             center,
