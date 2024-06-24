@@ -456,9 +456,7 @@ module Polars
     end
 
     def to_s
-      # TODO improve in 0.12.0
-      # "#{self.class.name}(#{fields.to_h { |f| [f.name, f.dtype] }})"
-      "#{self.class.name}([#{fields.map(&:to_s).join("\n")}])"
+      "#{self.class.name}(#{fields.to_h { |f| [f.name, f.dtype] }})"
     end
 
     def to_schema

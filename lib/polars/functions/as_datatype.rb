@@ -145,9 +145,7 @@ module Polars
     #
     # @example Use keyword arguments to easily name each struct field.
     #   df.select(Polars.struct(p: "int", q: "bool").alias("my_struct")).schema
-    #   # =>
-    #   # {"my_struct"=>Polars::Struct([Polars::Field("p", Polars::Int64)
-    #   # Polars::Field("q", Polars::Boolean)])}
+    #   # => {"my_struct"=>Polars::Struct({"p"=>Polars::Int64, "q"=>Polars::Boolean})}
     def struct(*exprs, schema: nil, eager: false, **named_exprs)
       rbexprs = Utils.parse_into_list_of_expressions(*exprs, **named_exprs)
       expr = Utils.wrap_expr(Plr.as_struct(rbexprs))
