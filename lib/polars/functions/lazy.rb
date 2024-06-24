@@ -1171,7 +1171,7 @@ module Polars
     #   # │ null ┆ null ┆ null ┆ 10.0 │
     #   # └──────┴──────┴──────┴──────┘
     def coalesce(exprs, *more_exprs)
-      exprs = Utils.parse_as_list_of_expressions(exprs, *more_exprs)
+      exprs = Utils.parse_into_list_of_expressions(exprs, *more_exprs)
       Utils.wrap_expr(Plr.coalesce(exprs))
     end
 

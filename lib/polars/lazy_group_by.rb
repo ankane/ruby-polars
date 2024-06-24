@@ -107,7 +107,7 @@ module Polars
     #   # │ b   ┆ 5     ┆ 10.0           │
     #   # └─────┴───────┴────────────────┘
     def agg(*aggs, **named_aggs)
-      rbexprs = Utils.parse_as_list_of_expressions(*aggs, **named_aggs)
+      rbexprs = Utils.parse_into_list_of_expressions(*aggs, **named_aggs)
       Utils.wrap_ldf(@lgb.agg(rbexprs))
     end
 

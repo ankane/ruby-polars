@@ -32,7 +32,7 @@ module Polars
     #   # │ null  ┆ null  ┆ z   ┆ null  │
     #   # └───────┴───────┴─────┴───────┘
     def all_horizontal(*exprs)
-      rbexprs = Utils.parse_as_list_of_expressions(*exprs)
+      rbexprs = Utils.parse_into_list_of_expressions(*exprs)
       Utils.wrap_expr(Plr.all_horizontal(rbexprs))
     end
 
@@ -68,7 +68,7 @@ module Polars
     #   # │ null  ┆ null  ┆ z   ┆ null  │
     #   # └───────┴───────┴─────┴───────┘
     def any_horizontal(*exprs)
-      rbexprs = Utils.parse_as_list_of_expressions(*exprs)
+      rbexprs = Utils.parse_into_list_of_expressions(*exprs)
       Utils.wrap_expr(Plr.any_horizontal(rbexprs))
     end
 
@@ -101,7 +101,7 @@ module Polars
     #   # │ 3   ┆ null ┆ z   ┆ 3   │
     #   # └─────┴──────┴─────┴─────┘
     def max_horizontal(*exprs)
-      rbexprs = Utils.parse_as_list_of_expressions(*exprs)
+      rbexprs = Utils.parse_into_list_of_expressions(*exprs)
       Utils.wrap_expr(Plr.max_horizontal(rbexprs))
     end
 
@@ -134,7 +134,7 @@ module Polars
     #   # │ 3   ┆ null ┆ z   ┆ 3   │
     #   # └─────┴──────┴─────┴─────┘
     def min_horizontal(*exprs)
-      rbexprs = Utils.parse_as_list_of_expressions(*exprs)
+      rbexprs = Utils.parse_into_list_of_expressions(*exprs)
       Utils.wrap_expr(Plr.min_horizontal(rbexprs))
     end
 
@@ -167,7 +167,7 @@ module Polars
     #   # │ 3   ┆ null ┆ z   ┆ 3   │
     #   # └─────┴──────┴─────┴─────┘
     def sum_horizontal(*exprs)
-      rbexprs = Utils.parse_as_list_of_expressions(*exprs)
+      rbexprs = Utils.parse_into_list_of_expressions(*exprs)
       Utils.wrap_expr(Plr.sum_horizontal(rbexprs))
     end
 
@@ -200,7 +200,7 @@ module Polars
     #   # │ 3   ┆ null ┆ z   ┆ 3.0  │
     #   # └─────┴──────┴─────┴──────┘
     def mean_horizontal(*exprs)
-      rbexprs = Utils.parse_as_list_of_expressions(*exprs)
+      rbexprs = Utils.parse_into_list_of_expressions(*exprs)
       Utils.wrap_expr(Plr.mean_horizontal(rbexprs))
     end
 
@@ -233,7 +233,7 @@ module Polars
     #   # │ 3   ┆ null ┆ z   ┆ {3,null}  │
     #   # └─────┴──────┴─────┴───────────┘
     def cum_sum_horizontal(*exprs)
-      rbexprs = Utils.parse_as_list_of_expressions(*exprs)
+      rbexprs = Utils.parse_into_list_of_expressions(*exprs)
       exprs_wrapped = rbexprs.map { |e| Utils.wrap_expr(e) }
 
       # (Expr): use u32 as that will not cast to float as eagerly

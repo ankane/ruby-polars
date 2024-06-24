@@ -270,7 +270,7 @@ module Polars
         )
       end
 
-      by = Utils.parse_as_list_of_expressions(by, *more_by)
+      by = Utils.parse_into_list_of_expressions(by, *more_by)
       reverse = Utils.extend_bool(reverse, by.length, "reverse", "by")
       nulls_last = Utils.extend_bool(nulls_last, by.length, "nulls_last", "by")
       _from_rbldf(
@@ -1028,7 +1028,7 @@ module Polars
     def select(*exprs, **named_exprs)
       structify = ENV.fetch("POLARS_AUTO_STRUCTIFY", "0") != "0"
 
-      rbexprs = Utils.parse_as_list_of_expressions(
+      rbexprs = Utils.parse_into_list_of_expressions(
         *exprs, **named_exprs, __structify: structify
       )
       _from_rbldf(_ldf.select(rbexprs))
@@ -1782,7 +1782,7 @@ module Polars
     def with_columns(*exprs, **named_exprs)
       structify = ENV.fetch("POLARS_AUTO_STRUCTIFY", "0") != "0"
 
-      rbexprs = Utils.parse_as_list_of_expressions(*exprs, **named_exprs, __structify: structify)
+      rbexprs = Utils.parse_into_list_of_expressions(*exprs, **named_exprs, __structify: structify)
 
       _from_rbldf(_ldf.with_columns(rbexprs))
     end

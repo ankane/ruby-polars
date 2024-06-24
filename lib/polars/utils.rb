@@ -301,7 +301,7 @@ module Polars
       Dir.glob(file).any?
     end
 
-    def self.parse_as_list_of_expressions(*inputs, __structify: false, **named_inputs)
+    def self.parse_into_list_of_expressions(*inputs, __structify: false, **named_inputs)
       exprs = _parse_positional_inputs(inputs, structify: __structify)
       if named_inputs.any?
         named_exprs = _parse_named_inputs(named_inputs, structify: __structify)

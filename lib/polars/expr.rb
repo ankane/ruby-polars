@@ -1545,7 +1545,7 @@ module Polars
     #   # │ two   │
     #   # └───────┘
     def sort_by(by, *more_by, reverse: false, nulls_last: false, multithreaded: true, maintain_order: false)
-      by = Utils.parse_as_list_of_expressions(by, *more_by)
+      by = Utils.parse_into_list_of_expressions(by, *more_by)
       reverse = Utils.extend_bool(reverse, by.length, "reverse", "by")
       nulls_last = Utils.extend_bool(nulls_last, by.length, "nulls_last", "by")
       _from_rbexpr(

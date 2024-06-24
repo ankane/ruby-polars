@@ -149,7 +149,7 @@ module Polars
     #   # {"my_struct"=>Polars::Struct([Polars::Field("p", Polars::Int64)
     #   # Polars::Field("q", Polars::Boolean)])}
     def struct(*exprs, schema: nil, eager: false, **named_exprs)
-      rbexprs = Utils.parse_as_list_of_expressions(*exprs, **named_exprs)
+      rbexprs = Utils.parse_into_list_of_expressions(*exprs, **named_exprs)
       expr = Utils.wrap_expr(Plr.as_struct(rbexprs))
 
       if !schema.nil? && !schema.empty?
@@ -157,7 +157,7 @@ module Polars
           # no columns or expressions provided; create one from schema keys
           expr =
             Utils.wrap_expr(
-              Plr.as_struct(Utils.parse_as_list_of_expressions(schema.keys))
+              Plr.as_struct(Utils.parse_into_list_of_expressions(schema.keys))
             )
           expr = expr.cast(Struct.new(schema), strict: false)
         end
