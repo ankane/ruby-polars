@@ -16,9 +16,9 @@ module Polars
       by,
       start_by
     )
-      period = Utils._timedelta_to_pl_duration(period)
-      offset = Utils._timedelta_to_pl_duration(offset)
-      every = Utils._timedelta_to_pl_duration(every)
+      period = Utils.parse_as_duration_string(period)
+      offset = Utils.parse_as_duration_string(offset)
+      every = Utils.parse_as_duration_string(every)
 
       @df = df
       @time_column = index_column

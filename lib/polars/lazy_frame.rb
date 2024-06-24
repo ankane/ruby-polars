@@ -1438,9 +1438,9 @@ module Polars
         period = every
       end
 
-      period = Utils._timedelta_to_pl_duration(period)
-      offset = Utils._timedelta_to_pl_duration(offset)
-      every = Utils._timedelta_to_pl_duration(every)
+      period = Utils.parse_as_duration_string(period)
+      offset = Utils.parse_as_duration_string(offset)
+      every = Utils.parse_as_duration_string(every)
 
       rbexprs_by = by.nil? ? [] : Utils.parse_into_list_of_expressions(by)
       lgb = _ldf.group_by_dynamic(
