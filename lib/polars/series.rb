@@ -4251,6 +4251,8 @@ module Polars
         end
 
         constructor = polars_type_to_constructor(dtype)
+        # TODO remove
+        strict = false if dtype == Decimal
         rbseries = constructor.call(name, values, strict)
 
         base_type = dtype.is_a?(DataType) ? dtype.class : dtype
