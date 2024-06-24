@@ -55,5 +55,14 @@ module Polars
         sz
       end
     end
+
+    def self.extend_bool(value, n_match, value_name, match_name)
+      values = bool?(value) ? [value] * n_match : value
+      if n_match != values.length
+        msg = "the length of `#{value_name}` (#{values.length}) does not match the length of `#{match_name}` (#{n_match})"
+        raise ValueError, msg
+      end
+      values
+    end
   end
 end
