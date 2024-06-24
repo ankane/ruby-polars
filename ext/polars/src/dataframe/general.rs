@@ -363,23 +363,20 @@ impl RbDataFrame {
     #[allow(clippy::too_many_arguments)]
     pub fn pivot_expr(
         &self,
-        index: Vec<String>,
-        columns: Vec<String>,
+        on: Vec<String>,
+        index: Option<Vec<String>>,
         values: Option<Vec<String>>,
         maintain_order: bool,
         sort_columns: bool,
         aggregate_expr: Option<&RbExpr>,
         separator: Option<String>,
     ) -> RbResult<Self> {
-        let fun = match maintain_order {
-            true => pivot_stable,
-            false => pivot,
-        };
+        let fun = if maintain_order { pivot_stable } else { pivot };
         let agg_expr = aggregate_expr.map(|aggregate_expr| aggregate_expr.inner.clone());
         let df = fun(
             &self.df.borrow(),
+            on,
             index,
-            columns,
             values,
             sort_columns,
             agg_expr,

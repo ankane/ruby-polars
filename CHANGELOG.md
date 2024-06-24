@@ -1,6 +1,6 @@
 ## 0.12.0 (unreleased)
 
-- Updated Polars to 0.41.0
+- Updated Polars to 0.41.2
 - Improved `struct` method
 - Aliased `melt` to `unpivot` for `DataFrame` and `LazyFrame`
 - Changed signature of `pivot` and `melt` methods
