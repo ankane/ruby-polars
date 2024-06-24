@@ -2276,7 +2276,7 @@ module Polars
     #   # │ 4      │
     #   # └────────┘
     def over(expr)
-      rbexprs = Utils.selection_to_rbexpr_list(expr)
+      rbexprs = Utils.parse_into_list_of_expressions(expr)
       _from_rbexpr(_rbexpr.over(rbexprs))
     end
 

@@ -87,7 +87,7 @@ module Polars
     #
     # @return [Expr]
     def concat_list(exprs)
-      exprs = Utils.selection_to_rbexpr_list(exprs)
+      exprs = Utils.parse_into_list_of_expressions(exprs)
       Utils.wrap_expr(Plr.concat_list(exprs))
     end
 
@@ -213,7 +213,7 @@ module Polars
     #   # │ 3   ┆ null ┆ walk ┆ null          │
     #   # └─────┴──────┴──────┴───────────────┘
     def concat_str(exprs, sep: "", ignore_nulls: false)
-      exprs = Utils.selection_to_rbexpr_list(exprs)
+      exprs = Utils.parse_into_list_of_expressions(exprs)
       Utils.wrap_expr(Plr.concat_str(exprs, sep, ignore_nulls))
     end
 

@@ -1442,7 +1442,7 @@ module Polars
       offset = Utils._timedelta_to_pl_duration(offset)
       every = Utils._timedelta_to_pl_duration(every)
 
-      rbexprs_by = by.nil? ? [] : Utils.selection_to_rbexpr_list(by)
+      rbexprs_by = by.nil? ? [] : Utils.parse_into_list_of_expressions(by)
       lgb = _ldf.group_by_dynamic(
         index_column,
         every,
@@ -2411,7 +2411,7 @@ module Polars
     #   # │ c       ┆ 8       │
     #   # └─────────┴─────────┘
     def explode(columns)
-      columns = Utils.selection_to_rbexpr_list(columns)
+      columns = Utils.parse_into_list_of_expressions(columns)
       _from_rbldf(_ldf.explode(columns))
     end
 
@@ -2680,9 +2680,9 @@ module Polars
       *more_columns,
       descending: false
     )
-      columns = Utils.selection_to_rbexpr_list(column)
+      columns = Utils.parse_into_list_of_expressions(column)
       if more_columns.any?
-        columns.concat(Utils.selection_to_rbexpr_list(more_columns))
+        columns.concat(Utils.parse_into_list_of_expressions(more_columns))
       end
       with_columns(
         columns.map { |e| Utils.wrap_expr(e).set_sorted(descending: descending) }

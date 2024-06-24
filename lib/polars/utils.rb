@@ -3,14 +3,6 @@ module Polars
   module Utils
     DTYPE_TEMPORAL_UNITS = ["ns", "us", "ms"]
 
-    def self.selection_to_rbexpr_list(exprs)
-      if exprs.is_a?(::String) || exprs.is_a?(Symbol) || exprs.is_a?(Expr) || exprs.is_a?(Series)
-        exprs = [exprs]
-      end
-
-      exprs.map { |e| parse_into_expression(e, str_as_lit: false) }
-    end
-
     # TODO fix
     def self.is_polars_dtype(data_type, include_unknown: false)
       if data_type == Unknown

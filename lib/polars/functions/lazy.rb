@@ -748,7 +748,7 @@ module Polars
         exprs = [exprs]
       end
 
-      exprs = Utils.selection_to_rbexpr_list(exprs)
+      exprs = Utils.parse_into_list_of_expressions(exprs)
       Utils.wrap_expr(Plr.fold(acc, f, exprs))
     end
 
@@ -781,7 +781,7 @@ module Polars
         exprs = [exprs]
       end
 
-      exprs = Utils.selection_to_rbexpr_list(exprs)
+      exprs = Utils.parse_into_list_of_expressions(exprs)
       Utils.wrap_expr(Plr.cum_fold(acc, f, exprs, include_init))
     end
     alias_method :cumfold, :cum_fold
@@ -982,7 +982,7 @@ module Polars
       if reverse == true || reverse == false
         reverse = [reverse] * exprs.length
       end
-      exprs = Utils.selection_to_rbexpr_list(exprs)
+      exprs = Utils.parse_into_list_of_expressions(exprs)
       Utils.wrap_expr(Plr.arg_sort_by(exprs, reverse))
     end
     alias_method :argsort_by, :arg_sort_by
