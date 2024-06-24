@@ -7,7 +7,7 @@ module Polars
       if value.is_a?(::Time) || value.is_a?(::DateTime)
         time_unit = dtype&.time_unit || "ns"
         time_zone = dtype.&time_zone
-        e = lit(Utils._datetime_to_pl_timestamp(value, time_unit)).cast(Datetime.new(time_unit))
+        e = lit(Utils.datetime_to_int(value, time_unit)).cast(Datetime.new(time_unit))
         if time_zone
           return e.dt.replace_time_zone(time_zone.to_s)
         else

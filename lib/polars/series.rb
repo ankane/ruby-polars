@@ -4199,12 +4199,12 @@ module Polars
       end
 
       if other.is_a?(::Time) && dtype.is_a?(Datetime)
-        ts = Utils._datetime_to_pl_timestamp(other, time_unit)
+        ts = Utils.datetime_to_int(other, time_unit)
         f = ffi_func("#{op}_<>", Int64, _s)
         fail if f.nil?
         return Utils.wrap_s(f.call(ts))
       elsif other.is_a?(::Date) && dtype == Date
-        d = Utils._date_to_pl_date(other)
+        d = Utils.date_to_int(other)
         f = ffi_func("#{op}_<>", Int32, _s)
         fail if f.nil?
         return Utils.wrap_s(f.call(d))
