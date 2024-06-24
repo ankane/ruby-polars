@@ -6,6 +6,7 @@
 - Changed signature of `pivot` and `melt` methods
 - Changed signature of `date_range` and `date_ranges` methods
 - Removed `use_earliest` option from `replace_time_zone` and `to_datetime` methods (use `ambiguous` instead)
+- Removed `by` and `closed` options from `rolling_*` methods (use `rolling_*_by` instead)
 - Removed `explode` method from `StringExpr` (use `split("").explode` instead)
 - Removed `set_ordering` method from `CatExpr`
 

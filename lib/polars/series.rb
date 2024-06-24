@@ -3220,8 +3220,7 @@ module Polars
       weights: nil,
       min_periods: nil,
       center: false,
-      ddof: 1,
-      warn_if_unsorted: true
+      ddof: 1
     )
       to_frame
         .select(
@@ -3230,8 +3229,7 @@ module Polars
             weights: weights,
             min_periods: min_periods,
             center: center,
-            ddof: ddof,
-            warn_if_unsorted: warn_if_unsorted
+            ddof: ddof
           )
         )
         .to_series
@@ -3275,8 +3273,7 @@ module Polars
       weights: nil,
       min_periods: nil,
       center: false,
-      ddof: 1,
-      warn_if_unsorted: true
+      ddof: 1
     )
       to_frame
         .select(
@@ -3285,8 +3282,7 @@ module Polars
             weights: weights,
             min_periods: min_periods,
             center: center,
-            ddof: ddof,
-            warn_if_unsorted: warn_if_unsorted
+            ddof: ddof
           )
         )
         .to_series
@@ -3328,8 +3324,7 @@ module Polars
       window_size,
       weights: nil,
       min_periods: nil,
-      center: false,
-      warn_if_unsorted: true
+      center: false
     )
       if min_periods.nil?
         min_periods = window_size
@@ -3341,8 +3336,7 @@ module Polars
             window_size,
             weights: weights,
             min_periods: min_periods,
-            center: center,
-            warn_if_unsorted: warn_if_unsorted
+            center: center
           )
         )
         .to_series
@@ -3401,8 +3395,7 @@ module Polars
       window_size: 2,
       weights: nil,
       min_periods: nil,
-      center: false,
-      warn_if_unsorted: true
+      center: false
     )
       if min_periods.nil?
         min_periods = window_size
@@ -3416,8 +3409,7 @@ module Polars
             window_size: window_size,
             weights: weights,
             min_periods: min_periods,
-            center: center,
-            warn_if_unsorted: warn_if_unsorted
+            center: center
           )
         )
         .to_series

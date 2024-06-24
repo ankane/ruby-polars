@@ -4900,12 +4900,6 @@ module Polars
     #   a result. If None, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
-    # @param by [String]
-    #   If the `window_size` is temporal for instance `"5h"` or `"3s`, you must
-    #   set the column that will be used to determine the windows. This column must
-    #   be of dtype `{Date, Datetime}`
-    # @param closed ["left", "right", "both", "none"]
-    #   Define whether the temporal window interval is closed or not.
     #
     # @note
     #   This functionality is experimental and may change without it being considered a
@@ -4943,24 +4937,8 @@ module Polars
       window_size,
       weights: nil,
       min_periods: nil,
-      center: false,
-      by: nil,
-      closed: nil
+      center: false
     )
-      window_size, min_periods = _prepare_rolling_window_args(
-        window_size, min_periods
-      )
-      if !by.nil?
-        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
-        return rolling_min_by(
-          by,
-          window_size,
-          min_periods: min_periods,
-          closed: closed || "right",
-          warn_if_unsorted: warn_if_unsorted
-        )
-      end
-      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_min(
           window_size, weights, min_periods, center
@@ -5000,12 +4978,6 @@ module Polars
     #   a result. If None, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
-    # @param by [String]
-    #   If the `window_size` is temporal for instance `"5h"` or `"3s`, you must
-    #   set the column that will be used to determine the windows. This column must
-    #   be of dtype `{Date, Datetime}`
-    # @param closed ["left", "right", "both", "none"]
-    #   Define whether the temporal window interval is closed or not.
     #
     # @note
     #   This functionality is experimental and may change without it being considered a
@@ -5043,24 +5015,8 @@ module Polars
       window_size,
       weights: nil,
       min_periods: nil,
-      center: false,
-      by: nil,
-      closed: nil
+      center: false
     )
-      window_size, min_periods = _prepare_rolling_window_args(
-        window_size, min_periods
-      )
-      if !by.nil?
-        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
-        return rolling_max_by(
-          by,
-          window_size,
-          min_periods: min_periods,
-          closed: closed || "right",
-          warn_if_unsorted: warn_if_unsorted
-        )
-      end
-      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_max(
           window_size, weights, min_periods, center
@@ -5100,12 +5056,6 @@ module Polars
     #   a result. If None, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
-    # @param by [String]
-    #   If the `window_size` is temporal for instance `"5h"` or `"3s`, you must
-    #   set the column that will be used to determine the windows. This column must
-    #   be of dtype `{Date, Datetime}`
-    # @param closed ["left", "right", "both", "none"]
-    #   Define whether the temporal window interval is closed or not.
     #
     # @note
     #   This functionality is experimental and may change without it being considered a
@@ -5143,24 +5093,8 @@ module Polars
       window_size,
       weights: nil,
       min_periods: nil,
-      center: false,
-      by: nil,
-      closed: nil
+      center: false
     )
-      window_size, min_periods = _prepare_rolling_window_args(
-        window_size, min_periods
-      )
-      if !by.nil?
-        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
-        return rolling_mean_by(
-          by,
-          window_size,
-          min_periods: min_periods,
-          closed: closed || "right",
-          warn_if_unsorted: warn_if_unsorted
-        )
-      end
-      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_mean(
           window_size, weights, min_periods, center
@@ -5200,12 +5134,6 @@ module Polars
     #   a result. If None, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
-    # @param by [String]
-    #   If the `window_size` is temporal for instance `"5h"` or `"3s`, you must
-    #   set the column that will be used to determine the windows. This column must
-    #   be of dtype `{Date, Datetime}`
-    # @param closed ["left", "right", "both", "none"]
-    #   Define whether the temporal window interval is closed or not.
     #
     # @note
     #   This functionality is experimental and may change without it being considered a
@@ -5243,24 +5171,8 @@ module Polars
       window_size,
       weights: nil,
       min_periods: nil,
-      center: false,
-      by: nil,
-      closed: nil
+      center: false
     )
-      window_size, min_periods = _prepare_rolling_window_args(
-        window_size, min_periods
-      )
-      if !by.nil?
-        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
-        return rolling_sum_by(
-          by,
-          window_size,
-          min_periods: min_periods,
-          closed: closed || "right",
-          warn_if_unsorted: warn_if_unsorted
-        )
-      end
-      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_sum(
           window_size, weights, min_periods, center
@@ -5300,12 +5212,6 @@ module Polars
     #   a result. If None, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
-    # @param by [String]
-    #   If the `window_size` is temporal for instance `"5h"` or `"3s`, you must
-    #   set the column that will be used to determine the windows. This column must
-    #   be of dtype `{Date, Datetime}`
-    # @param closed ["left", "right", "both", "none"]
-    #   Define whether the temporal window interval is closed or not.
     #
     # @note
     #   This functionality is experimental and may change without it being considered a
@@ -5344,26 +5250,8 @@ module Polars
       weights: nil,
       min_periods: nil,
       center: false,
-      by: nil,
-      closed: nil,
-      ddof: 1,
-      warn_if_unsorted: true
+      ddof: 1
     )
-      window_size, min_periods = _prepare_rolling_window_args(
-        window_size, min_periods
-      )
-      if !by.nil?
-        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
-        return rolling_std_by(
-          by,
-          window_size,
-          min_periods: min_periods,
-          closed: closed || "right",
-          ddof: ddof,
-          warn_if_unsorted: warn_if_unsorted
-        )
-      end
-      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_std(
           window_size, weights, min_periods, center, ddof
@@ -5403,12 +5291,6 @@ module Polars
     #   a result. If None, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
-    # @param by [String]
-    #   If the `window_size` is temporal for instance `"5h"` or `"3s`, you must
-    #   set the column that will be used to determine the windows. This column must
-    #   be of dtype `{Date, Datetime}`
-    # @param closed ["left", "right", "both", "none"]
-    #   Define whether the temporal window interval is closed or not.
     #
     # @note
     #   This functionality is experimental and may change without it being considered a
@@ -5447,26 +5329,8 @@ module Polars
       weights: nil,
       min_periods: nil,
       center: false,
-      by: nil,
-      closed: nil,
-      ddof: 1,
-      warn_if_unsorted: true
+      ddof: 1
     )
-      window_size, min_periods = _prepare_rolling_window_args(
-        window_size, min_periods
-      )
-      if !by.nil?
-        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
-        return rolling_var_by(
-          by,
-          window_size,
-          min_periods: min_periods,
-          closed: closed || "right",
-          ddof: ddof,
-          warn_if_unsorted: warn_if_unsorted
-        )
-      end
-      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_var(
           window_size, weights, min_periods, center, ddof
@@ -5502,12 +5366,6 @@ module Polars
     #   a result. If None, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
-    # @param by [String]
-    #   If the `window_size` is temporal for instance `"5h"` or `"3s`, you must
-    #   set the column that will be used to determine the windows. This column must
-    #   be of dtype `{Date, Datetime}`
-    # @param closed ["left", "right", "both", "none"]
-    #   Define whether the temporal window interval is closed or not.
     #
     # @note
     #   This functionality is experimental and may change without it being considered a
@@ -5545,25 +5403,8 @@ module Polars
       window_size,
       weights: nil,
       min_periods: nil,
-      center: false,
-      by: nil,
-      closed: nil,
-      warn_if_unsorted: true
+      center: false
     )
-      window_size, min_periods = _prepare_rolling_window_args(
-        window_size, min_periods
-      )
-      if !by.nil?
-        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
-        return rolling_median_by(
-          by,
-          window_size,
-          min_periods: min_periods,
-          closed: closed || "right",
-          warn_if_unsorted: warn_if_unsorted
-        )
-      end
-      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_median(
           window_size, weights, min_periods, center
@@ -5603,12 +5444,6 @@ module Polars
     #   a result. If None, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
-    # @param by [String]
-    #   If the `window_size` is temporal for instance `"5h"` or `"3s`, you must
-    #   set the column that will be used to determine the windows. This column must
-    #   be of dtype `{Date, Datetime}`
-    # @param closed ["left", "right", "both", "none"]
-    #   Define whether the temporal window interval is closed or not.
     #
     # @note
     #   This functionality is experimental and may change without it being considered a
@@ -5648,26 +5483,8 @@ module Polars
       window_size: 2,
       weights: nil,
       min_periods: nil,
-      center: false,
-      by: nil,
-      closed: nil,
-      warn_if_unsorted: true
+      center: false
     )
-      window_size, min_periods = _prepare_rolling_window_args(
-        window_size, min_periods
-      )
-      if !by.nil?
-        Utils.validate_rolling_by_aggs_arguments(weights, center: center)
-        return rolling_quantile_by(
-          by,
-          window_size,
-          min_periods: min_periods,
-          closed: closed || "right",
-          warn_if_unsorted: warn_if_unsorted,
-          quantile: quantile
-        )
-      end
-      window_size = Utils.validate_rolling_aggs_arguments(window_size, closed)
       _from_rbexpr(
         _rbexpr.rolling_quantile(
           quantile, interpolation, window_size, weights, min_periods, center
