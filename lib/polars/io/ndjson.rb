@@ -72,7 +72,7 @@ module Polars
           n_rows,
           low_memory,
           rechunk,
-          Utils._prepare_row_count_args(row_count_name, row_count_offset)
+          Utils.parse_row_index_args(row_count_name, row_count_offset)
         )
       Utils.wrap_ldf(rblf)
     end

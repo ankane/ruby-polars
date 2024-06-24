@@ -47,19 +47,11 @@ module Polars
       end
     end
 
-    def self._process_null_values(null_values)
-      if null_values.is_a?(Hash)
-        null_values.to_a
-      else
-        null_values
-      end
-    end
-
-    def self._prepare_row_count_args(row_count_name = nil, row_count_offset = 0)
-      if !row_count_name.nil?
-        [row_count_name, row_count_offset]
-      else
+    def self.parse_row_index_args(row_index_name = nil, row_index_offset = 0)
+      if row_index_name.nil?
         nil
+      else
+        [row_index_name, row_index_offset]
       end
     end
 

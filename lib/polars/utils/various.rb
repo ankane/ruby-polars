@@ -1,5 +1,13 @@
 module Polars
   module Utils
+    def self._process_null_values(null_values)
+      if null_values.is_a?(Hash)
+        null_values.to_a
+      else
+        null_values
+      end
+    end
+
     def self._is_iterable_of(val, eltype)
       val.all? { |x| x.is_a?(eltype) }
     end

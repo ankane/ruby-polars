@@ -78,7 +78,7 @@ module Polars
         missing_utf8_is_empty_string,
         parse_dates,
         skip_rows_after_header,
-        Utils._prepare_row_count_args(row_count_name, row_count_offset),
+        Utils.parse_row_index_args(row_count_name, row_count_offset),
         sample_size,
         eol_char,
         raise_if_empty,

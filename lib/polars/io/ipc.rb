@@ -76,7 +76,7 @@ module Polars
           columns,
           projection,
           n_rows,
-          Utils._prepare_row_count_args(row_count_name, row_count_offset),
+          Utils.parse_row_index_args(row_count_name, row_count_offset),
           memory_map
         )
       Utils.wrap_df(rbdf)
@@ -149,7 +149,7 @@ module Polars
         columns,
         projection,
         n_rows,
-        Utils._prepare_row_count_args(row_index_name, row_index_offset),
+        Utils.parse_row_index_args(row_index_name, row_index_offset),
         rechunk
       )
       Utils.wrap_df(pydf)
@@ -238,7 +238,7 @@ module Polars
           n_rows,
           cache,
           rechunk,
-          Utils._prepare_row_count_args(row_count_name, row_count_offset),
+          Utils.parse_row_index_args(row_count_name, row_count_offset),
           memory_map
         )
       Utils.wrap_ldf(rblf)

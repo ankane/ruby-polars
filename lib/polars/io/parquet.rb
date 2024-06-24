@@ -110,7 +110,7 @@ module Polars
           projection,
           n_rows,
           parallel,
-          Utils._prepare_row_count_args(row_count_name, row_count_offset),
+          Utils.parse_row_index_args(row_count_name, row_count_offset),
           low_memory,
           use_statistics,
           rechunk
@@ -213,7 +213,7 @@ module Polars
           cache,
           parallel,
           rechunk,
-          Utils._prepare_row_count_args(row_count_name, row_count_offset),
+          Utils.parse_row_index_args(row_count_name, row_count_offset),
           low_memory,
           use_statistics,
           hive_partitioning,
