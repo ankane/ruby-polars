@@ -99,21 +99,6 @@ module Polars
       [projection, columns]
     end
 
-    def self.scale_bytes(sz, to:)
-      scaling_factor = {
-        "b" => 1,
-        "k" => 1024,
-        "m" => 1024 ** 2,
-        "g" => 1024 ** 3,
-        "t" => 1024 ** 4
-      }[to[0]]
-      if scaling_factor > 1
-        sz / scaling_factor.to_f
-      else
-        sz
-      end
-    end
-
     def self.bool?(value)
       value.is_a?(TrueClass) || value.is_a?(FalseClass)
     end
