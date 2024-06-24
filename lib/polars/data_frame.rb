@@ -4556,7 +4556,7 @@ module Polars
     #   # │ 3   ┆ 7   │
     #   # └─────┴─────┘
     def gather_every(n, offset = 0)
-      select(Utils.col("*").gather_every(n, offset))
+      select(F.col("*").gather_every(n, offset))
     end
     alias_method :take_every, :gather_every
 
@@ -4626,7 +4626,7 @@ module Polars
     #   # │ 10.0 ┆ null ┆ 9.0      │
     #   # └──────┴──────┴──────────┘
     def interpolate
-      select(Utils.col("*").interpolate)
+      select(F.col("*").interpolate)
     end
 
     # Check if the dataframe is empty.

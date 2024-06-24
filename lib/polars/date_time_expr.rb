@@ -721,7 +721,7 @@ module Polars
     def second(fractional: false)
       sec = Utils.wrap_expr(_rbexpr.dt_second)
       if fractional
-        sec + (Utils.wrap_expr(_rbexpr.dt_nanosecond) / Utils.lit(1_000_000_000.0))
+        sec + (Utils.wrap_expr(_rbexpr.dt_nanosecond) / F.lit(1_000_000_000.0))
       else
         sec
       end

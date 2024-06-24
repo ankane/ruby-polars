@@ -3,10 +3,6 @@ module Polars
   module Utils
     DTYPE_TEMPORAL_UNITS = ["ns", "us", "ms"]
 
-    def self.col(name)
-      Polars.col(name)
-    end
-
     def self.arrlen(obj)
       if obj.is_a?(Range)
         # size only works for numeric ranges
@@ -30,18 +26,14 @@ module Polars
 
     def self.expr_to_lit_or_expr(expr, str_to_lit: true)
       if (expr.is_a?(::String) || expr.is_a?(Symbol)) && !str_to_lit
-        col(expr)
+        F.col(expr)
       elsif expr.is_a?(Integer) || expr.is_a?(Float) || expr.is_a?(::String) || expr.is_a?(Symbol) || expr.is_a?(Series) || expr.nil?
-        lit(expr)
+        F.lit(expr)
       elsif expr.is_a?(Expr)
         expr
       else
         raise ArgumentError, "did not expect value #{expr} of type #{expr.class.name}, maybe disambiguate with Polars.lit or Polars.col"
       end
-    end
-
-    def self.lit(value)
-      Polars.lit(value)
     end
 
     def self.normalize_filepath(path, check_not_directory: true)

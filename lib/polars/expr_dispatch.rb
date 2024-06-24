@@ -14,7 +14,7 @@ module Polars
       namespace = self.class._accessor
 
       s = Utils.wrap_s(_s)
-      expr = Utils.col(s.name)
+      expr = F.col(s.name)
       expr = expr.send(namespace) if namespace
       s.to_frame.select(expr.send(method, ...)).to_series
     end

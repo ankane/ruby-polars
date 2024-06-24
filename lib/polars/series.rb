@@ -1378,7 +1378,7 @@ module Polars
     #   #         2
     #   # ]
     def limit(n = 10)
-      to_frame.select(Utils.col(name).limit(n)).to_series
+      to_frame.select(F.col(name).limit(n)).to_series
     end
 
     # Get a slice of this Series.
@@ -1510,7 +1510,7 @@ module Polars
     #   #         2
     #   # ]
     def head(n = 10)
-      to_frame.select(Utils.col(name).head(n)).to_series
+      to_frame.select(F.col(name).head(n)).to_series
     end
 
     # Get the last `n` rows.
@@ -1531,7 +1531,7 @@ module Polars
     #   #         3
     #   # ]
     def tail(n = 10)
-      to_frame.select(Utils.col(name).tail(n)).to_series
+      to_frame.select(F.col(name).tail(n)).to_series
     end
 
     # Take every nth value in the Series and return as new Series.

@@ -7355,7 +7355,7 @@ module Polars
     end
 
     def _to_expr(other)
-      other.is_a?(Expr) ? other : Utils.lit(other)
+      other.is_a?(Expr) ? other : F.lit(other)
     end
 
     def _prepare_alpha(com, span, half_life, alpha)

@@ -2142,7 +2142,7 @@ module Polars
     #   # │ 3   ┆ 7   │
     #   # └─────┴─────┘
     def take_every(n)
-      select(Utils.col("*").take_every(n))
+      select(F.col("*").take_every(n))
     end
 
     # Fill null values using the specified value or strategy.
@@ -2185,7 +2185,7 @@ module Polars
     #   # └──────┴──────┘
     def fill_nan(fill_value)
       if !fill_value.is_a?(Expr)
-        fill_value = Utils.lit(fill_value)
+        fill_value = F.lit(fill_value)
       end
       _from_rbldf(_ldf.fill_nan(fill_value._rbexpr))
     end
@@ -2560,7 +2560,7 @@ module Polars
     #   # │ 10.0 ┆ null ┆ 9.0      │
     #   # └──────┴──────┴──────────┘
     def interpolate
-      select(Utils.col("*").interpolate)
+      select(F.col("*").interpolate)
     end
 
     # Decompose a struct into its fields.
