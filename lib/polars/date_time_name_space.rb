@@ -747,8 +747,6 @@ module Polars
     #
     # @param time_zone [String]
     #     Time zone for the `Datetime` Series. Pass `nil` to unset time zone.
-    # @param use_earliest [Boolean]
-    #     Determine how to deal with ambiguous datetimes.
     # @param ambiguous [String]
     #     Determine how to deal with ambiguous datetimes.
     # @param non_existent [String]
@@ -823,7 +821,7 @@ module Polars
     #   #         1585717200
     #   #         1588309200
     #   # ]
-    def replace_time_zone(time_zone, use_earliest: nil, ambiguous: "raise", non_existent: "raise")
+    def replace_time_zone(time_zone, ambiguous: "raise", non_existent: "raise")
       super
     end
 

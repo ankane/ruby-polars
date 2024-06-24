@@ -241,18 +241,6 @@ module Polars
       Dir.glob(file).any?
     end
 
-    USE_EARLIEST_TO_AMBIGUOUS = {
-      true => "earliest",
-      false => "latest"
-    }
-
-    def self.rename_use_earliest_to_ambiguous(use_earliest, ambiguous)
-      unless use_earliest.nil?
-        ambiguous = USE_EARLIEST_TO_AMBIGUOUS.fetch(use_earliest)
-      end
-      ambiguous
-    end
-
     def self._check_arg_is_1byte(arg_name, arg, can_be_empty = false)
       if arg.is_a?(::String)
         arg_byte_length = arg.bytesize

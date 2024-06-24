@@ -925,17 +925,16 @@ module Polars
     #
     # @param time_zone [String]
     #     Time zone for the `Datetime` Series. Pass `nil` to unset time zone.
-    # @param use_earliest [Boolean]
-    #     Determine how to deal with ambiguous datetimes.
     # @param ambiguous [String]
     #     Determine how to deal with ambiguous datetimes.
     # @param non_existent [String]
     #     Determine how to deal with non-existent datetimes.
     #
     # @return [Expr]
-    def replace_time_zone(time_zone, use_earliest: nil, ambiguous: "raise", non_existent: "raise")
-      ambiguous = Utils.rename_use_earliest_to_ambiguous(use_earliest, ambiguous)
-      ambiguous = Polars.lit(ambiguous) unless ambiguous.is_a?(Expr)
+    def replace_time_zone(time_zone, ambiguous: "raise", non_existent: "raise")
+      unless ambiguous.is_a?(Expr)
+        ambiguous = Polars.lit(ambiguous)
+      end
       Utils.wrap_expr(_rbexpr.dt_replace_time_zone(time_zone, ambiguous._rbexpr, non_existent))
     end
 

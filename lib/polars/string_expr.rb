@@ -39,7 +39,7 @@ module Polars
     #   # ]
     def to_date(format = nil, strict: true, exact: true, cache: true)
       _validate_format_argument(format)
-      Utils.wrap_expr(self._rbexpr.str_to_date(format, strict, exact, cache))
+      Utils.wrap_expr(_rbexpr.str_to_date(format, strict, exact, cache))
     end
 
     # Convert a Utf8 column into a Datetime column.
@@ -83,14 +83,14 @@ module Polars
       strict: true,
       exact: true,
       cache: true,
-      use_earliest: nil,
       ambiguous: "raise"
     )
       _validate_format_argument(format)
-      ambiguous = Utils.rename_use_earliest_to_ambiguous(use_earliest, ambiguous)
-      ambiguous = Polars.lit(ambiguous) unless ambiguous.is_a?(Expr)
+      unless ambiguous.is_a?(Expr)
+        ambiguous = Polars.lit(ambiguous)
+      end
       Utils.wrap_expr(
-        self._rbexpr.str_to_datetime(
+        _rbexpr.str_to_datetime(
           format,
           time_unit,
           time_zone,

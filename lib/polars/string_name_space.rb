@@ -83,7 +83,7 @@ module Polars
       strict: true,
       exact: true,
       cache: true,
-      use_earliest: nil
+      ambiguous: "raise"
     )
       super
     end
