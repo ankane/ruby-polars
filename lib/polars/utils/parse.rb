@@ -12,7 +12,7 @@ module Polars
         if structify
           expr = _structify_expression(expr)
         end
-      elsif input.is_a?(::String) && !str_as_lit
+      elsif (input.is_a?(::String) || input.is_a?(Symbol)) && !str_as_lit
         expr = F.col(input)
       elsif input.is_a?(::Array) && list_as_series
         expr = F.lit(Series.new(input), dtype: dtype)

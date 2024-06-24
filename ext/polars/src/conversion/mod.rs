@@ -927,6 +927,23 @@ impl TryConvert for Wrap<SearchSortedSide> {
     }
 }
 
+impl TryConvert for Wrap<ClosedInterval> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "both" => ClosedInterval::Both,
+            "left" => ClosedInterval::Left,
+            "right" => ClosedInterval::Right,
+            "none" => ClosedInterval::None,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "`closed` must be one of {{'both', 'left', 'right', 'none'}}, got {v}",
+                )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<WindowMapping> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match String::try_convert(ob)?.as_str() {

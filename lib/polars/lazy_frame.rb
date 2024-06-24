@@ -932,7 +932,7 @@ module Polars
     def filter(predicate)
       _from_rbldf(
         _ldf.filter(
-          Utils.expr_to_lit_or_expr(predicate, str_to_lit: false)._rbexpr
+          Utils.parse_into_expression(predicate, str_as_lit: false)
         )
       )
     end
@@ -1036,12 +1036,14 @@ module Polars
 
     # Start a group by operation.
     #
-    # @param by [Object]
+    # @param by [Array]
     #   Column(s) to group by.
     # @param maintain_order [Boolean]
     #   Make sure that the order of the groups remain consistent. This is more
     #   expensive than a default group by.
-    #
+    # @param named_by [Hash]
+    #   Additional columns to group by, specified as keyword arguments.
+    #   The columns will be renamed to the keyword used.
     # @return [LazyGroupBy]
     #
     # @example
@@ -1064,9 +1066,9 @@ module Polars
     #   # │ b   ┆ 11  │
     #   # │ c   ┆ 6   │
     #   # └─────┴─────┘
-    def group_by(by, maintain_order: false)
-      rbexprs_by = Utils.selection_to_rbexpr_list(by)
-      lgb = _ldf.group_by(rbexprs_by, maintain_order)
+    def group_by(*by, maintain_order: false, **named_by)
+      exprs = Utils.parse_into_list_of_expressions(*by, **named_by)
+      lgb = _ldf.group_by(exprs, maintain_order)
       LazyGroupBy.new(lgb)
     end
     alias_method :groupby, :group_by
@@ -1427,7 +1429,7 @@ module Polars
         label = truncate ? "left" : "datapoint"
       end
 
-      index_column = Utils.expr_to_lit_or_expr(index_column, str_to_lit: false)
+      index_column = Utils.parse_into_expression(index_column, str_as_lit: false)
       if offset.nil?
         offset = period.nil? ? "-#{every}" : "0ns"
       end
@@ -1442,7 +1444,7 @@ module Polars
 
       rbexprs_by = by.nil? ? [] : Utils.selection_to_rbexpr_list(by)
       lgb = _ldf.group_by_dynamic(
-        index_column._rbexpr,
+        index_column,
         every,
         period,
         offset,
@@ -1721,12 +1723,12 @@ module Polars
       end
 
       if !on.nil?
-        rbexprs = Utils.selection_to_rbexpr_list(on)
+        rbexprs = Utils.parse_into_list_of_expressions(on)
         rbexprs_left = rbexprs
         rbexprs_right = rbexprs
       elsif !left_on.nil? && !right_on.nil?
-        rbexprs_left = Utils.selection_to_rbexpr_list(left_on)
-        rbexprs_right = Utils.selection_to_rbexpr_list(right_on)
+        rbexprs_left = Utils.parse_into_list_of_expressions(left_on)
+        rbexprs_right = Utils.parse_into_list_of_expressions(right_on)
       else
         raise ArgumentError, "must specify `on` OR `left_on` and `right_on`"
       end
@@ -2376,8 +2378,8 @@ module Polars
     #   # │ 3.0 ┆ 1.0 │
     #   # └─────┴─────┘
     def quantile(quantile, interpolation: "nearest")
-      quantile = Utils.expr_to_lit_or_expr(quantile, str_to_lit: false)
-      _from_rbldf(_ldf.quantile(quantile._rbexpr, interpolation))
+      quantile = Utils.parse_into_expression(quantile, str_as_lit: false)
+      _from_rbldf(_ldf.quantile(quantile, interpolation))
     end
 
     # Explode lists to long format.

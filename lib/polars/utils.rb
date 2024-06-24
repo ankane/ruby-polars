@@ -8,19 +8,7 @@ module Polars
         exprs = [exprs]
       end
 
-      exprs.map { |e| expr_to_lit_or_expr(e, str_to_lit: false)._rbexpr }
-    end
-
-    def self.expr_to_lit_or_expr(expr, str_to_lit: true)
-      if (expr.is_a?(::String) || expr.is_a?(Symbol)) && !str_to_lit
-        F.col(expr)
-      elsif expr.is_a?(Integer) || expr.is_a?(Float) || expr.is_a?(::String) || expr.is_a?(Symbol) || expr.is_a?(Series) || expr.nil?
-        F.lit(expr)
-      elsif expr.is_a?(Expr)
-        expr
-      else
-        raise ArgumentError, "did not expect value #{expr} of type #{expr.class.name}, maybe disambiguate with Polars.lit or Polars.col"
-      end
+      exprs.map { |e| parse_into_expression(e, str_as_lit: false) }
     end
 
     # TODO fix

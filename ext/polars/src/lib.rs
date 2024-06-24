@@ -238,6 +238,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("std", method!(RbExpr::std, 1))?;
     class.define_method("var", method!(RbExpr::var, 1))?;
     class.define_method("is_unique", method!(RbExpr::is_unique, 0))?;
+    class.define_method("is_between", method!(RbExpr::is_between, 3))?;
     class.define_method("approx_n_unique", method!(RbExpr::approx_n_unique, 0))?;
     class.define_method("is_first_distinct", method!(RbExpr::is_first_distinct, 0))?;
     class.define_method("is_last_distinct", method!(RbExpr::is_last_distinct, 0))?;

@@ -743,13 +743,13 @@ module Polars
     #
     # @return [Expr]
     def fold(acc, f, exprs)
-      acc = Utils.expr_to_lit_or_expr(acc, str_to_lit: true)
+      acc = Utils.parse_into_expression(acc, str_as_lit: true)
       if exprs.is_a?(Expr)
         exprs = [exprs]
       end
 
       exprs = Utils.selection_to_rbexpr_list(exprs)
-      Utils.wrap_expr(Plr.fold(acc._rbexpr, f, exprs))
+      Utils.wrap_expr(Plr.fold(acc, f, exprs))
     end
 
     # def reduce
@@ -776,13 +776,13 @@ module Polars
     #   If you simply want the first encountered expression as accumulator,
     #   consider using `cumreduce`.
     def cum_fold(acc, f, exprs, include_init: false)
-      acc = Utils.expr_to_lit_or_expr(acc, str_to_lit: true)
+      acc = Utils.parse_into_expression(acc, str_as_lit: true)
       if exprs.is_a?(Expr)
         exprs = [exprs]
       end
 
       exprs = Utils.selection_to_rbexpr_list(exprs)
-      Utils.wrap_expr(Plr.cum_fold(acc._rbexpr, f, exprs, include_init))
+      Utils.wrap_expr(Plr.cum_fold(acc, f, exprs, include_init))
     end
     alias_method :cumfold, :cum_fold
 
@@ -1119,8 +1119,8 @@ module Polars
         end
         condition.to_frame.select(arg_where(Polars.col(condition.name))).to_series
       else
-        condition = Utils.expr_to_lit_or_expr(condition, str_to_lit: true)
-        Utils.wrap_expr(Plr.arg_where(condition._rbexpr))
+        condition = Utils.parse_into_expression(condition, str_as_lit: true)
+        Utils.wrap_expr(Plr.arg_where(condition))
       end
     end
 

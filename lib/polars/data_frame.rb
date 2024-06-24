@@ -4138,7 +4138,7 @@ module Polars
       end
 
       if subset.is_a?(::Array) && subset.length == 1
-        expr = Utils.expr_to_lit_or_expr(subset[0], str_to_lit: false)
+        expr = Utils.wrap_expr(Utils.parse_into_expression(subset[0], str_as_lit: false))
       else
         struct_fields = subset.nil? ? Polars.all : subset
         expr = Polars.struct(struct_fields)

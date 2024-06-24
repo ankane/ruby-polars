@@ -44,28 +44,28 @@ module Polars
       time_unit: "us"
     )
       if !weeks.nil?
-        weeks = Utils.expr_to_lit_or_expr(weeks, str_to_lit: false)._rbexpr
+        weeks = Utils.parse_into_expression(weeks, str_as_lit: false)
       end
       if !days.nil?
-        days = Utils.expr_to_lit_or_expr(days, str_to_lit: false)._rbexpr
+        days = Utils.parse_into_expression(days, str_as_lit: false)
       end
       if !hours.nil?
-        hours = Utils.expr_to_lit_or_expr(hours, str_to_lit: false)._rbexpr
+        hours = Utils.parse_into_expression(hours, str_as_lit: false)
       end
       if !minutes.nil?
-        minutes = Utils.expr_to_lit_or_expr(minutes, str_to_lit: false)._rbexpr
+        minutes = Utils.parse_into_expression(minutes, str_as_lit: false)
       end
       if !seconds.nil?
-        seconds = Utils.expr_to_lit_or_expr(seconds, str_to_lit: false)._rbexpr
+        seconds = Utils.parse_into_expression(seconds, str_as_lit: false)
       end
       if !milliseconds.nil?
-        milliseconds = Utils.expr_to_lit_or_expr(milliseconds, str_to_lit: false)._rbexpr
+        milliseconds = Utils.parse_into_expression(milliseconds, str_as_lit: false)
       end
       if !microseconds.nil?
-        microseconds = Utils.expr_to_lit_or_expr(microseconds, str_to_lit: false)._rbexpr
+        microseconds = Utils.parse_into_expression(microseconds, str_as_lit: false)
       end
       if !nanoseconds.nil?
-        nanoseconds = Utils.expr_to_lit_or_expr(nanoseconds, str_to_lit: false)._rbexpr
+        nanoseconds = Utils.parse_into_expression(nanoseconds, str_as_lit: false)
       end
 
       Utils.wrap_expr(
@@ -219,7 +219,7 @@ module Polars
 
     # Format expressions as a string.
     #
-    # @param fstring [String]
+    # @param f_string [String]
     #   A string that with placeholders.
     #   For example: "hello_{}" or "{}_world
     # @param args [Object]
@@ -250,17 +250,17 @@ module Polars
     #   # │ foo_b_bar_2 │
     #   # │ foo_c_bar_3 │
     #   # └─────────────┘
-    def format(fstring, *args)
-      if fstring.scan("{}").length != args.length
+    def format(f_string, *args)
+      if f_string.scan("{}").length != args.length
         raise ArgumentError, "number of placeholders should equal the number of arguments"
       end
 
       exprs = []
 
       arguments = args.each
-      fstring.split(/(\{\})/).each do |s|
+      f_string.split(/(\{\})/).each do |s|
         if s == "{}"
-          e = Utils.expr_to_lit_or_expr(arguments.next, str_to_lit: false)
+          e = Utils.wrap_expr(Utils.parse_into_expression(arguments.next))
           exprs << e
         elsif s.length > 0
           exprs << lit(s)

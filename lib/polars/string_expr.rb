@@ -690,7 +690,7 @@ module Polars
     #   # │ null        ┆ null  ┆ null    │
     #   # └─────────────┴───────┴─────────┘
     def contains(pattern, literal: false, strict: true)
-      pattern = Utils.expr_to_lit_or_expr(pattern, str_to_lit: true)._rbexpr
+      pattern = Utils.parse_into_expression(pattern, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_contains(pattern, literal, strict))
     end
 
@@ -730,7 +730,7 @@ module Polars
     #   # │ mango  │
     #   # └────────┘
     def ends_with(sub)
-      sub = Utils.expr_to_lit_or_expr(sub, str_to_lit: true)._rbexpr
+      sub = Utils.parse_into_expression(sub, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_ends_with(sub))
     end
 
@@ -770,7 +770,7 @@ module Polars
     #   # │ apple  │
     #   # └────────┘
     def starts_with(sub)
-      sub = Utils.expr_to_lit_or_expr(sub, str_to_lit: true)._rbexpr
+      sub = Utils.parse_into_expression(sub, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_starts_with(sub))
     end
 
@@ -973,8 +973,8 @@ module Polars
     #   # │ ["678", "910"] │
     #   # └────────────────┘
     def extract_all(pattern)
-      pattern = Utils.expr_to_lit_or_expr(pattern, str_to_lit: true)
-      Utils.wrap_expr(_rbexpr.str_extract_all(pattern._rbexpr))
+      pattern = Utils.parse_into_expression(pattern, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.str_extract_all(pattern))
     end
 
     # Extract all capture groups for the given regex pattern.
@@ -1197,9 +1197,9 @@ module Polars
     #   # │ 2   ┆ abc456 │
     #   # └─────┴────────┘
     def replace(pattern, value, literal: false, n: 1)
-      pattern = Utils.expr_to_lit_or_expr(pattern, str_to_lit: true)
-      value = Utils.expr_to_lit_or_expr(value, str_to_lit: true)
-      Utils.wrap_expr(_rbexpr.str_replace_n(pattern._rbexpr, value._rbexpr, literal, n))
+      pattern = Utils.parse_into_expression(pattern, str_as_lit: true)
+      value = Utils.parse_into_expression(value, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.str_replace_n(pattern, value, literal, n))
     end
 
     # Replace all matching regex/literal substrings with a new string value.
@@ -1227,9 +1227,9 @@ module Polars
     #   # │ 2   ┆ 123-123 │
     #   # └─────┴─────────┘
     def replace_all(pattern, value, literal: false)
-      pattern = Utils.expr_to_lit_or_expr(pattern, str_to_lit: true)
-      value = Utils.expr_to_lit_or_expr(value, str_to_lit: true)
-      Utils.wrap_expr(_rbexpr.str_replace_all(pattern._rbexpr, value._rbexpr, literal))
+      pattern = Utils.parse_into_expression(pattern, str_as_lit: true)
+      value = Utils.parse_into_expression(value, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.str_replace_all(pattern, value, literal))
     end
 
     # Returns string values in reversed order.

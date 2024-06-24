@@ -218,8 +218,8 @@ module Polars
       unless time.is_a?(Time) || time.is_a?(Expr)
         raise TypeError, "expected 'time' to be a Ruby time or Polars expression, found #{time}"
       end
-      time = Utils.expr_to_lit_or_expr(time)
-      Utils.wrap_expr(_rbexpr.dt_combine(time._rbexpr, time_unit))
+      time = Utils.parse_into_expression(time)
+      Utils.wrap_expr(_rbexpr.dt_combine(time, time_unit))
     end
 
     # Convert a Date/Time/Datetime column into a String column with the given format.

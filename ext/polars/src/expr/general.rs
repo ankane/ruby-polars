@@ -435,6 +435,13 @@ impl RbExpr {
         self.clone().inner.is_unique().into()
     }
 
+    pub fn is_between(&self, lower: &Self, upper: &Self, closed: Wrap<ClosedInterval>) -> Self {
+        self.inner
+            .clone()
+            .is_between(lower.inner.clone(), upper.inner.clone(), closed.0)
+            .into()
+    }
+
     pub fn approx_n_unique(&self) -> Self {
         self.clone().inner.approx_n_unique().into()
     }

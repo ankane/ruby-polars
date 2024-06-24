@@ -431,7 +431,7 @@ module Polars
       if index.is_a?(::Array)
         index = Series.new(index)
       end
-      index = Utils.expr_to_lit_or_expr(index, str_to_lit: false)._rbexpr
+      index = Utils.parse_into_expression(index, str_as_lit: false)
       Utils.wrap_expr(_rbexpr.list_gather(index, null_on_oob))
     end
     alias_method :take, :gather
@@ -502,7 +502,7 @@ module Polars
     #   # │ true  │
     #   # └───────┘
     def contains(item)
-      Utils.wrap_expr(_rbexpr.list_contains(Utils.expr_to_lit_or_expr(item)._rbexpr))
+      Utils.wrap_expr(_rbexpr.list_contains(Utils.parse_into_expression(item)))
     end
 
     # Join all string items in a sublist and place a separator between them.
@@ -650,8 +650,8 @@ module Polars
     #   #         [2, 1]
     #   # ]
     def slice(offset, length = nil)
-      offset = Utils.expr_to_lit_or_expr(offset, str_to_lit: false)._rbexpr
-      length = Utils.expr_to_lit_or_expr(length, str_to_lit: false)._rbexpr
+      offset = Utils.parse_into_expression(offset, str_as_lit: false)
+      length = Utils.parse_into_expression(length, str_as_lit: false)
       Utils.wrap_expr(_rbexpr.list_slice(offset, length))
     end
 
@@ -722,7 +722,7 @@ module Polars
     #   # │ 0              │
     #   # └────────────────┘
     def count_matches(element)
-      Utils.wrap_expr(_rbexpr.list_count_matches(Utils.expr_to_lit_or_expr(element)._rbexpr))
+      Utils.wrap_expr(_rbexpr.list_count_matches(Utils.parse_into_expression(element)))
     end
     alias_method :count_match, :count_matches
 

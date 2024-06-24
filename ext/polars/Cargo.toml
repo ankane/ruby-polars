@@ -55,6 +55,7 @@ features = [
     "interpolate",
     "ipc",
     "ipc_streaming",
+    "is_between",
     "is_first_distinct",
     "is_in",
     "is_last_distinct",

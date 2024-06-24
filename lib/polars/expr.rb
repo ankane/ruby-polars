@@ -82,8 +82,8 @@ module Polars
     #
     # @return [Expr]
     def **(power)
-      exponent = Utils.expr_to_lit_or_expr(power)
-      _from_rbexpr(_rbexpr.pow(exponent._rbexpr))
+      exponent = Utils.parse_into_expression(power)
+      _from_rbexpr(_rbexpr.pow(exponent))
     end
 
     # Greater than or equal.
@@ -811,8 +811,8 @@ module Polars
     #   # │ 10  ┆ 4    │
     #   # └─────┴──────┘
     def append(other, upcast: true)
-      other = Utils.expr_to_lit_or_expr(other)
-      _from_rbexpr(_rbexpr.append(other._rbexpr, upcast))
+      other = Utils.parse_into_expression(other)
+      _from_rbexpr(_rbexpr.append(other, upcast))
     end
 
     # Create a single chunk of memory for this Series.
@@ -1165,8 +1165,8 @@ module Polars
     #   # │ 44  │
     #   # └─────┘
     def dot(other)
-      other = Utils.expr_to_lit_or_expr(other, str_to_lit: false)
-      _from_rbexpr(_rbexpr.dot(other._rbexpr))
+      other = Utils.parse_into_expression(other, str_as_lit: false)
+      _from_rbexpr(_rbexpr.dot(other))
     end
 
     # Compute the most occurring value(s).
@@ -1498,8 +1498,8 @@ module Polars
     #   # │ 0    ┆ 2     ┆ 4   │
     #   # └──────┴───────┴─────┘
     def search_sorted(element, side: "any")
-      element = Utils.expr_to_lit_or_expr(element, str_to_lit: false)
-      _from_rbexpr(_rbexpr.search_sorted(element._rbexpr, side))
+      element = Utils.parse_into_expression(element, str_as_lit: false)
+      _from_rbexpr(_rbexpr.search_sorted(element, side))
     end
 
     # Sort this column by the ordering of another column, or multiple other columns.
@@ -1589,11 +1589,11 @@ module Polars
     #   # └───────┴───────────┘
     def gather(indices)
       if indices.is_a?(::Array)
-        indices_lit = Polars.lit(Series.new("", indices, dtype: :u32))
+        indices_lit = Polars.lit(Series.new("", indices, dtype: :u32))._rbexpr
       else
-        indices_lit = Utils.expr_to_lit_or_expr(indices, str_to_lit: false)
+        indices_lit = Utils.parse_into_expression(indices, str_as_lit: false)
       end
-      _from_rbexpr(_rbexpr.gather(indices_lit._rbexpr))
+      _from_rbexpr(_rbexpr.gather(indices_lit))
     end
     alias_method :take, :gather
 
@@ -1728,8 +1728,8 @@ module Polars
       end
 
       if !value.nil?
-        value = Utils.expr_to_lit_or_expr(value, str_to_lit: true)
-        _from_rbexpr(_rbexpr.fill_null(value._rbexpr))
+        value = Utils.parse_into_expression(value, str_as_lit: true)
+        _from_rbexpr(_rbexpr.fill_null(value))
       else
         _from_rbexpr(_rbexpr.fill_null_with_strategy(strategy, limit))
       end
@@ -1759,8 +1759,8 @@ module Polars
     #   # │ zero ┆ 6.0  │
     #   # └──────┴──────┘
     def fill_nan(fill_value)
-      fill_value = Utils.expr_to_lit_or_expr(fill_value, str_to_lit: true)
-      _from_rbexpr(_rbexpr.fill_nan(fill_value._rbexpr))
+      fill_value = Utils.parse_into_expression(fill_value, str_as_lit: true)
+      _from_rbexpr(_rbexpr.fill_nan(fill_value))
     end
 
     # Fill missing values with the latest seen values.
@@ -2471,8 +2471,8 @@ module Polars
     #   # │ 1.5 │
     #   # └─────┘
     def quantile(quantile, interpolation: "nearest")
-      quantile = Utils.expr_to_lit_or_expr(quantile, str_to_lit: false)
-      _from_rbexpr(_rbexpr.quantile(quantile._rbexpr, interpolation))
+      quantile = Utils.parse_into_expression(quantile, str_as_lit: false)
+      _from_rbexpr(_rbexpr.quantile(quantile, interpolation))
     end
 
     # Bin continuous values into discrete categories.
@@ -3612,14 +3612,14 @@ module Polars
     def is_in(other)
       if other.is_a?(::Array)
         if other.length == 0
-          other = Polars.lit(nil)
+          other = Polars.lit(nil)._rbexpr
         else
-          other = Polars.lit(Series.new(other))
+          other = Polars.lit(Series.new(other))._rbexpr
         end
       else
-        other = Utils.expr_to_lit_or_expr(other, str_to_lit: false)
+        other = Utils.parse_into_expression(other, str_as_lit: false)
       end
-      _from_rbexpr(_rbexpr.is_in(other._rbexpr))
+      _from_rbexpr(_rbexpr.is_in(other))
     end
     alias_method :in?, :is_in
 
@@ -3654,15 +3654,15 @@ module Polars
     #   # │ ["z", "z", "z"] │
     #   # └─────────────────┘
     def repeat_by(by)
-      by = Utils.expr_to_lit_or_expr(by, str_to_lit: false)
-      _from_rbexpr(_rbexpr.repeat_by(by._rbexpr))
+      by = Utils.parse_into_expression(by, str_as_lit: false)
+      _from_rbexpr(_rbexpr.repeat_by(by))
     end
 
     # Check if this expression is between start and end.
     #
-    # @param start [Object]
+    # @param lower_bound [Object]
     #   Lower bound as primitive type or datetime.
-    # @param _end [Object]
+    # @param upper_bound [Object]
     #   Upper bound as primitive type or datetime.
     # @param closed ["both", "left", "right", "none"]
     #   Define which sides of the interval are closed (inclusive).
@@ -3724,22 +3724,13 @@ module Polars
     #   # │ d   ┆ false      │
     #   # │ e   ┆ false      │
     #   # └─────┴────────────┘
-    def is_between(start, _end, closed: "both")
-      start = Utils.expr_to_lit_or_expr(start, str_to_lit: false)
-      _end = Utils.expr_to_lit_or_expr(_end, str_to_lit: false)
+    def is_between(lower_bound, upper_bound, closed: "both")
+      lower_bound = Utils.parse_into_expression(lower_bound)
+      upper_bound = Utils.parse_into_expression(upper_bound)
 
-      case closed
-      when "none"
-        (self > start) & (self < _end)
-      when "both"
-        (self >= start) & (self <= _end)
-      when "right"
-        (self > start) & (self <= _end)
-      when "left"
-        (self >= start) & (self < _end)
-      else
-        raise ArgumentError, "closed must be one of 'left', 'right', 'both', or 'none'"
-      end
+      _from_rbexpr(
+        _rbexpr.is_between(lower_bound, upper_bound, closed)
+      )
     end
 
     # Hash the elements in the selection.
