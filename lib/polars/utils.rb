@@ -3,19 +3,6 @@ module Polars
   module Utils
     DTYPE_TEMPORAL_UNITS = ["ns", "us", "ms"]
 
-    def self.arrlen(obj)
-      if obj.is_a?(Range)
-        # size only works for numeric ranges
-        obj.to_a.length
-      elsif obj.is_a?(::String)
-        nil
-      else
-        obj.length
-      end
-    rescue
-      nil
-    end
-
     def self.selection_to_rbexpr_list(exprs)
       if exprs.is_a?(::String) || exprs.is_a?(Symbol) || exprs.is_a?(Expr) || exprs.is_a?(Series)
         exprs = [exprs]
@@ -34,14 +21,6 @@ module Polars
       else
         raise ArgumentError, "did not expect value #{expr} of type #{expr.class.name}, maybe disambiguate with Polars.lit or Polars.col"
       end
-    end
-
-    def self.normalize_filepath(path, check_not_directory: true)
-      path = File.expand_path(path)
-      if check_not_directory && File.exist?(path) && Dir.exist?(path)
-        raise ArgumentError, "Expected a file path; #{path} is a directory"
-      end
-      path
     end
 
     # TODO fix
@@ -145,38 +124,6 @@ module Polars
 
     def self.pathlike?(value)
       value.is_a?(::String) || (defined?(Pathname) && value.is_a?(Pathname))
-    end
-
-    def self._is_iterable_of(val, eltype)
-      val.all? { |x| x.is_a?(eltype) }
-    end
-
-    def self.is_bool_sequence(val)
-      val.is_a?(::Array) && val.all? { |x| x == true || x == false }
-    end
-
-    def self.is_dtype_sequence(val)
-      val.is_a?(::Array) && val.all? { |x| is_polars_dtype(x) }
-    end
-
-    def self.is_int_sequence(val)
-      val.is_a?(::Array) && _is_iterable_of(val, Integer)
-    end
-
-    def self.is_expr_sequence(val)
-      val.is_a?(::Array) && _is_iterable_of(val, Expr)
-    end
-
-    def self.is_rbexpr_sequence(val)
-      val.is_a?(::Array) && _is_iterable_of(val, RbExpr)
-    end
-
-    def self.is_str_sequence(val, allow_str: false)
-      if allow_str == false && val.is_a?(::String)
-        false
-      else
-        val.is_a?(::Array) && _is_iterable_of(val, ::String)
-      end
     end
 
     def self.local_file?(file)
