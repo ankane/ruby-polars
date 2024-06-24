@@ -21,24 +21,24 @@ module Polars
 
     def self.date_to_int(d)
       dt = d.to_datetime.to_time
-      dt.to_i / (3600 * 24)
+      dt.to_i / SECONDS_PER_DAY
     end
 
     def self.datetime_to_int(dt, time_unit)
       dt = dt.to_datetime.to_time
       if time_unit == "ns"
         nanos = dt.nsec
-        dt.to_i * 1_000_000_000 + nanos
+        dt.to_i * NS_PER_SECOND + nanos
       elsif time_unit == "us"
         micros = dt.usec
-        dt.to_i * 1_000_000 + micros
+        dt.to_i * US_PER_SECOND + micros
       elsif time_unit == "ms"
         millis = dt.usec / 1000
-        dt.to_i * 1_000 + millis
+        dt.to_i * MS_PER_SECOND + millis
       elsif time_unit.nil?
         # Ruby has ns precision
         nanos = dt.nsec
-        dt.to_i * 1_000_000_000 + nanos
+        dt.to_i * NS_PER_SECOND + nanos
       else
         raise ArgumentError, "time_unit must be one of {{'ns', 'us', 'ms'}}, got #{tu}"
       end
