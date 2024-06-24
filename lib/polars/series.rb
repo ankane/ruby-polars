@@ -3020,16 +3020,7 @@ module Polars
       min_periods: nil,
       center: false
     )
-      to_frame
-        .select(
-          Polars.col(name).rolling_min(
-            window_size,
-            weights: weights,
-            min_periods: min_periods,
-            center: center
-          )
-        )
-        .to_series
+      super
     end
 
     # Apply a rolling max (moving max) over the values in this array.
@@ -3070,16 +3061,7 @@ module Polars
       min_periods: nil,
       center: false
     )
-      to_frame
-        .select(
-          Polars.col(name).rolling_max(
-            window_size,
-            weights: weights,
-            min_periods: min_periods,
-            center: center
-          )
-        )
-        .to_series
+      super
     end
 
     # Apply a rolling mean (moving mean) over the values in this array.
@@ -3120,16 +3102,7 @@ module Polars
       min_periods: nil,
       center: false
     )
-      to_frame
-        .select(
-          Polars.col(name).rolling_mean(
-            window_size,
-            weights: weights,
-            min_periods: min_periods,
-            center: center
-          )
-        )
-        .to_series
+      super
     end
 
     # Apply a rolling sum (moving sum) over the values in this array.
@@ -3170,16 +3143,7 @@ module Polars
       min_periods: nil,
       center: false
     )
-      to_frame
-        .select(
-          Polars.col(name).rolling_sum(
-            window_size,
-            weights: weights,
-            min_periods: min_periods,
-            center: center
-          )
-        )
-        .to_series
+      super
     end
 
     # Compute a rolling std dev.
@@ -3222,17 +3186,7 @@ module Polars
       center: false,
       ddof: 1
     )
-      to_frame
-        .select(
-          Polars.col(name).rolling_std(
-            window_size,
-            weights: weights,
-            min_periods: min_periods,
-            center: center,
-            ddof: ddof
-          )
-        )
-        .to_series
+      super
     end
 
     # Compute a rolling variance.
@@ -3275,17 +3229,7 @@ module Polars
       center: false,
       ddof: 1
     )
-      to_frame
-        .select(
-          Polars.col(name).rolling_var(
-            window_size,
-            weights: weights,
-            min_periods: min_periods,
-            center: center,
-            ddof: ddof
-          )
-        )
-        .to_series
+      super
     end
 
     # def rolling_apply
@@ -3326,20 +3270,7 @@ module Polars
       min_periods: nil,
       center: false
     )
-      if min_periods.nil?
-        min_periods = window_size
-      end
-
-      to_frame
-        .select(
-          Polars.col(name).rolling_median(
-            window_size,
-            weights: weights,
-            min_periods: min_periods,
-            center: center
-          )
-        )
-        .to_series
+      super
     end
 
     # Compute a rolling quantile.
@@ -3397,22 +3328,7 @@ module Polars
       min_periods: nil,
       center: false
     )
-      if min_periods.nil?
-        min_periods = window_size
-      end
-
-      to_frame
-        .select(
-          Polars.col(name).rolling_quantile(
-            quantile,
-            interpolation: interpolation,
-            window_size: window_size,
-            weights: weights,
-            min_periods: min_periods,
-            center: center
-          )
-        )
-        .to_series
+      super
     end
 
     # Compute a rolling skew.
