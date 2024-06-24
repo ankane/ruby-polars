@@ -70,6 +70,7 @@ require_relative "polars/struct_expr"
 require_relative "polars/struct_name_space"
 require_relative "polars/testing"
 require_relative "polars/utils"
+require_relative "polars/utils/wrap"
 require_relative "polars/version"
 require_relative "polars/whenthen"
 
