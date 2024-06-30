@@ -91,8 +91,8 @@ init_method_opt!(new_opt_f64, Float64Type, f64);
 
 fn vec_wrap_any_value<'s>(arr: RArray) -> RbResult<Vec<Wrap<AnyValue<'s>>>> {
     let mut val = Vec::with_capacity(arr.len());
-    for v in arr.each() {
-        val.push(Wrap::<AnyValue<'s>>::try_convert(v?)?);
+    for v in arr.into_iter() {
+        val.push(Wrap::<AnyValue<'s>>::try_convert(v)?);
     }
     Ok(val)
 }
@@ -138,9 +138,9 @@ impl RbSeries {
 
     pub fn new_object(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
         let val = val
-            .each()
-            .map(|v| v.map(ObjectValue::from))
-            .collect::<RbResult<Vec<ObjectValue>>>()?;
+            .into_iter()
+            .map(ObjectValue::from)
+            .collect::<Vec<ObjectValue>>();
         let s = ObjectChunked::<ObjectValue>::new_from_vec(&name, val).into_series();
         Ok(s.into())
     }

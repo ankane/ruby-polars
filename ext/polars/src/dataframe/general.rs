@@ -15,8 +15,8 @@ use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 impl RbDataFrame {
     pub fn init(columns: RArray) -> RbResult<Self> {
         let mut cols = Vec::new();
-        for i in columns.each() {
-            cols.push(<&RbSeries>::try_convert(i?)?.series.borrow().clone());
+        for i in columns.into_iter() {
+            cols.push(<&RbSeries>::try_convert(i)?.series.borrow().clone());
         }
         let df = DataFrame::new(cols).map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))

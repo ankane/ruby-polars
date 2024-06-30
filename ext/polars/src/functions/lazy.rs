@@ -95,8 +95,8 @@ pub fn col(name: String) -> RbExpr {
 
 pub fn collect_all(lfs: RArray) -> RbResult<RArray> {
     let lfs = lfs
-        .each()
-        .map(|v| <&RbLazyFrame>::try_convert(v?))
+        .into_iter()
+        .map(|v| <&RbLazyFrame>::try_convert(v))
         .collect::<RbResult<Vec<&RbLazyFrame>>>()?;
 
     Ok(RArray::from_iter(lfs.iter().map(|lf| {
@@ -118,8 +118,8 @@ pub fn concat_lf(
     let (seq, len) = get_rbseq(lfs)?;
     let mut lfs = Vec::with_capacity(len);
 
-    for res in seq.each() {
-        let item = res?;
+    for res in seq.into_iter() {
+        let item = res;
         let lf = get_lf(item)?;
         lfs.push(lf);
     }
@@ -184,13 +184,10 @@ pub fn concat_lf_diagonal(
     parallel: bool,
     to_supertypes: bool,
 ) -> RbResult<RbLazyFrame> {
-    let iter = lfs.each();
+    let iter = lfs.into_iter();
 
     let lfs = iter
-        .map(|item| {
-            let item = item?;
-            get_lf(item)
-        })
+        .map(|item| get_lf(item))
         .collect::<RbResult<Vec<_>>>()?;
 
     let lf = dsl::functions::concat_lf_diagonal(
@@ -212,8 +209,8 @@ pub fn dtype_cols(dtypes: Vec<DataType>) -> RbExpr {
 
 pub fn dtype_cols2(dtypes: RArray) -> RbResult<RbExpr> {
     let dtypes = dtypes
-        .each()
-        .map(|v| Wrap::<DataType>::try_convert(v?))
+        .into_iter()
+        .map(|v| Wrap::<DataType>::try_convert(v))
         .collect::<RbResult<Vec<Wrap<DataType>>>>()?;
     let dtypes = vec_extract_wrapped(dtypes);
     Ok(crate::functions::lazy::dtype_cols(dtypes))

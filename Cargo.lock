@@ -957,9 +957,9 @@ dependencies = [
 
 [[package]]
 name = "magnus"
-version = "0.6.4"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1597ef40aa8c36be098249e82c9a20cf7199278ac1c1a1a995eeead6a184479"
+checksum = "6b9b66a022f64c76a32fd611346af0439238035584cf9cf8dfffad4b6e99e0a0"
 dependencies = [
  "magnus-macros",
  "rb-sys",

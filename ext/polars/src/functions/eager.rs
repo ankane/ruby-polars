@@ -9,8 +9,8 @@ use crate::{RbDataFrame, RbResult, RbSeries};
 pub fn concat_df(seq: RArray) -> RbResult<RbDataFrame> {
     use polars_core::error::PolarsResult;
 
-    let mut iter = seq.each();
-    let first = iter.next().unwrap()?;
+    let mut iter = seq.into_iter();
+    let first = iter.next().unwrap();
 
     let first_rdf = get_df(first)?;
     let identity_df = first_rdf.slice(0, 0);
@@ -18,7 +18,7 @@ pub fn concat_df(seq: RArray) -> RbResult<RbDataFrame> {
     let mut rdfs: Vec<PolarsResult<DataFrame>> = vec![Ok(first_rdf)];
 
     for item in iter {
-        let rdf = get_df(item?)?;
+        let rdf = get_df(item)?;
         rdfs.push(Ok(rdf));
     }
 
@@ -37,13 +37,13 @@ pub fn concat_df(seq: RArray) -> RbResult<RbDataFrame> {
 }
 
 pub fn concat_series(seq: RArray) -> RbResult<RbSeries> {
-    let mut iter = seq.each();
-    let first = iter.next().unwrap()?;
+    let mut iter = seq.into_iter();
+    let first = iter.next().unwrap();
 
     let mut s = get_series(first)?;
 
     for res in iter {
-        let item = res?;
+        let item = res;
         let item = get_series(item)?;
         s.append(&item).map_err(RbPolarsErr::from)?;
     }
@@ -52,8 +52,8 @@ pub fn concat_series(seq: RArray) -> RbResult<RbSeries> {
 
 pub fn concat_df_diagonal(seq: RArray) -> RbResult<RbDataFrame> {
     let mut dfs = Vec::new();
-    for item in seq.each() {
-        dfs.push(get_df(item?)?);
+    for item in seq.into_iter() {
+        dfs.push(get_df(item)?);
     }
     let df = functions::concat_df_diagonal(&dfs).map_err(RbPolarsErr::from)?;
     Ok(df.into())
@@ -61,8 +61,8 @@ pub fn concat_df_diagonal(seq: RArray) -> RbResult<RbDataFrame> {
 
 pub fn concat_df_horizontal(seq: RArray) -> RbResult<RbDataFrame> {
     let mut dfs = Vec::new();
-    for item in seq.each() {
-        dfs.push(get_df(item?)?);
+    for item in seq.into_iter() {
+        dfs.push(get_df(item)?);
     }
     let df = functions::concat_df_horizontal(&dfs).map_err(RbPolarsErr::from)?;
     Ok(df.into())

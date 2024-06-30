@@ -114,10 +114,10 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
                 let list = v;
 
                 let mut avs = Vec::with_capacity(25);
-                let mut iter = list.each();
+                let mut iter = list.into_iter();
 
                 for item in (&mut iter).take(25) {
-                    avs.push(Wrap::<AnyValue>::try_convert(item?)?.0)
+                    avs.push(Wrap::<AnyValue>::try_convert(item)?.0)
                 }
 
                 let (dtype, _n_types) =
@@ -126,7 +126,7 @@ impl<'s> TryConvert for Wrap<AnyValue<'s>> {
                 // push the rest
                 avs.reserve(list.len());
                 for item in iter {
-                    avs.push(Wrap::<AnyValue>::try_convert(item?)?.0)
+                    avs.push(Wrap::<AnyValue>::try_convert(item)?.0)
                 }
 
                 let s = Series::from_any_values_and_dtype("", &avs, &dtype, true)

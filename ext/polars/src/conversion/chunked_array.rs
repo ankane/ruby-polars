@@ -11,8 +11,8 @@ impl TryConvert for Wrap<StringChunked> {
         let (seq, len) = get_rbseq(obj)?;
         let mut builder = StringChunkedBuilder::new("", len);
 
-        for res in seq.each() {
-            let item = res?;
+        for res in seq.into_iter() {
+            let item = res;
             match String::try_convert(item) {
                 Ok(val) => builder.append_value(&val),
                 Err(_) => builder.append_null(),
@@ -27,8 +27,8 @@ impl TryConvert for Wrap<BinaryChunked> {
         let (seq, len) = get_rbseq(obj)?;
         let mut builder = BinaryChunkedBuilder::new("", len);
 
-        for res in seq.each() {
-            let item = res?;
+        for res in seq.into_iter() {
+            let item = res;
             match RString::try_convert(item) {
                 Ok(val) => builder.append_value(unsafe { val.as_slice() }),
                 Err(_) => builder.append_null(),

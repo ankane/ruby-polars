@@ -255,8 +255,8 @@ pub fn apply_lambda_with_rows_output<'a>(
                 match RArray::try_convert(val).ok() {
                     Some(tuple) => {
                         row_buf.0.clear();
-                        for v in tuple.each() {
-                            let v = Wrap::<AnyValue>::try_convert(v.unwrap()).unwrap().0;
+                        for v in tuple.into_iter() {
+                            let v = Wrap::<AnyValue>::try_convert(v).unwrap().0;
                             row_buf.0.push(v);
                         }
                         let ptr = &row_buf as *const Row;

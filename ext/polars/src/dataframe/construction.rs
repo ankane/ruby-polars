@@ -13,11 +13,11 @@ impl RbDataFrame {
         schema: Option<Wrap<Schema>>,
     ) -> RbResult<Self> {
         let mut data = Vec::with_capacity(rb_rows.len());
-        for v in rb_rows.each() {
-            let rb_row = RArray::try_convert(v?)?;
+        for v in rb_rows.into_iter() {
+            let rb_row = RArray::try_convert(v)?;
             let mut row = Vec::with_capacity(rb_row.len());
-            for val in rb_row.each() {
-                row.push(Wrap::<AnyValue>::try_convert(val?)?.0);
+            for val in rb_row.into_iter() {
+                row.push(Wrap::<AnyValue>::try_convert(val)?.0);
             }
             data.push(Row(row));
         }
@@ -130,8 +130,7 @@ where
 fn dicts_to_rows<'a>(data: &Value, names: &'a [String], _strict: bool) -> RbResult<Vec<Row<'a>>> {
     let (data, len) = get_rbseq(*data)?;
     let mut rows = Vec::with_capacity(len);
-    for d in data.each() {
-        let d = d?;
+    for d in data.into_iter() {
         let d = RHash::try_convert(d)?;
 
         let mut row = Vec::with_capacity(names.len());
@@ -170,8 +169,7 @@ fn infer_schema_names_from_data(
         .unwrap_or(data_len);
 
     let mut names = PlIndexSet::new();
-    for d in data.each().take(infer_schema_length) {
-        let d = d?;
+    for d in data.into_iter().take(infer_schema_length) {
         let d = RHash::try_convert(d)?;
         d.foreach(|name: Value, _value: Value| {
             if let Some(v) = Symbol::from_value(name) {

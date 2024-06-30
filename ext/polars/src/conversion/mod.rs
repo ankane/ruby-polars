@@ -379,8 +379,8 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Struct" => {
                     let arr: RArray = ob.funcall("fields", ())?;
                     let mut fields = Vec::with_capacity(arr.len());
-                    for v in arr.each() {
-                        fields.push(Wrap::<Field>::try_convert(v?)?.0);
+                    for v in arr.into_iter() {
+                        fields.push(Wrap::<Field>::try_convert(v)?.0);
                     }
                     DataType::Struct(fields)
                 }
@@ -455,8 +455,8 @@ impl TryConvert for Wrap<StatisticsOptions> {
 impl<'s> TryConvert for Wrap<Row<'s>> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let mut vals: Vec<Wrap<AnyValue<'s>>> = Vec::new();
-        for item in RArray::try_convert(ob)?.each() {
-            vals.push(Wrap::<AnyValue<'s>>::try_convert(item?)?);
+        for item in RArray::try_convert(ob)?.into_iter() {
+            vals.push(Wrap::<AnyValue<'s>>::try_convert(item)?);
         }
         let vals: Vec<AnyValue> = unsafe { std::mem::transmute(vals) };
         Ok(Wrap(Row(vals)))
