@@ -63,7 +63,7 @@ module Polars
     end
 
     def self._to_ruby_datetime(value, time_unit = "ns", time_zone = nil)
-      if time_zone.nil? || time_zone == ""
+      if time_zone.nil? || time_zone == "" || time_zone == "UTC"
         if time_unit == "ns"
           ::Time.at(value / 1000000000, value % 1000000000, :nsec).utc
         elsif time_unit == "us"
