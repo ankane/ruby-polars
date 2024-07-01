@@ -96,7 +96,7 @@ pub fn col(name: String) -> RbExpr {
 pub fn collect_all(lfs: RArray) -> RbResult<RArray> {
     let lfs = lfs
         .into_iter()
-        .map(|v| <&RbLazyFrame>::try_convert(v))
+        .map(<&RbLazyFrame>::try_convert)
         .collect::<RbResult<Vec<&RbLazyFrame>>>()?;
 
     Ok(RArray::from_iter(lfs.iter().map(|lf| {
@@ -187,7 +187,7 @@ pub fn concat_lf_diagonal(
     let iter = lfs.into_iter();
 
     let lfs = iter
-        .map(|item| get_lf(item))
+        .map(get_lf)
         .collect::<RbResult<Vec<_>>>()?;
 
     let lf = dsl::functions::concat_lf_diagonal(
@@ -210,7 +210,7 @@ pub fn dtype_cols(dtypes: Vec<DataType>) -> RbExpr {
 pub fn dtype_cols2(dtypes: RArray) -> RbResult<RbExpr> {
     let dtypes = dtypes
         .into_iter()
-        .map(|v| Wrap::<DataType>::try_convert(v))
+        .map(Wrap::<DataType>::try_convert)
         .collect::<RbResult<Vec<Wrap<DataType>>>>()?;
     let dtypes = vec_extract_wrapped(dtypes);
     Ok(crate::functions::lazy::dtype_cols(dtypes))

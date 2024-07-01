@@ -536,7 +536,7 @@ impl RbLazyFrame {
     pub fn with_context(&self, contexts: RArray) -> RbResult<Self> {
         let contexts = contexts
             .into_iter()
-            .map(|v| TryConvert::try_convert(v))
+            .map(TryConvert::try_convert)
             .collect::<RbResult<Vec<&RbLazyFrame>>>()?;
         let contexts = contexts
             .into_iter()
