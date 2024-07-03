@@ -900,7 +900,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c2a198fb6b0eada2a8df47933734e6d35d350665a33a3593d7164fa52c75c19"
 dependencies = [
  "cfg-if",
- "windows-targets 0.52.5",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -957,9 +957,9 @@ dependencies = [
 
 [[package]]
 name = "magnus"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b9b66a022f64c76a32fd611346af0439238035584cf9cf8dfffad4b6e99e0a0"
+checksum = "3d87ae53030f3a22e83879e666cb94e58a7bdf31706878a0ba48752994146dab"
 dependencies = [
  "magnus-macros",
  "rb-sys",
@@ -1804,18 +1804,18 @@ dependencies = [
 
 [[package]]
 name = "rb-sys"
-version = "0.9.97"
+version = "0.9.98"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47d30bcad206b51f2f66121190ca678dce1fdf3a2eae0ac5d838d1818b19bdf5"
+checksum = "8914b2e6af10bd50dd7aaac8c5146872d3924d6012929b4ff504e988f6badd24"
 dependencies = [
  "rb-sys-build",
 ]
 
 [[package]]
 name = "rb-sys-build"
-version = "0.9.97"
+version = "0.9.98"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3cbd92f281615f3c2dcb9dcb0f0576624752afbf9a7f99173b37c4b55b62dd8a"
+checksum = "12af68c9757d419b82d65a12b5db538990dfe9416049fea3f0ba4b9a8ca108cd"
 dependencies = [
  "bindgen",
  "lazy_static",
