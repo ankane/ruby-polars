@@ -720,7 +720,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("new_from_csv", function!(RbLazyFrame::new_from_csv, -1))?;
     class.define_singleton_method(
         "new_from_parquet",
-        function!(RbLazyFrame::new_from_parquet, 12),
+        function!(RbLazyFrame::new_from_parquet, 13),
     )?;
     class.define_singleton_method("new_from_ipc", function!(RbLazyFrame::new_from_ipc, 6))?;
     class.define_method("write_json", method!(RbLazyFrame::write_json, 1))?;
@@ -739,7 +739,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("collect", method!(RbLazyFrame::collect, 0))?;
     class.define_method("sink_parquet", method!(RbLazyFrame::sink_parquet, 7))?;
     class.define_method("sink_ipc", method!(RbLazyFrame::sink_ipc, 3))?;
-    class.define_method("sink_csv", method!(RbLazyFrame::sink_csv, 14))?;
+    class.define_method("sink_csv", method!(RbLazyFrame::sink_csv, 15))?;
     class.define_method("sink_json", method!(RbLazyFrame::sink_json, 2))?;
     class.define_method("fetch", method!(RbLazyFrame::fetch, 1))?;
     class.define_method("filter", method!(RbLazyFrame::filter, 1))?;

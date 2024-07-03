@@ -160,6 +160,7 @@ impl RbLazyFrame {
         use_statistics: bool,
         hive_partitioning: Option<bool>,
         hive_schema: Option<Wrap<Schema>>,
+        try_parse_hive_dates: bool,
         glob: bool,
     ) -> RbResult<Self> {
         let parallel = parallel.0;
@@ -181,6 +182,7 @@ impl RbLazyFrame {
             enabled: hive_partitioning,
             hive_start_idx: 0,
             schema: hive_schema,
+            try_parse_dates: try_parse_hive_dates,
         };
 
         let args = ScanArgsParquet {
@@ -393,6 +395,7 @@ impl RbLazyFrame {
         datetime_format: Option<String>,
         date_format: Option<String>,
         time_format: Option<String>,
+        float_scientific: Option<bool>,
         float_precision: Option<usize>,
         null_value: Option<String>,
         quote_style: Option<Wrap<QuoteStyle>>,
@@ -405,6 +408,7 @@ impl RbLazyFrame {
             date_format,
             time_format,
             datetime_format,
+            float_scientific,
             float_precision,
             separator,
             quote_char,

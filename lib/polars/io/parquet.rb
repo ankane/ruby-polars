@@ -218,6 +218,7 @@ module Polars
           use_statistics,
           hive_partitioning,
           nil,
+          true,
           glob
         )
       Utils.wrap_ldf(rblf)
