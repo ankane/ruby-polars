@@ -186,9 +186,7 @@ pub fn concat_lf_diagonal(
 ) -> RbResult<RbLazyFrame> {
     let iter = lfs.into_iter();
 
-    let lfs = iter
-        .map(get_lf)
-        .collect::<RbResult<Vec<_>>>()?;
+    let lfs = iter.map(get_lf).collect::<RbResult<Vec<_>>>()?;
 
     let lf = dsl::functions::concat_lf_diagonal(
         lfs,
