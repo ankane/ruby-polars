@@ -558,4 +558,16 @@ class DataFrameTest < Minitest::Test
     df = Polars::DataFrame.new({"a" => [0, 1, 2], "min" => [1, nil, 1]})
     assert_frame ({"a" => [1, 1, 2]}), df.select(Polars.col("a").clip("min"))
   end
+
+  def test_pivot
+    df = Polars::DataFrame.new(
+      {
+        "name" => ["Cady", "Cady", "Karen", "Karen"],
+        "subject" => ["maths", "physics", "maths", "physics"],
+        "test_1" => [98, 99, 61, 58],
+        "test_2" => [100, 100, 60, 60]
+      }
+    )
+    df.pivot("subject", index: "name")
+  end
 end

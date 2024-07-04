@@ -2998,8 +2998,8 @@ module Polars
     #   # └─────┴─────┴─────┘
     def pivot(
       on,
-      index:,
-      values:,
+      index: nil,
+      values: nil,
       aggregate_function: nil,
       maintain_order: true,
       sort_columns: false,
