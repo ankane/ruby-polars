@@ -3878,7 +3878,8 @@ module Polars
       half_life: nil,
       alpha: nil,
       adjust: true,
-      min_periods: 1
+      min_periods: 1,
+      ignore_nulls: true
     )
       super
     end
@@ -3893,7 +3894,8 @@ module Polars
       alpha: nil,
       adjust: true,
       bias: false,
-      min_periods: 1
+      min_periods: 1,
+      ignore_nulls: true
     )
       super
     end
@@ -3908,7 +3910,8 @@ module Polars
       alpha: nil,
       adjust: true,
       bias: false,
-      min_periods: 1
+      min_periods: 1,
+      ignore_nulls: true
     )
       super
     end
