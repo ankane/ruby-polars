@@ -5848,12 +5848,12 @@ module Polars
     #   # │ null ┆ null        │
     #   # │ 50   ┆ 10          │
     #   # └──────┴─────────────┘
-    def clip(lower_bound, upper_bound)
+    def clip(lower_bound = nil, upper_bound = nil)
       if !lower_bound.nil?
-        lower_bound = Utils.parse_into_expression(lower_bound, str_as_lit: true)
+        lower_bound = Utils.parse_into_expression(lower_bound)
       end
       if !upper_bound.nil?
-        upper_bound = Utils.parse_into_expression(upper_bound, str_as_lit: true)
+        upper_bound = Utils.parse_into_expression(upper_bound)
       end
       _from_rbexpr(_rbexpr.clip(lower_bound, upper_bound))
     end

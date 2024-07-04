@@ -3730,7 +3730,7 @@ module Polars
     #   #         null
     #   #         10
     #   # ]
-    def clip(min_val, max_val)
+    def clip(min_val = nil, max_val = nil)
       super
     end
 

@@ -553,4 +553,9 @@ class DataFrameTest < Minitest::Test
     expected = Polars::DataFrame.new({"a" => [1.5, 100.0, 100.0, 1.0]})
     assert_frame expected, df.select(Polars.col("a").replace({2 => 100}, default: Polars.col("b")))
   end
+
+  def test_clip
+    df = Polars::DataFrame.new({"a" => [0, 1, 2], "min" => [1, nil, 1]})
+    assert_frame ({"a" => [1, 1, 2]}), df.select(Polars.col("a").clip("min"))
+  end
 end
