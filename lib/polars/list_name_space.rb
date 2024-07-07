@@ -197,9 +197,13 @@ module Polars
     #
     # @param index [Integer]
     #   Index to return per sublist
+    # @param null_on_oob [Boolean]
+    #   Behavior if an index is out of bounds:
+    #   true -> set as null
+    #   false -> raise an error
     #
     # @return [Series]
-    def get(index)
+    def get(index, null_on_oob: false)
       super
     end
 
