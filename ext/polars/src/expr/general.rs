@@ -46,7 +46,7 @@ impl RbExpr {
     }
 
     pub fn eq(&self, other: &Self) -> Self {
-        self.clone().inner.eq(other.inner.clone()).into()
+        self.inner.clone().eq(other.inner.clone()).into()
     }
 
     pub fn eq_missing(&self, other: &Self) -> Self {
@@ -54,7 +54,7 @@ impl RbExpr {
     }
 
     pub fn neq(&self, other: &Self) -> Self {
-        self.clone().inner.neq(other.inner.clone()).into()
+        self.inner.clone().neq(other.inner.clone()).into()
     }
 
     pub fn neq_missing(&self, other: &Self) -> Self {
@@ -62,112 +62,112 @@ impl RbExpr {
     }
 
     pub fn gt(&self, other: &Self) -> Self {
-        self.clone().inner.gt(other.inner.clone()).into()
+        self.inner.clone().gt(other.inner.clone()).into()
     }
 
     pub fn gt_eq(&self, other: &Self) -> Self {
-        self.clone().inner.gt_eq(other.inner.clone()).into()
+        self.inner.clone().gt_eq(other.inner.clone()).into()
     }
 
     pub fn lt_eq(&self, other: &Self) -> Self {
-        self.clone().inner.lt_eq(other.inner.clone()).into()
+        self.inner.clone().lt_eq(other.inner.clone()).into()
     }
 
     pub fn lt(&self, other: &Self) -> Self {
-        self.clone().inner.lt(other.inner.clone()).into()
+        self.inner.clone().lt(other.inner.clone()).into()
     }
 
     pub fn alias(&self, name: String) -> Self {
-        self.clone().inner.alias(&name).into()
+        self.inner.clone().alias(&name).into()
     }
 
     pub fn not_(&self) -> Self {
-        self.clone().inner.not().into()
+        self.inner.clone().not().into()
     }
 
     pub fn is_null(&self) -> Self {
-        self.clone().inner.is_null().into()
+        self.inner.clone().is_null().into()
     }
 
     pub fn is_not_null(&self) -> Self {
-        self.clone().inner.is_not_null().into()
+        self.inner.clone().is_not_null().into()
     }
 
     pub fn is_infinite(&self) -> Self {
-        self.clone().inner.is_infinite().into()
+        self.inner.clone().is_infinite().into()
     }
 
     pub fn is_finite(&self) -> Self {
-        self.clone().inner.is_finite().into()
+        self.inner.clone().is_finite().into()
     }
 
     pub fn is_nan(&self) -> Self {
-        self.clone().inner.is_nan().into()
+        self.inner.clone().is_nan().into()
     }
 
     pub fn is_not_nan(&self) -> Self {
-        self.clone().inner.is_not_nan().into()
+        self.inner.clone().is_not_nan().into()
     }
 
     pub fn min(&self) -> Self {
-        self.clone().inner.min().into()
+        self.inner.clone().min().into()
     }
 
     pub fn max(&self) -> Self {
-        self.clone().inner.max().into()
+        self.inner.clone().max().into()
     }
 
     pub fn nan_max(&self) -> Self {
-        self.clone().inner.nan_max().into()
+        self.inner.clone().nan_max().into()
     }
 
     pub fn nan_min(&self) -> Self {
-        self.clone().inner.nan_min().into()
+        self.inner.clone().nan_min().into()
     }
 
     pub fn mean(&self) -> Self {
-        self.clone().inner.mean().into()
+        self.inner.clone().mean().into()
     }
 
     pub fn median(&self) -> Self {
-        self.clone().inner.median().into()
+        self.inner.clone().median().into()
     }
 
     pub fn sum(&self) -> Self {
-        self.clone().inner.sum().into()
+        self.inner.clone().sum().into()
     }
 
     pub fn n_unique(&self) -> Self {
-        self.clone().inner.n_unique().into()
+        self.inner.clone().n_unique().into()
     }
 
     pub fn arg_unique(&self) -> Self {
-        self.clone().inner.arg_unique().into()
+        self.inner.clone().arg_unique().into()
     }
 
     pub fn unique(&self) -> Self {
-        self.clone().inner.unique().into()
+        self.inner.clone().unique().into()
     }
 
     pub fn unique_stable(&self) -> Self {
-        self.clone().inner.unique_stable().into()
+        self.inner.clone().unique_stable().into()
     }
 
     pub fn first(&self) -> Self {
-        self.clone().inner.first().into()
+        self.inner.clone().first().into()
     }
 
     pub fn last(&self) -> Self {
-        self.clone().inner.last().into()
+        self.inner.clone().last().into()
     }
 
     pub fn implode(&self) -> Self {
-        self.clone().inner.implode().into()
+        self.inner.clone().implode().into()
     }
 
     pub fn quantile(&self, quantile: &Self, interpolation: Wrap<QuantileInterpolOptions>) -> Self {
-        self.clone()
-            .inner
+        self.inner
+            .clone()
             .quantile(quantile.inner.clone(), interpolation.0)
             .into()
     }
@@ -323,11 +323,11 @@ impl RbExpr {
     }
 
     pub fn arg_max(&self) -> Self {
-        self.clone().inner.arg_max().into()
+        self.inner.clone().arg_max().into()
     }
 
     pub fn arg_min(&self) -> Self {
-        self.clone().inner.arg_min().into()
+        self.inner.clone().arg_min().into()
     }
 
     pub fn search_sorted(&self, element: &Self, side: Wrap<SearchSortedSide>) -> Self {
@@ -338,7 +338,7 @@ impl RbExpr {
     }
 
     pub fn gather(&self, idx: &Self) -> Self {
-        self.clone().inner.gather(idx.inner.clone()).into()
+        self.inner.clone().gather(idx.inner.clone()).into()
     }
 
     pub fn get(&self, idx: &Self) -> Self {
@@ -355,8 +355,8 @@ impl RbExpr {
     ) -> RbResult<Self> {
         let by = rb_exprs_to_exprs(by)?;
         Ok(self
-            .clone()
             .inner
+            .clone()
             .sort_by(
                 by,
                 SortMultipleOptions {
@@ -370,11 +370,11 @@ impl RbExpr {
     }
 
     pub fn backward_fill(&self, limit: FillNullLimit) -> Self {
-        self.clone().inner.backward_fill(limit).into()
+        self.inner.clone().backward_fill(limit).into()
     }
 
     pub fn forward_fill(&self, limit: FillNullLimit) -> Self {
-        self.clone().inner.forward_fill(limit).into()
+        self.inner.clone().forward_fill(limit).into()
     }
 
     pub fn shift(&self, n: &Self, fill_value: Option<&Self>) -> Self {
@@ -387,7 +387,7 @@ impl RbExpr {
     }
 
     pub fn fill_null(&self, expr: &Self) -> Self {
-        self.clone().inner.fill_null(expr.inner.clone()).into()
+        self.inner.clone().fill_null(expr.inner.clone()).into()
     }
 
     pub fn fill_null_with_strategy(
@@ -420,23 +420,23 @@ impl RbExpr {
     }
 
     pub fn filter(&self, predicate: &Self) -> Self {
-        self.clone().inner.filter(predicate.inner.clone()).into()
+        self.inner.clone().filter(predicate.inner.clone()).into()
     }
 
     pub fn reverse(&self) -> Self {
-        self.clone().inner.reverse().into()
+        self.inner.clone().reverse().into()
     }
 
     pub fn std(&self, ddof: u8) -> Self {
-        self.clone().inner.std(ddof).into()
+        self.inner.clone().std(ddof).into()
     }
 
     pub fn var(&self, ddof: u8) -> Self {
-        self.clone().inner.var(ddof).into()
+        self.inner.clone().var(ddof).into()
     }
 
     pub fn is_unique(&self) -> Self {
-        self.clone().inner.is_unique().into()
+        self.inner.clone().is_unique().into()
     }
 
     pub fn is_between(&self, lower: &Self, upper: &Self, closed: Wrap<ClosedInterval>) -> Self {
@@ -447,19 +447,19 @@ impl RbExpr {
     }
 
     pub fn approx_n_unique(&self) -> Self {
-        self.clone().inner.approx_n_unique().into()
+        self.inner.clone().approx_n_unique().into()
     }
 
     pub fn is_first_distinct(&self) -> Self {
-        self.clone().inner.is_first_distinct().into()
+        self.inner.clone().is_first_distinct().into()
     }
 
     pub fn is_last_distinct(&self) -> Self {
-        self.clone().inner.is_last_distinct().into()
+        self.inner.clone().is_last_distinct().into()
     }
 
     pub fn explode(&self) -> Self {
-        self.clone().inner.explode().into()
+        self.inner.clone().explode().into()
     }
 
     pub fn gather_every(&self, n: usize, offset: usize) -> Self {
@@ -474,11 +474,11 @@ impl RbExpr {
     }
 
     pub fn tail(&self, n: Option<usize>) -> Self {
-        self.clone().inner.tail(n).into()
+        self.inner.clone().tail(n).into()
     }
 
     pub fn head(&self, n: Option<usize>) -> Self {
-        self.clone().inner.head(n).into()
+        self.inner.clone().head(n).into()
     }
 
     pub fn slice(&self, offset: &Self, length: &Self) -> Self {
@@ -503,15 +503,15 @@ impl RbExpr {
     }
 
     pub fn round(&self, decimals: u32) -> Self {
-        self.clone().inner.round(decimals).into()
+        self.inner.clone().round(decimals).into()
     }
 
     pub fn floor(&self) -> Self {
-        self.clone().inner.floor().into()
+        self.inner.clone().floor().into()
     }
 
     pub fn ceil(&self) -> Self {
-        self.clone().inner.ceil().into()
+        self.inner.clone().ceil().into()
     }
 
     pub fn clip(&self, min: Option<&Self>, max: Option<&Self>) -> Self {
@@ -526,112 +526,112 @@ impl RbExpr {
     }
 
     pub fn abs(&self) -> Self {
-        self.clone().inner.abs().into()
+        self.inner.clone().abs().into()
     }
 
     pub fn sin(&self) -> Self {
-        self.clone().inner.sin().into()
+        self.inner.clone().sin().into()
     }
 
     pub fn cos(&self) -> Self {
-        self.clone().inner.cos().into()
+        self.inner.clone().cos().into()
     }
 
     pub fn tan(&self) -> Self {
-        self.clone().inner.tan().into()
+        self.inner.clone().tan().into()
     }
 
     pub fn arcsin(&self) -> Self {
-        self.clone().inner.arcsin().into()
+        self.inner.clone().arcsin().into()
     }
 
     pub fn arccos(&self) -> Self {
-        self.clone().inner.arccos().into()
+        self.inner.clone().arccos().into()
     }
 
     pub fn arctan(&self) -> Self {
-        self.clone().inner.arctan().into()
+        self.inner.clone().arctan().into()
     }
 
     pub fn sinh(&self) -> Self {
-        self.clone().inner.sinh().into()
+        self.inner.clone().sinh().into()
     }
 
     pub fn cosh(&self) -> Self {
-        self.clone().inner.cosh().into()
+        self.inner.clone().cosh().into()
     }
 
     pub fn tanh(&self) -> Self {
-        self.clone().inner.tanh().into()
+        self.inner.clone().tanh().into()
     }
 
     pub fn arcsinh(&self) -> Self {
-        self.clone().inner.arcsinh().into()
+        self.inner.clone().arcsinh().into()
     }
 
     pub fn arccosh(&self) -> Self {
-        self.clone().inner.arccosh().into()
+        self.inner.clone().arccosh().into()
     }
 
     pub fn arctanh(&self) -> Self {
-        self.clone().inner.arctanh().into()
+        self.inner.clone().arctanh().into()
     }
 
     pub fn sign(&self) -> Self {
-        self.clone().inner.sign().into()
+        self.inner.clone().sign().into()
     }
 
     pub fn is_duplicated(&self) -> Self {
-        self.clone().inner.is_duplicated().into()
+        self.inner.clone().is_duplicated().into()
     }
 
     pub fn over(&self, partition_by: RArray) -> RbResult<Self> {
         let partition_by = rb_exprs_to_exprs(partition_by)?;
-        Ok(self.clone().inner.over(partition_by).into())
+        Ok(self.inner.clone().over(partition_by).into())
     }
 
     pub fn _and(&self, expr: &Self) -> Self {
-        self.clone().inner.and(expr.inner.clone()).into()
+        self.inner.clone().and(expr.inner.clone()).into()
     }
 
     pub fn _xor(&self, expr: &Self) -> Self {
-        self.clone().inner.xor(expr.inner.clone()).into()
+        self.inner.clone().xor(expr.inner.clone()).into()
     }
 
     pub fn _or(&self, expr: &Self) -> Self {
-        self.clone().inner.or(expr.inner.clone()).into()
+        self.inner.clone().or(expr.inner.clone()).into()
     }
 
     pub fn is_in(&self, expr: &Self) -> Self {
-        self.clone().inner.is_in(expr.inner.clone()).into()
+        self.inner.clone().is_in(expr.inner.clone()).into()
     }
 
     pub fn repeat_by(&self, by: &Self) -> Self {
-        self.clone().inner.repeat_by(by.inner.clone()).into()
+        self.inner.clone().repeat_by(by.inner.clone()).into()
     }
 
     pub fn pow(&self, exponent: &Self) -> Self {
-        self.clone().inner.pow(exponent.inner.clone()).into()
+        self.inner.clone().pow(exponent.inner.clone()).into()
     }
 
     pub fn cum_sum(&self, reverse: bool) -> Self {
-        self.clone().inner.cum_sum(reverse).into()
+        self.inner.clone().cum_sum(reverse).into()
     }
 
     pub fn cum_max(&self, reverse: bool) -> Self {
-        self.clone().inner.cum_max(reverse).into()
+        self.inner.clone().cum_max(reverse).into()
     }
 
     pub fn cum_min(&self, reverse: bool) -> Self {
-        self.clone().inner.cum_min(reverse).into()
+        self.inner.clone().cum_min(reverse).into()
     }
 
     pub fn cum_prod(&self, reverse: bool) -> Self {
-        self.clone().inner.cum_prod(reverse).into()
+        self.inner.clone().cum_prod(reverse).into()
     }
 
     pub fn product(&self) -> Self {
-        self.clone().inner.product().into()
+        self.inner.clone().product().into()
     }
 
     pub fn shrink_dtype(&self) -> Self {
