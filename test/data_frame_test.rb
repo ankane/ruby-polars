@@ -381,6 +381,14 @@ class DataFrameTest < Minitest::Test
     df.group("a").count
   end
 
+  def test_group_by_dynamic
+    df = Polars::DataFrame.new({
+      "ts" => [Date.new(2020, 1, 1), Date.new(2020, 1, 2), Date.new(2020, 1, 3)],
+      "value" => [1, 2, 3]
+    })
+    df.group_by_dynamic("ts", every: "1d", period: "2d").agg("value")
+  end
+
   def test_join
     df = Polars::DataFrame.new({
       a: [1, 2, 3],
