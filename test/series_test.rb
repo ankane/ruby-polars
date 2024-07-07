@@ -818,4 +818,9 @@ class SeriesTest < Minitest::Test
     end
     assert_equal "invalid operation: conversion from `i64` to `u8` failed in column '' for 1 out of 3 values: [300]", error.message
   end
+
+  def test_rle
+    s = Polars::Series.new(["a", "a", "b", "c", "c", "c"])
+    assert_equal ["len", "value"], s.rle.struct.unnest.columns
+  end
 end
