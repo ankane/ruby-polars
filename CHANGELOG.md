@@ -1,6 +1,7 @@
 ## 0.12.0 (unreleased)
 
 - Updated Polars to 0.41.3
+- Added `check_names` option to `equals` method
 - Improved `struct` method
 - Aliased `melt` to `unpivot` for `DataFrame` and `LazyFrame`
 - Changed signature of `pivot` and `melt` methods

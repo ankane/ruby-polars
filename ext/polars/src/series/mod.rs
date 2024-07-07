@@ -312,10 +312,20 @@ impl RbSeries {
         Ok(s.into())
     }
 
-    pub fn equals(&self, other: &RbSeries, null_equal: bool, strict: bool) -> bool {
-        if strict {
-            self.series.borrow().eq(&other.series.borrow())
-        } else if null_equal {
+    pub fn equals(
+        &self,
+        other: &RbSeries,
+        check_dtypes: bool,
+        check_names: bool,
+        null_equal: bool,
+    ) -> bool {
+        if check_dtypes && (self.series.borrow().dtype() != other.series.borrow().dtype()) {
+            return false;
+        }
+        if check_names && (self.series.borrow().name() != other.series.borrow().name()) {
+            return false;
+        }
+        if null_equal {
             self.series.borrow().equals_missing(&other.series.borrow())
         } else {
             self.series.borrow().equals(&other.series.borrow())

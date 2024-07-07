@@ -875,7 +875,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("has_validity", method!(RbSeries::has_validity, 0))?;
     class.define_method("sample_n", method!(RbSeries::sample_n, 4))?;
     class.define_method("sample_frac", method!(RbSeries::sample_frac, 4))?;
-    class.define_method("equals", method!(RbSeries::equals, 3))?;
+    class.define_method("equals", method!(RbSeries::equals, 4))?;
     class.define_method("eq", method!(RbSeries::eq, 1))?;
     class.define_method("neq", method!(RbSeries::neq, 1))?;
     class.define_method("gt", method!(RbSeries::gt, 1))?;
