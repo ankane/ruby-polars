@@ -93,6 +93,18 @@ class SeriesTest < Minitest::Test
 
     s = Polars::Series.new([1, "hello", 3.5], strict: false)
     assert_series [1, nil, 3.5], s, dtype: Polars::Float64
+
+    # TODO fix
+    # error = assert_raises(TypeError) do
+    #   Polars::Series.new([1, 2, 3.5])
+    # end
+    # assert_equals "", error.message
+
+    s = Polars::Series.new([1, 2, 3.5], strict: false)
+    assert_series [1, 2, 3.5], s, dtype: Polars::Float64
+
+    s = Polars::Series.new([1, 2, 3.5], strict: false, dtype: Polars::Int8)
+    assert_series [1, 2, 3], s, dtype: Polars::Int8
   end
 
   def test_new_enum
