@@ -214,6 +214,15 @@ pub fn dtype_cols2(dtypes: RArray) -> RbResult<RbExpr> {
     Ok(crate::functions::lazy::dtype_cols(dtypes))
 }
 
+pub fn index_cols(indices: Vec<i64>) -> RbExpr {
+    if indices.len() == 1 {
+        dsl::nth(indices[0])
+    } else {
+        dsl::index_cols(indices)
+    }
+    .into()
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn duration(
     weeks: Option<&RbExpr>,

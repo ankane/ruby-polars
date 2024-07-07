@@ -524,6 +524,55 @@ module Polars
       col(*columns).last
     end
 
+    # Get the nth column(s) of the context.
+    #
+    # @param indices [Array]
+    #   One or more indices representing the columns to retrieve.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 8, 3],
+    #       "b" => [4, 5, 2],
+    #       "c" => ["foo", "bar", "baz"]
+    #     }
+    #   )
+    #   df.select(Polars.nth(1))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ b   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 4   │
+    #   # │ 5   │
+    #   # │ 2   │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.nth(2, 0))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ c   ┆ a   │
+    #   # │ --- ┆ --- │
+    #   # │ str ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ foo ┆ 1   │
+    #   # │ bar ┆ 8   │
+    #   # │ baz ┆ 3   │
+    #   # └─────┴─────┘
+    def nth(*indices)
+      if indices.length == 1 && indices[0].is_a?(Array)
+        indices = indices[0]
+      end
+
+      Utils.wrap_expr(Plr.index_cols(indices))
+    end
+
     # Get the first `n` rows.
     #
     # This function is syntactic sugar for `col(column).head(n)`.
