@@ -101,6 +101,7 @@ class TypesTest < Minitest::Test
 
   def test_series_dtype_datetime_time_zone
     s = Polars::Series.new([Time.utc(2020, 1, 1)], dtype: Polars::Datetime.new("us", "Europe/Amsterdam"))
+    assert_equal Polars::Datetime.new("us", "Europe/Amsterdam"), s.dtype
     # TODO fix
     # assert_series [Time.utc(2020, 1, 1)], s, dtype: Polars::Datetime.new("us", "Europe/Amsterdam")
   end
