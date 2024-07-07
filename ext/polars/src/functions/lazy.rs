@@ -201,17 +201,13 @@ pub fn concat_lf_diagonal(
     Ok(lf.into())
 }
 
-pub fn dtype_cols(dtypes: Vec<DataType>) -> RbExpr {
-    dsl::dtype_cols(dtypes).into()
-}
-
-pub fn dtype_cols2(dtypes: RArray) -> RbResult<RbExpr> {
+pub fn dtype_cols(dtypes: RArray) -> RbResult<RbExpr> {
     let dtypes = dtypes
         .into_iter()
         .map(Wrap::<DataType>::try_convert)
         .collect::<RbResult<Vec<Wrap<DataType>>>>()?;
     let dtypes = vec_extract_wrapped(dtypes);
-    Ok(crate::functions::lazy::dtype_cols(dtypes))
+    Ok(dsl::dtype_cols(dtypes).into())
 }
 
 pub fn index_cols(indices: Vec<i64>) -> RbExpr {
