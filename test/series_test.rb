@@ -802,4 +802,13 @@ class SeriesTest < Minitest::Test
     s = Polars::Series.new([1, 4, nil, 3])
     s.ewm_mean(alpha: 0.9, ignore_nulls: false)
   end
+
+  def test_cast
+    s = Polars::Series.new([100, 200, 300])
+    # TODO use InvalidOperationError
+    error = assert_raises(RuntimeError) do
+      s.cast(Polars::UInt8)
+    end
+    assert_equal "invalid operation: conversion from `i64` to `u8` failed in column '' for 1 out of 3 values: [300]", error.message
+  end
 end
