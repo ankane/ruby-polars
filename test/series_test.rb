@@ -757,7 +757,7 @@ class SeriesTest < Minitest::Test
 
   def test_reshape
     s = Polars::Series.new([1, 2, 3, 4])
-    s.reshape([2, -1])
+    assert_equal Polars::Array, s.reshape([2, -1]).dtype
   end
 
   def test_shuffle
