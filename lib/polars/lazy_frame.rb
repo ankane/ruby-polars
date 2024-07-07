@@ -2671,24 +2671,19 @@ module Polars
     #
     # @param column [Object]
     #   Columns that are sorted
-    # @param more_columns [Object]
-    #   Additional columns that are sorted, specified as positional arguments.
     # @param descending [Boolean]
     #   Whether the columns are sorted in descending order.
     #
     # @return [LazyFrame]
     def set_sorted(
       column,
-      *more_columns,
       descending: false
     )
-      columns = Utils.parse_into_list_of_expressions(column)
-      if more_columns.any?
-        columns.concat(Utils.parse_into_list_of_expressions(more_columns))
+      if !Utils.strlike?(column)
+        msg = "expected a 'str' for argument 'column' in 'set_sorted'"
+        raise TypeError, msg
       end
-      with_columns(
-        columns.map { |e| Utils.wrap_expr(e).set_sorted(descending: descending) }
-      )
+      with_columns(F.col(column).set_sorted(descending: descending))
     end
 
     # TODO

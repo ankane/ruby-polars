@@ -4762,19 +4762,16 @@ module Polars
     #
     # @param column [Object]
     #   Columns that are sorted
-    # @param more_columns [Object]
-    #   Additional columns that are sorted, specified as positional arguments.
     # @param descending [Boolean]
     #   Whether the columns are sorted in descending order.
     #
     # @return [DataFrame]
     def set_sorted(
       column,
-      *more_columns,
       descending: false
     )
       lazy
-        .set_sorted(column, *more_columns, descending: descending)
+        .set_sorted(column, descending: descending)
         .collect(no_optimization: true)
     end
 
