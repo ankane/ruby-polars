@@ -99,6 +99,12 @@ class TypesTest < Minitest::Test
     assert_series [Time.utc(2022, 1, 1)], s, dtype: Polars::Datetime.new("ms")
   end
 
+  def test_series_dtype_datetime_time_zone
+    s = Polars::Series.new([Time.utc(2020, 1, 1)], dtype: Polars::Datetime.new("us", "Europe/Amsterdam"))
+    # TODO fix
+    # assert_series [Time.utc(2020, 1, 1)], s, dtype: Polars::Datetime.new("us", "Europe/Amsterdam")
+  end
+
   def test_series_dtype_duration
     s = Polars::Series.new([1e6, 2e6, 3e6], dtype: Polars::Duration)
     assert_series [1, 2, 3], s, dtype: Polars::Duration.new("us")
