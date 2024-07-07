@@ -1597,6 +1597,43 @@ module Polars
     end
     alias_method :take, :gather
 
+    # Return a single value by index.
+    #
+    # @param index [Object]
+    #   An expression that leads to a UInt32 index.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "group" => [
+    #         "one",
+    #         "one",
+    #         "one",
+    #         "two",
+    #         "two",
+    #         "two"
+    #       ],
+    #       "value" => [1, 98, 2, 3, 99, 4]
+    #     }
+    #   )
+    #   df.group_by("group", maintain_order: true).agg(Polars.col("value").get(1))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌───────┬───────┐
+    #   # │ group ┆ value │
+    #   # │ ---   ┆ ---   │
+    #   # │ str   ┆ i64   │
+    #   # ╞═══════╪═══════╡
+    #   # │ one   ┆ 98    │
+    #   # │ two   ┆ 99    │
+    #   # └───────┴───────┘
+    def get(index)
+      index_lit = Utils.parse_into_expression(index)
+      _from_rbexpr(_rbexpr.get(index_lit))
+    end
+
     # Shift the values by a given period.
     #
     # @param n [Integer]

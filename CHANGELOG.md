@@ -2,6 +2,7 @@
 
 - Updated Polars to 0.41.3
 - Added `nth` method to `Polars`
+- Added `get` method to `Expr`
 - Added `check_names` option to `equals` method
 - Improved `struct` method
 - Aliased `melt` to `unpivot` for `DataFrame` and `LazyFrame`

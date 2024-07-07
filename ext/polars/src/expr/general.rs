@@ -341,6 +341,10 @@ impl RbExpr {
         self.clone().inner.gather(idx.inner.clone()).into()
     }
 
+    pub fn get(&self, idx: &Self) -> Self {
+        self.inner.clone().get(idx.inner.clone()).into()
+    }
+
     pub fn sort_by(
         &self,
         by: RArray,

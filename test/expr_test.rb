@@ -29,6 +29,15 @@ class ExprTest < Minitest::Test
     assert_frame ({"a" => [1], "b" => [2]}), df.select(Polars.min(["a", "b"]))
   end
 
+  def test_get
+    df = Polars::DataFrame.new({"a" => [1, 2], "b" => [3, 4], "c" => [5, 6]})
+    error = assert_raises(TypeError) do
+      df.select(Polars.nth(1, "a"))
+    end
+    assert_equal "no implicit conversion of String into Integer", error.message
+    assert_frame ({"a" => [2]}), df.select(Polars.col("a").get(1))
+  end
+
   def assert_lit(expected, lit)
     assert_equal expected, lit.inspect
   end

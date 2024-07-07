@@ -221,6 +221,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arg_min", method!(RbExpr::arg_min, 0))?;
     class.define_method("search_sorted", method!(RbExpr::search_sorted, 2))?;
     class.define_method("gather", method!(RbExpr::gather, 1))?;
+    class.define_method("get", method!(RbExpr::get, 1))?;
     class.define_method("sort_by", method!(RbExpr::sort_by, 5))?;
     class.define_method("backward_fill", method!(RbExpr::backward_fill, 1))?;
     class.define_method("forward_fill", method!(RbExpr::forward_fill, 1))?;
