@@ -1,7 +1,6 @@
 use magnus::encoding::{EncodingCapable, Index};
 use magnus::{
-    class, prelude::*, r_hash::ForEach, Float, IntoValue, RArray, RHash, RString, Ruby, TryConvert,
-    Value,
+    class, prelude::*, r_hash::ForEach, IntoValue, RArray, RHash, RString, Ruby, TryConvert, Value,
 };
 use polars::prelude::*;
 use polars_core::utils::any_values_to_supertype_and_n_dtypes;
@@ -107,20 +106,29 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
         }
     }
 
+    fn get_float(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
+        Ok(AnyValue::Float64(f64::try_convert(ob)?))
+    }
+
+    fn get_str(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
+        let v = RString::from_value(ob).unwrap();
+        if v.enc_get() == Index::utf8() {
+            Ok(AnyValue::StringOwned(v.to_string()?.into()))
+        } else {
+            Ok(AnyValue::BinaryOwned(unsafe { v.as_slice() }.to_vec()))
+        }
+    }
+
     if ob.is_nil() {
         get_null(ob, strict)
     } else if ob.is_kind_of(class::true_class()) || ob.is_kind_of(class::false_class()) {
         get_bool(ob, strict)
     } else if ob.is_kind_of(class::integer()) {
         get_int(ob, strict)
-    } else if let Some(v) = Float::from_value(ob) {
-        Ok(AnyValue::Float64(v.to_f64()))
-    } else if let Some(v) = RString::from_value(ob) {
-        if v.enc_get() == Index::utf8() {
-            Ok(AnyValue::StringOwned(v.to_string()?.into()))
-        } else {
-            Ok(AnyValue::BinaryOwned(unsafe { v.as_slice() }.to_vec()))
-        }
+    } else if ob.is_kind_of(class::float()) {
+        get_float(ob, strict)
+    } else if ob.is_kind_of(class::string()) {
+        get_str(ob, strict)
     // call is_a? for ActiveSupport::TimeWithZone
     } else if ob.funcall::<_, _, bool>("is_a?", (class::time(),))? {
         let sec = ob.funcall::<_, _, i64>("to_i", ())?;
