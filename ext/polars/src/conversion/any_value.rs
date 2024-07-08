@@ -148,6 +148,11 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
         }
     }
 
+    fn get_list_from_series(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
+        let s = super::get_series(ob)?;
+        Ok(AnyValue::List(s))
+    }
+
     fn get_struct(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
         let dict = RHash::from_value(ob).unwrap();
         let len = dict.len();
@@ -236,6 +241,8 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
         get_list(ob, strict)
     } else if ob.is_kind_of(class::hash()) {
         get_struct(ob, strict)
+    } else if ob.respond_to("_s", true)? {
+        get_list_from_series(ob, strict)
     // call is_a? for ActiveSupport::TimeWithZone
     } else if ob.funcall::<_, _, bool>("is_a?", (class::time(),))? {
         get_time(ob, strict)
