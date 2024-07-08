@@ -30,6 +30,17 @@ class DataFrameTest < Minitest::Test
     assert_frame expected, df
   end
 
+  def test_new_array_arrays
+    error = assert_raises(TypeError) do
+      Polars::DataFrame.new([[1, "a"], [2, "b"]])
+    end
+    assert_match "unexpected value while building Series of type Int64; found value of type String", error.message
+
+    df = Polars::DataFrame.new([[1, "a"], [2, "b"]], orient: "row")
+    expected = Polars::DataFrame.new({"column_0" => [1, 2], "column_1" => ["a", "b"]})
+    assert_frame expected, df
+  end
+
   def test_new_array_schema
     df = Polars::DataFrame.new([{"a" => DateTime.new(2022, 1, 1)}], schema: {"a" => Polars::Datetime})
     assert_kind_of Polars::Datetime, df["a"].dtype
