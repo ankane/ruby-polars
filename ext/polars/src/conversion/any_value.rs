@@ -1,13 +1,14 @@
 use magnus::encoding::{EncodingCapable, Index};
 use magnus::{
-    class, prelude::*, r_hash::ForEach, Float, Integer, IntoValue, RArray, RHash, RString, Ruby,
-    TryConvert, Value,
+    class, prelude::*, r_hash::ForEach, Float, IntoValue, RArray, RHash, RString, Ruby, TryConvert,
+    Value,
 };
 use polars::prelude::*;
 use polars_core::utils::any_values_to_supertype_and_n_dtypes;
 
 use super::{struct_dict, ObjectValue, Wrap};
 
+use crate::error::RbOverflowError;
 use crate::rb_modules::utils;
 use crate::{RbPolarsErr, RbResult, RbSeries};
 
@@ -91,12 +92,27 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
         Ok(AnyValue::Boolean(b))
     }
 
+    fn get_int(ob: Value, strict: bool) -> RbResult<AnyValue<'static>> {
+        if let Ok(v) = i64::try_convert(ob) {
+            Ok(AnyValue::Int64(v))
+        } else if let Ok(v) = u64::try_convert(ob) {
+            Ok(AnyValue::UInt64(v))
+        } else if !strict {
+            let f = f64::try_convert(ob)?;
+            Ok(AnyValue::Float64(f))
+        } else {
+            Err(RbOverflowError::new_err(format!(
+                "int value too large for Polars integer types: {ob}"
+            )))
+        }
+    }
+
     if ob.is_nil() {
         get_null(ob, strict)
     } else if ob.is_kind_of(class::true_class()) || ob.is_kind_of(class::false_class()) {
         get_bool(ob, strict)
-    } else if let Some(v) = Integer::from_value(ob) {
-        Ok(AnyValue::Int64(v.to_i64()?))
+    } else if ob.is_kind_of(class::integer()) {
+        get_int(ob, strict)
     } else if let Some(v) = Float::from_value(ob) {
         Ok(AnyValue::Float64(v.to_f64()))
     } else if let Some(v) = RString::from_value(ob) {

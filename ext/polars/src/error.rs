@@ -43,6 +43,14 @@ impl ComputeError {
     }
 }
 
+pub struct RbOverflowError {}
+
+impl RbOverflowError {
+    pub fn new_err(message: String) -> Error {
+        Error::new(exception::runtime_error(), message)
+    }
+}
+
 #[macro_export]
 macro_rules! raise_err(
     ($msg:expr, $err:ident) => {{
