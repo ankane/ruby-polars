@@ -10,9 +10,6 @@ class GuideTest < Minitest::Test
       "cars" => ["beetle", "audi", "beetle", "beetle", "beetle"]
     })
 
-    # TODO remove when fixed upstream
-    skip
-
     output df.sort("fruits").select([
       "fruits",
       "cars",
