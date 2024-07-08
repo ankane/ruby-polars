@@ -11,9 +11,7 @@ impl RbPolarsErr {
     pub fn from(e: PolarsError) -> Error {
         match e {
             PolarsError::ComputeError(err) => ComputeError::new_err(err.to_string()),
-            PolarsError::InvalidOperation(err) => {
-                Error::new(rb_modules::invalid_operation_error(), err.to_string())
-            }
+            PolarsError::InvalidOperation(err) => InvalidOperationError::new_err(err.to_string()),
             _ => Error::new(rb_modules::error(), e.to_string()),
         }
     }
@@ -56,6 +54,14 @@ pub struct ComputeError {}
 impl ComputeError {
     pub fn new_err(message: String) -> Error {
         Error::new(rb_modules::compute_error(), message)
+    }
+}
+
+pub struct InvalidOperationError {}
+
+impl InvalidOperationError {
+    pub fn new_err(message: String) -> Error {
+        Error::new(rb_modules::invalid_operation_error(), message)
     }
 }
 
