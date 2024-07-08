@@ -51,6 +51,11 @@ class NumoTest < Minitest::Test
     assert_equal s.to_a, s.to_numo.to_a
   end
 
+  def test_series_2d
+    s = Polars::Series.new(Numo::Int64.cast([[1, 2], [3, 4]]))
+    assert_series [[1, 2], [3, 4]], s, dtype: Polars::Array
+  end
+
   def test_data_frame
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_kind_of Numo::RObject, df.to_numo

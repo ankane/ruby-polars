@@ -4202,10 +4202,18 @@ module Polars
           # TODO improve performance
           constructor.call(name, values.to_a, strict)
         end
-      elsif values.shape.length == 2
+      elsif values.shape.sum == 0
         raise Todo
       else
-        raise Todo
+        original_shape = values.shape
+        values = values.reshape(original_shape.inject(&:*))
+        rb_s = numo_to_rbseries(
+          name,
+          values,
+          strict: strict,
+          nan_to_null: nan_to_null
+        )
+        Utils.wrap_s(rb_s).reshape(original_shape)._s
       end
     end
 
