@@ -43,19 +43,19 @@ impl RbValueError {
     }
 }
 
-pub struct ComputeError {}
-
-impl ComputeError {
-    pub fn new_err(message: String) -> Error {
-        Error::new(rb_modules::compute_error(), message)
-    }
-}
-
 pub struct RbOverflowError {}
 
 impl RbOverflowError {
     pub fn new_err(message: String) -> Error {
         Error::new(exception::range_error(), message)
+    }
+}
+
+pub struct ComputeError {}
+
+impl ComputeError {
+    pub fn new_err(message: String) -> Error {
+        Error::new(rb_modules::compute_error(), message)
     }
 }
 
