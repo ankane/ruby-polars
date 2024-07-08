@@ -27,6 +27,9 @@ module Polars
   class AssertionError < Error; end
 
   # @private
+  class ComputeError < Error; end
+
+  # @private
   class Todo < Error
     def message
       "not implemented yet"

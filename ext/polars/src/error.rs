@@ -9,7 +9,7 @@ pub struct RbPolarsErr {}
 impl RbPolarsErr {
     // convert to Error instead of Self
     pub fn from(e: PolarsError) -> Error {
-        Error::new(rb_modules::error(), e.to_string())
+        Error::new(rb_modules::compute_error(), e.to_string())
     }
 
     pub fn io(e: std::io::Error) -> Error {
@@ -41,7 +41,7 @@ pub struct ComputeError {}
 
 impl ComputeError {
     pub fn new_err(message: String) -> Error {
-        Error::new(exception::runtime_error(), message)
+        Error::new(rb_modules::compute_error(), message)
     }
 }
 

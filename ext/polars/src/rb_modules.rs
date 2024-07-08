@@ -45,3 +45,10 @@ static ERROR: Lazy<ExceptionClass> =
 pub(crate) fn error() -> ExceptionClass {
     Ruby::get().unwrap().get_inner(&ERROR)
 }
+
+static COMPUTE_ERROR: Lazy<ExceptionClass> =
+    Lazy::new(|ruby| ruby.get_inner(&POLARS).const_get("ComputeError").unwrap());
+
+pub(crate) fn compute_error() -> ExceptionClass {
+    Ruby::get().unwrap().get_inner(&COMPUTE_ERROR)
+}
