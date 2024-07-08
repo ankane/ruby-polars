@@ -1,6 +1,7 @@
 use magnus::{prelude::*, RArray};
 use polars_core::prelude::*;
 
+use crate::any_value::rb_object_to_any_value;
 use crate::conversion::{slice_extract_wrapped, vec_extract_wrapped, Wrap};
 use crate::prelude::ObjectValue;
 use crate::series::to_series_collection;
@@ -35,36 +36,28 @@ impl RbSeries {
     }
 }
 
-fn new_primitive<T>(name: &str, obj: RArray, strict: bool) -> RbResult<RbSeries>
+fn new_primitive<T>(name: &str, values: RArray, _strict: bool) -> RbResult<RbSeries>
 where
     T: PolarsNumericType,
     ChunkedArray<T>: IntoSeries,
     T::Native: magnus::TryConvert,
 {
-    let len = obj.len();
+    let len = values.len();
     let mut builder = PrimitiveChunkedBuilder::<T>::new(name, len);
 
-    unsafe {
-        for item in obj.as_slice().iter() {
-            if item.is_nil() {
-                builder.append_null()
-            } else {
-                match T::Native::try_convert(*item) {
-                    Ok(val) => builder.append_value(val),
-                    Err(e) => {
-                        if strict {
-                            return Err(e);
-                        }
-                        builder.append_null()
-                    }
-                }
-            }
+    for res in values.into_iter() {
+        let value = res;
+        if value.is_nil() {
+            builder.append_null()
+        } else {
+            let v = <T::Native>::try_convert(value)?;
+            builder.append_value(v)
         }
     }
-    let ca = builder.finish();
 
+    let ca = builder.finish();
     let s = ca.into_series();
-    Ok(RbSeries::new(s))
+    Ok(s.into())
 }
 
 // Init with lists that can contain Nones
@@ -117,6 +110,25 @@ impl RbSeries {
         }
 
         result
+    }
+
+    pub fn new_from_any_values_and_dtype(
+        name: String,
+        values: RArray,
+        dtype: Wrap<DataType>,
+        strict: bool,
+    ) -> RbResult<Self> {
+        let any_values = values
+            .into_iter()
+            .map(|v| rb_object_to_any_value(v, strict))
+            .collect::<RbResult<Vec<AnyValue>>>()?;
+        let s = Series::from_any_values_and_dtype(&name, any_values.as_slice(), &dtype.0, strict)
+            .map_err(|e| {
+            RbTypeError::new_err(format!(
+                "{e}\n\nHint: Try setting `strict: false` to allow passing data with mixed types."
+            ))
+        })?;
+        Ok(s.into())
     }
 
     pub fn new_str(name: String, val: Wrap<StringChunked>, _strict: bool) -> Self {

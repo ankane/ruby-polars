@@ -4333,7 +4333,20 @@ module Polars
             else
               rb_type_to_constructor(value.class)
             end
-          constructor.call(name, values, strict)
+
+          construct_series_with_fallbacks(constructor, name, values, dtype, strict: strict)
+        end
+      end
+    end
+
+    def construct_series_with_fallbacks(constructor, name, values, dtype, strict:)
+      begin
+        constructor.call(name, values, strict)
+      rescue
+        if dtype.nil?
+          RbSeries.new_from_any_values(name, values, strict)
+        else
+          RbSeries.new_from_any_values_and_dtype(name, values, dtype, strict)
         end
       end
     end

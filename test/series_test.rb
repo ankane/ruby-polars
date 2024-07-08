@@ -89,10 +89,10 @@ class SeriesTest < Minitest::Test
 
   def test_new_strict
     s = Polars::Series.new([1.0, "hello", 3], strict: false)
-    assert_series [1, nil, 3], s, dtype: Polars::Float64
+    assert_series ["1.0", "hello", "3"], s, dtype: Polars::String
 
     s = Polars::Series.new([1, "hello", 3.5], strict: false)
-    assert_series [1, nil, 3.5], s, dtype: Polars::Float64
+    assert_series ["1", "hello", "3.5"], s, dtype: Polars::String
 
     # TODO fix
     # error = assert_raises(TypeError) do
@@ -151,7 +151,7 @@ class SeriesTest < Minitest::Test
     error = assert_raises(TypeError) do
       Polars::Series.new([1, "hello", true])
     end
-    assert_equal "no implicit conversion of String into Integer", error.message
+    assert_match "unexpected value while building Series of type Int64; found value of type String", error.message
   end
 
   def test_new_range

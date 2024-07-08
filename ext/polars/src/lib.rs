@@ -811,6 +811,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "new_from_any_values",
         function!(RbSeries::new_from_any_values, 3),
     )?;
+    class.define_singleton_method(
+        "new_from_any_values_and_dtype",
+        function!(RbSeries::new_from_any_values_and_dtype, 4),
+    )?;
     class.define_singleton_method("new_str", function!(RbSeries::new_str, 3))?;
     class.define_singleton_method("new_binary", function!(RbSeries::new_binary, 3))?;
     class.define_singleton_method("new_null", function!(RbSeries::new_null, 3))?;
