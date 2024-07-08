@@ -202,7 +202,7 @@ module Polars
       storage_options: nil,
       low_memory: false,
       use_statistics: true,
-      hive_partitioning: true,
+      hive_partitioning: nil,
       glob: true
     )
       rblf =
