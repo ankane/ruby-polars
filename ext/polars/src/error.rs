@@ -11,6 +11,9 @@ impl RbPolarsErr {
     pub fn from(e: PolarsError) -> Error {
         match e {
             PolarsError::ComputeError(s) => Error::new(rb_modules::compute_error(), s.to_string()),
+            PolarsError::InvalidOperation(s) => {
+                Error::new(rb_modules::invalid_operation_error(), s.to_string())
+            }
             _ => Error::new(rb_modules::error(), e.to_string()),
         }
     }

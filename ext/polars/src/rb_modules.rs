@@ -52,3 +52,13 @@ static COMPUTE_ERROR: Lazy<ExceptionClass> =
 pub(crate) fn compute_error() -> ExceptionClass {
     Ruby::get().unwrap().get_inner(&COMPUTE_ERROR)
 }
+
+static INVALID_OPERATION_ERROR: Lazy<ExceptionClass> = Lazy::new(|ruby| {
+    ruby.get_inner(&POLARS)
+        .const_get("InvalidOperationError")
+        .unwrap()
+});
+
+pub(crate) fn invalid_operation_error() -> ExceptionClass {
+    Ruby::get().unwrap().get_inner(&INVALID_OPERATION_ERROR)
+}

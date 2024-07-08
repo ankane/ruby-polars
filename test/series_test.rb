@@ -812,11 +812,10 @@ class SeriesTest < Minitest::Test
 
   def test_cast
     s = Polars::Series.new([100, 200, 300])
-    # TODO use InvalidOperationError
-    error = assert_raises(Polars::Error) do
+    error = assert_raises(Polars::InvalidOperationError) do
       s.cast(Polars::UInt8)
     end
-    assert_equal "invalid operation: conversion from `i64` to `u8` failed in column '' for 1 out of 3 values: [300]", error.message
+    assert_equal "conversion from `i64` to `u8` failed in column '' for 1 out of 3 values: [300]", error.message
   end
 
   def test_rle
