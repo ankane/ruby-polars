@@ -119,38 +119,8 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
         }
     }
 
-    if ob.is_nil() {
-        get_null(ob, strict)
-    } else if ob.is_kind_of(class::true_class()) || ob.is_kind_of(class::false_class()) {
-        get_bool(ob, strict)
-    } else if ob.is_kind_of(class::integer()) {
-        get_int(ob, strict)
-    } else if ob.is_kind_of(class::float()) {
-        get_float(ob, strict)
-    } else if ob.is_kind_of(class::string()) {
-        get_str(ob, strict)
-    // call is_a? for ActiveSupport::TimeWithZone
-    } else if ob.funcall::<_, _, bool>("is_a?", (class::time(),))? {
-        let sec = ob.funcall::<_, _, i64>("to_i", ())?;
-        let nsec = ob.funcall::<_, _, i64>("nsec", ())?;
-        let v = sec * 1_000_000_000 + nsec;
-        // TODO support time zone when possible
-        // https://github.com/pola-rs/polars/issues/9103
-        Ok(AnyValue::Datetime(v, TimeUnit::Nanoseconds, &None))
-    } else if let Some(dict) = RHash::from_value(ob) {
-        let len = dict.len();
-        let mut keys = Vec::with_capacity(len);
-        let mut vals = Vec::with_capacity(len);
-        dict.foreach(|k: Value, v: Value| {
-            let key = String::try_convert(k)?;
-            let val = Wrap::<AnyValue>::try_convert(v)?.0;
-            let dtype = DataType::from(&val);
-            keys.push(Field::new(&key, dtype));
-            vals.push(val);
-            Ok(ForEach::Continue)
-        })?;
-        Ok(AnyValue::StructOwned(Box::new((vals, keys))))
-    } else if let Some(v) = RArray::from_value(ob) {
+    fn get_list(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
+        let v = RArray::from_value(ob).unwrap();
         if v.is_empty() {
             Ok(AnyValue::List(Series::new_empty("", &DataType::Null)))
         } else {
@@ -176,6 +146,46 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
                 .map_err(RbPolarsErr::from)?;
             Ok(AnyValue::List(s))
         }
+    }
+
+    fn get_struct(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
+        let dict = RHash::from_value(ob).unwrap();
+        let len = dict.len();
+        let mut keys = Vec::with_capacity(len);
+        let mut vals = Vec::with_capacity(len);
+        dict.foreach(|k: Value, v: Value| {
+            let key = String::try_convert(k)?;
+            let val = Wrap::<AnyValue>::try_convert(v)?.0;
+            let dtype = DataType::from(&val);
+            keys.push(Field::new(&key, dtype));
+            vals.push(val);
+            Ok(ForEach::Continue)
+        })?;
+        Ok(AnyValue::StructOwned(Box::new((vals, keys))))
+    }
+
+    if ob.is_nil() {
+        get_null(ob, strict)
+    } else if ob.is_kind_of(class::true_class()) || ob.is_kind_of(class::false_class()) {
+        get_bool(ob, strict)
+    } else if ob.is_kind_of(class::integer()) {
+        get_int(ob, strict)
+    } else if ob.is_kind_of(class::float()) {
+        get_float(ob, strict)
+    } else if ob.is_kind_of(class::string()) {
+        get_str(ob, strict)
+    } else if ob.is_kind_of(class::array()) {
+        get_list(ob, strict)
+    } else if ob.is_kind_of(class::hash()) {
+        get_struct(ob, strict)
+    // call is_a? for ActiveSupport::TimeWithZone
+    } else if ob.funcall::<_, _, bool>("is_a?", (class::time(),))? {
+        let sec = ob.funcall::<_, _, i64>("to_i", ())?;
+        let nsec = ob.funcall::<_, _, i64>("nsec", ())?;
+        let v = sec * 1_000_000_000 + nsec;
+        // TODO support time zone when possible
+        // https://github.com/pola-rs/polars/issues/9103
+        Ok(AnyValue::Datetime(v, TimeUnit::Nanoseconds, &None))
     } else if ob.is_kind_of(crate::rb_modules::datetime()) {
         let sec: i64 = ob.funcall("to_i", ())?;
         let nsec: i64 = ob.funcall("nsec", ())?;
