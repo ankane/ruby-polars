@@ -53,7 +53,7 @@ class NumoTest < Minitest::Test
 
   def test_series_2d
     s = Polars::Series.new(Numo::Int64.cast([[1, 2], [3, 4]]))
-    assert_series [[1, 2], [3, 4]], s, dtype: Polars::Array
+    assert_series [[1, 2], [3, 4]], s, dtype: Polars::Array.new(Polars::Int64, 2)
   end
 
   def test_data_frame
