@@ -13,60 +13,64 @@ use crate::{RbPolarsErr, RbResult, RbSeries};
 
 impl IntoValue for Wrap<AnyValue<'_>> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
-        match self.0 {
-            AnyValue::UInt8(v) => ruby.into_value(v),
-            AnyValue::UInt16(v) => ruby.into_value(v),
-            AnyValue::UInt32(v) => ruby.into_value(v),
-            AnyValue::UInt64(v) => ruby.into_value(v),
-            AnyValue::Int8(v) => ruby.into_value(v),
-            AnyValue::Int16(v) => ruby.into_value(v),
-            AnyValue::Int32(v) => ruby.into_value(v),
-            AnyValue::Int64(v) => ruby.into_value(v),
-            AnyValue::Float32(v) => ruby.into_value(v),
-            AnyValue::Float64(v) => ruby.into_value(v),
-            AnyValue::Null => ruby.qnil().as_value(),
-            AnyValue::Boolean(v) => ruby.into_value(v),
-            AnyValue::String(v) => ruby.into_value(v),
-            AnyValue::StringOwned(v) => ruby.into_value(v.as_str()),
-            AnyValue::Categorical(idx, rev, arr) | AnyValue::Enum(idx, rev, arr) => {
-                let s = if arr.is_null() {
-                    rev.get(idx)
-                } else {
-                    unsafe { arr.deref_unchecked().value(idx as usize) }
-                };
-                s.into_value()
-            }
-            AnyValue::Date(v) => utils().funcall("_to_ruby_date", (v,)).unwrap(),
-            AnyValue::Datetime(v, time_unit, time_zone) => {
-                let time_unit = time_unit.to_ascii();
-                utils()
-                    .funcall("_to_ruby_datetime", (v, time_unit, time_zone.clone()))
-                    .unwrap()
-            }
-            AnyValue::Duration(v, time_unit) => {
-                let time_unit = time_unit.to_ascii();
-                utils()
-                    .funcall("_to_ruby_duration", (v, time_unit))
-                    .unwrap()
-            }
-            AnyValue::Time(v) => utils().funcall("_to_ruby_time", (v,)).unwrap(),
-            AnyValue::Array(v, _) | AnyValue::List(v) => RbSeries::new(v).to_a().into_value(),
-            ref av @ AnyValue::Struct(_, _, flds) => struct_dict(av._iter_struct_av(), flds),
-            AnyValue::StructOwned(payload) => struct_dict(payload.0.into_iter(), &payload.1),
-            AnyValue::Object(v) => {
-                let object = v.as_any().downcast_ref::<ObjectValue>().unwrap();
-                object.to_object()
-            }
-            AnyValue::ObjectOwned(v) => {
-                let object = v.0.as_any().downcast_ref::<ObjectValue>().unwrap();
-                object.to_object()
-            }
-            AnyValue::Binary(v) => RString::from_slice(v).into_value(),
-            AnyValue::BinaryOwned(v) => RString::from_slice(&v).into_value(),
-            AnyValue::Decimal(v, scale) => utils()
-                .funcall("_to_ruby_decimal", (v.to_string(), -(scale as i32)))
-                .unwrap(),
+        any_value_into_rb_object(self.0, ruby)
+    }
+}
+
+pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
+    match av {
+        AnyValue::UInt8(v) => ruby.into_value(v),
+        AnyValue::UInt16(v) => ruby.into_value(v),
+        AnyValue::UInt32(v) => ruby.into_value(v),
+        AnyValue::UInt64(v) => ruby.into_value(v),
+        AnyValue::Int8(v) => ruby.into_value(v),
+        AnyValue::Int16(v) => ruby.into_value(v),
+        AnyValue::Int32(v) => ruby.into_value(v),
+        AnyValue::Int64(v) => ruby.into_value(v),
+        AnyValue::Float32(v) => ruby.into_value(v),
+        AnyValue::Float64(v) => ruby.into_value(v),
+        AnyValue::Null => ruby.qnil().as_value(),
+        AnyValue::Boolean(v) => ruby.into_value(v),
+        AnyValue::String(v) => ruby.into_value(v),
+        AnyValue::StringOwned(v) => ruby.into_value(v.as_str()),
+        AnyValue::Categorical(idx, rev, arr) | AnyValue::Enum(idx, rev, arr) => {
+            let s = if arr.is_null() {
+                rev.get(idx)
+            } else {
+                unsafe { arr.deref_unchecked().value(idx as usize) }
+            };
+            s.into_value()
         }
+        AnyValue::Date(v) => utils().funcall("_to_ruby_date", (v,)).unwrap(),
+        AnyValue::Datetime(v, time_unit, time_zone) => {
+            let time_unit = time_unit.to_ascii();
+            utils()
+                .funcall("_to_ruby_datetime", (v, time_unit, time_zone.clone()))
+                .unwrap()
+        }
+        AnyValue::Duration(v, time_unit) => {
+            let time_unit = time_unit.to_ascii();
+            utils()
+                .funcall("_to_ruby_duration", (v, time_unit))
+                .unwrap()
+        }
+        AnyValue::Time(v) => utils().funcall("_to_ruby_time", (v,)).unwrap(),
+        AnyValue::Array(v, _) | AnyValue::List(v) => RbSeries::new(v).to_a().into_value(),
+        ref av @ AnyValue::Struct(_, _, flds) => struct_dict(av._iter_struct_av(), flds),
+        AnyValue::StructOwned(payload) => struct_dict(payload.0.into_iter(), &payload.1),
+        AnyValue::Object(v) => {
+            let object = v.as_any().downcast_ref::<ObjectValue>().unwrap();
+            object.to_object()
+        }
+        AnyValue::ObjectOwned(v) => {
+            let object = v.0.as_any().downcast_ref::<ObjectValue>().unwrap();
+            object.to_object()
+        }
+        AnyValue::Binary(v) => RString::from_slice(v).into_value(),
+        AnyValue::BinaryOwned(v) => RString::from_slice(&v).into_value(),
+        AnyValue::Decimal(v, scale) => utils()
+            .funcall("_to_ruby_decimal", (v.to_string(), -(scale as i32)))
+            .unwrap(),
     }
 }
 
