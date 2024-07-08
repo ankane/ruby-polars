@@ -58,7 +58,8 @@ class CsvTest < Minitest::Test
   end
 
   def test_read_csv_glob_mismatch
-    error = assert_raises(Polars::ComputeError) do
+    # TODO use ComputeError
+    error = assert_raises(Polars::Error) do
       Polars.read_csv("test/support/*.csv")
     end
     assert_match "schema lengths differ", error.message
