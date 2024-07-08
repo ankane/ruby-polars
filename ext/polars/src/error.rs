@@ -55,7 +55,7 @@ pub struct RbOverflowError {}
 
 impl RbOverflowError {
     pub fn new_err(message: String) -> Error {
-        Error::new(exception::runtime_error(), message)
+        Error::new(exception::range_error(), message)
     }
 }
 
