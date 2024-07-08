@@ -164,6 +164,64 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
         Ok(AnyValue::StructOwned(Box::new((vals, keys))))
     }
 
+    fn get_date(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
+        // convert to DateTime for UTC
+        let v = ob
+            .funcall::<_, _, Value>("to_datetime", ())?
+            .funcall::<_, _, Value>("to_time", ())?
+            .funcall::<_, _, i64>("to_i", ())?;
+        Ok(AnyValue::Date((v / 86400) as i32))
+    }
+
+    fn get_time(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
+        let sec = ob.funcall::<_, _, i64>("to_i", ())?;
+        let nsec = ob.funcall::<_, _, i64>("nsec", ())?;
+        let v = sec * 1_000_000_000 + nsec;
+        // TODO support time zone when possible
+        // https://github.com/pola-rs/polars/issues/9103
+        Ok(AnyValue::Datetime(v, TimeUnit::Nanoseconds, &None))
+    }
+
+    fn get_datetime(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
+        let sec: i64 = ob.funcall("to_i", ())?;
+        let nsec: i64 = ob.funcall("nsec", ())?;
+        Ok(AnyValue::Datetime(
+            sec * 1_000_000_000 + nsec,
+            TimeUnit::Nanoseconds,
+            &None,
+        ))
+    }
+
+    fn get_decimal(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
+        fn abs_decimal_from_digits(digits: String, exp: i32) -> Option<(i128, usize)> {
+            let exp = exp - (digits.len() as i32);
+            match digits.parse::<i128>() {
+                Ok(mut v) => {
+                    let scale = if exp > 0 {
+                        v = 10_i128
+                            .checked_pow(exp as u32)
+                            .and_then(|factor| v.checked_mul(factor))?;
+                        0
+                    } else {
+                        (-exp) as usize
+                    };
+                    Some((v, scale))
+                }
+                Err(_) => None,
+            }
+        }
+
+        let (sign, digits, _, exp): (i8, String, i32, i32) = ob.funcall("split", ()).unwrap();
+        let (mut v, scale) = abs_decimal_from_digits(digits, exp).ok_or_else(|| {
+            RbPolarsErr::other("BigDecimal is too large to fit in Decimal128".into())
+        })?;
+        if sign < 0 {
+            // TODO better error
+            v = v.checked_neg().unwrap();
+        }
+        Ok(AnyValue::Decimal(v, scale))
+    }
+
     if ob.is_nil() {
         get_null(ob, strict)
     } else if ob.is_kind_of(class::true_class()) || ob.is_kind_of(class::false_class()) {
@@ -180,59 +238,17 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
         get_struct(ob, strict)
     // call is_a? for ActiveSupport::TimeWithZone
     } else if ob.funcall::<_, _, bool>("is_a?", (class::time(),))? {
-        let sec = ob.funcall::<_, _, i64>("to_i", ())?;
-        let nsec = ob.funcall::<_, _, i64>("nsec", ())?;
-        let v = sec * 1_000_000_000 + nsec;
-        // TODO support time zone when possible
-        // https://github.com/pola-rs/polars/issues/9103
-        Ok(AnyValue::Datetime(v, TimeUnit::Nanoseconds, &None))
+        get_time(ob, strict)
     } else if ob.is_kind_of(crate::rb_modules::datetime()) {
-        let sec: i64 = ob.funcall("to_i", ())?;
-        let nsec: i64 = ob.funcall("nsec", ())?;
-        Ok(AnyValue::Datetime(
-            sec * 1_000_000_000 + nsec,
-            TimeUnit::Nanoseconds,
-            &None,
-        ))
+        get_datetime(ob, strict)
     } else if ob.is_kind_of(crate::rb_modules::date()) {
-        // convert to DateTime for UTC
-        let v = ob
-            .funcall::<_, _, Value>("to_datetime", ())?
-            .funcall::<_, _, Value>("to_time", ())?
-            .funcall::<_, _, i64>("to_i", ())?;
-        Ok(AnyValue::Date((v / 86400) as i32))
+        get_date(ob, strict)
     } else if ob.is_kind_of(crate::rb_modules::bigdecimal()) {
-        let (sign, digits, _, exp): (i8, String, i32, i32) = ob.funcall("split", ()).unwrap();
-        let (mut v, scale) = abs_decimal_from_digits(digits, exp).ok_or_else(|| {
-            RbPolarsErr::other("BigDecimal is too large to fit in Decimal128".into())
-        })?;
-        if sign < 0 {
-            // TODO better error
-            v = v.checked_neg().unwrap();
-        }
-        Ok(AnyValue::Decimal(v, scale))
+        get_decimal(ob, strict)
     } else {
         Err(RbPolarsErr::other(format!(
             "object type not supported {:?}",
             ob
         )))
-    }
-}
-
-fn abs_decimal_from_digits(digits: String, exp: i32) -> Option<(i128, usize)> {
-    let exp = exp - (digits.len() as i32);
-    match digits.parse::<i128>() {
-        Ok(mut v) => {
-            let scale = if exp > 0 {
-                v = 10_i128
-                    .checked_pow(exp as u32)
-                    .and_then(|factor| v.checked_mul(factor))?;
-                0
-            } else {
-                (-exp) as usize
-            };
-            Some((v, scale))
-        }
-        Err(_) => None,
     }
 }
