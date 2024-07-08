@@ -80,9 +80,21 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
     }
 }
 
-pub(crate) fn rb_object_to_any_value<'s>(ob: Value, _strict: bool) -> RbResult<AnyValue<'s>> {
-    if ob.is_kind_of(class::true_class()) || ob.is_kind_of(class::false_class()) {
-        Ok(AnyValue::Boolean(bool::try_convert(ob)?))
+pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<AnyValue<'s>> {
+    // Conversion functions.
+    fn get_null(_ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
+        Ok(AnyValue::Null)
+    }
+
+    fn get_bool(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
+        let b = bool::try_convert(ob)?;
+        Ok(AnyValue::Boolean(b))
+    }
+
+    if ob.is_nil() {
+        get_null(ob, strict)
+    } else if ob.is_kind_of(class::true_class()) || ob.is_kind_of(class::false_class()) {
+        get_bool(ob, strict)
     } else if let Some(v) = Integer::from_value(ob) {
         Ok(AnyValue::Int64(v.to_i64()?))
     } else if let Some(v) = Float::from_value(ob) {
@@ -101,8 +113,6 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, _strict: bool) -> RbResult<A
         // TODO support time zone when possible
         // https://github.com/pola-rs/polars/issues/9103
         Ok(AnyValue::Datetime(v, TimeUnit::Nanoseconds, &None))
-    } else if ob.is_nil() {
-        Ok(AnyValue::Null.into())
     } else if let Some(dict) = RHash::from_value(ob) {
         let len = dict.len();
         let mut keys = Vec::with_capacity(len);
