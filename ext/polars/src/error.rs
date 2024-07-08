@@ -2,20 +2,22 @@ use magnus::exception;
 use magnus::Error;
 use polars::prelude::PolarsError;
 
+use crate::rb_modules;
+
 pub struct RbPolarsErr {}
 
 impl RbPolarsErr {
     // convert to Error instead of Self
     pub fn from(e: PolarsError) -> Error {
-        Error::new(exception::runtime_error(), e.to_string())
+        Error::new(rb_modules::error(), e.to_string())
     }
 
     pub fn io(e: std::io::Error) -> Error {
-        Error::new(exception::runtime_error(), e.to_string())
+        Error::new(rb_modules::error(), e.to_string())
     }
 
     pub fn other(message: String) -> Error {
-        Error::new(exception::runtime_error(), message)
+        Error::new(rb_modules::error(), message)
     }
 }
 

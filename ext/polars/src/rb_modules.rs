@@ -1,4 +1,4 @@
-use magnus::{value::Lazy, Module, RClass, RModule, Ruby};
+use magnus::{value::Lazy, ExceptionClass, Module, RClass, RModule, Ruby};
 
 static POLARS: Lazy<RModule> = Lazy::new(|ruby| ruby.class_object().const_get("Polars").unwrap());
 
@@ -37,4 +37,11 @@ static DATETIME: Lazy<RClass> =
 
 pub(crate) fn datetime() -> RClass {
     Ruby::get().unwrap().get_inner(&DATETIME)
+}
+
+static ERROR: Lazy<ExceptionClass> =
+    Lazy::new(|ruby| ruby.get_inner(&POLARS).const_get("Error").unwrap());
+
+pub(crate) fn error() -> ExceptionClass {
+    Ruby::get().unwrap().get_inner(&ERROR)
 }

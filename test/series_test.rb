@@ -465,7 +465,8 @@ class SeriesTest < Minitest::Test
     assert_in_delta 2, s.quantile(0.5)
     assert_in_delta 3, s.quantile(1)
 
-    error = assert_raises(RuntimeError) do
+    # TODO use ComputeError
+    error = assert_raises(Polars::Error) do
       Polars::Series.new([1, 2, 3]).quantile(2)
     end
     assert_equal "quantile should be between 0.0 and 1.0", error.message
@@ -813,7 +814,7 @@ class SeriesTest < Minitest::Test
   def test_cast
     s = Polars::Series.new([100, 200, 300])
     # TODO use InvalidOperationError
-    error = assert_raises(RuntimeError) do
+    error = assert_raises(Polars::Error) do
       s.cast(Polars::UInt8)
     end
     assert_equal "invalid operation: conversion from `i64` to `u8` failed in column '' for 1 out of 3 values: [300]", error.message

@@ -5,7 +5,7 @@ class ListNameSpaceTest < Minitest::Test
     s = Polars::Series.new([[0, 1, 2], [0]])
 
     # TODO use ComputeError
-    error = assert_raises(RuntimeError) do
+    error = assert_raises(Polars::Error) do
       s.list.get(1)
     end
     assert_equal "get index is out of bounds", error.message
