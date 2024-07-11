@@ -1,4 +1,4 @@
-## 0.12.0 (unreleased)
+## 0.12.0 (2024-07-11)
 
 - Updated Polars to 0.41.3
 - Added `nth` method to `Polars`
