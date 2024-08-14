@@ -162,6 +162,7 @@ impl RbLazyFrame {
         hive_schema: Option<Wrap<Schema>>,
         try_parse_hive_dates: bool,
         glob: bool,
+        include_file_paths: Option<String>,
     ) -> RbResult<Self> {
         let parallel = parallel.0;
         let hive_schema = hive_schema.map(|s| Arc::new(s.0));
@@ -196,6 +197,7 @@ impl RbLazyFrame {
             use_statistics,
             hive_options,
             glob,
+            include_file_paths: include_file_paths.map(Arc::from),
         };
 
         let lf = if path.is_some() {
@@ -207,6 +209,7 @@ impl RbLazyFrame {
         Ok(lf.into())
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn new_from_ipc(
         path: String,
         n_rows: Option<usize>,
@@ -214,11 +217,22 @@ impl RbLazyFrame {
         rechunk: bool,
         row_index: Option<(String, IdxSize)>,
         memory_map: bool,
+        hive_partitioning: Option<bool>,
+        hive_schema: Option<Wrap<Schema>>,
+        try_parse_hive_dates: bool,
+        include_file_paths: Option<String>,
     ) -> RbResult<Self> {
         let row_index = row_index.map(|(name, offset)| RowIndex {
             name: Arc::from(name.as_str()),
             offset,
         });
+
+        let hive_options = HiveOptions {
+            enabled: hive_partitioning,
+            hive_start_idx: 0,
+            schema: hive_schema.map(|x| Arc::new(x.0)),
+            try_parse_dates: try_parse_hive_dates,
+        };
 
         let args = ScanArgsIpc {
             n_rows,
@@ -227,6 +241,8 @@ impl RbLazyFrame {
             row_index,
             memory_map,
             cloud_options: None,
+            hive_options,
+            include_file_paths: include_file_paths.map(Arc::from),
         };
         let lf = LazyFrame::scan_ipc(path, args).map_err(RbPolarsErr::from)?;
         Ok(lf.into())
@@ -348,7 +364,7 @@ impl RbLazyFrame {
         compression_level: Option<i32>,
         statistics: Wrap<StatisticsOptions>,
         row_group_size: Option<usize>,
-        data_pagesize_limit: Option<usize>,
+        data_page_size: Option<usize>,
         maintain_order: bool,
     ) -> RbResult<()> {
         let compression = parse_parquet_compression(&compression, compression_level)?;
@@ -357,7 +373,7 @@ impl RbLazyFrame {
             compression,
             statistics: statistics.0,
             row_group_size,
-            data_pagesize_limit,
+            data_page_size,
             maintain_order,
         };
 
@@ -752,22 +768,22 @@ impl RbLazyFrame {
 
     pub fn unpivot(
         &self,
-        on: Vec<String>,
-        index: Vec<String>,
+        on: RArray,
+        index: RArray,
         value_name: Option<String>,
         variable_name: Option<String>,
-        streamable: bool,
-    ) -> Self {
-        let args = UnpivotArgs {
-            on: strings_to_smartstrings(on),
-            index: strings_to_smartstrings(index),
+    ) -> RbResult<Self> {
+        let on = rb_exprs_to_exprs(on)?;
+        let index = rb_exprs_to_exprs(index)?;
+        let args = UnpivotArgsDSL {
+            on: on.into_iter().map(|e| e.into()).collect(),
+            index: index.into_iter().map(|e| e.into()).collect(),
             value_name: value_name.map(|s| s.into()),
             variable_name: variable_name.map(|s| s.into()),
-            streamable,
         };
 
         let ldf = self.ldf.borrow().clone();
-        ldf.unpivot(args).into()
+        Ok(ldf.unpivot(args).into())
     }
 
     pub fn with_row_index(&self, name: String, offset: Option<IdxSize>) -> Self {

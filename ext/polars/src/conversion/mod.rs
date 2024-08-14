@@ -26,12 +26,6 @@ use crate::object::OBJECT_NAME;
 use crate::rb_modules::series;
 use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
 
-pub(crate) fn slice_to_wrapped<T>(slice: &[T]) -> &[Wrap<T>] {
-    // Safety:
-    // Wrap is transparent.
-    unsafe { std::mem::transmute(slice) }
-}
-
 pub(crate) fn slice_extract_wrapped<T>(slice: &[Wrap<T>]) -> &[T] {
     // Safety:
     // Wrap is transparent.

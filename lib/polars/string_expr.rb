@@ -792,15 +792,15 @@ module Polars
     #   df.select(Polars.col("json").str.json_decode(dtype))
     #   # =>
     #   # shape: (3, 1)
-    #   # ┌─────────────┐
-    #   # │ json        │
-    #   # │ ---         │
-    #   # │ struct[2]   │
-    #   # ╞═════════════╡
-    #   # │ {1,true}    │
-    #   # │ {null,null} │
-    #   # │ {2,false}   │
-    #   # └─────────────┘
+    #   # ┌───────────┐
+    #   # │ json      │
+    #   # │ ---       │
+    #   # │ struct[2] │
+    #   # ╞═══════════╡
+    #   # │ {1,true}  │
+    #   # │ null      │
+    #   # │ {2,false} │
+    #   # └───────────┘
     def json_decode(dtype = nil, infer_schema_length: 100)
       if !dtype.nil?
         dtype = Utils.rb_type_to_dtype(dtype)

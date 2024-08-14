@@ -348,12 +348,11 @@ impl RbDataFrame {
         value_name: Option<String>,
         variable_name: Option<String>,
     ) -> RbResult<Self> {
-        let args = UnpivotArgs {
+        let args = UnpivotArgsIR {
             on: strings_to_smartstrings(on),
             index: strings_to_smartstrings(index),
             value_name: value_name.map(|s| s.into()),
             variable_name: variable_name.map(|s| s.into()),
-            streamable: false,
         };
 
         let df = self.df.borrow().unpivot2(args).map_err(RbPolarsErr::from)?;

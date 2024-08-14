@@ -93,7 +93,7 @@ fn iterator_to_struct(
             .collect::<Vec<_>>()
     });
 
-    Ok(StructChunked::new(name, &fields)
+    Ok(StructChunked::from_series(name, &fields)
         .unwrap()
         .into_series()
         .into())

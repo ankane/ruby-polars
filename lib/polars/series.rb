@@ -1790,9 +1790,10 @@ module Polars
     # Use this to swiftly assert a Series does not have null values.
     #
     # @return [Boolean]
-    def has_validity
-      _s.has_validity
+    def has_nulls
+      _s.has_nulls
     end
+    alias_method :has_validity, :has_nulls
 
     # Check if the Series is empty.
     #

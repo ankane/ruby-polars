@@ -4,7 +4,7 @@ version = "0.12.0"
 license = "MIT"
 authors = ["Andrew Kane <andrew@ankane.org>"]
 edition = "2021"
-rust-version = "1.76.0"
+rust-version = "1.80.0"
 publish = false
 
 [lib]
@@ -15,14 +15,14 @@ ahash = "0.8"
 chrono = "0.4"
 either = "1.8"
 magnus = "0.7"
-polars-core = "=0.41.3"
-polars-parquet = "=0.41.3"
-polars-utils = "=0.41.3"
+polars-core = "=0.42.0"
+polars-parquet = "=0.42.0"
+polars-utils = "=0.42.0"
 serde_json = "1"
 smartstring = "1"
 
 [dependencies.polars]
-version = "=0.41.3"
+version = "=0.42.0"
 features = [
     "abs",
     "approx_unique",

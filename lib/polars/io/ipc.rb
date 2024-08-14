@@ -193,6 +193,18 @@ module Polars
     #   Try to memory map the file. This can greatly improve performance on repeated
     #   queries as the OS may cache pages.
     #   Only uncompressed IPC files can be memory mapped.
+    # @param hive_partitioning [Boolean]
+    #   Infer statistics and schema from Hive partitioned URL and use them
+    #   to prune reads. This is unset by default (i.e. `nil`), meaning it is
+    #   automatically enabled when a single directory is passed, and otherwise
+    #   disabled.
+    # @param hive_schema [Hash]
+    #   The column names and data types of the columns by which the data is partitioned.
+    #   If set to `nil` (default), the schema of the Hive partitions is inferred.
+    # @param try_parse_hive_dates [Boolean]
+    #   Whether to try parsing hive values as date/datetime types.
+    # @param include_file_paths [String]
+    #   Include the path of the source file(s) as a column with this name.
     #
     # @return [LazyFrame]
     def scan_ipc(
@@ -203,7 +215,11 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0,
       storage_options: nil,
-      memory_map: true
+      memory_map: true,
+      hive_partitioning: nil,
+      hive_schema: nil,
+      try_parse_hive_dates: true,
+      include_file_paths: nil
     )
       _scan_ipc_impl(
         source,
@@ -213,7 +229,11 @@ module Polars
         row_count_name: row_count_name,
         row_count_offset: row_count_offset,
         storage_options: storage_options,
-        memory_map: memory_map
+        memory_map: memory_map,
+        hive_partitioning: hive_partitioning,
+        hive_schema: hive_schema,
+        try_parse_hive_dates: try_parse_hive_dates,
+        include_file_paths: include_file_paths
       )
     end
 
@@ -226,7 +246,11 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0,
       storage_options: nil,
-      memory_map: true
+      memory_map: true,
+      hive_partitioning: nil,
+      hive_schema: nil,
+      try_parse_hive_dates: true,
+      include_file_paths: nil
     )
       if Utils.pathlike?(file)
         file = Utils.normalize_filepath(file)
@@ -239,7 +263,11 @@ module Polars
           cache,
           rechunk,
           Utils.parse_row_index_args(row_count_name, row_count_offset),
-          memory_map
+          memory_map,
+          hive_partitioning,
+          hive_schema,
+          try_parse_hive_dates,
+          include_file_paths
         )
       Utils.wrap_ldf(rblf)
     end

@@ -2526,11 +2526,15 @@ module Polars
       value_name: nil,
       streamable: true
     )
+      if !streamable
+        warn "The `streamable` parameter for `LazyFrame.unpivot` is deprecated"
+      end
+
       on = on.nil? ? [] : Utils._expand_selectors(self, on)
       index = index.nil? ? [] : Utils._expand_selectors(self, index)
 
       _from_rbldf(
-        _ldf.unpivot(on, index, value_name, variable_name, streamable)
+        _ldf.unpivot(on, index, value_name, variable_name)
       )
     end
     alias_method :melt, :unpivot

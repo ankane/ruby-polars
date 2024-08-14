@@ -722,9 +722,9 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("new_from_csv", function!(RbLazyFrame::new_from_csv, -1))?;
     class.define_singleton_method(
         "new_from_parquet",
-        function!(RbLazyFrame::new_from_parquet, 13),
+        function!(RbLazyFrame::new_from_parquet, 14),
     )?;
-    class.define_singleton_method("new_from_ipc", function!(RbLazyFrame::new_from_ipc, 6))?;
+    class.define_singleton_method("new_from_ipc", function!(RbLazyFrame::new_from_ipc, 10))?;
     class.define_method("write_json", method!(RbLazyFrame::write_json, 1))?;
     class.define_method("describe_plan", method!(RbLazyFrame::describe_plan, 0))?;
     class.define_method(
@@ -780,7 +780,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("drop_nulls", method!(RbLazyFrame::drop_nulls, 1))?;
     class.define_method("slice", method!(RbLazyFrame::slice, 2))?;
     class.define_method("tail", method!(RbLazyFrame::tail, 1))?;
-    class.define_method("unpivot", method!(RbLazyFrame::unpivot, 5))?;
+    class.define_method("unpivot", method!(RbLazyFrame::unpivot, 4))?;
     class.define_method("with_row_index", method!(RbLazyFrame::with_row_index, 2))?;
     class.define_method("drop", method!(RbLazyFrame::drop, 1))?;
     class.define_method("cast_all", method!(RbLazyFrame::cast_all, 2))?;
@@ -878,7 +878,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arg_max", method!(RbSeries::arg_max, 0))?;
     class.define_method("take_with_series", method!(RbSeries::take_with_series, 1))?;
     class.define_method("null_count", method!(RbSeries::null_count, 0))?;
-    class.define_method("has_validity", method!(RbSeries::has_validity, 0))?;
+    class.define_method("has_nulls", method!(RbSeries::has_nulls, 0))?;
     class.define_method("sample_n", method!(RbSeries::sample_n, 4))?;
     class.define_method("sample_frac", method!(RbSeries::sample_frac, 4))?;
     class.define_method("equals", method!(RbSeries::equals, 4))?;

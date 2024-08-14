@@ -158,6 +158,8 @@ module Polars
     #   Extra options that make sense for a particular storage connection.
     # @param low_memory [Boolean]
     #   Reduce memory pressure at the expense of performance.
+    # @param include_file_paths [String]
+    #  Include the path of the source file(s) as a column with this name.
     #
     # @return [LazyFrame]
     def scan_parquet(
@@ -170,7 +172,8 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0,
       storage_options: nil,
-      low_memory: false
+      low_memory: false,
+      include_file_paths: nil
     )
       if Utils.pathlike?(source)
         source = Utils.normalize_filepath(source)
@@ -186,7 +189,8 @@ module Polars
         row_count_offset: row_count_offset,
         storage_options: storage_options,
         low_memory: low_memory,
-        glob: glob
+        glob: glob,
+        include_file_paths: include_file_paths
       )
     end
 
@@ -203,7 +207,8 @@ module Polars
       low_memory: false,
       use_statistics: true,
       hive_partitioning: nil,
-      glob: true
+      glob: true,
+      include_file_paths: nil
     )
       rblf =
         RbLazyFrame.new_from_parquet(
@@ -219,7 +224,8 @@ module Polars
           hive_partitioning,
           nil,
           true,
-          glob
+          glob,
+          include_file_paths
         )
       Utils.wrap_ldf(rblf)
     end

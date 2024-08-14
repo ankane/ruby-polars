@@ -50,7 +50,7 @@ impl RbSeries {
     pub fn struct_unnest(&self) -> RbResult<RbDataFrame> {
         let binding = self.series.borrow();
         let ca = binding.struct_().map_err(RbPolarsErr::from)?;
-        let df: DataFrame = ca.clone().into();
+        let df: DataFrame = ca.clone().unnest();
         Ok(df.into())
     }
 
@@ -278,8 +278,8 @@ impl RbSeries {
         Ok(self.series.borrow().null_count())
     }
 
-    pub fn has_validity(&self) -> bool {
-        self.series.borrow().has_validity()
+    pub fn has_nulls(&self) -> bool {
+        self.series.borrow().has_nulls()
     }
 
     pub fn sample_n(

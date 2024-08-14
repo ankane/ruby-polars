@@ -7,15 +7,11 @@ impl RbExpr {
         self.inner == other.inner
     }
 
-    pub fn meta_pop(&self) -> RArray {
-        RArray::from_iter(
-            self.inner
-                .clone()
-                .meta()
-                .pop()
-                .into_iter()
-                .map(RbExpr::from),
-        )
+    pub fn meta_pop(&self) -> RbResult<RArray> {
+        let exprs = self.inner.clone().meta().pop().map_err(RbPolarsErr::from)?;
+        Ok(RArray::from_iter(
+            exprs.iter().map(|e| RbExpr::from(e.clone())),
+        ))
     }
 
     pub fn meta_root_names(&self) -> Vec<String> {

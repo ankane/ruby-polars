@@ -64,6 +64,6 @@ pub fn concat_df_horizontal(seq: RArray) -> RbResult<RbDataFrame> {
     for item in seq.into_iter() {
         dfs.push(get_df(item)?);
     }
-    let df = functions::concat_df_horizontal(&dfs).map_err(RbPolarsErr::from)?;
+    let df = functions::concat_df_horizontal(&dfs, true).map_err(RbPolarsErr::from)?;
     Ok(df.into())
 }
