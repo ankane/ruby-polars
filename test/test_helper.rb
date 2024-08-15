@@ -14,6 +14,10 @@ else
   ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ":memory:"
 end
 
+if ActiveSupport::VERSION::STRING.to_f == 7.2
+  ActiveSupport.to_time_preserves_timezone = true
+end
+
 ActiveRecord::Schema.define do
   create_table :users, force: true do |t|
     t.string :name
