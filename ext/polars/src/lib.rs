@@ -34,7 +34,7 @@ use sql::RbSQLContext;
 #[cfg(target_os = "linux")]
 use jemallocator::Jemalloc;
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
 use mimalloc::MiMalloc;
 
 #[global_allocator]
@@ -42,7 +42,7 @@ use mimalloc::MiMalloc;
 static GLOBAL: Jemalloc = Jemalloc;
 
 #[global_allocator]
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
 static GLOBAL: MiMalloc = MiMalloc;
 
 type RbResult<T> = Result<T, Error>;

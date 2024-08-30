@@ -22,10 +22,8 @@ jobs:
             setup: sudo ln -s /opt/osxcross/target/bin/x86_64-apple-darwin-strip /usr/local/bin/strip
           - platform: arm64-darwin
             target: aarch64-apple-darwin
-          # - platform: x64-mingw-ucrt
-          #   target: x86_64-pc-windows-gnu
-          # - platform: x64-mingw32
-          #   target: x86_64-pc-windows-gnu
+          - platform: x64-mingw-ucrt
+            target: x86_64-pc-windows-gnu
     runs-on: ubuntu-latest
     name: ${{ matrix.platform }}
     steps:

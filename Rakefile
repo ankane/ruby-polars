@@ -20,8 +20,7 @@ platforms = [
   "aarch64-linux-musl",
   "x86_64-darwin",
   "arm64-darwin",
-  "x64-mingw-ucrt",
-  "x64-mingw32"
+  "x64-mingw-ucrt"
 ]
 
 gemspec = Bundler.load_gemspec("polars-df.gemspec")

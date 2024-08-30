@@ -2,6 +2,7 @@
 
 - Updated Polars to 0.42.0
 - Added precompiled gem for Linux ARM MUSL
+- Added precompiled gem for Windows
 
 ## 0.12.0 (2024-07-11)
 
