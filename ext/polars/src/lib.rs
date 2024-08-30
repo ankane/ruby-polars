@@ -1,3 +1,4 @@
+mod allocator;
 mod batched_csv;
 mod conversion;
 mod dataframe;
@@ -30,20 +31,6 @@ use lazygroupby::RbLazyGroupBy;
 use magnus::{define_module, function, method, prelude::*, Error, Ruby};
 use series::RbSeries;
 use sql::RbSQLContext;
-
-#[cfg(target_os = "linux")]
-use jemallocator::Jemalloc;
-
-#[cfg(not(any(target_os = "linux", target_os = "windows")))]
-use mimalloc::MiMalloc;
-
-#[global_allocator]
-#[cfg(target_os = "linux")]
-static GLOBAL: Jemalloc = Jemalloc;
-
-#[global_allocator]
-#[cfg(not(any(target_os = "linux", target_os = "windows")))]
-static GLOBAL: MiMalloc = MiMalloc;
 
 type RbResult<T> = Result<T, Error>;
 
