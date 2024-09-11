@@ -1,3 +1,7 @@
+## 0.14.0 (unreleased)
+
+- Fixed `frac` option for `sample` method
+
 ## 0.13.0 (2024-09-04)
 
 - Updated Polars to 0.42.0
