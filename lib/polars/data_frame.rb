@@ -4234,7 +4234,7 @@ module Polars
       if n.nil? && !frac.nil?
         frac = Series.new("frac", [frac]) unless frac.is_a?(Series)
 
-        _from_rbdf(
+        return _from_rbdf(
           _df.sample_frac(frac._s, with_replacement, shuffle, seed)
         )
       end
