@@ -589,4 +589,9 @@ class DataFrameTest < Minitest::Test
     )
     df.pivot("subject", index: "name")
   end
+
+  def test_sample
+    df = Polars::DataFrame.new({a: [1, 2, 3, 4]})
+    assert_equal 2, df.sample(frac: 0.5).height
+  end
 end
