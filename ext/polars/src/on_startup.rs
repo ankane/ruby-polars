@@ -13,7 +13,7 @@ use crate::Wrap;
 
 pub(crate) fn register_object_builder() {
     if !registry::is_object_builder_registered() {
-        let object_builder = Box::new(|name: &str, capacity: usize| {
+        let object_builder = Box::new(|name: PlSmallStr, capacity: usize| {
             Box::new(ObjectChunkedBuilder::<ObjectValue>::new(name, capacity))
                 as Box<dyn AnonymousObjectBuilder>
         });

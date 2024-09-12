@@ -2606,12 +2606,12 @@ module Polars
     #   s.sign
     #   # =>
     #   # shape: (5,)
-    #   # Series: 'a' [i64]
+    #   # Series: 'a' [f64]
     #   # [
-    #   #         -1
-    #   #         0
-    #   #         0
-    #   #         1
+    #   #         -1.0
+    #   #         -0.0
+    #   #         0.0
+    #   #         1.0
     #   #         null
     #   # ]
     def sign

@@ -20,7 +20,6 @@ use polars::series::ops::NullBehavior;
 use polars_core::utils::arrow::array::Array;
 use polars_core::utils::materialize_dyn_int;
 use polars_utils::total_ord::{TotalEq, TotalHash};
-use smartstring::alias::String as SmartString;
 
 use crate::object::OBJECT_NAME;
 use crate::rb_modules::series;
@@ -84,14 +83,26 @@ pub(crate) fn to_series(s: RbSeries) -> Value {
         .unwrap()
 }
 
+impl TryConvert for Wrap<PlSmallStr> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        Ok(Wrap((&*String::try_convert(ob)?).into()))
+    }
+}
+
 impl TryConvert for Wrap<NullValues> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         if let Ok(s) = String::try_convert(ob) {
-            Ok(Wrap(NullValues::AllColumnsSingle(s)))
+            Ok(Wrap(NullValues::AllColumnsSingle((&*s).into())))
         } else if let Ok(s) = Vec::<String>::try_convert(ob) {
-            Ok(Wrap(NullValues::AllColumns(s)))
+            Ok(Wrap(NullValues::AllColumns(
+                s.into_iter().map(|x| (&*x).into()).collect(),
+            )))
         } else if let Ok(s) = Vec::<(String, String)>::try_convert(ob) {
-            Ok(Wrap(NullValues::Named(s)))
+            Ok(Wrap(NullValues::Named(
+                s.into_iter()
+                    .map(|(a, b)| ((&*a).into(), (&*b).into()))
+                    .collect(),
+            )))
         } else {
             Err(RbPolarsErr::other(
                 "could not extract value from null_values argument".into(),
@@ -189,7 +200,7 @@ impl IntoValue for Wrap<DataType> {
             DataType::Datetime(tu, tz) => {
                 let datetime_class = pl.const_get::<_, Value>("Datetime").unwrap();
                 datetime_class
-                    .funcall::<_, _, Value>("new", (tu.to_ascii(), tz))
+                    .funcall::<_, _, Value>("new", (tu.to_ascii(), tz.as_deref()))
                     .unwrap()
             }
             DataType::Duration(tu) => {
@@ -210,7 +221,9 @@ impl IntoValue for Wrap<DataType> {
                 // we should always have an initialized rev_map coming from rust
                 let categories = rev_map.as_ref().unwrap().get_categories();
                 let class = pl.const_get::<_, Value>("Enum").unwrap();
-                let s = Series::from_arrow("category", categories.to_boxed()).unwrap();
+                let s =
+                    Series::from_arrow(PlSmallStr::from_static("category"), categories.to_boxed())
+                        .unwrap();
                 let series = to_series(s.into());
                 class.funcall::<_, _, Value>("new", (series,)).unwrap()
             }
@@ -222,7 +235,7 @@ impl IntoValue for Wrap<DataType> {
                 let field_class = pl.const_get::<_, Value>("Field").unwrap();
                 let iter = fields.iter().map(|fld| {
                     let name = fld.name().as_str();
-                    let dtype = Wrap(fld.data_type().clone());
+                    let dtype = Wrap(fld.dtype().clone());
                     field_class
                         .funcall::<_, _, Value>("new", (name, dtype))
                         .unwrap()
@@ -276,7 +289,7 @@ impl TryConvert for Wrap<Field> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let name: String = ob.funcall("name", ())?;
         let dtype: Wrap<DataType> = ob.funcall("dtype", ())?;
-        Ok(Wrap(Field::new(&name, dtype.0)))
+        Ok(Wrap(Field::new((&*name).into(), dtype.0)))
     }
 }
 
@@ -341,7 +354,7 @@ impl TryConvert for Wrap<DataType> {
                     let s = get_series(categories)?;
                     let ca = s.str().map_err(RbPolarsErr::from)?;
                     let categories = ca.downcast_iter().next().unwrap().clone();
-                    create_enum_data_type(categories)
+                    create_enum_dtype(categories)
                 }
                 "Polars::Date" => DataType::Date,
                 "Polars::Time" => DataType::Time,
@@ -357,8 +370,8 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Datetime" => {
                     let time_unit: Value = ob.funcall("time_unit", ()).unwrap();
                     let time_unit = Wrap::<TimeUnit>::try_convert(time_unit)?.0;
-                    let time_zone = ob.funcall("time_zone", ())?;
-                    DataType::Datetime(time_unit, time_zone)
+                    let time_zone: Option<String> = ob.funcall("time_zone", ())?;
+                    DataType::Datetime(time_unit, time_zone.as_deref().map(|x| x.into()))
                 }
                 "Polars::Decimal" => {
                     let precision = ob.funcall("precision", ())?;
@@ -463,7 +476,7 @@ impl TryConvert for Wrap<Schema> {
 
         let mut schema = Vec::new();
         dict.foreach(|key: String, val: Wrap<DataType>| {
-            schema.push(Ok(Field::new(&key, val.0)));
+            schema.push(Ok(Field::new((&*key).into(), val.0)));
             Ok(ForEach::Continue)
         })
         .unwrap();
@@ -1053,14 +1066,6 @@ pub fn parse_parquet_compression(
     Ok(parsed)
 }
 
-pub(crate) fn strings_to_smartstrings<I, S>(container: I) -> Vec<SmartString>
-where
-    I: IntoIterator<Item = S>,
-    S: AsRef<str>,
-{
-    container.into_iter().map(|s| s.as_ref().into()).collect()
-}
-
 impl TryConvert for Wrap<NonZeroUsize> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let v = usize::try_convert(ob)?;
@@ -1068,4 +1073,15 @@ impl TryConvert for Wrap<NonZeroUsize> {
             .map(Wrap)
             .ok_or(RbValueError::new_err("must be non-zero".into()))
     }
+}
+
+pub(crate) fn strings_to_pl_smallstr<I, S>(container: I) -> Vec<PlSmallStr>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<str>,
+{
+    container
+        .into_iter()
+        .map(|s| PlSmallStr::from_str(s.as_ref()))
+        .collect()
 }

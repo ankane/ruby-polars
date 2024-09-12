@@ -161,11 +161,11 @@ impl RbSeries {
     }
 
     pub fn name(&self) -> String {
-        self.series.borrow().name().into()
+        self.series.borrow().name().to_string()
     }
 
     pub fn rename(&self, name: String) {
-        self.series.borrow_mut().rename(&name);
+        self.series.borrow_mut().rename(name.into());
     }
 
     pub fn dtype(&self) -> Value {
@@ -257,7 +257,7 @@ impl RbSeries {
         let out = self
             .series
             .borrow()
-            .value_counts(sort, parallel, name, normalize)
+            .value_counts(sort, parallel, name.into(), normalize)
             .map_err(RbPolarsErr::from)?;
         Ok(out.into())
     }
@@ -395,7 +395,7 @@ impl RbSeries {
                     .0
             });
             avs.extend(iter);
-            return Ok(Series::new(&self.name(), &avs).into());
+            return Ok(Series::new(self.name().into(), &avs).into());
         }
 
         let out = match output_type {

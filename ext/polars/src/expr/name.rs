@@ -1,5 +1,6 @@
 use magnus::{block::Proc, value::Opaque, Ruby};
 use polars::prelude::*;
+use polars_utils::format_pl_smallstr;
 
 use crate::RbExpr;
 
@@ -15,9 +16,9 @@ impl RbExpr {
             .name()
             .map(move |name| {
                 let lambda = Ruby::get().unwrap().get_inner(lambda);
-                let out = lambda.call::<_, String>((name,));
+                let out = lambda.call::<_, String>((name.as_str(),));
                 match out {
-                    Ok(out) => Ok(out),
+                    Ok(out) => Ok(format_pl_smallstr!("{}", out)),
                     Err(e) => Err(PolarsError::ComputeError(
                         format!("Ruby function in 'name.map' produced an error: {}.", e).into(),
                     )),

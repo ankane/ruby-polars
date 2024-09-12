@@ -29,8 +29,12 @@ impl RbExpr {
         self.inner.clone().dt().with_time_unit(tu.0).into()
     }
 
-    pub fn dt_convert_time_zone(&self, tz: TimeZone) -> Self {
-        self.inner.clone().dt().convert_time_zone(tz).into()
+    pub fn dt_convert_time_zone(&self, time_zone: String) -> Self {
+        self.inner
+            .clone()
+            .dt()
+            .convert_time_zone(time_zone.into())
+            .into()
     }
 
     pub fn dt_cast_time_unit(&self, tu: Wrap<TimeUnit>) -> Self {
@@ -46,7 +50,11 @@ impl RbExpr {
         self.inner
             .clone()
             .dt()
-            .replace_time_zone(time_zone, ambiguous.inner.clone(), non_existent.0)
+            .replace_time_zone(
+                time_zone.map(|x| x.into()),
+                ambiguous.inner.clone(),
+                non_existent.0,
+            )
             .into()
     }
 

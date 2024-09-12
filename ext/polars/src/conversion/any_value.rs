@@ -51,7 +51,10 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
         AnyValue::Datetime(v, time_unit, time_zone) => {
             let time_unit = time_unit.to_ascii();
             utils()
-                .funcall("_to_ruby_datetime", (v, time_unit, time_zone.clone()))
+                .funcall(
+                    "_to_ruby_datetime",
+                    (v, time_unit, time_zone.as_ref().map(|v| v.to_string())),
+                )
                 .unwrap()
         }
         AnyValue::Duration(v, time_unit) => {
@@ -122,7 +125,10 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
     fn get_list(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
         let v = RArray::from_value(ob).unwrap();
         if v.is_empty() {
-            Ok(AnyValue::List(Series::new_empty("", &DataType::Null)))
+            Ok(AnyValue::List(Series::new_empty(
+                PlSmallStr::EMPTY,
+                &DataType::Null,
+            )))
         } else {
             let list = v;
 
@@ -142,7 +148,7 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
                 avs.push(Wrap::<AnyValue>::try_convert(item)?.0)
             }
 
-            let s = Series::from_any_values_and_dtype("", &avs, &dtype, true)
+            let s = Series::from_any_values_and_dtype(PlSmallStr::EMPTY, &avs, &dtype, true)
                 .map_err(RbPolarsErr::from)?;
             Ok(AnyValue::List(s))
         }
@@ -162,7 +168,7 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
             let key = String::try_convert(k)?;
             let val = Wrap::<AnyValue>::try_convert(v)?.0;
             let dtype = DataType::from(&val);
-            keys.push(Field::new(&key, dtype));
+            keys.push(Field::new(key.into(), dtype));
             vals.push(val);
             Ok(ForEach::Continue)
         })?;

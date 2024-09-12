@@ -28,7 +28,7 @@ fn iterator_to_struct(
     it: impl Iterator<Item = Option<Value>>,
     init_null_count: usize,
     first_value: AnyValue,
-    name: &str,
+    name: PlSmallStr,
     capacity: usize,
 ) -> RbResult<RbSeries> {
     let (vals, flds) = match &first_value {
@@ -89,7 +89,7 @@ fn iterator_to_struct(
         items
             .par_iter()
             .zip(flds)
-            .map(|(av, fld)| Series::new(fld.name(), av))
+            .map(|(av, fld)| Series::new(fld.name().clone(), av))
             .collect::<Vec<_>>()
     });
 
@@ -103,7 +103,7 @@ fn iterator_to_primitive<T>(
     it: impl Iterator<Item = Option<T::Native>>,
     init_null_count: usize,
     first_value: Option<T::Native>,
-    name: &str,
+    name: PlSmallStr,
     capacity: usize,
 ) -> ChunkedArray<T>
 where
@@ -136,7 +136,7 @@ fn iterator_to_bool(
     it: impl Iterator<Item = Option<bool>>,
     init_null_count: usize,
     first_value: Option<bool>,
-    name: &str,
+    name: PlSmallStr,
     capacity: usize,
 ) -> ChunkedArray<BooleanType> {
     // safety: we know the iterators len
@@ -166,7 +166,7 @@ fn iterator_to_object(
     it: impl Iterator<Item = Option<ObjectValue>>,
     init_null_count: usize,
     first_value: Option<ObjectValue>,
-    name: &str,
+    name: PlSmallStr,
     capacity: usize,
 ) -> ObjectChunked<ObjectValue> {
     // safety: we know the iterators len
@@ -196,7 +196,7 @@ fn iterator_to_utf8(
     it: impl Iterator<Item = Option<String>>,
     init_null_count: usize,
     first_value: Option<&str>,
-    name: &str,
+    name: PlSmallStr,
     capacity: usize,
 ) -> StringChunked {
     let first_value = first_value.map(|v| v.to_string());
@@ -229,7 +229,7 @@ fn iterator_to_list(
     it: impl Iterator<Item = Option<Series>>,
     init_null_count: usize,
     first_value: Option<&Series>,
-    name: &str,
+    name: PlSmallStr,
     capacity: usize,
 ) -> RbResult<ListChunked> {
     let mut builder =
@@ -246,7 +246,7 @@ fn iterator_to_list(
             Some(s) => {
                 if s.len() == 0 && s.dtype() != dt {
                     builder
-                        .append_series(&Series::full_null("", 0, dt))
+                        .append_series(&Series::full_null(PlSmallStr::EMPTY, 0, dt))
                         .unwrap()
                 } else {
                     builder.append_series(&s).map_err(RbPolarsErr::from)?

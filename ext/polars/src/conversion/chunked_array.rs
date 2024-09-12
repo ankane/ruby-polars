@@ -9,7 +9,7 @@ use crate::RbResult;
 impl TryConvert for Wrap<StringChunked> {
     fn try_convert(obj: Value) -> RbResult<Self> {
         let (seq, len) = get_rbseq(obj)?;
-        let mut builder = StringChunkedBuilder::new("", len);
+        let mut builder = StringChunkedBuilder::new(PlSmallStr::EMPTY, len);
 
         for res in seq.into_iter() {
             let item = res;
@@ -25,7 +25,7 @@ impl TryConvert for Wrap<StringChunked> {
 impl TryConvert for Wrap<BinaryChunked> {
     fn try_convert(obj: Value) -> RbResult<Self> {
         let (seq, len) = get_rbseq(obj)?;
-        let mut builder = BinaryChunkedBuilder::new("", len);
+        let mut builder = BinaryChunkedBuilder::new(PlSmallStr::EMPTY, len);
 
         for res in seq.into_iter() {
             let item = res;
@@ -90,7 +90,7 @@ impl IntoValue for Wrap<&DatetimeChunked> {
     fn into_value_with(self, _: &Ruby) -> Value {
         let utils = utils();
         let time_unit = Wrap(self.0.time_unit()).into_value();
-        let time_zone = self.0.time_zone().clone().into_value();
+        let time_zone = self.0.time_zone().as_deref().map(|v| v.into_value());
         let iter = self.0.into_iter().map(|opt_v| {
             opt_v.map(|v| {
                 utils

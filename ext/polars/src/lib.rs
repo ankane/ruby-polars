@@ -711,7 +711,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "new_from_parquet",
         function!(RbLazyFrame::new_from_parquet, 14),
     )?;
-    class.define_singleton_method("new_from_ipc", function!(RbLazyFrame::new_from_ipc, 10))?;
+    class.define_singleton_method("new_from_ipc", function!(RbLazyFrame::new_from_ipc, 9))?;
     class.define_method("write_json", method!(RbLazyFrame::write_json, 1))?;
     class.define_method("describe_plan", method!(RbLazyFrame::describe_plan, 0))?;
     class.define_method(

@@ -189,10 +189,6 @@ module Polars
     #   Offset to start the row_count column (only use if the name is set).
     # @param storage_options [Hash]
     #   Extra options that make sense for a particular storage connection.
-    # @param memory_map [Boolean]
-    #   Try to memory map the file. This can greatly improve performance on repeated
-    #   queries as the OS may cache pages.
-    #   Only uncompressed IPC files can be memory mapped.
     # @param hive_partitioning [Boolean]
     #   Infer statistics and schema from Hive partitioned URL and use them
     #   to prune reads. This is unset by default (i.e. `nil`), meaning it is
@@ -215,7 +211,6 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0,
       storage_options: nil,
-      memory_map: true,
       hive_partitioning: nil,
       hive_schema: nil,
       try_parse_hive_dates: true,
@@ -229,7 +224,6 @@ module Polars
         row_count_name: row_count_name,
         row_count_offset: row_count_offset,
         storage_options: storage_options,
-        memory_map: memory_map,
         hive_partitioning: hive_partitioning,
         hive_schema: hive_schema,
         try_parse_hive_dates: try_parse_hive_dates,
@@ -246,7 +240,6 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0,
       storage_options: nil,
-      memory_map: true,
       hive_partitioning: nil,
       hive_schema: nil,
       try_parse_hive_dates: true,
@@ -263,7 +256,6 @@ module Polars
           cache,
           rechunk,
           Utils.parse_row_index_args(row_count_name, row_count_offset),
-          memory_map,
           hive_partitioning,
           hive_schema,
           try_parse_hive_dates,

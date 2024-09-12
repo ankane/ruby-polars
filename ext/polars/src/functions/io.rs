@@ -11,9 +11,9 @@ pub fn read_ipc_schema(rb_f: Value) -> RbResult<RHash> {
     let metadata = read_file_metadata(&mut r).map_err(RbPolarsErr::from)?;
 
     let dict = RHash::new();
-    for field in &metadata.schema.fields {
-        let dt: Wrap<DataType> = Wrap((&field.data_type).into());
-        dict.aset(field.name.clone(), dt)?;
+    for field in metadata.schema.iter_values() {
+        let dt: Wrap<DataType> = Wrap((&field.dtype).into());
+        dict.aset(field.name.as_str(), dt)?;
     }
     Ok(dict)
 }
@@ -26,9 +26,9 @@ pub fn read_parquet_schema(rb_f: Value) -> RbResult<RHash> {
     let arrow_schema = infer_schema(&metadata).map_err(RbPolarsErr::from)?;
 
     let dict = RHash::new();
-    for field in arrow_schema.fields {
-        let dt: Wrap<DataType> = Wrap((&field.data_type).into());
-        dict.aset(field.name, dt)?;
+    for field in arrow_schema.iter_values() {
+        let dt: Wrap<DataType> = Wrap((&field.dtype).into());
+        dict.aset(field.name.as_str(), dt)?;
     }
     Ok(dict)
 }

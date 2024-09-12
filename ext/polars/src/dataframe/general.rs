@@ -9,6 +9,7 @@ use crate::map::dataframe::{
     apply_lambda_unknown, apply_lambda_with_bool_out_type, apply_lambda_with_primitive_out_type,
     apply_lambda_with_utf8_out_type,
 };
+use crate::prelude::strings_to_pl_smallstr;
 use crate::series::{to_rbseries_collection, to_series_collection};
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 
@@ -254,7 +255,7 @@ impl RbDataFrame {
     }
 
     pub fn gather(&self, indices: Vec<IdxSize>) -> RbResult<Self> {
-        let indices = IdxCa::from_vec("", indices);
+        let indices = IdxCa::from_vec("".into(), indices);
         let df = self.df.borrow().take(&indices).map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
     }
@@ -332,7 +333,7 @@ impl RbDataFrame {
         let df = self
             .df
             .borrow()
-            .with_row_index(&name, offset)
+            .with_row_index(name.into(), offset)
             .map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }
@@ -349,8 +350,8 @@ impl RbDataFrame {
         variable_name: Option<String>,
     ) -> RbResult<Self> {
         let args = UnpivotArgsIR {
-            on: strings_to_smartstrings(on),
-            index: strings_to_smartstrings(index),
+            on: strings_to_pl_smallstr(on),
+            index: strings_to_pl_smallstr(index),
             value_name: value_name.map(|s| s.into()),
             variable_name: variable_name.map(|s| s.into()),
         };
@@ -581,7 +582,7 @@ impl RbDataFrame {
     }
 
     pub fn to_struct(&self, name: String) -> RbSeries {
-        let s = self.df.borrow().clone().into_struct(&name);
+        let s = self.df.borrow().clone().into_struct(name.into());
         s.into_series().into()
     }
 

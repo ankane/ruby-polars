@@ -54,7 +54,7 @@ impl RbBatchedCsv {
         let null_values = null_values.map(|w| w.0);
         let eol_char = eol_char.as_bytes()[0];
         let row_index = row_index.map(|(name, offset)| RowIndex {
-            name: Arc::from(name.as_str()),
+            name: name.into(),
             offset,
         });
         let quote_char = if let Some(s) = quote_char {
@@ -72,7 +72,7 @@ impl RbBatchedCsv {
                 .iter()
                 .map(|(name, dtype)| {
                     let dtype = dtype.0.clone();
-                    Field::new(name, dtype)
+                    Field::new((&**name).into(), dtype)
                 })
                 .collect::<Schema>()
         });
@@ -95,7 +95,7 @@ impl RbBatchedCsv {
             .with_projection(projection.map(Arc::new))
             .with_rechunk(rechunk)
             .with_chunk_size(chunk_size)
-            .with_columns(columns.map(Arc::from))
+            .with_columns(columns.map(|x| x.into_iter().map(PlSmallStr::from_string).collect()))
             .with_n_threads(n_threads)
             .with_dtype_overwrite(overwrite_dtype_slice.map(Arc::new))
             .with_low_memory(low_memory)

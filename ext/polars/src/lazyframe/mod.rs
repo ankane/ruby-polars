@@ -59,7 +59,7 @@ impl RbLazyFrame {
     ) -> RbResult<Self> {
         let batch_size = batch_size.map(|v| v.0);
         let row_index = row_index.map(|(name, offset)| RowIndex {
-            name: Arc::from(name.as_str()),
+            name: name.into(),
             offset,
         });
 
@@ -106,14 +106,14 @@ impl RbLazyFrame {
         let separator = separator.as_bytes()[0];
         let eol_char = eol_char.as_bytes()[0];
         let row_index = row_index.map(|(name, offset)| RowIndex {
-            name: Arc::from(name.as_str()),
+            name: name.into(),
             offset,
         });
 
         let overwrite_dtype = overwrite_dtype.map(|overwrite_dtype| {
             overwrite_dtype
                 .into_iter()
-                .map(|(name, dtype)| Field::new(&name, dtype.0))
+                .map(|(name, dtype)| Field::new((&*name).into(), dtype.0))
                 .collect::<Schema>()
         });
 
@@ -128,7 +128,7 @@ impl RbLazyFrame {
             .with_dtype_overwrite(overwrite_dtype.map(Arc::new))
             // TODO add with_schema
             .with_low_memory(low_memory)
-            .with_comment_prefix(comment_prefix.as_deref())
+            .with_comment_prefix(comment_prefix.map(|x| x.into()))
             .with_quote_char(quote_char)
             .with_eol_char(eol_char)
             .with_rechunk(rechunk)
@@ -176,7 +176,7 @@ impl RbLazyFrame {
         };
 
         let row_index = row_index.map(|(name, offset)| RowIndex {
-            name: Arc::from(name.as_str()),
+            name: name.into(),
             offset,
         });
         let hive_options = HiveOptions {
@@ -197,7 +197,7 @@ impl RbLazyFrame {
             use_statistics,
             hive_options,
             glob,
-            include_file_paths: include_file_paths.map(Arc::from),
+            include_file_paths: include_file_paths.map(|x| x.into()),
         };
 
         let lf = if path.is_some() {
@@ -216,14 +216,13 @@ impl RbLazyFrame {
         cache: bool,
         rechunk: bool,
         row_index: Option<(String, IdxSize)>,
-        memory_map: bool,
         hive_partitioning: Option<bool>,
         hive_schema: Option<Wrap<Schema>>,
         try_parse_hive_dates: bool,
         include_file_paths: Option<String>,
     ) -> RbResult<Self> {
         let row_index = row_index.map(|(name, offset)| RowIndex {
-            name: Arc::from(name.as_str()),
+            name: name.into(),
             offset,
         });
 
@@ -239,10 +238,9 @@ impl RbLazyFrame {
             cache,
             rechunk,
             row_index,
-            memory_map,
             cloud_options: None,
             hive_options,
-            include_file_paths: include_file_paths.map(Arc::from),
+            include_file_paths: include_file_paths.map(|x| x.into()),
         };
         let lf = LazyFrame::scan_ipc(path, args).map_err(RbPolarsErr::from)?;
         Ok(lf.into())
@@ -593,8 +591,8 @@ impl RbLazyFrame {
             .force_parallel(force_parallel)
             .how(JoinType::AsOf(AsOfOptions {
                 strategy: strategy.0,
-                left_by: left_by.map(strings_to_smartstrings),
-                right_by: right_by.map(strings_to_smartstrings),
+                left_by: left_by.map(strings_to_pl_smallstr),
+                right_by: right_by.map(strings_to_pl_smallstr),
                 tolerance: tolerance.map(|t| t.0.into_static().unwrap()),
                 tolerance_str: tolerance_str.map(|s| s.into()),
             }))
@@ -744,8 +742,8 @@ impl RbLazyFrame {
     ) -> RbResult<Self> {
         let ldf = self.ldf.borrow().clone();
         Ok(match maintain_order {
-            true => ldf.unique_stable(subset, keep.0),
-            false => ldf.unique(subset, keep.0),
+            true => ldf.unique_stable_generic(subset, keep.0),
+            false => ldf.unique_generic(subset, keep.0),
         }
         .into())
     }
@@ -805,7 +803,11 @@ impl RbLazyFrame {
     }
 
     pub fn collect_schema(&self) -> RbResult<RHash> {
-        let schema = self.ldf.borrow_mut().schema().map_err(RbPolarsErr::from)?;
+        let schema = self
+            .ldf
+            .borrow_mut()
+            .collect_schema()
+            .map_err(RbPolarsErr::from)?;
 
         let schema_dict = RHash::new();
         schema.iter_fields().for_each(|fld| {
@@ -813,7 +815,7 @@ impl RbLazyFrame {
             schema_dict
                 .aset::<String, Value>(
                     fld.name().to_string(),
-                    Wrap(fld.data_type().clone()).into_value(),
+                    Wrap(fld.dtype().clone()).into_value(),
                 )
                 .unwrap();
         });

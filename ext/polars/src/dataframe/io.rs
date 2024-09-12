@@ -50,7 +50,7 @@ impl RbDataFrame {
         let null_values = null_values.map(|w| w.0);
         let eol_char = eol_char.as_bytes()[0];
         let row_index = row_index.map(|(name, offset)| RowIndex {
-            name: Arc::from(name.as_str()),
+            name: name.into(),
             offset,
         });
         let quote_char = if let Some(s) = quote_char {
@@ -68,7 +68,7 @@ impl RbDataFrame {
                 .iter()
                 .map(|(name, dtype)| {
                     let dtype = dtype.0.clone();
-                    Field::new(name, dtype)
+                    Field::new((&**name).into(), dtype)
                 })
                 .collect::<Schema>()
         });
@@ -91,7 +91,7 @@ impl RbDataFrame {
             .with_projection(projection.map(Arc::new))
             .with_rechunk(rechunk)
             .with_chunk_size(chunk_size)
-            .with_columns(columns.map(Arc::from))
+            .with_columns(columns.map(|x| x.into_iter().map(|x| x.into()).collect()))
             .with_n_threads(n_threads)
             .with_schema_overwrite(overwrite_dtype.map(Arc::new))
             .with_dtype_overwrite(overwrite_dtype_slice.map(Arc::new))
@@ -135,7 +135,7 @@ impl RbDataFrame {
         use EitherRustRubyFile::*;
 
         let row_index = row_index.map(|(name, offset)| RowIndex {
-            name: Arc::from(name.as_str()),
+            name: name.into(),
             offset,
         });
         let result = match get_either_file(rb_f, false)? {
@@ -225,7 +225,7 @@ impl RbDataFrame {
         _memory_map: bool,
     ) -> RbResult<Self> {
         let row_index = row_index.map(|(name, offset)| RowIndex {
-            name: Arc::from(name.as_str()),
+            name: name.into(),
             offset,
         });
         let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
@@ -252,7 +252,7 @@ impl RbDataFrame {
         rechunk: bool,
     ) -> RbResult<Self> {
         let row_index = row_index.map(|(name, offset)| RowIndex {
-            name: Arc::from(name.as_str()),
+            name: name.into(),
             offset,
         });
         // rb_f = read_if_bytesio(rb_f);

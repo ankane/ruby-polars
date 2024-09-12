@@ -1,4 +1,4 @@
-use magnus::{prelude::*, RArray};
+use magnus::{prelude::*, RArray, RString};
 use polars_core::prelude::*;
 
 use crate::any_value::rb_object_to_any_value;
@@ -10,7 +10,7 @@ use crate::{RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
 impl RbSeries {
     pub fn new_opt_bool(name: String, obj: RArray, strict: bool) -> RbResult<RbSeries> {
         let len = obj.len();
-        let mut builder = BooleanChunkedBuilder::new(&name, len);
+        let mut builder = BooleanChunkedBuilder::new(name.into(), len);
 
         unsafe {
             for item in obj.as_slice().iter() {
@@ -43,7 +43,7 @@ where
     T::Native: magnus::TryConvert,
 {
     let len = values.len();
-    let mut builder = PrimitiveChunkedBuilder::<T>::new(name, len);
+    let mut builder = PrimitiveChunkedBuilder::<T>::new(name.into(), len);
 
     for res in values.into_iter() {
         let value = res;
@@ -96,7 +96,7 @@ impl RbSeries {
         // from anyvalues is fallible
         let result = any_values_result.and_then(|avs| {
             let avs = slice_extract_wrapped(&avs);
-            let s = Series::from_any_values(&name, avs, strict).map_err(|e| {
+            let s = Series::from_any_values(name.clone().into(), avs, strict).map_err(|e| {
                 RbTypeError::new_err(format!(
                     "{e}\n\nHint: Try setting `strict: false` to allow passing data with mixed types."
                 ))
@@ -122,30 +122,57 @@ impl RbSeries {
             .into_iter()
             .map(|v| rb_object_to_any_value(v, strict))
             .collect::<RbResult<Vec<AnyValue>>>()?;
-        let s = Series::from_any_values_and_dtype(&name, any_values.as_slice(), &dtype.0, strict)
-            .map_err(|e| {
-            RbTypeError::new_err(format!(
+        let s =
+            Series::from_any_values_and_dtype(name.into(), any_values.as_slice(), &dtype.0, strict)
+                .map_err(|e| {
+                    RbTypeError::new_err(format!(
                 "{e}\n\nHint: Try setting `strict: false` to allow passing data with mixed types."
             ))
-        })?;
+                })?;
         Ok(s.into())
     }
 
-    pub fn new_str(name: String, val: Wrap<StringChunked>, _strict: bool) -> Self {
-        let mut s = val.0.into_series();
-        s.rename(&name);
-        RbSeries::new(s)
-    }
+    pub fn new_str(name: String, values: RArray, _strict: bool) -> RbResult<Self> {
+        let len = values.len();
+        let mut builder = StringChunkedBuilder::new(name.into(), len);
 
-    pub fn new_binary(name: String, val: Wrap<BinaryChunked>, _strict: bool) -> Self {
-        let mut s = val.0.into_series();
-        s.rename(&name);
-        RbSeries::new(s)
-    }
+        for res in values.into_iter() {
+            let value = res;
+            if value.is_nil() {
+                builder.append_null()
+            } else {
+                let v = String::try_convert(value)?;
+                builder.append_value(v)
+            }
+        }
 
-    pub fn new_null(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
-        let s = Series::new_null(&name, val.len());
+        let ca = builder.finish();
+        let s = ca.into_series();
         Ok(s.into())
+    }
+
+    pub fn new_binary(name: String, values: RArray, _strict: bool) -> RbResult<Self> {
+        let len = values.len();
+        let mut builder = BinaryChunkedBuilder::new(name.into(), len);
+
+        for res in values.into_iter() {
+            let value = res;
+            if value.is_nil() {
+                builder.append_null()
+            } else {
+                let v = RString::try_convert(value)?;
+                builder.append_value(unsafe { v.as_slice() })
+            }
+        }
+
+        let ca = builder.finish();
+        let s = ca.into_series();
+        Ok(s.into())
+    }
+
+    pub fn new_null(name: String, values: RArray, _strict: bool) -> RbResult<Self> {
+        let len = values.len();
+        Ok(Series::new_null(name.into(), len).into())
     }
 
     pub fn new_object(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
@@ -153,13 +180,13 @@ impl RbSeries {
             .into_iter()
             .map(ObjectValue::from)
             .collect::<Vec<ObjectValue>>();
-        let s = ObjectChunked::<ObjectValue>::new_from_vec(&name, val).into_series();
+        let s = ObjectChunked::<ObjectValue>::new_from_vec(name.into(), val).into_series();
         Ok(s.into())
     }
 
     pub fn new_series_list(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
         let series_vec = to_series_collection(val)?;
-        Ok(Series::new(&name, &series_vec).into())
+        Ok(Series::new(name.into(), &series_vec).into())
     }
 
     pub fn new_array(
@@ -171,7 +198,7 @@ impl RbSeries {
     ) -> RbResult<Self> {
         let val = vec_wrap_any_value(val)?;
         let val = vec_extract_wrapped(val);
-        let out = Series::new(&name, &val);
+        let out = Series::new(name.into(), &val);
         match out.dtype() {
             DataType::List(list_inner) => {
                 let out = out
@@ -199,7 +226,7 @@ impl RbSeries {
         dtype: Wrap<DataType>,
     ) -> RbResult<Self> {
         let av = val.0;
-        Ok(Series::new(&name, &[av])
+        Ok(Series::new(name.into(), &[av])
             .cast(&dtype.0)
             .map_err(RbPolarsErr::from)?
             .new_from_index(0, n)

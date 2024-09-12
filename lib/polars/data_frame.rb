@@ -2426,15 +2426,15 @@ module Polars
     #   df.map_rows { |t| t[0] * 2 + t[1] }
     #   # =>
     #   # shape: (3, 1)
-    #   # ┌───────┐
-    #   # │ apply │
-    #   # │ ---   │
-    #   # │ i64   │
-    #   # ╞═══════╡
-    #   # │ 1     │
-    #   # │ 9     │
-    #   # │ 14    │
-    #   # └───────┘
+    #   # ┌─────┐
+    #   # │ map │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 9   │
+    #   # │ 14  │
+    #   # └─────┘
     def map_rows(return_dtype: nil, inference_size: 256, &f)
       out, is_df = _df.map_rows(f, return_dtype, inference_size)
       if is_df

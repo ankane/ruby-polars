@@ -173,7 +173,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
                 null_count += 1
             }
         }
-        Ok(Self::full_null(self.name(), self.len())
+        Ok(Self::full_null(self.name().clone(), self.len())
             .into_series()
             .into())
     }
@@ -190,13 +190,25 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
                 .into_no_null_iter()
                 .skip(init_null_count + skip)
                 .map(|val| call_lambda(lambda, val).ok());
-            iterator_to_struct(it, init_null_count, first_value, self.name(), self.len())
+            iterator_to_struct(
+                it,
+                init_null_count,
+                first_value,
+                self.name().clone(),
+                self.len(),
+            )
         } else {
             let it = self
                 .into_iter()
                 .skip(init_null_count + skip)
                 .map(|opt_val| opt_val.and_then(|val| call_lambda(lambda, val).ok()));
-            iterator_to_struct(it, init_null_count, first_value, self.name(), self.len())
+            iterator_to_struct(
+                it,
+                init_null_count,
+                first_value,
+                self.name().clone(),
+                self.len(),
+            )
         }
     }
 
@@ -212,7 +224,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
     {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
-            Ok(ChunkedArray::full_null(self.name(), self.len()))
+            Ok(ChunkedArray::full_null(self.name().clone(), self.len()))
         } else if !self.has_nulls() {
             let it = self
                 .into_no_null_iter()
@@ -222,7 +234,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         } else {
@@ -234,7 +246,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         }
@@ -248,7 +260,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
     ) -> RbResult<BooleanChunked> {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
-            Ok(ChunkedArray::full_null(self.name(), self.len()))
+            Ok(ChunkedArray::full_null(self.name().clone(), self.len()))
         } else if !self.has_nulls() {
             let it = self
                 .into_no_null_iter()
@@ -258,7 +270,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         } else {
@@ -270,7 +282,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         }
@@ -284,7 +296,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
     ) -> RbResult<StringChunked> {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
-            Ok(ChunkedArray::full_null(self.name(), self.len()))
+            Ok(ChunkedArray::full_null(self.name().clone(), self.len()))
         } else if !self.has_nulls() {
             let it = self
                 .into_no_null_iter()
@@ -295,7 +307,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         } else {
@@ -307,7 +319,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         }
@@ -322,7 +334,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
     ) -> RbResult<ListChunked> {
         let skip = 1;
         if init_null_count == self.len() {
-            Ok(ChunkedArray::full_null(self.name(), self.len()))
+            Ok(ChunkedArray::full_null(self.name().clone(), self.len()))
         } else if !self.has_nulls() {
             let it = self
                 .into_no_null_iter()
@@ -334,7 +346,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
                 it,
                 init_null_count,
                 Some(first_value),
-                self.name(),
+                self.name().clone(),
                 self.len(),
             )
         } else {
@@ -347,7 +359,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
                 it,
                 init_null_count,
                 Some(first_value),
-                self.name(),
+                self.name().clone(),
                 self.len(),
             )
         }
@@ -383,7 +395,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
                 });
             avs.extend(iter);
         }
-        Ok(Series::new(self.name(), &avs))
+        Ok(Series::new(self.name().clone(), &avs))
     }
 
     fn apply_lambda_with_object_out_type(
@@ -394,7 +406,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
     ) -> RbResult<ObjectChunked<ObjectValue>> {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
-            Ok(ChunkedArray::full_null(self.name(), self.len()))
+            Ok(ChunkedArray::full_null(self.name().clone(), self.len()))
         } else if !self.has_nulls() {
             let it = self
                 .into_no_null_iter()
@@ -405,7 +417,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         } else {
@@ -417,7 +429,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         }
@@ -445,7 +457,7 @@ where
                 null_count += 1
             }
         }
-        Ok(Self::full_null(self.name(), self.len())
+        Ok(Self::full_null(self.name().clone(), self.len())
             .into_series()
             .into())
     }
@@ -462,13 +474,25 @@ where
                 .into_no_null_iter()
                 .skip(init_null_count + skip)
                 .map(|val| call_lambda(lambda, val).ok());
-            iterator_to_struct(it, init_null_count, first_value, self.name(), self.len())
+            iterator_to_struct(
+                it,
+                init_null_count,
+                first_value,
+                self.name().clone(),
+                self.len(),
+            )
         } else {
             let it = self
                 .into_iter()
                 .skip(init_null_count + skip)
                 .map(|opt_val| opt_val.and_then(|val| call_lambda(lambda, val).ok()));
-            iterator_to_struct(it, init_null_count, first_value, self.name(), self.len())
+            iterator_to_struct(
+                it,
+                init_null_count,
+                first_value,
+                self.name().clone(),
+                self.len(),
+            )
         }
     }
 
@@ -484,7 +508,7 @@ where
     {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
-            Ok(ChunkedArray::full_null(self.name(), self.len()))
+            Ok(ChunkedArray::full_null(self.name().clone(), self.len()))
         } else if !self.has_nulls() {
             let it = self
                 .into_no_null_iter()
@@ -494,7 +518,7 @@ where
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         } else {
@@ -506,7 +530,7 @@ where
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         }
@@ -520,7 +544,7 @@ where
     ) -> RbResult<BooleanChunked> {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
-            Ok(ChunkedArray::full_null(self.name(), self.len()))
+            Ok(ChunkedArray::full_null(self.name().clone(), self.len()))
         } else if !self.has_nulls() {
             let it = self
                 .into_no_null_iter()
@@ -530,7 +554,7 @@ where
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         } else {
@@ -542,7 +566,7 @@ where
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         }
@@ -556,7 +580,7 @@ where
     ) -> RbResult<StringChunked> {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
-            Ok(ChunkedArray::full_null(self.name(), self.len()))
+            Ok(ChunkedArray::full_null(self.name().clone(), self.len()))
         } else if !self.has_nulls() {
             let it = self
                 .into_no_null_iter()
@@ -567,7 +591,7 @@ where
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         } else {
@@ -579,7 +603,7 @@ where
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         }
@@ -594,7 +618,7 @@ where
     ) -> RbResult<ListChunked> {
         let skip = 1;
         if init_null_count == self.len() {
-            Ok(ChunkedArray::full_null(self.name(), self.len()))
+            Ok(ChunkedArray::full_null(self.name().clone(), self.len()))
         } else if !self.has_nulls() {
             let it = self
                 .into_no_null_iter()
@@ -606,7 +630,7 @@ where
                 it,
                 init_null_count,
                 Some(first_value),
-                self.name(),
+                self.name().clone(),
                 self.len(),
             )
         } else {
@@ -619,7 +643,7 @@ where
                 it,
                 init_null_count,
                 Some(first_value),
-                self.name(),
+                self.name().clone(),
                 self.len(),
             )
         }
@@ -655,7 +679,7 @@ where
                 });
             avs.extend(iter);
         }
-        Ok(Series::new(self.name(), &avs))
+        Ok(Series::new(self.name().clone(), &avs))
     }
 
     fn apply_lambda_with_object_out_type(
@@ -666,7 +690,7 @@ where
     ) -> RbResult<ObjectChunked<ObjectValue>> {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
-            Ok(ChunkedArray::full_null(self.name(), self.len()))
+            Ok(ChunkedArray::full_null(self.name().clone(), self.len()))
         } else if !self.has_nulls() {
             let it = self
                 .into_no_null_iter()
@@ -677,7 +701,7 @@ where
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         } else {
@@ -689,7 +713,7 @@ where
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         }
@@ -712,7 +736,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
                 null_count += 1
             }
         }
-        Ok(Self::full_null(self.name(), self.len())
+        Ok(Self::full_null(self.name().clone(), self.len())
             .into_series()
             .into())
     }
@@ -729,13 +753,25 @@ impl<'a> ApplyLambda<'a> for StringChunked {
                 .into_no_null_iter()
                 .skip(init_null_count + skip)
                 .map(|val| call_lambda(lambda, val).ok());
-            iterator_to_struct(it, init_null_count, first_value, self.name(), self.len())
+            iterator_to_struct(
+                it,
+                init_null_count,
+                first_value,
+                self.name().clone(),
+                self.len(),
+            )
         } else {
             let it = self
                 .into_iter()
                 .skip(init_null_count + skip)
                 .map(|opt_val| opt_val.and_then(|val| call_lambda(lambda, val).ok()));
-            iterator_to_struct(it, init_null_count, first_value, self.name(), self.len())
+            iterator_to_struct(
+                it,
+                init_null_count,
+                first_value,
+                self.name().clone(),
+                self.len(),
+            )
         }
     }
 
@@ -751,7 +787,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
     {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
-            Ok(ChunkedArray::full_null(self.name(), self.len()))
+            Ok(ChunkedArray::full_null(self.name().clone(), self.len()))
         } else if !self.has_nulls() {
             let it = self
                 .into_no_null_iter()
@@ -761,7 +797,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         } else {
@@ -773,7 +809,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         }
@@ -787,7 +823,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
     ) -> RbResult<BooleanChunked> {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
-            Ok(ChunkedArray::full_null(self.name(), self.len()))
+            Ok(ChunkedArray::full_null(self.name().clone(), self.len()))
         } else if !self.has_nulls() {
             let it = self
                 .into_no_null_iter()
@@ -797,7 +833,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         } else {
@@ -809,7 +845,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         }
@@ -823,7 +859,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
     ) -> RbResult<StringChunked> {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
-            Ok(ChunkedArray::full_null(self.name(), self.len()))
+            Ok(ChunkedArray::full_null(self.name().clone(), self.len()))
         } else if !self.has_nulls() {
             let it = self
                 .into_no_null_iter()
@@ -834,7 +870,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         } else {
@@ -846,7 +882,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         }
@@ -861,7 +897,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
     ) -> RbResult<ListChunked> {
         let skip = 1;
         if init_null_count == self.len() {
-            Ok(ChunkedArray::full_null(self.name(), self.len()))
+            Ok(ChunkedArray::full_null(self.name().clone(), self.len()))
         } else if !self.has_nulls() {
             let it = self
                 .into_no_null_iter()
@@ -873,7 +909,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
                 it,
                 init_null_count,
                 Some(first_value),
-                self.name(),
+                self.name().clone(),
                 self.len(),
             )
         } else {
@@ -886,7 +922,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
                 it,
                 init_null_count,
                 Some(first_value),
-                self.name(),
+                self.name().clone(),
                 self.len(),
             )
         }
@@ -922,7 +958,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
                 });
             avs.extend(iter);
         }
-        Ok(Series::new(self.name(), &avs))
+        Ok(Series::new(self.name().clone(), &avs))
     }
 
     fn apply_lambda_with_object_out_type(
@@ -933,7 +969,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
     ) -> RbResult<ObjectChunked<ObjectValue>> {
         let skip = usize::from(first_value.is_some());
         if init_null_count == self.len() {
-            Ok(ChunkedArray::full_null(self.name(), self.len()))
+            Ok(ChunkedArray::full_null(self.name().clone(), self.len()))
         } else if !self.has_nulls() {
             let it = self
                 .into_no_null_iter()
@@ -944,7 +980,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         } else {
@@ -956,7 +992,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
                 it,
                 init_null_count,
                 first_value,
-                self.name(),
+                self.name().clone(),
                 self.len(),
             ))
         }
@@ -995,7 +1031,13 @@ impl<'a> ApplyLambda<'a> for StructChunked {
             let out = lambda.funcall("call", (Wrap(val),)).unwrap();
             Some(out)
         });
-        iterator_to_struct(it, init_null_count, first_value, self.name(), self.len())
+        iterator_to_struct(
+            it,
+            init_null_count,
+            first_value,
+            self.name().clone(),
+            self.len(),
+        )
     }
 
     fn apply_lambda_with_primitive_out_type<D>(
@@ -1017,7 +1059,7 @@ impl<'a> ApplyLambda<'a> for StructChunked {
             it,
             init_null_count,
             first_value,
-            self.name(),
+            self.name().clone(),
             self.len(),
         ))
     }
@@ -1037,7 +1079,7 @@ impl<'a> ApplyLambda<'a> for StructChunked {
             it,
             init_null_count,
             first_value,
-            self.name(),
+            self.name().clone(),
             self.len(),
         ))
     }
@@ -1057,7 +1099,7 @@ impl<'a> ApplyLambda<'a> for StructChunked {
             it,
             init_null_count,
             first_value,
-            self.name(),
+            self.name().clone(),
             self.len(),
         ))
     }
@@ -1078,7 +1120,7 @@ impl<'a> ApplyLambda<'a> for StructChunked {
             it,
             init_null_count,
             Some(first_value),
-            self.name(),
+            self.name().clone(),
             self.len(),
         )
     }
@@ -1100,7 +1142,7 @@ impl<'a> ApplyLambda<'a> for StructChunked {
         });
         avs.extend(iter);
 
-        Ok(Series::new(self.name(), &avs))
+        Ok(Series::new(self.name().clone(), &avs))
     }
 
     fn apply_lambda_with_object_out_type(
@@ -1118,7 +1160,7 @@ impl<'a> ApplyLambda<'a> for StructChunked {
             it,
             init_null_count,
             first_value,
-            self.name(),
+            self.name().clone(),
             self.len(),
         ))
     }
