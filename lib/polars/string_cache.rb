@@ -1,5 +1,27 @@
 module Polars
-  # Context manager for enabling and disabling the global string cache.
+  # Class for enabling and disabling the global string cache.
+  #
+  # @example Construct two Series using the same global string cache.
+  #   s1 = nil
+  #   s2 = nil
+  #   Polars::StringCache.new do
+  #     s1 = Polars::Series.new("color", ["red", "green", "red"], dtype: Polars::Categorical)
+  #     s2 = Polars::Series.new("color", ["blue", "red", "green"], dtype: Polars::Categorical)
+  #   end
+  #
+  # @example As both Series are constructed under the same global string cache, they can be concatenated.
+  #   Polars.concat([s1, s2])
+  #   # =>
+  #   # shape: (6,)
+  #   # Series: 'color' [cat]
+  #   # [
+  #   #         "red"
+  #   #         "green"
+  #   #         "red"
+  #   #         "blue"
+  #   #         "red"
+  #   #         "green"
+  #   # ]
   class StringCache
     def initialize(&block)
       RbStringCacheHolder.hold(&block)
