@@ -5187,5 +5187,13 @@ module Polars
       end
       other
     end
+
+    def _dump(level)
+      write_ipc(nil)
+    end
+
+    def self._load(bin)
+      Polars.read_ipc(StringIO.new(bin))
+    end
   end
 end

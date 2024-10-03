@@ -4440,5 +4440,14 @@ module Polars
     def _get_first_non_none(values)
       values.find { |v| !v.nil? }
     end
+
+    def _dump(level)
+      DataFrame.new([self]).write_ipc(nil)
+    end
+
+    def self._load(bin)
+      df = Polars.read_ipc(StringIO.new(bin))
+      df.get_column(df.columns[0])
+    end
   end
 end
