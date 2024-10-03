@@ -31,6 +31,14 @@ class IpcTest < Minitest::Test
     assert_frame df, Polars.read_ipc(path)
   end
 
+  def test_write_ipc_io
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    io = StringIO.new
+    df.write_ipc(io)
+    io.rewind
+    assert_frame df, Polars.read_ipc(io)
+  end
+
   def test_write_ipc_to_string
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     output = df.write_ipc(nil)
