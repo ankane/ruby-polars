@@ -127,6 +127,33 @@ module Polars
     def self.numeric
       _selector_proxy_(F.col(NUMERIC_DTYPES), name: "numeric")
     end
+
+    # Select all binary columns.
+    #
+    # @return [SelectorProxy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => ["hello".b], "b" => ["world"], "c" => ["!".b], "d" => [":)"]})
+    #   # =>
+    #   # shape: (1, 4)
+    #   # ┌──────────┬───────┬────────┬─────┐
+    #   # │ a        ┆ b     ┆ c      ┆ d   │
+    #   # │ ---      ┆ ---   ┆ ---    ┆ --- │
+    #   # │ binary   ┆ str   ┆ binary ┆ str │
+    #   # ╞══════════╪═══════╪════════╪═════╡
+    #   # │ b"hello" ┆ world ┆ b"!"   ┆ :)  │
+    #   # └──────────┴───────┴────────┴─────┘
+    #
+    # @example Select binary columns and export as a dict:
+    #   df.select(Polars.cs.binary).to_h(as_series: false)
+    #   # => {"a"=>["hello"], "c"=>["!"]}
+    #
+    # @example Select all columns *except* for those that are binary:
+    #   df.select(~Polars.cs.binary).to_h(as_series: false)
+    #   # => {"b"=>["world"], "d"=>[":)"]}
+    def self.binary
+      _selector_proxy_(F.col(Binary), name: "binary")
+    end
   end
 
   def self.cs
