@@ -48,6 +48,9 @@ module Polars
     #   If the data comes from one or more Numo arrays, can optionally convert input
     #   data NaN values to null instead. This is a no-op for all other input data.
     def initialize(data = nil, schema: nil, columns: nil, schema_overrides: nil, orient: nil, infer_schema_length: 100, nan_to_null: false)
+      if schema && columns
+        warn "columns is ignored when schema is passed"
+      end
       schema ||= columns
 
       if defined?(ActiveRecord) && (data.is_a?(ActiveRecord::Relation) || data.is_a?(ActiveRecord::Result))
