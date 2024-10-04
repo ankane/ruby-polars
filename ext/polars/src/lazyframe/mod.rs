@@ -822,7 +822,6 @@ impl RbLazyFrame {
 
         let schema_dict = RHash::new();
         schema.iter_fields().for_each(|fld| {
-            // TODO remove unwrap
             schema_dict
                 .aset::<String, Value>(
                     fld.name().to_string(),
