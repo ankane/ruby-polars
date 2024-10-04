@@ -5038,7 +5038,7 @@ module Polars
       end
 
       column_casts = []
-      columns.each do |col, i|
+      columns.each_with_index do |col, i|
         if dtypes[col] == Categorical # != rbdf_dtypes[i]
           column_casts << Polars.col(col).cast(Categorical)._rbexpr
         elsif structs&.any? && structs.include?(col) && structs[col] != rbdf_dtypes[i]
@@ -5101,7 +5101,7 @@ module Polars
             schema, schema_overrides: schema_overrides, n_expected: first_element.length
           )
           local_schema_override = (
-            schema_overrides.any? ? (raise Todo) : {}
+            schema_overrides.any? ? _include_unknowns(schema_overrides, column_names) : {}
           )
           if column_names.any? && first_element.length > 0 && first_element.length != column_names.length
             raise ArgumentError, "the row data does not match the number of columns"
@@ -5109,7 +5109,11 @@ module Polars
 
           unpack_nested = false
           local_schema_override.each do |col, tp|
-            raise Todo
+            if [Categorical, Enum].include?(tp)
+              local_schema_override[col] = String
+            elsif !unpack_nested && [Unknown, Struct].include?(tp.base_type)
+              raise Todo
+            end
           end
 
           if unpack_nested
@@ -5143,6 +5147,11 @@ module Polars
 
       data_series = _handle_columns_arg(data_series, columns: columns)
       RbDataFrame.new(data_series)
+    end
+
+    # @private
+    def self._include_unknowns(schema, cols)
+      cols.to_h { |col| [col, schema[col] || Unknown] }
     end
 
     # @private

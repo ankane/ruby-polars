@@ -47,6 +47,12 @@ class DataFrameTest < Minitest::Test
     assert_frame expected, df
   end
 
+  def test_new_array_arrays_schema_dtypes
+    df = Polars::DataFrame.new([[1, 2], [3, 4]], orient: "row", schema: [["a", Polars::Float32], ["b", Polars::Int8]])
+    assert_equal df.columns, ["a", "b"]
+    assert_equal df.dtypes, [Polars::Float32, Polars::Int8]
+  end
+
   def test_new_array_schema
     df = Polars::DataFrame.new([{"a" => DateTime.new(2022, 1, 1)}], schema: {"a" => Polars::Datetime})
     assert_kind_of Polars::Datetime, df["a"].dtype

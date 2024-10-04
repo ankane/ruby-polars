@@ -1,5 +1,6 @@
 ## 0.14.1 (unreleased)
 
+- Added support for array of name-type pairs to `schema` option
 - Added `cast` method to `DataFrame` and `LazyFrame`
 
 ## 0.14.0 (2024-09-17)
