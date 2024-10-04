@@ -3,12 +3,14 @@ module Polars
   module Utils
     DTYPE_TEMPORAL_UNITS = ["ns", "us", "ms"]
 
-    # TODO fix
-    def self.is_polars_dtype(data_type, include_unknown: false)
-      if data_type == Unknown
-        return include_unknown
+    def self.is_polars_dtype(dtype, include_unknown: false)
+      is_dtype = dtype.is_a?(Symbol) || dtype.is_a?(::String) || dtype.is_a?(DataType) || (dtype.is_a?(Class) && dtype < DataType)
+
+      if !include_unknown
+        is_dtype && dtype != Unknown
+      else
+        is_dtype
       end
-      data_type.is_a?(Symbol) || data_type.is_a?(::String) || data_type.is_a?(DataType) || (data_type.is_a?(Class) && data_type < DataType)
     end
 
     def self.map_rb_type_to_dtype(ruby_dtype)
