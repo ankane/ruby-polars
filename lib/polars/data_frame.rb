@@ -8,16 +8,45 @@ module Polars
 
     # Create a new DataFrame.
     #
-    # @param data [Hash, Array, Series, nil]
-    #   Two-dimensional data in various forms. Hash must contain Arrays.
-    #   Array may contain Series.
-    # @param columns [Array, Hash, nil]
-    #   Column labels to use for resulting DataFrame. If specified, overrides any
-    #   labels already present in the data. Must match data dimensions.
-    # @param orient ["col", "row", nil]
-    #   Whether to interpret two-dimensional data as columns or as rows. If `nil`,
+    # @param data [Object]
+    #   Two-dimensional data in various forms; hash input must contain arrays
+    #   or a range. Arrays may contain Series or other arrays.
+    # @param schema [Object]
+    #   The schema of the resulting DataFrame. The schema may be declared in several
+    #   ways:
+    #
+    #   * As a hash of {name:type} pairs; if type is nil, it will be auto-inferred.
+    #   * As an array of column names; in this case types are automatically inferred.
+    #   * As an array of (name,type) pairs; this is equivalent to the dictionary form.
+    #
+    #   If you supply a list of column names that does not match the names in the
+    #   underlying data, the names given here will overwrite them. The number
+    #   of names given in the schema should match the underlying data dimensions.
+    #
+    #   If set to `nil` (default), the schema is inferred from the data.
+    # @param schema_overrides [Hash]
+    #   Support type specification or override of one or more columns; note that
+    #   any dtypes inferred from the schema param will be overridden.
+    #
+    #   The number of entries in the schema should match the underlying data
+    #   dimensions, unless an array of hashes is being passed, in which case
+    #   a *partial* schema can be declared to prevent specific fields from being loaded.
+    # @param strict [Boolean]
+    #   Throw an error if any `data` value does not exactly match the given or inferred
+    #   data type for that column. If set to `false`, values that do not match the data
+    #   type are cast to that data type or, if casting is not possible, set to null
+    #   instead.
+    # @param orient ["col", "row"]
+    #   Whether to interpret two-dimensional data as columns or as rows. If nil,
     #   the orientation is inferred by matching the columns and data dimensions. If
     #   this does not yield conclusive results, column orientation is used.
+    # @param infer_schema_length [Integer]
+    #   The maximum number of rows to scan for schema inference. If set to `nil`, the
+    #   full data may be scanned *(this can be slow)*. This parameter only applies if
+    #   the input data is a sequence or generator of rows; other input is read as-is.
+    # @param nan_to_null [Boolean]
+    #   If the data comes from one or more Numo arrays, can optionally convert input
+    #   data NaN values to null instead. This is a no-op for all other input data.
     def initialize(data = nil, schema: nil, columns: nil, schema_overrides: nil, orient: nil, infer_schema_length: 100, nan_to_null: false)
       schema ||= columns
 
