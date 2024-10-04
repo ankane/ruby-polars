@@ -5108,7 +5108,6 @@ module Polars
 
     # @private
     def self.sequence_to_rbdf(data, schema: nil, schema_overrides: nil, strict: true, orient: nil, infer_schema_length: 50)
-      raise Todo if schema_overrides
       columns = schema
 
       if data.length == 0
