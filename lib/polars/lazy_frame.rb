@@ -2591,8 +2591,8 @@ module Polars
         warn "The `streamable` parameter for `LazyFrame.unpivot` is deprecated"
       end
 
-      on = on.nil? ? [] : Utils._expand_selectors(self, on)
-      index = index.nil? ? [] : Utils._expand_selectors(self, index)
+      on = on.nil? ? [] : Utils.parse_into_list_of_expressions(on)
+      index = index.nil? ? [] : Utils.parse_into_list_of_expressions(index)
 
       _from_rbldf(
         _ldf.unpivot(on, index, value_name, variable_name)

@@ -100,6 +100,27 @@ module Polars
       end
     end
 
+    def self.is_selector(obj)
+      obj.is_a?(Selectors::SelectorProxy)
+    end
+
+    def self.expand_selector(target, selector, strict: true)
+      if target.is_a?(Hash)
+        target = DataFrame.new(schema: target)
+      end
+
+      if !is_selector(selector) && !is_polars_dtype(selector)
+        msg = "expected a selector; found #{selector.inspect} instead."
+        raise TypeError, msg
+      end
+
+      if is_selector(selector)
+        target.select(selector).columns
+      else
+        target.select(Polars.col(selector)).columns
+      end
+    end
+
     def self._expand_selectors(frame, *items)
       items_iter = _parse_inputs_as_iterable(items)
 
@@ -115,11 +136,6 @@ module Polars
       expanded
     end
 
-    # TODO
-    def self.is_selector(obj)
-      false
-    end
-
     def self.parse_interval_argument(interval)
       if interval.include?(" ")
         interval = interval.gsub(" ", "")
@@ -133,19 +149,6 @@ module Polars
       else
         raise Todo
       end
-    end
-
-    def self.expand_selector(target, selector, strict: true)
-      if target.is_a?(Hash)
-        target = DataFrame.new(schema: target)
-      end
-
-      if !is_polars_dtype(selector)
-        msg = "expected a selector; found #{selector.inspect} instead."
-        raise TypeError, msg
-      end
-
-      target.select(Polars.col(selector)).columns
     end
   end
 end

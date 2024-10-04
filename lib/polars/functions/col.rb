@@ -23,7 +23,7 @@ module Polars
         Utils.wrap_expr(Plr.col(name.to_s))
       elsif Utils.is_polars_dtype(name)
         Utils.wrap_expr(Plr.dtype_cols([name]))
-      elsif name.is_a?(::Array)
+      elsif name.is_a?(::Array) || name.is_a?(::Set)
         names = Array(name)
         if names.empty?
           return Utils.wrap_expr(Plr.cols(names))
