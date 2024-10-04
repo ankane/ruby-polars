@@ -308,41 +308,19 @@ impl RbDataFrame {
     ) -> RbResult<()> {
         let batch_size = batch_size.0;
         let null = null_value.unwrap_or_default();
-
-        if let Ok(s) = String::try_convert(rb_f) {
-            let f = std::fs::File::create(s).unwrap();
-            // no need for a buffered writer, because the csv writer does internal buffering
-            CsvWriter::new(f)
-                .include_header(include_header)
-                .with_separator(separator)
-                .with_quote_char(quote_char)
-                .with_batch_size(batch_size)
-                .with_datetime_format(datetime_format)
-                .with_date_format(date_format)
-                .with_time_format(time_format)
-                .with_float_precision(float_precision)
-                .with_null_value(null)
-                .finish(&mut self.df.borrow_mut())
-                .map_err(RbPolarsErr::from)?;
-        } else {
-            let mut buf = Cursor::new(Vec::new());
-            CsvWriter::new(&mut buf)
-                .include_header(include_header)
-                .with_separator(separator)
-                .with_quote_char(quote_char)
-                .with_batch_size(batch_size)
-                .with_datetime_format(datetime_format)
-                .with_date_format(date_format)
-                .with_time_format(time_format)
-                .with_float_precision(float_precision)
-                .with_null_value(null)
-                .finish(&mut self.df.borrow_mut())
-                .map_err(RbPolarsErr::from)?;
-            // TODO less copying
-            let rb_str = RString::from_slice(&buf.into_inner());
-            rb_f.funcall::<_, _, Value>("write", (rb_str,))?;
-        }
-
+        let mut buf = get_file_like(rb_f, true)?;
+        CsvWriter::new(&mut buf)
+            .include_header(include_header)
+            .with_separator(separator)
+            .with_quote_char(quote_char)
+            .with_batch_size(batch_size)
+            .with_datetime_format(datetime_format)
+            .with_date_format(date_format)
+            .with_time_format(time_format)
+            .with_float_precision(float_precision)
+            .with_null_value(null)
+            .finish(&mut self.df.borrow_mut())
+            .map_err(RbPolarsErr::from)?;
         Ok(())
     }
 
