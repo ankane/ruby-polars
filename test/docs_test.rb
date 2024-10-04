@@ -89,6 +89,10 @@ class DocsTest < Minitest::Test
     assert_docs Polars::NameExpr
   end
 
+  def test_selectors
+    assert_docs Polars::Selectors
+  end
+
   def test_series
     assert_docs Polars::Series
   end
