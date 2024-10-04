@@ -4269,7 +4269,7 @@ module Polars
         rbseries = constructor.call(name, values, strict)
 
         base_type = dtype.is_a?(DataType) ? dtype.class : dtype
-        if [Date, Datetime, Duration, Time, Categorical, Boolean, Enum].include?(base_type)
+        if [Date, Datetime, Duration, Time, Categorical, Boolean, Enum, Decimal].include?(base_type)
           if rbseries.dtype != dtype
             rbseries = rbseries.cast(dtype, true)
           end
