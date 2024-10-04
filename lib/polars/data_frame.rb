@@ -15,7 +15,7 @@ module Polars
     #   The schema of the resulting DataFrame. The schema may be declared in several
     #   ways:
     #
-    #   * As a hash of {name:type} pairs; if type is nil, it will be auto-inferred.
+    #   * As a hash of name:type pairs; if type is nil, it will be auto-inferred.
     #   * As an array of column names; in this case types are automatically inferred.
     #   * As an array of (name,type) pairs; this is equivalent to the dictionary form.
     #
