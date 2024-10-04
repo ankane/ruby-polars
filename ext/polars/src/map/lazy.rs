@@ -73,6 +73,7 @@ pub fn map_single(
     _output_type: Option<Wrap<DataType>>,
     _agg_list: bool,
     _is_elementwise: bool,
+    _returns_scalar: bool,
 ) -> RbExpr {
     todo!();
 }

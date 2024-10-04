@@ -644,8 +644,16 @@ impl RbExpr {
         output_type: Option<Wrap<DataType>>,
         agg_list: bool,
         is_elementwise: bool,
+        returns_scalar: bool,
     ) -> Self {
-        map_single(self, lambda, output_type, agg_list, is_elementwise)
+        map_single(
+            self,
+            lambda,
+            output_type,
+            agg_list,
+            is_elementwise,
+            returns_scalar,
+        )
     }
 
     pub fn dot(&self, other: &Self) -> Self {

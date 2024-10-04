@@ -2825,7 +2825,7 @@ module Polars
     #   # ╞══════╪════════╡
     #   # │ 1    ┆ 0      │
     #   # └──────┴────────┘
-    # def map_batches(return_dtype: nil, agg_list: false, is_elementwise: false, &f)
+    # def map_batches(return_dtype: nil, agg_list: false, is_elementwise: false, returns_scalar: false, &f)
     #   if !return_dtype.nil?
     #     return_dtype = Utils.rb_type_to_dtype(return_dtype)
     #   end
@@ -2835,7 +2835,8 @@ module Polars
     #       f,
     #       return_dtype,
     #       agg_list,
-    #       is_elementwise
+    #       is_elementwise,
+    #       returns_scalar
     #     )
     #   )
     # end
