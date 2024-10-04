@@ -18,7 +18,7 @@ module Polars
     #
     # @example
     #   Polars.time_range(
-    #     time(14, 0),
+    #     Time.utc(2000, 1, 1, 14, 0),
     #     nil,
     #     "3h15m",
     #     eager: true
@@ -48,12 +48,12 @@ module Polars
       end
 
       if start.nil?
-        # start = time(0, 0, 0)
-        raise Todo
+        # date part is ignored
+        start = ::Time.utc(2000, 1, 1, 0, 0, 0)
       end
       if stop.nil?
-        # stop = time(23, 59, 59, 999999)
-        raise Todo
+        # date part is ignored
+        stop = ::Time.utc(2000, 1, 1, 23, 59, 59, 999999)
       end
 
       start_rbexpr = Utils.parse_into_expression(start)
@@ -87,21 +87,21 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "start" => [time(9, 0), time(10, 0)],
-    #       "end" => time(11, 0)
+    #       "start" => [Time.utc(2000, 1, 1, 9, 0), Time.utc(2000, 1, 1, 10, 0)],
+    #       "end" => Time.utc(2000, 1, 1, 11, 0)
     #     }
     #   )
-    #   df.with_columns(time_range: Polars.time_ranges("start", "end"))
+    #   df.select(time_range: Polars.time_ranges("start", "end"))
     #   # =>
-    #   # shape: (2, 3)
-    #   # ┌──────────┬──────────┬────────────────────────────────┐
-    #   # │ start    ┆ end      ┆ time_range                     │
-    #   # │ ---      ┆ ---      ┆ ---                            │
-    #   # │ time     ┆ time     ┆ list[time]                     │
-    #   # ╞══════════╪══════════╪════════════════════════════════╡
-    #   # │ 09:00:00 ┆ 11:00:00 ┆ [09:00:00, 10:00:00, 11:00:00] │
-    #   # │ 10:00:00 ┆ 11:00:00 ┆ [10:00:00, 11:00:00]           │
-    #   # └──────────┴──────────┴────────────────────────────────┘
+    #   # shape: (2, 1)
+    #   # ┌────────────────────────────────┐
+    #   # │ time_range                     │
+    #   # │ ---                            │
+    #   # │ list[time]                     │
+    #   # ╞════════════════════════════════╡
+    #   # │ [09:00:00, 10:00:00, 11:00:00] │
+    #   # │ [10:00:00, 11:00:00]           │
+    #   # └────────────────────────────────┘
     def time_ranges(
       start = nil,
       stop = nil,
@@ -118,12 +118,12 @@ module Polars
       end
 
       if start.nil?
-        # start = time(0, 0, 0)
-        raise Todo
+        # date part is ignored
+        start = ::Time.utc(2000, 1, 1, 0, 0, 0)
       end
       if stop.nil?
-        # stop = time(23, 59, 59, 999999)
-        raise Todo
+        # date part is ignored
+        stop = ::Time.utc(2000, 1, 1, 23, 59, 59, 999999)
       end
 
       start_rbexpr = Utils.parse_into_expression(start)
