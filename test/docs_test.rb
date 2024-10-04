@@ -169,7 +169,7 @@ class DocsTest < Minitest::Test
     return if [:to_titlecase].include?(method.name)
 
     # TODO fix
-    return if [:align_frames, :coalesce].include?(method.name)
+    return if [:align_frames].include?(method.name)
 
     code = ""
     method.tags(:example).each do |example|
