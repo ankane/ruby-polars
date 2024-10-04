@@ -1,5 +1,6 @@
 ## 0.14.1 (unreleased)
 
+- Added `strict` option to `DataFrame` constructor
 - Added support for array of name-type pairs to `schema` option
 - Added `cast` method to `DataFrame` and `LazyFrame`
 
