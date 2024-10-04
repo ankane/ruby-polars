@@ -54,9 +54,6 @@ fn finish_from_rows(
     schema_overrides: Option<Schema>,
     infer_schema_length: Option<usize>,
 ) -> RbResult<RbDataFrame> {
-    // Object builder must be registered
-    crate::on_startup::register_object_builder();
-
     let mut schema = if let Some(mut schema) = schema {
         resolve_schema_overrides(&mut schema, schema_overrides);
         update_schema_from_rows(&mut schema, &rows, infer_schema_length)?;

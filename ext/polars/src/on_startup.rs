@@ -11,7 +11,7 @@ use polars_core::prelude::AnyValue;
 use crate::prelude::ObjectValue;
 use crate::Wrap;
 
-pub(crate) fn register_object_builder() {
+pub(crate) fn register_startup_deps() {
     if !registry::is_object_builder_registered() {
         let object_builder = Box::new(|name: PlSmallStr, capacity: usize| {
             Box::new(ObjectChunkedBuilder::<ObjectValue>::new(name, capacity))

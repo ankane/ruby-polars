@@ -36,6 +36,8 @@ type RbResult<T> = Result<T, Error>;
 
 #[magnus::init]
 fn init(ruby: &Ruby) -> RbResult<()> {
+    crate::on_startup::register_startup_deps();
+
     let module = define_module("Polars")?;
 
     let class = module.define_class("RbBatchedCsv", ruby.class_object())?;
