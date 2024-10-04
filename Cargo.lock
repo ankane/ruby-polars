@@ -1254,6 +1254,7 @@ dependencies = [
  "polars 0.43.1",
  "polars-core",
  "polars-parquet",
+ "polars-plan",
  "polars-utils",
  "serde_json",
 ]

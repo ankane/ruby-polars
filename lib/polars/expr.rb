@@ -2825,22 +2825,22 @@ module Polars
     #   # ╞══════╪════════╡
     #   # │ 1    ┆ 0      │
     #   # └──────┴────────┘
-    # def map_batches(return_dtype: nil, agg_list: false, is_elementwise: false, returns_scalar: false, &f)
-    #   if !return_dtype.nil?
-    #     return_dtype = Utils.rb_type_to_dtype(return_dtype)
-    #   end
-    #   _from_rbexpr(
-    #     _rbexpr.map_batches(
-    #       # TODO _map_batches_wrapper
-    #       f,
-    #       return_dtype,
-    #       agg_list,
-    #       is_elementwise,
-    #       returns_scalar
-    #     )
-    #   )
-    # end
-    # alias_method :map, :map_batches
+    def map_batches(return_dtype: nil, agg_list: false, is_elementwise: false, returns_scalar: false, &f)
+      if !return_dtype.nil?
+        return_dtype = Utils.rb_type_to_dtype(return_dtype)
+      end
+      _from_rbexpr(
+        _rbexpr.map_batches(
+          # TODO _map_batches_wrapper
+          f,
+          return_dtype,
+          agg_list,
+          is_elementwise,
+          returns_scalar
+        )
+      )
+    end
+    alias_method :map, :map_batches
 
     # Apply a custom/user-defined function (UDF) in a GroupBy or Projection context.
     #
@@ -2917,23 +2917,23 @@ module Polars
     #   # │ b   ┆ 2   │
     #   # │ c   ┆ 4   │
     #   # └─────┴─────┘
-    # def map_elements(
-    #   return_dtype: nil,
-    #   skip_nulls: true,
-    #   pass_name: false,
-    #   strategy: "thread_local",
-    #   &f
-    # )
-    #   if pass_name
-    #     raise Todo
-    #   else
-    #     wrap_f = lambda do |x|
-    #       x.map_elements(return_dtype: return_dtype, skip_nulls: skip_nulls, &f)
-    #     end
-    #   end
-    #   map_batches(agg_list: true, return_dtype: return_dtype, &wrap_f)
-    # end
-    # alias_method :apply, :map_elements
+    def map_elements(
+      return_dtype: nil,
+      skip_nulls: true,
+      pass_name: false,
+      strategy: "thread_local",
+      &f
+    )
+      if pass_name
+        raise Todo
+      else
+        wrap_f = lambda do |x|
+          x.map_elements(return_dtype: return_dtype, skip_nulls: skip_nulls, &f)
+        end
+      end
+      map_batches(agg_list: true, return_dtype: return_dtype, &wrap_f)
+    end
+    alias_method :apply, :map_elements
 
     # Explode a list or utf8 Series. This means that every item is expanded to a new
     # row.

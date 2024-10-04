@@ -1,10 +1,11 @@
-use magnus::{prelude::*, RArray, Value};
+use magnus::{prelude::*, value::Opaque, RArray, Value};
 use polars::prelude::*;
 
+use super::ruby_udf;
 use crate::rb_modules::*;
-use crate::{RbExpr, RbSeries, Wrap};
+use crate::{RbExpr, RbResult, RbSeries, Wrap};
 
-fn to_series(v: Value, name: &str) -> PolarsResult<Series> {
+pub fn to_series(v: Value, name: &str) -> PolarsResult<Series> {
     let rb_rbseries = match v.funcall("_s", ()) {
         Ok(s) => s,
         // the lambda did not return a series, we try to create a new Ruby Series
@@ -26,6 +27,15 @@ fn to_series(v: Value, name: &str) -> PolarsResult<Series> {
     };
     // Finally get the actual Series
     Ok(rb_rbseries.series.borrow().clone())
+}
+
+pub(crate) fn call_lambda_with_series(s: Series, lambda: Value) -> RbResult<Value> {
+    // create a RbSeries struct/object for Ruby
+    let rbseries = RbSeries::new(s);
+    // Wrap this RbSeries object in the Ruby side Series wrapper
+    let ruby_series_wrapper: Value = utils().funcall("wrap_s", (rbseries,)).unwrap();
+    // call the lambda and get a Ruby side Series wrapper
+    lambda.funcall("call", (ruby_series_wrapper,))
 }
 
 pub fn binary_lambda(lambda: Value, a: Series, b: Series) -> PolarsResult<Option<Series>> {
@@ -68,12 +78,20 @@ pub fn binary_lambda(lambda: Value, a: Series, b: Series) -> PolarsResult<Option
 }
 
 pub fn map_single(
-    _rbexpr: &RbExpr,
-    _lambda: Value,
-    _output_type: Option<Wrap<DataType>>,
-    _agg_list: bool,
-    _is_elementwise: bool,
-    _returns_scalar: bool,
+    rbexpr: &RbExpr,
+    lambda: Value,
+    output_type: Option<Wrap<DataType>>,
+    agg_list: bool,
+    is_elementwise: bool,
+    returns_scalar: bool,
 ) -> RbExpr {
-    todo!();
+    let output_type = output_type.map(|wrap| wrap.0);
+
+    let func = ruby_udf::RubyUdfExpression::new(
+        Opaque::from(lambda),
+        output_type,
+        is_elementwise,
+        returns_scalar,
+    );
+    ruby_udf::map_ruby(rbexpr.inner.clone(), func, agg_list).into()
 }
