@@ -2721,6 +2721,59 @@ module Polars
       drop_in_place(name) if include?(name)
     end
 
+    # Cast DataFrame column(s) to the specified dtype(s).
+    #
+    # @param dtypes [Object]
+    #   Mapping of column names (or selector) to dtypes, or a single dtype
+    #   to which all columns will be cast.
+    # @param strict [Boolean]
+    #   Throw an error if a cast could not be done (for instance, due to an
+    #   overflow).
+    #
+    # @return [DataFrame]
+    #
+    # @example Cast specific frame columns to the specified dtypes:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => [Date.new(2020, 1, 2), Date.new(2021, 3, 4), Date.new(2022, 5, 6)]
+    #     }
+    #   )
+    #   df.cast({"foo" => Polars::Float32, "bar" => Polars::UInt8})
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬────────────┐
+    #   # │ foo ┆ bar ┆ ham        │
+    #   # │ --- ┆ --- ┆ ---        │
+    #   # │ f32 ┆ u8  ┆ date       │
+    #   # ╞═════╪═════╪════════════╡
+    #   # │ 1.0 ┆ 6   ┆ 2020-01-02 │
+    #   # │ 2.0 ┆ 7   ┆ 2021-03-04 │
+    #   # │ 3.0 ┆ 8   ┆ 2022-05-06 │
+    #   # └─────┴─────┴────────────┘
+    #
+    # @example Cast all frame columns matching one dtype (or dtype group) to another dtype:
+    #   df.cast({Polars::Date => Polars::Datetime})
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────────────────────┐
+    #   # │ foo ┆ bar ┆ ham                 │
+    #   # │ --- ┆ --- ┆ ---                 │
+    #   # │ i64 ┆ f64 ┆ datetime[μs]        │
+    #   # ╞═════╪═════╪═════════════════════╡
+    #   # │ 1   ┆ 6.0 ┆ 2020-01-02 00:00:00 │
+    #   # │ 2   ┆ 7.0 ┆ 2021-03-04 00:00:00 │
+    #   # │ 3   ┆ 8.0 ┆ 2022-05-06 00:00:00 │
+    #   # └─────┴─────┴─────────────────────┘
+    #
+    # @example Cast all frame columns to the specified dtype:
+    #   df.cast(Polars::String).to_h(as_series: false)
+    #   # => {"foo"=>["1", "2", "3"], "bar"=>["6.0", "7.0", "8.0"], "ham"=>["2020-01-02", "2021-03-04", "2022-05-06"]}
+    def cast(dtypes, strict: true)
+      lazy.cast(dtypes, strict: strict).collect(_eager: true)
+    end
+
     # Create an empty copy of the current DataFrame.
     #
     # Returns a DataFrame with identical schema but no data.

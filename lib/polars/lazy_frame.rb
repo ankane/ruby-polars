@@ -848,9 +848,70 @@ module Polars
       _from_rbldf(_ldf.cache)
     end
 
-    # TODO
-    # def cast
-    # end
+    # Cast LazyFrame column(s) to the specified dtype(s).
+    #
+    # @param dtypes [Hash]
+    #   Mapping of column names (or selector) to dtypes, or a single dtype
+    #   to which all columns will be cast.
+    # @param strict [Boolean]
+    #   Throw an error if a cast could not be done (for instance, due to an
+    #   overflow).
+    #
+    # @return [LazyFrame]
+    #
+    # @example Cast specific frame columns to the specified dtypes:
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => [Date.new(2020, 1, 2), Date.new(2021, 3, 4), Date.new(2022, 5, 6)]
+    #     }
+    #   )
+    #   lf.cast({"foo" => Polars::Float32, "bar" => Polars::UInt8}).collect
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬────────────┐
+    #   # │ foo ┆ bar ┆ ham        │
+    #   # │ --- ┆ --- ┆ ---        │
+    #   # │ f32 ┆ u8  ┆ date       │
+    #   # ╞═════╪═════╪════════════╡
+    #   # │ 1.0 ┆ 6   ┆ 2020-01-02 │
+    #   # │ 2.0 ┆ 7   ┆ 2021-03-04 │
+    #   # │ 3.0 ┆ 8   ┆ 2022-05-06 │
+    #   # └─────┴─────┴────────────┘
+    #
+    # @example Cast all frame columns matching one dtype (or dtype group) to another dtype:
+    #   lf.cast({Polars::Date => Polars::Datetime}).collect
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────────────────────┐
+    #   # │ foo ┆ bar ┆ ham                 │
+    #   # │ --- ┆ --- ┆ ---                 │
+    #   # │ i64 ┆ f64 ┆ datetime[μs]        │
+    #   # ╞═════╪═════╪═════════════════════╡
+    #   # │ 1   ┆ 6.0 ┆ 2020-01-02 00:00:00 │
+    #   # │ 2   ┆ 7.0 ┆ 2021-03-04 00:00:00 │
+    #   # │ 3   ┆ 8.0 ┆ 2022-05-06 00:00:00 │
+    #   # └─────┴─────┴─────────────────────┘
+    #
+    # @example Cast all frame columns to the specified dtype:
+    #   lf.cast(Polars::String).collect.to_h(as_series: false)
+    #   # => {"foo"=>["1", "2", "3"], "bar"=>["6.0", "7.0", "8.0"], "ham"=>["2020-01-02", "2021-03-04", "2022-05-06"]}
+    def cast(dtypes, strict: true)
+      if !dtypes.is_a?(Hash)
+        return _from_rbldf(_ldf.cast_all(dtypes, strict))
+      end
+
+      cast_map = {}
+      dtypes.each do |c, dtype|
+        dtype = Utils.parse_into_dtype(dtype)
+        cast_map.merge!(
+          c.is_a?(::String) ? {c => dtype} : Utils.expand_selector(self, c).to_h { |x| [x, dtype] }
+        )
+      end
+
+      _from_rbldf(_ldf.cast(cast_map, strict))
+    end
 
     # Create an empty copy of the current LazyFrame.
     #

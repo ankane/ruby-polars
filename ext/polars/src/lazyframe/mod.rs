@@ -1,4 +1,4 @@
-use magnus::{IntoValue, RArray, RHash, TryConvert, Value};
+use magnus::{r_hash::ForEach, IntoValue, RArray, RHash, TryConvert, Value};
 use polars::io::{HiveOptions, RowIndex};
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
@@ -792,6 +792,17 @@ impl RbLazyFrame {
     pub fn drop(&self, cols: Vec<String>) -> Self {
         let ldf = self.ldf.borrow().clone();
         ldf.drop(cols).into()
+    }
+
+    pub fn cast(&self, rb_dtypes: RHash, strict: bool) -> RbResult<Self> {
+        let mut dtypes = Vec::new();
+        rb_dtypes.foreach(|k: String, v: Wrap<DataType>| {
+            dtypes.push((k, v.0));
+            Ok(ForEach::Continue)
+        })?;
+        let mut cast_map = PlHashMap::with_capacity(dtypes.len());
+        cast_map.extend(dtypes.iter().map(|(k, v)| (k.as_ref(), v.clone())));
+        Ok(self.ldf.borrow().clone().cast(cast_map, strict).into())
     }
 
     pub fn cast_all(&self, dtype: Wrap<DataType>, strict: bool) -> Self {

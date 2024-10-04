@@ -1,3 +1,7 @@
+## 0.14.1 (unreleased)
+
+- Added `cast` method to `DataFrame` and `LazyFrame`
+
 ## 0.14.0 (2024-09-17)
 
 - Updated Polars to 0.43.1

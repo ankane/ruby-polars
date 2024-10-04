@@ -126,5 +126,26 @@ module Polars
       end
       interval.downcase
     end
+
+    def self.parse_into_dtype(input)
+      if is_polars_dtype(input)
+        input
+      else
+        raise Todo
+      end
+    end
+
+    def self.expand_selector(target, selector, strict: true)
+      if target.is_a?(Hash)
+        target = DataFrame.new(schema: target)
+      end
+
+      if !is_polars_dtype(selector)
+        msg = "expected a selector; found #{selector.inspect} instead."
+        raise TypeError, msg
+      end
+
+      target.select(Polars.col(selector)).columns
+    end
   end
 end
