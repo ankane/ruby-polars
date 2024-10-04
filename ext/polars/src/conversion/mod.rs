@@ -452,8 +452,7 @@ impl TryConvert for Wrap<StatisticsOptions> {
                 }
             }
             Ok(ForEach::Continue)
-        })
-        .unwrap();
+        })?;
 
         Ok(Wrap(statistics))
     }
@@ -478,8 +477,7 @@ impl TryConvert for Wrap<Schema> {
         dict.foreach(|key: String, val: Wrap<DataType>| {
             schema.push(Ok(Field::new((&*key).into(), val.0)));
             Ok(ForEach::Continue)
-        })
-        .unwrap();
+        })?;
 
         Ok(Wrap(schema.into_iter().collect::<RbResult<Schema>>()?))
     }
