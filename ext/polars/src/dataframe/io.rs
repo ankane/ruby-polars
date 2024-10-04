@@ -33,8 +33,7 @@ impl RbDataFrame {
         let n_threads = Option::<usize>::try_convert(arguments[12])?;
         let path = Option::<String>::try_convert(arguments[13])?;
         let overwrite_dtype = Option::<Vec<(String, Wrap<DataType>)>>::try_convert(arguments[14])?;
-        // TODO fix
-        let overwrite_dtype_slice = Option::<Vec<Wrap<DataType>>>::None; // Option::<Vec<Wrap<DataType>>>::try_convert(arguments[15])?;
+        let overwrite_dtype_slice = Option::<Vec<Wrap<DataType>>>::try_convert(arguments[15])?;
         let low_memory = bool::try_convert(arguments[16])?;
         let comment_prefix = Option::<String>::try_convert(arguments[17])?;
         let quote_char = Option::<String>::try_convert(arguments[18])?;

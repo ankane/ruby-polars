@@ -6,8 +6,8 @@ use std::hash::{Hash, Hasher};
 use std::num::NonZeroUsize;
 
 use magnus::{
-    class, exception, prelude::*, r_hash::ForEach, value::Opaque, IntoValue, Module, RArray, RHash,
-    Ruby, Symbol, TryConvert, Value,
+    class, exception, prelude::*, r_hash::ForEach, try_convert::TryConvertOwned, value::Opaque,
+    IntoValue, Module, RArray, RHash, Ruby, Symbol, TryConvert, Value,
 };
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
@@ -433,6 +433,8 @@ impl TryConvert for Wrap<DataType> {
         Ok(Wrap(dtype))
     }
 }
+
+unsafe impl TryConvertOwned for Wrap<DataType> {}
 
 impl TryConvert for Wrap<StatisticsOptions> {
     fn try_convert(ob: Value) -> RbResult<Self> {
