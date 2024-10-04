@@ -8,7 +8,8 @@ use std::num::NonZeroUsize;
 use super::*;
 use crate::conversion::*;
 use crate::file::{
-    get_either_file, get_file_like, get_mmap_bytes_reader, read_if_bytesio, EitherRustRubyFile,
+    get_either_file, get_file_like, get_mmap_bytes_reader, get_mmap_bytes_reader_and_path,
+    read_if_bytesio, EitherRustRubyFile,
 };
 use crate::{RbPolarsErr, RbResult};
 
@@ -227,17 +228,16 @@ impl RbDataFrame {
         projection: Option<Vec<usize>>,
         n_rows: Option<usize>,
         row_index: Option<(String, IdxSize)>,
-        _memory_map: bool,
+        memory_map: bool,
     ) -> RbResult<Self> {
         let row_index = row_index.map(|(name, offset)| RowIndex {
             name: name.into(),
             offset,
         });
         let rb_f = read_if_bytesio(rb_f);
-        let mmap_bytes_r = get_mmap_bytes_reader(&rb_f)?;
+        let (mmap_bytes_r, mmap_path) = get_mmap_bytes_reader_and_path(&rb_f)?;
 
-        // TODO fix
-        let mmap_path = None;
+        let mmap_path = if memory_map { mmap_path } else { None };
         let df = IpcReader::new(mmap_bytes_r)
             .with_projection(projection)
             .with_columns(columns)

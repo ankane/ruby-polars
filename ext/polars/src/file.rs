@@ -171,18 +171,24 @@ pub enum RbReadBytes {
 
 pub fn read_if_bytesio(rb_f: Value) -> RbReadBytes {
     rb_f.funcall("read", ())
-        .map(|v| RbReadBytes::Bytes(v))
+        .map(RbReadBytes::Bytes)
         .unwrap_or(RbReadBytes::Other(rb_f))
 }
 
 pub fn get_mmap_bytes_reader<'a>(rb_f: &'a RbReadBytes) -> RbResult<Box<dyn MmapBytesReader + 'a>> {
+    get_mmap_bytes_reader_and_path(rb_f).map(|t| t.0)
+}
+
+pub fn get_mmap_bytes_reader_and_path<'a>(
+    rb_f: &'a RbReadBytes,
+) -> RbResult<(Box<dyn MmapBytesReader + 'a>, Option<PathBuf>)> {
     match rb_f {
-        RbReadBytes::Bytes(v) => Ok(Box::new(Cursor::new(unsafe { v.as_slice() }))),
+        RbReadBytes::Bytes(v) => Ok((Box::new(Cursor::new(unsafe { v.as_slice() })), None)),
         RbReadBytes::Other(v) => {
-            let p = PathBuf::try_convert(*v)?;
-            let f =
-                File::open(p).map_err(|e| Error::new(exception::runtime_error(), e.to_string()))?;
-            Ok(Box::new(f))
+            let path = PathBuf::try_convert(*v)?;
+            let f = File::open(&path)
+                .map_err(|e| Error::new(exception::runtime_error(), e.to_string()))?;
+            Ok((Box::new(f), Some(path)))
         }
     }
 }
