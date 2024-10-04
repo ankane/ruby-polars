@@ -5207,7 +5207,7 @@ module Polars
       if schema_overrides.any?
         new_dtype = schema_overrides.values[0]
         if new_dtype != data.dtype
-          data_series[0] = data_series[0].cast(new_dtype, strict: strict)
+          data_series[0] = data_series[0].cast(new_dtype, strict)
         end
       end
 
