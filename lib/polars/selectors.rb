@@ -18,4 +18,8 @@ module Polars
       end
     end
   end
+
+  def self.cs
+    Polars::Selectors
+  end
 end

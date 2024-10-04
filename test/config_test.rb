@@ -13,4 +13,13 @@ class ConfigTest < Minitest::Test
   def test_state
     assert_empty Polars::Config.state(if_set: true, env_only: true)
   end
+
+  def test_method
+    s = Polars::Series.new(1..100)
+    Polars.config do |cfg|
+      cfg.set_tbl_rows(100)
+      refute_match "…", s.inspect
+    end
+    assert_match "…", s.inspect
+  end
 end

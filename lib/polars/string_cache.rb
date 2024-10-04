@@ -28,6 +28,10 @@ module Polars
     end
   end
 
+  def self.string_cache(...)
+    StringCache.new(...)
+  end
+
   module Functions
     # Enable the global string cache.
     #

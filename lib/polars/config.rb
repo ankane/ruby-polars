@@ -527,4 +527,8 @@ module Polars
       self
     end
   end
+
+  def self.config(...)
+    Config.new(...)
+  end
 end

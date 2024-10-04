@@ -2565,7 +2565,7 @@ module Polars
     #       "c" => [2, 4, 6]
     #     }
     #   )
-    #   lf.unpivot(Polars::Selectors.numeric, index: "a").collect
+    #   lf.unpivot(Polars.cs.numeric, index: "a").collect
     #   # =>
     #   # shape: (6, 3)
     #   # ┌─────┬──────────┬───────┐

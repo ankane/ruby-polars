@@ -1,5 +1,6 @@
 ## 0.14.1 (unreleased)
 
+- Added `config`, `string_cache`, and `cs` methods to `Polars`
 - Added `strict` option to `DataFrame` constructor
 - Added `compat_level` option to `write_ipc` and `write_ipc_stream` methods
 - Added `name` option to `write_avro` method

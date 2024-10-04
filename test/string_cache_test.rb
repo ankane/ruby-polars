@@ -15,4 +15,10 @@ class StringCacheTest < Minitest::Test
     end
     assert_equal "no block given", error.message
   end
+
+  def test_method
+    Polars.string_cache do
+      assert Polars.using_string_cache
+    end
+  end
 end
