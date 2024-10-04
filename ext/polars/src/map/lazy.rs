@@ -18,7 +18,7 @@ fn to_series(v: Value, name: &str) -> PolarsResult<Series> {
                 Err(_) => {
                     polars_bail!(ComputeError:
                         "expected a something that could convert to a `Series` but got: {}",
-                        "todo"
+                        unsafe { v.classname() }
                     )
                 }
             }
