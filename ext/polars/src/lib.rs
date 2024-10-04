@@ -60,14 +60,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("read_ndjson", function!(RbDataFrame::read_ndjson, 4))?;
     class.define_method("estimated_size", method!(RbDataFrame::estimated_size, 0))?;
     class.define_method("dtype_strings", method!(RbDataFrame::dtype_strings, 0))?;
-    class.define_method("write_avro", method!(RbDataFrame::write_avro, 2))?;
+    class.define_method("write_avro", method!(RbDataFrame::write_avro, 3))?;
     class.define_method("write_json", method!(RbDataFrame::write_json, 3))?;
     class.define_method("write_ndjson", method!(RbDataFrame::write_ndjson, 1))?;
     class.define_method("write_csv", method!(RbDataFrame::write_csv, 10))?;
-    class.define_method("write_ipc", method!(RbDataFrame::write_ipc, 2))?;
+    class.define_method("write_ipc", method!(RbDataFrame::write_ipc, 3))?;
     class.define_method(
         "write_ipc_stream",
-        method!(RbDataFrame::write_ipc_stream, 2),
+        method!(RbDataFrame::write_ipc_stream, 3),
     )?;
     class.define_method("row_tuple", method!(RbDataFrame::row_tuple, 1))?;
     class.define_method("row_tuples", method!(RbDataFrame::row_tuples, 0))?;

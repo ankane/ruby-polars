@@ -798,15 +798,18 @@ module Polars
     #   Compression method. Defaults to "uncompressed".
     #
     # @return [nil]
-    def write_avro(file, compression = "uncompressed")
+    def write_avro(file, compression = "uncompressed", name: "")
       if compression.nil?
         compression = "uncompressed"
       end
       if Utils.pathlike?(file)
         file = Utils.normalize_filepath(file)
       end
+      if name.nil?
+        name = ""
+      end
 
-      _df.write_avro(file, compression)
+      _df.write_avro(file, compression, name)
     end
 
     # Write to Arrow IPC binary stream or Feather file.
@@ -817,7 +820,7 @@ module Polars
     #   Compression method. Defaults to "uncompressed".
     #
     # @return [nil]
-    def write_ipc(file, compression: "uncompressed")
+    def write_ipc(file, compression: "uncompressed", compat_level: nil)
       return_bytes = file.nil?
       if return_bytes
         file = StringIO.new
@@ -827,11 +830,15 @@ module Polars
         file = Utils.normalize_filepath(file)
       end
 
+      if compat_level.nil?
+        compat_level = true
+      end
+
       if compression.nil?
         compression = "uncompressed"
       end
 
-      _df.write_ipc(file, compression)
+      _df.write_ipc(file, compression, compat_level)
       return_bytes ? file.string : nil
     end
 
@@ -858,7 +865,8 @@ module Polars
     #   df.write_ipc_stream("new_file.arrow")
     def write_ipc_stream(
       file,
-      compression: "uncompressed"
+      compression: "uncompressed",
+      compat_level: nil
     )
       return_bytes = file.nil?
       if return_bytes
@@ -868,11 +876,15 @@ module Polars
         file = Utils.normalize_filepath(file)
       end
 
+      if compat_level.nil?
+        compat_level = true
+      end
+
       if compression.nil?
         compression = "uncompressed"
       end
 
-      _df.write_ipc_stream(file, compression)
+      _df.write_ipc_stream(file, compression, compat_level)
       return_bytes ? file.string : nil
     end
 

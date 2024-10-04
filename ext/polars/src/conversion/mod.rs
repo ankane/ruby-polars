@@ -1085,3 +1085,28 @@ where
         .map(|s| PlSmallStr::from_str(s.as_ref()))
         .collect()
 }
+
+#[derive(Debug, Copy, Clone)]
+pub struct RbCompatLevel(pub CompatLevel);
+
+impl TryConvert for RbCompatLevel {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        Ok(RbCompatLevel(if let Ok(level) = u16::try_convert(ob) {
+            if let Ok(compat_level) = CompatLevel::with_level(level) {
+                compat_level
+            } else {
+                return Err(RbValueError::new_err("invalid compat level".to_string()));
+            }
+        } else if let Ok(future) = bool::try_convert(ob) {
+            if future {
+                CompatLevel::newest()
+            } else {
+                CompatLevel::oldest()
+            }
+        } else {
+            return Err(RbTypeError::new_err(
+                "'compat_level' argument accepts int or bool".to_string(),
+            ));
+        }))
+    }
+}

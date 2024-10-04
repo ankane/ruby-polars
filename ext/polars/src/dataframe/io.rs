@@ -378,6 +378,7 @@ impl RbDataFrame {
         &self,
         rb_f: Value,
         compression: Wrap<Option<IpcCompression>>,
+        compat_level: RbCompatLevel,
     ) -> RbResult<()> {
         let either = get_either_file(rb_f, true)?;
         if let EitherRustRubyFile::Rust(ref f) = either {
@@ -386,7 +387,7 @@ impl RbDataFrame {
         let mut buf = either.into_dyn();
         IpcWriter::new(&mut buf)
             .with_compression(compression.0)
-            // .with_compat_level(compat_level.0)
+            .with_compat_level(compat_level.0)
             .finish(&mut self.df.borrow_mut())
             .map_err(RbPolarsErr::from)?;
         Ok(())
@@ -396,11 +397,12 @@ impl RbDataFrame {
         &self,
         rb_f: Value,
         compression: Wrap<Option<IpcCompression>>,
+        compat_level: RbCompatLevel,
     ) -> RbResult<()> {
         let mut buf = get_file_like(rb_f, true)?;
         IpcStreamWriter::new(&mut buf)
             .with_compression(compression.0)
-            // .with_compat_level(compat_level.0)
+            .with_compat_level(compat_level.0)
             .finish(&mut self.df.borrow_mut())
             .map_err(RbPolarsErr::from)?;
         Ok(())
@@ -410,12 +412,13 @@ impl RbDataFrame {
         &self,
         rb_f: Value,
         compression: Wrap<Option<AvroCompression>>,
+        name: String,
     ) -> RbResult<()> {
         use polars::io::avro::AvroWriter;
         let mut buf = get_file_like(rb_f, true)?;
         AvroWriter::new(&mut buf)
             .with_compression(compression.0)
-            // .with_name(name)
+            .with_name(name)
             .finish(&mut self.df.borrow_mut())
             .map_err(RbPolarsErr::from)?;
         Ok(())

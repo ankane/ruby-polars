@@ -1,6 +1,8 @@
 ## 0.14.1 (unreleased)
 
 - Added `strict` option to `DataFrame` constructor
+- Added `compat_level` option to `write_ipc` and `write_ipc_stream` methods
+- Added `name` option to `write_avro` method
 - Added support for array of name-type pairs to `schema` option
 - Added `cast` method to `DataFrame` and `LazyFrame`
 
