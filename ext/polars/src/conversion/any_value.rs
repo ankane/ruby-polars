@@ -164,9 +164,8 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
         let len = dict.len();
         let mut keys = Vec::with_capacity(len);
         let mut vals = Vec::with_capacity(len);
-        dict.foreach(|k: Value, v: Value| {
-            let key = String::try_convert(k)?;
-            let val = Wrap::<AnyValue>::try_convert(v)?.0;
+        dict.foreach(|key: String, val: Wrap<AnyValue>| {
+            let val = val.0;
             let dtype = DataType::from(&val);
             keys.push(Field::new(key.into(), dtype));
             vals.push(val);
