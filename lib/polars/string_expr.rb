@@ -421,7 +421,6 @@ module Polars
     #   # │ THERE'S NO TURNING BACK ┆ There's No Turning Back │
     #   # └─────────────────────────┴─────────────────────────┘
     def to_titlecase
-      raise Todo
       Utils.wrap_expr(_rbexpr.str_to_titlecase)
     end
 

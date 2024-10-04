@@ -286,6 +286,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_slice", method!(RbExpr::str_slice, 2))?;
     class.define_method("str_to_uppercase", method!(RbExpr::str_to_uppercase, 0))?;
     class.define_method("str_to_lowercase", method!(RbExpr::str_to_lowercase, 0))?;
+    // class.define_method("str_to_titlecase", method!(RbExpr::str_to_titlecase, 0))?;
     class.define_method("str_len_bytes", method!(RbExpr::str_len_bytes, 0))?;
     class.define_method("str_len_chars", method!(RbExpr::str_len_chars, 0))?;
     class.define_method("str_replace_n", method!(RbExpr::str_replace_n, 4))?;

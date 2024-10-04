@@ -130,6 +130,11 @@ impl RbExpr {
         self.inner.clone().str().to_lowercase().into()
     }
 
+    // requires nightly
+    // pub fn str_to_titlecase(&self) -> Self {
+    //     self.inner.clone().str().to_titlecase().into()
+    // }
+
     pub fn str_len_bytes(&self) -> Self {
         self.inner.clone().str().len_bytes().into()
     }

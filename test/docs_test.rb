@@ -162,8 +162,14 @@ class DocsTest < Minitest::Test
     # requires files
     return if [:read_csv_batched, :sink_parquet, :sink_ipc, :sink_csv, :sink_ndjson].include?(method.name)
 
+    # TODO time object
+    return if [:time_range, :time_ranges].include?(method.name)
+
+    # requires nightly
+    return if [:to_titlecase].include?(method.name)
+
     # TODO fix
-    return if [:align_frames, :coalesce, :cum_sum_horizontal, :cumsum_horizontal, :to_titlecase, :time_range, :time_ranges].include?(method.name)
+    return if [:align_frames, :coalesce, :cum_sum_horizontal, :cumsum_horizontal].include?(method.name)
 
     code = ""
     method.tags(:example).each do |example|
