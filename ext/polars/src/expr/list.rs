@@ -1,4 +1,4 @@
-use magnus::Value;
+use magnus::{prelude::*, value::Opaque, Ruby, Value};
 use polars::lazy::dsl::lit;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
@@ -179,17 +179,21 @@ impl RbExpr {
     pub fn list_to_struct(
         &self,
         width_strat: Wrap<ListToStructWidthStrategy>,
-        _name_gen: Option<Value>,
+        name_gen: Option<Value>,
         upper_bound: usize,
     ) -> RbResult<Self> {
-        // TODO fix
-        let name_gen = None;
-        // let name_gen = name_gen.map(|lambda| {
-        //     Arc::new(move |idx: usize| {
-        //         let out: Value = lambda.funcall("call", (idx,)).unwrap();
-        //         String::try_convert(out).unwrap()
-        //     }) as NameGenerator
-        // });
+        let name_gen = name_gen.map(|lambda| {
+            let lambda = Opaque::from(lambda);
+            Arc::new(move |idx: usize| {
+                let lambda = Ruby::get().unwrap().get_inner(lambda);
+                let out: String = lambda.funcall("call", (idx,)).unwrap();
+                let out = PlSmallStr::from_string(out);
+                out
+            }) as NameGenerator;
+
+            // non-Ruby thread
+            todo!();
+        });
 
         Ok(self
             .inner
