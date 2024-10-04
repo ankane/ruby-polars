@@ -4928,7 +4928,7 @@ module Polars
     end
 
     # @private
-    def self.expand_hash_scalars(data, schema_overrides: nil, order: nil, nan_to_null: false)
+    def self.expand_hash_scalars(data, schema_overrides: nil, strict: true, order: nil, nan_to_null: false)
       updated_data = {}
       unless data.empty?
         dtypes = schema_overrides || {}
@@ -4937,23 +4937,23 @@ module Polars
           data.each do |name, val|
             dtype = dtypes[name]
             if val.is_a?(Hash) && dtype != Struct
-              updated_data[name] = DataFrame.new(val).to_struct(name)
+              updated_data[name] = DataFrame.new(val, strict: strict).to_struct(name)
             elsif !Utils.arrlen(val).nil?
-              updated_data[name] = Series.new(::String.new(name), val, dtype: dtype)
+              updated_data[name] = Series.new(::String.new(name), val, dtype: dtype, strict: strict)
             elsif val.nil? || [Integer, Float, TrueClass, FalseClass, ::String, ::Date, ::DateTime, ::Time].any? { |cls| val.is_a?(cls) }
               dtype = Polars::Float64 if val.nil? && dtype.nil?
-              updated_data[name] = Series.new(::String.new(name), [val], dtype: dtype).extend_constant(val, array_len - 1)
+              updated_data[name] = Series.new(::String.new(name), [val], dtype: dtype, strict: strict).extend_constant(val, array_len - 1)
             else
               raise Todo
             end
           end
         elsif data.values.all? { |val| Utils.arrlen(val) == 0 }
           data.each do |name, val|
-            updated_data[name] = Series.new(name, val, dtype: dtypes[name])
+            updated_data[name] = Series.new(name, val, dtype: dtypes[name], strict: strict)
           end
         elsif data.values.all? { |val| Utils.arrlen(val).nil? }
           data.each do |name, val|
-            updated_data[name] = Series.new(name, [val], dtype: dtypes[name])
+            updated_data[name] = Series.new(name, [val], dtype: dtypes[name], strict: strict)
           end
         end
       end
@@ -4978,9 +4978,9 @@ module Polars
       end
 
       if data.empty? && !schema_overrides.empty?
-        data_series = column_names.map { |name| Series.new(name, [], dtype: schema_overrides[name], nan_to_null: nan_to_null)._s }
+        data_series = column_names.map { |name| Series.new(name, [], dtype: schema_overrides[name], strict: strict, nan_to_null: nan_to_null)._s }
       else
-        data_series = expand_hash_scalars(data, schema_overrides: schema_overrides, nan_to_null: nan_to_null).values.map(&:_s)
+        data_series = expand_hash_scalars(data, schema_overrides: schema_overrides, strict: strict, nan_to_null: nan_to_null).values.map(&:_s)
       end
 
       data_series = _handle_columns_arg(data_series, columns: column_names, from_hash: true)
