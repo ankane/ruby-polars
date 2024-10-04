@@ -305,6 +305,12 @@ class SeriesTest < Minitest::Test
     assert_series [0, 0, 0], a % 5
   end
 
+  def test_add_series
+    a = Polars::Series.new([1, 2, 3])
+    b = Polars::Series.new(["a", "b", "c"])
+    assert_series ["1a", "2b", "3c"], a + b
+  end
+
   def test_pow
     a = Polars::Series.new([10, 20, 30])
     assert_series [100, 400, 900], a**2

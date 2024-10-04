@@ -4381,7 +4381,7 @@ module Polars
     # @example A horizontal string concatenation:
     #   df = Polars::DataFrame.new(
     #     {
-    #       "a" => ["foo", "bar", 2],
+    #       "a" => ["foo", "bar", nil],
     #       "b" => [1, 2, 3],
     #       "c" => [1.0, 2.0, 3.0]
     #     }
