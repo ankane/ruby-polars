@@ -7,7 +7,9 @@ use std::num::NonZeroUsize;
 
 use super::*;
 use crate::conversion::*;
-use crate::file::{get_either_file, get_file_like, get_mmap_bytes_reader, EitherRustRubyFile};
+use crate::file::{
+    get_either_file, get_file_like, get_mmap_bytes_reader, read_if_bytesio, EitherRustRubyFile,
+};
 use crate::{RbPolarsErr, RbResult};
 
 impl RbDataFrame {
@@ -80,7 +82,8 @@ impl RbDataFrame {
                 .collect::<Vec<_>>()
         });
 
-        let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
+        let rb_f = read_if_bytesio(rb_f);
+        let mmap_bytes_r = get_mmap_bytes_reader(&rb_f)?;
         let df = CsvReadOptions::default()
             .with_path(path)
             .with_infer_schema_length(infer_schema_length)
@@ -172,7 +175,8 @@ impl RbDataFrame {
         schema: Option<Wrap<Schema>>,
         schema_overrides: Option<Wrap<Schema>>,
     ) -> RbResult<Self> {
-        let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
+        let rb_f = read_if_bytesio(rb_f);
+        let mmap_bytes_r = get_mmap_bytes_reader(&rb_f)?;
 
         let mut builder = JsonReader::new(mmap_bytes_r)
             .with_json_format(JsonFormat::Json)
@@ -196,7 +200,8 @@ impl RbDataFrame {
         schema: Option<Wrap<Schema>>,
         schema_overrides: Option<Wrap<Schema>>,
     ) -> RbResult<Self> {
-        let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
+        let rb_f = read_if_bytesio(rb_f);
+        let mmap_bytes_r = get_mmap_bytes_reader(&rb_f)?;
 
         let mut builder = JsonReader::new(mmap_bytes_r)
             .with_json_format(JsonFormat::JsonLines)
@@ -228,7 +233,8 @@ impl RbDataFrame {
             name: name.into(),
             offset,
         });
-        let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
+        let rb_f = read_if_bytesio(rb_f);
+        let mmap_bytes_r = get_mmap_bytes_reader(&rb_f)?;
 
         // TODO fix
         let mmap_path = None;
@@ -255,8 +261,8 @@ impl RbDataFrame {
             name: name.into(),
             offset,
         });
-        // rb_f = read_if_bytesio(rb_f);
-        let mmap_bytes_r = get_mmap_bytes_reader(rb_f)?;
+        let rb_f = read_if_bytesio(rb_f);
+        let mmap_bytes_r = get_mmap_bytes_reader(&rb_f)?;
         let df = IpcStreamReader::new(mmap_bytes_r)
             .with_projection(projection)
             .with_columns(columns)

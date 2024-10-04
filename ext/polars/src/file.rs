@@ -164,14 +164,25 @@ pub fn get_file_like(f: Value, truncate: bool) -> RbResult<Box<dyn FileLike>> {
     }
 }
 
-pub fn get_mmap_bytes_reader(rb_f: Value) -> RbResult<Box<dyn MmapBytesReader>> {
-    if let Ok(bytes) = rb_f.funcall::<_, _, RString>("read", ()) {
-        let bytes = unsafe { bytes.as_slice() };
-        // TODO avoid copy
-        Ok(Box::new(Cursor::new(bytes.to_vec())))
-    } else {
-        let p = PathBuf::try_convert(rb_f)?;
-        let f = File::open(p).map_err(|e| Error::new(exception::runtime_error(), e.to_string()))?;
-        Ok(Box::new(f))
+pub enum RbReadBytes {
+    Bytes(RString),
+    Other(Value),
+}
+
+pub fn read_if_bytesio(rb_f: Value) -> RbReadBytes {
+    rb_f.funcall("read", ())
+        .map(|v| RbReadBytes::Bytes(v))
+        .unwrap_or(RbReadBytes::Other(rb_f))
+}
+
+pub fn get_mmap_bytes_reader<'a>(rb_f: &'a RbReadBytes) -> RbResult<Box<dyn MmapBytesReader + 'a>> {
+    match rb_f {
+        RbReadBytes::Bytes(v) => Ok(Box::new(Cursor::new(unsafe { v.as_slice() }))),
+        RbReadBytes::Other(v) => {
+            let p = PathBuf::try_convert(*v)?;
+            let f =
+                File::open(p).map_err(|e| Error::new(exception::runtime_error(), e.to_string()))?;
+            Ok(Box::new(f))
+        }
     }
 }
