@@ -168,9 +168,6 @@ class DocsTest < Minitest::Test
     # requires nightly
     return if [:to_titlecase].include?(method.name)
 
-    # TODO fix
-    return if [:align_frames].include?(method.name)
-
     code = ""
     method.tags(:example).each do |example|
       # use variables from previous examples

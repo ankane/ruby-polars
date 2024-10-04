@@ -127,7 +127,7 @@ module Polars
     #   af1, af2, af3 = Polars.align_frames(
     #     df1, df2, df3, on: "dt", select: ["x", "y"]
     #   )
-    #   (af1 * af2 * af3).fill_null(0).select(Polars.sum(Polars.col("*")).alias("dot"))
+    #   (af1 * af2 * af3).fill_null(0).select(Polars.sum_horizontal("*").alias("dot"))
     #   # =>
     #   # shape: (3, 1)
     #   # ┌───────┐
@@ -136,9 +136,7 @@ module Polars
     #   # │ f64   │
     #   # ╞═══════╡
     #   # │ 0.0   │
-    #   # ├╌╌╌╌╌╌╌┤
     #   # │ 167.5 │
-    #   # ├╌╌╌╌╌╌╌┤
     #   # │ 47.0  │
     #   # └───────┘
     def align_frames(
