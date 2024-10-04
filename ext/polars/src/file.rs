@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io;
-use std::io::{BufReader, Cursor, Read, Seek, SeekFrom, Write};
+use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
 
 use magnus::{exception, prelude::*, Error, RString, Value};
@@ -132,7 +132,16 @@ impl FileLike for RbFileLikeObject {}
 
 pub enum EitherRustRubyFile {
     Rb(RbFileLikeObject),
-    Rust(BufReader<File>),
+    Rust(File),
+}
+
+impl EitherRustRubyFile {
+    pub fn into_dyn(self) -> Box<dyn FileLike> {
+        match self {
+            EitherRustRubyFile::Rb(f) => Box::new(f),
+            EitherRustRubyFile::Rust(f) => Box::new(f),
+        }
+    }
 }
 
 ///
@@ -148,8 +157,7 @@ pub fn get_either_file(rb_f: Value, truncate: bool) -> RbResult<EitherRustRubyFi
         } else {
             polars_utils::open_file(&file_path).map_err(RbPolarsErr::from)?
         };
-        let reader = BufReader::new(f);
-        Ok(EitherRustRubyFile::Rust(reader))
+        Ok(EitherRustRubyFile::Rust(f))
     } else {
         let f = RbFileLikeObject::with_requirements(rb_f, !truncate, truncate, !truncate)?;
         Ok(EitherRustRubyFile::Rb(f))
@@ -157,11 +165,7 @@ pub fn get_either_file(rb_f: Value, truncate: bool) -> RbResult<EitherRustRubyFi
 }
 
 pub fn get_file_like(f: Value, truncate: bool) -> RbResult<Box<dyn FileLike>> {
-    use EitherRustRubyFile::*;
-    match get_either_file(f, truncate)? {
-        Rb(f) => Ok(Box::new(f)),
-        Rust(f) => Ok(Box::new(f.into_inner())),
-    }
+    Ok(get_either_file(f, truncate)?.into_dyn())
 }
 
 pub enum RbReadBytes {

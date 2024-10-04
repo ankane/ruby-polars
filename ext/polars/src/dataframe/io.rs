@@ -1,8 +1,9 @@
-use magnus::{prelude::*, RString, Value};
+use magnus::{prelude::*, Value};
 use polars::io::avro::AvroCompression;
 use polars::io::RowIndex;
 use polars::prelude::*;
-use std::io::{BufWriter, Cursor};
+use polars_utils::mmap::ensure_not_mapped;
+use std::io::BufWriter;
 use std::num::NonZeroUsize;
 
 use super::*;
@@ -156,7 +157,7 @@ impl RbDataFrame {
                     .set_rechunk(rechunk)
                     .finish()
             }
-            Rust(f) => ParquetReader::new(f.into_inner())
+            Rust(f) => ParquetReader::new(f)
                 .with_projection(projection)
                 .with_columns(columns)
                 .read_parallel(parallel.0)
@@ -335,26 +336,14 @@ impl RbDataFrame {
     ) -> RbResult<()> {
         let compression = parse_parquet_compression(&compression, compression_level)?;
 
-        if let Ok(s) = String::try_convert(rb_f) {
-            let f = std::fs::File::create(s).unwrap();
-            ParquetWriter::new(f)
-                .with_compression(compression)
-                .with_statistics(statistics.0)
-                .with_row_group_size(row_group_size)
-                .with_data_page_size(data_page_size)
-                .finish(&mut self.df.borrow_mut())
-                .map_err(RbPolarsErr::from)?;
-        } else {
-            let buf = get_file_like(rb_f, true)?;
-            ParquetWriter::new(buf)
-                .with_compression(compression)
-                .with_statistics(statistics.0)
-                .with_row_group_size(row_group_size)
-                .with_data_page_size(data_page_size)
-                .finish(&mut self.df.borrow_mut())
-                .map_err(RbPolarsErr::from)?;
-        }
-
+        let buf = get_file_like(rb_f, true)?;
+        ParquetWriter::new(buf)
+            .with_compression(compression)
+            .with_statistics(statistics.0)
+            .with_row_group_size(row_group_size)
+            .with_data_page_size(data_page_size)
+            .finish(&mut self.df.borrow_mut())
+            .map_err(RbPolarsErr::from)?;
         Ok(())
     }
 
@@ -390,22 +379,16 @@ impl RbDataFrame {
         rb_f: Value,
         compression: Wrap<Option<IpcCompression>>,
     ) -> RbResult<()> {
-        if let Ok(s) = String::try_convert(rb_f) {
-            let f = std::fs::File::create(s).unwrap();
-            IpcWriter::new(f)
-                .with_compression(compression.0)
-                .finish(&mut self.df.borrow_mut())
-                .map_err(RbPolarsErr::from)?;
-        } else {
-            let mut buf = Cursor::new(Vec::new());
-            IpcWriter::new(&mut buf)
-                .with_compression(compression.0)
-                .finish(&mut self.df.borrow_mut())
-                .map_err(RbPolarsErr::from)?;
-            // TODO less copying
-            let rb_str = RString::from_slice(&buf.into_inner());
-            rb_f.funcall::<_, _, Value>("write", (rb_str,))?;
+        let either = get_either_file(rb_f, true)?;
+        if let EitherRustRubyFile::Rust(ref f) = either {
+            ensure_not_mapped(f).map_err(RbPolarsErr::from)?;
         }
+        let mut buf = either.into_dyn();
+        IpcWriter::new(&mut buf)
+            .with_compression(compression.0)
+            // .with_compat_level(compat_level.0)
+            .finish(&mut self.df.borrow_mut())
+            .map_err(RbPolarsErr::from)?;
         Ok(())
     }
 
@@ -414,20 +397,12 @@ impl RbDataFrame {
         rb_f: Value,
         compression: Wrap<Option<IpcCompression>>,
     ) -> RbResult<()> {
-        if let Ok(s) = String::try_convert(rb_f) {
-            let f = std::fs::File::create(s).unwrap();
-            IpcStreamWriter::new(f)
-                .with_compression(compression.0)
-                .finish(&mut self.df.borrow_mut())
-                .map_err(RbPolarsErr::from)?
-        } else {
-            let mut buf = get_file_like(rb_f, true)?;
-
-            IpcStreamWriter::new(&mut buf)
-                .with_compression(compression.0)
-                .finish(&mut self.df.borrow_mut())
-                .map_err(RbPolarsErr::from)?;
-        }
+        let mut buf = get_file_like(rb_f, true)?;
+        IpcStreamWriter::new(&mut buf)
+            .with_compression(compression.0)
+            // .with_compat_level(compat_level.0)
+            .finish(&mut self.df.borrow_mut())
+            .map_err(RbPolarsErr::from)?;
         Ok(())
     }
 
@@ -437,21 +412,12 @@ impl RbDataFrame {
         compression: Wrap<Option<AvroCompression>>,
     ) -> RbResult<()> {
         use polars::io::avro::AvroWriter;
-
-        if let Ok(s) = String::try_convert(rb_f) {
-            let f = std::fs::File::create(s).unwrap();
-            AvroWriter::new(f)
-                .with_compression(compression.0)
-                .finish(&mut self.df.borrow_mut())
-                .map_err(RbPolarsErr::from)?;
-        } else {
-            let mut buf = get_file_like(rb_f, true)?;
-            AvroWriter::new(&mut buf)
-                .with_compression(compression.0)
-                .finish(&mut self.df.borrow_mut())
-                .map_err(RbPolarsErr::from)?;
-        }
-
+        let mut buf = get_file_like(rb_f, true)?;
+        AvroWriter::new(&mut buf)
+            .with_compression(compression.0)
+            // .with_name(name)
+            .finish(&mut self.df.borrow_mut())
+            .map_err(RbPolarsErr::from)?;
         Ok(())
     }
 }
