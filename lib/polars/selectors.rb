@@ -419,9 +419,71 @@ module Polars
       _selector_proxy_(F.col(Categorical), name: "categorical")
     end
 
-    # TODO
-    # def contains
-    # end
+    # Select columns whose names contain the given literal substring(s).
+    #
+    # @param substring [Object]
+    #   Substring(s) that matching column names should contain.
+    #
+    # @return [SelectorProxy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => ["x", "y"],
+    #       "bar" => [123, 456],
+    #       "baz" => [2.0, 5.5],
+    #       "zap" => [false, true]
+    #     }
+    #   )
+    #
+    # @example Select columns that contain the substring 'ba':
+    #   df.select(Polars.cs.contains("ba"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ bar ┆ baz │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 123 ┆ 2.0 │
+    #   # │ 456 ┆ 5.5 │
+    #   # └─────┴─────┘
+    #
+    # @example Select columns that contain the substring 'ba' or the letter 'z':
+    #   df.select(Polars.cs.contains("ba", "z"))
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬───────┐
+    #   # │ bar ┆ baz ┆ zap   │
+    #   # │ --- ┆ --- ┆ ---   │
+    #   # │ i64 ┆ f64 ┆ bool  │
+    #   # ╞═════╪═════╪═══════╡
+    #   # │ 123 ┆ 2.0 ┆ false │
+    #   # │ 456 ┆ 5.5 ┆ true  │
+    #   # └─────┴─────┴───────┘
+    #
+    # @example Select all columns *except* for those that contain the substring 'ba':
+    #   df.select(~Polars.cs.contains("ba"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬───────┐
+    #   # │ foo ┆ zap   │
+    #   # │ --- ┆ ---   │
+    #   # │ str ┆ bool  │
+    #   # ╞═════╪═══════╡
+    #   # │ x   ┆ false │
+    #   # │ y   ┆ true  │
+    #   # └─────┴───────┘
+    def self.contains(*substring)
+      escaped_substring = _re_string(substring)
+      raw_params = "^.*#{escaped_substring}.*$"
+
+      _selector_proxy_(
+        F.col(raw_params),
+        name: "contains",
+        parameters: {"*substring" => escaped_substring}
+      )
+    end
 
     # Select all date columns.
     #
