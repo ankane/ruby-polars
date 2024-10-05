@@ -328,7 +328,6 @@ impl TryConvert for Wrap<DataType> {
                     )))
                 }
             }
-        // TODO improve
         } else if String::try_convert(ob).is_err() {
             let name = unsafe { ob.class().name() }.into_owned();
             match name.as_str() {
