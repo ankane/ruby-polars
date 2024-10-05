@@ -113,6 +113,24 @@ module Polars
       SelectorProxy.new(...)
     end
 
+    # @private
+    def self._re_string(string, escape: true)
+      if string.is_a?(::String)
+        rx = escape ? Utils.re_escape(string) : string
+      else
+        strings = []
+        string.each do |st|
+          if st.is_a?(Array)
+            strings.concat(st)
+          else
+            strings << st
+          end
+        end
+        rx = strings.map { |x| escape ? Utils.re_escape(x) : x }.join("|")
+      end
+      "(#{rx})"
+    end
+
     # Select all columns.
     #
     # @return [SelectorProxy]
@@ -710,6 +728,72 @@ module Polars
     #   # └─────┘
     def self.numeric
       _selector_proxy_(F.col(NUMERIC_DTYPES), name: "numeric")
+    end
+
+    # Select columns that start with the given substring(s).
+    #
+    # @param prefix [Object]
+    #   Substring(s) that matching column names should start with.
+    #
+    # @return [SelectorProxy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1.0, 2.0],
+    #       "bar" => [3.0, 4.0],
+    #       "baz" => [5, 6],
+    #       "zap" => [7, 8]
+    #     }
+    #   )
+    #
+    # @example Match columns starting with a 'b':
+    #   df.select(Polars.cs.starts_with("b"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ bar ┆ baz │
+    #   # │ --- ┆ --- │
+    #   # │ f64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 3.0 ┆ 5   │
+    #   # │ 4.0 ┆ 6   │
+    #   # └─────┴─────┘
+    #
+    # @example Match columns starting with *either* the letter 'b' or 'z':
+    #   df.select(Polars.cs.starts_with("b", "z"))
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ bar ┆ baz ┆ zap │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ f64 ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 3.0 ┆ 5   ┆ 7   │
+    #   # │ 4.0 ┆ 6   ┆ 8   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example Match all columns *except* for those starting with 'b':
+    #   df.select(~Polars.cs.starts_with("b"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ zap │
+    #   # │ --- ┆ --- │
+    #   # │ f64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1.0 ┆ 7   │
+    #   # │ 2.0 ┆ 8   │
+    #   # └─────┴─────┘
+    def self.starts_with(*prefix)
+      escaped_prefix = _re_string(prefix)
+      raw_params = "^#{escaped_prefix}.*$"
+
+      _selector_proxy_(
+        F.col(raw_params),
+        name: "starts_with",
+        parameters: {"*prefix" => prefix}
+      )
     end
 
     # Select all String (and, optionally, Categorical) string columns.

@@ -156,5 +156,12 @@ module Polars
         raise Todo
       end
     end
+
+    def self.re_escape(s)
+      # note: almost the same as the standard python 're.escape' function, but
+      # escapes _only_ those metachars with meaning to the rust regex crate
+      re_rust_metachars = "\\?()|\[\]{}^$#&~.+*-"
+      s.gsub("([#{re_rust_metachars}])", "\\\1")
+    end
   end
 end
