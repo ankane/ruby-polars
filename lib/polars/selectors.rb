@@ -75,7 +75,7 @@ module Polars
 
       def |(other)
         if Utils.is_column(other)
-          other = by_name(other.meta.output_name())
+          raise Todo
         end
         if Utils.is_selector(other)
           SelectorProxy.new(
@@ -85,6 +85,21 @@ module Polars
           )
         else
           as_expr | other
+        end
+      end
+
+      def ^(other)
+        if Utils.is_column(other)
+          raise Todo
+        end
+        if Utils.is_selector(other)
+          SelectorProxy.new(
+            meta._as_selector.meta._selector_and(other),
+            parameters: {"self" => self, "other" => other},
+            name: "xor"
+          )
+        else
+          as_expr ^ other
         end
       end
 
