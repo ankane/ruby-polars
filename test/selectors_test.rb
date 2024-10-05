@@ -11,8 +11,8 @@ class SelectorsTest < Minitest::Test
   end
 
   def test_starts_with_escape
-    df = Polars::DataFrame.new({"+" => [1, 2, 3]})
-    assert_equal ["+"], df.select(Polars.cs.starts_with("+")).columns
+    df = Polars::DataFrame.new({".+" => [1], "a" => [2]})
+    assert_equal [".+"], df.select(Polars.cs.starts_with(".+")).columns
   end
 
   def assert_inspect(expected, obj)
