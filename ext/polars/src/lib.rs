@@ -571,6 +571,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("concat_str", function!(functions::lazy::concat_str, 3))?;
     class.define_singleton_method("concat_list", function!(functions::lazy::concat_list, 1))?;
     class.define_singleton_method(
+        "business_day_count",
+        function!(functions::business::business_day_count, 4),
+    )?;
+    class.define_singleton_method(
         "all_horizontal",
         function!(functions::aggregation::all_horizontal, 1),
     )?;
