@@ -28,10 +28,11 @@ use functions::string_cache::RbStringCacheHolder;
 use functions::whenthen::{RbChainedThen, RbChainedWhen, RbThen, RbWhen};
 use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
-use magnus::error::Result as RbResult;
 use magnus::{define_module, function, method, prelude::*, Ruby};
 use series::RbSeries;
 use sql::RbSQLContext;
+
+use magnus::error::Result as RbResult;
 
 #[magnus::init]
 fn init(ruby: &Ruby) -> RbResult<()> {
