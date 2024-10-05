@@ -31,7 +31,7 @@ impl RbSeries {
     }
 }
 
-pub fn to_series_collection(rs: RArray) -> RbResult<Vec<Series>> {
+pub fn to_series(rs: RArray) -> RbResult<Vec<Series>> {
     let mut series = Vec::new();
     for item in rs.into_iter() {
         series.push(<&RbSeries>::try_convert(item)?.series.borrow().clone());
@@ -39,6 +39,6 @@ pub fn to_series_collection(rs: RArray) -> RbResult<Vec<Series>> {
     Ok(series)
 }
 
-pub fn to_rbseries_collection(s: Vec<Series>) -> RArray {
+pub fn to_rbseries(s: Vec<Series>) -> RArray {
     RArray::from_iter(s.into_iter().map(RbSeries::new))
 }

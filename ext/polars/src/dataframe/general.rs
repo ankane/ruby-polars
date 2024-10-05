@@ -10,7 +10,7 @@ use crate::map::dataframe::{
     apply_lambda_with_utf8_out_type,
 };
 use crate::prelude::strings_to_pl_smallstr;
-use crate::series::{to_rbseries_collection, to_series_collection};
+use crate::series::{to_rbseries, to_series};
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 
 impl RbDataFrame {
@@ -128,7 +128,7 @@ impl RbDataFrame {
 
     pub fn get_columns(&self) -> RArray {
         let cols = self.df.borrow().get_columns().to_vec();
-        to_rbseries_collection(cols)
+        to_rbseries(cols)
     }
 
     pub fn columns(&self) -> Vec<String> {
@@ -174,7 +174,7 @@ impl RbDataFrame {
     }
 
     pub fn hstack(&self, columns: RArray) -> RbResult<Self> {
-        let columns = to_series_collection(columns)?;
+        let columns = to_series(columns)?;
         let df = self
             .df
             .borrow()
@@ -184,7 +184,7 @@ impl RbDataFrame {
     }
 
     pub fn hstack_mut(&self, columns: RArray) -> RbResult<()> {
-        let columns = to_series_collection(columns)?;
+        let columns = to_series(columns)?;
         self.df
             .borrow_mut()
             .hstack_mut(&columns)

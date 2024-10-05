@@ -4,7 +4,7 @@ use polars_core::prelude::*;
 use crate::any_value::rb_object_to_any_value;
 use crate::conversion::{slice_extract_wrapped, vec_extract_wrapped, Wrap};
 use crate::prelude::ObjectValue;
-use crate::series::to_series_collection;
+use crate::series::to_series;
 use crate::{RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
 
 impl RbSeries {
@@ -185,7 +185,7 @@ impl RbSeries {
     }
 
     pub fn new_series_list(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
-        let series_vec = to_series_collection(val)?;
+        let series_vec = to_series(val)?;
         Ok(Series::new(name.into(), &series_vec).into())
     }
 
