@@ -84,50 +84,6 @@ module Polars
       _selector_proxy_(F.all, name: "all")
     end
 
-    # Select all numeric columns.
-    #
-    # @return [SelectorProxy]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "foo" => ["x", "y"],
-    #       "bar" => [123, 456],
-    #       "baz" => [2.0, 5.5],
-    #       "zap" => [0, 0]
-    #     },
-    #     schema_overrides: {"bar" => Polars::Int16, "baz" => Polars::Float32, "zap" => Polars::UInt8},
-    #   )
-    #
-    # @example Match all numeric columns:
-    #   df.select(Polars.cs.numeric)
-    #   # =>
-    #   # shape: (2, 3)
-    #   # ┌─────┬─────┬─────┐
-    #   # │ bar ┆ baz ┆ zap │
-    #   # │ --- ┆ --- ┆ --- │
-    #   # │ i16 ┆ f32 ┆ u8  │
-    #   # ╞═════╪═════╪═════╡
-    #   # │ 123 ┆ 2.0 ┆ 0   │
-    #   # │ 456 ┆ 5.5 ┆ 0   │
-    #   # └─────┴─────┴─────┘
-    #
-    # @example Match all columns *except* for those that are numeric:
-    #   df.select(~Polars.cs.numeric)
-    #   # =>
-    #   # shape: (2, 1)
-    #   # ┌─────┐
-    #   # │ foo │
-    #   # │ --- │
-    #   # │ str │
-    #   # ╞═════╡
-    #   # │ x   │
-    #   # │ y   │
-    #   # └─────┘
-    def self.numeric
-      _selector_proxy_(F.col(NUMERIC_DTYPES), name: "numeric")
-    end
-
     # Select all columns with alphabetic names (eg: only letters).
     #
     # @param ascii_only [Boolean]
@@ -552,6 +508,50 @@ module Polars
     #   # └─────┴─────┴─────┘
     def self.last
       _selector_proxy_(F.last, name: "last")
+    end
+
+    # Select all numeric columns.
+    #
+    # @return [SelectorProxy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => ["x", "y"],
+    #       "bar" => [123, 456],
+    #       "baz" => [2.0, 5.5],
+    #       "zap" => [0, 0]
+    #     },
+    #     schema_overrides: {"bar" => Polars::Int16, "baz" => Polars::Float32, "zap" => Polars::UInt8},
+    #   )
+    #
+    # @example Match all numeric columns:
+    #   df.select(Polars.cs.numeric)
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ bar ┆ baz ┆ zap │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i16 ┆ f32 ┆ u8  │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 123 ┆ 2.0 ┆ 0   │
+    #   # │ 456 ┆ 5.5 ┆ 0   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example Match all columns *except* for those that are numeric:
+    #   df.select(~Polars.cs.numeric)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ x   │
+    #   # │ y   │
+    #   # └─────┘
+    def self.numeric
+      _selector_proxy_(F.col(NUMERIC_DTYPES), name: "numeric")
     end
   end
 
