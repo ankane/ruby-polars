@@ -18,6 +18,7 @@ magnus = "0.7"
 polars-core = "=0.43.1"
 polars-parquet = "=0.43.1"
 polars-utils = "=0.43.1"
+regex = "1"
 serde_json = "1"
 
 [dependencies.polars]

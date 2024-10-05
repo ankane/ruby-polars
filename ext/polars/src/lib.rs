@@ -34,6 +34,11 @@ use sql::RbSQLContext;
 
 use magnus::error::Result as RbResult;
 
+// TODO move
+fn re_escape(pattern: String) -> String {
+    regex::escape(&pattern)
+}
+
 #[magnus::init]
 fn init(ruby: &Ruby) -> RbResult<()> {
     crate::on_startup::register_startup_deps();
@@ -707,6 +712,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "set_random_seed",
         function!(functions::random::set_random_seed, 1),
     )?;
+    class.define_singleton_method("re_escape", function!(re_escape, 1))?;
 
     let class = module.define_class("RbLazyFrame", ruby.class_object())?;
     class.define_singleton_method("read_json", function!(RbLazyFrame::read_json, 1))?;

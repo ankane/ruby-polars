@@ -1255,6 +1255,7 @@ dependencies = [
  "polars-core",
  "polars-parquet",
  "polars-utils",
+ "regex",
  "serde_json",
 ]
 
