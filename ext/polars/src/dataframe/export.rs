@@ -18,7 +18,7 @@ impl RbDataFrame {
                 .map(|s| match s.dtype() {
                     DataType::Object(_, _) => {
                         let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
-                        obj.unwrap().to_object()
+                        obj.unwrap().to_value()
                     }
                     _ => Wrap(s.get(idx).unwrap()).into_value(),
                 }),
@@ -37,7 +37,7 @@ impl RbDataFrame {
                     .map(|s| match s.dtype() {
                         DataType::Object(_, _) => {
                             let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
-                            obj.unwrap().to_object()
+                            obj.unwrap().to_value()
                         }
                         _ => Wrap(s.get(idx).unwrap()).into_value(),
                     }),

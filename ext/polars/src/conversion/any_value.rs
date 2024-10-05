@@ -69,11 +69,11 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
         AnyValue::StructOwned(payload) => struct_dict(payload.0.into_iter(), &payload.1),
         AnyValue::Object(v) => {
             let object = v.as_any().downcast_ref::<ObjectValue>().unwrap();
-            object.to_object()
+            object.to_value()
         }
         AnyValue::ObjectOwned(v) => {
             let object = v.0.as_any().downcast_ref::<ObjectValue>().unwrap();
-            object.to_object()
+            object.to_value()
         }
         AnyValue::Binary(v) => RString::from_slice(v).into_value(),
         AnyValue::BinaryOwned(v) => RString::from_slice(&v).into_value(),

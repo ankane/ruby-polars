@@ -492,7 +492,7 @@ pub struct ObjectValue {
 impl Debug for ObjectValue {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ObjectValue")
-            .field("inner", &self.to_object())
+            .field("inner", &self.to_value())
             .finish()
     }
 }
@@ -500,7 +500,7 @@ impl Debug for ObjectValue {
 impl Hash for ObjectValue {
     fn hash<H: Hasher>(&self, state: &mut H) {
         let h = self
-            .to_object()
+            .to_value()
             .funcall::<_, _, isize>("hash", ())
             .expect("should be hashable");
         state.write_isize(h)
@@ -511,7 +511,7 @@ impl Eq for ObjectValue {}
 
 impl PartialEq for ObjectValue {
     fn eq(&self, other: &Self) -> bool {
-        self.to_object().eql(other.to_object()).unwrap_or(false)
+        self.to_value().eql(other.to_value()).unwrap_or(false)
     }
 }
 
@@ -532,7 +532,7 @@ impl TotalHash for ObjectValue {
 
 impl Display for ObjectValue {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_object())
+        write!(f, "{}", self.to_value())
     }
 }
 
@@ -560,10 +560,9 @@ impl From<&dyn PolarsObjectSafe> for &ObjectValue {
     }
 }
 
-// TODO remove
 impl ObjectValue {
-    pub fn to_object(&self) -> Value {
-        Ruby::get().unwrap().get_inner(self.inner)
+    pub fn to_value(&self) -> Value {
+        self.clone().into_value()
     }
 }
 
