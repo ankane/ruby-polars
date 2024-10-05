@@ -709,6 +709,120 @@ module Polars
       _selector_proxy_(F.col(INTEGER_DTYPES), name: "integer")
     end
 
+    # Select all signed integer columns.
+    #
+    # @return [SelectorProxy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [-123, -456],
+    #       "bar" => [3456, 6789],
+    #       "baz" => [7654, 4321],
+    #       "zap" => ["ab", "cd"]
+    #     },
+    #     schema_overrides: {"bar" => Polars::UInt32, "baz" => Polars::UInt64}
+    #   )
+    #
+    # @example Select all signed integer columns:
+    #   df.select(Polars.cs.signed_integer)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌──────┐
+    #   # │ foo  │
+    #   # │ ---  │
+    #   # │ i64  │
+    #   # ╞══════╡
+    #   # │ -123 │
+    #   # │ -456 │
+    #   # └──────┘
+    #
+    # @example
+    #   df.select(~Polars.cs.signed_integer)
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────┬──────┬─────┐
+    #   # │ bar  ┆ baz  ┆ zap │
+    #   # │ ---  ┆ ---  ┆ --- │
+    #   # │ u32  ┆ u64  ┆ str │
+    #   # ╞══════╪══════╪═════╡
+    #   # │ 3456 ┆ 7654 ┆ ab  │
+    #   # │ 6789 ┆ 4321 ┆ cd  │
+    #   # └──────┴──────┴─────┘
+    #
+    # @example Select all integer columns (both signed and unsigned):
+    #   df.select(Polars.cs.integer)
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ baz  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ u32  ┆ u64  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ -123 ┆ 3456 ┆ 7654 │
+    #   # │ -456 ┆ 6789 ┆ 4321 │
+    #   # └──────┴──────┴──────┘
+    def self.signed_integer
+      _selector_proxy_(F.col(SIGNED_INTEGER_DTYPES), name: "signed_integer")
+    end
+
+    # Select all unsigned integer columns.
+    #
+    # @return [SelectorProxy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [-123, -456],
+    #       "bar" => [3456, 6789],
+    #       "baz" => [7654, 4321],
+    #       "zap" => ["ab", "cd"]
+    #     },
+    #     schema_overrides: {"bar" => Polars::UInt32, "baz" => Polars::UInt64}
+    #   )
+    #
+    # @example Select all unsigned integer columns:
+    #   df.select(Polars.cs.unsigned_integer)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌──────┬──────┐
+    #   # │ bar  ┆ baz  │
+    #   # │ ---  ┆ ---  │
+    #   # │ u32  ┆ u64  │
+    #   # ╞══════╪══════╡
+    #   # │ 3456 ┆ 7654 │
+    #   # │ 6789 ┆ 4321 │
+    #   # └──────┴──────┘
+    #
+    # @example Select all columns *except* for those that are unsigned integers:
+    #   df.select(~Polars.cs.unsigned_integer)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌──────┬─────┐
+    #   # │ foo  ┆ zap │
+    #   # │ ---  ┆ --- │
+    #   # │ i64  ┆ str │
+    #   # ╞══════╪═════╡
+    #   # │ -123 ┆ ab  │
+    #   # │ -456 ┆ cd  │
+    #   # └──────┴─────┘
+    #
+    # @example Select all integer columns (both signed and unsigned):
+    #   df.select(Polars.cs.integer)
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ baz  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ u32  ┆ u64  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ -123 ┆ 3456 ┆ 7654 │
+    #   # │ -456 ┆ 6789 ┆ 4321 │
+    #   # └──────┴──────┴──────┘
+    def self.unsigned_integer
+      _selector_proxy_(F.col(UNSIGNED_INTEGER_DTYPES), name: "unsigned_integer")
+    end
+
     # Select the last column in the current scope.
     #
     # @return [SelectorProxy]
