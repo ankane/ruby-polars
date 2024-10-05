@@ -128,6 +128,114 @@ module Polars
       _selector_proxy_(F.col(NUMERIC_DTYPES), name: "numeric")
     end
 
+    # Select all columns with alphabetic names (eg: only letters).
+    #
+    # @param ascii_only [Boolean]
+    #   Indicate whether to consider only ASCII alphabetic characters, or the full
+    #   Unicode range of valid letters (accented, idiographic, etc).
+    # @param ignore_spaces [Boolean]
+    #   Indicate whether to ignore the presence of spaces in column names; if so,
+    #   only the other (non-space) characters are considered.
+    #
+    # @return [SelectorProxy]
+    #
+    # @note
+    #   Matching column names cannot contain *any* non-alphabetic characters. Note
+    #   that the definition of "alphabetic" consists of all valid Unicode alphabetic
+    #   characters (`\p{Alphabetic}`) by default; this can be changed by setting
+    #   `ascii_only: true`.
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "no1" => [100, 200, 300],
+    #       "café" => ["espresso", "latte", "mocha"],
+    #       "t or f" => [true, false, nil],
+    #       "hmm" => ["aaa", "bbb", "ccc"],
+    #       "都市" => ["東京", "大阪", "京都"]
+    #     }
+    #   )
+    #
+    # @example Select columns with alphabetic names; note that accented characters and kanji are recognised as alphabetic here:
+    #   df.select(Polars.cs.alpha)
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌──────────┬─────┬──────┐
+    #   # │ café     ┆ hmm ┆ 都市 │
+    #   # │ ---      ┆ --- ┆ ---  │
+    #   # │ str      ┆ str ┆ str  │
+    #   # ╞══════════╪═════╪══════╡
+    #   # │ espresso ┆ aaa ┆ 東京 │
+    #   # │ latte    ┆ bbb ┆ 大阪 │
+    #   # │ mocha    ┆ ccc ┆ 京都 │
+    #   # └──────────┴─────┴──────┘
+    #
+    # @example Constrain the definition of "alphabetic" to ASCII characters only:
+    #   df.select(Polars.cs.alpha(ascii_only: true))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ hmm │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ aaa │
+    #   # │ bbb │
+    #   # │ ccc │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(Polars.cs.alpha(ascii_only: true, ignore_spaces: true))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌────────┬─────┐
+    #   # │ t or f ┆ hmm │
+    #   # │ ---    ┆ --- │
+    #   # │ bool   ┆ str │
+    #   # ╞════════╪═════╡
+    #   # │ true   ┆ aaa │
+    #   # │ false  ┆ bbb │
+    #   # │ null   ┆ ccc │
+    #   # └────────┴─────┘
+    #
+    # @example Select all columns *except* for those with alphabetic names:
+    #   df.select(~Polars.cs.alpha)
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬────────┐
+    #   # │ no1 ┆ t or f │
+    #   # │ --- ┆ ---    │
+    #   # │ i64 ┆ bool   │
+    #   # ╞═════╪════════╡
+    #   # │ 100 ┆ true   │
+    #   # │ 200 ┆ false  │
+    #   # │ 300 ┆ null   │
+    #   # └─────┴────────┘
+    #
+    # @example
+    #   df.select(~Polars.cs.alpha(ignore_spaces: true))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ no1 │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 100 │
+    #   # │ 200 │
+    #   # │ 300 │
+    #   # └─────┘
+    def self.alpha(ascii_only: false, ignore_spaces: false)
+      # note that we need to supply a pattern compatible with the *rust* regex crate
+      re_alpha = ascii_only ? "a-zA-Z" : "\\p{Alphabetic}"
+      re_space = ignore_spaces ? " " : ""
+      _selector_proxy_(
+        F.col("^[#{re_alpha}#{re_space}]+$"),
+        name: "alpha",
+        parameters: {"ascii_only" => ascii_only, "ignore_spaces" => ignore_spaces},
+      )
+    end
+
     # Select all binary columns.
     #
     # @return [SelectorProxy]
