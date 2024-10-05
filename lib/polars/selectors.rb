@@ -1031,6 +1031,49 @@ module Polars
         parameters: {"include_categorical" => include_categorical},
       )
     end
+
+    # Select all time columns.
+    #
+    # @return [SelectorProxy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "dtm" => [DateTime.new(2001, 5, 7, 10, 25), DateTime.new(2031, 12, 31, 0, 30)],
+    #       "dt" => [Date.new(1999, 12, 31), Date.new(2024, 8, 9)],
+    #       "tm" => [Time.utc(2001, 1, 1, 0, 0, 0), Time.utc(2001, 1, 1, 23, 59, 59)]
+    #     },
+    #     schema_overrides: {"tm" => Polars::Time}
+    #   )
+    #
+    # @example Select all time columns:
+    #   df.select(Polars.cs.time)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌──────────┐
+    #   # │ tm       │
+    #   # │ ---      │
+    #   # │ time     │
+    #   # ╞══════════╡
+    #   # │ 00:00:00 │
+    #   # │ 23:59:59 │
+    #   # └──────────┘
+    #
+    # @example Select all columns *except* for those that are times:
+    #   df.select(~Polars.cs.time)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────────────────────┬────────────┐
+    #   # │ dtm                 ┆ dt         │
+    #   # │ ---                 ┆ ---        │
+    #   # │ datetime[ns]        ┆ date       │
+    #   # ╞═════════════════════╪════════════╡
+    #   # │ 2001-05-07 10:25:00 ┆ 1999-12-31 │
+    #   # │ 2031-12-31 00:30:00 ┆ 2024-08-09 │
+    #   # └─────────────────────┴────────────┘
+    def self.time
+      _selector_proxy_(F.col(Time), name: "time")
+    end
   end
 
   def self.cs
