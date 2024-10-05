@@ -58,6 +58,20 @@ module Polars
         end
       end
 
+      def &(other)
+        if Utils.is_column(other)
+          raise Todo
+        elsif Utils.is_selector(other)
+          SelectorProxy.new(
+            meta._as_selector.meta._selector_and(other),
+            parameters: {"self" => self, "other" => other},
+            name: "and"
+          )
+        else
+          as_expr & other
+        end
+      end
+
       def as_expr
         Expr._from_rbexpr(_rbexpr)
       end

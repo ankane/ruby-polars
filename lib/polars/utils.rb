@@ -13,6 +13,10 @@ module Polars
       end
     end
 
+    def self.is_column(obj)
+      obj.is_a?(Expr) && obj.meta.is_column
+    end
+
     def self.map_rb_type_to_dtype(ruby_dtype)
       if ruby_dtype == Float
         Float64
