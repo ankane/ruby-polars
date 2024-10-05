@@ -187,9 +187,8 @@ impl RbExpr {
             Arc::new(move |idx: usize| {
                 let lambda = Ruby::get().unwrap().get_inner(lambda);
                 let out: String = lambda.funcall("call", (idx,)).unwrap();
-                let out = PlSmallStr::from_string(out);
-                out
-            }) as NameGenerator;
+                PlSmallStr::from_string(out)
+            });
 
             // non-Ruby thread
             todo!();
