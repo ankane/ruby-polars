@@ -386,8 +386,7 @@ module Polars
     #   df = Polars::DataFrame.new(
     #     {
     #       "dtm" => [DateTime.new(2001, 5, 7, 10, 25), DateTime.new(2031, 12, 31, 0, 30)],
-    #       "dt" => [Date.new(1999, 12, 31), Date.new(2024, 8, 9)],
-    #       "tm" => [Time.utc(2000, 1, 1, 0, 0, 0), Time.utc(2000, 1, 1, 23, 59, 59)]
+    #       "dt" => [Date.new(1999, 12, 31), Date.new(2024, 8, 9)]
     #     }
     #   )
     #
@@ -407,17 +406,66 @@ module Polars
     # @example Select all columns *except* for those that are dates:
     #   df.select(~Polars.cs.date)
     #   # =>
-    #   # shape: (2, 2)
-    #   # ┌─────────────────────┬──────────┐
-    #   # │ dtm                 ┆ tm       │
-    #   # │ ---                 ┆ ---      │
-    #   # │ datetime[μs]        ┆ time     │
-    #   # ╞═════════════════════╪══════════╡
-    #   # │ 2001-05-07 10:25:00 ┆ 00:00:00 │
-    #   # │ 2031-12-31 00:30:00 ┆ 23:59:59 │
-    #   # └─────────────────────┴──────────┘
-    def date
+    #   # shape: (2, 1)
+    #   # ┌─────────────────────┐
+    #   # │ dtm                 │
+    #   # │ ---                 │
+    #   # │ datetime[ns]        │
+    #   # ╞═════════════════════╡
+    #   # │ 2001-05-07 10:25:00 │
+    #   # │ 2031-12-31 00:30:00 │
+    #   # └─────────────────────┘
+    def self.date
       _selector_proxy_(F.col(Date), name: "date")
+    end
+
+    # TODO
+    # def datetime
+    # end
+
+    # Select all decimal columns.
+    #
+    # @return [SelectorProxy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => ["x", "y"],
+    #       "bar" => [BigDecimal("123"), BigDecimal("456")],
+    #       "baz" => [BigDecimal("2.0005"), BigDecimal("-50.5555")],
+    #     },
+    #     schema_overrides: {"baz" => Polars::Decimal.new(10, 5)}
+    #   )
+    #
+    # @example Select all decimal columns:
+    #   df.select(Polars.cs.decimal)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌──────────────┬───────────────┐
+    #   # │ bar          ┆ baz           │
+    #   # │ ---          ┆ ---           │
+    #   # │ decimal[*,0] ┆ decimal[10,5] │
+    #   # ╞══════════════╪═══════════════╡
+    #   # │ 123          ┆ 2.00050       │
+    #   # │ 456          ┆ -50.55550     │
+    #   # └──────────────┴───────────────┘
+    #
+    # @example Select all columns *except* the decimal ones:
+    #
+    #   df.select(~Polars.cs.decimal)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ x   │
+    #   # │ y   │
+    #   # └─────┘
+    def self.decimal
+      # TODO: allow explicit selection by scale/precision?
+      _selector_proxy_(F.col(Decimal), name: "decimal")
     end
   end
 
