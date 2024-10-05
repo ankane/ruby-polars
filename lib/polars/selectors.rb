@@ -318,6 +318,61 @@ module Polars
     def self.boolean
       _selector_proxy_(F.col(Boolean), name: "boolean")
     end
+
+    # TODO
+    # def by_dtype
+    # end
+
+    # TODO
+    # def by_index
+    # end
+
+    # TODO
+    # def by_name
+    # end
+
+    # Select all categorical columns.
+    #
+    # @return [SelectorProxy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => ["xx", "yy"],
+    #       "bar" => [123, 456],
+    #       "baz" => [2.0, 5.5]
+    #     },
+    #     schema_overrides: {"foo" => Polars::Categorical}
+    #   )
+    #
+    # @example Select all categorical columns:
+    #   df.select(Polars.cs.categorical)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ cat │
+    #   # ╞═════╡
+    #   # │ xx  │
+    #   # │ yy  │
+    #   # └─────┘
+    #
+    # @example Select all columns *except* for those that are categorical:
+    #   df.select(~Polars.cs.categorical)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ bar ┆ baz │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 123 ┆ 2.0 │
+    #   # │ 456 ┆ 5.5 │
+    #   # └─────┴─────┘
+    def self.categorical
+      _selector_proxy_(F.col(Categorical), name: "categorical")
+    end
   end
 
   def self.cs
