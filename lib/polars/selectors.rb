@@ -510,6 +510,49 @@ module Polars
     def self.first
       _selector_proxy_(F.first, name: "first")
     end
+
+    # Select the last column in the current scope.
+    #
+    # @return [SelectorProxy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => ["x", "y"],
+    #       "bar" => [123, 456],
+    #       "baz" => [2.0, 5.5],
+    #       "zap" => [0, 1]
+    #     }
+    #   )
+    #
+    # @example Select the last column:
+    #   df.select(Polars.cs.last)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ zap │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 0   │
+    #   # │ 1   │
+    #   # └─────┘
+    #
+    # @example Select everything *except* for the last column:
+    #   df.select(~Polars.cs.last)
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ baz │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ f64 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ x   ┆ 123 ┆ 2.0 │
+    #   # │ y   ┆ 456 ┆ 5.5 │
+    #   # └─────┴─────┴─────┘
+    def self.last
+      _selector_proxy_(F.last, name: "last")
+    end
   end
 
   def self.cs
