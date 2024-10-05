@@ -711,6 +711,62 @@ module Polars
     def self.numeric
       _selector_proxy_(F.col(NUMERIC_DTYPES), name: "numeric")
     end
+
+    # Select all String (and, optionally, Categorical) string columns.
+    #
+    # @return [SelectorProxy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "w" => ["xx", "yy", "xx", "yy", "xx"],
+    #       "x" => [1, 2, 1, 4, -2],
+    #       "y" => [3.0, 4.5, 1.0, 2.5, -2.0],
+    #       "z" => ["a", "b", "a", "b", "b"]
+    #     },
+    #   ).with_columns(
+    #     z: Polars.col("z").cast(Polars::Categorical.new("lexical")),
+    #   )
+    #
+    # @example Group by all string columns, sum the numeric columns, then sort by the string cols:
+    # >>> df.group_by(Polars.cs.string).agg(Polars.cs.numeric.sum).sort(Polars.cs.string)
+    # shape: (2, 3)
+    # ┌─────┬─────┬─────┐
+    # │ w   ┆ x   ┆ y   │
+    # │ --- ┆ --- ┆ --- │
+    # │ str ┆ i64 ┆ f64 │
+    # ╞═════╪═════╪═════╡
+    # │ xx  ┆ 0   ┆ 2.0 │
+    # │ yy  ┆ 6   ┆ 7.0 │
+    # └─────┴─────┴─────┘
+    #
+    # @example Group by all string *and* categorical columns:
+    #   df.group_by(Polars.cs.string(include_categorical: true)).agg(Polars.cs.numeric.sum).sort(
+    #     Polars.cs.string(include_categorical: true)
+    #   )
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌─────┬─────┬─────┬──────┐
+    #   # │ w   ┆ z   ┆ x   ┆ y    │
+    #   # │ --- ┆ --- ┆ --- ┆ ---  │
+    #   # │ str ┆ cat ┆ i64 ┆ f64  │
+    #   # ╞═════╪═════╪═════╪══════╡
+    #   # │ xx  ┆ a   ┆ 2   ┆ 4.0  │
+    #   # │ xx  ┆ b   ┆ -2  ┆ -2.0 │
+    #   # │ yy  ┆ b   ┆ 6   ┆ 7.0  │
+    #   # └─────┴─────┴─────┴──────┘
+    def self.string(include_categorical: false)
+      string_dtypes = [String]
+      if include_categorical
+        string_dtypes << Categorical
+      end
+
+      _selector_proxy_(
+        F.col(string_dtypes),
+        name: "string",
+        parameters: {"include_categorical" => include_categorical},
+      )
+    end
   end
 
   def self.cs

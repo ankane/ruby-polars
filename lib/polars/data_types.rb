@@ -292,6 +292,8 @@ module Polars
 
   # A categorical encoding of a set of strings.
   class Categorical < DataType
+    attr_reader :ordering
+
     def initialize(ordering = "physical")
       @ordering = ordering
     end
