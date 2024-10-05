@@ -4424,11 +4424,11 @@ module Polars
     #   #         true
     #   #         true
     #   # ]
-    def fold(&operation)
+    def fold
       acc = to_series(0)
 
       1.upto(width - 1) do |i|
-        acc = operation.call(acc, to_series(i))
+        acc = yield(acc, to_series(i))
       end
       acc
     end
