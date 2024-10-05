@@ -1,4 +1,5 @@
 mod general;
+mod serde;
 
 use polars::lazy::frame::LazyFrame;
 use std::cell::RefCell;

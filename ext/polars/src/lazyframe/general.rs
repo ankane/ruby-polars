@@ -3,7 +3,7 @@ use polars::io::{HiveOptions, RowIndex};
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
 use std::cell::RefCell;
-use std::io::{BufWriter, Read};
+use std::io::BufWriter;
 use std::num::NonZeroUsize;
 use std::path::PathBuf;
 
@@ -13,27 +13,6 @@ use crate::file::get_file_like;
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
 
 impl RbLazyFrame {
-    pub fn read_json(rb_f: Value) -> RbResult<Self> {
-        // it is faster to first read to memory and then parse: https://github.com/serde-rs/json/issues/160
-        // so don't bother with files.
-        let mut json = String::new();
-        let _ = get_file_like(rb_f, false)?
-            .read_to_string(&mut json)
-            .unwrap();
-
-        // Safety
-        // we skipped the serializing/deserializing of the static in lifetime in `DataType`
-        // so we actually don't have a lifetime at all when serializing.
-
-        // &str still has a lifetime. Bit its ok, because we drop it immediately
-        // in this scope
-        let json = unsafe { std::mem::transmute::<&'_ str, &'static str>(json.as_str()) };
-
-        let lp = serde_json::from_str::<DslPlan>(json)
-            .map_err(|err| RbValueError::new_err(format!("{:?}", err)))?;
-        Ok(LazyFrame::from(lp).into())
-    }
-
     pub fn new_from_ndjson(
         path: String,
         infer_schema_length: Option<usize>,
