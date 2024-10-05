@@ -15,10 +15,15 @@ impl RbSeries {
         Ok(df.into())
     }
 
-    // pub fn struct_fields(&self) -> RbResult<Vec<&str>> {
-    //     let ca = self.series.borrow().struct_().map_err(RbPolarsErr::from)?;
-    //     Ok(ca.fields().iter().map(|s| s.name()).collect())
-    // }
+    pub fn struct_fields(&self) -> RbResult<Vec<String>> {
+        let binding = self.series.borrow();
+        let ca = binding.struct_().map_err(RbPolarsErr::from)?;
+        Ok(ca
+            .struct_fields()
+            .iter()
+            .map(|s| s.name().to_string())
+            .collect())
+    }
 
     pub fn is_sorted_ascending_flag(&self) -> bool {
         matches!(self.series.borrow().is_sorted_flag(), IsSorted::Ascending)
