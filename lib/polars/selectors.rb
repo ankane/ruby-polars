@@ -467,6 +467,93 @@ module Polars
       _selector_proxy_(F.first, name: "first")
     end
 
+    # Select all float columns.
+    #
+    # @return [SelectorProxy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => ["x", "y"],
+    #       "bar" => [123, 456],
+    #       "baz" => [2.0, 5.5],
+    #       "zap" => [0.0, 1.0]
+    #     },
+    #     schema_overrides: {"baz" => Polars::Float32, "zap" => Polars::Float64}
+    #   )
+    #
+    # @example Select all float columns:
+    #   df.select(Polars.cs.float)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ baz ┆ zap │
+    #   # │ --- ┆ --- │
+    #   # │ f32 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 2.0 ┆ 0.0 │
+    #   # │ 5.5 ┆ 1.0 │
+    #   # └─────┴─────┘
+    #
+    # @example Select all columns *except* for those that are float:
+    #   df.select(~Polars.cs.float)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ bar │
+    #   # │ --- ┆ --- │
+    #   # │ str ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ x   ┆ 123 │
+    #   # │ y   ┆ 456 │
+    #   # └─────┴─────┘
+    def self.float
+      _selector_proxy_(F.col(FLOAT_DTYPES), name: "float")
+    end
+
+    # Select all integer columns.
+    #
+    # @return [SelectorProxy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => ["x", "y"],
+    #       "bar" => [123, 456],
+    #       "baz" => [2.0, 5.5],
+    #       "zap" => [0, 1]
+    #     }
+    #   )
+    #
+    # @example Select all integer columns:
+    #   df.select(Polars.cs.integer)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ bar ┆ zap │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 123 ┆ 0   │
+    #   # │ 456 ┆ 1   │
+    #   # └─────┴─────┘
+    #
+    # @example Select all columns *except* for those that are integer:
+    #   df.select(~Polars.cs.integer)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ baz │
+    #   # │ --- ┆ --- │
+    #   # │ str ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ x   ┆ 2.0 │
+    #   # │ y   ┆ 5.5 │
+    #   # └─────┴─────┘
+    def self.integer
+      _selector_proxy_(F.col(INTEGER_DTYPES), name: "integer")
+    end
+
     # Select the last column in the current scope.
     #
     # @return [SelectorProxy]
