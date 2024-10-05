@@ -568,8 +568,8 @@ impl ObjectValue {
 }
 
 impl IntoValue for ObjectValue {
-    fn into_value_with(self, _: &Ruby) -> Value {
-        self.to_object()
+    fn into_value_with(self, ruby: &Ruby) -> Value {
+        ruby.get_inner(self.inner)
     }
 }
 
