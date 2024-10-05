@@ -236,6 +236,10 @@ module Polars
       )
     end
 
+    # TODO
+    # def alphanumeric
+    # end
+
     # Select all binary columns.
     #
     # @return [SelectorProxy]
@@ -261,6 +265,58 @@ module Polars
     #   # => {"b"=>["world"], "d"=>[":)"]}
     def self.binary
       _selector_proxy_(F.col(Binary), name: "binary")
+    end
+
+    # Select all boolean columns.
+    #
+    # @return [SelectorProxy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"n" => 1..4}).with_columns(n_even: Polars.col("n") % 2 == 0)
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬────────┐
+    #   # │ n   ┆ n_even │
+    #   # │ --- ┆ ---    │
+    #   # │ i64 ┆ bool   │
+    #   # ╞═════╪════════╡
+    #   # │ 1   ┆ false  │
+    #   # │ 2   ┆ true   │
+    #   # │ 3   ┆ false  │
+    #   # │ 4   ┆ true   │
+    #   # └─────┴────────┘
+    #
+    # @example Select and invert boolean columns:
+    #   df.with_columns(is_odd: Polars.cs.boolean.not_)
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬────────┬────────┐
+    #   # │ n   ┆ n_even ┆ is_odd │
+    #   # │ --- ┆ ---    ┆ ---    │
+    #   # │ i64 ┆ bool   ┆ bool   │
+    #   # ╞═════╪════════╪════════╡
+    #   # │ 1   ┆ false  ┆ true   │
+    #   # │ 2   ┆ true   ┆ false  │
+    #   # │ 3   ┆ false  ┆ true   │
+    #   # │ 4   ┆ true   ┆ false  │
+    #   # └─────┴────────┴────────┘
+    #
+    # @example Select all columns *except* for those that are boolean:
+    #   df.select(~Polars.cs.boolean)
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌─────┐
+    #   # │ n   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 2   │
+    #   # │ 3   │
+    #   # │ 4   │
+    #   # └─────┘
+    def self.boolean
+      _selector_proxy_(F.col(Boolean), name: "boolean")
     end
   end
 
