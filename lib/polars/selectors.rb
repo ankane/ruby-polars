@@ -2,18 +2,44 @@ module Polars
   module Selectors
     # @private
     class SelectorProxy < Expr
+      attr_accessor :_attrs
+      attr_accessor :_repr_override
+
       def initialize(
         expr,
         name:,
         parameters: nil
       )
         self._rbexpr = expr._rbexpr
+        self._attrs = {
+          name: name,
+          params: parameters
+        }
+      end
+
+      def inspect
+        if !_attrs
+          as_expr.inspect
+        elsif _repr_override
+          _repr_override
+        else
+          selector_name = _attrs[:name]
+          params = _attrs[:params] || {}
+          set_ops = {"and" => "&", "or" => "|", "sub" => "-", "xor" => "^"}
+          if set_ops.include?(selector_name)
+            op = set_ops[selector_name]
+            "(#{params.values.map(&:inspect).join(" #{op} ")})"
+          else
+            str_params = params.map { |k, v| k.start_with?("*") ? v.inspect[1..-2] : "#{k}=#{v.inspect}" }.join(", ")
+            "Polars.cs.#{selector_name}(#{str_params})"
+          end
+        end
       end
 
       def ~
         if Utils.is_selector(self)
           inverted = Selectors.all - self
-          # inverted._repr_override = f"~{self!r}"
+          inverted._repr_override = "~#{inspect}"
         else
           inverted = ~as_expr
         end
