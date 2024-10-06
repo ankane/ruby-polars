@@ -94,10 +94,7 @@ pub fn col(name: String) -> RbExpr {
 }
 
 pub fn collect_all(lfs: RArray) -> RbResult<RArray> {
-    let lfs = lfs
-        .into_iter()
-        .map(<&RbLazyFrame>::try_convert)
-        .collect::<RbResult<Vec<&RbLazyFrame>>>()?;
+    let lfs = lfs.typecheck::<Obj<RbLazyFrame>>()?;
 
     Ok(RArray::from_iter(lfs.iter().map(|lf| {
         let df = lf.ldf.borrow().clone().collect().unwrap();

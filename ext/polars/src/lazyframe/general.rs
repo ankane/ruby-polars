@@ -1,4 +1,4 @@
-use magnus::{r_hash::ForEach, IntoValue, RArray, RHash, TryConvert, Value};
+use magnus::{r_hash::ForEach, typed_data::Obj, IntoValue, RArray, RHash, TryConvert, Value};
 use polars::io::{HiveOptions, RowIndex};
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
@@ -517,10 +517,7 @@ impl RbLazyFrame {
     }
 
     pub fn with_context(&self, contexts: RArray) -> RbResult<Self> {
-        let contexts = contexts
-            .into_iter()
-            .map(TryConvert::try_convert)
-            .collect::<RbResult<Vec<&RbLazyFrame>>>()?;
+        let contexts = contexts.typecheck::<Obj<RbLazyFrame>>()?;
         let contexts = contexts
             .into_iter()
             .map(|ldf| ldf.ldf.borrow().clone())
