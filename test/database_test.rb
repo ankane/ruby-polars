@@ -69,6 +69,16 @@ class DatabaseTest < Minitest::Test
     assert_equal "Expected ActiveRecord::Relation, ActiveRecord::Result, or String", error.message
   end
 
+  def test_connection_leasing
+    ActiveRecord::Base.connection_handler.clear_active_connections!
+    assert_nil ActiveRecord::Base.connection_pool.active_connection?
+    ActiveRecord::Base.connection_pool.with_connection do
+      Polars.read_database(User.order(:id))
+      Polars.read_database("SELECT * FROM users ORDER BY id")
+    end
+    assert_nil ActiveRecord::Base.connection_pool.active_connection?
+  end
+
   private
 
   def assert_result(df, users)

@@ -18,9 +18,9 @@ module Polars
         if query.is_a?(ActiveRecord::Result)
           query
         elsif query.is_a?(ActiveRecord::Relation)
-          query.connection.select_all(query.to_sql)
+          query.connection_pool.with_connection { |c| c.select_all(query.to_sql) }
         elsif query.is_a?(::String)
-          ActiveRecord::Base.connection.select_all(query)
+          ActiveRecord::Base.connection_pool.with_connection { |c| c.select_all(query) }
         else
           raise ArgumentError, "Expected ActiveRecord::Relation, ActiveRecord::Result, or String"
         end
