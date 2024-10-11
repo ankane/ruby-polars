@@ -9,6 +9,7 @@
 - Added `cast` method to `DataFrame` and `LazyFrame`
 - Fixed `read_database` connection leasing for Active Record 7.2
 - Added `coalesce` option to `join` and `join_asof` methods
+- Added `validate` option to `join` method
 
 ## 0.14.0 (2024-09-17)
 

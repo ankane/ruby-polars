@@ -2328,6 +2328,12 @@ module Polars
     #   Join strategy.
     # @param suffix [String]
     #   Suffix to append to columns with a duplicate name.
+    # @param validate ['m:m', 'm:1', '1:m', '1:1']
+    #   Checks if join is of specified type.
+    #     * *many_to_many* - “m:m”: default, does not result in checks
+    #     * *one_to_one* - “1:1”: check if join keys are unique in both left and right datasets
+    #     * *one_to_many* - “1:m”: check if join keys are unique in left dataset
+    #     * *many_to_one* - “m:1”: check if join keys are unique in right dataset
     # @param join_nulls [Boolean]
     #   Join on null values. By default null values will never produce matches.
     # @param coalesce [Boolean]
@@ -2424,6 +2430,7 @@ module Polars
       on: nil,
       how: "inner",
       suffix: "_right",
+      validate: "m:m",
       join_nulls: false,
       coalesce: nil
     )
@@ -2435,6 +2442,7 @@ module Polars
           on: on,
           how: how,
           suffix: suffix,
+          validate: validate,
           join_nulls: join_nulls,
           coalesce: coalesce
         )

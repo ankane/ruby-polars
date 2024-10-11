@@ -581,6 +581,7 @@ impl RbLazyFrame {
         join_nulls: bool,
         how: Wrap<JoinType>,
         suffix: String,
+        validate: Wrap<JoinValidation>,
         coalesce: Option<bool>,
     ) -> RbResult<Self> {
         let coalesce = match coalesce {
@@ -602,8 +603,9 @@ impl RbLazyFrame {
             .force_parallel(force_parallel)
             .join_nulls(join_nulls)
             .how(how.0)
-            .suffix(suffix)
+            .validate(validate.0)
             .coalesce(coalesce)
+            .suffix(suffix)
             .finish()
             .into())
     }

@@ -1677,6 +1677,12 @@ module Polars
     #   Join strategy.
     # @param suffix [String]
     #   Suffix to append to columns with a duplicate name.
+    # @param validate ['m:m', 'm:1', '1:m', '1:1']
+    #   Checks if join is of specified type.
+    #     * *many_to_many* - “m:m”: default, does not result in checks
+    #     * *one_to_one* - “1:1”: check if join keys are unique in both left and right datasets
+    #     * *one_to_many* - “1:m”: check if join keys are unique in left dataset
+    #     * *many_to_one* - “m:1”: check if join keys are unique in right dataset
     # @param join_nulls [Boolean]
     #   Join on null values. By default null values will never produce matches.
     # @param allow_parallel [Boolean]
@@ -1780,6 +1786,7 @@ module Polars
       on: nil,
       how: "inner",
       suffix: "_right",
+      validate: "m:m",
       join_nulls: false,
       allow_parallel: true,
       force_parallel: false,
@@ -1794,7 +1801,7 @@ module Polars
       elsif how == "cross"
         return _from_rbldf(
           _ldf.join(
-            other._ldf, [], [], allow_parallel, join_nulls, force_parallel, how, suffix, coalesce
+            other._ldf, [], [], allow_parallel, join_nulls, force_parallel, how, suffix, validate, coalesce
           )
         )
       end
@@ -1820,6 +1827,7 @@ module Polars
           join_nulls,
           how,
           suffix,
+          validate,
           coalesce
         )
       )
