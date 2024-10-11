@@ -539,7 +539,13 @@ impl RbLazyFrame {
         strategy: Wrap<AsofStrategy>,
         tolerance: Option<Wrap<AnyValue<'_>>>,
         tolerance_str: Option<String>,
+        coalesce: bool,
     ) -> RbResult<Self> {
+        let coalesce = if coalesce {
+            JoinCoalesce::CoalesceColumns
+        } else {
+            JoinCoalesce::KeepColumns
+        };
         let ldf = self.ldf.borrow().clone();
         let other = other.ldf.borrow().clone();
         let left_on = left_on.inner.clone();
@@ -551,6 +557,7 @@ impl RbLazyFrame {
             .right_on([right_on])
             .allow_parallel(allow_parallel)
             .force_parallel(force_parallel)
+            .coalesce(coalesce)
             .how(JoinType::AsOf(AsOfOptions {
                 strategy: strategy.0,
                 left_by: left_by.map(strings_to_pl_smallstr),
@@ -574,7 +581,13 @@ impl RbLazyFrame {
         join_nulls: bool,
         how: Wrap<JoinType>,
         suffix: String,
+        coalesce: Option<bool>,
     ) -> RbResult<Self> {
+        let coalesce = match coalesce {
+            None => JoinCoalesce::JoinSpecific,
+            Some(true) => JoinCoalesce::CoalesceColumns,
+            Some(false) => JoinCoalesce::KeepColumns,
+        };
         let ldf = self.ldf.borrow().clone();
         let other = other.ldf.borrow().clone();
         let left_on = rb_exprs_to_exprs(left_on)?;
@@ -590,6 +603,7 @@ impl RbLazyFrame {
             .join_nulls(join_nulls)
             .how(how.0)
             .suffix(suffix)
+            .coalesce(coalesce)
             .finish()
             .into())
     }
