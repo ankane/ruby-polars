@@ -1581,6 +1581,11 @@ module Polars
     # @param force_parallel [Boolean]
     #   Force the physical plan to evaluate the computation of both DataFrames up to
     #   the join in parallel.
+    # @param coalesce [Boolean]
+    #   Coalescing behavior (merging of join columns).
+    #     - true: -> Always coalesce join columns.
+    #     - false: -> Never coalesce join columns.
+    #   Note that joining on any other expressions than `col` will turn off coalescing.
     #
     # @return [LazyFrame]
     def join_asof(
@@ -1595,7 +1600,8 @@ module Polars
       suffix: "_right",
       tolerance: nil,
       allow_parallel: true,
-      force_parallel: false
+      force_parallel: false,
+      coalesce: true
     )
       if !other.is_a?(LazyFrame)
         raise ArgumentError, "Expected a `LazyFrame` as join table, got #{other.class.name}"
@@ -1650,7 +1656,8 @@ module Polars
           suffix,
           strategy,
           tolerance_num,
-          tolerance_str
+          tolerance_str,
+          coalesce
         )
       )
     end
@@ -1678,6 +1685,12 @@ module Polars
     # @param force_parallel [Boolean]
     #   Force the physical plan to evaluate the computation of both DataFrames up to
     #   the join in parallel.
+    # @param coalesce [Boolean]
+    #   Coalescing behavior (merging of join columns).
+    #     - nil: -> join specific.
+    #     - true: -> Always coalesce join columns.
+    #     - false: -> Never coalesce join columns.
+    #   Note that joining on any other expressions than `col` will turn off coalescing.
     #
     # @return [LazyFrame]
     #
@@ -1769,7 +1782,8 @@ module Polars
       suffix: "_right",
       join_nulls: false,
       allow_parallel: true,
-      force_parallel: false
+      force_parallel: false,
+      coalesce: nil
     )
       if !other.is_a?(LazyFrame)
         raise ArgumentError, "Expected a `LazyFrame` as join table, got #{other.class.name}"
@@ -1780,7 +1794,7 @@ module Polars
       elsif how == "cross"
         return _from_rbldf(
           _ldf.join(
-            other._ldf, [], [], allow_parallel, join_nulls, force_parallel, how, suffix
+            other._ldf, [], [], allow_parallel, join_nulls, force_parallel, how, suffix, coalesce
           )
         )
       end
@@ -1806,6 +1820,7 @@ module Polars
           join_nulls,
           how,
           suffix,
+          coalesce
         )
       )
     end

@@ -2234,6 +2234,11 @@ module Polars
     # @param force_parallel [Boolean]
     #   Force the physical plan to evaluate the computation of both DataFrames up to
     #   the join in parallel.
+    # @param coalesce [Boolean]
+    #   Coalescing behavior (merging of join columns).
+    #     - true: -> Always coalesce join columns.
+    #     - false: -> Never coalesce join columns.
+    #   Note that joining on any other expressions than `col` will turn off coalescing.
     #
     # @return [DataFrame]
     #
@@ -2287,7 +2292,8 @@ module Polars
       suffix: "_right",
       tolerance: nil,
       allow_parallel: true,
-      force_parallel: false
+      force_parallel: false,
+      coalesce: true
     )
       lazy
         .join_asof(
@@ -2302,7 +2308,8 @@ module Polars
           suffix: suffix,
           tolerance: tolerance,
           allow_parallel: allow_parallel,
-          force_parallel: force_parallel
+          force_parallel: force_parallel,
+          coalesce: coalesce
         )
         .collect(no_optimization: true)
     end
@@ -2323,6 +2330,12 @@ module Polars
     #   Suffix to append to columns with a duplicate name.
     # @param join_nulls [Boolean]
     #   Join on null values. By default null values will never produce matches.
+    # @param coalesce [Boolean]
+    #   Coalescing behavior (merging of join columns).
+    #     - nil: -> join specific.
+    #     - true: -> Always coalesce join columns.
+    #     - false: -> Never coalesce join columns.
+    #   Note that joining on any other expressions than `col` will turn off coalescing.
     #
     # @return [DataFrame]
     #
@@ -2405,7 +2418,15 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ 3   ┆ 8.0 ┆ c   │
     #   # └─────┴─────┴─────┘
-    def join(other, left_on: nil, right_on: nil, on: nil, how: "inner", suffix: "_right", join_nulls: false)
+    def join(other,
+      left_on: nil,
+      right_on: nil,
+      on: nil,
+      how: "inner",
+      suffix: "_right",
+      join_nulls: false,
+      coalesce: nil
+    )
       lazy
         .join(
           other.lazy,
@@ -2414,7 +2435,8 @@ module Polars
           on: on,
           how: how,
           suffix: suffix,
-          join_nulls: join_nulls
+          join_nulls: join_nulls,
+          coalesce: coalesce
         )
         .collect(no_optimization: true)
     end

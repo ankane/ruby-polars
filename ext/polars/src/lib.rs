@@ -755,8 +755,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbLazyFrame::group_by_dynamic, 9),
     )?;
     class.define_method("with_context", method!(RbLazyFrame::with_context, 1))?;
-    class.define_method("join_asof", method!(RbLazyFrame::join_asof, 11))?;
-    class.define_method("join", method!(RbLazyFrame::join, 8))?;
+    class.define_method("join_asof", method!(RbLazyFrame::join_asof, 12))?;
+    class.define_method("join", method!(RbLazyFrame::join, 9))?;
     class.define_method("with_column", method!(RbLazyFrame::with_column, 1))?;
     class.define_method("with_columns", method!(RbLazyFrame::with_columns, 1))?;
     class.define_method(
