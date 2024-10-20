@@ -3210,7 +3210,7 @@ module Polars
     #       "c" => [2, 4, 6]
     #     }
     #   )
-    #   df.unpivot(Polars::Selectors.numeric, index: "a")
+    #   df.unpivot(Polars.cs.numeric, index: "a")
     #   # =>
     #   # shape: (6, 3)
     #   # ┌─────┬──────────┬───────┐
