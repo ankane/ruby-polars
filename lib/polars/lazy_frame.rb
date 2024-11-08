@@ -2132,8 +2132,43 @@ module Polars
     #   Consider using the {#fetch} operation if you only want to test your
     #   query. The {#fetch} operation will load the first `n` rows at the scan
     #   level, whereas the {#head}/{#limit} are applied at the end.
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "a" => [1, 2, 3, 4, 5, 6],
+    #       "b" => [7, 8, 9, 10, 11, 12]
+    #     }
+    #   )
+    #   lf.limit.collect
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 7   │
+    #   # │ 2   ┆ 8   │
+    #   # │ 3   ┆ 9   │
+    #   # │ 4   ┆ 10  │
+    #   # │ 5   ┆ 11  │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   lf.limit(2).collect
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 7   │
+    #   # │ 2   ┆ 8   │
+    #   # └─────┴─────┘
     def limit(n = 5)
-      head(5)
+      head(n)
     end
 
     # Get the first `n` rows.
