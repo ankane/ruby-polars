@@ -14,7 +14,9 @@ else
   ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ":memory:"
 end
 
-if ActiveSupport::VERSION::STRING.to_f == 7.2
+if ActiveSupport::VERSION::STRING.to_f == 8.0
+  ActiveSupport.to_time_preserves_timezone = :zone
+elsif ActiveSupport::VERSION::STRING.to_f == 7.2
   ActiveSupport.to_time_preserves_timezone = true
 end
 
