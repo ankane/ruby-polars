@@ -2182,6 +2182,41 @@ module Polars
     #   Consider using the {#fetch} operation if you only want to test your
     #   query. The {#fetch} operation will load the first `n` rows at the scan
     #   level, whereas the {#head}/{#limit} are applied at the end.
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "a" => [1, 2, 3, 4, 5, 6],
+    #       "b" => [7, 8, 9, 10, 11, 12]
+    #     }
+    #   )
+    #   lf.head.collect
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 7   │
+    #   # │ 2   ┆ 8   │
+    #   # │ 3   ┆ 9   │
+    #   # │ 4   ┆ 10  │
+    #   # │ 5   ┆ 11  │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   lf.head(2).collect
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 7   │
+    #   # │ 2   ┆ 8   │
+    #   # └─────┴─────┘
     def head(n = 5)
       slice(0, n)
     end
@@ -2192,6 +2227,41 @@ module Polars
     #     Number of rows.
     #
     # @return [LazyFrame]
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "a" => [1, 2, 3, 4, 5, 6],
+    #       "b" => [7, 8, 9, 10, 11, 12]
+    #     }
+    #   )
+    #   lf.tail.collect
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 2   ┆ 8   │
+    #   # │ 3   ┆ 9   │
+    #   # │ 4   ┆ 10  │
+    #   # │ 5   ┆ 11  │
+    #   # │ 6   ┆ 12  │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   lf.tail(2).collect
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 5   ┆ 11  │
+    #   # │ 6   ┆ 12  │
+    #   # └─────┴─────┘
     def tail(n = 5)
       _from_rbldf(_ldf.tail(n))
     end
@@ -2199,6 +2269,24 @@ module Polars
     # Get the last row of the DataFrame.
     #
     # @return [LazyFrame]
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "a" => [1, 5, 3],
+    #       "b" => [2, 4, 6]
+    #     }
+    #   )
+    #   lf.last.collect
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 3   ┆ 6   │
+    #   # └─────┴─────┘
     def last
       tail(1)
     end
@@ -2206,6 +2294,24 @@ module Polars
     # Get the first row of the DataFrame.
     #
     # @return [LazyFrame]
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "a" => [1, 5, 3],
+    #       "b" => [2, 4, 6]
+    #     }
+    #   )
+    #   lf.first.collect
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 2   │
+    #   # └─────┴─────┘
     def first
       slice(0, 1)
     end
