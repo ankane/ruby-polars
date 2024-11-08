@@ -12,7 +12,7 @@ gem "vega"
 if ENV["ADAPTER"] == "postgresql"
   gem "pg"
 else
-  gem "sqlite3", "< 2"
+  gem "sqlite3"
 end
 
 # https://github.com/lsegal/yard/issues/1321
