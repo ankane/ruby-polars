@@ -5686,6 +5686,22 @@ module Polars
     #   If false, the calculations are corrected for statistical bias.
     #
     # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 4, 2, 9]})
+    #   df.select(Polars.col("a").rolling_skew(3))
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ null     │
+    #   # │ null     │
+    #   # │ 0.381802 │
+    #   # │ 0.47033  │
+    #   # └──────────┘
     def rolling_skew(window_size, bias: true)
       _from_rbexpr(_rbexpr.rolling_skew(window_size, bias))
     end
