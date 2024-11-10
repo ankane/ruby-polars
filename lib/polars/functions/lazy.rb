@@ -1047,15 +1047,70 @@ module Polars
     #   Default is ascending.
     #
     # @return [Expr]
-    def arg_sort_by(exprs, reverse: false)
-      if !exprs.is_a?(::Array)
-        exprs = [exprs]
-      end
-      if reverse == true || reverse == false
-        reverse = [reverse] * exprs.length
-      end
-      exprs = Utils.parse_into_list_of_expressions(exprs)
-      Utils.wrap_expr(Plr.arg_sort_by(exprs, reverse))
+    #
+    # @example Pass a single column name to compute the arg sort by that column.
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [0, 1, 1, 0],
+    #       "b" => [3, 2, 3, 2],
+    #       "c" => [1, 2, 3, 4]
+    #     }
+    #   )
+    #   df.select(Polars.arg_sort_by("a"))
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 0   │
+    #   # │ 3   │
+    #   # │ 1   │
+    #   # │ 2   │
+    #   # └─────┘
+    #
+    # @example Compute the arg sort by multiple columns by either passing a list of columns, or by specifying each column as a positional argument.
+    #   df.select(Polars.arg_sort_by(["a", "b"], reverse: true))
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 2   │
+    #   # │ 1   │
+    #   # │ 0   │
+    #   # │ 3   │
+    #   # └─────┘
+    #
+    # @example Use gather to apply the arg sort to other columns.
+    #   df.select(Polars.col("c").gather(Polars.arg_sort_by("a")))
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌─────┐
+    #   # │ c   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 4   │
+    #   # │ 2   │
+    #   # │ 3   │
+    #   # └─────┘
+    def arg_sort_by(
+      exprs,
+      *more_exprs,
+      reverse: false,
+      nulls_last: false,
+      multithreaded: true,
+      maintain_order: false
+    )
+      exprs = Utils.parse_into_list_of_expressions(exprs, *more_exprs)
+      reverse = Utils.extend_bool(reverse, exprs.length, "reverse", "exprs")
+      nulls_last = Utils.extend_bool(nulls_last, exprs.length, "nulls_last", "exprs")
+      Utils.wrap_expr(Plr.arg_sort_by(exprs, reverse, nulls_last, multithreaded, maintain_order))
     end
     alias_method :argsort_by, :arg_sort_by
 
