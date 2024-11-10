@@ -664,6 +664,18 @@ module Polars
     # Compute the exponential, element-wise.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([1, 2, 3])
+    #   s.exp
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         2.718282
+    #   #         7.389056
+    #   #         20.085537
+    #   # ]
     def exp
       super
     end
@@ -671,6 +683,18 @@ module Polars
     # Create a new Series that copies data from this Series without null values.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([1.0, nil, 3.0, Float::NAN])
+    #   s.drop_nulls
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         1.0
+    #   #         3.0
+    #   #         NaN
+    #   # ]
     def drop_nulls
       super
     end
@@ -678,6 +702,18 @@ module Polars
     # Drop NaN values.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([1.0, nil, 3.0, Float::NAN])
+    #   s.drop_nans
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         1.0
+    #   #         null
+    #   #         3.0
+    #   # ]
     def drop_nans
       super
     end
@@ -685,7 +721,37 @@ module Polars
     # Cast this Series to a DataFrame.
     #
     # @return [DataFrame]
-    def to_frame
+    #
+    # @example
+    #   s = Polars::Series.new("a", [123, 456])
+    #   s.to_frame
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 123 │
+    #   # │ 456 │
+    #   # └─────┘
+    #
+    # @example
+    #   s.to_frame("xyz")
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ xyz │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 123 │
+    #   # │ 456 │
+    #   # └─────┘
+    def to_frame(name = nil)
+      if name
+        return Utils.wrap_df(RbDataFrame.new([rename(name)._s]))
+      end
       Utils.wrap_df(RbDataFrame.new([_s]))
     end
 
