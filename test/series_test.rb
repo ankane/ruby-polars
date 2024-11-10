@@ -206,11 +206,6 @@ class SeriesTest < Minitest::Test
     assert s.flags["SORTED_DESC"]
   end
 
-  def test_inner_dtype
-    s = Polars::Series.new([1, 2, 3])
-    assert_nil s.inner_dtype
-  end
-
   def test_name
     s = Polars::Series.new("a", [1, 2, 3])
     assert_equal "a", s.name

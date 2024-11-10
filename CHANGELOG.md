@@ -15,6 +15,7 @@
 - Removed `to_list` from `Polars` (use `col(name).list` instead)
 - Removed `spearman_rank_corr` from `Polars` (use `corr(method: "spearman")` instead)
 - Removed `pearson_corr` from `Polars` (use `corr(method: "pearson")` instead)
+- Removed `inner_dtype` and `time_unit` methods from `Series`
 
 ## 0.14.0 (2024-09-17)
 

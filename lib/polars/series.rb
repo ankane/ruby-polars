@@ -116,13 +116,6 @@ module Polars
       out
     end
 
-    # Get the inner dtype in of a List typed Series.
-    #
-    # @return [Symbol]
-    def inner_dtype
-      _s.inner_dtype
-    end
-
     # Get the name of this Series.
     #
     # @return [String]
@@ -145,13 +138,6 @@ module Polars
     #   # => [3]
     def shape
       [_s.len]
-    end
-
-    # Get the time unit of underlying Datetime Series as `"ns"`, `"us"`, or `"ms"`.
-    #
-    # @return [String]
-    def time_unit
-      _s.time_unit
     end
 
     # Returns a string representing the Series.
