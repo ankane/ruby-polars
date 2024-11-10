@@ -85,6 +85,42 @@ module Polars
     #   otherwise mask out with a null value.
     #
     # @return [Series]
+    #
+    # @example Decode values using hexadecimal encoding.
+    #   s = Polars::Series.new("colors", ["000000".b, "ffff00".b, "0000ff".b])
+    #   s.bin.decode("hex")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'colors' [binary]
+    #   # [
+    #   #         b"\x00\x00\x00"
+    #   #         b"\xff\xff\x00"
+    #   #         b"\x00\x00\xff"
+    #   # ]
+    #
+    # @example Decode values using Base64 encoding.
+    #   s = Polars::Series.new("colors", ["AAAA".b, "//8A".b, "AAD/".b])
+    #   s.bin.decode("base64")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'colors' [binary]
+    #   # [
+    #   #         b"\x00\x00\x00"
+    #   #         b"\xff\xff\x00"
+    #   #         b"\x00\x00\xff"
+    #   # ]
+    #
+    # @example Set `strict=False` to set invalid values to null instead of raising an error.
+    #   s = Polars::Series.new("colors", ["000000".b, "ffff00".b, "invalid_value".b])
+    #   s.bin.decode("hex", strict: false)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'colors' [binary]
+    #   # [
+    #   #         b"\x00\x00\x00"
+    #   #         b"\xff\xff\x00"
+    #   #         null
+    #   # ]
     def decode(encoding, strict: true)
       super
     end
@@ -95,6 +131,29 @@ module Polars
     #   The encoding to use.
     #
     # @return [Series]
+    #
+    # @example Encode values using hexadecimal encoding.
+    #   s = Polars::Series.new("colors", ["\x00\x00\x00".b, "\xff\xff\x00".b, "\x00\x00\xff".b])
+    #   s.bin.encode("hex")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'colors' [str]
+    #   # [
+    #   #         "000000"
+    #   #         "ffff00"
+    #   #         "0000ff"
+    #   # ]
+    #
+    # @example Encode values using Base64 encoding.
+    #   s.bin.encode("base64")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'colors' [str]
+    #   # [
+    #   #         "AAAA"
+    #   #         "//8A"
+    #   #         "AAD/"
+    #   # ]
     def encode(encoding)
       super
     end

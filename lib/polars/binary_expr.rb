@@ -128,6 +128,28 @@ module Polars
     #   otherwise mask out with a null value.
     #
     # @return [Expr]
+    #
+    # @example
+    #   colors = Polars::DataFrame.new(
+    #     {
+    #       "name" => ["black", "yellow", "blue"],
+    #       "encoded" => ["000000".b, "ffff00".b, "0000ff".b]
+    #     }
+    #   )
+    #   colors.with_columns(
+    #     Polars.col("encoded").bin.decode("hex").alias("code")
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────┬───────────┬─────────────────┐
+    #   # │ name   ┆ encoded   ┆ code            │
+    #   # │ ---    ┆ ---       ┆ ---             │
+    #   # │ str    ┆ binary    ┆ binary          │
+    #   # ╞════════╪═══════════╪═════════════════╡
+    #   # │ black  ┆ b"000000" ┆ b"\x00\x00\x00" │
+    #   # │ yellow ┆ b"ffff00" ┆ b"\xff\xff\x00" │
+    #   # │ blue   ┆ b"0000ff" ┆ b"\x00\x00\xff" │
+    #   # └────────┴───────────┴─────────────────┘
     def decode(encoding, strict: true)
       if encoding == "hex"
         Utils.wrap_expr(_rbexpr.binary_hex_decode(strict))
@@ -144,6 +166,28 @@ module Polars
     #   The encoding to use.
     #
     # @return [Expr]
+    #
+    # @example
+    #   colors = Polars::DataFrame.new(
+    #     {
+    #       "color" => ["black", "yellow", "blue"],
+    #       "code" => ["\x00\x00\x00".b, "\xff\xff\x00".b, "\x00\x00\xff".b]
+    #     }
+    #   )
+    #   colors.with_columns(
+    #     Polars.col("code").bin.encode("hex").alias("encoded")
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────┬─────────────────┬─────────┐
+    #   # │ color  ┆ code            ┆ encoded │
+    #   # │ ---    ┆ ---             ┆ ---     │
+    #   # │ str    ┆ binary          ┆ str     │
+    #   # ╞════════╪═════════════════╪═════════╡
+    #   # │ black  ┆ b"\x00\x00\x00" ┆ 000000  │
+    #   # │ yellow ┆ b"\xff\xff\x00" ┆ ffff00  │
+    #   # │ blue   ┆ b"\x00\x00\xff" ┆ 0000ff  │
+    #   # └────────┴─────────────────┴─────────┘
     def encode(encoding)
       if encoding == "hex"
         Utils.wrap_expr(_rbexpr.binary_hex_encode)
