@@ -868,6 +868,11 @@ module Polars
     # Reduce this Series to the product value.
     #
     # @return [Numeric]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.product
+    #   # => 6
     def product
       to_frame.select(Polars.col(name).product).to_series[0]
     end
@@ -899,15 +904,35 @@ module Polars
     # Get maximum value, but propagate/poison encountered NaN values.
     #
     # @return [Object]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 3, 4])
+    #   s.nan_max
+    #   # => 4
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, Float::NAN, 4.0])
+    #   s.nan_max
+    #   # => NaN
     def nan_max
-      to_frame.select(Polars.col(name).nan_max)[0, 0]
+      to_frame.select(F.col(name).nan_max)[0, 0]
     end
 
     # Get minimum value, but propagate/poison encountered NaN values.
     #
     # @return [Object]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 3, 4])
+    #   s.nan_min
+    #   # => 1
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.0, Float::NAN, 4.0])
+    #   s.nan_min
+    #   # => NaN
     def nan_min
-      to_frame.select(Polars.col(name).nan_min)[0, 0]
+      to_frame.select(F.col(name).nan_min)[0, 0]
     end
 
     # Get the standard deviation of this Series.
