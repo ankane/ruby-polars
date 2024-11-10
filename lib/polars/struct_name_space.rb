@@ -33,6 +33,11 @@ module Polars
     # Get the names of the fields.
     #
     # @return [Array]
+    #
+    # @example
+    #   s = Polars::Series.new([{"a" => 1, "b" => 2}, {"a" => 3, "b" => 4}])
+    #   s.struct.fields
+    #   # => ["a", "b"]
     def fields
       if _s.nil?
         []
@@ -47,6 +52,17 @@ module Polars
     #   Name of the field
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([{"a" => 1, "b" => 2}, {"a" => 3, "b" => 4}])
+    #   s.struct.field("a")
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         3
+    #   # ]
     def field(name)
       super
     end
@@ -57,6 +73,16 @@ module Polars
     #   New names in the order of the struct's fields
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([{"a" => 1, "b" => 2}, {"a" => 3, "b" => 4}])
+    #   s.struct.fields
+    #   # => ["a", "b"]
+    #
+    # @example
+    #   s = s.struct.rename_fields(["c", "d"])
+    #   s.struct.fields
+    #   # => ["c", "d"]
     def rename_fields(names)
       super
     end
@@ -64,6 +90,11 @@ module Polars
     # Get the struct definition as a name/dtype schema dict.
     #
     # @return [Object]
+    #
+    # @example
+    #   s = Polars::Series.new([{"a" => 1, "b" => 2}, {"a" => 3, "b" => 4}])
+    #   s.struct.schema
+    #   # => {"a"=>Polars::Int64, "b"=>Polars::Int64}
     def schema
       if _s.nil?
         {}
