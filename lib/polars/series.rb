@@ -4301,6 +4301,18 @@ module Polars
     # Exponentially-weighted moving variance.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.ewm_var(com: 1, ignore_nulls: false)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         0.0
+    #   #         0.5
+    #   #         0.928571
+    #   # ]
     def ewm_var(
       com: nil,
       span: nil,
@@ -4365,6 +4377,18 @@ module Polars
     # Create a new Series filled with values from the given index.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3, 4, 5])
+    #   s.new_from_index(1, 3)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         2
+    #   #         2
+    #   #         2
+    #   # ]
     def new_from_index(index, length)
       Utils.wrap_s(_s.new_from_index(index, length))
     end
@@ -4375,6 +4399,21 @@ module Polars
     # This can be used to reduce memory pressure.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3, 4, 5, 6])
+    #   s.shrink_dtype
+    #   # =>
+    #   # shape: (6,)
+    #   # Series: 'a' [i8]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   #         4
+    #   #         5
+    #   #         6
+    #   # ]
     def shrink_dtype
       super
     end
