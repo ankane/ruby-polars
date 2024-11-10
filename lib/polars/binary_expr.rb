@@ -47,12 +47,38 @@ module Polars
 
     # Check if string values end with a binary substring.
     #
-    # @param sub [String]
+    # @param suffix [String]
     #   Suffix substring.
     #
     # @return [Expr]
-    def ends_with(sub)
-      Utils.wrap_expr(_rbexpr.binary_ends_with(sub))
+    #
+    # @example
+    #   colors = Polars::DataFrame.new(
+    #     {
+    #       "name" => ["black", "yellow", "blue"],
+    #       "code" => ["\x00\x00\x00".b, "\xff\xff\x00".b, "\x00\x00\xff".b],
+    #       "suffix" => ["\x00".b, "\xff\x00".b, "\x00\x00".b]
+    #     }
+    #   )
+    #   colors.select(
+    #     "name",
+    #     Polars.col("code").bin.ends_with("\xff".b).alias("ends_with_lit"),
+    #     Polars.col("code").bin.ends_with(Polars.col("suffix")).alias("ends_with_expr")
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────┬───────────────┬────────────────┐
+    #   # │ name   ┆ ends_with_lit ┆ ends_with_expr │
+    #   # │ ---    ┆ ---           ┆ ---            │
+    #   # │ str    ┆ bool          ┆ bool           │
+    #   # ╞════════╪═══════════════╪════════════════╡
+    #   # │ black  ┆ false         ┆ true           │
+    #   # │ yellow ┆ false         ┆ true           │
+    #   # │ blue   ┆ true          ┆ false          │
+    #   # └────────┴───────────────┴────────────────┘
+    def ends_with(suffix)
+      suffix = Utils.parse_into_expression(suffix, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.binary_ends_with(suffix))
     end
 
     # Check if values start with a binary substring.

@@ -34,11 +34,23 @@ module Polars
 
     # Check if string values end with a binary substring.
     #
-    # @param sub [String]
+    # @param suffix [String]
     #   Suffix substring.
     #
     # @return [Series]
-    def ends_with(sub)
+    #
+    # @example
+    #   s = Polars::Series.new("colors", ["\x00\x00\x00".b, "\xff\xff\x00".b, "\x00\x00\xff".b])
+    #   s.bin.ends_with("\x00".b)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'colors' [bool]
+    #   # [
+    #   #         true
+    #   #         true
+    #   #         false
+    #   # ]
+    def ends_with(suffix)
       super
     end
 
