@@ -597,6 +597,18 @@ module Polars
     # Check if all boolean values in the column are `false`.
     #
     # @return [Boolean]
+    #
+    # @example
+    #   Polars::Series.new([true, false]).none?
+    #   # => false
+    #
+    # @example
+    #   Polars::Series.new([false, false]).none?
+    #   # => true
+    #
+    # @example
+    #   Polars::Series.new([nil, false]).none?
+    #   # => true
     def none?(&block)
       if block_given?
         apply(&block).none?
