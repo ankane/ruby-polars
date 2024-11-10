@@ -269,6 +269,50 @@ module Polars
     # See [chrono strftime/strptime](https://docs.rs/chrono/latest/chrono/format/strftime/index.html).
     #
     # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "datetime" => [
+    #         Time.utc(2020, 3, 1),
+    #         Time.utc(2020, 4, 1),
+    #         Time.utc(2020, 5, 1)
+    #       ]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("datetime")
+    #     .dt.strftime("%Y/%m/%d %H:%M:%S")
+    #     .alias("datetime_string")
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────────────────────┬─────────────────────┐
+    #   # │ datetime            ┆ datetime_string     │
+    #   # │ ---                 ┆ ---                 │
+    #   # │ datetime[ns]        ┆ str                 │
+    #   # ╞═════════════════════╪═════════════════════╡
+    #   # │ 2020-03-01 00:00:00 ┆ 2020/03/01 00:00:00 │
+    #   # │ 2020-04-01 00:00:00 ┆ 2020/04/01 00:00:00 │
+    #   # │ 2020-05-01 00:00:00 ┆ 2020/05/01 00:00:00 │
+    #   # └─────────────────────┴─────────────────────┘
+    #
+    # @example If you're interested in the day name / month name, you can use `'%A'` / `'%B'`:
+    #   df.with_columns(
+    #     day_name: Polars.col("datetime").dt.strftime("%A"),
+    #     month_name: Polars.col("datetime").dt.strftime("%B")
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────────────────────┬───────────┬────────────┐
+    #   # │ datetime            ┆ day_name  ┆ month_name │
+    #   # │ ---                 ┆ ---       ┆ ---        │
+    #   # │ datetime[ns]        ┆ str       ┆ str        │
+    #   # ╞═════════════════════╪═══════════╪════════════╡
+    #   # │ 2020-03-01 00:00:00 ┆ Sunday    ┆ March      │
+    #   # │ 2020-04-01 00:00:00 ┆ Wednesday ┆ April      │
+    #   # │ 2020-05-01 00:00:00 ┆ Friday    ┆ May        │
+    #   # └─────────────────────┴───────────┴────────────┘
     def strftime(fmt)
       Utils.wrap_expr(_rbexpr.strftime(fmt))
     end
