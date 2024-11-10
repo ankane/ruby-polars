@@ -2902,6 +2902,57 @@ module Polars
     # Get the DataFrame as a Array of Series.
     #
     # @return [Array]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3], "bar" => [4, 5, 6]})
+    #   df.get_columns
+    #   # =>
+    #   # [shape: (3,)
+    #   # Series: 'foo' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ], shape: (3,)
+    #   # Series: 'bar' [i64]
+    #   # [
+    #   #         4
+    #   #         5
+    #   #         6
+    #   # ]]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3, 4],
+    #       "b" => [0.5, 4, 10, 13],
+    #       "c" => [true, true, false, true]
+    #     }
+    #   )
+    #   df.get_columns
+    #   # =>
+    #   # [shape: (4,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   #         4
+    #   # ], shape: (4,)
+    #   # Series: 'b' [f64]
+    #   # [
+    #   #         0.5
+    #   #         4.0
+    #   #         10.0
+    #   #         13.0
+    #   # ], shape: (4,)
+    #   # Series: 'c' [bool]
+    #   # [
+    #   #         true
+    #   #         true
+    #   #         false
+    #   #         true
+    #   # ]]
     def get_columns
       _df.get_columns.map { |s| Utils.wrap_s(s) }
     end
