@@ -919,6 +919,34 @@ module Polars
     #   Time unit for the `Datetime` Series.
     #
     # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => Polars.datetime_range(
+    #         Time.utc(2001, 1, 1),
+    #         Time.utc(2001, 1, 3),
+    #         "1d",
+    #         time_unit: "ns",
+    #         eager: true
+    #       )
+    #     }
+    #   )
+    #   df.select(
+    #     Polars.col("date"),
+    #     Polars.col("date").dt.with_time_unit("us").alias("time_unit_us")
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────────────────────┬───────────────────────┐
+    #   # │ date                ┆ time_unit_us          │
+    #   # │ ---                 ┆ ---                   │
+    #   # │ datetime[ns]        ┆ datetime[μs]          │
+    #   # ╞═════════════════════╪═══════════════════════╡
+    #   # │ 2001-01-01 00:00:00 ┆ +32971-04-28 00:00:00 │
+    #   # │ 2001-01-02 00:00:00 ┆ +32974-01-22 00:00:00 │
+    #   # │ 2001-01-03 00:00:00 ┆ +32976-10-18 00:00:00 │
+    #   # └─────────────────────┴───────────────────────┘
     def with_time_unit(time_unit)
       Utils.wrap_expr(_rbexpr.dt_with_time_unit(time_unit))
     end
@@ -1015,6 +1043,71 @@ module Polars
     #     Determine how to deal with non-existent datetimes.
     #
     # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "london_timezone": Polars.datetime_range(
+    #         Time.utc(2020, 3, 1),
+    #         Time.utc(2020, 7, 1),
+    #         "1mo",
+    #         time_zone: "UTC",
+    #         eager: true,
+    #       ).dt.convert_time_zone("Europe/London")
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.col("london_timezone"),
+    #       Polars.col("london_timezone")
+    #       .dt.replace_time_zone("Europe/Amsterdam")
+    #       .alias("London_to_Amsterdam")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────────────────────────────┬────────────────────────────────┐
+    #   # │ london_timezone             ┆ London_to_Amsterdam            │
+    #   # │ ---                         ┆ ---                            │
+    #   # │ datetime[ns, Europe/London] ┆ datetime[ns, Europe/Amsterdam] │
+    #   # ╞═════════════════════════════╪════════════════════════════════╡
+    #   # │ 2020-03-01 00:00:00 GMT     ┆ 2020-03-01 00:00:00 CET        │
+    #   # │ 2020-04-01 01:00:00 BST     ┆ 2020-04-01 01:00:00 CEST       │
+    #   # │ 2020-05-01 01:00:00 BST     ┆ 2020-05-01 01:00:00 CEST       │
+    #   # │ 2020-06-01 01:00:00 BST     ┆ 2020-06-01 01:00:00 CEST       │
+    #   # │ 2020-07-01 01:00:00 BST     ┆ 2020-07-01 01:00:00 CEST       │
+    #   # └─────────────────────────────┴────────────────────────────────┘
+    #
+    # @example You can use `ambiguous` to deal with ambiguous datetimes:
+    #   dates = [
+    #     "2018-10-28 01:30",
+    #     "2018-10-28 02:00",
+    #     "2018-10-28 02:30",
+    #     "2018-10-28 02:00"
+    #   ]
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "ts" => Polars::Series.new(dates).str.strptime(Polars::Datetime),
+    #       "ambiguous" => ["earliest", "earliest", "latest", "latest"]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     ts_localized: Polars.col("ts").dt.replace_time_zone(
+    #       "Europe/Brussels", ambiguous: Polars.col("ambiguous")
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────────────────────┬───────────┬───────────────────────────────┐
+    #   # │ ts                  ┆ ambiguous ┆ ts_localized                  │
+    #   # │ ---                 ┆ ---       ┆ ---                           │
+    #   # │ datetime[μs]        ┆ str       ┆ datetime[μs, Europe/Brussels] │
+    #   # ╞═════════════════════╪═══════════╪═══════════════════════════════╡
+    #   # │ 2018-10-28 01:30:00 ┆ earliest  ┆ 2018-10-28 01:30:00 CEST      │
+    #   # │ 2018-10-28 02:00:00 ┆ earliest  ┆ 2018-10-28 02:00:00 CEST      │
+    #   # │ 2018-10-28 02:30:00 ┆ latest    ┆ 2018-10-28 02:30:00 CET       │
+    #   # │ 2018-10-28 02:00:00 ┆ latest    ┆ 2018-10-28 02:00:00 CET       │
+    #   # └─────────────────────┴───────────┴───────────────────────────────┘
     def replace_time_zone(time_zone, ambiguous: "raise", non_existent: "raise")
       unless ambiguous.is_a?(Expr)
         ambiguous = Polars.lit(ambiguous)
