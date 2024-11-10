@@ -133,6 +133,17 @@ module Polars
     # Sum all the arrays in the list.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("values", [[1], [2, 3]])
+    #   s.list.sum
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'values' [i64]
+    #   # [
+    #   #         1
+    #   #         5
+    #   # ]
     def sum
       super
     end
@@ -140,6 +151,17 @@ module Polars
     # Compute the max value of the arrays in the list.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("values", [[4, 1], [2, 3]])
+    #   s.list.max
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'values' [i64]
+    #   # [
+    #   #         4
+    #   #         3
+    #   # ]
     def max
       super
     end
@@ -147,6 +169,17 @@ module Polars
     # Compute the min value of the arrays in the list.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("values", [[4, 1], [2, 3]])
+    #   s.list.min
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'values' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   # ]
     def min
       super
     end
@@ -154,6 +187,17 @@ module Polars
     # Compute the mean value of the arrays in the list.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("values", [[3, 1], [3, 3]])
+    #   s.list.mean
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'values' [f64]
+    #   # [
+    #   #         2.0
+    #   #         3.0
+    #   # ]
     def mean
       super
     end
@@ -161,6 +205,27 @@ module Polars
     # Sort the arrays in the list.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[3, 2, 1], [9, 1, 2]])
+    #   s.list.sort
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [list[i64]]
+    #   # [
+    #   #         [1, 2, 3]
+    #   #         [1, 2, 9]
+    #   # ]
+    #
+    # @example
+    #   s.list.sort(reverse: true)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [list[i64]]
+    #   # [
+    #   #         [3, 2, 1]
+    #   #         [9, 2, 1]
+    #   # ]
     def sort(reverse: false)
       super
     end
