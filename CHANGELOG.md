@@ -11,10 +11,10 @@
 - Added `validate` option to `join` method
 - Fixed `limit` method for `LazyFrame`
 - Fixed `read_database` connection leasing for Active Record 7.2
-- Removed `get_dummies` from `Polars` (use `df.to_dummies` instead)
-- Removed `to_list` from `Polars` (use `col(name).list` instead)
-- Removed `spearman_rank_corr` from `Polars` (use `corr(method: "spearman")` instead)
-- Removed `pearson_corr` from `Polars` (use `corr(method: "pearson")` instead)
+- Removed `get_dummies` method from `Polars` (use `df.to_dummies` instead)
+- Removed `to_list` method from `Polars` (use `col(name).list` instead)
+- Removed `spearman_rank_corr` method from `Polars` (use `corr(method: "spearman")` instead)
+- Removed `pearson_corr` method from `Polars` (use `corr(method: "pearson")` instead)
 - Removed `inner_dtype` and `time_unit` methods from `Series`
 
 ## 0.14.0 (2024-09-17)
