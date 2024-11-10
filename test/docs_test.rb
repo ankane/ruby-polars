@@ -172,10 +172,8 @@ class DocsTest < Minitest::Test
     # yard global
     return if [:log].include?(method.name)
 
-    if ENV["EXAMPLES"]
-      if method.tags(:example).empty? && ![Polars::Config, Polars::IO, Polars::Testing, Polars::DataType, Polars::SQLContext].include?(cls) && method.name.match?(/\A[a-z]/i) && ![:inspect, :to_s, :plot, :list, :arr, :bin, :cat, :dt, :meta, :name, :str, :struct].include?(method.name)
-        warn "Missing examples (#{method})"
-      end
+    if ENV["EXAMPLES"] && missing_examples?(method, cls)
+      warn "Missing examples (#{method})"
     end
 
     code = ""
@@ -220,5 +218,13 @@ class DocsTest < Minitest::Test
         raise "Example failed (#{method.name}): #{e.message}"
       end
     end
+  end
+
+  def missing_examples?(method, cls)
+    method.tags(:example).empty? &&
+    ![Polars::Config, Polars::IO, Polars::Testing, Polars::DataType, Polars::SQLContext].include?(cls) &&
+    method.name.match?(/\A[a-z]/i) &&
+    ![:inspect, :to_s, :plot, :list, :arr, :bin, :cat, :dt, :meta, :name, :str, :struct, :initialize, :set_random_seed, :col].include?(method.name) &&
+    !method.name.start_with?("write_")
   end
 end
