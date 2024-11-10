@@ -732,6 +732,34 @@ module Polars
     # Applies to Datetime columns.
     #
     # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "datetime": [
+    #         Time.utc(1978, 1, 1, 1, 1, 1, 0),
+    #         Time.utc(2024, 10, 13, 5, 30, 14, 500_000),
+    #         Time.utc(2065, 1, 1, 10, 20, 30, 60_000),
+    #       ]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("datetime").dt.hour.alias("hour"),
+    #     Polars.col("datetime").dt.minute.alias("minute"),
+    #     Polars.col("datetime").dt.second.alias("second"),
+    #     Polars.col("datetime").dt.millisecond.alias("millisecond")
+    #   )
+    #   # =>
+    #   # shape: (3, 5)
+    #   # ┌─────────────────────────┬──────┬────────┬────────┬─────────────┐
+    #   # │ datetime                ┆ hour ┆ minute ┆ second ┆ millisecond │
+    #   # │ ---                     ┆ ---  ┆ ---    ┆ ---    ┆ ---         │
+    #   # │ datetime[ns]            ┆ i8   ┆ i8     ┆ i8     ┆ i32         │
+    #   # ╞═════════════════════════╪══════╪════════╪════════╪═════════════╡
+    #   # │ 1978-01-01 01:01:01     ┆ 1    ┆ 1      ┆ 1      ┆ 0           │
+    #   # │ 2024-10-13 05:30:14.500 ┆ 5    ┆ 30     ┆ 14     ┆ 500         │
+    #   # │ 2065-01-01 10:20:30.060 ┆ 10   ┆ 20     ┆ 30     ┆ 60          │
+    #   # └─────────────────────────┴──────┴────────┴────────┴─────────────┘
     def millisecond
       Utils.wrap_expr(_rbexpr.dt_millisecond)
     end
@@ -741,6 +769,34 @@ module Polars
     # Applies to Datetime columns.
     #
     # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "datetime": [
+    #         Time.utc(1978, 1, 1, 1, 1, 1, 0),
+    #         Time.utc(2024, 10, 13, 5, 30, 14, 500_000),
+    #         Time.utc(2065, 1, 1, 10, 20, 30, 60_000),
+    #       ]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("datetime").dt.hour.alias("hour"),
+    #     Polars.col("datetime").dt.minute.alias("minute"),
+    #     Polars.col("datetime").dt.second.alias("second"),
+    #     Polars.col("datetime").dt.microsecond.alias("microsecond")
+    #   )
+    #   # =>
+    #   # shape: (3, 5)
+    #   # ┌─────────────────────────┬──────┬────────┬────────┬─────────────┐
+    #   # │ datetime                ┆ hour ┆ minute ┆ second ┆ microsecond │
+    #   # │ ---                     ┆ ---  ┆ ---    ┆ ---    ┆ ---         │
+    #   # │ datetime[ns]            ┆ i8   ┆ i8     ┆ i8     ┆ i32         │
+    #   # ╞═════════════════════════╪══════╪════════╪════════╪═════════════╡
+    #   # │ 1978-01-01 01:01:01     ┆ 1    ┆ 1      ┆ 1      ┆ 0           │
+    #   # │ 2024-10-13 05:30:14.500 ┆ 5    ┆ 30     ┆ 14     ┆ 500000      │
+    #   # │ 2065-01-01 10:20:30.060 ┆ 10   ┆ 20     ┆ 30     ┆ 60000       │
+    #   # └─────────────────────────┴──────┴────────┴────────┴─────────────┘
     def microsecond
       Utils.wrap_expr(_rbexpr.dt_microsecond)
     end
@@ -750,6 +806,34 @@ module Polars
     # Applies to Datetime columns.
     #
     # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "datetime": [
+    #         Time.utc(1978, 1, 1, 1, 1, 1, 0),
+    #         Time.utc(2024, 10, 13, 5, 30, 14, 500_000),
+    #         Time.utc(2065, 1, 1, 10, 20, 30, 60_000),
+    #       ]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("datetime").dt.hour.alias("hour"),
+    #     Polars.col("datetime").dt.minute.alias("minute"),
+    #     Polars.col("datetime").dt.second.alias("second"),
+    #     Polars.col("datetime").dt.nanosecond.alias("nanosecond")
+    #   )
+    #   # =>
+    #   # shape: (3, 5)
+    #   # ┌─────────────────────────┬──────┬────────┬────────┬────────────┐
+    #   # │ datetime                ┆ hour ┆ minute ┆ second ┆ nanosecond │
+    #   # │ ---                     ┆ ---  ┆ ---    ┆ ---    ┆ ---        │
+    #   # │ datetime[ns]            ┆ i8   ┆ i8     ┆ i8     ┆ i32        │
+    #   # ╞═════════════════════════╪══════╪════════╪════════╪════════════╡
+    #   # │ 1978-01-01 01:01:01     ┆ 1    ┆ 1      ┆ 1      ┆ 0          │
+    #   # │ 2024-10-13 05:30:14.500 ┆ 5    ┆ 30     ┆ 14     ┆ 500000000  │
+    #   # │ 2065-01-01 10:20:30.060 ┆ 10   ┆ 20     ┆ 30     ┆ 60000000   │
+    #   # └─────────────────────────┴──────┴────────┴────────┴────────────┘
     def nanosecond
       Utils.wrap_expr(_rbexpr.dt_nanosecond)
     end
