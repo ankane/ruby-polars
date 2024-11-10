@@ -1,4 +1,4 @@
-## 0.14.1 (unreleased)
+## 0.15.0 (unreleased)
 
 - Added selectors
 - Added `config`, `string_cache`, and `cs` methods to `Polars`
@@ -11,6 +11,10 @@
 - Added `validate` option to `join` method
 - Fixed `limit` method for `LazyFrame`
 - Fixed `read_database` connection leasing for Active Record 7.2
+- Removed `get_dummies` from `Polars` (use `df.to_dummies` instead)
+- Removed `to_list` from `Polars` (use `col(name).list` instead)
+- Removed `spearman_rank_corr` from `Polars` (use `corr(method: "spearman")` instead)
+- Removed `pearson_corr` from `Polars` (use `corr(method: "pearson")` instead)
 
 ## 0.14.0 (2024-09-17)
 
