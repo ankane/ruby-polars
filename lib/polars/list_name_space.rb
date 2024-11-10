@@ -351,6 +351,18 @@ module Polars
     # Get the first value of the sublists.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[3, 2, 1], [], [1, 2]])
+    #   s.list.first
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         3
+    #   #         null
+    #   #         1
+    #   # ]
     def first
       super
     end
@@ -358,6 +370,18 @@ module Polars
     # Get the last value of the sublists.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[3, 2, 1], [], [1, 2]])
+    #   s.list.last
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         null
+    #   #         2
+    #   # ]
     def last
       super
     end
@@ -368,6 +392,18 @@ module Polars
     #   Item that will be checked for membership.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[3, 2, 1], [], [1, 2]])
+    #   s.list.contains(1)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         true
+    #   #         false
+    #   #         true
+    #   # ]
     def contains(item)
       super
     end
@@ -375,6 +411,17 @@ module Polars
     # Retrieve the index of the minimal value in every sublist.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1, 2], [2, 1]])
+    #   s.list.arg_min
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [u32]
+    #   # [
+    #   #         0
+    #   #         1
+    #   # ]
     def arg_min
       super
     end
@@ -382,6 +429,17 @@ module Polars
     # Retrieve the index of the maximum value in every sublist.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1, 2], [2, 1]])
+    #   s.list.arg_max
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [u32]
+    #   # [
+    #   #         1
+    #   #         0
+    #   # ]
     def arg_max
       super
     end
