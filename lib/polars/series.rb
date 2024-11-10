@@ -2237,9 +2237,24 @@ module Polars
     # Get a mask of the first unique value.
     #
     # @return [Series]
-    def is_first
+    #
+    # @example
+    #   s = Polars::Series.new([1, 1, 2, 3, 2])
+    #   s.is_first_distinct
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: '' [bool]
+    #   # [
+    #   #         true
+    #   #         false
+    #   #         true
+    #   #         true
+    #   #         false
+    #   # ]
+    def is_first_distinct
       super
     end
+    alias_method :is_first, :is_first_distinct
 
     # Get mask of all duplicated values.
     #
@@ -2405,6 +2420,35 @@ module Polars
     #   In place or not.
     #
     # @return [Series]
+    #
+    # @example
+    #   s1 = Polars::Series.new("a", [1, 2, 3])
+    #   s1.n_chunks
+    #   # => 1
+    #
+    # @example
+    #   s2 = Polars::Series.new("a", [4, 5, 6])
+    #   s = Polars.concat([s1, s2], rechunk: false)
+    #   s.n_chunks
+    #   # => 2
+    #
+    # @example
+    #   s.rechunk(in_place: true)
+    #   # =>
+    #   # shape: (6,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   #         4
+    #   #         5
+    #   #         6
+    #   # ]
+    #
+    # @example
+    #   s.n_chunks
+    #   # => 1
     def rechunk(in_place: false)
       opt_s = _s.rechunk(in_place)
       in_place ? self : Utils.wrap_s(opt_s)
