@@ -4007,6 +4007,11 @@ module Polars
     #   If `false`, the calculations are corrected for statistical bias.
     #
     # @return [Float, nil]
+    #
+    # @example
+    #   s = Polars::Series.new([1, 2, 2, 4, 5])
+    #   s.skew
+    #   # => 0.34776706224699483
     def skew(bias: true)
       _s.skew(bias)
     end
@@ -4026,6 +4031,19 @@ module Polars
     #   If `false`, the calculations are corrected for statistical bias.
     #
     # @return [Float, nil]
+    #
+    # @example
+    #   s = Polars::Series.new("grades", [66, 79, 54, 97, 96, 70, 69, 85, 93, 75])
+    #   s.kurtosis
+    #   # => -1.0522623626787952
+    #
+    # @example
+    #   s.kurtosis(fisher: false)
+    #   # => 1.9477376373212048
+    #
+    # @example
+    #   s.kurtosis(fisher: false, bias: false)
+    #   # => 2.1040361802642726
     def kurtosis(fisher: true, bias: true)
       _s.kurtosis(fisher, bias)
     end
