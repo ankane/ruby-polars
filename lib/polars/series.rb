@@ -4191,7 +4191,6 @@ module Polars
     # @example
     #   s = Polars::Series.new("foo", [1, 2, 3, 4, 5, 6, 7, 8, 9])
     #   square = s.reshape([3, 3])
-    #   square
     #   # =>
     #   # shape: (3,)
     #   # Series: 'foo' [array[i64, 3]]
