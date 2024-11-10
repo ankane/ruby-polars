@@ -585,10 +585,10 @@ impl TryConvert for Wrap<AsofStrategy> {
         let parsed = match String::try_convert(ob)?.as_str() {
             "backward" => AsofStrategy::Backward,
             "forward" => AsofStrategy::Forward,
+            "nearest" => AsofStrategy::Nearest,
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "strategy must be one of {{'backward', 'forward'}}, got {}",
-                    v
+                    "asof `strategy` must be one of {{'backward', 'forward', 'nearest'}}, got {v}",
                 )))
             }
         };

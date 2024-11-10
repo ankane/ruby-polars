@@ -1588,6 +1588,190 @@ module Polars
     #   Note that joining on any other expressions than `col` will turn off coalescing.
     #
     # @return [LazyFrame]
+    #
+    # @example
+    #   gdp = Polars::LazyFrame.new(
+    #     {
+    #       "date" => Polars.date_range(
+    #         Date.new(2016, 1, 1),
+    #         Date.new(2020, 1, 1),
+    #         "1y",
+    #         eager: true
+    #       ),
+    #       "gdp" => [4164, 4411, 4566, 4696, 4827]
+    #     }
+    #   )
+    #   gdp.collect
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌────────────┬──────┐
+    #   # │ date       ┆ gdp  │
+    #   # │ ---        ┆ ---  │
+    #   # │ date       ┆ i64  │
+    #   # ╞════════════╪══════╡
+    #   # │ 2016-01-01 ┆ 4164 │
+    #   # │ 2017-01-01 ┆ 4411 │
+    #   # │ 2018-01-01 ┆ 4566 │
+    #   # │ 2019-01-01 ┆ 4696 │
+    #   # │ 2020-01-01 ┆ 4827 │
+    #   # └────────────┴──────┘
+    #
+    # @example
+    #   population = Polars::LazyFrame.new(
+    #     {
+    #       "date" => [Date.new(2016, 3, 1), Date.new(2018, 8, 1), Date.new(2019, 1, 1)],
+    #       "population" => [82.19, 82.66, 83.12]
+    #     }
+    #   ).sort("date")
+    #   population.collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌────────────┬────────────┐
+    #   # │ date       ┆ population │
+    #   # │ ---        ┆ ---        │
+    #   # │ date       ┆ f64        │
+    #   # ╞════════════╪════════════╡
+    #   # │ 2016-03-01 ┆ 82.19      │
+    #   # │ 2018-08-01 ┆ 82.66      │
+    #   # │ 2019-01-01 ┆ 83.12      │
+    #   # └────────────┴────────────┘
+    #
+    # @example Note how the dates don't quite match. If we join them using `join_asof` and `strategy: "backward"`, then each date from `population` which doesn't have an exact match is matched with the closest earlier date from `gdp`:
+    #   population.join_asof(gdp, on: "date", strategy: "backward").collect
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────────┬────────────┬──────┐
+    #   # │ date       ┆ population ┆ gdp  │
+    #   # │ ---        ┆ ---        ┆ ---  │
+    #   # │ date       ┆ f64        ┆ i64  │
+    #   # ╞════════════╪════════════╪══════╡
+    #   # │ 2016-03-01 ┆ 82.19      ┆ 4164 │
+    #   # │ 2018-08-01 ┆ 82.66      ┆ 4566 │
+    #   # │ 2019-01-01 ┆ 83.12      ┆ 4696 │
+    #   # └────────────┴────────────┴──────┘
+    #
+    # @example
+    #   population.join_asof(
+    #     gdp, on: "date", strategy: "backward", coalesce: false
+    #   ).collect
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌────────────┬────────────┬────────────┬──────┐
+    #   # │ date       ┆ population ┆ date_right ┆ gdp  │
+    #   # │ ---        ┆ ---        ┆ ---        ┆ ---  │
+    #   # │ date       ┆ f64        ┆ date       ┆ i64  │
+    #   # ╞════════════╪════════════╪════════════╪══════╡
+    #   # │ 2016-03-01 ┆ 82.19      ┆ 2016-01-01 ┆ 4164 │
+    #   # │ 2018-08-01 ┆ 82.66      ┆ 2018-01-01 ┆ 4566 │
+    #   # │ 2019-01-01 ┆ 83.12      ┆ 2019-01-01 ┆ 4696 │
+    #   # └────────────┴────────────┴────────────┴──────┘
+    #
+    # @example If we instead use `strategy: "forward"`, then each date from `population` which doesn't have an exact match is matched with the closest later date from `gdp`:
+    #   population.join_asof(gdp, on: "date", strategy: "forward").collect
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────────┬────────────┬──────┐
+    #   # │ date       ┆ population ┆ gdp  │
+    #   # │ ---        ┆ ---        ┆ ---  │
+    #   # │ date       ┆ f64        ┆ i64  │
+    #   # ╞════════════╪════════════╪══════╡
+    #   # │ 2016-03-01 ┆ 82.19      ┆ 4411 │
+    #   # │ 2018-08-01 ┆ 82.66      ┆ 4696 │
+    #   # │ 2019-01-01 ┆ 83.12      ┆ 4696 │
+    #   # └────────────┴────────────┴──────┘
+    #
+    # @example
+    #   population.join_asof(gdp, on: "date", strategy: "nearest").collect
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────────┬────────────┬──────┐
+    #   # │ date       ┆ population ┆ gdp  │
+    #   # │ ---        ┆ ---        ┆ ---  │
+    #   # │ date       ┆ f64        ┆ i64  │
+    #   # ╞════════════╪════════════╪══════╡
+    #   # │ 2016-03-01 ┆ 82.19      ┆ 4164 │
+    #   # │ 2018-08-01 ┆ 82.66      ┆ 4696 │
+    #   # │ 2019-01-01 ┆ 83.12      ┆ 4696 │
+    #   # └────────────┴────────────┴──────┘
+    #
+    # @example
+    #   gdp_dates = Polars.date_range(
+    #     Date.new(2016, 1, 1), Date.new(2020, 1, 1), "1y", eager: true
+    #   )
+    #   gdp2 = Polars::LazyFrame.new(
+    #     {
+    #       "country" => ["Germany"] * 5 + ["Netherlands"] * 5,
+    #       "date" => Polars.concat([gdp_dates, gdp_dates]),
+    #       "gdp" => [4164, 4411, 4566, 4696, 4827, 784, 833, 914, 910, 909]
+    #     }
+    #   ).sort("country", "date")
+    #   gdp2.collect
+    #   # =>
+    #   # shape: (10, 3)
+    #   # ┌─────────────┬────────────┬──────┐
+    #   # │ country     ┆ date       ┆ gdp  │
+    #   # │ ---         ┆ ---        ┆ ---  │
+    #   # │ str         ┆ date       ┆ i64  │
+    #   # ╞═════════════╪════════════╪══════╡
+    #   # │ Germany     ┆ 2016-01-01 ┆ 4164 │
+    #   # │ Germany     ┆ 2017-01-01 ┆ 4411 │
+    #   # │ Germany     ┆ 2018-01-01 ┆ 4566 │
+    #   # │ Germany     ┆ 2019-01-01 ┆ 4696 │
+    #   # │ Germany     ┆ 2020-01-01 ┆ 4827 │
+    #   # │ Netherlands ┆ 2016-01-01 ┆ 784  │
+    #   # │ Netherlands ┆ 2017-01-01 ┆ 833  │
+    #   # │ Netherlands ┆ 2018-01-01 ┆ 914  │
+    #   # │ Netherlands ┆ 2019-01-01 ┆ 910  │
+    #   # │ Netherlands ┆ 2020-01-01 ┆ 909  │
+    #   # └─────────────┴────────────┴──────┘
+    #
+    # @example
+    #   pop2 = Polars::LazyFrame.new(
+    #     {
+    #       "country" => ["Germany"] * 3 + ["Netherlands"] * 3,
+    #       "date" => [
+    #         Date.new(2016, 3, 1),
+    #         Date.new(2018, 8, 1),
+    #         Date.new(2019, 1, 1),
+    #         Date.new(2016, 3, 1),
+    #         Date.new(2018, 8, 1),
+    #         Date.new(2019, 1, 1)
+    #       ],
+    #       "population" => [82.19, 82.66, 83.12, 17.11, 17.32, 17.40]
+    #     }
+    #   ).sort("country", "date")
+    #   pop2.collect
+    #   # =>
+    #   # shape: (6, 3)
+    #   # ┌─────────────┬────────────┬────────────┐
+    #   # │ country     ┆ date       ┆ population │
+    #   # │ ---         ┆ ---        ┆ ---        │
+    #   # │ str         ┆ date       ┆ f64        │
+    #   # ╞═════════════╪════════════╪════════════╡
+    #   # │ Germany     ┆ 2016-03-01 ┆ 82.19      │
+    #   # │ Germany     ┆ 2018-08-01 ┆ 82.66      │
+    #   # │ Germany     ┆ 2019-01-01 ┆ 83.12      │
+    #   # │ Netherlands ┆ 2016-03-01 ┆ 17.11      │
+    #   # │ Netherlands ┆ 2018-08-01 ┆ 17.32      │
+    #   # │ Netherlands ┆ 2019-01-01 ┆ 17.4       │
+    #   # └─────────────┴────────────┴────────────┘
+    #
+    # @example
+    #   pop2.join_asof(gdp2, by: "country", on: "date", strategy: "nearest").collect
+    #   # =>
+    #   # shape: (6, 4)
+    #   # ┌─────────────┬────────────┬────────────┬──────┐
+    #   # │ country     ┆ date       ┆ population ┆ gdp  │
+    #   # │ ---         ┆ ---        ┆ ---        ┆ ---  │
+    #   # │ str         ┆ date       ┆ f64        ┆ i64  │
+    #   # ╞═════════════╪════════════╪════════════╪══════╡
+    #   # │ Germany     ┆ 2016-03-01 ┆ 82.19      ┆ 4164 │
+    #   # │ Germany     ┆ 2018-08-01 ┆ 82.66      ┆ 4696 │
+    #   # │ Germany     ┆ 2019-01-01 ┆ 83.12      ┆ 4696 │
+    #   # │ Netherlands ┆ 2016-03-01 ┆ 17.11      ┆ 784  │
+    #   # │ Netherlands ┆ 2018-08-01 ┆ 17.32      ┆ 910  │
+    #   # │ Netherlands ┆ 2019-01-01 ┆ 17.4       ┆ 910  │
+    #   # └─────────────┴────────────┴────────────┴──────┘
     def join_asof(
       other,
       left_on: nil,
