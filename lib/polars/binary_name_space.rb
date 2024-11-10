@@ -56,11 +56,23 @@ module Polars
 
     # Check if values start with a binary substring.
     #
-    # @param sub [String]
+    # @param prefix [String]
     #   Prefix substring.
     #
     # @return [Series]
-    def starts_with(sub)
+    #
+    # @example
+    #   s = Polars::Series.new("colors", ["\x00\x00\x00".b, "\xff\xff\x00".b, "\x00\x00\xff".b])
+    #   s.bin.starts_with("\x00".b)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'colors' [bool]
+    #   # [
+    #   #         true
+    #   #         false
+    #   #         true
+    #   # ]
+    def starts_with(prefix)
       super
     end
 

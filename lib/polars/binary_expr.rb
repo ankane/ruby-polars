@@ -83,12 +83,40 @@ module Polars
 
     # Check if values start with a binary substring.
     #
-    # @param sub [String]
+    # @param prefix [String]
     #   Prefix substring.
     #
     # @return [Expr]
-    def starts_with(sub)
-      Utils.wrap_expr(_rbexpr.binary_starts_with(sub))
+    #
+    # @example
+    #   colors = Polars::DataFrame.new(
+    #     {
+    #       "name": ["black", "yellow", "blue"],
+    #       "code": ["\x00\x00\x00".b, "\xff\xff\x00".b, "\x00\x00\xff".b],
+    #       "prefix": ["\x00".b, "\xff\x00".b, "\x00\x00".b]
+    #     }
+    #   )
+    #   colors.select(
+    #     "name",
+    #     Polars.col("code").bin.starts_with("\xff".b).alias("starts_with_lit"),
+    #     Polars.col("code")
+    #     .bin.starts_with(Polars.col("prefix"))
+    #     .alias("starts_with_expr")
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────┬─────────────────┬──────────────────┐
+    #   # │ name   ┆ starts_with_lit ┆ starts_with_expr │
+    #   # │ ---    ┆ ---             ┆ ---              │
+    #   # │ str    ┆ bool            ┆ bool             │
+    #   # ╞════════╪═════════════════╪══════════════════╡
+    #   # │ black  ┆ false           ┆ true             │
+    #   # │ yellow ┆ true            ┆ false            │
+    #   # │ blue   ┆ false           ┆ true             │
+    #   # └────────┴─────────────────┴──────────────────┘
+    def starts_with(prefix)
+      prefix = Utils.parse_into_expression(prefix, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.binary_starts_with(prefix))
     end
 
     # Decode a value using the provided encoding.
