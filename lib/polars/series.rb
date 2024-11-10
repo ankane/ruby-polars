@@ -1984,6 +1984,11 @@ module Polars
     # Count the null values in this Series.
     #
     # @return [Integer]
+    #
+    # @example
+    #   s = Polars::Series.new([1, nil, nil])
+    #   s.null_count
+    #   # => 2
     def null_count
       _s.null_count
     end
@@ -1994,6 +1999,15 @@ module Polars
     # Use this to swiftly assert a Series does not have null values.
     #
     # @return [Boolean]
+    #
+    # @example
+    #   s = Polars::Series.new([1, 2, nil])
+    #   s.has_nulls
+    #   # => true
+    #
+    # @example
+    #   s[...2].has_nulls
+    #   # => false
     def has_nulls
       _s.has_nulls
     end
