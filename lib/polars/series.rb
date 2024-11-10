@@ -3780,6 +3780,18 @@ module Polars
     #   If true, reinterpret as `:i64`. Otherwise, reinterpret as `:u64`.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [-(2**60), -2, 3])
+    #   s.reinterpret(signed: false)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [u64]
+    #   # [
+    #   #         17293822569102704640
+    #   #         18446744073709551614
+    #   #         3
+    #   # ]
     def reinterpret(signed: true)
       super
     end
@@ -3808,6 +3820,18 @@ module Polars
     # Compute absolute values.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([1, -2, -3])
+    #   s.abs
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ]
     def abs
       super
     end
@@ -3878,6 +3902,44 @@ module Polars
     #   How to handle null values.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("s", [20, 10, 30, 25, 35], dtype: Polars::Int8)
+    #   s.diff
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 's' [i8]
+    #   # [
+    #   #         null
+    #   #         -10
+    #   #         20
+    #   #         -5
+    #   #         10
+    #   # ]
+    #
+    # @example
+    #   s.diff(n: 2)
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 's' [i8]
+    #   # [
+    #   #         null
+    #   #         null
+    #   #         10
+    #   #         15
+    #   #         5
+    #   # ]
+    #
+    # @example
+    #   s.diff(n: 2, null_behavior: "drop")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 's' [i8]
+    #   # [
+    #   #         10
+    #   #         15
+    #   #         5
+    #   # ]
     def diff(n: 1, null_behavior: "ignore")
       super
     end
