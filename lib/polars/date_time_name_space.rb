@@ -1226,6 +1226,52 @@ module Polars
     # @note
     #   This functionality is currently experimental and may
     #   change without it being considered a breaking change.
+    #
+    # @example
+    #   start = Time.utc(2001, 1, 1)
+    #   stop = Time.utc(2001, 1, 2)
+    #   s = Polars.datetime_range(
+    #     start, stop, "165m", eager: true
+    #   ).alias("datetime")
+    #   s.dt.round("1h")
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: 'datetime' [datetime[ns]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 03:00:00
+    #   #         2001-01-01 06:00:00
+    #   #         2001-01-01 08:00:00
+    #   #         2001-01-01 11:00:00
+    #   #         2001-01-01 14:00:00
+    #   #         2001-01-01 17:00:00
+    #   #         2001-01-01 19:00:00
+    #   #         2001-01-01 22:00:00
+    #   # ]
+    #
+    # @example
+    #   round_str = s.dt.round("1h")
+    #   round_td = s.dt.round("1h")
+    #   round_str.equals(round_td)
+    #   # => true
+    #
+    # @example
+    #   start = Time.utc(2001, 1, 1)
+    #   stop = Time.utc(2001, 1, 1, 1)
+    #   s = Polars.datetime_range(start, stop, "10m", eager: true).alias("datetime")
+    #   s.dt.round("30m")
+    #   # =>
+    #   # shape: (7,)
+    #   # Series: 'datetime' [datetime[ns]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:30:00
+    #   #         2001-01-01 00:30:00
+    #   #         2001-01-01 00:30:00
+    #   #         2001-01-01 01:00:00
+    #   #         2001-01-01 01:00:00
+    #   # ]
     def round(every)
       super
     end
