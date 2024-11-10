@@ -1963,6 +1963,55 @@ module Polars
     #   - List of column names.
     #
     # @return [LazyFrame]
+    #
+    # @example Drop a single column by passing the name of that column.
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   lf.drop("ham").collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ bar │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 6.0 │
+    #   # │ 2   ┆ 7.0 │
+    #   # │ 3   ┆ 8.0 │
+    #   # └─────┴─────┘
+    #
+    # @example Drop multiple columns by passing a selector.
+    #   lf.drop(Polars.cs.numeric).collect
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ ham │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ a   │
+    #   # │ b   │
+    #   # │ c   │
+    #   # └─────┘
+    #
+    # @example Use positional arguments to drop multiple columns.
+    #   lf.drop("foo", "ham").collect
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ bar │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 6.0 │
+    #   # │ 7.0 │
+    #   # │ 8.0 │
+    #   # └─────┘
     def drop(*columns)
       drop_cols = Utils._expand_selectors(self, *columns)
       _from_rbldf(_ldf.drop(drop_cols))
@@ -1974,10 +2023,49 @@ module Polars
     #   Key value pairs that map from old name to new name.
     #
     # @return [LazyFrame]
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   lf.rename({"foo" => "apple"}).collect
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌───────┬─────┬─────┐
+    #   # │ apple ┆ bar ┆ ham │
+    #   # │ ---   ┆ --- ┆ --- │
+    #   # │ i64   ┆ i64 ┆ str │
+    #   # ╞═══════╪═════╪═════╡
+    #   # │ 1     ┆ 6   ┆ a   │
+    #   # │ 2     ┆ 7   ┆ b   │
+    #   # │ 3     ┆ 8   ┆ c   │
+    #   # └───────┴─────┴─────┘
+    #
+    # @example
+    #   lf.rename(->(column_name) { "c" + column_name[1..] }).collect
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ coo ┆ car ┆ cam │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6   ┆ a   │
+    #   # │ 2   ┆ 7   ┆ b   │
+    #   # │ 3   ┆ 8   ┆ c   │
+    #   # └─────┴─────┴─────┘
     def rename(mapping)
-      existing = mapping.keys
-      _new = mapping.values
-      _from_rbldf(_ldf.rename(existing, _new))
+      if mapping.respond_to?(:call)
+        select(F.all.name.map(&mapping))
+      else
+        existing = mapping.keys
+        _new = mapping.values
+        _from_rbldf(_ldf.rename(existing, _new))
+      end
     end
 
     # Reverse the DataFrame.
