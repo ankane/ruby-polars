@@ -411,6 +411,26 @@ module Polars
     # Add a prefix to the root column name of the expression.
     #
     # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3],
+    #       "b" => ["x", "y", "z"]
+    #     }
+    #   )
+    #   df.with_columns(Polars.all.reverse.name.prefix("reverse_"))
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌─────┬─────┬───────────┬───────────┐
+    #   # │ a   ┆ b   ┆ reverse_a ┆ reverse_b │
+    #   # │ --- ┆ --- ┆ ---       ┆ ---       │
+    #   # │ i64 ┆ str ┆ i64       ┆ str       │
+    #   # ╞═════╪═════╪═══════════╪═══════════╡
+    #   # │ 1   ┆ x   ┆ 3         ┆ z         │
+    #   # │ 2   ┆ y   ┆ 2         ┆ y         │
+    #   # │ 3   ┆ z   ┆ 1         ┆ x         │
+    #   # └─────┴─────┴───────────┴───────────┘
     def prefix(prefix)
       name.prefix(prefix)
     end
@@ -418,6 +438,26 @@ module Polars
     # Add a suffix to the root column name of the expression.
     #
     # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3],
+    #       "b" => ["x", "y", "z"]
+    #     }
+    #   )
+    #   df.with_columns(Polars.all.reverse.name.suffix("_reverse"))
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌─────┬─────┬───────────┬───────────┐
+    #   # │ a   ┆ b   ┆ a_reverse ┆ b_reverse │
+    #   # │ --- ┆ --- ┆ ---       ┆ ---       │
+    #   # │ i64 ┆ str ┆ i64       ┆ str       │
+    #   # ╞═════╪═════╪═══════════╪═══════════╡
+    #   # │ 1   ┆ x   ┆ 3         ┆ z         │
+    #   # │ 2   ┆ y   ┆ 2         ┆ y         │
+    #   # │ 3   ┆ z   ┆ 1         ┆ x         │
+    #   # └─────┴─────┴───────────┴───────────┘
     def suffix(suffix)
       name.suffix(suffix)
     end

@@ -169,6 +169,12 @@ class DocsTest < Minitest::Test
     # requires nightly
     return if [:to_titlecase].include?(method.name)
 
+    if ENV["EXAMPLES"]
+      if method.tags(:example).empty? && ![Polars::Config, Polars::IO, Polars::Testing].include?(cls) && method.name.match?(/\A[a-z]/i)
+        warn "Missing examples (#{method})"
+      end
+    end
+
     code = ""
     method.tags(:example).each do |example|
       # use variables from previous examples
