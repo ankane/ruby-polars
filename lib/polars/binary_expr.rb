@@ -11,12 +11,38 @@ module Polars
 
     # Check if binaries in Series contain a binary substring.
     #
-    # @param lit [String]
+    # @param literal [String]
     #   The binary substring to look for
     #
     # @return [Expr]
-    def contains(lit)
-      Utils.wrap_expr(_rbexpr.binary_contains(lit))
+    #
+    # @example
+    #   colors = Polars::DataFrame.new(
+    #     {
+    #       "name" => ["black", "yellow", "blue"],
+    #       "code" => ["\x00\x00\x00".b, "\xff\xff\x00".b, "\x00\x00\xff".b],
+    #       "lit" => ["\x00".b, "\xff\x00".b, "\xff\xff".b]
+    #     }
+    #   )
+    #   colors.select(
+    #     "name",
+    #     Polars.col("code").bin.contains("\xff".b).alias("contains_with_lit"),
+    #     Polars.col("code").bin.contains(Polars.col("lit")).alias("contains_with_expr"),
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────┬───────────────────┬────────────────────┐
+    #   # │ name   ┆ contains_with_lit ┆ contains_with_expr │
+    #   # │ ---    ┆ ---               ┆ ---                │
+    #   # │ str    ┆ bool              ┆ bool               │
+    #   # ╞════════╪═══════════════════╪════════════════════╡
+    #   # │ black  ┆ false             ┆ true               │
+    #   # │ yellow ┆ true              ┆ true               │
+    #   # │ blue   ┆ true              ┆ false              │
+    #   # └────────┴───────────────────┴────────────────────┘
+    def contains(literal)
+      literal = Utils.parse_into_expression(literal, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.binary_contains(literal))
     end
 
     # Check if string values end with a binary substring.

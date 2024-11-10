@@ -12,11 +12,23 @@ module Polars
 
     # Check if binaries in Series contain a binary substring.
     #
-    # @param lit [String]
+    # @param literal [String]
     #   The binary substring to look for
     #
     # @return [Series]
-    def contains(lit)
+    #
+    # @example
+    #   s = Polars::Series.new("colors", ["\x00\x00\x00".b, "\xff\xff\x00".b, "\x00\x00\xff".b])
+    #   s.bin.contains("\xff".b)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'colors' [bool]
+    #   # [
+    #   #         false
+    #   #         true
+    #   #         true
+    #   # ]
+    def contains(literal)
       super
     end
 
