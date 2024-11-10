@@ -730,6 +730,19 @@ module Polars
     #   Fill the value up to this length.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([-1, 123, 999999, nil])
+    #   s.cast(Polars::String).str.zfill(4)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "-001"
+    #   #         "0123"
+    #   #         "999999"
+    #   #         null
+    #   # ]
     def zfill(length)
       super
     end
@@ -793,6 +806,17 @@ module Polars
     # Modify the strings to their lowercase equivalent.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("foo", ["CAT", "DOG"])
+    #   s.str.to_lowercase
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'foo' [str]
+    #   # [
+    #   #         "cat"
+    #   #         "dog"
+    #   # ]
     def to_lowercase
       super
     end
@@ -800,6 +824,17 @@ module Polars
     # Modify the strings to their uppercase equivalent.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("foo", ["cat", "dog"])
+    #   s.str.to_uppercase
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'foo' [str]
+    #   # [
+    #   #         "CAT"
+    #   #         "DOG"
+    #   # ]
     def to_uppercase
       super
     end
