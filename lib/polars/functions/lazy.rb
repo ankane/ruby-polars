@@ -824,6 +824,29 @@ module Polars
     # @note
     #   If you simply want the first encountered expression as accumulator,
     #   consider using `cumreduce`.
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3],
+    #       "b" => [3, 4, 5],
+    #       "c" => [5, 6, 7]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.cum_fold(Polars.lit(1), ->(acc, x) { acc + x }, Polars.all)
+    #   )
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌─────┬─────┬─────┬───────────┐
+    #   # │ a   ┆ b   ┆ c   ┆ cum_fold  │
+    #   # │ --- ┆ --- ┆ --- ┆ ---       │
+    #   # │ i64 ┆ i64 ┆ i64 ┆ struct[3] │
+    #   # ╞═════╪═════╪═════╪═══════════╡
+    #   # │ 1   ┆ 3   ┆ 5   ┆ {2,5,10}  │
+    #   # │ 2   ┆ 4   ┆ 6   ┆ {3,7,13}  │
+    #   # │ 3   ┆ 5   ┆ 7   ┆ {4,9,16}  │
+    #   # └─────┴─────┴─────┴───────────┘
     def cum_fold(acc, f, exprs, include_init: false)
       acc = Utils.parse_into_expression(acc, str_as_lit: true)
       if exprs.is_a?(Expr)
@@ -831,7 +854,7 @@ module Polars
       end
 
       exprs = Utils.parse_into_list_of_expressions(exprs)
-      Utils.wrap_expr(Plr.cum_fold(acc, f, exprs, include_init))
+      Utils.wrap_expr(Plr.cum_fold(acc, f, exprs, include_init)._alias("cum_fold"))
     end
     alias_method :cumfold, :cum_fold
 
