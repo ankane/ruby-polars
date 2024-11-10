@@ -2071,6 +2071,26 @@ module Polars
     # Reverse the DataFrame.
     #
     # @return [LazyFrame]
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "key" => ["a", "b", "c"],
+    #       "val" => [1, 2, 3]
+    #     }
+    #   )
+    #   lf.reverse.collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ key ┆ val │
+    #   # │ --- ┆ --- │
+    #   # │ str ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ c   ┆ 3   │
+    #   # │ b   ┆ 2   │
+    #   # │ a   ┆ 1   │
+    #   # └─────┴─────┘
     def reverse
       _from_rbldf(_ldf.reverse)
     end
@@ -2465,6 +2485,72 @@ module Polars
     # Fill null values using the specified value or strategy.
     #
     # @return [LazyFrame]
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "a" => [1, 2, nil, 4],
+    #       "b" => [0.5, 4, nil, 13]
+    #     }
+    #   )
+    #   lf.fill_null(99).collect
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬──────┐
+    #   # │ a   ┆ b    │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ f64  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ 0.5  │
+    #   # │ 2   ┆ 4.0  │
+    #   # │ 99  ┆ 99.0 │
+    #   # │ 4   ┆ 13.0 │
+    #   # └─────┴──────┘
+    #
+    # @example
+    #   lf.fill_null(strategy: "forward").collect
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬──────┐
+    #   # │ a   ┆ b    │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ f64  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ 0.5  │
+    #   # │ 2   ┆ 4.0  │
+    #   # │ 2   ┆ 4.0  │
+    #   # │ 4   ┆ 13.0 │
+    #   # └─────┴──────┘
+    #
+    # @example
+    #   lf.fill_null(strategy: "max").collect
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬──────┐
+    #   # │ a   ┆ b    │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ f64  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ 0.5  │
+    #   # │ 2   ┆ 4.0  │
+    #   # │ 4   ┆ 13.0 │
+    #   # │ 4   ┆ 13.0 │
+    #   # └─────┴──────┘
+    #
+    # @example
+    #   lf.fill_null(strategy: "zero").collect
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬──────┐
+    #   # │ a   ┆ b    │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ f64  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ 0.5  │
+    #   # │ 2   ┆ 4.0  │
+    #   # │ 0   ┆ 0.0  │
+    #   # │ 4   ┆ 13.0 │
+    #   # └─────┴──────┘
     def fill_null(value = nil, strategy: nil, limit: nil, matches_supertype: nil)
       select(Polars.all.fill_null(value, strategy: strategy, limit: limit))
     end
@@ -2744,6 +2830,53 @@ module Polars
     #   Which of the duplicate rows to keep.
     #
     # @return [LazyFrame]
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3, 1],
+    #       "bar" => ["a", "a", "a", "a"],
+    #       "ham" => ["b", "b", "b", "b"]
+    #     }
+    #   )
+    #   lf.unique(maintain_order: true).collect
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ str ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ a   ┆ b   │
+    #   # │ 2   ┆ a   ┆ b   │
+    #   # │ 3   ┆ a   ┆ b   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example
+    #   lf.unique(subset: ["bar", "ham"], maintain_order: true).collect
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ str ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ a   ┆ b   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example
+    #   lf.unique(keep: "last", maintain_order: true).collect
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ str ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 2   ┆ a   ┆ b   │
+    #   # │ 3   ┆ a   ┆ b   │
+    #   # │ 1   ┆ a   ┆ b   │
+    #   # └─────┴─────┴─────┘
     def unique(maintain_order: true, subset: nil, keep: "first")
       if !subset.nil? && !subset.is_a?(::Array)
         subset = [subset]
