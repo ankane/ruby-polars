@@ -88,6 +88,11 @@ module Polars
     # Get the data type of this Series.
     #
     # @return [Symbol]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.dtype
+    #   # => Polars::Int64
     def dtype
       _s.dtype
     end
@@ -95,6 +100,11 @@ module Polars
     # Get flags that are set on the Series.
     #
     # @return [Hash]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.flags
+    #   # => {"SORTED_ASC"=>false, "SORTED_DESC"=>false}
     def flags
       out = {
         "SORTED_ASC" => _s.is_sorted_flag,
@@ -116,6 +126,11 @@ module Polars
     # Get the name of this Series.
     #
     # @return [String]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.name
+    #   # => "a"
     def name
       _s.name
     end
@@ -123,6 +138,11 @@ module Polars
     # Shape of this Series.
     #
     # @return [Array]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.shape
+    #   # => [3]
     def shape
       [_s.len]
     end

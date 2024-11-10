@@ -170,7 +170,7 @@ class DocsTest < Minitest::Test
     return if [:to_titlecase].include?(method.name)
 
     if ENV["EXAMPLES"]
-      if method.tags(:example).empty? && ![Polars::Config, Polars::IO, Polars::Testing].include?(cls) && method.name.match?(/\A[a-z]/i)
+      if method.tags(:example).empty? && ![Polars::Config, Polars::IO, Polars::Testing, Polars::DataType].include?(cls) && method.name.match?(/\A[a-z]/i)
         warn "Missing examples (#{method})"
       end
     end
