@@ -1150,6 +1150,47 @@ module Polars
     #   Every interval start and period length.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars.datetime_range(
+    #     Time.utc(2001, 1, 1),
+    #     Time.utc(2001, 1, 2),
+    #     "165m",
+    #     eager: true
+    #   ).alias("datetime")
+    #   s.dt.truncate("1h")
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: 'datetime' [datetime[ns]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 02:00:00
+    #   #         2001-01-01 05:00:00
+    #   #         2001-01-01 08:00:00
+    #   #         2001-01-01 11:00:00
+    #   #         2001-01-01 13:00:00
+    #   #         2001-01-01 16:00:00
+    #   #         2001-01-01 19:00:00
+    #   #         2001-01-01 22:00:00
+    #   # ]
+    #
+    # @example
+    #   s = Polars.datetime_range(
+    #     Time.utc(2001, 1, 1), Time.utc(2001, 1, 1, 1), "10m", eager: true
+    #   ).alias("datetime")
+    #   s.dt.truncate("30m")
+    #   # =>
+    #   # shape: (7,)
+    #   # Series: 'datetime' [datetime[ns]]
+    #   # [
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:00:00
+    #   #         2001-01-01 00:30:00
+    #   #         2001-01-01 00:30:00
+    #   #         2001-01-01 00:30:00
+    #   #         2001-01-01 01:00:00
+    #   # ]
     def truncate(every)
       super
     end
