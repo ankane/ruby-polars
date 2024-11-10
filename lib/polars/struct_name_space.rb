@@ -23,13 +23,6 @@ module Polars
       end
     end
 
-    # Convert this Struct Series to a DataFrame.
-    #
-    # @return [DataFrame]
-    def to_frame
-      Utils.wrap_df(_s.struct_to_frame)
-    end
-
     # Get the names of the fields.
     #
     # @return [Array]
