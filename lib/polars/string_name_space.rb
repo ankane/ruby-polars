@@ -658,7 +658,18 @@ module Polars
     #   An optional single character that should be trimmed
     #
     # @return [Series]
-    def strip(matches = nil)
+    #
+    # @example
+    #   s = Polars::Series.new([" hello ", "\tworld"])
+    #   s.str.strip_chars
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "hello"
+    #   #         "world"
+    #   # ]
+    def strip_chars(matches = nil)
       super
     end
 
@@ -668,9 +679,21 @@ module Polars
     #   An optional single character that should be trimmed
     #
     # @return [Series]
-    def lstrip(matches = nil)
+    #
+    # @example
+    #   s = Polars::Series.new([" hello ", "\tworld"])
+    #   s.str.strip_chars_start
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "hello "
+    #   #         "world"
+    #   # ]
+    def strip_chars_start(matches = nil)
       super
     end
+    alias_method :lstrip, :strip_chars_start
 
     # Remove trailing whitespace.
     #
@@ -678,9 +701,21 @@ module Polars
     #   An optional single character that should be trimmed
     #
     # @return [Series]
-    def rstrip(matches = nil)
+    #
+    # @example
+    #   s = Polars::Series.new([" hello ", "world\t"])
+    #   s.str.strip_chars_end
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         " hello"
+    #   #         "world"
+    #   # ]
+    def strip_chars_end(matches = nil)
       super
     end
+    alias_method :rstrip, :strip_chars_end
 
     # Fills the string with zeroes.
     #
