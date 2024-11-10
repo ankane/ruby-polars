@@ -1832,20 +1832,7 @@ module Polars
     def arg_sort(reverse: false, nulls_last: false)
       super
     end
-
-    # Get the index values that would sort this Series.
-    #
-    # Alias for {#arg_sort}.
-    #
-    # @param reverse [Boolean]
-    #   Sort in reverse (descending) order.
-    # @param nulls_last [Boolean]
-    #   Place null values last instead of first.
-    #
-    # @return [Series]
-    def argsort(reverse: false, nulls_last: false)
-      super
-    end
+    alias_method :argsort, :arg_sort
 
     # Get unique index as Series.
     #
@@ -1896,6 +1883,52 @@ module Polars
     #   Expression or scalar value.
     #
     # @return [Integer]
+    #
+    # @example
+    #   s = Polars::Series.new("set", [1, 2, 3, 4, 4, 5, 6, 7])
+    #   s.search_sorted(4)
+    #   # => 3
+    #
+    # @example
+    #   s.search_sorted(4, side: "left")
+    #   # => 3
+    #
+    # @example
+    #   s.search_sorted(4, side: "right")
+    #   # => 5
+    #
+    # @example
+    #   s.search_sorted([1, 4, 5])
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'set' [u32]
+    #   # [
+    #   #         0
+    #   #         3
+    #   #         5
+    #   # ]
+    #
+    # @example
+    #   s.search_sorted([1, 4, 5], side: "left")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'set' [u32]
+    #   # [
+    #   #         0
+    #   #         3
+    #   #         5
+    #   # ]
+    #
+    # @example
+    #   s.search_sorted([1, 4, 5], side: "right")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'set' [u32]
+    #   # [
+    #   #         1
+    #   #         5
+    #   #         6
+    #   # ]
     def search_sorted(element, side: "any")
       if element.is_a?(Integer) || element.is_a?(Float)
         return Polars.select(Polars.lit(self).search_sorted(element, side: side)).item
