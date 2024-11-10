@@ -2791,6 +2791,28 @@ module Polars
     #   Column to drop.
     #
     # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.delete("ham")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'ham' [str]
+    #   # [
+    #   #         "a"
+    #   #         "b"
+    #   #         "c"
+    #   # ]
+    #
+    # @example
+    #   df.delete("missing")
+    #   # => nil
     def delete(name)
       drop_in_place(name) if include?(name)
     end
