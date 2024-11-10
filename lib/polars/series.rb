@@ -4187,6 +4187,36 @@ module Polars
     #   dimension is inferred.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("foo", [1, 2, 3, 4, 5, 6, 7, 8, 9])
+    #   square = s.reshape([3, 3])
+    #   square
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'foo' [array[i64, 3]]
+    #   # [
+    #   #         [1, 2, 3]
+    #   #         [4, 5, 6]
+    #   #         [7, 8, 9]
+    #   # ]
+    #
+    # @example
+    #   square.reshape([9])
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: 'foo' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   #         4
+    #   #         5
+    #   #         6
+    #   #         7
+    #   #         8
+    #   #         9
+    #   # ]
     def reshape(dims)
       super
     end
@@ -4216,6 +4246,18 @@ module Polars
     # Exponentially-weighted moving average.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([1, 2, 3])
+    #   s.ewm_mean(com: 1, ignore_nulls: false)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         1.0
+    #   #         1.666667
+    #   #         2.428571
+    #   # ]
     def ewm_mean(
       com: nil,
       span: nil,
@@ -4231,6 +4273,18 @@ module Polars
     # Exponentially-weighted moving standard deviation.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.ewm_std(com: 1, ignore_nulls: false)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         0.0
+    #   #         0.707107
+    #   #         0.963624
+    #   # ]
     def ewm_std(
       com: nil,
       span: nil,
