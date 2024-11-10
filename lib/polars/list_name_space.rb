@@ -233,6 +233,17 @@ module Polars
     # Reverse the arrays in the list.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[3, 2, 1], [9, 1, 2]])
+    #   s.list.reverse
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [list[i64]]
+    #   # [
+    #   #         [1, 2, 3]
+    #   #         [2, 1, 9]
+    #   # ]
     def reverse
       super
     end
@@ -240,6 +251,17 @@ module Polars
     # Get the unique/distinct values in the list.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1, 1, 2], [2, 3, 3]])
+    #   s.list.unique()
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [list[i64]]
+    #   # [
+    #   #         [1, 2]
+    #   #         [2, 3]
+    #   # ]
     def unique
       super
     end
@@ -250,6 +272,18 @@ module Polars
     #   Columns to concat into a List Series
     #
     # @return [Series]
+    #
+    # @example
+    #   s1 = Polars::Series.new("a", [["a", "b"], ["c"]])
+    #   s2 = Polars::Series.new("b", [["c"], ["d", nil]])
+    #   s1.list.concat(s2)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [list[str]]
+    #   # [
+    #   #         ["a", "b", "c"]
+    #   #         ["c", "d", null]
+    #   # ]
     def concat(other)
       super
     end
@@ -268,6 +302,18 @@ module Polars
     #   false -> raise an error
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[3, 2, 1], [], [1, 2]])
+    #   s.list.get(0, null_on_oob: true)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         3
+    #   #         null
+    #   #         1
+    #   # ]
     def get(index, null_on_oob: false)
       super
     end
