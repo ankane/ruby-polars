@@ -544,6 +544,18 @@ module Polars
     # Compute the square root of the elements.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([1, 2, 3])
+    #   s.sqrt
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         1.0
+    #   #         1.414214
+    #   #         1.732051
+    #   # ]
     def sqrt
       self**0.5
     end
@@ -551,6 +563,18 @@ module Polars
     # Check if any boolean value in the column is `true`.
     #
     # @return [Boolean]
+    #
+    # @example
+    #   Polars::Series.new([true, false]).any?
+    #   # => true
+    #
+    # @example
+    #   Polars::Series.new([false, false]).any?
+    #   # => false
+    #
+    # @example
+    #   Polars::Series.new([nil, false]).any?
+    #   # => false
     def any?(ignore_nulls: true, &block)
       if block_given?
         apply(skip_nulls: ignore_nulls, &block).any?
@@ -563,6 +587,18 @@ module Polars
     # Check if all boolean values in the column are `true`.
     #
     # @return [Boolean]
+    #
+    # @example
+    #   Polars::Series.new([true, true]).all?
+    #   # => true
+    #
+    # @example
+    #   Polars::Series.new([false, true]).all?
+    #   # => false
+    #
+    # @example
+    #   Polars::Series.new([nil, true]).all?
+    #   # => true
     def all?(ignore_nulls: true, &block)
       if block_given?
         apply(skip_nulls: ignore_nulls, &block).all?
@@ -590,6 +626,18 @@ module Polars
     #   Given base, defaults to `Math::E`.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([1, 2, 3])
+    #   s.log
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         0.0
+    #   #         0.693147
+    #   #         1.098612
+    #   # ]
     def log(base = Math::E)
       super
     end
@@ -597,6 +645,18 @@ module Polars
     # Compute the base 10 logarithm of the input array, element-wise.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([10, 100, 1000])
+    #   s.log10
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         1.0
+    #   #         2.0
+    #   #         3.0
+    #   # ]
     def log10
       super
     end
