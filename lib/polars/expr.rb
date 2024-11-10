@@ -1903,6 +1903,35 @@ module Polars
     # Reverse the selection.
     #
     # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "A" => [1, 2, 3, 4, 5],
+    #       "fruits" => ["banana", "banana", "apple", "apple", "banana"],
+    #       "B" => [5, 4, 3, 2, 1],
+    #       "cars" => ["beetle", "audi", "beetle", "beetle", "beetle"]
+    #     }
+    #   )
+    #   df.select(
+    #     [
+    #       Polars.all,
+    #       Polars.all.reverse.name.suffix("_reverse")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (5, 8)
+    #   # ┌─────┬────────┬─────┬────────┬───────────┬────────────────┬───────────┬──────────────┐
+    #   # │ A   ┆ fruits ┆ B   ┆ cars   ┆ A_reverse ┆ fruits_reverse ┆ B_reverse ┆ cars_reverse │
+    #   # │ --- ┆ ---    ┆ --- ┆ ---    ┆ ---       ┆ ---            ┆ ---       ┆ ---          │
+    #   # │ i64 ┆ str    ┆ i64 ┆ str    ┆ i64       ┆ str            ┆ i64       ┆ str          │
+    #   # ╞═════╪════════╪═════╪════════╪═══════════╪════════════════╪═══════════╪══════════════╡
+    #   # │ 1   ┆ banana ┆ 5   ┆ beetle ┆ 5         ┆ banana         ┆ 1         ┆ beetle       │
+    #   # │ 2   ┆ banana ┆ 4   ┆ audi   ┆ 4         ┆ apple          ┆ 2         ┆ beetle       │
+    #   # │ 3   ┆ apple  ┆ 3   ┆ beetle ┆ 3         ┆ apple          ┆ 3         ┆ beetle       │
+    #   # │ 4   ┆ apple  ┆ 2   ┆ beetle ┆ 2         ┆ banana         ┆ 4         ┆ audi         │
+    #   # │ 5   ┆ banana ┆ 1   ┆ beetle ┆ 1         ┆ banana         ┆ 5         ┆ beetle       │
+    #   # └─────┴────────┴─────┴────────┴───────────┴────────────────┴───────────┴──────────────┘
     def reverse
       _from_rbexpr(_rbexpr.reverse)
     end
@@ -3112,6 +3141,21 @@ module Polars
     #   Number of rows to return.
     #
     # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4, 5, 6, 7]})
+    #   df.select(Polars.col("foo").limit(3))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ foo │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 2   │
+    #   # │ 3   │
+    #   # └─────┘
     def limit(n = 10)
       head(n)
     end
