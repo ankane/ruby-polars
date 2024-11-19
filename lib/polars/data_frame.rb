@@ -484,6 +484,11 @@ module Polars
       end
     end
 
+    # @private
+    def arrow_c_stream
+      _df.arrow_c_stream
+    end
+
     # Return the dataframe as a scalar.
     #
     # Equivalent to `df[0,0]`, with a check that the shape is (1,1).

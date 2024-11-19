@@ -1252,6 +1252,7 @@ dependencies = [
  "magnus",
  "mimalloc",
  "polars 0.43.1",
+ "polars-arrow",
  "polars-core",
  "polars-parquet",
  "polars-utils",

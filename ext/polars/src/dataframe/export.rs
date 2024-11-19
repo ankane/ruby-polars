@@ -2,6 +2,8 @@ use magnus::{prelude::*, IntoValue, RArray, Value};
 
 use super::*;
 use crate::conversion::{ObjectValue, Wrap};
+use crate::interop::arrow::to_ruby::dataframe_to_stream;
+use crate::RbResult;
 
 impl RbDataFrame {
     pub fn row_tuple(&self, idx: i64) -> Value {
@@ -44,5 +46,10 @@ impl RbDataFrame {
             )
         }))
         .as_value()
+    }
+
+    pub fn __arrow_c_stream__(&self) -> RbResult<Value> {
+        self.df.borrow_mut().align_chunks();
+        dataframe_to_stream(&self.df.borrow())
     }
 }

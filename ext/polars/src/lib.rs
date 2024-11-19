@@ -26,6 +26,7 @@ use expr::rb_exprs_to_exprs;
 use expr::RbExpr;
 use functions::string_cache::RbStringCacheHolder;
 use functions::whenthen::{RbChainedThen, RbChainedWhen, RbThen, RbWhen};
+use interop::arrow::to_ruby::RbArrowArrayStream;
 use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
 use magnus::{define_module, function, method, prelude::*, Ruby};
@@ -76,6 +77,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("row_tuple", method!(RbDataFrame::row_tuple, 1))?;
     class.define_method("row_tuples", method!(RbDataFrame::row_tuples, 0))?;
+    class.define_method(
+        "arrow_c_stream",
+        method!(RbDataFrame::__arrow_c_stream__, 0),
+    )?;
     class.define_method("to_numo", method!(RbDataFrame::to_numo, 0))?;
     class.define_method("write_parquet", method!(RbDataFrame::write_parquet, 6))?;
     class.define_method("add", method!(RbDataFrame::add, 1))?;
@@ -1096,6 +1101,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     // string cache
     let class = module.define_class("RbStringCacheHolder", ruby.class_object())?;
     class.define_singleton_method("hold", function!(RbStringCacheHolder::hold, 0))?;
+
+    // arrow array stream
+    let class = module.define_class("RbArrowArrayStream", ruby.class_object())?;
+    class.define_method("to_i", method!(RbArrowArrayStream::to_i, 0))?;
 
     Ok(())
 }
