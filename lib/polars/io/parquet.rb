@@ -81,7 +81,7 @@ module Polars
         columns = [columns]
       end
 
-      if source.is_a?(::String) && source.include?("*") && Utils.local_file?(source)
+      if (source.is_a?(::String) && source.include?("*") && Utils.local_file?(source)) || source.is_a?(::Array)
         scan =
           scan_parquet(
             source,
