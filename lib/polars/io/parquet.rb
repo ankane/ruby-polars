@@ -196,7 +196,7 @@ module Polars
 
     # @private
     def _scan_parquet_impl(
-      file,
+      source,
       n_rows: nil,
       cache: true,
       parallel: "auto",
@@ -210,10 +210,17 @@ module Polars
       glob: true,
       include_file_paths: nil
     )
+      if source.is_a?(::Array)
+        sources = source
+        source = nil
+      else
+        sources = []
+      end
+
       rblf =
         RbLazyFrame.new_from_parquet(
-          file,
-          [],
+          source,
+          sources,
           n_rows,
           cache,
           parallel,
