@@ -3,6 +3,7 @@
 - Updated Polars to 0.44.2
 - I/O methods no longer require a `URI` object for remote files
 - Added support for scanning files from cloud storage
+- Added experimental support for Arrow C streams
 - Added selectors
 - Added `config`, `string_cache`, and `cs` methods to `Polars`
 - Added `strict` option to `DataFrame` constructor
