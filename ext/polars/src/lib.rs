@@ -832,6 +832,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("new_array", function!(RbSeries::new_array, 5))?;
     class.define_singleton_method("new_decimal", function!(RbSeries::new_decimal, 3))?;
     class.define_singleton_method("repeat", function!(RbSeries::repeat, 4))?;
+    class.define_singleton_method(
+        "from_arrow_c_stream",
+        function!(RbSeries::from_arrow_c_stream, 1),
+    )?;
     class.define_method("struct_unnest", method!(RbSeries::struct_unnest, 0))?;
     class.define_method("struct_fields", method!(RbSeries::struct_fields, 0))?;
     class.define_method(

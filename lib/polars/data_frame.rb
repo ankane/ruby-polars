@@ -66,6 +66,12 @@ module Polars
         self._df = self.class.sequence_to_rbdf(data, schema: schema, schema_overrides: schema_overrides, strict: strict, orient: orient, infer_schema_length: infer_schema_length)
       elsif data.is_a?(Series)
         self._df = self.class.series_to_rbdf(data, schema: schema, schema_overrides: schema_overrides, strict: strict)
+      elsif data.respond_to?(:arrow_c_stream)
+        # This uses the fact that RbSeries.from_arrow_c_stream will create a
+        # struct-typed Series. Then we unpack that to a DataFrame.
+        tmp_col_name = ""
+        s = Utils.wrap_s(RbSeries.from_arrow_c_stream(data))
+        self._df = s.to_frame(tmp_col_name).unnest(tmp_col_name)._df
       else
         raise ArgumentError, "DataFrame constructor called with unsupported type; got #{data.class.name}"
       end

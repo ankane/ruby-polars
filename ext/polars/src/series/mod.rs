@@ -4,6 +4,7 @@ mod comparison;
 mod construction;
 mod export;
 mod general;
+mod import;
 mod scatter;
 
 use magnus::{prelude::*, RArray};
