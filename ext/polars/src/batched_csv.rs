@@ -82,7 +82,7 @@ impl RbBatchedCsv {
                 .collect::<Vec<_>>()
         });
 
-        let file = std::fs::File::open(path).map_err(RbPolarsErr::io)?;
+        let file = std::fs::File::open(path).map_err(RbPolarsErr::from)?;
         let reader = Box::new(file) as Box<dyn MmapBytesReader>;
         let reader = CsvReadOptions::default()
             .with_infer_schema_length(infer_schema_length)

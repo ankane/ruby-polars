@@ -2,33 +2,33 @@ use crate::{RbPolarsErr, RbResult, RbSeries};
 
 impl RbSeries {
     pub fn add(&self, other: &RbSeries) -> RbResult<Self> {
-        (&*self.series.borrow() + &*other.series.borrow())
+        Ok((&*self.series.borrow() + &*other.series.borrow())
             .map(Into::into)
-            .map_err(RbPolarsErr::from)
+            .map_err(RbPolarsErr::from)?)
     }
 
     pub fn sub(&self, other: &RbSeries) -> RbResult<Self> {
-        (&*self.series.borrow() - &*other.series.borrow())
+        Ok((&*self.series.borrow() - &*other.series.borrow())
             .map(Into::into)
-            .map_err(RbPolarsErr::from)
+            .map_err(RbPolarsErr::from)?)
     }
 
     pub fn mul(&self, other: &RbSeries) -> RbResult<Self> {
-        (&*self.series.borrow() * &*other.series.borrow())
+        Ok((&*self.series.borrow() * &*other.series.borrow())
             .map(Into::into)
-            .map_err(RbPolarsErr::from)
+            .map_err(RbPolarsErr::from)?)
     }
 
     pub fn div(&self, other: &RbSeries) -> RbResult<Self> {
-        (&*self.series.borrow() / &*other.series.borrow())
+        Ok((&*self.series.borrow() / &*other.series.borrow())
             .map(Into::into)
-            .map_err(RbPolarsErr::from)
+            .map_err(RbPolarsErr::from)?)
     }
 
     pub fn rem(&self, other: &RbSeries) -> RbResult<Self> {
-        (&*self.series.borrow() % &*other.series.borrow())
+        Ok((&*self.series.borrow() % &*other.series.borrow())
             .map(Into::into)
-            .map_err(RbPolarsErr::from)
+            .map_err(RbPolarsErr::from)?)
     }
 }
 

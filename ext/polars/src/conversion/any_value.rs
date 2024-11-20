@@ -1,5 +1,4 @@
 use magnus::encoding::{EncodingCapable, Index};
-use magnus::Error as RbErr;
 use magnus::{
     class, prelude::*, r_hash::ForEach, IntoValue, RArray, RHash, RString, Ruby, TryConvert, Value,
 };
@@ -10,7 +9,7 @@ use super::{struct_dict, ObjectValue, Wrap};
 
 use crate::error::RbOverflowError;
 use crate::rb_modules::utils;
-use crate::{RbPolarsErr, RbResult, RbSeries};
+use crate::{RbErr, RbPolarsErr, RbResult, RbSeries};
 
 impl IntoValue for Wrap<AnyValue<'_>> {
     fn into_value_with(self, ruby: &Ruby) -> Value {

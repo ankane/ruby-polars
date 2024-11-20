@@ -5,30 +5,34 @@ use polars::prelude::PolarsError;
 use crate::rb_modules;
 
 pub enum RbPolarsErr {
-    // Polars(PolarsError),
+    Polars(PolarsError),
     Other(String),
+}
+
+impl From<PolarsError> for RbPolarsErr {
+    fn from(err: PolarsError) -> Self {
+        RbPolarsErr::Polars(err)
+    }
+}
+
+impl From<std::io::Error> for RbPolarsErr {
+    fn from(value: std::io::Error) -> Self {
+        RbPolarsErr::Other(format!("{value:?}"))
+    }
 }
 
 impl From<RbPolarsErr> for Error {
     fn from(err: RbPolarsErr) -> Self {
         match err {
+            RbPolarsErr::Polars(err) => match err {
+                PolarsError::ComputeError(err) => ComputeError::new_err(err.to_string()),
+                PolarsError::InvalidOperation(err) => {
+                    InvalidOperationError::new_err(err.to_string())
+                }
+                _ => Error::new(rb_modules::error(), err.to_string()),
+            },
             RbPolarsErr::Other(err) => Error::new(rb_modules::error(), err.to_string()),
         }
-    }
-}
-
-impl RbPolarsErr {
-    // convert to Error instead of Self
-    pub fn from(e: PolarsError) -> Error {
-        match e {
-            PolarsError::ComputeError(err) => ComputeError::new_err(err.to_string()),
-            PolarsError::InvalidOperation(err) => InvalidOperationError::new_err(err.to_string()),
-            _ => Error::new(rb_modules::error(), e.to_string()),
-        }
-    }
-
-    pub fn io(e: std::io::Error) -> Error {
-        Error::new(rb_modules::error(), e.to_string())
     }
 }
 

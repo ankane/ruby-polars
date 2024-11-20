@@ -2,7 +2,7 @@ use polars::export::arrow::array::Array;
 use polars::prelude::*;
 
 use crate::error::RbPolarsErr;
-use crate::{RbResult, RbSeries};
+use crate::{RbErr, RbResult, RbSeries};
 
 impl RbSeries {
     pub fn scatter(&self, idx: &RbSeries, values: &RbSeries) -> RbResult<()> {
@@ -12,7 +12,7 @@ impl RbSeries {
                 *s = out;
                 Ok(())
             }
-            Err(e) => Err(RbPolarsErr::from(e)),
+            Err(e) => Err(RbErr::from(RbPolarsErr::from(e))),
         }
     }
 }

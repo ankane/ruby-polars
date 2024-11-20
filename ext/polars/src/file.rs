@@ -169,7 +169,7 @@ pub fn get_either_file(rb_f: Value, truncate: bool) -> RbResult<EitherRustRubyFi
         let file_path = std::path::Path::new(&s);
         let file_path = resolve_homedir(file_path);
         let f = if truncate {
-            File::create(file_path).map_err(RbPolarsErr::io)?
+            File::create(file_path).map_err(RbPolarsErr::from)?
         } else {
             polars_utils::open_file(&file_path).map_err(RbPolarsErr::from)?
         };

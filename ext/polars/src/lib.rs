@@ -34,6 +34,7 @@ use series::RbSeries;
 use sql::RbSQLContext;
 
 use magnus::error::Result as RbResult;
+use magnus::Error as RbErr;
 
 // TODO move
 fn re_escape(pattern: String) -> String {

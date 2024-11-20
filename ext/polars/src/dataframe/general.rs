@@ -241,11 +241,13 @@ impl RbDataFrame {
     }
 
     pub fn get_column(&self, name: String) -> RbResult<RbSeries> {
-        self.df
+        let series = self
+            .df
             .borrow()
             .column(&name)
             .map(|s| RbSeries::new(s.as_materialized_series().clone()))
-            .map_err(RbPolarsErr::from)
+            .map_err(RbPolarsErr::from)?;
+        Ok(series)
     }
 
     pub fn select(&self, selection: Vec<String>) -> RbResult<Self> {
