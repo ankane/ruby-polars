@@ -51,6 +51,13 @@ class ParquetTest < Minitest::Test
     assert_frame expected, df.collect
   end
 
+  def test_scan_parquet_io
+    io = StringIO.new(File.binread("test/support/data.parquet"))
+    df = Polars.scan_parquet(io)
+    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_frame expected, df.collect
+  end
+
   def test_read_parquet_schema
     schema = Polars.read_parquet_schema("test/support/data.parquet")
     assert_equal ({"a" => Polars::Int64, "b" => Polars::String}), schema

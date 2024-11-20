@@ -2,6 +2,7 @@ use magnus::{r_hash::ForEach, typed_data::Obj, IntoValue, RArray, RHash, TryConv
 use polars::io::{HiveOptions, RowIndex};
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
+use polars_plan::plans::ScanSources;
 use std::cell::RefCell;
 use std::io::BufWriter;
 use std::num::NonZeroUsize;
@@ -11,6 +12,15 @@ use crate::conversion::*;
 use crate::expr::rb_exprs_to_exprs;
 use crate::file::get_file_like;
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
+
+fn rbobject_to_first_path_and_scan_sources(obj: Value) -> RbResult<(Option<PathBuf>, ScanSources)> {
+    use crate::file::{get_ruby_scan_source_input, RubyScanSourceInput};
+    Ok(match get_ruby_scan_source_input(obj, false)? {
+        RubyScanSourceInput::Path(path) => (Some(path.clone()), ScanSources::Paths([path].into())),
+        RubyScanSourceInput::File(file) => (None, ScanSources::Files([file].into())),
+        RubyScanSourceInput::Buffer(buff) => (None, ScanSources::Buffers([buff].into())),
+    })
+}
 
 impl RbLazyFrame {
     pub fn new_from_ndjson(
@@ -113,8 +123,8 @@ impl RbLazyFrame {
     }
 
     pub fn new_from_parquet(arguments: &[Value]) -> RbResult<Self> {
-        let path = Option::<PathBuf>::try_convert(arguments[0])?;
-        let paths = Vec::<PathBuf>::try_convert(arguments[1])?;
+        let source = Option::<Value>::try_convert(arguments[0])?;
+        let sources = Wrap::<ScanSources>::try_convert(arguments[1])?;
         let n_rows = Option::<usize>::try_convert(arguments[2])?;
         let cache = bool::try_convert(arguments[3])?;
         let parallel = Wrap::<ParallelStrategy>::try_convert(arguments[4])?;
@@ -133,18 +143,11 @@ impl RbLazyFrame {
         let parallel = parallel.0;
         let hive_schema = hive_schema.map(|s| Arc::new(s.0));
 
-        let first_path = if let Some(path) = &path {
-            path
-        } else {
-            paths
-                .first()
-                .ok_or_else(|| RbValueError::new_err("expected a path argument".to_string()))?
-        };
-
         let row_index = row_index.map(|(name, offset)| RowIndex {
             name: name.into(),
             offset,
         });
+
         let hive_options = HiveOptions {
             enabled: hive_partitioning,
             hive_start_idx: 0,
@@ -168,12 +171,14 @@ impl RbLazyFrame {
             allow_missing_columns,
         };
 
-        let lf = if path.is_some() {
-            LazyFrame::scan_parquet(first_path, args)
-        } else {
-            LazyFrame::scan_parquet_files(Arc::from(paths), args)
-        }
-        .map_err(RbPolarsErr::from)?;
+        let sources = sources.0;
+        let (_first_path, sources) = match source {
+            None => (sources.first_path().map(|p| p.to_path_buf()), sources),
+            Some(source) => rbobject_to_first_path_and_scan_sources(source)?,
+        };
+
+        let lf = LazyFrame::scan_parquet_sources(sources, args).map_err(RbPolarsErr::from)?;
+
         Ok(lf.into())
     }
 

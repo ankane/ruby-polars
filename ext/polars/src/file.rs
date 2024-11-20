@@ -24,6 +24,10 @@ impl RbFileLikeObject {
         RbFileLikeObject { inner: object }
     }
 
+    pub fn as_bytes(&self) -> bytes::Bytes {
+        self.as_file_buffer().into_inner().into()
+    }
+
     pub fn as_buffer(&self) -> std::io::Cursor<Vec<u8>> {
         let data = self.as_file_buffer().into_inner();
         std::io::Cursor::new(data)
@@ -141,6 +145,23 @@ impl EitherRustRubyFile {
             EitherRustRubyFile::Rb(f) => Box::new(f),
             EitherRustRubyFile::Rust(f) => Box::new(f),
         }
+    }
+}
+
+pub enum RubyScanSourceInput {
+    Buffer(bytes::Bytes),
+    Path(PathBuf),
+    #[allow(dead_code)]
+    File(File),
+}
+
+pub fn get_ruby_scan_source_input(rb_f: Value, write: bool) -> RbResult<RubyScanSourceInput> {
+    if let Ok(file_path) = PathBuf::try_convert(rb_f) {
+        // TODO resolve_homedir
+        Ok(RubyScanSourceInput::Path(file_path))
+    } else {
+        let f = RbFileLikeObject::with_requirements(rb_f, !write, write, !write)?;
+        Ok(RubyScanSourceInput::Buffer(f.as_bytes()))
     }
 }
 

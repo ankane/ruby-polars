@@ -1592,6 +1592,7 @@ name = "polars"
 version = "0.14.0"
 dependencies = [
  "ahash",
+ "bytes",
  "chrono",
  "either",
  "jemallocator",
@@ -1601,6 +1602,7 @@ dependencies = [
  "polars-arrow",
  "polars-core",
  "polars-parquet",
+ "polars-plan",
  "polars-utils",
  "regex",
  "serde_json",

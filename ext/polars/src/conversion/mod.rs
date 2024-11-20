@@ -2,8 +2,10 @@ pub(crate) mod any_value;
 mod chunked_array;
 
 use std::fmt::{Debug, Display, Formatter};
+use std::fs::File;
 use std::hash::{Hash, Hasher};
 use std::num::NonZeroUsize;
+use std::path::PathBuf;
 
 use magnus::{
     class, exception, prelude::*, r_hash::ForEach, try_convert::TryConvertOwned, value::Opaque,
@@ -19,8 +21,10 @@ use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 use polars_core::utils::arrow::array::Array;
 use polars_core::utils::materialize_dyn_int;
+use polars_plan::plans::ScanSources;
 use polars_utils::total_ord::{TotalEq, TotalHash};
 
+use crate::file::{get_ruby_scan_source_input, RubyScanSourceInput};
 use crate::object::OBJECT_NAME;
 use crate::rb_modules::series;
 use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
@@ -481,6 +485,69 @@ impl TryConvert for Wrap<Schema> {
         })?;
 
         Ok(Wrap(schema.into_iter().collect::<RbResult<Schema>>()?))
+    }
+}
+
+impl TryConvert for Wrap<ScanSources> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let list = RArray::try_convert(ob)?;
+
+        if list.is_empty() {
+            return Ok(Wrap(ScanSources::default()));
+        }
+
+        enum MutableSources {
+            Paths(Vec<PathBuf>),
+            Files(Vec<File>),
+            Buffers(Vec<bytes::Bytes>),
+        }
+
+        let num_items = list.len();
+        let mut iter = list
+            .into_iter()
+            .map(|val| get_ruby_scan_source_input(val, false));
+
+        let Some(first) = iter.next() else {
+            return Ok(Wrap(ScanSources::default()));
+        };
+
+        let mut sources = match first? {
+            RubyScanSourceInput::Path(path) => {
+                let mut sources = Vec::with_capacity(num_items);
+                sources.push(path);
+                MutableSources::Paths(sources)
+            }
+            RubyScanSourceInput::File(file) => {
+                let mut sources = Vec::with_capacity(num_items);
+                sources.push(file);
+                MutableSources::Files(sources)
+            }
+            RubyScanSourceInput::Buffer(buffer) => {
+                let mut sources = Vec::with_capacity(num_items);
+                sources.push(buffer);
+                MutableSources::Buffers(sources)
+            }
+        };
+
+        for source in iter {
+            match (&mut sources, source?) {
+                (MutableSources::Paths(v), RubyScanSourceInput::Path(p)) => v.push(p),
+                (MutableSources::Files(v), RubyScanSourceInput::File(f)) => v.push(f),
+                (MutableSources::Buffers(v), RubyScanSourceInput::Buffer(f)) => v.push(f),
+                _ => {
+                    return Err(RbTypeError::new_err(
+                        "Cannot combine in-memory bytes, paths and files for scan sources"
+                            .to_string(),
+                    ))
+                }
+            }
+        }
+
+        Ok(Wrap(match sources {
+            MutableSources::Paths(i) => ScanSources::Paths(i.into()),
+            MutableSources::Files(i) => ScanSources::Files(i.into()),
+            MutableSources::Buffers(i) => ScanSources::Buffers(i.into()),
+        }))
     }
 }
 
