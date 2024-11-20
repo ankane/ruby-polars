@@ -1,7 +1,7 @@
-use magnus::exception;
 use magnus::Error;
 use polars::prelude::PolarsError;
 
+use crate::exceptions::{ComputeError, InvalidOperationError};
 use crate::rb_modules;
 
 pub enum RbPolarsErr {
@@ -35,28 +35,6 @@ impl From<RbPolarsErr> for Error {
         }
     }
 }
-
-macro_rules! impl_error_class {
-    ($type:ty, $cls:expr) => {
-        impl $type {
-            pub fn new_err(message: String) -> Error {
-                Error::new($cls, message)
-            }
-        }
-    };
-}
-
-pub struct RbTypeError {}
-pub struct RbValueError {}
-pub struct RbOverflowError {}
-pub struct ComputeError {}
-pub struct InvalidOperationError {}
-
-impl_error_class!(RbTypeError, exception::type_error());
-impl_error_class!(RbValueError, exception::arg_error());
-impl_error_class!(RbOverflowError, exception::range_error());
-impl_error_class!(ComputeError, rb_modules::compute_error());
-impl_error_class!(InvalidOperationError, rb_modules::invalid_operation_error());
 
 #[macro_export]
 macro_rules! raise_err(

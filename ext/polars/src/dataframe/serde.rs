@@ -1,4 +1,4 @@
-use crate::error::ComputeError;
+use crate::exceptions::ComputeError;
 use crate::file::get_file_like;
 use crate::{RbDataFrame, RbResult};
 use magnus::Value;

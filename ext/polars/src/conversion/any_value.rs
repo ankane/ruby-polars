@@ -7,7 +7,7 @@ use polars_core::utils::any_values_to_supertype_and_n_dtypes;
 
 use super::{struct_dict, ObjectValue, Wrap};
 
-use crate::error::RbOverflowError;
+use crate::exceptions::RbOverflowError;
 use crate::rb_modules::utils;
 use crate::{RbErr, RbPolarsErr, RbResult, RbSeries};
 

@@ -35,7 +35,7 @@ fn iterator_to_struct(
         av @ AnyValue::Struct(_, _, flds) => (av._iter_struct_av().collect::<Vec<_>>(), &**flds),
         AnyValue::StructOwned(payload) => (payload.0.clone(), &*payload.1),
         _ => {
-            return Err(crate::error::ComputeError::new_err(format!(
+            return Err(crate::exceptions::ComputeError::new_err(format!(
                 "expected struct got {first_value:?}",
             )))
         }
@@ -70,7 +70,7 @@ fn iterator_to_struct(
             Some(dict) => {
                 let dict = RHash::try_convert(dict)?;
                 if dict.len() != struct_width {
-                    return Err(crate::error::ComputeError::new_err(
+                    return Err(crate::exceptions::ComputeError::new_err(
                         format!("Cannot create struct type.\n> The struct dtype expects {} fields, but it got a dict with {} fields.", struct_width, dict.len())
                     ));
                 }
