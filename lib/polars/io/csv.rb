@@ -606,7 +606,7 @@ module Polars
 
     # @private
     def _scan_csv_impl(
-      file,
+      source,
       has_header: true,
       sep: ",",
       comment_char: nil,
@@ -638,9 +638,16 @@ module Polars
       end
       processed_null_values = Utils._process_null_values(null_values)
 
+      if source.is_a?(::Array)
+        sources = source
+        source = nil
+      else
+        sources = []
+      end
+
       rblf =
         RbLazyFrame.new_from_csv(
-          file,
+          source,
           sep,
           has_header,
           ignore_errors,
@@ -660,7 +667,8 @@ module Polars
           Utils.parse_row_index_args(row_count_name, row_count_offset),
           parse_dates,
           eol_char,
-          truncate_ragged_lines
+          truncate_ragged_lines,
+          sources
         )
       Utils.wrap_ldf(rblf)
     end

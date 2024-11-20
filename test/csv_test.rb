@@ -80,6 +80,13 @@ class CsvTest < Minitest::Test
     assert_frame expected, df.collect
   end
 
+  def test_scan_csv_io
+    io = StringIO.new(File.binread("test/support/data.csv"))
+    df = Polars.scan_csv(io)
+    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_frame expected, df.collect
+  end
+
   def test_write_csv
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     path = temp_path

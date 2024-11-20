@@ -67,7 +67,8 @@ impl RbLazyFrame {
     pub fn new_from_csv(arguments: &[Value]) -> RbResult<Self> {
         // start arguments
         // this pattern is needed for more than 16
-        let path = String::try_convert(arguments[0])?;
+        let source = Option::<Value>::try_convert(arguments[0])?;
+        let sources = Wrap::<ScanSources>::try_convert(arguments[21])?;
         let separator = String::try_convert(arguments[1])?;
         let has_header = bool::try_convert(arguments[2])?;
         let ignore_errors = bool::try_convert(arguments[3])?;
@@ -106,7 +107,15 @@ impl RbLazyFrame {
                 .collect::<Schema>()
         });
 
-        let r = LazyCsvReader::new(path)
+        let sources = sources.0;
+        let (_first_path, sources) = match source {
+            None => (sources.first_path().map(|p| p.to_path_buf()), sources),
+            Some(source) => rbobject_to_first_path_and_scan_sources(source)?,
+        };
+
+        let r = LazyCsvReader::new_with_sources(sources);
+
+        let r = r
             .with_infer_schema_length(infer_schema_length)
             .with_separator(separator)
             .with_has_header(has_header)
