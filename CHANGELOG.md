@@ -1,6 +1,7 @@
 ## 0.15.0 (unreleased)
 
 - Updated Polars to 0.44.2
+- I/O methods no longer require a `URI` object for remote files
 - Added support for scanning files from cloud storage
 - Added selectors
 - Added `config`, `string_cache`, and `cs` methods to `Polars`
