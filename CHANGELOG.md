@@ -1,4 +1,4 @@
-## 0.15.0 (unreleased)
+## 0.15.0 (2024-11-20)
 
 - Updated Polars to 0.44.2
 - I/O methods no longer require a `URI` object for remote files
