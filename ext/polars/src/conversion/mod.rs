@@ -1143,7 +1143,7 @@ impl TryConvert for Wrap<NonZeroUsize> {
         let v = usize::try_convert(ob)?;
         NonZeroUsize::new(v)
             .map(Wrap)
-            .ok_or(RbValueError::new_err("must be non-zero".into()))
+            .ok_or(RbValueError::new_err("must be non-zero"))
     }
 }
 

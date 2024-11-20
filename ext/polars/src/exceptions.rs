@@ -1,21 +1,21 @@
 use crate::rb_modules;
 use magnus::{exception, Error};
+use std::borrow::Cow;
 
 macro_rules! create_exception {
-    ($type:ty, $cls:expr) => {
+    ($type:ident, $cls:expr) => {
+        pub struct $type {}
+
         impl $type {
-            pub fn new_err(message: String) -> Error {
+            pub fn new_err<T>(message: T) -> Error
+            where
+                T: Into<Cow<'static, str>>,
+            {
                 Error::new($cls, message)
             }
         }
     };
 }
-
-pub struct RbTypeError {}
-pub struct RbValueError {}
-pub struct RbOverflowError {}
-pub struct ComputeError {}
-pub struct InvalidOperationError {}
 
 create_exception!(RbTypeError, exception::type_error());
 create_exception!(RbValueError, exception::arg_error());
