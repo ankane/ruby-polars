@@ -154,15 +154,17 @@ impl RbLazyFrame {
         let rechunk = bool::try_convert(arguments[5])?;
         let row_index = Option::<(String, IdxSize)>::try_convert(arguments[6])?;
         let low_memory = bool::try_convert(arguments[7])?;
-        let use_statistics = bool::try_convert(arguments[8])?;
-        let hive_partitioning = Option::<bool>::try_convert(arguments[9])?;
-        let schema = Option::<Wrap<Schema>>::try_convert(arguments[10])?;
-        let hive_schema = Option::<Wrap<Schema>>::try_convert(arguments[11])?;
-        let try_parse_hive_dates = bool::try_convert(arguments[12])?;
-        let glob = bool::try_convert(arguments[13])?;
-        let include_file_paths = Option::<String>::try_convert(arguments[14])?;
-        let allow_missing_columns = bool::try_convert(arguments[15])?;
-        let cloud_options = Option::<Vec<(String, String)>>::try_convert(arguments[16])?;
+        let cloud_options = Option::<Vec<(String, String)>>::try_convert(arguments[8])?;
+        let _credential_provider = Option::<Value>::try_convert(arguments[9])?;
+        let use_statistics = bool::try_convert(arguments[10])?;
+        let hive_partitioning = Option::<bool>::try_convert(arguments[11])?;
+        let schema = Option::<Wrap<Schema>>::try_convert(arguments[12])?;
+        let hive_schema = Option::<Wrap<Schema>>::try_convert(arguments[13])?;
+        let try_parse_hive_dates = bool::try_convert(arguments[14])?;
+        let retries = usize::try_convert(arguments[15])?;
+        let glob = bool::try_convert(arguments[16])?;
+        let include_file_paths = Option::<String>::try_convert(arguments[17])?;
+        let allow_missing_columns = bool::try_convert(arguments[18])?;
 
         let parallel = parallel.0;
         let hive_schema = hive_schema.map(|s| Arc::new(s.0));
@@ -205,7 +207,7 @@ impl RbLazyFrame {
             let first_path_url = first_path.to_string_lossy();
             let cloud_options =
                 parse_cloud_options(&first_path_url, cloud_options.unwrap_or_default())?;
-            args.cloud_options = Some(cloud_options);
+            args.cloud_options = Some(cloud_options.with_max_retries(retries));
         }
 
         let lf = LazyFrame::scan_parquet_sources(sources, args).map_err(RbPolarsErr::from)?;
