@@ -141,39 +141,68 @@ module Polars
     #   Path to a file.
     # @param n_rows [Integer]
     #   Stop reading from parquet file after reading `n_rows`.
-    # @param cache [Boolean]
-    #   Cache the result after reading.
-    # @param parallel ["auto", "columns", "row_groups", "none"]
-    #   This determines the direction of parallelism. 'auto' will try to determine the
-    #   optimal direction.
-    # @param rechunk [Boolean]
-    #   In case of reading multiple files via a glob pattern rechunk the final DataFrame
-    #   into contiguous memory chunks.
     # @param row_count_name [String]
     #   If not nil, this will insert a row count column with give name into the
     #   DataFrame.
     # @param row_count_offset [Integer]
     #   Offset to start the row_count column (only use if the name is set).
-    # @param storage_options [Hash]
-    #   Extra options that make sense for a particular storage connection.
+    # @param parallel ["auto", "columns", "row_groups", "none"]
+    #   This determines the direction of parallelism. 'auto' will try to determine the
+    #   optimal direction.
+    # @param use_statistics [Boolean]
+    #   Use statistics in the parquet to determine if pages
+    #   can be skipped from reading.
+    # @param hive_partitioning [Boolean]
+    #   Infer statistics and schema from hive partitioned URL and use them
+    #   to prune reads.
+    # @param glob [Boolean]
+    #   Expand path given via globbing rules.
+    # @param schema [Object]
+    #   Specify the datatypes of the columns. The datatypes must match the
+    #   datatypes in the file(s). If there are extra columns that are not in the
+    #   file(s), consider also enabling `allow_missing_columns`.
+    # @param hive_schema [Object]
+    #   The column names and data types of the columns by which the data is partitioned.
+    #   If set to `nil` (default), the schema of the Hive partitions is inferred.
+    # @param try_parse_hive_dates [Boolean]
+    #   Whether to try parsing hive values as date/datetime types.
+    # @param rechunk [Boolean]
+    #   In case of reading multiple files via a glob pattern rechunk the final DataFrame
+    #   into contiguous memory chunks.
     # @param low_memory [Boolean]
     #   Reduce memory pressure at the expense of performance.
+    # @param cache [Boolean]
+    #   Cache the result after reading.
+    # @param storage_options [Hash]
+    #   Extra options that make sense for a particular storage connection.
+    # @param credential_provider [Object]
+    #   Provide a function that can be called to provide cloud storage
+    #   credentials. The function is expected to return a dictionary of
+    #   credential keys along with an optional credential expiry time.
+    # @param retries [Integer]
+    #   Number of retries if accessing a cloud instance fails.
     # @param include_file_paths [String]
-    #  Include the path of the source file(s) as a column with this name.
+    #   Include the path of the source file(s) as a column with this name.
     #
     # @return [LazyFrame]
     def scan_parquet(
       source,
       n_rows: nil,
-      cache: true,
-      parallel: "auto",
-      glob: true,
-      schema: nil,
-      rechunk: true,
       row_count_name: nil,
       row_count_offset: 0,
-      storage_options: nil,
+      parallel: "auto",
+      use_statistics: true,
+      hive_partitioning: nil,
+      glob: true,
+      schema: nil,
+      hive_schema: nil,
+      try_parse_hive_dates: true,
+      rechunk: true,
       low_memory: false,
+      cache: true,
+      storage_options: nil,
+      credential_provider: nil,
+      retries: 2,
       include_file_paths: nil,
       allow_missing_columns: false
     )
@@ -181,6 +210,10 @@ module Polars
         source = Utils.normalize_filepath(source, check_not_directory: false)
       elsif Utils.is_path_or_str_sequence(source)
         source = source.map { |s| Utils.normalize_filepath(s, check_not_directory: false) }
+      end
+
+      if credential_provider
+        raise Todo
       end
 
       _scan_parquet_impl(
@@ -192,8 +225,14 @@ module Polars
         row_index_name: row_count_name,
         row_index_offset: row_count_offset,
         storage_options: storage_options,
+        credential_provider: credential_provider,
         low_memory: low_memory,
+        use_statistics: use_statistics,
+        hive_partitioning: hive_partitioning,
         schema: schema,
+        hive_schema: hive_schema,
+        try_parse_hive_dates: try_parse_hive_dates,
+        retries: retries,
         glob: glob,
         include_file_paths: include_file_paths,
         allow_missing_columns: allow_missing_columns
