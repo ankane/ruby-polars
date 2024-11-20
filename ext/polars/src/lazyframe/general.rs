@@ -162,6 +162,7 @@ impl RbLazyFrame {
         let glob = bool::try_convert(arguments[13])?;
         let include_file_paths = Option::<String>::try_convert(arguments[14])?;
         let allow_missing_columns = bool::try_convert(arguments[15])?;
+        let cloud_options = Option::<Vec<(String, String)>>::try_convert(arguments[16])?;
 
         let parallel = parallel.0;
         let hive_schema = hive_schema.map(|s| Arc::new(s.0));
@@ -178,7 +179,7 @@ impl RbLazyFrame {
             try_parse_dates: try_parse_hive_dates,
         };
 
-        let args = ScanArgsParquet {
+        let mut args = ScanArgsParquet {
             n_rows,
             cache,
             parallel,
@@ -195,10 +196,17 @@ impl RbLazyFrame {
         };
 
         let sources = sources.0;
-        let (_first_path, sources) = match source {
+        let (first_path, sources) = match source {
             None => (sources.first_path().map(|p| p.to_path_buf()), sources),
             Some(source) => rbobject_to_first_path_and_scan_sources(source)?,
         };
+
+        if let Some(first_path) = first_path {
+            let first_path_url = first_path.to_string_lossy();
+            let cloud_options =
+                parse_cloud_options(&first_path_url, cloud_options.unwrap_or_default())?;
+            args.cloud_options = Some(cloud_options);
+        }
 
         let lf = LazyFrame::scan_parquet_sources(sources, args).map_err(RbPolarsErr::from)?;
 

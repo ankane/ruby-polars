@@ -17,6 +17,7 @@ use polars::datatypes::AnyValue;
 use polars::frame::row::Row;
 use polars::frame::NullStrategy;
 use polars::io::avro::AvroCompression;
+use polars::io::cloud::CloudOptions;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 use polars_core::utils::arrow::array::Array;
@@ -1064,6 +1065,11 @@ impl TryConvert for Wrap<QuoteStyle> {
         };
         Ok(Wrap(parsed))
     }
+}
+
+pub(crate) fn parse_cloud_options(uri: &str, kv: Vec<(String, String)>) -> RbResult<CloudOptions> {
+    let out = CloudOptions::from_untyped_config(uri, kv).map_err(RbPolarsErr::from)?;
+    Ok(out)
 }
 
 pub fn parse_fill_null_strategy(

@@ -90,6 +90,14 @@ class JsonTest < Minitest::Test
     assert_frame expected, df.collect
   end
 
+  def test_scan_ndjson_cloud
+    skip unless cloud?
+
+    df = Polars.scan_ndjson(cloud_file("data.ndjson"))
+    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_frame expected, df.collect
+  end
+
   def test_write_ndjson
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     path = temp_path

@@ -225,6 +225,12 @@ module Polars
         sources = []
       end
 
+      if storage_options
+        storage_options = storage_options.map { |k, v| [k.to_s, v.to_s] }
+      else
+        storage_options = nil
+      end
+
       rblf =
         RbLazyFrame.new_from_parquet(
           source,
@@ -242,7 +248,8 @@ module Polars
           true,
           glob,
           include_file_paths,
-          allow_missing_columns
+          allow_missing_columns,
+          storage_options
         )
       Utils.wrap_ldf(rblf)
     end

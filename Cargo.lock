@@ -1463,6 +1463,7 @@ dependencies = [
  "rand",
  "reqwest",
  "ring",
+ "rustls-pemfile",
  "serde",
  "serde_json",
  "snafu",
@@ -1846,6 +1847,7 @@ checksum = "4a8ca74f42e7b47cad241b36b98d991cc7fbb51b8d0695a055eb937588d1f310"
 dependencies = [
  "ahash",
  "bitflags",
+ "futures",
  "memchr",
  "once_cell",
  "polars-arrow",
@@ -1861,6 +1863,7 @@ dependencies = [
  "polars-time",
  "polars-utils",
  "rayon",
+ "tokio",
  "version_check",
 ]
 
@@ -1987,6 +1990,7 @@ dependencies = [
  "polars-row",
  "polars-utils",
  "rayon",
+ "tokio",
  "uuid",
  "version_check",
 ]

@@ -77,4 +77,16 @@ class Minitest::Test
       end
     end
   end
+
+  def cloud?
+    !cloud_prefix.nil?
+  end
+
+  def cloud_prefix
+    ENV["CLOUD_PREFIX"]
+  end
+
+  def cloud_file(filename)
+    "#{cloud_prefix}/#{filename}"
+  end
 end

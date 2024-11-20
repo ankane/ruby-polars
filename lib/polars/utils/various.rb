@@ -46,7 +46,7 @@ module Polars
     end
 
     def self.normalize_filepath(path, check_not_directory: true)
-      path = File.expand_path(path)
+      path = File.expand_path(path) if !path.is_a?(::String) || path.start_with?("~")
       if check_not_directory && File.exist?(path) && Dir.exist?(path)
         raise ArgumentError, "Expected a file path; #{path} is a directory"
       end
