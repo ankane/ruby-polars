@@ -1,3 +1,5 @@
+use std::fmt::{Debug, Formatter};
+
 use magnus::Error;
 use polars::prelude::PolarsError;
 
@@ -32,6 +34,16 @@ impl From<RbPolarsErr> for Error {
                 _ => Error::new(rb_modules::error(), err.to_string()),
             },
             RbPolarsErr::Other(err) => Error::new(rb_modules::error(), err.to_string()),
+        }
+    }
+}
+
+impl Debug for RbPolarsErr {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        use RbPolarsErr::*;
+        match self {
+            Polars(err) => write!(f, "{err:?}"),
+            Other(err) => write!(f, "BindingsError: {err:?}"),
         }
     }
 }
