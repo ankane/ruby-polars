@@ -17,8 +17,7 @@ gem "polars-df"
 This library follows the [Polars Python API](https://pola-rs.github.io/polars/py-polars/html/reference/index.html).
 
 ```ruby
-Polars.read_csv("iris.csv")
-  .lazy
+Polars.scan_csv("iris.csv")
   .filter(Polars.col("sepal_length") > 5)
   .group_by("species")
   .agg(Polars.all.sum)
