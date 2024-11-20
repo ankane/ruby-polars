@@ -12,6 +12,7 @@
 - Added `coalesce` option to `join` and `join_asof` methods
 - Added `validate` option to `join` method
 - Added `strict` option to `rename` method
+- Changed `rechunk` option default from `true` to `false` for `scan_parquet` method
 - Fixed `limit` method for `LazyFrame`
 - Fixed `read_database` connection leasing for Active Record 7.2
 - Removed `get_dummies` method from `Polars` (use `df.to_dummies` instead)

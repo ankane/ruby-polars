@@ -53,7 +53,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     let class = module.define_class("RbDataFrame", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbDataFrame::init, 1))?;
     class.define_singleton_method("read_csv", function!(RbDataFrame::read_csv, -1))?;
-    class.define_singleton_method("read_parquet", function!(RbDataFrame::read_parquet, 9))?;
     class.define_singleton_method("read_ipc", function!(RbDataFrame::read_ipc, 6))?;
     class.define_singleton_method(
         "read_ipc_stream",

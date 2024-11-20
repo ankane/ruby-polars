@@ -2,120 +2,108 @@ module Polars
   module IO
     # Read into a DataFrame from a parquet file.
     #
-    # @param source [String, Pathname, StringIO]
+    # @param source [Object]
     #   Path to a file or a file-like object.
     # @param columns [Object]
     #   Columns to select. Accepts a list of column indices (starting at zero) or a list
     #   of column names.
     # @param n_rows [Integer]
     #   Stop reading from parquet file after reading `n_rows`.
-    # @param storage_options [Hash]
-    #   Extra options that make sense for a particular storage connection.
-    # @param parallel ["auto", "columns", "row_groups", "none"]
-    #   This determines the direction of parallelism. 'auto' will try to determine the
-    #   optimal direction.
     # @param row_count_name [String]
     #   If not nil, this will insert a row count column with give name into the
     #   DataFrame.
     # @param row_count_offset [Integer]
     #   Offset to start the row_count column (only use if the name is set).
-    # @param low_memory [Boolean]
-    #   Reduce memory pressure at the expense of performance.
+    # @param parallel ["auto", "columns", "row_groups", "none"]
+    #   This determines the direction of parallelism. 'auto' will try to determine the
+    #   optimal direction.
     # @param use_statistics [Boolean]
     #   Use statistics in the parquet to determine if pages
     #   can be skipped from reading.
+    # @param hive_partitioning [Boolean]
+    #   Infer statistics and schema from hive partitioned URL and use them
+    #   to prune reads.
+    # @param glob [Boolean]
+    #   Expand path given via globbing rules.
+    # @param schema [Object]
+    #   Specify the datatypes of the columns. The datatypes must match the
+    #   datatypes in the file(s). If there are extra columns that are not in the
+    #   file(s), consider also enabling `allow_missing_columns`.
+    # @param hive_schema [Object]
+    #   The column names and data types of the columns by which the data is partitioned.
+    #   If set to `nil` (default), the schema of the Hive partitions is inferred.
+    # @param try_parse_hive_dates [Boolean]
+    #   Whether to try parsing hive values as date/datetime types.
     # @param rechunk [Boolean]
-    #   Make sure that all columns are contiguous in memory by
-    #   aggregating the chunks into a single array.
+    #   In case of reading multiple files via a glob pattern rechunk the final DataFrame
+    #   into contiguous memory chunks.
+    # @param low_memory [Boolean]
+    #   Reduce memory pressure at the expense of performance.
+    # @param storage_options [Hash]
+    #   Extra options that make sense for a particular storage connection.
+    # @param credential_provider [Object]
+    #   Provide a function that can be called to provide cloud storage
+    #   credentials. The function is expected to return a dictionary of
+    #   credential keys along with an optional credential expiry time.
+    # @param retries [Integer]
+    #   Number of retries if accessing a cloud instance fails.
+    # @param include_file_paths [String]
+    #   Include the path of the source file(s) as a column with this name.
     #
     # @return [DataFrame]
-    #
-    # @note
-    #   This operation defaults to a `rechunk` operation at the end, meaning that
-    #   all data will be stored continuously in memory.
-    #   Set `rechunk: false` if you are benchmarking the parquet-reader. A `rechunk` is
-    #   an expensive operation.
     def read_parquet(
       source,
       columns: nil,
       n_rows: nil,
-      storage_options: nil,
-      parallel: "auto",
       row_count_name: nil,
       row_count_offset: 0,
-      low_memory: false,
+      parallel: "auto",
       use_statistics: true,
-      rechunk: true
+      hive_partitioning: nil,
+      glob: true,
+      schema: nil,
+      hive_schema: nil,
+      try_parse_hive_dates: true,
+      rechunk: false,
+      low_memory: false,
+      storage_options: nil,
+      credential_provider: nil,
+      retries: 2,
+      include_file_paths: nil,
+      allow_missing_columns: false
     )
-      _prepare_file_arg(source) do |data|
-        _read_parquet_impl(
-          data,
-          columns: columns,
+      lf =
+        scan_parquet(
+          source,
           n_rows: n_rows,
-          parallel: parallel,
           row_count_name: row_count_name,
           row_count_offset: row_count_offset,
-          low_memory: low_memory,
+          parallel: parallel,
           use_statistics: use_statistics,
-          rechunk: rechunk
+          hive_partitioning: hive_partitioning,
+          schema: schema,
+          hive_schema: hive_schema,
+          try_parse_hive_dates: try_parse_hive_dates,
+          rechunk: rechunk,
+          low_memory: low_memory,
+          cache: false,
+          storage_options: storage_options,
+          credential_provider: credential_provider,
+          retries: retries,
+          glob: glob,
+          include_file_paths: include_file_paths,
+          allow_missing_columns: allow_missing_columns
         )
-      end
-    end
 
-    # @private
-    def _read_parquet_impl(
-      source,
-      columns: nil,
-      n_rows: nil,
-      parallel: "auto",
-      row_count_name: nil,
-      row_count_offset: 0,
-      low_memory: false,
-      use_statistics: true,
-      rechunk: true
-    )
-      if Utils.pathlike?(source)
-        source = Utils.normalize_filepath(source)
-      end
-      if columns.is_a?(::String)
-        columns = [columns]
-      end
-
-      if (source.is_a?(::String) && source.include?("*") && Utils.local_file?(source)) || source.is_a?(::Array)
-        scan =
-          scan_parquet(
-            source,
-            n_rows: n_rows,
-            rechunk: true,
-            parallel: parallel,
-            row_count_name: row_count_name,
-            row_count_offset: row_count_offset,
-            low_memory: low_memory
-          )
-
-        if columns.nil?
-          return scan.collect
-        elsif Utils.is_str_sequence(columns, allow_str: false)
-          return scan.select(columns).collect
+      if !columns.nil?
+        if Utils.is_int_sequence(columns)
+          lf = lf.select(F.nth(columns))
         else
-          raise ArgumentError, "cannot use glob patterns and integer based projection as `columns` argument; Use columns: Array[String]"
+          lf = lf.select(columns)
         end
       end
 
-      projection, columns = Utils.handle_projection_columns(columns)
-      rbdf =
-        RbDataFrame.read_parquet(
-          source,
-          columns,
-          projection,
-          n_rows,
-          parallel,
-          Utils.parse_row_index_args(row_count_name, row_count_offset),
-          low_memory,
-          use_statistics,
-          rechunk
-        )
-      Utils.wrap_df(rbdf)
+      lf.collect
     end
 
     # Get a schema of the Parquet file without reading data.
@@ -137,8 +125,8 @@ module Polars
     # This allows the query optimizer to push down predicates and projections to the scan
     # level, thereby potentially reducing memory overhead.
     #
-    # @param source [String]
-    #   Path to a file.
+    # @param source [Object]
+    #   Path to a file or a file-like object.
     # @param n_rows [Integer]
     #   Stop reading from parquet file after reading `n_rows`.
     # @param row_count_name [String]
@@ -197,7 +185,7 @@ module Polars
       schema: nil,
       hive_schema: nil,
       try_parse_hive_dates: true,
-      rechunk: true,
+      rechunk: false,
       low_memory: false,
       cache: true,
       storage_options: nil,

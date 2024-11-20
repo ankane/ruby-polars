@@ -122,52 +122,6 @@ impl RbDataFrame {
         Ok(df.into())
     }
 
-    #[allow(clippy::too_many_arguments)]
-    pub fn read_parquet(
-        rb_f: Value,
-        columns: Option<Vec<String>>,
-        projection: Option<Vec<usize>>,
-        n_rows: Option<usize>,
-        parallel: Wrap<ParallelStrategy>,
-        row_index: Option<(String, IdxSize)>,
-        low_memory: bool,
-        use_statistics: bool,
-        rechunk: bool,
-    ) -> RbResult<Self> {
-        use EitherRustRubyFile::*;
-
-        let row_index = row_index.map(|(name, offset)| RowIndex {
-            name: name.into(),
-            offset,
-        });
-        let result = match get_either_file(rb_f, false)? {
-            Rb(f) => {
-                let buf = f.as_buffer();
-                ParquetReader::new(buf)
-                    .with_projection(projection)
-                    .with_columns(columns)
-                    .read_parallel(parallel.0)
-                    .with_slice(n_rows.map(|x| (0, x)))
-                    .with_row_index(row_index)
-                    .set_low_memory(low_memory)
-                    .use_statistics(use_statistics)
-                    .set_rechunk(rechunk)
-                    .finish()
-            }
-            Rust(f) => ParquetReader::new(f)
-                .with_projection(projection)
-                .with_columns(columns)
-                .read_parallel(parallel.0)
-                .with_slice(n_rows.map(|x| (0, x)))
-                .with_row_index(row_index)
-                .use_statistics(use_statistics)
-                .set_rechunk(rechunk)
-                .finish(),
-        };
-        let df = result.map_err(RbPolarsErr::from)?;
-        Ok(RbDataFrame::new(df))
-    }
-
     pub fn read_json(
         rb_f: Value,
         infer_schema_length: Option<usize>,
