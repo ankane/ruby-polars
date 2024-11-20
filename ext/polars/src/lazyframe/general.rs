@@ -23,6 +23,7 @@ fn rbobject_to_first_path_and_scan_sources(obj: Value) -> RbResult<(Option<PathB
 }
 
 impl RbLazyFrame {
+    #[allow(clippy::too_many_arguments)]
     pub fn new_from_ndjson(
         source: Option<Value>,
         sources: Wrap<ScanSources>,
