@@ -178,7 +178,9 @@ module Polars
       allow_missing_columns: false
     )
       if Utils.pathlike?(source)
-        source = Utils.normalize_filepath(source)
+        source = Utils.normalize_filepath(source, check_not_directory: false)
+      elsif Utils.is_path_or_str_sequence(source)
+        source = source.map { |s| Utils.normalize_filepath(s, check_not_directory: false) }
       end
 
       _scan_parquet_impl(

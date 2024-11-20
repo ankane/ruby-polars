@@ -12,6 +12,10 @@ module Polars
       val.all? { |x| x.is_a?(eltype) }
     end
 
+    def self.is_path_or_str_sequence(val)
+      val.is_a?(::Array) && val.all? { |x| pathlike?(x) }
+    end
+
     def self.is_bool_sequence(val)
       val.is_a?(::Array) && val.all? { |x| x == true || x == false }
     end
