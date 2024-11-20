@@ -728,7 +728,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("new_from_csv", function!(RbLazyFrame::new_from_csv, -1))?;
     class.define_singleton_method(
         "new_from_parquet",
-        function!(RbLazyFrame::new_from_parquet, 14),
+        function!(RbLazyFrame::new_from_parquet, -1),
     )?;
     class.define_singleton_method("new_from_ipc", function!(RbLazyFrame::new_from_ipc, 9))?;
     class.define_method("write_json", method!(RbLazyFrame::write_json, 1))?;
@@ -768,7 +768,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "with_columns_seq",
         method!(RbLazyFrame::with_columns_seq, 1),
     )?;
-    class.define_method("rename", method!(RbLazyFrame::rename, 2))?;
+    class.define_method("rename", method!(RbLazyFrame::rename, 3))?;
     class.define_method("reverse", method!(RbLazyFrame::reverse, 0))?;
     class.define_method("shift", method!(RbLazyFrame::shift, 2))?;
     class.define_method("fill_nan", method!(RbLazyFrame::fill_nan, 1))?;

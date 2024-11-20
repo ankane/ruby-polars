@@ -170,8 +170,14 @@ pub fn cum_fold(
     let exprs = rb_exprs_to_exprs(exprs)?;
     let lambda = Opaque::from(lambda);
 
-    let func =
-        move |a: Series, b: Series| binary_lambda(Ruby::get().unwrap().get_inner(lambda), a, b);
+    let func = move |a: Column, b: Column| {
+        binary_lambda(
+            Ruby::get().unwrap().get_inner(lambda),
+            a.take_materialized_series(),
+            b.take_materialized_series(),
+        )
+        .map(|v| v.map(Column::from))
+    };
     Ok(dsl::cum_fold_exprs(acc.inner.clone(), func, exprs, include_init).into())
 }
 
@@ -260,8 +266,14 @@ pub fn fold(acc: &RbExpr, lambda: Value, exprs: RArray) -> RbResult<RbExpr> {
     let exprs = rb_exprs_to_exprs(exprs)?;
     let lambda = Opaque::from(lambda);
 
-    let func =
-        move |a: Series, b: Series| binary_lambda(Ruby::get().unwrap().get_inner(lambda), a, b);
+    let func = move |a: Column, b: Column| {
+        binary_lambda(
+            Ruby::get().unwrap().get_inner(lambda),
+            a.take_materialized_series(),
+            b.take_materialized_series(),
+        )
+        .map(|v| v.map(Column::from))
+    };
     Ok(dsl::fold_exprs(acc.inner.clone(), func, exprs).into())
 }
 

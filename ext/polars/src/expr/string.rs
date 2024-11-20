@@ -205,51 +205,19 @@ impl RbExpr {
     }
 
     pub fn str_hex_encode(&self) -> Self {
-        self.clone()
-            .inner
-            .map(
-                move |s| s.str().map(|s| Some(s.hex_encode().into_series())),
-                GetOutput::same_type(),
-            )
-            .with_fmt("str.hex_encode")
-            .into()
+        self.inner.clone().str().hex_encode().into()
     }
 
     pub fn str_hex_decode(&self, strict: bool) -> Self {
-        self.clone()
-            .inner
-            .map(
-                move |s| s.str()?.hex_decode(strict).map(|s| Some(s.into_series())),
-                GetOutput::same_type(),
-            )
-            .with_fmt("str.hex_decode")
-            .into()
+        self.inner.clone().str().hex_decode(strict).into()
     }
 
     pub fn str_base64_encode(&self) -> Self {
-        self.clone()
-            .inner
-            .map(
-                move |s| s.str().map(|s| Some(s.base64_encode().into_series())),
-                GetOutput::same_type(),
-            )
-            .with_fmt("str.base64_encode")
-            .into()
+        self.inner.clone().str().base64_encode().into()
     }
 
     pub fn str_base64_decode(&self, strict: bool) -> Self {
-        self.clone()
-            .inner
-            .map(
-                move |s| {
-                    s.str()?
-                        .base64_decode(strict)
-                        .map(|s| Some(s.into_series()))
-                },
-                GetOutput::same_type(),
-            )
-            .with_fmt("str.base64_decode")
-            .into()
+        self.inner.clone().str().base64_decode(strict).into()
     }
 
     pub fn str_to_integer(&self, base: &Self, strict: bool) -> Self {

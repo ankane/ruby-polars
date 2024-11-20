@@ -7,13 +7,16 @@ use super::*;
 use crate::{RbDataFrame, RbPolarsErr, RbSeries, Wrap};
 
 fn get_iters(df: &DataFrame) -> Vec<SeriesIter> {
-    df.get_columns().iter().map(|s| s.iter()).collect()
+    df.get_columns()
+        .iter()
+        .map(|s| s.as_materialized_series().iter())
+        .collect()
 }
 
 fn get_iters_skip(df: &DataFrame, skip: usize) -> Vec<std::iter::Skip<SeriesIter>> {
     df.get_columns()
         .iter()
-        .map(|s| s.iter().skip(skip))
+        .map(|s| s.as_materialized_series().iter().skip(skip))
         .collect()
 }
 

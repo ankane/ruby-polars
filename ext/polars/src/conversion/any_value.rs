@@ -47,15 +47,20 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
             };
             s.into_value()
         }
+        AnyValue::CategoricalOwned(idx, rev, arr) | AnyValue::EnumOwned(idx, rev, arr) => {
+            let s = if arr.is_null() {
+                rev.get(idx)
+            } else {
+                unsafe { arr.deref_unchecked().value(idx as usize) }
+            };
+            s.into_value()
+        }
         AnyValue::Date(v) => utils().funcall("_to_ruby_date", (v,)).unwrap(),
         AnyValue::Datetime(v, time_unit, time_zone) => {
-            let time_unit = time_unit.to_ascii();
-            utils()
-                .funcall(
-                    "_to_ruby_datetime",
-                    (v, time_unit, time_zone.as_ref().map(|v| v.to_string())),
-                )
-                .unwrap()
+            datetime_to_rb_object(v, time_unit, time_zone)
+        }
+        AnyValue::DatetimeOwned(v, time_unit, time_zone) => {
+            datetime_to_rb_object(v, time_unit, time_zone.as_ref().map(AsRef::as_ref))
         }
         AnyValue::Duration(v, time_unit) => {
             let time_unit = time_unit.to_ascii();
@@ -81,6 +86,13 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
             .funcall("_to_ruby_decimal", (v.to_string(), -(scale as i32)))
             .unwrap(),
     }
+}
+
+fn datetime_to_rb_object(v: i64, tu: TimeUnit, tz: Option<&TimeZone>) -> Value {
+    let tu = tu.to_ascii();
+    utils()
+        .funcall("_to_ruby_datetime", (v, tu, tz.map(|v| v.to_string())))
+        .unwrap()
 }
 
 pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<AnyValue<'s>> {
@@ -189,7 +201,7 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
         let v = sec * 1_000_000_000 + nsec;
         // TODO support time zone when possible
         // https://github.com/pola-rs/polars/issues/9103
-        Ok(AnyValue::Datetime(v, TimeUnit::Nanoseconds, &None))
+        Ok(AnyValue::Datetime(v, TimeUnit::Nanoseconds, None))
     }
 
     fn get_datetime(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
@@ -198,7 +210,7 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
         Ok(AnyValue::Datetime(
             sec * 1_000_000_000 + nsec,
             TimeUnit::Nanoseconds,
-            &None,
+            None,
         ))
     }
 

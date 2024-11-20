@@ -57,7 +57,7 @@ pub fn binary_lambda(lambda: Value, a: Series, b: Series) -> PolarsResult<Option
             .collect()?;
 
         let s = out.select_at_idx(0).unwrap().clone();
-        RbSeries::new(s)
+        RbSeries::new(s.take_materialized_series())
     } else {
         return Some(to_series(result_series_wrapper, "")).transpose();
     };

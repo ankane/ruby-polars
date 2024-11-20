@@ -84,7 +84,7 @@ class SeriesTest < Minitest::Test
 
   def test_new_list_of_structs
     s = Polars::Series.new([[{}], [{}], [{}]])
-    assert_series [[nil], [nil], [nil]], s, dtype: Polars::List
+    assert_series [[{}], [{}], [{}]], s, dtype: Polars::List
   end
 
   def test_new_strict

@@ -75,9 +75,6 @@ module Polars
     #   the DataFrame.
     # @param row_count_offset [Integer]
     #   Offset to start the row_count column (only used if the name is set).
-    # @param sample_size [Integer]
-    #   Set the sample size. This is used to sample statistics to estimate the
-    #   allocation needed.
     # @param eol_char [String]
     #   Single byte end of line character.
     # @param truncate_ragged_lines [Boolean]
@@ -114,7 +111,6 @@ module Polars
       skip_rows_after_header: 0,
       row_count_name: nil,
       row_count_offset: 0,
-      sample_size: 1024,
       eol_char: "\n",
       truncate_ragged_lines: false
     )
@@ -163,7 +159,6 @@ module Polars
           skip_rows_after_header: skip_rows_after_header,
           row_count_name: row_count_name,
           row_count_offset: row_count_offset,
-          sample_size: sample_size,
           eol_char: eol_char,
           truncate_ragged_lines: truncate_ragged_lines
         )
@@ -201,7 +196,6 @@ module Polars
       skip_rows_after_header: 0,
       row_count_name: nil,
       row_count_offset: 0,
-      sample_size: 1024,
       eol_char: "\n",
       raise_if_empty: true,
       truncate_ragged_lines: false,
@@ -305,7 +299,6 @@ module Polars
           parse_dates,
           skip_rows_after_header,
           Utils.parse_row_index_args(row_count_name, row_count_offset),
-          sample_size,
           eol_char,
           raise_if_empty,
           truncate_ragged_lines,
@@ -392,9 +385,6 @@ module Polars
     #   the DataFrame.
     # @param row_count_offset [Integer]
     #   Offset to start the row_count column (only used if the name is set).
-    # @param sample_size [Integer]
-    #   Set the sample size. This is used to sample statistics to estimate the
-    #   allocation needed.
     # @param eol_char [String]
     #   Single byte end of line character.
     # @param truncate_ragged_lines [Boolean]
@@ -431,7 +421,6 @@ module Polars
       skip_rows_after_header: 0,
       row_count_name: nil,
       row_count_offset: 0,
-      sample_size: 1024,
       eol_char: "\n",
       raise_if_empty: true,
       truncate_ragged_lines: false,
@@ -474,7 +463,6 @@ module Polars
         skip_rows_after_header: skip_rows_after_header,
         row_count_name: row_count_name,
         row_count_offset: row_count_offset,
-        sample_size: sample_size,
         eol_char: eol_char,
         new_columns: new_columns,
         raise_if_empty: raise_if_empty,

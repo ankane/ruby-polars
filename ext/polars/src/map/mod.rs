@@ -93,10 +93,12 @@ fn iterator_to_struct(
             .collect::<Vec<_>>()
     });
 
-    Ok(StructChunked::from_series(name, &fields)
-        .unwrap()
-        .into_series()
-        .into())
+    Ok(
+        StructChunked::from_series(name, fields[0].len(), fields.iter())
+            .unwrap()
+            .into_series()
+            .into(),
+    )
 }
 
 fn iterator_to_primitive<T>(
@@ -232,8 +234,7 @@ fn iterator_to_list(
     name: PlSmallStr,
     capacity: usize,
 ) -> RbResult<ListChunked> {
-    let mut builder =
-        get_list_builder(dt, capacity * 5, capacity, name).map_err(RbPolarsErr::from)?;
+    let mut builder = get_list_builder(dt, capacity * 5, capacity, name);
     for _ in 0..init_null_count {
         builder.append_null()
     }

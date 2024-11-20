@@ -112,23 +112,24 @@ impl RbLazyFrame {
         Ok(r.finish().map_err(RbPolarsErr::from)?.into())
     }
 
-    #[allow(clippy::too_many_arguments)]
-    pub fn new_from_parquet(
-        path: Option<PathBuf>,
-        paths: Vec<PathBuf>,
-        n_rows: Option<usize>,
-        cache: bool,
-        parallel: Wrap<ParallelStrategy>,
-        rechunk: bool,
-        row_index: Option<(String, IdxSize)>,
-        low_memory: bool,
-        use_statistics: bool,
-        hive_partitioning: Option<bool>,
-        hive_schema: Option<Wrap<Schema>>,
-        try_parse_hive_dates: bool,
-        glob: bool,
-        include_file_paths: Option<String>,
-    ) -> RbResult<Self> {
+    pub fn new_from_parquet(arguments: &[Value]) -> RbResult<Self> {
+        let path = Option::<PathBuf>::try_convert(arguments[0])?;
+        let paths = Vec::<PathBuf>::try_convert(arguments[1])?;
+        let n_rows = Option::<usize>::try_convert(arguments[2])?;
+        let cache = bool::try_convert(arguments[3])?;
+        let parallel = Wrap::<ParallelStrategy>::try_convert(arguments[4])?;
+        let rechunk = bool::try_convert(arguments[5])?;
+        let row_index = Option::<(String, IdxSize)>::try_convert(arguments[6])?;
+        let low_memory = bool::try_convert(arguments[7])?;
+        let use_statistics = bool::try_convert(arguments[8])?;
+        let hive_partitioning = Option::<bool>::try_convert(arguments[9])?;
+        let schema = Option::<Wrap<Schema>>::try_convert(arguments[10])?;
+        let hive_schema = Option::<Wrap<Schema>>::try_convert(arguments[11])?;
+        let try_parse_hive_dates = bool::try_convert(arguments[12])?;
+        let glob = bool::try_convert(arguments[13])?;
+        let include_file_paths = Option::<String>::try_convert(arguments[14])?;
+        let allow_missing_columns = bool::try_convert(arguments[15])?;
+
         let parallel = parallel.0;
         let hive_schema = hive_schema.map(|s| Arc::new(s.0));
 
@@ -160,9 +161,11 @@ impl RbLazyFrame {
             low_memory,
             cloud_options: None,
             use_statistics,
+            schema: schema.map(|x| Arc::new(x.0)),
             hive_options,
             glob,
             include_file_paths: include_file_paths.map(|x| x.into()),
+            allow_missing_columns,
         };
 
         let lf = if path.is_some() {
@@ -562,7 +565,7 @@ impl RbLazyFrame {
                 strategy: strategy.0,
                 left_by: left_by.map(strings_to_pl_smallstr),
                 right_by: right_by.map(strings_to_pl_smallstr),
-                tolerance: tolerance.map(|t| t.0.into_static().unwrap()),
+                tolerance: tolerance.map(|t| t.0.into_static()),
                 tolerance_str: tolerance_str.map(|s| s.into()),
             }))
             .suffix(suffix)
@@ -625,9 +628,9 @@ impl RbLazyFrame {
         Ok(ldf.with_columns_seq(rb_exprs_to_exprs(exprs)?).into())
     }
 
-    pub fn rename(&self, existing: Vec<String>, new: Vec<String>) -> Self {
+    pub fn rename(&self, existing: Vec<String>, new: Vec<String>, strict: bool) -> Self {
         let ldf = self.ldf.borrow().clone();
-        ldf.rename(existing, new).into()
+        ldf.rename(existing, new, strict).into()
     }
 
     pub fn reverse(&self) -> Self {
@@ -691,11 +694,7 @@ impl RbLazyFrame {
         out.into()
     }
 
-    pub fn quantile(
-        &self,
-        quantile: &RbExpr,
-        interpolation: Wrap<QuantileInterpolOptions>,
-    ) -> Self {
+    pub fn quantile(&self, quantile: &RbExpr, interpolation: Wrap<QuantileMethod>) -> Self {
         let ldf = self.ldf.borrow().clone();
         let out = ldf.quantile(quantile.inner.clone(), interpolation.0);
         out.into()

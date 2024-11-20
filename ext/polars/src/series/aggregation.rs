@@ -98,11 +98,7 @@ impl RbSeries {
         .into_value())
     }
 
-    pub fn quantile(
-        &self,
-        quantile: f64,
-        interpolation: Wrap<QuantileInterpolOptions>,
-    ) -> RbResult<Value> {
+    pub fn quantile(&self, quantile: f64, interpolation: Wrap<QuantileMethod>) -> RbResult<Value> {
         let bind = self
             .series
             .borrow()

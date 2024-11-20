@@ -9,7 +9,6 @@ use polars_core::series::IsSorted;
 use crate::conversion::{parse_fill_null_strategy, Wrap};
 use crate::map::lazy::map_single;
 use crate::rb_exprs_to_exprs;
-use crate::utils::reinterpret;
 use crate::{RbExpr, RbResult};
 
 impl RbExpr {
@@ -165,7 +164,7 @@ impl RbExpr {
         self.inner.clone().implode().into()
     }
 
-    pub fn quantile(&self, quantile: &Self, interpolation: Wrap<QuantileInterpolOptions>) -> Self {
+    pub fn quantile(&self, quantile: &Self, interpolation: Wrap<QuantileMethod>) -> Self {
         self.inner
             .clone()
             .quantile(quantile.inner.clone(), interpolation.0)
@@ -463,14 +462,7 @@ impl RbExpr {
     }
 
     pub fn gather_every(&self, n: usize, offset: usize) -> Self {
-        self.clone()
-            .inner
-            .map(
-                move |s: Series| Ok(Some(s.gather_every(n, offset))),
-                GetOutput::same_type(),
-            )
-            .with_fmt("gather_every")
-            .into()
+        self.inner.clone().gather_every(n, offset).into()
     }
 
     pub fn tail(&self, n: Option<usize>) -> Self {
@@ -661,16 +653,7 @@ impl RbExpr {
     }
 
     pub fn reinterpret(&self, signed: bool) -> Self {
-        let function = move |s: Series| reinterpret(&s, signed).map(Some);
-        let dt = if signed {
-            DataType::Int64
-        } else {
-            DataType::UInt64
-        };
-        self.clone()
-            .inner
-            .map(function, GetOutput::from_type(dt))
-            .into()
+        self.inner.clone().reinterpret(signed).into()
     }
 
     pub fn mode(&self) -> Self {
@@ -725,7 +708,7 @@ impl RbExpr {
     }
 
     pub fn reshape(&self, dims: Vec<i64>) -> Self {
-        self.inner.clone().reshape(&dims, NestedType::Array).into()
+        self.inner.clone().reshape(&dims).into()
     }
 
     pub fn cum_count(&self, reverse: bool) -> Self {

@@ -39,6 +39,10 @@ pub fn to_series(rs: RArray) -> RbResult<Vec<Series>> {
     Ok(series)
 }
 
-pub fn to_rbseries(s: Vec<Series>) -> RArray {
-    RArray::from_iter(s.into_iter().map(RbSeries::new))
+pub fn to_rbseries(s: Vec<Column>) -> RArray {
+    RArray::from_iter(
+        s.into_iter()
+            .map(|c| c.take_materialized_series())
+            .map(RbSeries::new),
+    )
 }

@@ -828,14 +828,14 @@ impl TryConvert for Wrap<ParallelStrategy> {
     }
 }
 
-impl TryConvert for Wrap<QuantileInterpolOptions> {
+impl TryConvert for Wrap<QuantileMethod> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match String::try_convert(ob)?.as_str() {
-            "lower" => QuantileInterpolOptions::Lower,
-            "higher" => QuantileInterpolOptions::Higher,
-            "nearest" => QuantileInterpolOptions::Nearest,
-            "linear" => QuantileInterpolOptions::Linear,
-            "midpoint" => QuantileInterpolOptions::Midpoint,
+            "lower" => QuantileMethod::Lower,
+            "higher" => QuantileMethod::Higher,
+            "nearest" => QuantileMethod::Nearest,
+            "linear" => QuantileMethod::Linear,
+            "midpoint" => QuantileMethod::Midpoint,
             v => {
                 return Err(RbValueError::new_err(format!(
                     "interpolation must be one of {{'lower', 'higher', 'nearest', 'linear', 'midpoint'}}, got {}",

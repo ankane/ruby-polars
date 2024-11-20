@@ -17,7 +17,7 @@ impl RbDataFrame {
     pub fn init(columns: RArray) -> RbResult<Self> {
         let mut cols = Vec::new();
         for i in columns.into_iter() {
-            cols.push(<&RbSeries>::try_convert(i)?.series.borrow().clone());
+            cols.push(<&RbSeries>::try_convert(i)?.series.borrow().clone().into());
         }
         let df = DataFrame::new(cols).map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
@@ -175,6 +175,7 @@ impl RbDataFrame {
 
     pub fn hstack(&self, columns: RArray) -> RbResult<Self> {
         let columns = to_series(columns)?;
+        let columns = columns.into_iter().map(Into::into).collect::<Vec<_>>();
         let df = self
             .df
             .borrow()
@@ -185,6 +186,7 @@ impl RbDataFrame {
 
     pub fn hstack_mut(&self, columns: RArray) -> RbResult<()> {
         let columns = to_series(columns)?;
+        let columns = columns.into_iter().map(Into::into).collect::<Vec<_>>();
         self.df
             .borrow_mut()
             .hstack_mut(&columns)
@@ -223,6 +225,7 @@ impl RbDataFrame {
             .borrow_mut()
             .drop_in_place(&name)
             .map_err(RbPolarsErr::from)?;
+        let s = s.take_materialized_series();
         Ok(RbSeries::new(s))
     }
 
@@ -230,7 +233,7 @@ impl RbDataFrame {
         self.df
             .borrow()
             .select_at_idx(idx)
-            .map(|s| RbSeries::new(s.clone()))
+            .map(|s| RbSeries::new(s.as_materialized_series().clone()))
     }
 
     pub fn get_column_index(&self, name: String) -> Option<usize> {
@@ -241,7 +244,7 @@ impl RbDataFrame {
         self.df
             .borrow()
             .column(&name)
-            .map(|s| RbSeries::new(s.clone()))
+            .map(|s| RbSeries::new(s.as_materialized_series().clone()))
             .map_err(RbPolarsErr::from)
     }
 
@@ -411,7 +414,7 @@ impl RbDataFrame {
             .borrow()
             .max_horizontal()
             .map_err(RbPolarsErr::from)?;
-        Ok(s.map(|s| s.into()))
+        Ok(s.map(|s| s.take_materialized_series().into()))
     }
 
     pub fn min_horizontal(&self) -> RbResult<Option<RbSeries>> {
@@ -420,7 +423,7 @@ impl RbDataFrame {
             .borrow()
             .min_horizontal()
             .map_err(RbPolarsErr::from)?;
-        Ok(s.map(|s| s.into()))
+        Ok(s.map(|s| s.take_materialized_series().into()))
     }
 
     pub fn sum_horizontal(&self, ignore_nulls: bool) -> RbResult<Option<RbSeries>> {

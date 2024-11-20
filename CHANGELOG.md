@@ -1,5 +1,6 @@
 ## 0.15.0 (unreleased)
 
+- Updated Polars to 0.44.2
 - Added selectors
 - Added `config`, `string_cache`, and `cs` methods to `Polars`
 - Added `strict` option to `DataFrame` constructor
@@ -9,6 +10,7 @@
 - Added `cast` method to `DataFrame` and `LazyFrame`
 - Added `coalesce` option to `join` and `join_asof` methods
 - Added `validate` option to `join` method
+- Added `strict` option to `rename` method
 - Fixed `limit` method for `LazyFrame`
 - Fixed `read_database` connection leasing for Active Record 7.2
 - Removed `get_dummies` method from `Polars` (use `df.to_dummies` instead)

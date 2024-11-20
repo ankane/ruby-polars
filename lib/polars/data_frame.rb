@@ -1086,6 +1086,10 @@ module Polars
     #
     # @param mapping [Hash]
     #   Key value pairs that map from old name to new name.
+    # @param strict [Boolean]
+    #   Validate that all column names exist in the current schema,
+    #   and throw an exception if any do not. (Note that this parameter
+    #   is a no-op when passing a function to `mapping`).
     #
     # @return [DataFrame]
     #
@@ -1109,8 +1113,8 @@ module Polars
     #   # │ 2     ┆ 7   ┆ b   │
     #   # │ 3     ┆ 8   ┆ c   │
     #   # └───────┴─────┴─────┘
-    def rename(mapping)
-      lazy.rename(mapping).collect(no_optimization: true)
+    def rename(mapping, strict: true)
+      lazy.rename(mapping, strict: strict).collect(no_optimization: true)
     end
 
     # Insert a Series at a certain column index. This operation is in place.

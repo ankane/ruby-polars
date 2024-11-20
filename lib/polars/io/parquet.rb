@@ -168,12 +168,14 @@ module Polars
       cache: true,
       parallel: "auto",
       glob: true,
+      schema: nil,
       rechunk: true,
       row_count_name: nil,
       row_count_offset: 0,
       storage_options: nil,
       low_memory: false,
-      include_file_paths: nil
+      include_file_paths: nil,
+      allow_missing_columns: false
     )
       if Utils.pathlike?(source)
         source = Utils.normalize_filepath(source)
@@ -189,8 +191,10 @@ module Polars
         row_count_offset: row_count_offset,
         storage_options: storage_options,
         low_memory: low_memory,
+        schema: schema,
         glob: glob,
-        include_file_paths: include_file_paths
+        include_file_paths: include_file_paths,
+        allow_missing_columns: allow_missing_columns
       )
     end
 
@@ -208,7 +212,9 @@ module Polars
       use_statistics: true,
       hive_partitioning: nil,
       glob: true,
-      include_file_paths: nil
+      schema: nil,
+      include_file_paths: nil,
+      allow_missing_columns: false
     )
       if source.is_a?(::Array)
         sources = source
@@ -229,10 +235,12 @@ module Polars
           low_memory,
           use_statistics,
           hive_partitioning,
+          schema,
           nil,
           true,
           glob,
-          include_file_paths
+          include_file_paths,
+          allow_missing_columns
         )
       Utils.wrap_ldf(rblf)
     end

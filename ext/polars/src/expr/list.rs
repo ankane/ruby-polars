@@ -198,7 +198,11 @@ impl RbExpr {
             .inner
             .clone()
             .list()
-            .to_struct(width_strat.0, name_gen, upper_bound)
+            .to_struct(ListToStructArgs::InferWidth {
+                infer_field_strategy: width_strat.0,
+                get_index_name: name_gen,
+                max_fields: upper_bound,
+            })
             .into())
     }
 

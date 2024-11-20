@@ -1,5 +1,4 @@
 use polars::prelude::*;
-use std::any::Any;
 
 use crate::conversion::Wrap;
 use crate::RbExpr;
@@ -169,7 +168,7 @@ impl RbExpr {
             weights,
             min_periods,
             center,
-            fn_params: Some(Arc::new(RollingVarParams { ddof }) as Arc<dyn Any + Send + Sync>),
+            fn_params: Some(RollingFnParams::Var(RollingVarParams { ddof })),
         };
 
         self.inner.clone().rolling_std(options).into()
@@ -187,7 +186,7 @@ impl RbExpr {
             window_size: Duration::parse(&window_size),
             min_periods,
             closed_window: closed.0,
-            fn_params: Some(Arc::new(RollingVarParams { ddof }) as Arc<dyn Any + Send + Sync>),
+            fn_params: Some(RollingFnParams::Var(RollingVarParams { ddof })),
         };
 
         self.inner
@@ -210,7 +209,7 @@ impl RbExpr {
             weights,
             min_periods,
             center,
-            fn_params: Some(Arc::new(RollingVarParams { ddof }) as Arc<dyn Any + Send + Sync>),
+            fn_params: Some(RollingFnParams::Var(RollingVarParams { ddof })),
         };
 
         self.inner.clone().rolling_var(options).into()
@@ -228,7 +227,7 @@ impl RbExpr {
             window_size: Duration::parse(&window_size),
             min_periods,
             closed_window: closed.0,
-            fn_params: Some(Arc::new(RollingVarParams { ddof }) as Arc<dyn Any + Send + Sync>),
+            fn_params: Some(RollingFnParams::Var(RollingVarParams { ddof })),
         };
 
         self.inner
@@ -277,7 +276,7 @@ impl RbExpr {
     pub fn rolling_quantile(
         &self,
         quantile: f64,
-        interpolation: Wrap<QuantileInterpolOptions>,
+        interpolation: Wrap<QuantileMethod>,
         window_size: usize,
         weights: Option<Vec<f64>>,
         min_periods: Option<usize>,
@@ -302,7 +301,7 @@ impl RbExpr {
         &self,
         by: &RbExpr,
         quantile: f64,
-        interpolation: Wrap<QuantileInterpolOptions>,
+        interpolation: Wrap<QuantileMethod>,
         window_size: String,
         min_periods: usize,
         closed: Wrap<ClosedWindow>,

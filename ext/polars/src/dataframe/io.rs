@@ -42,12 +42,11 @@ impl RbDataFrame {
         let try_parse_dates = bool::try_convert(arguments[21])?;
         let skip_rows_after_header = usize::try_convert(arguments[22])?;
         let row_index = Option::<(String, IdxSize)>::try_convert(arguments[23])?;
-        let sample_size = usize::try_convert(arguments[24])?;
-        let eol_char = String::try_convert(arguments[25])?;
-        let raise_if_empty = bool::try_convert(arguments[26])?;
-        let truncate_ragged_lines = bool::try_convert(arguments[27])?;
-        let decimal_comma = bool::try_convert(arguments[28])?;
-        let schema = Option::<Wrap<Schema>>::try_convert(arguments[29])?;
+        let eol_char = String::try_convert(arguments[24])?;
+        let raise_if_empty = bool::try_convert(arguments[25])?;
+        let truncate_ragged_lines = bool::try_convert(arguments[26])?;
+        let decimal_comma = bool::try_convert(arguments[27])?;
+        let schema = Option::<Wrap<Schema>>::try_convert(arguments[28])?;
         // end arguments
 
         let null_values = null_values.map(|w| w.0);
@@ -103,7 +102,6 @@ impl RbDataFrame {
             .with_low_memory(low_memory)
             .with_skip_rows_after_header(skip_rows_after_header)
             .with_row_index(row_index)
-            .with_sample_size(sample_size)
             .with_raise_if_empty(raise_if_empty)
             .with_parse_options(
                 CsvParseOptions::default()

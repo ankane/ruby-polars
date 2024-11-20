@@ -2205,6 +2205,10 @@ module Polars
     #
     # @param mapping [Hash]
     #   Key value pairs that map from old name to new name.
+    # @param strict [Boolean]
+    #   Validate that all column names exist in the current schema,
+    #   and throw an exception if any do not. (Note that this parameter
+    #   is a no-op when passing a function to `mapping`).
     #
     # @return [LazyFrame]
     #
@@ -2242,13 +2246,13 @@ module Polars
     #   # │ 2   ┆ 7   ┆ b   │
     #   # │ 3   ┆ 8   ┆ c   │
     #   # └─────┴─────┴─────┘
-    def rename(mapping)
+    def rename(mapping, strict: true)
       if mapping.respond_to?(:call)
         select(F.all.name.map(&mapping))
       else
         existing = mapping.keys
         _new = mapping.values
-        _from_rbldf(_ldf.rename(existing, _new))
+        _from_rbldf(_ldf.rename(existing, _new, strict))
       end
     end
 
