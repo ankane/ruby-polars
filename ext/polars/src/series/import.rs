@@ -16,8 +16,7 @@ fn call_arrow_c_stream(ob: Value) -> RbResult<Value> {
 }
 
 pub(crate) fn import_stream_rbcapsule(capsule: Value) -> RbResult<RbSeries> {
-    let ptr: usize = capsule.funcall("to_i", ())?;
-    let capsule_pointer = ptr as *mut ArrowArrayStream;
+    let capsule_pointer: usize = capsule.funcall("to_i", ())?;
 
     // # Safety
     // capsule holds a valid C ArrowArrayStream pointer, as defined by the Arrow PyCapsule
