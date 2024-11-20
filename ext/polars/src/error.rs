@@ -25,45 +25,27 @@ impl RbPolarsErr {
     }
 }
 
+macro_rules! impl_error_class {
+    ($type:ty, $cls:expr) => {
+        impl $type {
+            pub fn new_err(message: String) -> Error {
+                Error::new($cls, message)
+            }
+        }
+    };
+}
+
 pub struct RbTypeError {}
-
-impl RbTypeError {
-    pub fn new_err(message: String) -> Error {
-        Error::new(exception::type_error(), message)
-    }
-}
-
 pub struct RbValueError {}
-
-impl RbValueError {
-    pub fn new_err(message: String) -> Error {
-        Error::new(exception::arg_error(), message)
-    }
-}
-
 pub struct RbOverflowError {}
-
-impl RbOverflowError {
-    pub fn new_err(message: String) -> Error {
-        Error::new(exception::range_error(), message)
-    }
-}
-
 pub struct ComputeError {}
-
-impl ComputeError {
-    pub fn new_err(message: String) -> Error {
-        Error::new(rb_modules::compute_error(), message)
-    }
-}
-
 pub struct InvalidOperationError {}
 
-impl InvalidOperationError {
-    pub fn new_err(message: String) -> Error {
-        Error::new(rb_modules::invalid_operation_error(), message)
-    }
-}
+impl_error_class!(RbTypeError, exception::type_error());
+impl_error_class!(RbValueError, exception::arg_error());
+impl_error_class!(RbOverflowError, exception::range_error());
+impl_error_class!(ComputeError, rb_modules::compute_error());
+impl_error_class!(InvalidOperationError, rb_modules::invalid_operation_error());
 
 #[macro_export]
 macro_rules! raise_err(
