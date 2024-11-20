@@ -676,10 +676,10 @@ module Polars
     private
 
     def _prepare_file_arg(file)
-      # TODO remove
-      # not required for cloud files
       if file.is_a?(::String) && file =~ /\Ahttps?:\/\//
-        raise ArgumentError, "use URI(...) for remote files"
+        require "uri"
+
+        file = URI(file)
       end
 
       if defined?(URI) && file.is_a?(URI)
