@@ -28,11 +28,6 @@ impl RbFileLikeObject {
         self.as_file_buffer().into_inner().into()
     }
 
-    pub fn as_buffer(&self) -> std::io::Cursor<Vec<u8>> {
-        let data = self.as_file_buffer().into_inner();
-        std::io::Cursor::new(data)
-    }
-
     pub fn as_file_buffer(&self) -> Cursor<Vec<u8>> {
         let bytes = self
             .inner
