@@ -723,7 +723,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("read_json", function!(RbLazyFrame::read_json, 1))?;
     class.define_singleton_method(
         "new_from_ndjson",
-        function!(RbLazyFrame::new_from_ndjson, 7),
+        function!(RbLazyFrame::new_from_ndjson, 8),
     )?;
     class.define_singleton_method("new_from_csv", function!(RbLazyFrame::new_from_csv, -1))?;
     class.define_singleton_method(

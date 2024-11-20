@@ -60,13 +60,23 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0
     )
+      sources = []
       if Utils.pathlike?(source)
         source = Utils.normalize_filepath(source)
+      elsif source.is_a?(::Array)
+        if Utils.is_path_or_str_sequence(source)
+          sources = source.map { |s| Utils.normalize_filepath(s) }
+        else
+          sources = source
+        end
+
+        source = nil
       end
 
       rblf =
         RbLazyFrame.new_from_ndjson(
           source,
+          sources,
           infer_schema_length,
           batch_size,
           n_rows,

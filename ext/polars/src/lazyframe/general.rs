@@ -24,7 +24,8 @@ fn rbobject_to_first_path_and_scan_sources(obj: Value) -> RbResult<(Option<PathB
 
 impl RbLazyFrame {
     pub fn new_from_ndjson(
-        path: String,
+        source: Option<Value>,
+        sources: Wrap<ScanSources>,
         infer_schema_length: Option<usize>,
         batch_size: Option<Wrap<NonZeroUsize>>,
         n_rows: Option<usize>,
@@ -38,15 +39,28 @@ impl RbLazyFrame {
             offset,
         });
 
-        let lf = LazyJsonLineReader::new(path)
+        let sources = sources.0;
+        let (_first_path, sources) = match source {
+            None => (sources.first_path().map(|p| p.to_path_buf()), sources),
+            Some(source) => rbobject_to_first_path_and_scan_sources(source)?,
+        };
+
+        let r = LazyJsonLineReader::new_with_sources(sources);
+
+        let lf = r
             .with_infer_schema_length(infer_schema_length.and_then(NonZeroUsize::new))
             .with_batch_size(batch_size)
             .with_n_rows(n_rows)
             .low_memory(low_memory)
             .with_rechunk(rechunk)
+            // .with_schema(schema.map(|schema| Arc::new(schema.0)))
+            // .with_schema_overwrite(schema_overrides.map(|x| Arc::new(x.0)))
             .with_row_index(row_index)
+            // .with_ignore_errors(ignore_errors)
+            // .with_include_file_paths(include_file_paths.map(|x| x.into()))
             .finish()
             .map_err(RbPolarsErr::from)?;
+
         Ok(lf.into())
     }
 
