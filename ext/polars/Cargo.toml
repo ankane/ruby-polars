@@ -60,6 +60,7 @@ features = [
     "find_many",
     "fmt",
     "gcp",
+    "http",
     "interpolate",
     "ipc",
     "ipc_streaming",
