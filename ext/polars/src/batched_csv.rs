@@ -129,7 +129,7 @@ impl RbBatchedCsv {
         let batches = reader
             .borrow()
             .lock()
-            .map_err(|e| RbPolarsErr::other(e.to_string()))?
+            .map_err(|e| RbPolarsErr::Other(e.to_string()))?
             .next_batches(n)
             .map_err(RbPolarsErr::from)?;
 

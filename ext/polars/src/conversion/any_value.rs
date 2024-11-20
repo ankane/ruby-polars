@@ -1,4 +1,5 @@
 use magnus::encoding::{EncodingCapable, Index};
+use magnus::Error as RbErr;
 use magnus::{
     class, prelude::*, r_hash::ForEach, IntoValue, RArray, RHash, RString, Ruby, TryConvert, Value,
 };
@@ -235,7 +236,9 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
 
         let (sign, digits, _, exp): (i8, String, i32, i32) = ob.funcall("split", ()).unwrap();
         let (mut v, scale) = abs_decimal_from_digits(digits, exp).ok_or_else(|| {
-            RbPolarsErr::other("BigDecimal is too large to fit in Decimal128".into())
+            RbErr::from(RbPolarsErr::Other(
+                "BigDecimal is too large to fit in Decimal128".into(),
+            ))
         })?;
         if sign < 0 {
             // TODO better error
@@ -270,9 +273,6 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
     } else if ob.is_kind_of(crate::rb_modules::bigdecimal()) {
         get_decimal(ob, strict)
     } else {
-        Err(RbPolarsErr::other(format!(
-            "object type not supported {:?}",
-            ob
-        )))
+        Err(RbPolarsErr::Other(format!("object type not supported {:?}", ob)).into())
     }
 }

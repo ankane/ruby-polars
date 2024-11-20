@@ -4,7 +4,18 @@ use polars::prelude::PolarsError;
 
 use crate::rb_modules;
 
-pub struct RbPolarsErr {}
+pub enum RbPolarsErr {
+    // Polars(PolarsError),
+    Other(String),
+}
+
+impl From<RbPolarsErr> for Error {
+    fn from(err: RbPolarsErr) -> Self {
+        match err {
+            RbPolarsErr::Other(err) => Error::new(rb_modules::error(), err.to_string()),
+        }
+    }
+}
 
 impl RbPolarsErr {
     // convert to Error instead of Self
@@ -18,10 +29,6 @@ impl RbPolarsErr {
 
     pub fn io(e: std::io::Error) -> Error {
         Error::new(rb_modules::error(), e.to_string())
-    }
-
-    pub fn other(message: String) -> Error {
-        Error::new(rb_modules::error(), message)
     }
 }
 

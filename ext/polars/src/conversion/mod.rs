@@ -109,9 +109,10 @@ impl TryConvert for Wrap<NullValues> {
                     .collect(),
             )))
         } else {
-            Err(RbPolarsErr::other(
-                "could not extract value from null_values argument".into(),
-            ))
+            Err(
+                RbPolarsErr::Other("could not extract value from null_values argument".into())
+                    .into(),
+            )
         }
     }
 }

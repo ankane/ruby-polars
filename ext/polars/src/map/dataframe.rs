@@ -116,16 +116,17 @@ pub fn apply_lambda_unknown<'a>(
                 true,
             ));
         } else if out.is_kind_of(class::array()) {
-            return Err(RbPolarsErr::other(
+            return Err(RbPolarsErr::Other(
                 "A list output type is invalid. Do you mean to create polars List Series?\
 Then return a Series object."
                     .into(),
-            ));
+            )
+            .into());
         } else {
-            return Err(RbPolarsErr::other("Could not determine output type".into()));
+            return Err(RbPolarsErr::Other("Could not determine output type".into()).into());
         }
     }
-    Err(RbPolarsErr::other("Could not determine output type".into()))
+    Err(RbPolarsErr::Other("Could not determine output type".into()).into())
 }
 
 fn apply_iter<T>(

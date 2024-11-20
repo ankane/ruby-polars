@@ -170,7 +170,7 @@ impl RbDataFrame {
 
         let out = builder
             .finish()
-            .map_err(|e| RbPolarsErr::other(format!("{e}")))?;
+            .map_err(|e| RbPolarsErr::Other(format!("{e}")))?;
         Ok(out.into())
     }
 
@@ -310,7 +310,7 @@ impl RbDataFrame {
             (false, _) => serde_json::to_writer(file, &*self.df.borrow())
                 .map_err(|e| PolarsError::ComputeError(format!("{:?}", e).into())),
         };
-        r.map_err(|e| RbPolarsErr::other(format!("{:?}", e)))?;
+        r.map_err(|e| RbPolarsErr::Other(format!("{:?}", e)))?;
         Ok(())
     }
 
@@ -321,7 +321,7 @@ impl RbDataFrame {
             .with_json_format(JsonFormat::JsonLines)
             .finish(&mut self.df.borrow_mut());
 
-        r.map_err(|e| RbPolarsErr::other(format!("{:?}", e)))?;
+        r.map_err(|e| RbPolarsErr::Other(format!("{:?}", e)))?;
         Ok(())
     }
 
