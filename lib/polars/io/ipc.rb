@@ -233,7 +233,7 @@ module Polars
 
     # @private
     def _scan_ipc_impl(
-      file,
+      source,
       n_rows: nil,
       cache: true,
       rechunk: true,
@@ -245,13 +245,23 @@ module Polars
       try_parse_hive_dates: true,
       include_file_paths: nil
     )
-      if Utils.pathlike?(file)
-        file = Utils.normalize_filepath(file)
+      sources = []
+      if Utils.pathlike?(source)
+        source = Utils.normalize_filepath(source)
+      elsif source.is_a?(::Array)
+        if Utils.is_path_or_str_sequence(source)
+          sources = source.map { |s| Utils.normalize_filepath(s) }
+        else
+          sources = source
+        end
+
+        source = nil
       end
 
       rblf =
         RbLazyFrame.new_from_ipc(
-          file,
+          source,
+          sources,
           n_rows,
           cache,
           rechunk,

@@ -198,7 +198,8 @@ impl RbLazyFrame {
 
     #[allow(clippy::too_many_arguments)]
     pub fn new_from_ipc(
-        path: String,
+        source: Option<Value>,
+        sources: Wrap<ScanSources>,
         n_rows: Option<usize>,
         cache: bool,
         rechunk: bool,
@@ -229,7 +230,14 @@ impl RbLazyFrame {
             hive_options,
             include_file_paths: include_file_paths.map(|x| x.into()),
         };
-        let lf = LazyFrame::scan_ipc(path, args).map_err(RbPolarsErr::from)?;
+
+        let sources = sources.0;
+        let (_first_path, sources) = match source {
+            None => (sources.first_path().map(|p| p.to_path_buf()), sources),
+            Some(source) => rbobject_to_first_path_and_scan_sources(source)?,
+        };
+
+        let lf = LazyFrame::scan_ipc_sources(sources, args).map_err(RbPolarsErr::from)?;
         Ok(lf.into())
     }
 

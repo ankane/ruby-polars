@@ -19,6 +19,12 @@ class IpcTest < Minitest::Test
     assert_frame expected, df.collect
   end
 
+  def test_scan_ipc_file
+    df = File.open("test/support/data.arrow", "rb") { |f| Polars.scan_ipc(f) }
+    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_frame expected, df.collect
+  end
+
   def test_read_ipc_schema
     schema = Polars.read_ipc_schema("test/support/data.arrow")
     assert_equal ({"a" => Polars::Int64, "b" => Polars::String}), schema
