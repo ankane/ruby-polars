@@ -304,29 +304,31 @@ impl TryConvert for Wrap<DataType> {
         let dtype = if ob.is_kind_of(class::class()) {
             let name = ob.funcall::<_, _, String>("name", ())?;
             match name.as_str() {
-                "Polars::UInt8" => DataType::UInt8,
-                "Polars::UInt16" => DataType::UInt16,
-                "Polars::UInt32" => DataType::UInt32,
-                "Polars::UInt64" => DataType::UInt64,
                 "Polars::Int8" => DataType::Int8,
                 "Polars::Int16" => DataType::Int16,
                 "Polars::Int32" => DataType::Int32,
                 "Polars::Int64" => DataType::Int64,
+                "Polars::UInt8" => DataType::UInt8,
+                "Polars::UInt16" => DataType::UInt16,
+                "Polars::UInt32" => DataType::UInt32,
+                "Polars::UInt64" => DataType::UInt64,
+                "Polars::Float32" => DataType::Float32,
+                "Polars::Float64" => DataType::Float64,
+                "Polars::Boolean" => DataType::Boolean,
                 "Polars::String" => DataType::String,
                 "Polars::Binary" => DataType::Binary,
-                "Polars::Boolean" => DataType::Boolean,
                 "Polars::Categorical" => DataType::Categorical(None, Default::default()),
                 "Polars::Enum" => DataType::Enum(None, Default::default()),
                 "Polars::Date" => DataType::Date,
-                "Polars::Datetime" => DataType::Datetime(TimeUnit::Microseconds, None),
                 "Polars::Time" => DataType::Time,
+                "Polars::Datetime" => DataType::Datetime(TimeUnit::Microseconds, None),
                 "Polars::Duration" => DataType::Duration(TimeUnit::Microseconds),
                 "Polars::Decimal" => DataType::Decimal(None, None),
-                "Polars::Float32" => DataType::Float32,
-                "Polars::Float64" => DataType::Float64,
-                "Polars::Object" => DataType::Object(OBJECT_NAME, None),
                 "Polars::List" => DataType::List(Box::new(DataType::Null)),
+                "Polars::Array" => DataType::Array(Box::new(DataType::Null), 0),
+                "Polars::Struct" => DataType::Struct(vec![]),
                 "Polars::Null" => DataType::Null,
+                "Polars::Object" => DataType::Object(OBJECT_NAME, None),
                 "Polars::Unknown" => DataType::Unknown(Default::default()),
                 dt => {
                     return Err(RbValueError::new_err(format!(
@@ -345,9 +347,11 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::UInt16" => DataType::UInt16,
                 "Polars::UInt32" => DataType::UInt32,
                 "Polars::UInt64" => DataType::UInt64,
+                "Polars::Float32" => DataType::Float32,
+                "Polars::Float64" => DataType::Float64,
+                "Polars::Boolean" => DataType::Boolean,
                 "Polars::String" => DataType::String,
                 "Polars::Binary" => DataType::Binary,
-                "Polars::Boolean" => DataType::Boolean,
                 "Polars::Categorical" => {
                     let ordering = ob
                         .funcall::<_, _, Wrap<CategoricalOrdering>>("ordering", ())?
@@ -363,20 +367,16 @@ impl TryConvert for Wrap<DataType> {
                 }
                 "Polars::Date" => DataType::Date,
                 "Polars::Time" => DataType::Time,
-                "Polars::Float32" => DataType::Float32,
-                "Polars::Float64" => DataType::Float64,
-                "Polars::Null" => DataType::Null,
-                "Polars::Unknown" => DataType::Unknown(Default::default()),
-                "Polars::Duration" => {
-                    let time_unit: Value = ob.funcall("time_unit", ()).unwrap();
-                    let time_unit = Wrap::<TimeUnit>::try_convert(time_unit)?.0;
-                    DataType::Duration(time_unit)
-                }
                 "Polars::Datetime" => {
                     let time_unit: Value = ob.funcall("time_unit", ()).unwrap();
                     let time_unit = Wrap::<TimeUnit>::try_convert(time_unit)?.0;
                     let time_zone: Option<String> = ob.funcall("time_zone", ())?;
                     DataType::Datetime(time_unit, time_zone.as_deref().map(|x| x.into()))
+                }
+                "Polars::Duration" => {
+                    let time_unit: Value = ob.funcall("time_unit", ()).unwrap();
+                    let time_unit = Wrap::<TimeUnit>::try_convert(time_unit)?.0;
+                    DataType::Duration(time_unit)
                 }
                 "Polars::Decimal" => {
                     let precision = ob.funcall("precision", ())?;
@@ -388,6 +388,13 @@ impl TryConvert for Wrap<DataType> {
                     let inner = Wrap::<DataType>::try_convert(inner)?;
                     DataType::List(Box::new(inner.0))
                 }
+                "Polars::Array" => {
+                    let inner: Value = ob.funcall("inner", ()).unwrap();
+                    let size: Value = ob.funcall("size", ()).unwrap();
+                    let inner = Wrap::<DataType>::try_convert(inner)?;
+                    let size = usize::try_convert(size)?;
+                    DataType::Array(Box::new(inner.0), size)
+                }
                 "Polars::Struct" => {
                     let arr: RArray = ob.funcall("fields", ())?;
                     let mut fields = Vec::with_capacity(arr.len());
@@ -396,6 +403,9 @@ impl TryConvert for Wrap<DataType> {
                     }
                     DataType::Struct(fields)
                 }
+                "Polars::Null" => DataType::Null,
+                "Object" => DataType::Object(OBJECT_NAME, None),
+                "Polars::Unknown" => DataType::Unknown(Default::default()),
                 dt => {
                     return Err(RbTypeError::new_err(format!(
                         "A {dt} object is not a correct polars DataType. \
