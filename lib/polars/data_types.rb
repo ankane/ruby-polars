@@ -311,7 +311,7 @@ module Polars
       end
 
       if categories.empty?
-        self.categories = Series.new("category", [], dtype: String)
+        @categories = Series.new("category", [], dtype: String)
         return
       end
 
