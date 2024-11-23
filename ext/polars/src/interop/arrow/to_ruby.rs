@@ -9,7 +9,7 @@ use polars_core::utils::arrow;
 
 use crate::RbResult;
 
-#[magnus::wrap(class = "Polars::RbArrowArrayStream")]
+#[magnus::wrap(class = "Polars::ArrowArrayStream")]
 pub struct RbArrowArrayStream {
     stream: ffi::ArrowArrayStream,
 }

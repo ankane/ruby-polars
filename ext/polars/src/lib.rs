@@ -1109,7 +1109,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("hold", function!(RbStringCacheHolder::hold, 0))?;
 
     // arrow array stream
-    let class = module.define_class("RbArrowArrayStream", ruby.class_object())?;
+    let class = module.define_class("ArrowArrayStream", ruby.class_object())?;
     class.define_method("to_i", method!(RbArrowArrayStream::to_i, 0))?;
 
     Ok(())

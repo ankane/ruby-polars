@@ -89,4 +89,11 @@ module Polars
 
   # @private
   N_INFER_DEFAULT = 100
+
+  # @private
+  class ArrowArrayStream
+    def arrow_c_stream
+      self
+    end
+  end
 end

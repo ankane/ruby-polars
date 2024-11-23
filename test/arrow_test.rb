@@ -6,7 +6,11 @@ class ArrowTest < Minitest::Test
     stream = df.arrow_c_stream
     assert_kind_of Integer, stream.to_i
 
-    df2 = Struct.new(:arrow_c_stream).new(stream)
-    assert_frame df, Polars::DataFrame.new(df2)
+    assert_frame df, Polars::DataFrame.new(stream)
+
+    error = assert_raises(ArgumentError) do
+      Polars::DataFrame.new(stream)
+    end
+    assert_equal "the C stream was already released", error.message
   end
 end
