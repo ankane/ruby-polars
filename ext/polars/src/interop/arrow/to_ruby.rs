@@ -36,7 +36,7 @@ pub struct DataFrameStreamIterator {
 
 impl DataFrameStreamIterator {
     fn new(df: &DataFrame) -> Self {
-        let schema = df.schema().to_arrow(CompatLevel::newest());
+        let schema = df.schema().to_arrow(CompatLevel::oldest());
         let dtype = ArrowDataType::Struct(schema.into_iter_values().collect());
 
         Self {
@@ -67,7 +67,7 @@ impl Iterator for DataFrameStreamIterator {
             let batch_cols = self
                 .columns
                 .iter()
-                .map(|s| s.to_arrow(self.idx, CompatLevel::newest()))
+                .map(|s| s.to_arrow(self.idx, CompatLevel::oldest()))
                 .collect::<Vec<_>>();
             self.idx += 1;
 
