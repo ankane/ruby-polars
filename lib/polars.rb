@@ -96,4 +96,11 @@ module Polars
       self
     end
   end
+
+  # Return the number of threads in the Polars thread pool.
+  #
+  # @return [Integer]
+  def self.thread_pool_size
+    Plr.thread_pool_size
+  end
 end

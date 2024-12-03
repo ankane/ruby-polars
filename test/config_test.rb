@@ -22,4 +22,8 @@ class ConfigTest < Minitest::Test
     end
     assert_match "…", s.inspect
   end
+
+  def test_thread_pool_size
+    assert_kind_of Integer, Polars.thread_pool_size
+  end
 end

@@ -660,8 +660,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(functions::meta::get_index_type, 0),
     )?;
     class.define_singleton_method(
-        "threadpool_size",
-        function!(functions::meta::threadpool_size, 0),
+        "thread_pool_size",
+        function!(functions::meta::thread_pool_size, 0),
     )?;
     class.define_singleton_method(
         "enable_string_cache",

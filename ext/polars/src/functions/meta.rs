@@ -11,7 +11,7 @@ pub fn get_index_type() -> Value {
     Wrap(IDX_DTYPE).into_value()
 }
 
-pub fn threadpool_size() -> usize {
+pub fn thread_pool_size() -> usize {
     POOL.current_num_threads()
 }
 
