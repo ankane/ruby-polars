@@ -961,6 +961,20 @@ module Polars
       )
     end
 
+    # Write DataFrame as delta table.
+    #
+    # @param target [Object]
+    #   URI of a table or a DeltaTable object.
+    #
+    # @return [nil]
+    def write_delta(target)
+      Polars.send(:_check_if_delta_available)
+
+      data = self
+
+      DeltaLake.write(target, data)
+    end
+
     # Return an estimation of the total (heap) allocated size of the DataFrame.
     #
     # Estimated size is given in the specified unit (bytes by default).

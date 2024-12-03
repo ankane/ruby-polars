@@ -15,5 +15,9 @@ else
   gem "sqlite3"
 end
 
+if ENV["TEST_DELTA"]
+  gem "deltalake-rb"
+end
+
 # https://github.com/lsegal/yard/issues/1321
 gem "yard", require: false
