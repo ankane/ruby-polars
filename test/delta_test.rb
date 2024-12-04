@@ -72,6 +72,8 @@ class DeltaTest < Minitest::Test
     assert_nil df.write_delta(path)
     assert_nil df2.write_delta(path, mode: "overwrite")
     assert_equal df2, Polars.read_delta(path)
+    assert_equal df2, Polars.read_delta(path, version: 1)
+    assert_equal df, Polars.read_delta(path, version: 0)
   end
 
   def test_write_delta_mode_ignore
