@@ -16,7 +16,7 @@ else
 end
 
 if ENV["TEST_DELTA"]
-  gem "deltalake-rb"
+  gem "deltalake-rb", github: "ankane/delta-ruby"
 end
 
 # https://github.com/lsegal/yard/issues/1321
