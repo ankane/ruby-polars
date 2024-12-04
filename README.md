@@ -88,6 +88,15 @@ From Avro
 Polars.read_avro("file.avro")
 ```
 
+From Delta Lake (requires [deltalake-rb](https://github.com/ankane/delta-ruby)) [experimental, unreleased]
+
+```ruby
+Polars.read_delta("./data/delta")
+
+# or lazily with
+Polars.scan_delta("./data/delta")
+```
+
 From a hash
 
 ```ruby
@@ -354,6 +363,12 @@ Avro
 
 ```ruby
 df.write_avro("file.avro")
+```
+
+Delta Lake [experimental, unreleased]
+
+```ruby
+df.write_delta("./data/delta")
 ```
 
 Numo array
