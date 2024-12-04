@@ -33,10 +33,10 @@ module Polars
           delta_table_options: delta_table_options
         )
 
-      df = dl_tbl.to_polars
-      df.rechunk if rechunk
-      # TODO implement by_name
+      df = dl_tbl.to_polars(eager: false)
       df = df.select(Polars.cs.by_name(*columns)) if columns
+      df = df.collect
+      df.rechunk if rechunk
       df
     end
 

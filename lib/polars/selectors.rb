@@ -372,9 +372,91 @@ module Polars
     # def by_index
     # end
 
-    # TODO
-    # def by_name
-    # end
+    # Select all columns matching the given names.
+    #
+    # @param names [Array]
+    #   One or more names of columns to select.
+    # @param require_all [Boolean]
+    #   Whether to match *all* names (the default) or *any* of the names.
+    #
+    # @return [SelectorProxy]
+    #
+    # @note
+    #   Matching columns are returned in the order in which they are declared in
+    #   the selector, not the underlying schema order.
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => ["x", "y"],
+    #       "bar" => [123, 456],
+    #       "baz" => [2.0, 5.5],
+    #       "zap" => [false, true]
+    #     }
+    #   )
+    #
+    # @example Select columns by name:
+    #   df.select(Polars.cs.by_name("foo", "bar"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ bar │
+    #   # │ --- ┆ --- │
+    #   # │ str ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ x   ┆ 123 │
+    #   # │ y   ┆ 456 │
+    #   # └─────┴─────┘
+    #
+    # @example Match *any* of the given columns by name:
+    #   df.select(Polars.cs.by_name("baz", "moose", "foo", "bear", require_all: false))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ baz │
+    #   # │ --- ┆ --- │
+    #   # │ str ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ x   ┆ 2.0 │
+    #   # │ y   ┆ 5.5 │
+    #   # └─────┴─────┘
+    #
+    # @example Match all columns *except* for those given:
+    #   df.select(~Polars.cs.by_name("foo", "bar"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬───────┐
+    #   # │ baz ┆ zap   │
+    #   # │ --- ┆ ---   │
+    #   # │ f64 ┆ bool  │
+    #   # ╞═════╪═══════╡
+    #   # │ 2.0 ┆ false │
+    #   # │ 5.5 ┆ true  │
+    #   # └─────┴───────┘
+    def self.by_name(*names, require_all: true)
+      all_names = []
+      names.each do |nm|
+        if nm.is_a?(::String)
+          all_names << nm
+        else
+          msg = "invalid name: #{nm.inspect}"
+          raise TypeError, msg
+        end
+      end
+
+      selector_params = {"*names" => all_names}
+      match_cols = all_names
+      if !require_all
+        match_cols = "^(#{all_names.map { |nm| Utils.re_escape(nm) }.join("|")})$"
+        selector_params["require_all"] = require_all
+      end
+
+      _selector_proxy_(
+        F.col(match_cols),
+        name: "by_name",
+        parameters: selector_params
+      )
+    end
 
     # Select all categorical columns.
     #
