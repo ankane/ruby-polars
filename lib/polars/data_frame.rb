@@ -965,14 +965,55 @@ module Polars
     #
     # @param target [Object]
     #   URI of a table or a DeltaTable object.
+    # @param mode ["error", "append", "overwrite", "ignore", "merge"]
+    #   How to handle existing data.
+    # @param storage_options [Hash]
+    #   Extra options for the storage backends supported by `deltalake-rb`.
+    # @param delta_write_options [Hash]
+    #   Additional keyword arguments while writing a Delta lake Table.
+    # @param delta_merge_options [Hash]
+    #   Keyword arguments which are required to `MERGE` a Delta lake Table.
     #
     # @return [nil]
-    def write_delta(target)
+    def write_delta(
+      target,
+      mode: "error",
+      storage_options: nil,
+      delta_write_options: nil,
+      delta_merge_options: nil
+    )
       Polars.send(:_check_if_delta_available)
+
+      if Utils.pathlike?(target)
+        target = Polars.send(:_resolve_delta_lake_uri, target.to_s, strict: false)
+      end
 
       data = self
 
-      DeltaLake.write(target, data)
+      if mode == "merge"
+        if delta_merge_options.nil?
+          msg = "You need to pass delta_merge_options with at least a given predicate for `MERGE` to work."
+          raise ArgumentError, msg
+        end
+        if target.is_a?(::String)
+          dt = DeltaLake::Table.new(target, storage_options: storage_options)
+        else
+          dt = target
+        end
+
+        predicate = delta_merge_options.delete(:predicate)
+        dt.merge(data, predicate, **delta_merge_options)
+      else
+        delta_write_options ||= {}
+
+        DeltaLake.write(
+          target,
+          data,
+          mode: mode,
+          storage_options: storage_options,
+          **delta_write_options
+        )
+      end
     end
 
     # Return an estimation of the total (heap) allocated size of the DataFrame.

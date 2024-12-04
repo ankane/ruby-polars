@@ -46,4 +46,28 @@ class DeltaTest < Minitest::Test
     assert_nil df.write_delta(path)
     assert_equal df, Polars.read_delta(path)
   end
+
+  def test_write_delta_mode_append
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    path = temp_path
+    assert_nil df.write_delta(path)
+    assert_nil df.write_delta(path, mode: "append")
+    assert_equal Polars.concat([df, df]), Polars.read_delta(path)
+  end
+
+  # TODO improve test
+  def test_write_delta_mode_merge
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    path = temp_path
+    assert_nil df.write_delta(path)
+    delta_merge_options = {
+      predicate: "s.a = t.a",
+      source_alias: "s",
+      target_alias: "t"
+    }
+    df.write_delta(path, mode: "merge", delta_merge_options: delta_merge_options)
+      .when_matched_update({"b" => "s.b"})
+      .execute
+    assert_equal df, Polars.read_delta(path)
+  end
 end
