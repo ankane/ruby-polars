@@ -72,8 +72,7 @@ module Polars
 
       resolved_uri =
         if parsed_result.scheme == ""
-          # TODO resolve home
-          table_uri
+          Utils.normalize_filepath(table_uri)
         else
           table_uri
         end
