@@ -68,7 +68,9 @@ module Polars
     private
 
     def _resolve_delta_lake_uri(table_uri, strict: true)
-      parsed_result = URI.parse(table_uri)
+      require "uri"
+
+      parsed_result = URI(table_uri)
 
       resolved_uri =
         if parsed_result.scheme == ""
