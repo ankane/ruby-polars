@@ -336,6 +336,26 @@ Parquet
 df.write_parquet("file.parquet")
 ```
 
+JSON
+
+```ruby
+df.write_json("file.json")
+# or
+df.write_ndjson("file.ndjson")
+```
+
+Feather / Arrow IPC
+
+```ruby
+df.write_ipc("file.arrow")
+```
+
+Avro
+
+```ruby
+df.write_avro("file.avro")
+```
+
 Numo array
 
 ```ruby
