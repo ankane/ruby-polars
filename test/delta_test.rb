@@ -17,6 +17,7 @@ class DeltaTest < Minitest::Test
     assert_frame expected, df
   end
 
+  # TODO test column order
   def test_read_delta_columns
     df = Polars.read_delta("test/support/delta", columns: ["a"])
     expected = Polars::DataFrame.new({"a" => [1, 2, 3]})
