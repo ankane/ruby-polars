@@ -14,7 +14,7 @@ gem "polars-df"
 
 ## Getting Started
 
-This library follows the [Polars Python API](https://pola-rs.github.io/polars/py-polars/html/reference/index.html).
+This library follows the [Polars Python API](https://docs.pola.rs/api/python/stable/reference/index.html).
 
 ```ruby
 Polars.scan_csv("iris.csv")
@@ -24,7 +24,7 @@ Polars.scan_csv("iris.csv")
   .collect
 ```
 
-You can follow [Polars tutorials](https://pola-rs.github.io/polars-book/user-guide/) and convert the code to Ruby in many cases. Feel free to open an issue if you run into problems.
+You can follow [Polars tutorials](https://docs.pola.rs/) and convert the code to Ruby in many cases. Feel free to open an issue if you run into problems.
 
 ## Reference
 
