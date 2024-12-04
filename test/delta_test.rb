@@ -17,11 +17,15 @@ class DeltaTest < Minitest::Test
     assert_frame expected, df
   end
 
-  # TODO test column order
   def test_read_delta_columns
     df = Polars.read_delta("test/support/delta", columns: ["a"])
     expected = Polars::DataFrame.new({"a" => [1, 2, 3]})
     assert_frame expected, df
+  end
+
+  def test_read_delta_columns_order
+    df = Polars.read_delta("test/support/delta", columns: ["b", "a"])
+    assert_equal ["b", "a"], df.columns
   end
 
   def test_scan_delta
