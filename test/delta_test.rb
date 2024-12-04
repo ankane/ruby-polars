@@ -47,12 +47,40 @@ class DeltaTest < Minitest::Test
     assert_equal df, Polars.read_delta(path)
   end
 
-  def test_write_delta_mode_append
+  def test_write_delta_mode_error
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     path = temp_path
     assert_nil df.write_delta(path)
-    assert_nil df.write_delta(path, mode: "append")
-    assert_equal Polars.concat([df, df]), Polars.read_delta(path)
+    assert_raises(DeltaLake::Error) do
+      df.write_delta(path, mode: "error")
+    end
+  end
+
+  def test_write_delta_mode_append
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    df2 = Polars::DataFrame.new({"a" => [4, 5, 6], "b" => ["four", "five", "six"]})
+    path = temp_path
+    assert_nil df.write_delta(path)
+    assert_nil df2.write_delta(path, mode: "append")
+    assert_equal Polars.concat([df, df2]), Polars.read_delta(path)
+  end
+
+  def test_write_delta_mode_overwrite
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    df2 = Polars::DataFrame.new({"a" => [4, 5, 6], "b" => ["four", "five", "six"]})
+    path = temp_path
+    assert_nil df.write_delta(path)
+    assert_nil df2.write_delta(path, mode: "overwrite")
+    assert_equal df2, Polars.read_delta(path)
+  end
+
+  def test_write_delta_mode_ignore
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    df2 = Polars::DataFrame.new({"a" => [4, 5, 6], "b" => ["four", "five", "six"]})
+    path = temp_path
+    assert_nil df.write_delta(path)
+    assert_nil df2.write_delta(path, mode: "ignore")
+    assert_equal df, Polars.read_delta(path)
   end
 
   # TODO improve test
