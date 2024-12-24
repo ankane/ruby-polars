@@ -39,7 +39,7 @@ jobs:
         id: cross-gem
         with:
           platform: ${{ matrix.platform }}
-          ruby-versions: "3.3,3.2,3.1"
+          ruby-versions: "3.4,3.3,3.2"
           # pre-script: ${{ matrix.setup }}
       - uses: actions/upload-artifact@v3
         with:

@@ -1,10 +1,12 @@
 ## 0.16.0 (unreleased)
 
 - Updated Polars to 0.45.1
+- Added support for Ruby 3.4
 - Added experimental support for Delta Lake
 - Added `by_name` selector
 - Added `thread_pool_size` method to `Polars`
 - Removed `axis` option from `min`, `max`, `sum`, and `mean` methods (use `*_horizontal` instead)
+- Dropped support for Ruby < 3.2
 
 ## 0.15.0 (2024-11-20)
 
