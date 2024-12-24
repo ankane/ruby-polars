@@ -4,6 +4,7 @@
 - Added experimental support for Delta Lake
 - Added `by_name` selector
 - Added `thread_pool_size` method to `Polars`
+- Removed `axis` option from `min`, `max`, `sum`, and `mean` methods (use `*_horizontal` instead)
 
 ## 0.15.0 (2024-11-20)
 
