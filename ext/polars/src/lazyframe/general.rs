@@ -330,6 +330,7 @@ impl RbLazyFrame {
                 nulls_last: vec![nulls_last],
                 multithreaded,
                 maintain_order,
+                limit: None,
             },
         )
         .into()
@@ -353,6 +354,7 @@ impl RbLazyFrame {
                     nulls_last,
                     maintain_order,
                     multithreaded,
+                    limit: None,
                 },
             )
             .into())
@@ -379,6 +381,8 @@ impl RbLazyFrame {
         row_group_size: Option<usize>,
         data_page_size: Option<usize>,
         maintain_order: bool,
+        cloud_options: Option<Vec<(String, String)>>,
+        retries: usize,
     ) -> RbResult<()> {
         let compression = parse_parquet_compression(&compression, compression_level)?;
 
@@ -390,8 +394,15 @@ impl RbLazyFrame {
             maintain_order,
         };
 
+        let cloud_options = {
+            let cloud_options =
+                parse_cloud_options(path.to_str().unwrap(), cloud_options.unwrap_or_default())?;
+            Some(cloud_options.with_max_retries(retries))
+        };
+
         let ldf = self.ldf.borrow().clone();
-        ldf.sink_parquet(path, options).map_err(RbPolarsErr::from)?;
+        ldf.sink_parquet(&path, options, cloud_options)
+            .map_err(RbPolarsErr::from)?;
         Ok(())
     }
 
@@ -400,14 +411,23 @@ impl RbLazyFrame {
         path: PathBuf,
         compression: Option<Wrap<IpcCompression>>,
         maintain_order: bool,
+        cloud_options: Option<Vec<(String, String)>>,
+        retries: usize,
     ) -> RbResult<()> {
         let options = IpcWriterOptions {
             compression: compression.map(|c| c.0),
             maintain_order,
         };
 
+        let cloud_options = {
+            let cloud_options =
+                parse_cloud_options(path.to_str().unwrap(), cloud_options.unwrap_or_default())?;
+            Some(cloud_options.with_max_retries(retries))
+        };
+
         let ldf = self.ldf.borrow().clone();
-        ldf.sink_ipc(path, options).map_err(RbPolarsErr::from)?;
+        ldf.sink_ipc(&path, options, cloud_options)
+            .map_err(RbPolarsErr::from)?;
         Ok(())
     }
 
@@ -430,6 +450,9 @@ impl RbLazyFrame {
         quote_style: Option<Wrap<QuoteStyle>>,
         maintain_order: bool,
     ) -> RbResult<()> {
+        // TODO
+        let cloud_options = None;
+
         let quote_style = quote_style.map_or(QuoteStyle::default(), |wrap| wrap.0);
         let null_value = null_value.unwrap_or(SerializeOptions::default().null);
 
@@ -454,16 +477,36 @@ impl RbLazyFrame {
             serialize_options,
         };
 
+        let cloud_options = {
+            let cloud_options =
+                parse_cloud_options(path.to_str().unwrap(), cloud_options.unwrap_or_default())?;
+            Some(cloud_options)
+        };
+
         let ldf = self.ldf.borrow().clone();
-        ldf.sink_csv(path, options).map_err(RbPolarsErr::from)?;
+        ldf.sink_csv(&path, options, cloud_options)
+            .map_err(RbPolarsErr::from)?;
         Ok(())
     }
 
-    pub fn sink_json(&self, path: PathBuf, maintain_order: bool) -> RbResult<()> {
+    pub fn sink_json(
+        &self,
+        path: PathBuf,
+        maintain_order: bool,
+        cloud_options: Option<Vec<(String, String)>>,
+        retries: usize,
+    ) -> RbResult<()> {
         let options = JsonWriterOptions { maintain_order };
 
+        let cloud_options = {
+            let cloud_options =
+                parse_cloud_options(path.to_str().unwrap(), cloud_options.unwrap_or_default())?;
+            Some(cloud_options.with_max_retries(retries))
+        };
+
         let ldf = self.ldf.borrow().clone();
-        ldf.sink_json(path, options).map_err(RbPolarsErr::from)?;
+        ldf.sink_json(&path, options, cloud_options)
+            .map_err(RbPolarsErr::from)?;
         Ok(())
     }
 

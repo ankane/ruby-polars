@@ -1,6 +1,5 @@
 use either::Either;
 use magnus::{prelude::*, typed_data::Obj, IntoValue, RArray, Value};
-use polars::frame::NullStrategy;
 use polars::prelude::pivot::{pivot, pivot_stable};
 use polars::prelude::*;
 
@@ -158,7 +157,7 @@ impl RbDataFrame {
     }
 
     pub fn n_chunks(&self) -> usize {
-        self.df.borrow().n_chunks()
+        self.df.borrow().first_col_n_chunks()
     }
 
     pub fn shape(&self) -> (usize, usize) {
@@ -408,52 +407,6 @@ impl RbDataFrame {
 
     pub fn lazy(&self) -> RbLazyFrame {
         self.df.borrow().clone().lazy().into()
-    }
-
-    pub fn max_horizontal(&self) -> RbResult<Option<RbSeries>> {
-        let s = self
-            .df
-            .borrow()
-            .max_horizontal()
-            .map_err(RbPolarsErr::from)?;
-        Ok(s.map(|s| s.take_materialized_series().into()))
-    }
-
-    pub fn min_horizontal(&self) -> RbResult<Option<RbSeries>> {
-        let s = self
-            .df
-            .borrow()
-            .min_horizontal()
-            .map_err(RbPolarsErr::from)?;
-        Ok(s.map(|s| s.take_materialized_series().into()))
-    }
-
-    pub fn sum_horizontal(&self, ignore_nulls: bool) -> RbResult<Option<RbSeries>> {
-        let null_strategy = if ignore_nulls {
-            NullStrategy::Ignore
-        } else {
-            NullStrategy::Propagate
-        };
-        let s = self
-            .df
-            .borrow()
-            .sum_horizontal(null_strategy)
-            .map_err(RbPolarsErr::from)?;
-        Ok(s.map(|s| s.into()))
-    }
-
-    pub fn mean_horizontal(&self, ignore_nulls: bool) -> RbResult<Option<RbSeries>> {
-        let null_strategy = if ignore_nulls {
-            NullStrategy::Ignore
-        } else {
-            NullStrategy::Propagate
-        };
-        let s = self
-            .df
-            .borrow()
-            .mean_horizontal(null_strategy)
-            .map_err(RbPolarsErr::from)?;
-        Ok(s.map(|s| s.into()))
     }
 
     pub fn to_dummies(

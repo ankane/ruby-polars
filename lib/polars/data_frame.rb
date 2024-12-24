@@ -831,7 +831,13 @@ module Polars
     #   Compression method. Defaults to "uncompressed".
     #
     # @return [nil]
-    def write_ipc(file, compression: "uncompressed", compat_level: nil)
+    def write_ipc(
+      file,
+      compression: "uncompressed",
+      compat_level: nil,
+      storage_options: nil,
+      retries: 2
+    )
       return_bytes = file.nil?
       if return_bytes
         file = StringIO.new
@@ -849,7 +855,13 @@ module Polars
         compression = "uncompressed"
       end
 
-      _df.write_ipc(file, compression, compat_level)
+      if storage_options&.any?
+        storage_options = storage_options.to_a
+      else
+        storage_options = nil
+      end
+
+      _df.write_ipc(file, compression, compat_level, storage_options, retries)
       return_bytes ? file.string : nil
     end
 
@@ -3994,14 +4006,32 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ 3   ┆ 8   ┆ c   │
     #   # └─────┴─────┴─────┘
-    def max(axis: 0)
-      if axis == 0
-        lazy.max.collect(_eager: true)
-      elsif axis == 1
-        Utils.wrap_s(_df.max_horizontal)
-      else
-        raise ArgumentError, "Axis should be 0 or 1."
-      end
+    def max
+      lazy.max.collect(_eager: true)
+    end
+
+    # Get the maximum value horizontally across columns.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [4.0, 5.0, 6.0]
+    #     }
+    #   )
+    #   df.max_horizontal
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'max' [f64]
+    #   # [
+    #   #         4.0
+    #   #         5.0
+    #   #         6.0
+    #   # ]
+    def max_horizontal
+      select(max: F.max_horizontal(F.all)).to_series
     end
 
     # Aggregate the columns of this DataFrame to their minimum value.
@@ -4026,22 +4056,35 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ 1   ┆ 6   ┆ a   │
     #   # └─────┴─────┴─────┘
-    def min(axis: 0)
-      if axis == 0
-        lazy.min.collect(_eager: true)
-      elsif axis == 1
-        Utils.wrap_s(_df.min_horizontal)
-      else
-        raise ArgumentError, "Axis should be 0 or 1."
-      end
+    def min
+      lazy.min.collect(_eager: true)
+    end
+
+    # Get the minimum value horizontally across columns.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [4.0, 5.0, 6.0]
+    #     }
+    #   )
+    #   df.min_horizontal
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'min' [f64]
+    #   # [
+    #   #         1.0
+    #   #         2.0
+    #   #         3.0
+    #   # ]
+    def min_horizontal
+      select(min: F.min_horizontal(F.all)).to_series
     end
 
     # Aggregate the columns of this DataFrame to their sum value.
-    #
-    # @param axis [Integer]
-    #   Either 0 or 1.
-    # @param null_strategy ["ignore", "propagate"]
-    #   This argument is only used if axis == 1.
     #
     # @return [DataFrame]
     #
@@ -4063,34 +4106,41 @@ module Polars
     #   # ╞═════╪═════╪══════╡
     #   # │ 6   ┆ 21  ┆ null │
     #   # └─────┴─────┴──────┘
+    def sum
+      lazy.sum.collect(_eager: true)
+    end
+
+    # Sum all values horizontally across columns.
+    #
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default).
+    #   If set to `false`, any null value in the input will lead to a null output.
+    #
+    # @return [Series]
     #
     # @example
-    #   df.sum(axis: 1)
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [4.0, 5.0, 6.0]
+    #     }
+    #   )
+    #   df.sum_horizontal
     #   # =>
     #   # shape: (3,)
-    #   # Series: 'foo' [str]
+    #   # Series: 'sum' [f64]
     #   # [
-    #   #         "16a"
-    #   #         "27b"
-    #   #         "38c"
+    #   #         5.0
+    #   #         7.0
+    #   #         9.0
     #   # ]
-    def sum(axis: 0, null_strategy: "ignore")
-      case axis
-      when 0
-        lazy.sum.collect(_eager: true)
-      when 1
-        Utils.wrap_s(_df.sum_horizontal(null_strategy))
-      else
-        raise ArgumentError, "Axis should be 0 or 1."
-      end
+    def sum_horizontal(ignore_nulls: true)
+      select(
+        sum: F.sum_horizontal(F.all, ignore_nulls: ignore_nulls)
+      ).to_series
     end
 
     # Aggregate the columns of this DataFrame to their mean value.
-    #
-    # @param axis [Integer]
-    #   Either 0 or 1.
-    # @param null_strategy ["ignore", "propagate"]
-    #   This argument is only used if axis == 1.
     #
     # @return [DataFrame]
     #
@@ -4112,15 +4162,38 @@ module Polars
     #   # ╞═════╪═════╪══════╡
     #   # │ 2.0 ┆ 7.0 ┆ null │
     #   # └─────┴─────┴──────┘
-    def mean(axis: 0, null_strategy: "ignore")
-      case axis
-      when 0
-        lazy.mean.collect(_eager: true)
-      when 1
-        Utils.wrap_s(_df.mean_horizontal(null_strategy))
-      else
-        raise ArgumentError, "Axis should be 0 or 1."
-      end
+    def mean
+      lazy.mean.collect(_eager: true)
+    end
+
+    # Take the mean of all values horizontally across columns.
+    #
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default).
+    #   If set to `false`, any null value in the input will lead to a null output.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [4.0, 5.0, 6.0]
+    #     }
+    #   )
+    #   df.mean_horizontal
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'mean' [f64]
+    #   # [
+    #   #         2.5
+    #   #         3.5
+    #   #         4.5
+    #   # ]
+    def mean_horizontal(ignore_nulls: true)
+      select(
+        mean: F.mean_horizontal(F.all, ignore_nulls: ignore_nulls)
+      ).to_series
     end
 
     # Aggregate the columns of this DataFrame to their standard deviation value.

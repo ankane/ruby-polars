@@ -28,14 +28,14 @@ pub fn min_horizontal(exprs: RArray) -> RbResult<RbExpr> {
     Ok(e.into())
 }
 
-pub fn sum_horizontal(exprs: RArray) -> RbResult<RbExpr> {
+pub fn sum_horizontal(exprs: RArray, ignore_nulls: bool) -> RbResult<RbExpr> {
     let exprs = rb_exprs_to_exprs(exprs)?;
-    let e = dsl::sum_horizontal(exprs).map_err(RbPolarsErr::from)?;
+    let e = dsl::sum_horizontal(exprs, ignore_nulls).map_err(RbPolarsErr::from)?;
     Ok(e.into())
 }
 
-pub fn mean_horizontal(exprs: RArray) -> RbResult<RbExpr> {
+pub fn mean_horizontal(exprs: RArray, ignore_nulls: bool) -> RbResult<RbExpr> {
     let exprs = rb_exprs_to_exprs(exprs)?;
-    let e = dsl::mean_horizontal(exprs).map_err(RbPolarsErr::from)?;
+    let e = dsl::mean_horizontal(exprs, ignore_nulls).map_err(RbPolarsErr::from)?;
     Ok(e.into())
 }

@@ -271,6 +271,7 @@ impl RbExpr {
                 nulls_last,
                 multithreaded: true,
                 maintain_order: false,
+                limit: None,
             })
             .into()
     }
@@ -283,6 +284,7 @@ impl RbExpr {
                 nulls_last,
                 multithreaded: true,
                 maintain_order: false,
+                limit: None,
             })
             .into()
     }
@@ -363,6 +365,7 @@ impl RbExpr {
                     nulls_last,
                     multithreaded,
                     maintain_order,
+                    limit: None,
                 },
             )
             .into())

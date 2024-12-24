@@ -70,6 +70,7 @@ pub fn arg_sort_by(
             nulls_last,
             multithreaded,
             maintain_order,
+            limit: None,
         },
     )
     .into())
@@ -320,8 +321,8 @@ pub fn lit(value: Value, allow_object: bool) -> RbResult<RbExpr> {
     }
 }
 
-pub fn pearson_corr(a: &RbExpr, b: &RbExpr, ddof: u8) -> RbExpr {
-    dsl::pearson_corr(a.inner.clone(), b.inner.clone(), ddof).into()
+pub fn pearson_corr(a: &RbExpr, b: &RbExpr) -> RbExpr {
+    dsl::pearson_corr(a.inner.clone(), b.inner.clone()).into()
 }
 
 pub fn repeat(value: &RbExpr, n: &RbExpr, dtype: Option<Wrap<DataType>>) -> RbResult<RbExpr> {
@@ -345,8 +346,8 @@ pub fn repeat(value: &RbExpr, n: &RbExpr, dtype: Option<Wrap<DataType>>) -> RbRe
     Ok(dsl::repeat(value, n).into())
 }
 
-pub fn spearman_rank_corr(a: &RbExpr, b: &RbExpr, ddof: u8, propagate_nans: bool) -> RbExpr {
-    dsl::spearman_rank_corr(a.inner.clone(), b.inner.clone(), ddof, propagate_nans).into()
+pub fn spearman_rank_corr(a: &RbExpr, b: &RbExpr, propagate_nans: bool) -> RbExpr {
+    dsl::spearman_rank_corr(a.inner.clone(), b.inner.clone(), propagate_nans).into()
 }
 
 pub fn sql_expr(sql: String) -> RbResult<RbExpr> {

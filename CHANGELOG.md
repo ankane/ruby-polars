@@ -1,5 +1,6 @@
-## 0.15.1 (unreleased)
+## 0.16.0 (unreleased)
 
+- Updated Polars to 0.45.1
 - Added experimental support for Delta Lake
 - Added `by_name` selector
 - Added `thread_pool_size` method to `Polars`

@@ -72,7 +72,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("write_json", method!(RbDataFrame::write_json, 3))?;
     class.define_method("write_ndjson", method!(RbDataFrame::write_ndjson, 1))?;
     class.define_method("write_csv", method!(RbDataFrame::write_csv, 10))?;
-    class.define_method("write_ipc", method!(RbDataFrame::write_ipc, 3))?;
+    class.define_method("write_ipc", method!(RbDataFrame::write_ipc, 5))?;
     class.define_method(
         "write_ipc_stream",
         method!(RbDataFrame::write_ipc_stream, 3),
@@ -143,10 +143,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("pivot_expr", method!(RbDataFrame::pivot_expr, 7))?;
     class.define_method("partition_by", method!(RbDataFrame::partition_by, 3))?;
     class.define_method("lazy", method!(RbDataFrame::lazy, 0))?;
-    class.define_method("mean_horizontal", method!(RbDataFrame::mean_horizontal, 1))?;
-    class.define_method("max_horizontal", method!(RbDataFrame::max_horizontal, 0))?;
-    class.define_method("min_horizontal", method!(RbDataFrame::min_horizontal, 0))?;
-    class.define_method("sum_horizontal", method!(RbDataFrame::sum_horizontal, 1))?;
     class.define_method("to_dummies", method!(RbDataFrame::to_dummies, 3))?;
     class.define_method("null_count", method!(RbDataFrame::null_count, 0))?;
     class.define_method("map_rows", method!(RbDataFrame::map_rows, 3))?;
@@ -568,10 +564,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("int_range", function!(functions::range::int_range, 4))?;
     class.define_singleton_method("int_ranges", function!(functions::range::int_ranges, 4))?;
     class.define_singleton_method("repeat", function!(functions::lazy::repeat, 3))?;
-    class.define_singleton_method("pearson_corr", function!(functions::lazy::pearson_corr, 3))?;
+    class.define_singleton_method("pearson_corr", function!(functions::lazy::pearson_corr, 2))?;
     class.define_singleton_method(
         "spearman_rank_corr",
-        function!(functions::lazy::spearman_rank_corr, 4),
+        function!(functions::lazy::spearman_rank_corr, 3),
     )?;
     class.define_singleton_method("sql_expr", function!(functions::lazy::sql_expr, 1))?;
     class.define_singleton_method("cov", function!(functions::lazy::cov, 3))?;
@@ -605,11 +601,11 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_singleton_method(
         "sum_horizontal",
-        function!(functions::aggregation::sum_horizontal, 1),
+        function!(functions::aggregation::sum_horizontal, 2),
     )?;
     class.define_singleton_method(
         "mean_horizontal",
-        function!(functions::aggregation::mean_horizontal, 1),
+        function!(functions::aggregation::mean_horizontal, 2),
     )?;
     class.define_singleton_method("as_struct", function!(functions::lazy::as_struct, 1))?;
     class.define_singleton_method("coalesce", function!(functions::lazy::coalesce, 1))?;
@@ -747,10 +743,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("sort_by_exprs", method!(RbLazyFrame::sort_by_exprs, 5))?;
     class.define_method("cache", method!(RbLazyFrame::cache, 0))?;
     class.define_method("collect", method!(RbLazyFrame::collect, 0))?;
-    class.define_method("sink_parquet", method!(RbLazyFrame::sink_parquet, 7))?;
-    class.define_method("sink_ipc", method!(RbLazyFrame::sink_ipc, 3))?;
+    class.define_method("sink_parquet", method!(RbLazyFrame::sink_parquet, 9))?;
+    class.define_method("sink_ipc", method!(RbLazyFrame::sink_ipc, 5))?;
     class.define_method("sink_csv", method!(RbLazyFrame::sink_csv, 15))?;
-    class.define_method("sink_json", method!(RbLazyFrame::sink_json, 2))?;
+    class.define_method("sink_json", method!(RbLazyFrame::sink_json, 4))?;
     class.define_method("fetch", method!(RbLazyFrame::fetch, 1))?;
     class.define_method("filter", method!(RbLazyFrame::filter, 1))?;
     class.define_method("select", method!(RbLazyFrame::select, 1))?;

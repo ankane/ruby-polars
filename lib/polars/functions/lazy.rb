@@ -729,16 +729,20 @@ module Polars
       a,
       b,
       method: "pearson",
-      ddof: 1,
+      ddof: nil,
       propagate_nans: false
     )
+      if !ddof.nil?
+        warn "The `ddof` parameter has no effect. Do not use it."
+      end
+
       a = Utils.parse_into_expression(a)
       b = Utils.parse_into_expression(b)
 
       if method == "pearson"
-        Utils.wrap_expr(Plr.pearson_corr(a, b, ddof))
+        Utils.wrap_expr(Plr.pearson_corr(a, b))
       elsif method == "spearman"
-        Utils.wrap_expr(Plr.spearman_rank_corr(a, b, ddof, propagate_nans))
+        Utils.wrap_expr(Plr.spearman_rank_corr(a, b, propagate_nans))
       else
         msg = "method must be one of {{'pearson', 'spearman'}}, got #{method}"
         raise ArgumentError, msg

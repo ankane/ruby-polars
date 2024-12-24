@@ -2,15 +2,13 @@ use magnus::{prelude::*, Value};
 use polars::io::avro::AvroCompression;
 use polars::io::RowIndex;
 use polars::prelude::*;
-use polars_utils::mmap::ensure_not_mapped;
 use std::io::BufWriter;
 use std::num::NonZeroUsize;
 
 use super::*;
 use crate::conversion::*;
 use crate::file::{
-    get_either_file, get_file_like, get_mmap_bytes_reader, get_mmap_bytes_reader_and_path,
-    read_if_bytesio, EitherRustRubyFile,
+    get_file_like, get_mmap_bytes_reader, get_mmap_bytes_reader_and_path, read_if_bytesio,
 };
 use crate::{RbPolarsErr, RbResult};
 
@@ -330,13 +328,19 @@ impl RbDataFrame {
         rb_f: Value,
         compression: Wrap<Option<IpcCompression>>,
         compat_level: RbCompatLevel,
+        cloud_options: Option<Vec<(String, String)>>,
+        retries: usize,
     ) -> RbResult<()> {
-        let either = get_either_file(rb_f, true)?;
-        if let EitherRustRubyFile::Rust(ref f) = either {
-            ensure_not_mapped(f).map_err(RbPolarsErr::from)?;
-        }
-        let mut buf = either.into_dyn();
-        IpcWriter::new(&mut buf)
+        let cloud_options = if let Ok(path) = String::try_convert(rb_f) {
+            let cloud_options = parse_cloud_options(&path, cloud_options.unwrap_or_default())?;
+            Some(cloud_options.with_max_retries(retries))
+        } else {
+            None
+        };
+
+        let f = crate::file::try_get_writeable(rb_f, cloud_options.as_ref())?;
+
+        IpcWriter::new(f)
             .with_compression(compression.0)
             .with_compat_level(compat_level.0)
             .finish(&mut self.df.borrow_mut())

@@ -97,29 +97,17 @@ impl RbSeries {
     }
 
     pub fn bitand(&self, other: &RbSeries) -> RbResult<Self> {
-        let out = self
-            .series
-            .borrow()
-            .bitand(&other.series.borrow())
-            .map_err(RbPolarsErr::from)?;
+        let out = (&*self.series.borrow() & &*other.series.borrow()).map_err(RbPolarsErr::from)?;
         Ok(out.into())
     }
 
     pub fn bitor(&self, other: &RbSeries) -> RbResult<Self> {
-        let out = self
-            .series
-            .borrow()
-            .bitor(&other.series.borrow())
-            .map_err(RbPolarsErr::from)?;
+        let out = (&*self.series.borrow() | &*other.series.borrow()).map_err(RbPolarsErr::from)?;
         Ok(out.into())
     }
 
     pub fn bitxor(&self, other: &RbSeries) -> RbResult<Self> {
-        let out = self
-            .series
-            .borrow()
-            .bitxor(&other.series.borrow())
-            .map_err(RbPolarsErr::from)?;
+        let out = (&*self.series.borrow() ^ &*other.series.borrow()).map_err(RbPolarsErr::from)?;
         Ok(out.into())
     }
 

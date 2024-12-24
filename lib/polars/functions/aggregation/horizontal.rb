@@ -143,6 +143,9 @@ module Polars
     # @param exprs [Array]
     #   Column(s) to use in the aggregation. Accepts expression input. Strings are
     #   parsed as column names, other non-expression inputs are parsed as literals.
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default).
+    #   If set to `false`, any null value in the input will lead to a null output.
     #
     # @return [Expr]
     #
@@ -166,9 +169,9 @@ module Polars
     #   # │ 8   ┆ 5    ┆ y   ┆ 13  │
     #   # │ 3   ┆ null ┆ z   ┆ 3   │
     #   # └─────┴──────┴─────┴─────┘
-    def sum_horizontal(*exprs)
+    def sum_horizontal(*exprs, ignore_nulls: true)
       rbexprs = Utils.parse_into_list_of_expressions(*exprs)
-      Utils.wrap_expr(Plr.sum_horizontal(rbexprs))
+      Utils.wrap_expr(Plr.sum_horizontal(rbexprs, ignore_nulls))
     end
 
     # Compute the mean of all values horizontally across columns.
@@ -176,6 +179,9 @@ module Polars
     # @param exprs [Array]
     #   Column(s) to use in the aggregation. Accepts expression input. Strings are
     #   parsed as column names, other non-expression inputs are parsed as literals.
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default).
+    #   If set to `false`, any null value in the input will lead to a null output.
     #
     # @return [Expr]
     #
@@ -199,9 +205,9 @@ module Polars
     #   # │ 8   ┆ 5    ┆ y   ┆ 6.5  │
     #   # │ 3   ┆ null ┆ z   ┆ 3.0  │
     #   # └─────┴──────┴─────┴──────┘
-    def mean_horizontal(*exprs)
+    def mean_horizontal(*exprs, ignore_nulls: true)
       rbexprs = Utils.parse_into_list_of_expressions(*exprs)
-      Utils.wrap_expr(Plr.mean_horizontal(rbexprs))
+      Utils.wrap_expr(Plr.mean_horizontal(rbexprs, ignore_nulls))
     end
 
     # Cumulatively sum all values horizontally across columns.

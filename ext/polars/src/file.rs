@@ -4,7 +4,9 @@ use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
 
 use magnus::{exception, prelude::*, Error, RString, Value};
+use polars::io::cloud::CloudOptions;
 use polars::io::mmap::MmapBytesReader;
+use polars_utils::mmap::MemSlice;
 
 use crate::error::RbPolarsErr;
 use crate::prelude::resolve_homedir;
@@ -141,10 +143,17 @@ impl EitherRustRubyFile {
             EitherRustRubyFile::Rust(f) => Box::new(f),
         }
     }
+
+    pub fn into_dyn_writeable(self) -> Box<dyn Write> {
+        match self {
+            EitherRustRubyFile::Rb(f) => Box::new(f),
+            EitherRustRubyFile::Rust(f) => Box::new(f),
+        }
+    }
 }
 
 pub enum RubyScanSourceInput {
-    Buffer(bytes::Bytes),
+    Buffer(MemSlice),
     Path(PathBuf),
     #[allow(dead_code)]
     File(File),
@@ -156,7 +165,9 @@ pub fn get_ruby_scan_source_input(rb_f: Value, write: bool) -> RbResult<RubyScan
         Ok(RubyScanSourceInput::Path(file_path))
     } else {
         let f = RbFileLikeObject::with_requirements(rb_f, !write, write, !write)?;
-        Ok(RubyScanSourceInput::Buffer(f.as_bytes()))
+        Ok(RubyScanSourceInput::Buffer(MemSlice::from_bytes(
+            f.as_bytes(),
+        )))
     }
 }
 
@@ -167,7 +178,7 @@ pub fn get_either_file(rb_f: Value, truncate: bool) -> RbResult<EitherRustRubyFi
     if let Ok(rstring) = RString::try_convert(rb_f) {
         let s = unsafe { rstring.as_str() }?;
         let file_path = std::path::Path::new(&s);
-        let file_path = resolve_homedir(file_path);
+        let file_path = resolve_homedir(&file_path);
         let f = if truncate {
             File::create(file_path).map_err(RbPolarsErr::from)?
         } else {
@@ -211,4 +222,11 @@ pub fn get_mmap_bytes_reader_and_path<'a>(
             Ok((Box::new(f), Some(path)))
         }
     }
+}
+
+pub fn try_get_writeable(
+    rb_f: Value,
+    _cloud_options: Option<&CloudOptions>,
+) -> RbResult<Box<dyn Write>> {
+    Ok(get_either_file(rb_f, true)?.into_dyn_writeable())
 }

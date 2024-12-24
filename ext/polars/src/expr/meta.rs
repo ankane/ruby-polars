@@ -84,13 +84,17 @@ impl RbExpr {
         self.inner.clone().meta()._into_selector().into()
     }
 
-    pub fn meta_tree_format(&self) -> RbResult<String> {
+    fn compute_tree_format(&self, display_as_dot: bool) -> RbResult<String> {
         let e = self
             .inner
             .clone()
             .meta()
-            .into_tree_formatter()
+            .into_tree_formatter(display_as_dot)
             .map_err(RbPolarsErr::from)?;
         Ok(format!("{e}"))
+    }
+
+    pub fn meta_tree_format(&self) -> RbResult<String> {
+        self.compute_tree_format(false)
     }
 }

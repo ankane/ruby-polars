@@ -15,7 +15,6 @@ use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
 use polars::frame::row::Row;
-use polars::frame::NullStrategy;
 use polars::io::avro::AvroCompression;
 use polars::io::cloud::CloudOptions;
 use polars::prelude::*;
@@ -23,6 +22,7 @@ use polars::series::ops::NullBehavior;
 use polars_core::utils::arrow::array::Array;
 use polars_core::utils::materialize_dyn_int;
 use polars_plan::plans::ScanSources;
+use polars_utils::mmap::MemSlice;
 use polars_utils::total_ord::{TotalEq, TotalHash};
 
 use crate::file::{get_ruby_scan_source_input, RubyScanSourceInput};
@@ -511,7 +511,7 @@ impl TryConvert for Wrap<ScanSources> {
         enum MutableSources {
             Paths(Vec<PathBuf>),
             Files(Vec<File>),
-            Buffers(Vec<bytes::Bytes>),
+            Buffers(Vec<MemSlice>),
         }
 
         let num_items = list.len();

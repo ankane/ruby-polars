@@ -431,7 +431,9 @@ module Polars
       projection_pushdown: true,
       simplify_expression: true,
       no_optimization: false,
-      slice_pushdown: true
+      slice_pushdown: true,
+      storage_options: nil,
+      retries: 2
     )
       lf = _set_sink_optimizations(
         type_coercion: type_coercion,
@@ -460,6 +462,12 @@ module Polars
         }
       end
 
+      if storage_options&.any?
+        storage_options = storage_options.to_a
+      else
+        storage_options = nil
+      end
+
       lf.sink_parquet(
         path,
         compression,
@@ -467,7 +475,9 @@ module Polars
         statistics,
         row_group_size,
         data_pagesize_limit,
-        maintain_order
+        maintain_order,
+        storage_options,
+        retries
       )
     end
 
@@ -512,6 +522,10 @@ module Polars
       slice_pushdown: true,
       no_optimization: false
     )
+      # TODO support storage options in Rust
+      storage_options = nil
+      retries = 2
+
       lf = _set_sink_optimizations(
         type_coercion: type_coercion,
         predicate_pushdown: predicate_pushdown,
@@ -521,10 +535,18 @@ module Polars
         no_optimization: no_optimization
       )
 
+      if storage_options&.any?
+        storage_options = storage_options.to_a
+      else
+        storage_options = nil
+      end
+
       lf.sink_ipc(
         path,
         compression,
-        maintain_order
+        maintain_order,
+        storage_options,
+        retries
       )
     end
 
@@ -692,7 +714,9 @@ module Polars
       projection_pushdown: true,
       simplify_expression: true,
       slice_pushdown: true,
-      no_optimization: false
+      no_optimization: false,
+      storage_options: nil,
+      retries: 2
     )
       lf = _set_sink_optimizations(
         type_coercion: type_coercion,
@@ -703,7 +727,13 @@ module Polars
         no_optimization: no_optimization
       )
 
-      lf.sink_json(path, maintain_order)
+      if storage_options&.any?
+        storage_options = storage_options.to_a
+      else
+        storage_options = nil
+      end
+
+      lf.sink_json(path, maintain_order, storage_options, retries)
     end
 
     # @private
