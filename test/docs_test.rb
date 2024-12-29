@@ -201,6 +201,9 @@ class DocsTest < Minitest::Test
 
         # check output
         lines = code.split("\n")
+        if RUBY_VERSION.to_f >= 3.4
+          output = output.gsub(" => ", "=>")
+        end
         if lines.last.start_with?("# => ")
           expected = lines.last[5..]
           assert_equal expected, output, "Example output (#{method.name})"
