@@ -88,7 +88,7 @@ From Avro
 Polars.read_avro("file.avro")
 ```
 
-From Delta Lake (requires [deltalake-rb](https://github.com/ankane/delta-ruby)) [experimental, unreleased]
+From Delta Lake (requires [deltalake-rb](https://github.com/ankane/delta-ruby)) [experimental]
 
 ```ruby
 Polars.read_delta("./table")
@@ -365,7 +365,7 @@ Avro
 df.write_avro("file.avro")
 ```
 
-Delta Lake [experimental, unreleased]
+Delta Lake [experimental]
 
 ```ruby
 df.write_delta("./table")
