@@ -1616,6 +1616,14 @@ module Polars
     #     - true: -> Always coalesce join columns.
     #     - false: -> Never coalesce join columns.
     #   Note that joining on any other expressions than `col` will turn off coalescing.
+    # @param allow_exact_matches [Boolean]
+    #   Whether exact matches are valid join predicates.
+    #     - If true, allow matching with the same `on` value (i.e. less-than-or-equal-to / greater-than-or-equal-to).
+    #     - If false, don't match the same `on` value (i.e., strictly less-than / strictly greater-than).
+    # @param check_sortedness [Boolean]
+    #   Check the sortedness of the asof keys. If the keys are not sorted Polars
+    #   will error, or in case of 'by' argument raise a warning. This might become
+    #   a hard error in the future.
     #
     # @return [LazyFrame]
     #
@@ -1815,7 +1823,9 @@ module Polars
       tolerance: nil,
       allow_parallel: true,
       force_parallel: false,
-      coalesce: true
+      coalesce: true,
+      allow_exact_matches: true,
+      check_sortedness: true
     )
       if !other.is_a?(LazyFrame)
         raise ArgumentError, "Expected a `LazyFrame` as join table, got #{other.class.name}"
@@ -1871,7 +1881,9 @@ module Polars
           strategy,
           tolerance_num,
           tolerance_str,
-          coalesce
+          coalesce,
+          allow_exact_matches,
+          check_sortedness
         )
       )
     end

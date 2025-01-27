@@ -296,30 +296,24 @@ impl RbDataFrame {
         Ok(())
     }
 
-    pub fn write_json(&self, rb_f: Value, pretty: bool, row_oriented: bool) -> RbResult<()> {
+    pub fn write_json(&self, rb_f: Value) -> RbResult<()> {
         let file = BufWriter::new(get_file_like(rb_f, true)?);
 
-        let r = match (pretty, row_oriented) {
-            (_, true) => JsonWriter::new(file)
-                .with_json_format(JsonFormat::Json)
-                .finish(&mut self.df.borrow_mut()),
-            (true, _) => serde_json::to_writer_pretty(file, &*self.df.borrow())
-                .map_err(|e| PolarsError::ComputeError(format!("{:?}", e).into())),
-            (false, _) => serde_json::to_writer(file, &*self.df.borrow())
-                .map_err(|e| PolarsError::ComputeError(format!("{:?}", e).into())),
-        };
-        r.map_err(|e| RbPolarsErr::Other(format!("{:?}", e)))?;
+        JsonWriter::new(file)
+            .with_json_format(JsonFormat::Json)
+            .finish(&mut self.df.borrow_mut())
+            .map_err(RbPolarsErr::from)?;
         Ok(())
     }
 
     pub fn write_ndjson(&self, rb_f: Value) -> RbResult<()> {
         let file = BufWriter::new(get_file_like(rb_f, true)?);
 
-        let r = JsonWriter::new(file)
+        JsonWriter::new(file)
             .with_json_format(JsonFormat::JsonLines)
-            .finish(&mut self.df.borrow_mut());
+            .finish(&mut self.df.borrow_mut())
+            .map_err(RbPolarsErr::from)?;
 
-        r.map_err(|e| RbPolarsErr::Other(format!("{:?}", e)))?;
         Ok(())
     }
 

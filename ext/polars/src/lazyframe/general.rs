@@ -633,6 +633,8 @@ impl RbLazyFrame {
         tolerance: Option<Wrap<AnyValue<'_>>>,
         tolerance_str: Option<String>,
         coalesce: bool,
+        allow_eq: bool,
+        check_sortedness: bool,
     ) -> RbResult<Self> {
         let coalesce = if coalesce {
             JoinCoalesce::CoalesceColumns
@@ -657,6 +659,8 @@ impl RbLazyFrame {
                 right_by: right_by.map(strings_to_pl_smallstr),
                 tolerance: tolerance.map(|t| t.0.into_static()),
                 tolerance_str: tolerance_str.map(|s| s.into()),
+                allow_eq,
+                check_sortedness,
             }))
             .suffix(suffix)
             .finish()

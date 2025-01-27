@@ -33,6 +33,7 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
         AnyValue::Int16(v) => ruby.into_value(v),
         AnyValue::Int32(v) => ruby.into_value(v),
         AnyValue::Int64(v) => ruby.into_value(v),
+        AnyValue::Int128(_v) => todo!(),
         AnyValue::Float32(v) => ruby.into_value(v),
         AnyValue::Float64(v) => ruby.into_value(v),
         AnyValue::Null => ruby.qnil().as_value(),

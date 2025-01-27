@@ -69,7 +69,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("estimated_size", method!(RbDataFrame::estimated_size, 0))?;
     class.define_method("dtype_strings", method!(RbDataFrame::dtype_strings, 0))?;
     class.define_method("write_avro", method!(RbDataFrame::write_avro, 3))?;
-    class.define_method("write_json", method!(RbDataFrame::write_json, 3))?;
+    class.define_method("write_json", method!(RbDataFrame::write_json, 1))?;
     class.define_method("write_ndjson", method!(RbDataFrame::write_ndjson, 1))?;
     class.define_method("write_csv", method!(RbDataFrame::write_csv, 10))?;
     class.define_method("write_ipc", method!(RbDataFrame::write_ipc, 5))?;
@@ -758,7 +758,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbLazyFrame::group_by_dynamic, 9),
     )?;
     class.define_method("with_context", method!(RbLazyFrame::with_context, 1))?;
-    class.define_method("join_asof", method!(RbLazyFrame::join_asof, 12))?;
+    class.define_method("join_asof", method!(RbLazyFrame::join_asof, 14))?;
     class.define_method("join", method!(RbLazyFrame::join, 10))?;
     class.define_method("with_column", method!(RbLazyFrame::with_column, 1))?;
     class.define_method("with_columns", method!(RbLazyFrame::with_columns, 1))?;

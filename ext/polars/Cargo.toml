@@ -12,20 +12,21 @@ crate-type = ["cdylib"]
 
 [dependencies]
 ahash = "0.8"
-arrow = { package = "polars-arrow", version = "=0.45.1" }
+arrow = { package = "polars-arrow", version = "=0.46.0" }
 bytes = "1"
 chrono = "0.4"
 either = "1.8"
 magnus = "0.7"
-polars-core = "=0.45.1"
-polars-plan = "=0.45.1"
-polars-parquet = "=0.45.1"
-polars-utils = "=0.45.1"
+polars-core = "=0.46.0"
+polars-plan = "=0.46.0"
+polars-parquet = "=0.46.0"
+polars-utils = "=0.46.0"
+rayon = "1.9"
 regex = "1"
 serde_json = "1"
 
 [dependencies.polars]
-version = "=0.45.1"
+version = "=0.46.0"
 features = [
     "abs",
     "approx_unique",

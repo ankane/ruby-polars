@@ -604,10 +604,6 @@ module Polars
     #
     # @param file [String]
     #   File path to which the result should be written.
-    # @param pretty [Boolean]
-    #   Pretty serialize json.
-    # @param row_oriented [Boolean]
-    #   Write to row oriented json. This is slower, but more common.
     #
     # @return [nil]
     #
@@ -619,16 +615,8 @@ module Polars
     #     }
     #   )
     #   df.write_json
-    #   # => "{\"columns\":[{\"name\":\"foo\",\"datatype\":\"Int64\",\"bit_settings\":\"\",\"values\":[1,2,3]},{\"name\":\"bar\",\"datatype\":\"Int64\",\"bit_settings\":\"\",\"values\":[6,7,8]}]}"
-    #
-    # @example
-    #   df.write_json(row_oriented: true)
     #   # => "[{\"foo\":1,\"bar\":6},{\"foo\":2,\"bar\":7},{\"foo\":3,\"bar\":8}]"
-    def write_json(
-      file = nil,
-      pretty: false,
-      row_oriented: false
-    )
+    def write_json(file = nil)
       if Utils.pathlike?(file)
         file = Utils.normalize_filepath(file)
       end
@@ -636,7 +624,7 @@ module Polars
       if file.nil? || to_string_io
         buf = StringIO.new
         buf.set_encoding(Encoding::BINARY)
-        _df.write_json(buf, pretty, row_oriented)
+        _df.write_json(buf)
         json_bytes = buf.string
 
         json_str = json_bytes.force_encoding(Encoding::UTF_8)
@@ -646,7 +634,7 @@ module Polars
           return json_str
         end
       else
-        _df.write_json(file, pretty, row_oriented)
+        _df.write_json(file)
       end
       nil
     end
@@ -2294,6 +2282,14 @@ module Polars
     #   keys are within this distance. If an asof join is done on columns of dtype
     #   "Date", "Datetime", "Duration" or "Time" you use the following string
     #   language:
+    # @param allow_exact_matches [Boolean]
+    #   Whether exact matches are valid join predicates.
+    #     - If true, allow matching with the same `on` value (i.e. less-than-or-equal-to / greater-than-or-equal-to).
+    #     - If false, don't match the same `on` value (i.e., strictly less-than / strictly greater-than).
+    # @param check_sortedness [Boolean]
+    #   Check the sortedness of the asof keys. If the keys are not sorted Polars
+    #   will error, or in case of 'by' argument raise a warning. This might become
+    #   a hard error in the future.
     #
     #    - 1ns   (1 nanosecond)
     #    - 1us   (1 microsecond)
@@ -2375,7 +2371,9 @@ module Polars
       tolerance: nil,
       allow_parallel: true,
       force_parallel: false,
-      coalesce: true
+      coalesce: true,
+      allow_exact_matches: true,
+      check_sortedness: true
     )
       lazy
         .join_asof(
@@ -2391,7 +2389,9 @@ module Polars
           tolerance: tolerance,
           allow_parallel: allow_parallel,
           force_parallel: force_parallel,
-          coalesce: coalesce
+          coalesce: coalesce,
+          allow_exact_matches: allow_exact_matches,
+          check_sortedness: check_sortedness
         )
         .collect(no_optimization: true)
     end

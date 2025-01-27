@@ -1,4 +1,4 @@
-use polars::export::arrow::array::Array;
+use arrow::array::Array;
 use polars::prelude::*;
 
 use crate::error::RbPolarsErr;

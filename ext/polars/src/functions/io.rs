@@ -1,9 +1,9 @@
 use std::io::BufReader;
 
+use arrow::array::Utf8ViewArray;
 use magnus::{RHash, Value};
 use polars::prelude::ArrowSchema;
 use polars_core::datatypes::create_enum_dtype;
-use polars_core::export::arrow::array::Utf8ViewArray;
 
 use crate::conversion::Wrap;
 use crate::file::{get_either_file, EitherRustRubyFile};
@@ -11,7 +11,7 @@ use crate::prelude::ArrowDataType;
 use crate::{RbPolarsErr, RbResult};
 
 pub fn read_ipc_schema(rb_f: Value) -> RbResult<RHash> {
-    use polars_core::export::arrow::io::ipc::read::read_file_metadata;
+    use arrow::io::ipc::read::read_file_metadata;
     let metadata = match get_either_file(rb_f, false)? {
         EitherRustRubyFile::Rust(r) => {
             read_file_metadata(&mut BufReader::new(r)).map_err(RbPolarsErr::from)?

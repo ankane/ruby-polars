@@ -1,7 +1,7 @@
+use arrow::array::Array;
+use arrow::ffi::{ArrowArrayStream, ArrowArrayStreamReader};
 use magnus::prelude::*;
 use magnus::Value;
-use polars::export::arrow::array::Array;
-use polars::export::arrow::ffi::{ArrowArrayStream, ArrowArrayStreamReader};
 use polars::prelude::*;
 
 use super::RbSeries;

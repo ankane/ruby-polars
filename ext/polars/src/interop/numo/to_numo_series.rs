@@ -23,7 +23,7 @@ impl RbSeries {
                     .const_get::<_, RClass>("RObject")?
                     .funcall("cast", (np_arr,))
             }
-            dt if dt.is_numeric() => {
+            dt if dt.is_primitive_numeric() => {
                 if let Some(BitRepr::Large(_)) = s.bit_repr() {
                     let s = s.cast(&DataType::Float64).unwrap();
                     let ca = s.f64().unwrap();

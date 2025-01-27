@@ -146,6 +146,10 @@ impl IntoValue for Wrap<DataType> {
                 let class = pl.const_get::<_, Value>("Int64").unwrap();
                 class.funcall("new", ()).unwrap()
             }
+            DataType::Int128 => {
+                let class = pl.const_get::<_, Value>("Int128").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
             DataType::UInt8 => {
                 let class = pl.const_get::<_, Value>("UInt8").unwrap();
                 class.funcall("new", ()).unwrap()
