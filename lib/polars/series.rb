@@ -4696,7 +4696,12 @@ module Polars
         end
 
         constructor = polars_type_to_constructor(dtype)
-        rbseries = constructor.call(name, values, strict)
+        rbseries =
+          if dtype == Array
+            constructor.call(name, values, strict)
+          else
+            construct_series_with_fallbacks(constructor, name, values, dtype, strict: strict)
+          end
 
         base_type = dtype.is_a?(DataType) ? dtype.class : dtype
         if [Date, Datetime, Duration, Time, Categorical, Boolean, Enum, Decimal].include?(base_type)

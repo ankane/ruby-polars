@@ -2,6 +2,7 @@
 
 - Updated Polars to 0.46.0
 - Changed `write_json` method for `DataFrame` to be row-oriented
+- Fixed error with `Series` constructor and `strict: false`
 
 ## 0.16.0 (2024-12-29)
 

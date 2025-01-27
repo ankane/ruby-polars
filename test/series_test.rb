@@ -103,6 +103,9 @@ class SeriesTest < Minitest::Test
     s = Polars::Series.new([1, 2, 3.5], strict: false)
     assert_series [1, 2, 3.5], s, dtype: Polars::Float64
 
+    s = Polars::Series.new(["1", "2", "3.5"], strict: false, dtype: Polars::Float64)
+    assert_series [1, 2, 3.5], s, dtype: Polars::Float64
+
     s = Polars::Series.new([1, 2, 3.5], strict: false, dtype: Polars::Int8)
     assert_series [1, 2, 3], s, dtype: Polars::Int8
   end
