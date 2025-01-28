@@ -1,4 +1,4 @@
-## 0.17.0 (unreleased)
+## 0.17.0 (2025-01-28)
 
 - Updated Polars to 0.46.0
 - Changed `write_json` method for `DataFrame` to be row-oriented
