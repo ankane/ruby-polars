@@ -167,6 +167,10 @@ module Polars
   class Int64 < SignedIntegerType
   end
 
+  # 128-bit signed integer type.
+  class Int128 < SignedIntegerType
+  end
+
   # 8-bit unsigned integer type.
   class UInt8 < UnsignedIntegerType
   end
