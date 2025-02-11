@@ -3347,12 +3347,16 @@ module Polars
       _from_rbldf(_ldf.merge_sorted(other._ldf, key))
     end
 
-    # Indicate that one or multiple columns are sorted.
+    # Flag a column as sorted.
+    #
+    # This can speed up future operations.
+    #
+    # Warning: This can lead to incorrect results if the data is NOT sorted! Use with care!
     #
     # @param column [Object]
-    #   Columns that are sorted
+    #   Column that is sorted.
     # @param descending [Boolean]
-    #   Whether the columns are sorted in descending order.
+    #   Whether the column is sorted in descending order.
     #
     # @return [LazyFrame]
     def set_sorted(
