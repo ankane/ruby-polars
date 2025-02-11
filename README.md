@@ -1,6 +1,6 @@
 # Ruby Polars
 
-:fire: Blazingly fast DataFrames for Ruby, powered by [Polars](https://github.com/pola-rs/polars)
+🔥 Blazingly fast DataFrames for Ruby, powered by [Polars](https://github.com/pola-rs/polars)
 
 [![Build Status](https://github.com/ankane/ruby-polars/actions/workflows/build.yml/badge.svg)](https://github.com/ankane/ruby-polars/actions)
 
@@ -448,7 +448,7 @@ df.group_by("c").plot("a", "b", stacked: true)
 
 ## History
 
-View the [changelog](CHANGELOG.md)
+View the [changelog](https://github.com/ankane/ruby-polars/blob/master/CHANGELOG.md)
 
 ## Contributing
 
