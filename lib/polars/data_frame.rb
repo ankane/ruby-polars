@@ -5105,7 +5105,8 @@ module Polars
     #
     # This can speed up future operations.
     #
-    # Warning: This can lead to incorrect results if the data is NOT sorted! Use with care!
+    # @note
+    #   This can lead to incorrect results if the data is NOT sorted! Use with care!
     #
     # @param column [Object]
     #   Column that is sorted.
