@@ -3815,6 +3815,30 @@ module Polars
       super
     end
 
+    # Fill null values using interpolation based on another column.
+    #
+    # @param by [Expr]
+    #   Column to interpolate values based on.
+    #
+    # @return [Series]
+    #
+    # @example Fill null values using linear interpolation.
+    #   s = Polars::Series.new("a", [1, nil, nil, 3])
+    #   by = Polars::Series.new("b", [1, 2, 7, 8])
+    #   s.interpolate_by(by)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         1.0
+    #   #         1.285714
+    #   #         2.714286
+    #   #         3.0
+    #   # ]
+    def interpolate_by(by)
+      super
+    end
+
     # Compute absolute values.
     #
     # @return [Series]

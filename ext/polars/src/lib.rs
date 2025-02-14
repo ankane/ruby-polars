@@ -430,6 +430,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("mode", method!(RbExpr::mode, 0))?;
     class.define_method("exclude", method!(RbExpr::exclude, 1))?;
     class.define_method("interpolate", method!(RbExpr::interpolate, 1))?;
+    class.define_method("interpolate_by", method!(RbExpr::interpolate_by, 1))?;
     class.define_method("rolling_sum", method!(RbExpr::rolling_sum, 4))?;
     class.define_method("rolling_sum_by", method!(RbExpr::rolling_sum_by, 4))?;
     class.define_method("rolling_min", method!(RbExpr::rolling_min, 4))?;

@@ -63,6 +63,7 @@ features = [
     "gcp",
     "http",
     "interpolate",
+    "interpolate_by",
     "ipc",
     "ipc_streaming",
     "is_between",
