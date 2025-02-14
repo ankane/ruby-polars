@@ -614,6 +614,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "concat_lf_diagonal",
         function!(functions::lazy::concat_lf_diagonal, 4),
     )?;
+    class.define_singleton_method(
+        "concat_lf_horizontal",
+        function!(functions::lazy::concat_lf_horizontal, 2),
+    )?;
     class.define_singleton_method("concat_df", function!(functions::eager::concat_df, 1))?;
     class.define_singleton_method("concat_lf", function!(functions::lazy::concat_lf, 4))?;
     class.define_singleton_method(

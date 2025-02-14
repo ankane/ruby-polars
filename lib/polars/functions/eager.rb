@@ -7,7 +7,6 @@ module Polars
     # @param rechunk [Boolean]
     #   Make sure that all data is in contiguous memory.
     # @param how ["vertical", "vertical_relaxed", "diagonal", "horizontal"]
-    #   LazyFrames do not support the `horizontal` strategy.
     #
     #   - Vertical: applies multiple `vstack` operations.
     #   - Diagonal: finds a union between the column schemas and fills missing column values with null.
@@ -55,8 +54,10 @@ module Polars
           return Utils.wrap_ldf(Plr.concat_lf(items, rechunk, parallel, true))
         elsif how == "diagonal"
           return Utils.wrap_ldf(Plr.concat_lf_diagonal(items, rechunk, parallel, false))
+        elsif how == "horizontal"
+          return Utils.wrap_ldf(Plr.concat_lf_horizontal(items, parallel))
         else
-          raise ArgumentError, "Lazy only allows 'vertical', 'vertical_relaxed', and 'diagonal' concat strategy."
+          raise ArgumentError, "Lazy only allows 'vertical', 'vertical_relaxed', 'horizontal', and 'diagonal' concat strategy."
         end
       elsif first.is_a?(Series)
         # TODO
