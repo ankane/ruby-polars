@@ -671,6 +671,10 @@ impl RbExpr {
         self.inner.clone().interpolate(method.0).into()
     }
 
+    pub fn interpolate_by(&self, by: &Self) -> Self {
+        self.inner.clone().interpolate_by(by.inner.clone()).into()
+    }
+
     pub fn lower_bound(&self) -> Self {
         self.inner.clone().lower_bound().into()
     }

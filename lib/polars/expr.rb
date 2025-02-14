@@ -3994,6 +3994,37 @@ module Polars
       _from_rbexpr(_rbexpr.interpolate(method))
     end
 
+    # Fill null values using interpolation based on another column.
+    #
+    # @return [Expr]
+    #
+    # @param by [Expr] Column to interpolate values based on.
+    #
+    # @example Fill null values using linear interpolation.
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, nil, nil, 3],
+    #       "b" => [1, 2, 7, 8]
+    #     }
+    #   )
+    #   df.with_columns(a_interpolated: Polars.col("a").interpolate_by("b"))
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌──────┬─────┬────────────────┐
+    #   # │ a    ┆ b   ┆ a_interpolated │
+    #   # │ ---  ┆ --- ┆ ---            │
+    #   # │ i64  ┆ i64 ┆ f64            │
+    #   # ╞══════╪═════╪════════════════╡
+    #   # │ 1    ┆ 1   ┆ 1.0            │
+    #   # │ null ┆ 2   ┆ 1.285714       │
+    #   # │ null ┆ 7   ┆ 2.714286       │
+    #   # │ 3    ┆ 8   ┆ 3.0            │
+    #   # └──────┴─────┴────────────────┘
+    def interpolate_by(by)
+      by = Utils.parse_into_expression(by)
+      _from_rbexpr(_rbexpr.interpolate_by(by))
+    end
+
     # Apply a rolling min based on another column.
     #
     # @param by [String]
