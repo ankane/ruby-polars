@@ -78,4 +78,12 @@ class LazyFrameTest < Minitest::Test
     Polars.concat([df1, df2], how: "vertical_relaxed")
     Polars.concat([df1, df2], how: "diagonal")
   end
+
+  def test_concat_horizontal
+    df1 = Polars::LazyFrame.new({"a" => [1, 2]})
+    df2 = Polars::LazyFrame.new({"b" => [3, 4]})
+    df = Polars.concat([df1, df2], how: "horizontal").collect
+    expected = Polars::DataFrame.new({"a" => [1, 2], "b" => [3, 4]})
+    assert_frame expected, df
+  end
 end
