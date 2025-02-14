@@ -3996,9 +3996,9 @@ module Polars
 
     # Fill null values using interpolation based on another column.
     #
-    # @return [Expr]
-    #
     # @param by [Expr] Column to interpolate values based on.
+    #
+    # @return [Expr]
     #
     # @example Fill null values using linear interpolation.
     #   df = Polars::DataFrame.new(
