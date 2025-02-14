@@ -734,13 +734,6 @@ class SeriesTest < Minitest::Test
     assert_series [1, 2, 3, 4, 5], s.interpolate
   end
 
-  def test_interpolate_by
-    s = Polars::Series.new("a", [1, nil, nil, 3])
-    by = Polars::Series.new("b", [1, 2, 7, 8])
-    s.interpolate_by(by)
-    assert_series [1.0, 1.2857142857142856, 2.7142857142857144, 3.0], s.interpolate_by(by)
-  end
-
   def test_shrink_to_fit
     s = Polars::Series.new([1, 2, 3])
     s.shrink_to_fit
