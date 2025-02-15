@@ -1,6 +1,7 @@
 ## 0.17.1 (unreleased)
 
 - Added support for horizontal concatenation of `LazyFrame`s
+- Added `interpolate_by` method to `Series` and `Expr`
 
 ## 0.17.0 (2025-01-28)
 
