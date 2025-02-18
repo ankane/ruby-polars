@@ -14,6 +14,17 @@ impl RbSeries {
     }
 }
 
+struct RbArray {}
+
+impl RbArray {
+    fn from_iter(cls: &str, values: RArray) -> RbResult<Value> {
+        class::object()
+            .const_get::<_, RModule>("Numo")?
+            .const_get::<_, RClass>(cls)?
+            .funcall("cast", (values,))
+    }
+}
+
 /// Convert a Series to a Numo array.
 fn series_to_numo(s: &Series) -> RbResult<Value> {
     series_to_numo_with_copy(s)
@@ -36,10 +47,7 @@ fn series_to_numo_with_copy(s: &Series) -> RbResult<Value> {
         Boolean => boolean_series_to_numo(s),
         String => {
             let ca = s.str().unwrap();
-            class::object()
-                .const_get::<_, RModule>("Numo")?
-                .const_get::<_, RClass>("RObject")?
-                .funcall("cast", (RArray::from_iter(ca),))
+            RbArray::from_iter("RObject", RArray::from_iter(ca))
         }
         dt => {
             raise_err!(
@@ -60,20 +68,14 @@ where
     let ca: &ChunkedArray<T> = s.as_ref().as_ref();
     if s.null_count() == 0 {
         let values = ca.into_no_null_iter();
-        class::object()
-            .const_get::<_, RModule>("Numo")?
-            .const_get::<_, RClass>(c)?
-            .funcall("cast", (RArray::from_iter(values),))
+        RbArray::from_iter(c, RArray::from_iter(values))
     } else {
         let mapper = |opt_v: Option<T::Native>| match opt_v {
             Some(v) => NumCast::from(v).unwrap(),
             None => U::nan(),
         };
         let values = ca.iter().map(mapper);
-        class::object()
-            .const_get::<_, RModule>("Numo")?
-            .const_get::<_, RClass>(c2)?
-            .funcall("cast", (RArray::from_iter(values),))
+        RbArray::from_iter(c2, RArray::from_iter(values))
     }
 }
 
@@ -82,15 +84,9 @@ fn boolean_series_to_numo(s: &Series) -> RbResult<Value> {
     let ca = s.bool().unwrap();
     if s.null_count() == 0 {
         let values = ca.into_no_null_iter();
-        class::object()
-            .const_get::<_, RModule>("Numo")?
-            .const_get::<_, RClass>("Bit")?
-            .funcall("cast", (RArray::from_iter(values),))
+        RbArray::from_iter("Bit", RArray::from_iter(values))
     } else {
         let values = ca.iter();
-        class::object()
-            .const_get::<_, RModule>("Numo")?
-            .const_get::<_, RClass>("RObject")?
-            .funcall("cast", (RArray::from_iter(values),))
+        RbArray::from_iter("RObject", RArray::from_iter(values))
     }
 }
