@@ -23,16 +23,6 @@ fn series_to_numo(s: &Series) -> RbResult<Value> {
 fn series_to_numo_with_copy(s: &Series) -> RbResult<Value> {
     use DataType::*;
     match s.dtype() {
-        String => {
-            let ca = s.str().unwrap();
-
-            // TODO make more efficient
-            let np_arr = RArray::from_iter(ca);
-            class::object()
-                .const_get::<_, RModule>("Numo")?
-                .const_get::<_, RClass>("RObject")?
-                .funcall("cast", (np_arr,))
-        }
         dt if dt.is_primitive_numeric() => {
             if let Some(BitRepr::Large(_)) = s.bit_repr() {
                 let s = s.cast(&DataType::Float64).unwrap();
@@ -61,6 +51,13 @@ fn series_to_numo_with_copy(s: &Series) -> RbResult<Value> {
             }
         }
         Boolean => boolean_series_to_numo(s),
+        String => {
+            let ca = s.str().unwrap();
+            class::object()
+                .const_get::<_, RModule>("Numo")?
+                .const_get::<_, RClass>("RObject")?
+                .funcall("cast", (RArray::from_iter(ca),))
+        }
         dt => {
             raise_err!(
                 format!("'to_numo' not supported for dtype: {dt:?}"),
