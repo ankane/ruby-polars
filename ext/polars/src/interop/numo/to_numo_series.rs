@@ -1,4 +1,4 @@
-use magnus::{class, prelude::*, Module, RArray, RClass, RModule, Value};
+use magnus::{class, prelude::*, IntoValue, Module, RArray, RClass, RModule, Value};
 use num_traits::{Float, NumCast};
 use polars_core::prelude::*;
 
@@ -17,11 +17,14 @@ impl RbSeries {
 struct RbArray {}
 
 impl RbArray {
-    fn from_iter(cls: &str, values: RArray) -> RbResult<Value> {
+    fn from_iter<I>(cls: &str, values: I) -> RbResult<Value>
+    where
+        I: IntoIterator<Item: IntoValue>,
+    {
         class::object()
             .const_get::<_, RModule>("Numo")?
             .const_get::<_, RClass>(cls)?
-            .funcall("cast", (values,))
+            .funcall("cast", (RArray::from_iter(values),))
     }
 }
 
@@ -47,7 +50,7 @@ fn series_to_numo_with_copy(s: &Series) -> RbResult<Value> {
         Boolean => boolean_series_to_numo(s),
         String => {
             let ca = s.str().unwrap();
-            RbArray::from_iter("RObject", RArray::from_iter(ca))
+            RbArray::from_iter("RObject", ca)
         }
         dt => {
             raise_err!(
@@ -68,14 +71,14 @@ where
     let ca: &ChunkedArray<T> = s.as_ref().as_ref();
     if s.null_count() == 0 {
         let values = ca.into_no_null_iter();
-        RbArray::from_iter(c, RArray::from_iter(values))
+        RbArray::from_iter(c, values)
     } else {
         let mapper = |opt_v: Option<T::Native>| match opt_v {
             Some(v) => NumCast::from(v).unwrap(),
             None => U::nan(),
         };
         let values = ca.iter().map(mapper);
-        RbArray::from_iter(c2, RArray::from_iter(values))
+        RbArray::from_iter(c2, values)
     }
 }
 
@@ -84,9 +87,9 @@ fn boolean_series_to_numo(s: &Series) -> RbResult<Value> {
     let ca = s.bool().unwrap();
     if s.null_count() == 0 {
         let values = ca.into_no_null_iter();
-        RbArray::from_iter("Bit", RArray::from_iter(values))
+        RbArray::from_iter("Bit", values)
     } else {
         let values = ca.iter();
-        RbArray::from_iter("RObject", RArray::from_iter(values))
+        RbArray::from_iter("RObject", values)
     }
 }
