@@ -14,9 +14,9 @@ impl RbSeries {
     }
 }
 
-struct RbArray {}
+struct RbArray1 {}
 
-impl RbArray {
+impl RbArray1 {
     fn from_iter<I>(cls: &str, values: I) -> RbResult<Value>
     where
         I: IntoIterator<Item: IntoValue>,
@@ -50,7 +50,7 @@ fn series_to_numo_with_copy(s: &Series) -> RbResult<Value> {
         Boolean => boolean_series_to_numo(s),
         String => {
             let ca = s.str().unwrap();
-            RbArray::from_iter("RObject", ca)
+            RbArray1::from_iter("RObject", ca)
         }
         dt => {
             raise_err!(
@@ -71,14 +71,14 @@ where
     let ca: &ChunkedArray<T> = s.as_ref().as_ref();
     if s.null_count() == 0 {
         let values = ca.into_no_null_iter();
-        RbArray::from_iter(c, values)
+        RbArray1::from_iter(c, values)
     } else {
         let mapper = |opt_v: Option<T::Native>| match opt_v {
             Some(v) => NumCast::from(v).unwrap(),
             None => U::nan(),
         };
         let values = ca.iter().map(mapper);
-        RbArray::from_iter(c2, values)
+        RbArray1::from_iter(c2, values)
     }
 }
 
@@ -87,9 +87,9 @@ fn boolean_series_to_numo(s: &Series) -> RbResult<Value> {
     let ca = s.bool().unwrap();
     if s.null_count() == 0 {
         let values = ca.into_no_null_iter();
-        RbArray::from_iter("Bit", values)
+        RbArray1::from_iter("Bit", values)
     } else {
         let values = ca.iter();
-        RbArray::from_iter("RObject", values)
+        RbArray1::from_iter("RObject", values)
     }
 }
