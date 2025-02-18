@@ -2,16 +2,16 @@ require_relative "test_helper"
 
 class NumoTest < Minitest::Test
   def test_roundtrip
-    assert_numo Numo::Int8
-    assert_numo Numo::Int16
-    assert_numo Numo::Int32
-    assert_numo Numo::Int64
-    assert_numo Numo::UInt8
-    assert_numo Numo::UInt16
-    assert_numo Numo::UInt32
-    assert_numo Numo::UInt64
-    assert_numo Numo::SFloat
-    assert_numo Numo::DFloat
+    assert_roundtrip Numo::Int8
+    assert_roundtrip Numo::Int16
+    assert_roundtrip Numo::Int32
+    assert_roundtrip Numo::Int64
+    assert_roundtrip Numo::UInt8
+    assert_roundtrip Numo::UInt16
+    assert_roundtrip Numo::UInt32
+    assert_roundtrip Numo::UInt64
+    assert_roundtrip Numo::SFloat
+    assert_roundtrip Numo::DFloat
   end
 
   def test_series_int
@@ -68,7 +68,7 @@ class NumoTest < Minitest::Test
     assert_equal [[1, "one"], [2, "two"], [3, "three"]], df.to_numo.to_a
   end
 
-  def assert_numo(cls)
+  def assert_roundtrip(cls)
     v = cls.cast([1, 2, 3])
     assert_equal v, Polars::Series.new(v).to_numo
   end
