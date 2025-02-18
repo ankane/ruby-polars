@@ -2,6 +2,7 @@
 
 - Added support for horizontal concatenation of `LazyFrame`s
 - Added `interpolate_by` method to `Series` and `Expr`
+- Fixed error with `to_numo` method for `Boolean` series with null values
 
 ## 0.17.0 (2025-01-28)
 

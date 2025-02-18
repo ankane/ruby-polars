@@ -50,6 +50,7 @@ impl RbSeries {
                         .funcall("cast", (np_arr,))
                 }
             }
+            DataType::Boolean => boolean_series_to_numo(s),
             dt => {
                 raise_err!(
                     format!("'to_numo' not supported for dtype: {dt:?}"),
@@ -57,5 +58,22 @@ impl RbSeries {
                 );
             }
         }
+    }
+}
+
+fn boolean_series_to_numo(s: &Series) -> RbResult<Value> {
+    let ca = s.bool().unwrap();
+    if s.null_count() == 0 {
+        let values = ca.into_no_null_iter();
+        class::object()
+            .const_get::<_, RModule>("Numo")?
+            .const_get::<_, RClass>("Bit")?
+            .funcall("cast", (RArray::from_iter(values),))
+    } else {
+        let values = ca.iter();
+        class::object()
+            .const_get::<_, RModule>("Numo")?
+            .const_get::<_, RClass>("RObject")?
+            .funcall("cast", (RArray::from_iter(values),))
     }
 }
