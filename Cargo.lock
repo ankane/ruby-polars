@@ -1654,6 +1654,7 @@ dependencies = [
  "jemallocator",
  "magnus",
  "mimalloc",
+ "num-traits",
  "polars 0.46.0",
  "polars-arrow",
  "polars-core",

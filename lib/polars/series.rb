@@ -2554,27 +2554,7 @@ module Polars
     #   # Numo::Int64#shape=[3]
     #   # [1, 2, 3]
     def to_numo
-      if !has_validity
-        if is_datelike
-          Numo::RObject.cast(to_a)
-        elsif is_numeric
-          # TODO make more efficient
-          {
-            UInt8 => Numo::UInt8,
-            UInt16 => Numo::UInt16,
-            UInt32 => Numo::UInt32,
-            UInt64 => Numo::UInt64,
-            Int8 => Numo::Int8,
-            Int16 => Numo::Int16,
-            Int32 => Numo::Int32,
-            Int64 => Numo::Int64,
-            Float32 => Numo::SFloat,
-            Float64 => Numo::DFloat
-          }.fetch(dtype.class).cast(to_a)
-        else
-          _s.to_numo
-        end
-      elsif is_datelike
+      if is_datelike
         Numo::RObject.cast(to_a)
       else
         _s.to_numo

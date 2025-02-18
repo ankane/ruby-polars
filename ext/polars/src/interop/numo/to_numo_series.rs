@@ -1,5 +1,5 @@
 use magnus::{class, prelude::*, Module, RArray, RClass, RModule, Value};
-use polars::series::BitRepr;
+use num_traits::{Float, NumCast};
 use polars_core::prelude::*;
 
 use crate::error::RbPolarsErr;
@@ -23,33 +23,16 @@ fn series_to_numo(s: &Series) -> RbResult<Value> {
 fn series_to_numo_with_copy(s: &Series) -> RbResult<Value> {
     use DataType::*;
     match s.dtype() {
-        dt if dt.is_primitive_numeric() => {
-            if let Some(BitRepr::Large(_)) = s.bit_repr() {
-                let s = s.cast(&DataType::Float64).unwrap();
-                let ca = s.f64().unwrap();
-                // TODO make more efficient
-                let np_arr = RArray::from_iter(ca.into_iter().map(|opt_v| match opt_v {
-                    Some(v) => v,
-                    None => f64::NAN,
-                }));
-                class::object()
-                    .const_get::<_, RModule>("Numo")?
-                    .const_get::<_, RClass>("DFloat")?
-                    .funcall("cast", (np_arr,))
-            } else {
-                let s = s.cast(&DataType::Float32).unwrap();
-                let ca = s.f32().unwrap();
-                // TODO make more efficient
-                let np_arr = RArray::from_iter(ca.into_iter().map(|opt_v| match opt_v {
-                    Some(v) => v,
-                    None => f32::NAN,
-                }));
-                class::object()
-                    .const_get::<_, RModule>("Numo")?
-                    .const_get::<_, RClass>("SFloat")?
-                    .funcall("cast", (np_arr,))
-            }
-        }
+        Int8 => numeric_series_to_numpy::<Int8Type, f32>(s, "Int8", "SFloat"),
+        Int16 => numeric_series_to_numpy::<Int16Type, f32>(s, "Int16", "SFloat"),
+        Int32 => numeric_series_to_numpy::<Int32Type, f64>(s, "Int32", "DFloat"),
+        Int64 => numeric_series_to_numpy::<Int64Type, f64>(s, "Int64", "DFloat"),
+        UInt8 => numeric_series_to_numpy::<UInt8Type, f32>(s, "UInt8", "SFloat"),
+        UInt16 => numeric_series_to_numpy::<UInt16Type, f32>(s, "UInt16", "SFloat"),
+        UInt32 => numeric_series_to_numpy::<UInt32Type, f64>(s, "UInt32", "DFloat"),
+        UInt64 => numeric_series_to_numpy::<UInt64Type, f64>(s, "UInt64", "DFloat"),
+        Float32 => numeric_series_to_numpy::<Float32Type, f32>(s, "SFloat", "SFloat"),
+        Float64 => numeric_series_to_numpy::<Float64Type, f64>(s, "DFloat", "DFloat"),
         Boolean => boolean_series_to_numo(s),
         String => {
             let ca = s.str().unwrap();
@@ -64,6 +47,33 @@ fn series_to_numo_with_copy(s: &Series) -> RbResult<Value> {
                 ComputeError
             );
         }
+    }
+}
+
+/// Convert numeric types to f32 or f64 with NaN representing a null value.
+fn numeric_series_to_numpy<T, U>(s: &Series, c: &str, c2: &str) -> RbResult<Value>
+where
+    T: PolarsNumericType,
+    T::Native: magnus::IntoValue,
+    U: Float + magnus::IntoValue,
+{
+    let ca: &ChunkedArray<T> = s.as_ref().as_ref();
+    if s.null_count() == 0 {
+        let values = ca.into_no_null_iter();
+        class::object()
+            .const_get::<_, RModule>("Numo")?
+            .const_get::<_, RClass>(c)?
+            .funcall("cast", (RArray::from_iter(values),))
+    } else {
+        let mapper = |opt_v: Option<T::Native>| match opt_v {
+            Some(v) => NumCast::from(v).unwrap(),
+            None => U::nan(),
+        };
+        let values = ca.iter().map(mapper);
+        class::object()
+            .const_get::<_, RModule>("Numo")?
+            .const_get::<_, RClass>(c2)?
+            .funcall("cast", (RArray::from_iter(values),))
     }
 }
 
