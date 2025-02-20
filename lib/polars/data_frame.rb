@@ -967,7 +967,7 @@ module Polars
     #   Schema-qualified name of the table to create or append to in the target
     #   SQL database.
     # @param connection [Object]
-    #   An existing Active Record connection against the target database
+    #   An existing Active Record connection against the target database.
     # @param if_table_exists ['append', 'replace', 'fail']
     #   The insert mode:
     #
