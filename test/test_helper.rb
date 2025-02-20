@@ -8,8 +8,11 @@ logger = ActiveSupport::Logger.new(ENV["VERBOSE"] ? STDOUT : nil)
 ActiveRecord::Base.logger = logger
 ActiveRecord::Migration.verbose = ENV["VERBOSE"]
 
-if ENV["ADAPTER"] == "postgresql"
+case ENV["ADAPTER"]
+when "postgresql"
   ActiveRecord::Base.establish_connection adapter: "postgresql", database: "polars_ruby_test"
+when "mysql"
+  ActiveRecord::Base.establish_connection adapter: "mysql2", database: "polars_ruby_test"
 else
   ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ":memory:"
 end
@@ -29,10 +32,14 @@ ActiveRecord::Schema.define do
     t.datetime :joined_at
     t.date :joined_on
     t.binary :bin
-    t.decimal :dec
+    t.decimal :dec, precision: 10, scale: 3
     t.text :txt
     t.time :joined_time
-    t.column :settings, :jsonb
+    if ENV["ADAPTER"] == "postgresql"
+      t.column :settings, :jsonb
+    else
+      t.column :settings, :json
+    end
   end
 end
 

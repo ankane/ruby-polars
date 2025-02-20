@@ -9,8 +9,11 @@ gem "activerecord"
 gem "numo-narray"
 gem "vega"
 
-if ENV["ADAPTER"] == "postgresql"
+case ENV["ADAPTER"]
+when "postgresql"
   gem "pg"
+when "mysql"
+  gem "mysql2"
 else
   gem "sqlite3"
 end

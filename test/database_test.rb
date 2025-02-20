@@ -142,6 +142,9 @@ class DatabaseTest < Minitest::Test
     if postgresql?
       assert_series users.map(&:active), df["active"]
       assert_series users.map(&:joined_on), df["joined_on"]
+    elsif mysql?
+      assert_series users.map(&:active).map { |v| v ? 1 : 0 }, df["active"]
+      assert_series users.map(&:joined_on), df["joined_on"]
     else
       assert_series users.map(&:active).map { |v| v ? 1 : 0 }, df["active"]
       assert_series users.map(&:joined_on).map(&:to_s), df["joined_on"]
@@ -167,6 +170,12 @@ class DatabaseTest < Minitest::Test
       assert_equal Polars::Time, schema["joined_time"]
       # TODO fix for null
       # assert_equal Polars::Struct, schema["settings"]
+    elsif mysql?
+      assert_equal Polars::Int64, schema["active"]
+      assert_equal Polars::Datetime, schema["joined_at"]
+      assert_equal Polars::Decimal, schema["dec"]
+      assert_equal Polars::Datetime, schema["joined_time"]
+      assert_equal Polars::String, schema["settings"]
     else
       assert_equal Polars::Int64, schema["active"]
       assert_equal Polars::String, schema["joined_at"]
@@ -193,7 +202,7 @@ class DatabaseTest < Minitest::Test
         dec: BigDecimal("1.5"),
         txt: "txt",
         joined_time: now,
-        settings: settings[i]
+        settings: mysql? ? settings[i].to_json : settings[i]
       )
     end
     # reload for time column
@@ -202,5 +211,9 @@ class DatabaseTest < Minitest::Test
 
   def postgresql?
     ENV["ADAPTER"] == "postgresql"
+  end
+
+  def mysql?
+    ENV["ADAPTER"] == "mysql"
   end
 end
