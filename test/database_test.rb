@@ -3,6 +3,9 @@ require_relative "test_helper"
 class DatabaseTest < Minitest::Test
   def setup
     User.delete_all
+    ActiveRecord::Base.connection_pool.with_connection do |connection|
+      connection.drop_table("items") if connection.table_exists?("items")
+    end
   end
 
   def test_relation
@@ -77,6 +80,50 @@ class DatabaseTest < Minitest::Test
       Polars.read_database("SELECT * FROM users ORDER BY id")
     end
     assert_nil ActiveRecord::Base.connection_pool.active_connection?
+  end
+
+  def test_write_database
+    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
+    assert_equal (-1), df.write_database("items")
+  end
+
+  def test_if_table_exists_fail
+    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
+    df.write_database("items")
+
+    df2 = Polars::DataFrame.new({"a" => ["four", "five"], "b" => [4, 5]})
+    error = assert_raises(ArgumentError) do
+      df2.write_database("items", if_table_exists: "fail")
+    end
+    assert_equal "Table already exists", error.message
+  end
+
+  def test_if_table_exists_append
+    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
+    df.write_database("items")
+
+    df2 = Polars::DataFrame.new({"a" => ["four", "five"], "b" => [4, 5]})
+    df2.write_database("items", if_table_exists: "append")
+
+    assert_frame df.vstack(df2), Polars.read_database("SELECT * FROM items")
+  end
+
+  def test_if_table_exists_replace
+    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
+    df.write_database("items")
+
+    df2 = Polars::DataFrame.new({"a" => ["four", "five"], "b" => [4, 5]})
+    df2.write_database("items", if_table_exists: "replace")
+
+    assert_frame df2, Polars.read_database("SELECT * FROM items")
+  end
+
+  def test_if_table_exists_invalid
+    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
+    error = assert_raises(ArgumentError) do
+      df.write_database("items", if_table_exists: "invalid")
+    end
+    assert_equal %!write_database `if_table_exists` must be one of ["append", "replace", "fail"], got "invalid"!, error.message
   end
 
   private

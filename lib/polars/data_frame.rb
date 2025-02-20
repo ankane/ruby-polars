@@ -961,6 +961,82 @@ module Polars
       )
     end
 
+    # Write the data in a Polars DataFrame to a database.
+    #
+    # @param table_name [String]
+    #   Schema-qualified name of the table to create or append to in the target
+    #   SQL database.
+    # @param if_table_exists ['append', 'replace', 'fail']
+    #   The insert mode:
+    #
+    #   * 'replace' will create a new database table, overwriting an existing one.
+    #   * 'append' will append to an existing table.
+    #   * 'fail' will fail if table already exists.
+    #
+    # @return [Integer]
+    #
+    # @note
+    #   This functionality is experimental. It may be changed at any point without it being considered a breaking change.
+    def write_database(table_name, if_table_exists: "fail")
+      if !defined?(ActiveRecord)
+        raise Error, "Active Record not available"
+      end
+
+      valid_write_modes = ["append", "replace", "fail"]
+      if !valid_write_modes.include?(if_table_exists)
+        msg = "write_database `if_table_exists` must be one of #{valid_write_modes.inspect}, got #{if_table_exists.inspect}"
+        raise ArgumentError, msg
+      end
+
+      ActiveRecord::Base.connection_pool.with_connection do |connection|
+        table_exists = connection.table_exists?(table_name)
+        if table_exists && if_table_exists == "fail"
+          raise ArgumentError, "Table already exists"
+        end
+
+        if if_table_exists != "append"
+          force = if_table_exists == "replace"
+          connection.create_table(table_name, id: false, force: force) do |t|
+            schema.each do |c, dtype|
+              column_type =
+                case dtype
+                when Binary
+                  :binary
+                when Boolean
+                  :boolean
+                when Date
+                  :date
+                when Datetime
+                  :datetime
+                when Decimal
+                  :decimal
+                when Float32, Float64
+                  :float
+                # TODO use larger type for Int64, UInt32, and UInt64
+                when Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64
+                  :integer
+                when String
+                  :text
+                when Time
+                  :time
+                else
+                  raise ArgumentError, "column type not supported yet: #{dtype}"
+                end
+              t.column c, column_type
+            end
+          end
+        end
+
+        quoted_table = connection.quote_table_name(table_name)
+        quoted_columns = columns.map { |c| connection.quote_column_name(c) }
+        rows = rows(named: false).map { |row| "(#{row.map { |v| connection.quote(v) }.join(", ")})" }
+        # TODO uses transaction and batches for larger data frames
+        connection.exec_query("INSERT INTO #{quoted_table} (#{quoted_columns.join(", ")}) VALUES #{rows.join(", ")}")
+        # TODO get affected rows
+        -1
+      end
+    end
+
     # Write DataFrame as delta table.
     #
     # @param target [Object]
