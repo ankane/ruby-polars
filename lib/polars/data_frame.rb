@@ -1044,7 +1044,6 @@ module Polars
         quoted_table = connection.quote_table_name(table_name)
         quoted_columns = columns.map { |c| connection.quote_column_name(c) }
         rows = rows(named: false).map { |row| "(#{row.map { |v| connection.quote(v) }.join(", ")})" }
-        # TODO uses transaction and batches for larger data frames
         connection.exec_update("INSERT INTO #{quoted_table} (#{quoted_columns.join(", ")}) VALUES #{rows.join(", ")}")
       end
     end
