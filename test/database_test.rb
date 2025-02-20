@@ -86,6 +86,11 @@ class DatabaseTest < Minitest::Test
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
     assert_equal (-1), df.write_database("items")
     assert_frame df, Polars.read_database("SELECT * FROM items")
+
+    error = assert_raises(ArgumentError) do
+      df.write_database("items")
+    end
+    assert_equal "Table already exists", error.message
   end
 
   def test_write_database_connection
@@ -100,9 +105,8 @@ class DatabaseTest < Minitest::Test
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
     df.write_database("items")
 
-    df2 = Polars::DataFrame.new({"a" => ["four", "five"], "b" => [4, 5]})
     error = assert_raises(ArgumentError) do
-      df2.write_database("items", if_table_exists: "fail")
+      df.write_database("items", if_table_exists: "fail")
     end
     assert_equal "Table already exists", error.message
   end
