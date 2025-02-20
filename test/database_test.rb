@@ -139,6 +139,16 @@ class DatabaseTest < Minitest::Test
     assert_equal %!write_database `if_table_exists` must be one of ["append", "replace", "fail"], got "invalid"!, error.message
   end
 
+  def test_write_database_types
+    df =
+      Polars::DataFrame.new([
+        Polars::Series.new("int64", [(1 << 63) - 1], dtype: Polars::Int64),
+        Polars::Series.new("uint32", [(1 << 32) - 1], dtype: Polars::UInt32),
+        Polars::Series.new("date", [Date.today], dtype: Polars::Date),
+      ])
+    df.write_database("items")
+  end
+
   def test_write_database_many_rows
     df = Polars::DataFrame.new({"a" => 1..100_000})
     df.write_database("items")

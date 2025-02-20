@@ -1002,6 +1002,7 @@ module Polars
           force = if_table_exists == "replace"
           connection.create_table(table_name, id: false, force: force) do |t|
             schema.each do |c, dtype|
+              options = {}
               column_type =
                 case dtype
                 when Binary
@@ -1016,8 +1017,10 @@ module Polars
                   :decimal
                 when Float32, Float64
                   :float
-                # TODO use larger type for Int64, UInt32, and UInt64
-                when Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64
+                when Int8, Int16, Int32, UInt8, UInt16, UInt64
+                  :integer
+                when UInt32, Int64
+                  options[:limit] = 8
                   :integer
                 when String
                   :text
@@ -1026,7 +1029,7 @@ module Polars
                 else
                   raise ArgumentError, "column type not supported yet: #{dtype}"
                 end
-              t.column c, column_type
+              t.column c, column_type, **options
             end
           end
         end
