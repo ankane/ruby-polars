@@ -87,6 +87,13 @@ class DatabaseTest < Minitest::Test
     assert_equal (-1), df.write_database("items")
   end
 
+  def test_write_database_connection
+    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
+    ActiveRecord::Base.connection_pool.with_connection do |connection|
+      assert_equal (-1), df.write_database("items", connection)
+    end
+  end
+
   def test_if_table_exists_fail
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
     df.write_database("items")
