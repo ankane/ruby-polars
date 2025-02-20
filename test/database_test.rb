@@ -140,7 +140,7 @@ class DatabaseTest < Minitest::Test
   end
 
   def test_write_database_types
-    time = Time.now
+    time = Time.now.round(6)
     df =
       Polars::DataFrame.new([
         Polars::Series.new("binary", ["bin".b], dtype: Polars::Binary),
