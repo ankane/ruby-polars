@@ -140,12 +140,13 @@ class DatabaseTest < Minitest::Test
   end
 
   def test_write_database_types
+    time = Time.now
     df =
       Polars::DataFrame.new([
         Polars::Series.new("binary", ["bin".b], dtype: Polars::Binary),
         Polars::Series.new("boolean", [true], dtype: Polars::Boolean),
         Polars::Series.new("date", [Date.today], dtype: Polars::Date),
-        Polars::Series.new("datetime", [Time.now], dtype: Polars::Datetime),
+        Polars::Series.new("datetime", [time], dtype: Polars::Datetime),
         Polars::Series.new("decimal", [BigDecimal("123456789.01234567890123456789")], dtype: Polars::Decimal),
         Polars::Series.new("float32", [1.5], dtype: Polars::Float32),
         Polars::Series.new("float64", [Float::MAX], dtype: Polars::Float64),
@@ -164,8 +165,10 @@ class DatabaseTest < Minitest::Test
 
     result = Polars.read_database("SELECT * FROM items")
     if postgresql? || mysql?
+      assert_equal time, result["datetime"][0]
       assert_equal "123456789.01234567890123456789", result["decimal"][0].to_s
     else
+      assert_equal time, result["datetime"][0]
       # TODO fix or raise error
       assert_equal "123456789.01234567", result["decimal"][0].to_s
     end
