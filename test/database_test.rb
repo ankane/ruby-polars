@@ -103,7 +103,7 @@ class DatabaseTest < Minitest::Test
 
   def test_if_table_exists_fail
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
-    df.write_database("items")
+    df.write_database("items", if_table_exists: "fail")
 
     error = assert_raises(ArgumentError) do
       df.write_database("items", if_table_exists: "fail")
@@ -113,7 +113,7 @@ class DatabaseTest < Minitest::Test
 
   def test_if_table_exists_append
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
-    df.write_database("items")
+    df.write_database("items", if_table_exists: "append")
 
     df2 = Polars::DataFrame.new({"a" => ["four", "five"], "b" => [4, 5]})
     df2.write_database("items", if_table_exists: "append")
@@ -123,7 +123,7 @@ class DatabaseTest < Minitest::Test
 
   def test_if_table_exists_replace
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
-    df.write_database("items")
+    df.write_database("items", if_table_exists: "replace")
 
     df2 = Polars::DataFrame.new({"a" => ["four", "five"], "b" => [4, 5]})
     df2.write_database("items", if_table_exists: "replace")
@@ -159,7 +159,7 @@ class DatabaseTest < Minitest::Test
         Polars::Series.new("uint32", [(1 << 32) - 1], dtype: Polars::UInt32),
         # Polars::Series.new("uint64", [(1 << 64) - 1], dtype: Polars::UInt64),
         Polars::Series.new("string", ["str"], dtype: Polars::String),
-        Polars::Series.new("time", [Time.now], dtype: Polars::Time)
+        Polars::Series.new("time", [time], dtype: Polars::Time)
       ])
     df.write_database("items")
 

@@ -998,7 +998,7 @@ module Polars
           raise ArgumentError, "Table already exists"
         end
 
-        if if_table_exists != "append"
+        if !table_exists || if_table_exists == "replace"
           mysql = connection.adapter_name.match?(/mysql|trilogy/i)
           force = if_table_exists == "replace"
           connection.create_table(table_name, id: false, force: force) do |t|
