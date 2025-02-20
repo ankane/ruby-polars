@@ -999,6 +999,7 @@ module Polars
         end
 
         if if_table_exists != "append"
+          mysql = connection.adapter_name.match?(/mysql|trilogy/i)
           force = if_table_exists == "replace"
           connection.create_table(table_name, id: false, force: force) do |t|
             schema.each do |c, dtype|
@@ -1014,11 +1015,15 @@ module Polars
                 when Datetime
                   :datetime
                 when Decimal
+                  if mysql
+                    options[:precision] = dtype.precision || 65
+                    options[:scale] = dtype.scale || 30
+                  end
                   :decimal
                 when Float32
                   :float
                 when Float64
-                  connection.adapter_name.match?(/mysql|trilogy/i) ? :double : :float
+                  mysql ? :double : :float
                 when Int8, Int16, Int32, UInt8, UInt16
                   :integer
                 when UInt32, Int64
