@@ -966,6 +966,8 @@ module Polars
     # @param table_name [String]
     #   Schema-qualified name of the table to create or append to in the target
     #   SQL database.
+    # @param connection [Object]
+    #   An existing Active Record connection against the target database
     # @param if_table_exists ['append', 'replace', 'fail']
     #   The insert mode:
     #
@@ -977,7 +979,7 @@ module Polars
     #
     # @note
     #   This functionality is experimental. It may be changed at any point without it being considered a breaking change.
-    def write_database(table_name, if_table_exists: "fail")
+    def write_database(table_name, connection = nil, if_table_exists: "fail")
       if !defined?(ActiveRecord)
         raise Error, "Active Record not available"
       end
@@ -988,7 +990,7 @@ module Polars
         raise ArgumentError, msg
       end
 
-      ActiveRecord::Base.connection_pool.with_connection do |connection|
+      with_connection(connection) do |connection|
         table_exists = connection.table_exists?(table_name)
         if table_exists && if_table_exists == "fail"
           raise ArgumentError, "Table already exists"
@@ -5618,6 +5620,14 @@ module Polars
         other = Series.new("", [other])
       end
       other
+    end
+
+    def with_connection(connection, &block)
+      if !connection.nil?
+        block.call(connection)
+      else
+        ActiveRecord::Base.connection_pool.with_connection(&block)
+      end
     end
   end
 end
