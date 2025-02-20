@@ -157,6 +157,8 @@ class DatabaseTest < Minitest::Test
         Polars::Series.new("uint16", [(1 << 16) - 1], dtype: Polars::UInt16),
         Polars::Series.new("uint32", [(1 << 32) - 1], dtype: Polars::UInt32),
         # Polars::Series.new("uint64", [(1 << 64) - 1], dtype: Polars::UInt64),
+        Polars::Series.new("string", ["str"], dtype: Polars::String),
+        Polars::Series.new("time", [Time.now], dtype: Polars::Time)
       ])
     df.write_database("items")
     # p Polars.read_database("SELECT * FROM items")
