@@ -10,6 +10,7 @@ gem "numo-narray"
 gem "vega"
 gem "pg"
 gem "mysql2"
+gem "trilogy"
 gem "sqlite3"
 
 if ENV["TEST_DELTA"]

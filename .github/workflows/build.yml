@@ -22,7 +22,12 @@ jobs:
       - run: bundle exec rake test:docs
 
       - uses: ankane/setup-postgres@v1
+        with:
+          database: polars_ruby_test
       - run: ADAPTER=postgresql ruby test/database_test.rb
 
       - uses: ankane/setup-mysql@v1
+        with:
+          database: polars_ruby_test
       - run: ADAPTER=mysql ruby test/database_test.rb
+      - run: ADAPTER=trilogy ruby test/database_test.rb

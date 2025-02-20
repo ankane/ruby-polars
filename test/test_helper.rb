@@ -13,6 +13,8 @@ when "postgresql"
   ActiveRecord::Base.establish_connection adapter: "postgresql", database: "polars_ruby_test"
 when "mysql"
   ActiveRecord::Base.establish_connection adapter: "mysql2", database: "polars_ruby_test"
+when "trilogy"
+  ActiveRecord::Base.establish_connection adapter: "trilogy", database: "polars_ruby_test", host: "127.0.0.1"
 else
   ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ":memory:"
 end

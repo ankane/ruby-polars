@@ -227,6 +227,6 @@ class DatabaseTest < Minitest::Test
   end
 
   def mysql?
-    ENV["ADAPTER"] == "mysql"
+    ["mysql", "trilogy"].include?(ENV["ADAPTER"])
   end
 end
