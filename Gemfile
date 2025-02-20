@@ -8,15 +8,9 @@ gem "minitest"
 gem "activerecord"
 gem "numo-narray"
 gem "vega"
-
-case ENV["ADAPTER"]
-when "postgresql"
-  gem "pg"
-when "mysql"
-  gem "mysql2"
-else
-  gem "sqlite3"
-end
+gem "pg"
+gem "mysql2"
+gem "sqlite3"
 
 if ENV["TEST_DELTA"]
   gem "deltalake-rb", ">= 0.1.4"

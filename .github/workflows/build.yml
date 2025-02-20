@@ -20,3 +20,9 @@ jobs:
       - run: bundle exec rake test
       - run: bundle exec yard --fail-on-warning
       - run: bundle exec rake test:docs
+
+      - uses: ankane/setup-postgres@v1
+      - run: ADAPTER=postgresql ruby test/database_test.rb
+
+      - uses: ankane/setup-mysql@v1
+      - run: ADAPTER=mysql ruby test/database_test.rb
