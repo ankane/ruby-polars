@@ -148,7 +148,7 @@ class DatabaseTest < Minitest::Test
         Polars::Series.new("datetime", [Time.now], dtype: Polars::Datetime),
         Polars::Series.new("decimal", [BigDecimal("1.5")], dtype: Polars::Decimal),
         Polars::Series.new("float32", [1.5], dtype: Polars::Float32),
-        # Polars::Series.new("float64", [Float::MAX], dtype: Polars::Float64),
+        Polars::Series.new("float64", [Float::MAX], dtype: Polars::Float64),
         Polars::Series.new("int8", [(1 << 7) - 1], dtype: Polars::Int8),
         Polars::Series.new("int16", [(1 << 15) - 1], dtype: Polars::Int16),
         Polars::Series.new("int32", [(1 << 31) - 1], dtype: Polars::Int32),

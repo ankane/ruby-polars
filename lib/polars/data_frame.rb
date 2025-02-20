@@ -1015,9 +1015,11 @@ module Polars
                   :datetime
                 when Decimal
                   :decimal
-                when Float32, Float64
+                when Float32
                   :float
-                when Int8, Int16, Int32, UInt8, UInt16, UInt64
+                when Float64
+                  connection.adapter_name.match?(/mysql|trilogy/i) ? :double : :float
+                when Int8, Int16, Int32, UInt8, UInt16
                   :integer
                 when UInt32, Int64
                   options[:limit] = 8
