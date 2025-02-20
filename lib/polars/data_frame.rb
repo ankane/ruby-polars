@@ -1025,6 +1025,7 @@ module Polars
                 when Float64
                   mysql ? :double : :float
                 when Int8, Int16, Int32, UInt8, UInt16
+                  options[:limit] = 4
                   :integer
                 when UInt32, Int64
                   options[:limit] = 8
