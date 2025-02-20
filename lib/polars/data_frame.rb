@@ -982,6 +982,8 @@ module Polars
     def write_database(table_name, connection = nil, if_table_exists: "fail")
       if !defined?(ActiveRecord)
         raise Error, "Active Record not available"
+      elsif ActiveRecord::VERSION::MAJOR < 7
+        raise Error, "Requires Active Record 7+"
       end
 
       valid_write_modes = ["append", "replace", "fail"]
