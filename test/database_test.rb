@@ -142,8 +142,14 @@ class DatabaseTest < Minitest::Test
   def test_write_database_types
     df =
       Polars::DataFrame.new([
+        Polars::Series.new("int8", [(1 << 7) - 1], dtype: Polars::Int8),
+        Polars::Series.new("int16", [(1 << 15) - 1], dtype: Polars::Int16),
+        Polars::Series.new("int32", [(1 << 31) - 1], dtype: Polars::Int32),
         Polars::Series.new("int64", [(1 << 63) - 1], dtype: Polars::Int64),
+        Polars::Series.new("uint8", [(1 << 8) - 1], dtype: Polars::UInt8),
+        Polars::Series.new("uint16", [(1 << 16) - 1], dtype: Polars::UInt16),
         Polars::Series.new("uint32", [(1 << 32) - 1], dtype: Polars::UInt32),
+        # Polars::Series.new("uint64", [(1 << 64) - 1], dtype: Polars::UInt64),
         Polars::Series.new("date", [Date.today], dtype: Polars::Date),
       ])
     df.write_database("items")
