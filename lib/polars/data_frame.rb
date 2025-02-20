@@ -998,54 +998,57 @@ module Polars
           raise ArgumentError, "Table already exists"
         end
 
-        if !table_exists || if_table_exists == "replace"
-          mysql = connection.adapter_name.match?(/mysql|trilogy/i)
-          force = if_table_exists == "replace"
-          connection.create_table(table_name, id: false, force: force) do |t|
-            schema.each do |c, dtype|
-              options = {}
-              column_type =
-                case dtype
-                when Binary
-                  :binary
-                when Boolean
-                  :boolean
-                when Date
-                  :date
-                when Datetime
-                  :datetime
-                when Decimal
-                  if mysql
-                    options[:precision] = dtype.precision || 65
-                    options[:scale] = dtype.scale || 30
+        create_table = !table_exists || if_table_exists == "replace"
+        maybe_transaction(connection, create_table) do
+          if create_table
+            mysql = connection.adapter_name.match?(/mysql|trilogy/i)
+            force = if_table_exists == "replace"
+            connection.create_table(table_name, id: false, force: force) do |t|
+              schema.each do |c, dtype|
+                options = {}
+                column_type =
+                  case dtype
+                  when Binary
+                    :binary
+                  when Boolean
+                    :boolean
+                  when Date
+                    :date
+                  when Datetime
+                    :datetime
+                  when Decimal
+                    if mysql
+                      options[:precision] = dtype.precision || 65
+                      options[:scale] = dtype.scale || 30
+                    end
+                    :decimal
+                  when Float32
+                    :float
+                  when Float64
+                    mysql ? :double : :float
+                  when Int8, Int16, Int32, UInt8, UInt16
+                    options[:limit] = 4
+                    :integer
+                  when UInt32, Int64
+                    options[:limit] = 8
+                    :integer
+                  when String
+                    :text
+                  when Time
+                    :time
+                  else
+                    raise ArgumentError, "column type not supported yet: #{dtype}"
                   end
-                  :decimal
-                when Float32
-                  :float
-                when Float64
-                  mysql ? :double : :float
-                when Int8, Int16, Int32, UInt8, UInt16
-                  options[:limit] = 4
-                  :integer
-                when UInt32, Int64
-                  options[:limit] = 8
-                  :integer
-                when String
-                  :text
-                when Time
-                  :time
-                else
-                  raise ArgumentError, "column type not supported yet: #{dtype}"
-                end
-              t.column c, column_type, **options
+                t.column c, column_type, **options
+              end
             end
           end
-        end
 
-        quoted_table = connection.quote_table_name(table_name)
-        quoted_columns = columns.map { |c| connection.quote_column_name(c) }
-        rows = rows(named: false).map { |row| "(#{row.map { |v| connection.quote(v) }.join(", ")})" }
-        connection.exec_update("INSERT INTO #{quoted_table} (#{quoted_columns.join(", ")}) VALUES #{rows.join(", ")}")
+          quoted_table = connection.quote_table_name(table_name)
+          quoted_columns = columns.map { |c| connection.quote_column_name(c) }
+          rows = rows(named: false).map { |row| "(#{row.map { |v| connection.quote(v) }.join(", ")})" }
+          connection.exec_update("INSERT INTO #{quoted_table} (#{quoted_columns.join(", ")}) VALUES #{rows.join(", ")}")
+        end
       end
     end
 
@@ -5634,9 +5637,17 @@ module Polars
 
     def with_connection(connection, &block)
       if !connection.nil?
-        block.call(connection)
+        yield connection
       else
         ActiveRecord::Base.connection_pool.with_connection(&block)
+      end
+    end
+
+    def maybe_transaction(connection, create_table, &block)
+      if create_table && connection.adapter_name.match?(/postg|sqlite/i) && connection.open_transactions == 0
+        connection.transaction(&block)
+      else
+        yield
       end
     end
   end
