@@ -1031,19 +1031,49 @@ module Polars
                   when Int8
                     options[:limit] = 1
                     :integer
-                  when UInt8, Int16
+                  when Int16
                     options[:limit] = 2
                     :integer
-                  when UInt16, Int32
+                  when Int32
                     options[:limit] = 4
                     :integer
-                  when UInt32, Int64
+                  when Int64
                     options[:limit] = 8
                     :integer
+                  when UInt8
+                    if mysql
+                      options[:limit] = 1
+                      options[:unsigned] = true
+                    else
+                      options[:limit] = 2
+                    end
+                    :integer
+                  when UInt16
+                    if mysql
+                      options[:limit] = 2
+                      options[:unsigned] = true
+                    else
+                      options[:limit] = 4
+                    end
+                    :integer
+                  when UInt32
+                    if mysql
+                      options[:limit] = 4
+                      options[:unsigned] = true
+                    else
+                      options[:limit] = 8
+                    end
+                    :integer
                   when UInt64
-                    options[:precision] = 20
-                    options[:scale] = 0
-                    :decimal
+                    if mysql
+                      options[:limit] = 8
+                      options[:unsigned] = true
+                      :integer
+                    else
+                      options[:precision] = 20
+                      options[:scale] = 0
+                      :decimal
+                    end
                   when String
                     :text
                   when Time
