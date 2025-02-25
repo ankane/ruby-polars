@@ -1040,6 +1040,10 @@ module Polars
                   when UInt32, Int64
                     options[:limit] = 8
                     :integer
+                  when UInt64
+                    options[:precision] = 20
+                    options[:scale] = 0
+                    :decimal
                   when String
                     :text
                   when Time
@@ -1054,7 +1058,7 @@ module Polars
 
           quoted_table = connection.quote_table_name(table_name)
           quoted_columns = columns.map { |c| connection.quote_column_name(c) }
-          rows = rows(named: false).map { |row| "(#{row.map { |v| connection.quote(v) }.join(", ")})" }
+          rows = cast({Polars::UInt64 => Polars::String}).rows(named: false).map { |row| "(#{row.map { |v| connection.quote(v) }.join(", ")})" }
           connection.exec_update("INSERT INTO #{quoted_table} (#{quoted_columns.join(", ")}) VALUES #{rows.join(", ")}")
         end
       end
