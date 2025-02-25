@@ -1023,10 +1023,18 @@ module Polars
                     end
                     :decimal
                   when Float32
+                    options[:limit] = 24
                     :float
                   when Float64
-                    mysql ? :double : :float
-                  when Int8, Int16, Int32, UInt8, UInt16
+                    options[:limit] = 53
+                    :float
+                  when Int8
+                    options[:limit] = 1
+                    :integer
+                  when UInt8, Int16
+                    options[:limit] = 2
+                    :integer
+                  when UInt16, Int32
                     options[:limit] = 4
                     :integer
                   when UInt32, Int64

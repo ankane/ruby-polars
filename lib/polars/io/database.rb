@@ -51,8 +51,10 @@ module Polars
           when :decimal
             Decimal
           when :float
+            # TODO check limit
             Float64
           when :integer
+            # TODO check limit
             Int64
           when :string, :text
             String
