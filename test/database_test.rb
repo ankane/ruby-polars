@@ -8,20 +8,6 @@ class DatabaseTest < Minitest::Test
     end
   end
 
-  def test_relation
-    error = assert_raises(ArgumentError) do
-      Polars::DataFrame.new(User.order(:id))
-    end
-    assert_equal "Use read_database instead", error.message
-  end
-
-  def test_result
-    error = assert_raises(ArgumentError) do
-      Polars::DataFrame.new(User.connection.select_all("SELECT * FROM users ORDER BY id"))
-    end
-    assert_equal "Use read_database instead", error.message
-  end
-
   def test_read_database_relation
     users = create_users
     df = Polars.read_database(User.order(:id))
@@ -72,7 +58,7 @@ class DatabaseTest < Minitest::Test
     assert_equal "Expected ActiveRecord::Relation, ActiveRecord::Result, or String", error.message
   end
 
-  def test_connection_leasing
+  def test_read_database_connection_leasing
     ActiveRecord::Base.connection_handler.clear_active_connections!
     assert_nil ActiveRecord::Base.connection_pool.active_connection?
     ActiveRecord::Base.connection_pool.with_connection do
@@ -80,6 +66,20 @@ class DatabaseTest < Minitest::Test
       Polars.read_database("SELECT * FROM users ORDER BY id")
     end
     assert_nil ActiveRecord::Base.connection_pool.active_connection?
+  end
+
+  def test_relation
+    error = assert_raises(ArgumentError) do
+      Polars::DataFrame.new(User.order(:id))
+    end
+    assert_equal "Use read_database instead", error.message
+  end
+
+  def test_result
+    error = assert_raises(ArgumentError) do
+      Polars::DataFrame.new(User.connection.select_all("SELECT * FROM users ORDER BY id"))
+    end
+    assert_equal "Use read_database instead", error.message
   end
 
   def test_write_database
@@ -101,7 +101,7 @@ class DatabaseTest < Minitest::Test
     assert_frame df, Polars.read_database("SELECT * FROM items")
   end
 
-  def test_if_table_exists_fail
+  def test_write_database_if_table_exists_fail
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
     df.write_database("items", if_table_exists: "fail")
 
@@ -111,7 +111,7 @@ class DatabaseTest < Minitest::Test
     assert_equal "Table already exists", error.message
   end
 
-  def test_if_table_exists_append
+  def test_write_database_if_table_exists_append
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
     df.write_database("items", if_table_exists: "append")
 
@@ -121,7 +121,7 @@ class DatabaseTest < Minitest::Test
     assert_frame df.vstack(df2), Polars.read_database("SELECT * FROM items")
   end
 
-  def test_if_table_exists_replace
+  def test_write_database_if_table_exists_replace
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
     df.write_database("items", if_table_exists: "replace")
 
@@ -131,7 +131,7 @@ class DatabaseTest < Minitest::Test
     assert_frame df2, Polars.read_database("SELECT * FROM items")
   end
 
-  def test_if_table_exists_invalid
+  def test_write_database_if_table_exists_invalid
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
     error = assert_raises(ArgumentError) do
       df.write_database("items", if_table_exists: "invalid")
