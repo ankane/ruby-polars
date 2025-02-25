@@ -51,10 +51,25 @@ module Polars
           when :decimal
             Decimal
           when :float
-            # TODO check limit
+            # TODO uncomment in 0.18.0
+            # if column_type.limit && column_type.limit <= 24
+            #   Float32
+            # else
+            #   Float64
+            # end
             Float64
           when :integer
-            # TODO check limit
+            # TODO uncomment in 0.18.0
+            # case column_type.limit
+            # when 1
+            #   Int8
+            # when 2
+            #   Int16
+            # when 4
+            #   Int32
+            # else
+            #   Int64
+            # end
             Int64
           when :string, :text
             String
