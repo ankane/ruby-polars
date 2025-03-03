@@ -2,7 +2,7 @@ use magnus::Value;
 use num_traits::{Float, NumCast};
 use polars_core::prelude::*;
 
-use super::numo::{Element, RbArray1};
+use super::numo_rb::{Element, RbArray1};
 use crate::error::RbPolarsErr;
 use crate::raise_err;
 use crate::series::RbSeries;
