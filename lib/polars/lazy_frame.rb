@@ -619,6 +619,10 @@ module Polars
     #   Slice pushdown optimization.
     # @param no_optimization [Boolean]
     #   Turn off (certain) optimizations.
+    # @param storage_options [Object]
+    #   Options that indicate how to connect to a cloud provider.
+    # @param retries [Integer]
+    #   Number of retries if accessing a cloud instance fails.
     #
     # @return [DataFrame]
     #
@@ -646,7 +650,9 @@ module Polars
       projection_pushdown: true,
       simplify_expression: true,
       slice_pushdown: true,
-      no_optimization: false
+      no_optimization: false,
+      storage_options: nil,
+      retries: 2
     )
       Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, false)
@@ -659,6 +665,12 @@ module Polars
         slice_pushdown: slice_pushdown,
         no_optimization: no_optimization
       )
+
+      if storage_options&.any?
+        storage_options = storage_options.to_a
+      else
+        storage_options = nil
+      end
 
       lf.sink_csv(
         path,
@@ -675,7 +687,9 @@ module Polars
         float_precision,
         null_value,
         quote_style,
-        maintain_order
+        maintain_order,
+        storage_options,
+        retries
       )
     end
 

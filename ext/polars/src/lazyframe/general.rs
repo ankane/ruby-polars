@@ -431,27 +431,24 @@ impl RbLazyFrame {
         Ok(())
     }
 
-    #[allow(clippy::too_many_arguments)]
-    pub fn sink_csv(
-        &self,
-        path: PathBuf,
-        include_bom: bool,
-        include_header: bool,
-        separator: u8,
-        line_terminator: String,
-        quote_char: u8,
-        batch_size: Wrap<NonZeroUsize>,
-        datetime_format: Option<String>,
-        date_format: Option<String>,
-        time_format: Option<String>,
-        float_scientific: Option<bool>,
-        float_precision: Option<usize>,
-        null_value: Option<String>,
-        quote_style: Option<Wrap<QuoteStyle>>,
-        maintain_order: bool,
-    ) -> RbResult<()> {
-        // TODO
-        let cloud_options = None;
+    pub fn sink_csv(&self, arguments: &[Value]) -> RbResult<()> {
+        let path = PathBuf::try_convert(arguments[0])?;
+        let include_bom = bool::try_convert(arguments[1])?;
+        let include_header = bool::try_convert(arguments[2])?;
+        let separator = u8::try_convert(arguments[3])?;
+        let line_terminator = String::try_convert(arguments[4])?;
+        let quote_char = u8::try_convert(arguments[5])?;
+        let batch_size = Wrap::<NonZeroUsize>::try_convert(arguments[6])?;
+        let datetime_format = Option::<String>::try_convert(arguments[7])?;
+        let date_format = Option::<String>::try_convert(arguments[8])?;
+        let time_format = Option::<String>::try_convert(arguments[9])?;
+        let float_scientific = Option::<bool>::try_convert(arguments[10])?;
+        let float_precision = Option::<usize>::try_convert(arguments[11])?;
+        let null_value = Option::<String>::try_convert(arguments[12])?;
+        let quote_style = Option::<Wrap<QuoteStyle>>::try_convert(arguments[13])?;
+        let maintain_order = bool::try_convert(arguments[14])?;
+        let cloud_options = Option::<Vec<(String, String)>>::try_convert(arguments[15])?;
+        let retries = usize::try_convert(arguments[16])?;
 
         let quote_style = quote_style.map_or(QuoteStyle::default(), |wrap| wrap.0);
         let null_value = null_value.unwrap_or(SerializeOptions::default().null);
@@ -480,7 +477,7 @@ impl RbLazyFrame {
         let cloud_options = {
             let cloud_options =
                 parse_cloud_options(path.to_str().unwrap(), cloud_options.unwrap_or_default())?;
-            Some(cloud_options)
+            Some(cloud_options.with_max_retries(retries))
         };
 
         let ldf = self.ldf.borrow().clone();
