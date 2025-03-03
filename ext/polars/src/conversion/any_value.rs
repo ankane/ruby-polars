@@ -17,7 +17,7 @@ impl IntoValue for Wrap<AnyValue<'_>> {
     }
 }
 
-impl<'s> TryConvert for Wrap<AnyValue<'s>> {
+impl TryConvert for Wrap<AnyValue<'_>> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         rb_object_to_any_value(ob, true).map(Wrap)
     }
