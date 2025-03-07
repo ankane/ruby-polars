@@ -4998,6 +4998,36 @@ module Polars
       iter_rows(named: named, buffer_size: buffer_size, &block)
     end
 
+    # Returns a non-copying iterator of slices over the underlying DataFrame.
+    #
+    # @param n_rows [Integer]
+    #   Determines the number of rows contained in each DataFrame slice.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => 0...17_500,
+    #       "b" => Date.new(2023, 1, 1),
+    #       "c" => "klmnoopqrstuvwxyz"
+    #     },
+    #     schema_overrides: {"a" => Polars::Int32}
+    #   )
+    #   df.iter_slices.map.with_index do |frame, idx|
+    #     "#{frame.class.name}:[#{idx}]:#{frame.length}"
+    #   end
+    #   # => ["Polars::DataFrame:[0]:10000", "Polars::DataFrame:[1]:7500"]
+    def iter_slices(n_rows: 10_000)
+      return to_enum(:iter_slices, n_rows: n_rows) unless block_given?
+
+      offset = 0
+      while offset < height
+        yield slice(offset, n_rows)
+        offset += n_rows
+      end
+    end
+
     # Shrink DataFrame memory usage.
     #
     # Shrinks to fit the exact capacity needed to hold the data.
