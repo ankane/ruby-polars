@@ -4998,6 +4998,60 @@ module Polars
       iter_rows(named: named, buffer_size: buffer_size, &block)
     end
 
+    # Returns an iterator over the columns of this DataFrame.
+    #
+    # @return [Object]
+    #
+    # @note
+    #   Consider whether you can use `all` instead.
+    #   If you can, it will be more efficient.
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 3, 5],
+    #       "b" => [2, 4, 6]
+    #     }
+    #   )
+    #   df.iter_columns.map { |s| s.name }
+    #   # => ["a", "b"]
+    #
+    # @example If you're using this to modify a dataframe's columns, e.g.
+    #   # Do NOT do this
+    #   Polars::DataFrame.new(df.iter_columns.map { |column| column * 2 })
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 2   ┆ 4   │
+    #   # │ 6   ┆ 8   │
+    #   # │ 10  ┆ 12  │
+    #   # └─────┴─────┘
+    #
+    # @example then consider whether you can use `all` instead:
+    #   df.select(Polars.all * 2)
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 2   ┆ 4   │
+    #   # │ 6   ┆ 8   │
+    #   # │ 10  ┆ 12  │
+    #   # └─────┴─────┘
+    def iter_columns
+      return to_enum(:iter_columns) unless block_given?
+
+      _df.get_columns.each do |s|
+        yield Utils.wrap_s(s)
+      end
+    end
+
     # Returns a non-copying iterator of slices over the underlying DataFrame.
     #
     # @param n_rows [Integer]
