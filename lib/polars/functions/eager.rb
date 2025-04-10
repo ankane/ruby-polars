@@ -139,55 +139,56 @@ module Polars
         return eager ? lf.collect : lf
       end
 
-      first = items[0]
+      first = elems[0]
+
       if first.is_a?(DataFrame)
         if how == "vertical"
-          out = Utils.wrap_df(Plr.concat_df(items))
+          out = Utils.wrap_df(Plr.concat_df(elems))
         elsif how == "vertical_relaxed"
           out = Utils.wrap_ldf(
             Plr.concat_lf(
-              items.map { |df| df.lazy },
+              elems.map { |df| df.lazy },
               rechunk,
               parallel,
               true
             )
           ).collect(no_optimization: true)
         elsif how == "diagonal"
-          out = Utils.wrap_df(Plr.concat_df_diagonal(items))
+          out = Utils.wrap_df(Plr.concat_df_diagonal(elems))
         elsif how == "diagonal_relaxed"
           out = Utils.wrap_ldf(
             Plr.concat_lf_diagonal(
-              items.map { |df| df.lazy },
+              elems.map { |df| df.lazy },
               rechunk,
               parallel,
               true
             )
           ).collect(no_optimization: true)
         elsif how == "horizontal"
-          out = Utils.wrap_df(Plr.concat_df_horizontal(items))
+          out = Utils.wrap_df(Plr.concat_df_horizontal(elems))
         else
           raise ArgumentError, "how must be one of {{'vertical', 'vertical_relaxed', 'diagonal', 'diagonal_relaxed', 'horizontal'}}, got #{how}"
         end
       elsif first.is_a?(LazyFrame)
         if how == "vertical"
-          return Utils.wrap_ldf(Plr.concat_lf(items, rechunk, parallel, false))
+          return Utils.wrap_ldf(Plr.concat_lf(elems, rechunk, parallel, false))
         elsif how == "vertical_relaxed"
-          return Utils.wrap_ldf(Plr.concat_lf(items, rechunk, parallel, true))
+          return Utils.wrap_ldf(Plr.concat_lf(elems, rechunk, parallel, true))
         elsif how == "diagonal"
-          return Utils.wrap_ldf(Plr.concat_lf_diagonal(items, rechunk, parallel, false))
+          return Utils.wrap_ldf(Plr.concat_lf_diagonal(elems, rechunk, parallel, false))
         elsif how == "diagonal_relaxed"
-          return Utils.wrap_ldf(Plr.concat_lf_diagonal(items, rechunk, parallel, true))
+          return Utils.wrap_ldf(Plr.concat_lf_diagonal(elems, rechunk, parallel, true))
         elsif how == "horizontal"
-          return Utils.wrap_ldf(Plr.concat_lf_horizontal(items, parallel))
+          return Utils.wrap_ldf(Plr.concat_lf_horizontal(elems, parallel))
         else
           raise ArgumentError, "Lazy only allows 'vertical', 'vertical_relaxed', 'diagonal', and 'diagonal_relaxed' concat strategy."
         end
       elsif first.is_a?(Series)
         # TODO
-        out = Utils.wrap_s(Plr.concat_series(items))
+        out = Utils.wrap_s(Plr.concat_series(elems))
       elsif first.is_a?(Expr)
         out = first
-        items[1..-1].each do |e|
+        elems[1..-1].each do |e|
           out = out.append(e)
         end
       else
