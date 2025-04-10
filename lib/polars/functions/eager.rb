@@ -6,7 +6,7 @@ module Polars
     #   DataFrames/Series/LazyFrames to concatenate.
     # @param rechunk [Boolean]
     #   Make sure that all data is in contiguous memory.
-    # @param how ["vertical", "vertical_relaxed", "diagonal", "horizontal"]
+    # @param how ["vertical", "vertical_relaxed", "diagonal", "diagonal_relaxed", "horizontal"]
     #
     #   - Vertical: applies multiple `vstack` operations.
     #   - Diagonal: finds a union between the column schemas and fills missing column values with null.
@@ -20,7 +20,7 @@ module Polars
     # @example
     #   df1 = Polars::DataFrame.new({"a" => [1], "b" => [3]})
     #   df2 = Polars::DataFrame.new({"a" => [2], "b" => [4]})
-    #   Polars.concat([df1, df2])
+    #   Polars.concat([df1, df2])  # default is 'vertical' strategy
     #   # =>
     #   # shape: (2, 2)
     #   # ┌─────┬─────┐
@@ -31,6 +31,51 @@ module Polars
     #   # │ 1   ┆ 3   │
     #   # │ 2   ┆ 4   │
     #   # └─────┴─────┘
+    #
+    # @example
+    #   df1 = Polars::DataFrame.new({"a" => [1], "b" => [3]})
+    #   df2 = Polars::DataFrame.new({"a" => [2.5], "b" => [4]})
+    #   Polars.concat([df1, df2], how: "vertical_relaxed")  # 'a' coerced into f64
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ f64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1.0 ┆ 3   │
+    #   # │ 2.5 ┆ 4   │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df_h1 = Polars::DataFrame.new({"l1" => [1, 2], "l2" => [3, 4]})
+    #   df_h2 = Polars::DataFrame.new({"r1" => [5, 6], "r2" => [7, 8], "r3" => [9, 10]})
+    #   Polars.concat([df_h1, df_h2], how: "horizontal")
+    #   # =>
+    #   # shape: (2, 5)
+    #   # ┌─────┬─────┬─────┬─────┬─────┐
+    #   # │ l1  ┆ l2  ┆ r1  ┆ r2  ┆ r3  │
+    #   # │ --- ┆ --- ┆ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ i64 ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╪═════╪═════╡
+    #   # │ 1   ┆ 3   ┆ 5   ┆ 7   ┆ 9   │
+    #   # │ 2   ┆ 4   ┆ 6   ┆ 8   ┆ 10  │
+    #   # └─────┴─────┴─────┴─────┴─────┘
+    #
+    # @example
+    #   df_d1 = Polars::DataFrame.new({"a" => [1], "b" => [3]})
+    #   df_d2 = Polars::DataFrame.new({"a" => [2], "c" => [4]})
+    #   Polars.concat([df_d1, df_d2], how: "diagonal")
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬──────┬──────┐
+    #   # │ a   ┆ b    ┆ c    │
+    #   # │ --- ┆ ---  ┆ ---  │
+    #   # │ i64 ┆ i64  ┆ i64  │
+    #   # ╞═════╪══════╪══════╡
+    #   # │ 1   ┆ 3    ┆ null │
+    #   # │ 2   ┆ null ┆ 4    │
+    #   # └─────┴──────┴──────┘
     def concat(items, rechunk: true, how: "vertical", parallel: true)
       if items.empty?
         raise ArgumentError, "cannot concat empty list"
@@ -40,12 +85,30 @@ module Polars
       if first.is_a?(DataFrame)
         if how == "vertical"
           out = Utils.wrap_df(Plr.concat_df(items))
+        elsif how == "vertical_relaxed"
+          out = Utils.wrap_ldf(
+            Plr.concat_lf(
+              items.map { |df| df.lazy },
+              rechunk,
+              parallel,
+              true
+            )
+          ).collect(no_optimization: true)
         elsif how == "diagonal"
           out = Utils.wrap_df(Plr.concat_df_diagonal(items))
+        elsif how == "diagonal_relaxed"
+          out = Utils.wrap_ldf(
+            Plr.concat_lf_diagonal(
+              items.map { |df| df.lazy },
+              rechunk,
+              parallel,
+              true
+            )
+          ).collect(no_optimization: true)
         elsif how == "horizontal"
           out = Utils.wrap_df(Plr.concat_df_horizontal(items))
         else
-          raise ArgumentError, "how must be one of {{'vertical', 'diagonal', 'horizontal'}}, got #{how}"
+          raise ArgumentError, "how must be one of {{'vertical', 'vertical_relaxed', 'diagonal', 'diagonal_relaxed', 'horizontal'}}, got #{how}"
         end
       elsif first.is_a?(LazyFrame)
         if how == "vertical"
@@ -54,10 +117,12 @@ module Polars
           return Utils.wrap_ldf(Plr.concat_lf(items, rechunk, parallel, true))
         elsif how == "diagonal"
           return Utils.wrap_ldf(Plr.concat_lf_diagonal(items, rechunk, parallel, false))
+        elsif how == "diagonal_relaxed"
+          return Utils.wrap_ldf(Plr.concat_lf_diagonal(items, rechunk, parallel, true))
         elsif how == "horizontal"
           return Utils.wrap_ldf(Plr.concat_lf_horizontal(items, parallel))
         else
-          raise ArgumentError, "Lazy only allows 'vertical', 'vertical_relaxed', 'horizontal', and 'diagonal' concat strategy."
+          raise ArgumentError, "Lazy only allows 'vertical', 'vertical_relaxed', 'diagonal', and 'diagonal_relaxed' concat strategy."
         end
       elsif first.is_a?(Series)
         # TODO
