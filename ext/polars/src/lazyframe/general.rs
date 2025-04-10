@@ -676,6 +676,7 @@ impl RbLazyFrame {
         how: Wrap<JoinType>,
         suffix: String,
         validate: Wrap<JoinValidation>,
+        maintain_order: Wrap<MaintainOrderJoin>,
         coalesce: Option<bool>,
     ) -> RbResult<Self> {
         let coalesce = match coalesce {
@@ -699,6 +700,7 @@ impl RbLazyFrame {
             .how(how.0)
             .validate(validate.0)
             .coalesce(coalesce)
+            .maintain_order(maintain_order.0)
             .suffix(suffix)
             .finish()
             .into())

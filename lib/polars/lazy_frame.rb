@@ -1937,6 +1937,24 @@ module Polars
     #     - true: -> Always coalesce join columns.
     #     - false: -> Never coalesce join columns.
     #   Note that joining on any other expressions than `col` will turn off coalescing.
+    # @param maintain_order ['none', 'left', 'right', 'left_right', 'right_left']
+    #   Which DataFrame row order to preserve, if any.
+    #   Do not rely on any observed ordering without explicitly
+    #   setting this parameter, as your code may break in a future release.
+    #   Not specifying any ordering can improve performance
+    #   Supported for inner, left, right and full joins
+    #
+    #   * *none*
+    #       No specific ordering is desired. The ordering might differ across
+    #       Polars versions or even between different runs.
+    #   * *left*
+    #       Preserves the order of the left DataFrame.
+    #   * *right*
+    #       Preserves the order of the right DataFrame.
+    #   * *left_right*
+    #       First preserves the order of the left DataFrame, then the right.
+    #   * *right_left*
+    #       First preserves the order of the right DataFrame, then the left.
     #
     # @return [LazyFrame]
     #
@@ -2030,10 +2048,15 @@ module Polars
       join_nulls: false,
       allow_parallel: true,
       force_parallel: false,
-      coalesce: nil
+      coalesce: nil,
+      maintain_order: nil
     )
       if !other.is_a?(LazyFrame)
         raise ArgumentError, "Expected a `LazyFrame` as join table, got #{other.class.name}"
+      end
+
+      if maintain_order.nil?
+        maintain_order = "none"
       end
 
       if how == "outer"
@@ -2041,7 +2064,17 @@ module Polars
       elsif how == "cross"
         return _from_rbldf(
           _ldf.join(
-            other._ldf, [], [], allow_parallel, join_nulls, force_parallel, how, suffix, validate, coalesce
+            other._ldf,
+            [],
+            [],
+            allow_parallel,
+            join_nulls,
+            force_parallel,
+            how,
+            suffix,
+            validate,
+            maintain_order,
+            coalesce
           )
         )
       end
@@ -2068,6 +2101,7 @@ module Polars
           how,
           suffix,
           validate,
+          maintain_order,
           coalesce
         )
       )

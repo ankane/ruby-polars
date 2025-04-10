@@ -1065,6 +1065,24 @@ impl TryConvert for Wrap<JoinValidation> {
     }
 }
 
+impl TryConvert for Wrap<MaintainOrderJoin> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "none" => MaintainOrderJoin::None,
+            "left" => MaintainOrderJoin::Left,
+            "right" => MaintainOrderJoin::Right,
+            "left_right" => MaintainOrderJoin::LeftRight,
+            "right_left" => MaintainOrderJoin::RightLeft,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "`maintain_order` must be one of {{'none', 'left', 'right', 'left_right', 'right_left'}}, got {v}",
+                )))
+            },
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<QuoteStyle> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match String::try_convert(ob)?.as_str() {

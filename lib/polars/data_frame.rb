@@ -2596,6 +2596,24 @@ module Polars
     #     - true: -> Always coalesce join columns.
     #     - false: -> Never coalesce join columns.
     #   Note that joining on any other expressions than `col` will turn off coalescing.
+    # @param maintain_order ['none', 'left', 'right', 'left_right', 'right_left']
+    #   Which DataFrame row order to preserve, if any.
+    #   Do not rely on any observed ordering without explicitly
+    #   setting this parameter, as your code may break in a future release.
+    #   Not specifying any ordering can improve performance
+    #   Supported for inner, left, right and full joins
+    #
+    #   * *none*
+    #       No specific ordering is desired. The ordering might differ across
+    #       Polars versions or even between different runs.
+    #   * *left*
+    #       Preserves the order of the left DataFrame.
+    #   * *right*
+    #       Preserves the order of the right DataFrame.
+    #   * *left_right*
+    #       First preserves the order of the left DataFrame, then the right.
+    #   * *right_left*
+    #       First preserves the order of the right DataFrame, then the left.
     #
     # @return [DataFrame]
     #
@@ -2686,7 +2704,8 @@ module Polars
       suffix: "_right",
       validate: "m:m",
       join_nulls: false,
-      coalesce: nil
+      coalesce: nil,
+      maintain_order: nil
     )
       lazy
         .join(
@@ -2698,7 +2717,8 @@ module Polars
           suffix: suffix,
           validate: validate,
           join_nulls: join_nulls,
-          coalesce: coalesce
+          coalesce: coalesce,
+          maintain_order: maintain_order
         )
         .collect(no_optimization: true)
     end
