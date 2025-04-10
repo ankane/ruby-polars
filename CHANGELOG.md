@@ -4,6 +4,7 @@
 - Added `diagonal_relaxed` strategy to `concat` method
 - Added `interpolate_by` method to `Series` and `Expr`
 - Added `iter_columns` and `iter_slices` methods to `DataFrame`
+- Added `collect_schema` method to `DataFrame`
 - Added `write_database` method to `DataFrame` (experimental)
 - Fixed error with `to_numo` method for `Boolean` series with null values
 

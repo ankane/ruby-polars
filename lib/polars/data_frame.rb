@@ -495,6 +495,45 @@ module Polars
       _df.arrow_c_stream
     end
 
+    # Get an ordered mapping of column names to their data type.
+    #
+    # @return [Schema]
+    #
+    # @note
+    #   This method is included to facilitate writing code that is generic for both
+    #   DataFrame and LazyFrame.
+    #
+    # @example Determine the schema.
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.collect_schema
+    #   # => Polars::Schema({"foo"=>Polars::Int64, "bar"=>Polars::Float64, "ham"=>Polars::String})
+    #
+    # @example Access various properties of the schema using the `Schema` object.
+    #   schema = df.collect_schema
+    #   schema["bar"]
+    #   # => Polars::Float64
+    #
+    # @example
+    #   schema.names
+    #   # => ["foo", "bar", "ham"]
+    #
+    # @example
+    #   schema.dtypes
+    #   # => [Polars::Int64, Polars::Float64, Polars::String]
+    #
+    # @example
+    #   schema.length
+    #   # => 3
+    def collect_schema
+      Schema.new(columns.zip(dtypes), check_dtypes: false)
+    end
+
     # Return the dataframe as a scalar.
     #
     # Equivalent to `df[0,0]`, with a check that the shape is (1,1).
