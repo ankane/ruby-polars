@@ -374,6 +374,8 @@ class DataFrameTest < Minitest::Test
     df = Polars::DataFrame.new({"a" => 1..10})
     assert_series 6..10, df.slice(5)["a"]
     assert_series 6..8, df.slice(5, 3)["a"]
+    assert_series 9..10, df.slice(-2, 2)["a"]
+    assert_series 1..9, df.slice(0, -1)["a"]
   end
 
   def test_limit

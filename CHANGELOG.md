@@ -8,6 +8,7 @@
 - Added `collect_schema` method to `DataFrame`
 - Added `write_database` method to `DataFrame` (experimental)
 - Fixed error with `to_numo` method for `Boolean` series with null values
+- Fixed error with `slice` method and negative offset
 
 ## 0.17.0 (2025-01-28)
 

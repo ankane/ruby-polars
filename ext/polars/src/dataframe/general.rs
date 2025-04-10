@@ -295,11 +295,11 @@ impl RbDataFrame {
         Ok(())
     }
 
-    pub fn slice(&self, offset: usize, length: Option<usize>) -> Self {
-        let df = self.df.borrow().slice(
-            offset as i64,
-            length.unwrap_or_else(|| self.df.borrow().height()),
-        );
+    pub fn slice(&self, offset: i64, length: Option<usize>) -> Self {
+        let df = self
+            .df
+            .borrow()
+            .slice(offset, length.unwrap_or_else(|| self.df.borrow().height()));
         df.into()
     }
 
