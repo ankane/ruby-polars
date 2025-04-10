@@ -310,14 +310,6 @@ class DataFrameTest < Minitest::Test
     assert_series df["b"], df.to_series(-1)
   end
 
-  # write_json tested in json_test
-
-  # write_ndjson tested in json_test
-
-  # write_csv tested in csv_test
-
-  # write_parquet tested in parquet_test
-
   def test_estimated_size
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_in_delta df.estimated_size("kb"), df.estimated_size / 1024.0
@@ -365,9 +357,6 @@ class DataFrameTest < Minitest::Test
     assert_frame ({"a" => [1, 2, 3], "b" => ["one", "two", "three"]}), df
     df.sort!("b")
     assert_frame ({"a" => [1, 3, 2], "b" => ["one", "three", "two"]}), df
-  end
-
-  def test_frame_equal
   end
 
   def test_slice
@@ -480,9 +469,6 @@ class DataFrameTest < Minitest::Test
     assert_frame expected, df1.join(df2, how: "cross")
   end
 
-  def test_with_column
-  end
-
   def test_get_columns
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_kind_of Array, df.get_columns
@@ -491,9 +477,6 @@ class DataFrameTest < Minitest::Test
   def test_get_column
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_series [1, 2, 3], df.get_column("a")
-  end
-
-  def test_fill_null
   end
 
   def test_fill_nan
@@ -514,9 +497,6 @@ class DataFrameTest < Minitest::Test
   def test_lazy
     df = Polars::DataFrame.new({"a" => [1, 2, 3]})
     assert_kind_of Polars::LazyFrame, df.lazy
-  end
-
-  def test_select
   end
 
   def test_with_columns
@@ -577,12 +557,6 @@ class DataFrameTest < Minitest::Test
     assert_series [1, 2, 3], df.drop_in_place("a")
     assert_frame ({"b" => ["one", "two", "three"]}), df
     assert_nil df.delete("c")
-  end
-
-  def test_rechunk
-  end
-
-  def test_null_count
   end
 
   def test_count
