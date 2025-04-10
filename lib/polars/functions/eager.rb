@@ -184,8 +184,12 @@ module Polars
           raise ArgumentError, "Lazy only allows 'vertical', 'vertical_relaxed', 'diagonal', and 'diagonal_relaxed' concat strategy."
         end
       elsif first.is_a?(Series)
-        # TODO
-        out = Utils.wrap_s(Plr.concat_series(elems))
+        if how == "vertical"
+          out = Utils.wrap_s(Plr.concat_series(elems))
+        else
+          msg = "Series only supports 'vertical' concat strategy"
+          raise ArgumentError, msg
+        end
       elsif first.is_a?(Expr)
         out = first
         elems[1..-1].each do |e|
