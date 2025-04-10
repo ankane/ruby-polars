@@ -1,7 +1,7 @@
 ## 0.17.1 (unreleased)
 
 - Added support for horizontal concatenation of `LazyFrame`s
-- Added `diagonal_relaxed` strategy to `concat` method
+- Added `diagonal_relaxed` and `align` strategies to `concat` method
 - Added `interpolate_by` method to `Series` and `Expr`
 - Added `iter_columns` and `iter_slices` methods to `DataFrame`
 - Added `maintain_order` option to `join` method

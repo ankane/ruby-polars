@@ -76,9 +76,67 @@ module Polars
     #   # │ 1   ┆ 3    ┆ null │
     #   # │ 2   ┆ null ┆ 4    │
     #   # └─────┴──────┴──────┘
+    #
+    # @example
+    #   df_a1 = Polars::DataFrame.new({"id" => [1, 2], "x" => [3, 4]})
+    #   df_a2 = Polars::DataFrame.new({"id" => [2, 3], "y" => [5, 6]})
+    #   df_a3 = Polars::DataFrame.new({"id" => [1, 3], "z" => [7, 8]})
+    #   Polars.concat([df_a1, df_a2, df_a3], how: "align")
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌─────┬──────┬──────┬──────┐
+    #   # │ id  ┆ x    ┆ y    ┆ z    │
+    #   # │ --- ┆ ---  ┆ ---  ┆ ---  │
+    #   # │ i64 ┆ i64  ┆ i64  ┆ i64  │
+    #   # ╞═════╪══════╪══════╪══════╡
+    #   # │ 1   ┆ 3    ┆ null ┆ 7    │
+    #   # │ 2   ┆ 4    ┆ 5    ┆ null │
+    #   # │ 3   ┆ null ┆ 6    ┆ 8    │
+    #   # └─────┴──────┴──────┴──────┘
     def concat(items, rechunk: true, how: "vertical", parallel: true)
-      if items.empty?
+      elems = items.to_a
+
+      if elems.empty?
         raise ArgumentError, "cannot concat empty list"
+      end
+
+      if how == "align"
+        if !elems[0].is_a?(DataFrame) && !elems[0].is_a?(LazyFrame)
+          msg = "'align' strategy is not supported for #{elems[0].class.name}"
+          raise TypeError, msg
+        end
+
+        # establish common columns, maintaining the order in which they appear
+        all_columns = elems.flat_map { |e| e.collect_schema.names }
+        key = all_columns.uniq.map.with_index.to_h
+        common_cols = elems.map { |e| e.collect_schema.names }
+          .reduce { |x, y| Set.new(x) & Set.new(y) }
+          .sort_by { |k| key[k] }
+        # we require at least one key column for 'align'
+        if common_cols.empty?
+          msg = "'align' strategy requires at least one common column"
+          raise InvalidOperationError, msg
+        end
+
+        # align the frame data using a full outer join with no suffix-resolution
+        # (so we raise an error in case of column collision, like "horizontal")
+        lf = elems.map { |df| df.lazy }.reduce do |x, y|
+          x.join(
+            y,
+            how: "full",
+            on: common_cols,
+            suffix: "_PL_CONCAT_RIGHT",
+            maintain_order: "right_left"
+          )
+          # Coalesce full outer join columns
+          .with_columns(
+            common_cols.map { |name| F.coalesce([name, "#{name}_PL_CONCAT_RIGHT"]) }
+          )
+          .drop(common_cols.map { |name| "#{name}_PL_CONCAT_RIGHT" })
+        end.sort(common_cols)
+
+        eager = elems[0].is_a?(DataFrame)
+        return eager ? lf.collect : lf
       end
 
       first = items[0]
