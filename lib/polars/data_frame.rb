@@ -2696,7 +2696,8 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ 3   ┆ 8.0 ┆ c   │
     #   # └─────┴─────┴─────┘
-    def join(other,
+    def join(
+      other,
       left_on: nil,
       right_on: nil,
       on: nil,
