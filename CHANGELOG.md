@@ -1,4 +1,4 @@
-## 0.17.1 (unreleased)
+## 0.17.1 (2025-04-12)
 
 - Added support for horizontal concatenation of `LazyFrame`s
 - Added `diagonal_relaxed` and `align` strategies to `concat` method
