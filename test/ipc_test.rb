@@ -69,7 +69,7 @@ class IpcTest < Minitest::Test
   def test_sink_ipc_io
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     io = StringIO.new
-    df.lazy.sink_ipc(io)
+    assert_nil df.lazy.sink_ipc(io)
     io.rewind
     assert_frame df, Polars.read_ipc(io)
   end
