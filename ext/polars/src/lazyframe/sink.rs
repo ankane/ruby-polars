@@ -1,9 +1,9 @@
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use magnus::{RHash, TryConvert, Value};
 use polars::prelude::sync_on_close::SyncOnCloseType;
-use polars::prelude::SinkOptions;
+use polars::prelude::{SinkOptions, SpecialEq};
 
 use crate::prelude::Wrap;
 use crate::{RbResult, RbValueError};
@@ -18,7 +18,14 @@ impl TryConvert for Wrap<polars_plan::dsl::SinkTarget> {
         if let Ok(v) = PathBuf::try_convert(ob) {
             Ok(Wrap(polars::prelude::SinkTarget::Path(Arc::new(v))))
         } else {
-            todo!();
+            let writer = {
+                let rb_f = ob;
+                RbResult::Ok(crate::file::try_get_rbfile(rb_f, true)?.0.into_writeable())
+            }?;
+
+            Ok(Wrap(polars_plan::prelude::SinkTarget::Dyn(SpecialEq::new(
+                Arc::new(Mutex::new(Some(writer))),
+            ))))
         }
     }
 }

@@ -3,9 +3,12 @@ use std::io;
 use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
 
-use magnus::{exception, prelude::*, Error, RString, Value};
+use magnus::{exception, prelude::*, value::Opaque, Error, RString, Ruby, Value};
 use polars::io::cloud::CloudOptions;
 use polars::io::mmap::MmapBytesReader;
+use polars::prelude::file::DynWriteable;
+use polars::prelude::sync_on_close::SyncOnCloseType;
+use polars_utils::file::ClosableFile;
 use polars_utils::mmap::MemSlice;
 
 use crate::error::RbPolarsErr;
@@ -14,7 +17,22 @@ use crate::RbResult;
 
 #[derive(Clone)]
 pub struct RbFileLikeObject {
-    inner: Value,
+    inner: Opaque<Value>,
+}
+
+impl DynWriteable for RbFileLikeObject {
+    fn as_dyn_write(&self) -> &(dyn io::Write + Send + 'static) {
+        self as _
+    }
+    fn as_mut_dyn_write(&mut self) -> &mut (dyn io::Write + Send + 'static) {
+        self as _
+    }
+    fn close(self: Box<Self>) -> io::Result<()> {
+        Ok(())
+    }
+    fn sync_on_close(&mut self, _sync_on_close: SyncOnCloseType) -> io::Result<()> {
+        Ok(())
+    }
 }
 
 /// Wraps a `Value`, and implements read, seek, and write for it.
@@ -23,7 +41,9 @@ impl RbFileLikeObject {
     /// To assert the object has the required methods methods,
     /// instantiate it with `RbFileLikeObject::require`
     pub fn new(object: Value) -> Self {
-        RbFileLikeObject { inner: object }
+        RbFileLikeObject {
+            inner: object.into(),
+        }
     }
 
     pub fn as_bytes(&self) -> bytes::Bytes {
@@ -31,8 +51,9 @@ impl RbFileLikeObject {
     }
 
     pub fn as_file_buffer(&self) -> Cursor<Vec<u8>> {
-        let bytes = self
-            .inner
+        let bytes = Ruby::get()
+            .unwrap()
+            .get_inner(self.inner)
             .funcall::<_, _, RString>("read", ())
             .expect("no read method found");
 
@@ -77,8 +98,9 @@ fn rberr_to_io_err(e: Error) -> io::Error {
 
 impl Read for RbFileLikeObject {
     fn read(&mut self, mut buf: &mut [u8]) -> Result<usize, io::Error> {
-        let bytes = self
-            .inner
+        let bytes = Ruby::get()
+            .unwrap()
+            .get_inner(self.inner)
             .funcall::<_, _, RString>("read", (buf.len(),))
             .map_err(rberr_to_io_err)?;
 
@@ -92,8 +114,9 @@ impl Write for RbFileLikeObject {
     fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
         let rbbytes = RString::from_slice(buf);
 
-        let number_bytes_written = self
-            .inner
+        let number_bytes_written = Ruby::get()
+            .unwrap()
+            .get_inner(self.inner)
             .funcall::<_, _, usize>("write", (rbbytes,))
             .map_err(rberr_to_io_err)?;
 
@@ -101,7 +124,9 @@ impl Write for RbFileLikeObject {
     }
 
     fn flush(&mut self) -> Result<(), io::Error> {
-        self.inner
+        Ruby::get()
+            .unwrap()
+            .get_inner(self.inner)
             .funcall::<_, _, Value>("flush", ())
             .map_err(rberr_to_io_err)?;
 
@@ -117,8 +142,9 @@ impl Seek for RbFileLikeObject {
             SeekFrom::End(i) => (2, i),
         };
 
-        let new_position = self
-            .inner
+        let new_position = Ruby::get()
+            .unwrap()
+            .get_inner(self.inner)
             .funcall("seek", (offset, whence))
             .map_err(rberr_to_io_err)?;
 
@@ -129,11 +155,12 @@ impl Seek for RbFileLikeObject {
 pub trait FileLike: Read + Write + Seek {}
 
 impl FileLike for File {}
+impl FileLike for ClosableFile {}
 impl FileLike for RbFileLikeObject {}
 
 pub enum EitherRustRubyFile {
     Rb(RbFileLikeObject),
-    Rust(File),
+    Rust(ClosableFile),
 }
 
 impl EitherRustRubyFile {
@@ -141,6 +168,13 @@ impl EitherRustRubyFile {
         match self {
             EitherRustRubyFile::Rb(f) => Box::new(f),
             EitherRustRubyFile::Rust(f) => Box::new(f),
+        }
+    }
+
+    pub(crate) fn into_writeable(self) -> Box<dyn DynWriteable> {
+        match self {
+            Self::Rb(f) => Box::new(f),
+            Self::Rust(f) => Box::new(f),
         }
     }
 
@@ -157,6 +191,14 @@ pub enum RubyScanSourceInput {
     Path(PathBuf),
     #[allow(dead_code)]
     File(File),
+}
+
+pub(crate) fn try_get_rbfile(
+    rb_f: Value,
+    write: bool,
+) -> RbResult<(EitherRustRubyFile, Option<PathBuf>)> {
+    let f = RbFileLikeObject::with_requirements(rb_f, !write, write, !write)?;
+    Ok((EitherRustRubyFile::Rb(f), None))
 }
 
 pub fn get_ruby_scan_source_input(rb_f: Value, write: bool) -> RbResult<RubyScanSourceInput> {
@@ -184,7 +226,7 @@ pub fn get_either_file(rb_f: Value, truncate: bool) -> RbResult<EitherRustRubyFi
         } else {
             polars_utils::open_file(&file_path).map_err(RbPolarsErr::from)?
         };
-        Ok(EitherRustRubyFile::Rust(f))
+        Ok(EitherRustRubyFile::Rust(f.into()))
     } else {
         let f = RbFileLikeObject::with_requirements(rb_f, !truncate, truncate, !truncate)?;
         Ok(EitherRustRubyFile::Rb(f))
