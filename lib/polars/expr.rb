@@ -1176,8 +1176,8 @@ module Polars
     #   # │ 1.0 │
     #   # │ 1.2 │
     #   # └─────┘
-    def round(decimals = 0)
-      _from_rbexpr(_rbexpr.round(decimals))
+    def round(decimals = 0, mode: "half_to_even")
+      _from_rbexpr(_rbexpr.round(decimals, mode))
     end
 
     # Compute the dot/inner product between two Expressions.
@@ -1867,7 +1867,7 @@ module Polars
     #   # │ 2   ┆ 6   │
     #   # └─────┴─────┘
     def forward_fill(limit: nil)
-      _from_rbexpr(_rbexpr.forward_fill(limit))
+      fill_null(strategy: "forward", limit: limit)
     end
 
     # Fill missing values with the next to be seen values.
@@ -1897,7 +1897,7 @@ module Polars
     #   # │ null ┆ 6   │
     #   # └──────┴─────┘
     def backward_fill(limit: nil)
-      _from_rbexpr(_rbexpr.backward_fill(limit))
+      fill_null(strategy: "backward", limit: limit)
     end
 
     # Reverse the selection.
@@ -3712,6 +3712,8 @@ module Polars
     #
     # @param other [Object]
     #   Series or sequence of primitive type.
+    # @param nulls_equal [Boolean]
+    #   If true, treat null as a distinct value. Null values will not propagate.
     #
     # @return [Expr]
     #
@@ -3731,7 +3733,7 @@ module Polars
     #   # │ true     │
     #   # │ false    │
     #   # └──────────┘
-    def is_in(other)
+    def is_in(other, nulls_equal: false)
       if other.is_a?(::Array)
         if other.length == 0
           other = Polars.lit(nil)._rbexpr
@@ -3741,7 +3743,7 @@ module Polars
       else
         other = Utils.parse_into_expression(other, str_as_lit: false)
       end
-      _from_rbexpr(_rbexpr.is_in(other))
+      _from_rbexpr(_rbexpr.is_in(other, nulls_equal))
     end
     alias_method :in?, :is_in
 
@@ -5715,6 +5717,11 @@ module Polars
     #   Integer size of the rolling window.
     # @param bias [Boolean]
     #   If false, the calculations are corrected for statistical bias.
+    # @param min_samples [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If set to `nil` (default), it will be set equal to `window_size`.
+    # @param center [Boolean]
+    #   Set the labels at the center of the window.
     #
     # @return [Expr]
     #
@@ -5733,8 +5740,8 @@ module Polars
     #   # │ 0.381802 │
     #   # │ 0.47033  │
     #   # └──────────┘
-    def rolling_skew(window_size, bias: true)
-      _from_rbexpr(_rbexpr.rolling_skew(window_size, bias))
+    def rolling_skew(window_size, bias: true, min_samples: nil, center: false)
+      _from_rbexpr(_rbexpr.rolling_skew(window_size, bias, min_samples, center))
     end
 
     # Compute absolute values.
@@ -5889,6 +5896,7 @@ module Polars
     #   # │ 20   │
     #   # └──────┘
     def diff(n: 1, null_behavior: "ignore")
+      n = Utils.parse_into_expression(n)
       _from_rbexpr(_rbexpr.diff(n, null_behavior))
     end
 

@@ -27,7 +27,7 @@ impl RbSeries {
                 DataType::Categorical(_, _) | DataType::Enum(_, _) => {
                     RArray::from_iter(series.categorical().unwrap().iter_str()).into_value()
                 }
-                DataType::Object(_, _) => {
+                DataType::Object(_) => {
                     let v = RArray::with_capacity(series.len());
                     for i in 0..series.len() {
                         let obj: Option<&ObjectValue> = series.get_object(i).map(|any| any.into());

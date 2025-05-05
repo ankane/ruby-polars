@@ -18,7 +18,7 @@ impl RbDataFrame {
                 .get_columns()
                 .iter()
                 .map(|s| match s.dtype() {
-                    DataType::Object(_, _) => {
+                    DataType::Object(_) => {
                         let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
                         obj.unwrap().to_value()
                     }
@@ -37,7 +37,7 @@ impl RbDataFrame {
                     .get_columns()
                     .iter()
                     .map(|s| match s.dtype() {
-                        DataType::Object(_, _) => {
+                        DataType::Object(_) => {
                             let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
                             obj.unwrap().to_value()
                         }

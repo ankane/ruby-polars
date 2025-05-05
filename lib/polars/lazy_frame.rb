@@ -433,7 +433,10 @@ module Polars
       no_optimization: false,
       slice_pushdown: true,
       storage_options: nil,
-      retries: 2
+      retries: 2,
+      sync_on_close: nil,
+      mkdir: false,
+      lazy: false
     )
       lf = _set_sink_optimizations(
         type_coercion: type_coercion,
@@ -468,17 +471,30 @@ module Polars
         storage_options = nil
       end
 
-      lf.sink_parquet(
+      sink_options = {
+        "sync_on_close" => sync_on_close || "none",
+        "maintain_order" => maintain_order,
+        "mkdir" => mkdir
+      }
+
+      lf = lf.sink_parquet(
         path,
         compression,
         compression_level,
         statistics,
         row_group_size,
         data_pagesize_limit,
-        maintain_order,
         storage_options,
-        retries
+        retries,
+        sink_options
       )
+      lf = LazyFrame._from_rbldf(lf)
+
+      if !lazy
+        lf.collect
+        return nil
+      end
+      lf
     end
 
     # Evaluate the query in streaming mode and write to an IPC file.
@@ -520,7 +536,10 @@ module Polars
       projection_pushdown: true,
       simplify_expression: true,
       slice_pushdown: true,
-      no_optimization: false
+      no_optimization: false,
+      sync_on_close: nil,
+      mkdir: false,
+      lazy: false
     )
       # TODO support storage options in Rust
       storage_options = nil
@@ -541,13 +560,26 @@ module Polars
         storage_options = nil
       end
 
-      lf.sink_ipc(
+      sink_options = {
+        "sync_on_close" => sync_on_close || "none",
+        "maintain_order" => maintain_order,
+        "mkdir" => mkdir
+      }
+
+      lf = lf.sink_ipc(
         path,
         compression,
-        maintain_order,
         storage_options,
-        retries
+        retries,
+        sink_options
       )
+      lf = LazyFrame._from_rbldf(lf)
+
+      if !lazy
+        lf.collect
+        return nil
+      end
+      lf
     end
 
     # Evaluate the query in streaming mode and write to a CSV file.
@@ -652,7 +684,10 @@ module Polars
       slice_pushdown: true,
       no_optimization: false,
       storage_options: nil,
-      retries: 2
+      retries: 2,
+      sync_on_close: nil,
+      mkdir: false,
+      lazy: false
     )
       Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, false)
@@ -672,7 +707,13 @@ module Polars
         storage_options = nil
       end
 
-      lf.sink_csv(
+      sink_options = {
+        "sync_on_close" => sync_on_close || "none",
+        "maintain_order" => maintain_order,
+        "mkdir" => mkdir
+      }
+
+      lf = lf.sink_csv(
         path,
         include_bom,
         include_header,
@@ -687,10 +728,17 @@ module Polars
         float_precision,
         null_value,
         quote_style,
-        maintain_order,
         storage_options,
-        retries
+        retries,
+        sink_options
       )
+      lf = LazyFrame._from_rbldf(lf)
+
+      if !lazy
+        lf.collect
+        return nil
+      end
+      lf
     end
 
     # Evaluate the query in streaming mode and write to an NDJSON file.
@@ -730,7 +778,10 @@ module Polars
       slice_pushdown: true,
       no_optimization: false,
       storage_options: nil,
-      retries: 2
+      retries: 2,
+      sync_on_close: nil,
+      mkdir: false,
+      lazy: false
     )
       lf = _set_sink_optimizations(
         type_coercion: type_coercion,
@@ -747,7 +798,20 @@ module Polars
         storage_options = nil
       end
 
-      lf.sink_json(path, maintain_order, storage_options, retries)
+      sink_options = {
+        "sync_on_close" => sync_on_close || "none",
+        "maintain_order" => maintain_order,
+        "mkdir" => mkdir
+      }
+
+      lf = lf.sink_json(path, storage_options, retries, sink_options)
+      lf = LazyFrame._from_rbldf(lf)
+
+      if !lazy
+        lf.collect
+        return nil
+      end
+      lf
     end
 
     # @private

@@ -317,7 +317,7 @@ impl RbSeries {
 
         macro_rules! dispatch_apply {
             ($self:expr, $method:ident, $($args:expr),*) => {
-                if matches!($self.dtype(), DataType::Object(_, _)) {
+                if matches!($self.dtype(), DataType::Object(_)) {
                     // let ca = $self.0.unpack::<ObjectType<ObjectValue>>().unwrap();
                     // ca.$method($($args),*)
                     todo!()
@@ -484,7 +484,7 @@ impl RbSeries {
 
                 ca.into_series()
             }
-            Some(DataType::Object(_, _)) => {
+            Some(DataType::Object(_)) => {
                 let ca =
                     dispatch_apply!(series, apply_lambda_with_object_out_type, lambda, 0, None)?;
                 ca.into_series()

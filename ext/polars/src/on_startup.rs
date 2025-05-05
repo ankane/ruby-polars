@@ -1,5 +1,6 @@
 use std::any::Any;
 use std::sync::Arc;
+use std::sync::OnceLock;
 
 use magnus::IntoValue;
 use polars::prelude::*;
@@ -11,8 +12,10 @@ use polars_core::prelude::AnyValue;
 use crate::prelude::ObjectValue;
 use crate::Wrap;
 
+static POLARS_REGISTRY_INIT_LOCK: OnceLock<()> = OnceLock::new();
+
 pub(crate) fn register_startup_deps() {
-    if !registry::is_object_builder_registered() {
+    POLARS_REGISTRY_INIT_LOCK.get_or_init(|| {
         let object_builder = Box::new(|name: PlSmallStr, capacity: usize| {
             Box::new(ObjectChunkedBuilder::<ObjectValue>::new(name, capacity))
                 as Box<dyn AnonymousObjectBuilder>
@@ -24,9 +27,18 @@ pub(crate) fn register_startup_deps() {
             };
             Box::new(object) as Box<dyn Any>
         });
+        let rbobject_converter = Arc::new(|av: AnyValue| {
+            let object = Wrap(av).into_value();
+            Box::new(object) as Box<dyn Any>
+        });
 
         let object_size = std::mem::size_of::<ObjectValue>();
         let physical_dtype = ArrowDataType::FixedSizeBinary(object_size);
-        registry::register_object_builder(object_builder, object_converter, physical_dtype)
-    }
+        registry::register_object_builder(
+            object_builder,
+            object_converter,
+            rbobject_converter,
+            physical_dtype,
+        )
+    });
 }

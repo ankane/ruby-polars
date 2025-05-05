@@ -278,7 +278,13 @@ pub fn first() -> RbExpr {
     dsl::first().into()
 }
 
-pub fn fold(acc: &RbExpr, lambda: Value, exprs: RArray) -> RbResult<RbExpr> {
+pub fn fold(
+    acc: &RbExpr,
+    lambda: Value,
+    exprs: RArray,
+    returns_scalar: bool,
+    return_dtype: Option<Wrap<DataType>>,
+) -> RbResult<RbExpr> {
     let exprs = rb_exprs_to_exprs(exprs)?;
     let lambda = Opaque::from(lambda);
 
@@ -290,7 +296,14 @@ pub fn fold(acc: &RbExpr, lambda: Value, exprs: RArray) -> RbResult<RbExpr> {
         )
         .map(|v| v.map(Column::from))
     };
-    Ok(dsl::fold_exprs(acc.inner.clone(), func, exprs).into())
+    Ok(dsl::fold_exprs(
+        acc.inner.clone(),
+        func,
+        exprs,
+        returns_scalar,
+        return_dtype.map(|w| w.0),
+    )
+    .into())
 }
 
 pub fn last() -> RbExpr {

@@ -2,12 +2,13 @@ use magnus::{r_hash::ForEach, typed_data::Obj, IntoValue, RArray, RHash, TryConv
 use polars::io::{HiveOptions, RowIndex};
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
-use polars_plan::plans::ScanSources;
+use polars_plan::dsl::ScanSources;
 use std::cell::RefCell;
 use std::io::BufWriter;
 use std::num::NonZeroUsize;
 use std::path::PathBuf;
 
+use super::SinkTarget;
 use crate::conversion::*;
 use crate::expr::rb_exprs_to_exprs;
 use crate::file::get_file_like;
@@ -374,16 +375,16 @@ impl RbLazyFrame {
     #[allow(clippy::too_many_arguments)]
     pub fn sink_parquet(
         &self,
-        path: PathBuf,
+        target: SinkTarget,
         compression: String,
         compression_level: Option<i32>,
         statistics: Wrap<StatisticsOptions>,
         row_group_size: Option<usize>,
         data_page_size: Option<usize>,
-        maintain_order: bool,
         cloud_options: Option<Vec<(String, String)>>,
         retries: usize,
-    ) -> RbResult<()> {
+        sink_options: Wrap<SinkOptions>,
+    ) -> RbResult<RbLazyFrame> {
         let compression = parse_parquet_compression(&compression, compression_level)?;
 
         let options = ParquetWriteOptions {
@@ -391,48 +392,67 @@ impl RbLazyFrame {
             statistics: statistics.0,
             row_group_size,
             data_page_size,
-            maintain_order,
         };
 
-        let cloud_options = {
-            let cloud_options =
-                parse_cloud_options(path.to_str().unwrap(), cloud_options.unwrap_or_default())?;
-            Some(cloud_options.with_max_retries(retries))
+        let cloud_options = match target.base_path() {
+            None => None,
+            Some(base_path) => {
+                let cloud_options = parse_cloud_options(
+                    base_path.to_str().unwrap(),
+                    cloud_options.unwrap_or_default(),
+                )?;
+                Some(cloud_options.with_max_retries(retries))
+            }
         };
 
         let ldf = self.ldf.borrow().clone();
-        ldf.sink_parquet(&path, options, cloud_options)
-            .map_err(RbPolarsErr::from)?;
-        Ok(())
+        match target {
+            SinkTarget::File(target) => {
+                ldf.sink_parquet(target, options, cloud_options, sink_options.0)
+            }
+        }
+        .map_err(RbPolarsErr::from)
+        .map(Into::into)
+        .map_err(Into::into)
     }
 
     pub fn sink_ipc(
         &self,
-        path: PathBuf,
+        target: SinkTarget,
         compression: Option<Wrap<IpcCompression>>,
-        maintain_order: bool,
         cloud_options: Option<Vec<(String, String)>>,
         retries: usize,
-    ) -> RbResult<()> {
+        sink_options: Wrap<SinkOptions>,
+    ) -> RbResult<RbLazyFrame> {
         let options = IpcWriterOptions {
             compression: compression.map(|c| c.0),
-            maintain_order,
+            ..Default::default()
         };
 
-        let cloud_options = {
-            let cloud_options =
-                parse_cloud_options(path.to_str().unwrap(), cloud_options.unwrap_or_default())?;
-            Some(cloud_options.with_max_retries(retries))
+        let cloud_options = match target.base_path() {
+            None => None,
+            Some(base_path) => {
+                let cloud_options = parse_cloud_options(
+                    base_path.to_str().unwrap(),
+                    cloud_options.unwrap_or_default(),
+                )?;
+                Some(cloud_options.with_max_retries(retries))
+            }
         };
 
         let ldf = self.ldf.borrow().clone();
-        ldf.sink_ipc(&path, options, cloud_options)
-            .map_err(RbPolarsErr::from)?;
-        Ok(())
+        match target {
+            SinkTarget::File(target) => {
+                ldf.sink_ipc(target, options, cloud_options, sink_options.0)
+            }
+        }
+        .map_err(RbPolarsErr::from)
+        .map(Into::into)
+        .map_err(Into::into)
     }
 
-    pub fn sink_csv(&self, arguments: &[Value]) -> RbResult<()> {
-        let path = PathBuf::try_convert(arguments[0])?;
+    pub fn sink_csv(&self, arguments: &[Value]) -> RbResult<RbLazyFrame> {
+        let target = SinkTarget::try_convert(arguments[0])?;
         let include_bom = bool::try_convert(arguments[1])?;
         let include_header = bool::try_convert(arguments[2])?;
         let separator = u8::try_convert(arguments[3])?;
@@ -446,9 +466,9 @@ impl RbLazyFrame {
         let float_precision = Option::<usize>::try_convert(arguments[11])?;
         let null_value = Option::<String>::try_convert(arguments[12])?;
         let quote_style = Option::<Wrap<QuoteStyle>>::try_convert(arguments[13])?;
-        let maintain_order = bool::try_convert(arguments[14])?;
-        let cloud_options = Option::<Vec<(String, String)>>::try_convert(arguments[15])?;
-        let retries = usize::try_convert(arguments[16])?;
+        let cloud_options = Option::<Vec<(String, String)>>::try_convert(arguments[14])?;
+        let retries = usize::try_convert(arguments[15])?;
+        let sink_options = Wrap::<SinkOptions>::try_convert(arguments[16])?;
 
         let quote_style = quote_style.map_or(QuoteStyle::default(), |wrap| wrap.0);
         let null_value = null_value.unwrap_or(SerializeOptions::default().null);
@@ -469,42 +489,59 @@ impl RbLazyFrame {
         let options = CsvWriterOptions {
             include_bom,
             include_header,
-            maintain_order,
             batch_size: batch_size.0,
             serialize_options,
         };
 
-        let cloud_options = {
-            let cloud_options =
-                parse_cloud_options(path.to_str().unwrap(), cloud_options.unwrap_or_default())?;
-            Some(cloud_options.with_max_retries(retries))
+        let cloud_options = match target.base_path() {
+            None => None,
+            Some(base_path) => {
+                let cloud_options = parse_cloud_options(
+                    base_path.to_str().unwrap(),
+                    cloud_options.unwrap_or_default(),
+                )?;
+                Some(cloud_options.with_max_retries(retries))
+            }
         };
 
         let ldf = self.ldf.borrow().clone();
-        ldf.sink_csv(&path, options, cloud_options)
-            .map_err(RbPolarsErr::from)?;
-        Ok(())
+        match target {
+            SinkTarget::File(target) => {
+                ldf.sink_csv(target, options, cloud_options, sink_options.0)
+            }
+        }
+        .map_err(RbPolarsErr::from)
+        .map(Into::into)
+        .map_err(Into::into)
     }
 
     pub fn sink_json(
         &self,
-        path: PathBuf,
-        maintain_order: bool,
+        target: SinkTarget,
         cloud_options: Option<Vec<(String, String)>>,
         retries: usize,
-    ) -> RbResult<()> {
-        let options = JsonWriterOptions { maintain_order };
+        sink_options: Wrap<SinkOptions>,
+    ) -> RbResult<RbLazyFrame> {
+        let options = JsonWriterOptions {};
 
-        let cloud_options = {
-            let cloud_options =
-                parse_cloud_options(path.to_str().unwrap(), cloud_options.unwrap_or_default())?;
-            Some(cloud_options.with_max_retries(retries))
+        let cloud_options = match target.base_path() {
+            None => None,
+            Some(base_path) => {
+                let cloud_options = parse_cloud_options(
+                    base_path.to_str().unwrap(),
+                    cloud_options.unwrap_or_default(),
+                )?;
+                Some(cloud_options.with_max_retries(retries))
+            }
         };
 
         let ldf = self.ldf.borrow().clone();
-        ldf.sink_json(&path, options, cloud_options)
-            .map_err(RbPolarsErr::from)?;
-        Ok(())
+        match target {
+            SinkTarget::File(path) => ldf.sink_json(path, options, cloud_options, sink_options.0),
+        }
+        .map_err(RbPolarsErr::from)
+        .map(Into::into)
+        .map_err(Into::into)
     }
 
     pub fn fetch(&self, n_rows: usize) -> RbResult<RbDataFrame> {

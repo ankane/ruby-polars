@@ -1,7 +1,9 @@
 mod general;
 mod serde;
+mod sink;
 
 use polars::lazy::frame::LazyFrame;
+pub use sink::SinkTarget;
 use std::cell::RefCell;
 
 #[magnus::wrap(class = "Polars::RbLazyFrame")]

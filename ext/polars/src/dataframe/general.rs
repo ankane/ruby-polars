@@ -1,3 +1,5 @@
+use std::hash::BuildHasher;
+
 use either::Either;
 use magnus::{prelude::*, typed_data::Obj, IntoValue, RArray, Value};
 use polars::prelude::pivot::{pivot, pivot_stable};
@@ -494,7 +496,8 @@ impl RbDataFrame {
     }
 
     pub fn hash_rows(&self, k0: u64, k1: u64, k2: u64, k3: u64) -> RbResult<RbSeries> {
-        let hb = ahash::RandomState::with_seeds(k0, k1, k2, k3);
+        let seed = PlFixedStateQuality::default().hash_one((k0, k1, k2, k3));
+        let hb = PlSeedableRandomStateQuality::seed_from_u64(seed);
         let hash = self
             .df
             .borrow_mut()

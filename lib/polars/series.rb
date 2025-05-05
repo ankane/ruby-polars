@@ -3577,24 +3577,26 @@ module Polars
     #   Integer size of the rolling window.
     # @param bias [Boolean]
     #   If false, the calculations are corrected for statistical bias.
+    # @param min_samples [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If set to `nil` (default), it will be set equal to `window_size`.
+    # @param center [Boolean]
+    #   Set the labels at the center of the window.
     #
     # @return [Series]
     #
     # @example
-    #   s = Polars::Series.new("a", [1.0, 2.0, 3.0, 4.0, 6.0, 8.0])
-    #   s.rolling_skew(3)
+    #   Polars::Series.new([1, 4, 2, 9]).rolling_skew(3)
     #   # =>
-    #   # shape: (6,)
-    #   # Series: 'a' [f64]
+    #   # shape: (4,)
+    #   # Series: '' [f64]
     #   # [
     #   #         null
     #   #         null
-    #   #         0.0
-    #   #         0.0
     #   #         0.381802
-    #   #         0.0
+    #   #         0.47033
     #   # ]
-    def rolling_skew(window_size, bias: true)
+    def rolling_skew(window_size, bias: true, min_samples: nil, center: false)
       super
     end
 
@@ -4043,7 +4045,7 @@ module Polars
     #
     # @example
     #   s.kurtosis(fisher: false, bias: false)
-    #   # => 2.1040361802642726
+    #   # => 2.1040361802642717
     def kurtosis(fisher: true, bias: true)
       _s.kurtosis(fisher, bias)
     end

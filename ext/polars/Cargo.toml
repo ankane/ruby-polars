@@ -4,7 +4,7 @@ version = "0.17.1"
 license = "MIT"
 authors = ["Andrew Kane <andrew@ankane.org>"]
 edition = "2021"
-rust-version = "1.80.0"
+rust-version = "1.85.0"
 publish = false
 
 [lib]
@@ -12,22 +12,22 @@ crate-type = ["cdylib"]
 
 [dependencies]
 ahash = "0.8"
-arrow = { package = "polars-arrow", version = "=0.46.0" }
+arrow = { package = "polars-arrow", version = "=0.47.1" }
 bytes = "1"
 chrono = "0.4"
 either = "1.8"
 magnus = "0.7"
 num-traits = "0.2"
-polars-core = "=0.46.0"
-polars-plan = "=0.46.0"
-polars-parquet = "=0.46.0"
-polars-utils = "=0.46.0"
+polars-core = "=0.47.1"
+polars-plan = "=0.47.1"
+polars-parquet = "=0.47.1"
+polars-utils = "=0.47.1"
 rayon = "1.9"
 regex = "1"
 serde_json = "1"
 
 [dependencies.polars]
-version = "=0.46.0"
+version = "=0.47.1"
 features = [
     "abs",
     "approx_unique",

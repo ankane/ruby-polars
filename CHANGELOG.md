@@ -1,3 +1,7 @@
+## 0.18.0 (unreleased)
+
+- Updated Polars to 0.47.1
+
 ## 0.17.1 (2025-04-12)
 
 - Added support for horizontal concatenation of `LazyFrame`s

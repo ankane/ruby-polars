@@ -221,8 +221,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("gather", method!(RbExpr::gather, 1))?;
     class.define_method("get", method!(RbExpr::get, 1))?;
     class.define_method("sort_by", method!(RbExpr::sort_by, 5))?;
-    class.define_method("backward_fill", method!(RbExpr::backward_fill, 1))?;
-    class.define_method("forward_fill", method!(RbExpr::forward_fill, 1))?;
     class.define_method("shift", method!(RbExpr::shift, 2))?;
     class.define_method("fill_null", method!(RbExpr::fill_null, 1))?;
     class.define_method(
@@ -248,7 +246,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("slice", method!(RbExpr::slice, 2))?;
     class.define_method("append", method!(RbExpr::append, 2))?;
     class.define_method("rechunk", method!(RbExpr::rechunk, 0))?;
-    class.define_method("round", method!(RbExpr::round, 1))?;
+    class.define_method("round", method!(RbExpr::round, 2))?;
     class.define_method("floor", method!(RbExpr::floor, 0))?;
     class.define_method("ceil", method!(RbExpr::ceil, 0))?;
     class.define_method("clip", method!(RbExpr::clip, 2))?;
@@ -271,7 +269,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("_and", method!(RbExpr::_and, 1))?;
     class.define_method("_xor", method!(RbExpr::_xor, 1))?;
     class.define_method("_or", method!(RbExpr::_or, 1))?;
-    class.define_method("is_in", method!(RbExpr::is_in, 1))?;
+    class.define_method("is_in", method!(RbExpr::is_in, 2))?;
     class.define_method("repeat_by", method!(RbExpr::repeat_by, 1))?;
     class.define_method("pow", method!(RbExpr::pow, 1))?;
     class.define_method("cum_sum", method!(RbExpr::cum_sum, 1))?;
@@ -450,7 +448,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "rolling_quantile_by",
         method!(RbExpr::rolling_quantile_by, 6),
     )?;
-    class.define_method("rolling_skew", method!(RbExpr::rolling_skew, 2))?;
+    class.define_method("rolling_skew", method!(RbExpr::rolling_skew, 4))?;
     class.define_method("lower_bound", method!(RbExpr::lower_bound, 0))?;
     class.define_method("upper_bound", method!(RbExpr::upper_bound, 0))?;
     class.define_method("list_max", method!(RbExpr::list_max, 0))?;
@@ -559,7 +557,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("first", function!(functions::lazy::first, 0))?;
     class.define_singleton_method("last", function!(functions::lazy::last, 0))?;
     class.define_singleton_method("cols", function!(functions::lazy::cols, 1))?;
-    class.define_singleton_method("fold", function!(functions::lazy::fold, 3))?;
+    class.define_singleton_method("fold", function!(functions::lazy::fold, 5))?;
     class.define_singleton_method("cum_fold", function!(functions::lazy::cum_fold, 4))?;
     class.define_singleton_method("lit", function!(functions::lazy::lit, 2))?;
     class.define_singleton_method("int_range", function!(functions::range::int_range, 4))?;

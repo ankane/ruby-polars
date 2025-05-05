@@ -21,7 +21,7 @@ use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 use polars_core::utils::arrow::array::Array;
 use polars_core::utils::materialize_dyn_int;
-use polars_plan::plans::ScanSources;
+use polars_plan::dsl::ScanSources;
 use polars_utils::mmap::MemSlice;
 use polars_utils::total_ord::{TotalEq, TotalHash};
 
@@ -219,7 +219,7 @@ impl IntoValue for Wrap<DataType> {
                     .funcall::<_, _, Value>("new", (tu.to_ascii(),))
                     .unwrap()
             }
-            DataType::Object(_, _) => {
+            DataType::Object(_) => {
                 let class = pl.const_get::<_, Value>("Object").unwrap();
                 class.funcall("new", ()).unwrap()
             }
@@ -332,7 +332,7 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Array" => DataType::Array(Box::new(DataType::Null), 0),
                 "Polars::Struct" => DataType::Struct(vec![]),
                 "Polars::Null" => DataType::Null,
-                "Polars::Object" => DataType::Object(OBJECT_NAME, None),
+                "Polars::Object" => DataType::Object(OBJECT_NAME),
                 "Polars::Unknown" => DataType::Unknown(Default::default()),
                 dt => {
                     return Err(RbValueError::new_err(format!(
@@ -408,7 +408,7 @@ impl TryConvert for Wrap<DataType> {
                     DataType::Struct(fields)
                 }
                 "Polars::Null" => DataType::Null,
-                "Object" => DataType::Object(OBJECT_NAME, None),
+                "Object" => DataType::Object(OBJECT_NAME),
                 "Polars::Unknown" => DataType::Unknown(Default::default()),
                 dt => {
                     return Err(RbTypeError::new_err(format!(
@@ -437,7 +437,7 @@ impl TryConvert for Wrap<DataType> {
                 "time" => DataType::Time,
                 "dur" => DataType::Duration(TimeUnit::Microseconds),
                 "f64" => DataType::Float64,
-                "obj" => DataType::Object(OBJECT_NAME, None),
+                "obj" => DataType::Object(OBJECT_NAME),
                 "list" => DataType::List(Box::new(DataType::Boolean)),
                 "null" => DataType::Null,
                 "unk" => DataType::Unknown(Default::default()),
@@ -755,6 +755,21 @@ impl TryConvert for Wrap<ClosedWindow> {
                     "closed must be one of {{'left', 'right', 'both', 'none'}}, got {}",
                     v
                 )))
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<RoundMode> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "half_to_even" => RoundMode::HalfToEven,
+            "half_away_from_zero" => RoundMode::HalfAwayFromZero,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "`mode` must be one of {{'half_to_even', 'half_away_from_zero'}}, got {v}",
+                )));
             }
         };
         Ok(Wrap(parsed))

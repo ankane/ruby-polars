@@ -371,14 +371,6 @@ impl RbExpr {
             .into())
     }
 
-    pub fn backward_fill(&self, limit: FillNullLimit) -> Self {
-        self.inner.clone().backward_fill(limit).into()
-    }
-
-    pub fn forward_fill(&self, limit: FillNullLimit) -> Self {
-        self.inner.clone().forward_fill(limit).into()
-    }
-
     pub fn shift(&self, n: &Self, fill_value: Option<&Self>) -> Self {
         let expr = self.inner.clone();
         let out = match fill_value {
@@ -497,8 +489,8 @@ impl RbExpr {
             .into()
     }
 
-    pub fn round(&self, decimals: u32) -> Self {
-        self.inner.clone().round(decimals).into()
+    pub fn round(&self, decimals: u32, mode: Wrap<RoundMode>) -> Self {
+        self.inner.clone().round(decimals, mode.0).into()
     }
 
     pub fn floor(&self) -> Self {
@@ -597,8 +589,11 @@ impl RbExpr {
         self.inner.clone().or(expr.inner.clone()).into()
     }
 
-    pub fn is_in(&self, expr: &Self) -> Self {
-        self.inner.clone().is_in(expr.inner.clone()).into()
+    pub fn is_in(&self, expr: &Self, nulls_equal: bool) -> Self {
+        self.inner
+            .clone()
+            .is_in(expr.inner.clone(), nulls_equal)
+            .into()
     }
 
     pub fn repeat_by(&self, by: &Self) -> Self {
@@ -698,8 +693,11 @@ impl RbExpr {
         self.inner.clone().rank(options, seed).into()
     }
 
-    pub fn diff(&self, n: i64, null_behavior: Wrap<NullBehavior>) -> Self {
-        self.inner.clone().diff(n, null_behavior.0).into()
+    pub fn diff(&self, n: &Self, null_behavior: Wrap<NullBehavior>) -> Self {
+        self.inner
+            .clone()
+            .diff(n.inner.clone(), null_behavior.0)
+            .into()
     }
 
     pub fn pct_change(&self, n: &Self) -> Self {
