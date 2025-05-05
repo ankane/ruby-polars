@@ -403,7 +403,7 @@ module Polars
     # The indices may be defined in a single column, or by sublists in another
     # column of dtype `List`.
     #
-    # @param index [Object]
+    # @param indices [Object]
     #   Indices to return per sublist
     # @param null_on_oob [Boolean]
     #   Behavior if an index is out of bounds:
@@ -427,12 +427,9 @@ module Polars
     #   # │ []          ┆ [null, null] │
     #   # │ [1, 2, … 5] ┆ [1, 5]       │
     #   # └─────────────┴──────────────┘
-    def gather(index, null_on_oob: false)
-      if index.is_a?(::Array)
-        index = Series.new(index)
-      end
-      index = Utils.parse_into_expression(index, str_as_lit: false)
-      Utils.wrap_expr(_rbexpr.list_gather(index, null_on_oob))
+    def gather(indices, null_on_oob: false)
+      indices = Utils.parse_into_expression(indices)
+      Utils.wrap_expr(_rbexpr.list_gather(indices, null_on_oob))
     end
     alias_method :take, :gather
 
