@@ -372,7 +372,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
         first_value: AnyValue<'a>,
     ) -> RbResult<Series> {
         let mut avs = Vec::with_capacity(self.len());
-        avs.extend(std::iter::repeat(AnyValue::Null).take(init_null_count));
+        avs.extend(std::iter::repeat_n(AnyValue::Null, init_null_count));
         avs.push(first_value);
 
         if self.null_count() > 0 {
@@ -656,7 +656,7 @@ where
         first_value: AnyValue<'a>,
     ) -> RbResult<Series> {
         let mut avs = Vec::with_capacity(self.len());
-        avs.extend(std::iter::repeat(AnyValue::Null).take(init_null_count));
+        avs.extend(std::iter::repeat_n(AnyValue::Null, init_null_count));
         avs.push(first_value);
 
         if self.null_count() > 0 {
@@ -935,7 +935,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
         first_value: AnyValue<'a>,
     ) -> RbResult<Series> {
         let mut avs = Vec::with_capacity(self.len());
-        avs.extend(std::iter::repeat(AnyValue::Null).take(init_null_count));
+        avs.extend(std::iter::repeat_n(AnyValue::Null, init_null_count));
         avs.push(first_value);
 
         if self.null_count() > 0 {
@@ -1132,7 +1132,7 @@ impl<'a> ApplyLambda<'a> for StructChunked {
         first_value: AnyValue<'a>,
     ) -> RbResult<Series> {
         let mut avs = Vec::with_capacity(self.len());
-        avs.extend(std::iter::repeat(AnyValue::Null).take(init_null_count));
+        avs.extend(std::iter::repeat_n(AnyValue::Null, init_null_count));
         avs.push(first_value);
 
         let iter = iter_struct(self).skip(init_null_count + 1).map(|val| {
