@@ -23,11 +23,11 @@ impl RbExpr {
         self.inner.clone().list().arg_min().into()
     }
 
-    pub fn list_contains(&self, other: &RbExpr) -> Self {
+    pub fn list_contains(&self, other: &RbExpr, nulls_equal: bool) -> Self {
         self.inner
             .clone()
             .list()
-            .contains(other.inner.clone())
+            .contains(other.inner.clone(), nulls_equal)
             .into()
     }
 
@@ -180,7 +180,7 @@ impl RbExpr {
         &self,
         width_strat: Wrap<ListToStructWidthStrategy>,
         name_gen: Option<Value>,
-        upper_bound: usize,
+        upper_bound: Option<usize>,
     ) -> RbResult<Self> {
         let name_gen = name_gen.map(|lambda| {
             let lambda = Opaque::from(lambda);

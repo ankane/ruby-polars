@@ -80,11 +80,11 @@ class DateTimeExprTest < Minitest::Test
   end
 
   def test_convert_time_zone
-    assert_expr dt_expr.convert_time_zone("tz")
+    assert_expr dt_expr.convert_time_zone("Etc/UTC")
   end
 
   def test_replace_time_zone
-    assert_expr dt_expr.replace_time_zone("tz")
+    assert_expr dt_expr.replace_time_zone("Etc/UTC")
   end
 
   def test_days

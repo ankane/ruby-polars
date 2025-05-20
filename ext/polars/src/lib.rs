@@ -320,7 +320,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arr_arg_max", method!(RbExpr::arr_arg_max, 0))?;
     class.define_method("arr_get", method!(RbExpr::arr_get, 2))?;
     class.define_method("arr_join", method!(RbExpr::arr_join, 2))?;
-    class.define_method("arr_contains", method!(RbExpr::arr_contains, 1))?;
+    class.define_method("arr_contains", method!(RbExpr::arr_contains, 2))?;
     class.define_method("arr_count_matches", method!(RbExpr::arr_count_matches, 1))?;
     class.define_method("binary_contains", method!(RbExpr::bin_contains, 1))?;
     class.define_method("binary_ends_with", method!(RbExpr::bin_ends_with, 1))?;
@@ -365,7 +365,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_contains_any", method!(RbExpr::str_contains_any, 2))?;
     class.define_method("str_replace_many", method!(RbExpr::str_replace_many, 3))?;
     class.define_method("list_len", method!(RbExpr::list_len, 0))?;
-    class.define_method("list_contains", method!(RbExpr::list_contains, 1))?;
+    class.define_method("list_contains", method!(RbExpr::list_contains, 2))?;
     class.define_method("list_count_matches", method!(RbExpr::list_count_matches, 1))?;
     class.define_method("dt_year", method!(RbExpr::dt_year, 0))?;
     class.define_method("dt_is_leap_year", method!(RbExpr::dt_is_leap_year, 0))?;

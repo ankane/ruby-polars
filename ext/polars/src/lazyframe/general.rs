@@ -392,6 +392,8 @@ impl RbLazyFrame {
             statistics: statistics.0,
             row_group_size,
             data_page_size,
+            key_value_metadata: None,
+            field_overwrites: Vec::new(),
         };
 
         let cloud_options = match target.base_path() {

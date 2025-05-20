@@ -481,6 +481,8 @@ module Polars
     #
     # @param item [Object]
     #   Item that will be checked for membership
+    # @param nulls_equal [Boolean]
+    #   If true, treat null as a distinct value. Null values will not propagate.
     #
     # @return [Expr]
     #
@@ -498,8 +500,8 @@ module Polars
     #   # │ false │
     #   # │ true  │
     #   # └───────┘
-    def contains(item)
-      Utils.wrap_expr(_rbexpr.list_contains(Utils.parse_into_expression(item)))
+    def contains(item, nulls_equal: true)
+      Utils.wrap_expr(_rbexpr.list_contains(Utils.parse_into_expression(item), nulls_equal))
     end
 
     # Join all string items in a sublist and place a separator between them.
@@ -746,9 +748,9 @@ module Polars
     #   # │ {1,2,3}    │
     #   # │ {1,2,null} │
     #   # └────────────┘
-    def to_struct(n_field_strategy: "first_non_null", name_generator: nil)
+    def to_struct(n_field_strategy: "first_non_null", name_generator: nil, upper_bound: nil)
       raise Todo if name_generator
-      Utils.wrap_expr(_rbexpr.list_to_struct(n_field_strategy, name_generator, 0))
+      Utils.wrap_expr(_rbexpr.list_to_struct(n_field_strategy, name_generator, nil))
     end
 
     # Run any polars expression against the lists' elements.

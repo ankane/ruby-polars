@@ -1,7 +1,7 @@
 use polars::prelude::*;
 
 use crate::conversion::Wrap;
-use crate::RbExpr;
+use crate::{RbExpr, RbPolarsErr, RbResult};
 
 impl RbExpr {
     pub fn dt_to_string(&self, format: String) -> Self {
@@ -30,12 +30,17 @@ impl RbExpr {
         self.inner.clone().dt().with_time_unit(tu.0).into()
     }
 
-    pub fn dt_convert_time_zone(&self, time_zone: String) -> Self {
-        self.inner
+    pub fn dt_convert_time_zone(&self, time_zone: String) -> RbResult<Self> {
+        Ok(self
+            .inner
             .clone()
             .dt()
-            .convert_time_zone(time_zone.into())
-            .into()
+            .convert_time_zone(
+                TimeZone::opt_try_new(Some(PlSmallStr::from(time_zone)))
+                    .map_err(RbPolarsErr::from)?
+                    .unwrap_or(TimeZone::UTC),
+            )
+            .into())
     }
 
     pub fn dt_cast_time_unit(&self, tu: Wrap<TimeUnit>) -> Self {
@@ -47,16 +52,18 @@ impl RbExpr {
         time_zone: Option<String>,
         ambiguous: &Self,
         non_existent: Wrap<NonExistent>,
-    ) -> Self {
-        self.inner
+    ) -> RbResult<Self> {
+        Ok(self
+            .inner
             .clone()
             .dt()
             .replace_time_zone(
-                time_zone.map(|x| x.into()),
+                TimeZone::opt_try_new(time_zone.map(PlSmallStr::from_string))
+                    .map_err(RbPolarsErr::from)?,
                 ambiguous.inner.clone(),
                 non_existent.0,
             )
-            .into()
+            .into())
     }
 
     pub fn dt_truncate(&self, every: &Self) -> Self {

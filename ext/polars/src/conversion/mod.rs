@@ -210,7 +210,10 @@ impl IntoValue for Wrap<DataType> {
             DataType::Datetime(tu, tz) => {
                 let datetime_class = pl.const_get::<_, Value>("Datetime").unwrap();
                 datetime_class
-                    .funcall::<_, _, Value>("new", (tu.to_ascii(), tz.as_deref()))
+                    .funcall::<_, _, Value>(
+                        "new",
+                        (tu.to_ascii(), tz.as_deref().map(|x| x.as_str())),
+                    )
                     .unwrap()
             }
             DataType::Duration(tu) => {
@@ -375,7 +378,10 @@ impl TryConvert for Wrap<DataType> {
                     let time_unit: Value = ob.funcall("time_unit", ()).unwrap();
                     let time_unit = Wrap::<TimeUnit>::try_convert(time_unit)?.0;
                     let time_zone: Option<String> = ob.funcall("time_zone", ())?;
-                    DataType::Datetime(time_unit, time_zone.as_deref().map(|x| x.into()))
+                    DataType::Datetime(
+                        time_unit,
+                        TimeZone::opt_try_new(time_zone.as_deref()).map_err(RbPolarsErr::from)?,
+                    )
                 }
                 "Polars::Duration" => {
                     let time_unit: Value = ob.funcall("time_unit", ()).unwrap();
@@ -1227,5 +1233,15 @@ impl TryConvert for RbCompatLevel {
                 "'compat_level' argument accepts int or bool".to_string(),
             ));
         }))
+    }
+}
+
+impl TryConvert for Wrap<Option<TimeZone>> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let tz = Option::<Wrap<PlSmallStr>>::try_convert(ob)?;
+
+        let tz = tz.map(|x| x.0);
+
+        Ok(Wrap(TimeZone::opt_try_new(tz).map_err(RbPolarsErr::from)?))
     }
 }

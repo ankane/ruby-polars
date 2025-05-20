@@ -75,11 +75,11 @@ impl RbExpr {
             .into()
     }
 
-    pub fn arr_contains(&self, other: &RbExpr) -> Self {
+    pub fn arr_contains(&self, other: &RbExpr, nulls_equal: bool) -> Self {
         self.inner
             .clone()
             .arr()
-            .contains(other.inner.clone())
+            .contains(other.inner.clone(), nulls_equal)
             .into()
     }
 

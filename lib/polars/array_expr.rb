@@ -481,6 +481,8 @@ module Polars
     #
     # @param item [Object]
     #   Item that will be checked for membership
+    # @param nulls_equal [Boolean]
+    #   If true, treat null as a distinct value. Null values will not propagate.
     #
     # @return [Expr]
     #
@@ -501,9 +503,9 @@ module Polars
     #   # │ ["x", "y"]    ┆ false    │
     #   # │ ["a", "c"]    ┆ true     │
     #   # └───────────────┴──────────┘
-    def contains(item)
+    def contains(item, nulls_equal: true)
       item = Utils.parse_into_expression(item, str_as_lit: true)
-      Utils.wrap_expr(_rbexpr.arr_contains(item))
+      Utils.wrap_expr(_rbexpr.arr_contains(item, nulls_equal))
     end
 
     # Count how often the value produced by `element` occurs.
