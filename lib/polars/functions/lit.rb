@@ -16,13 +16,8 @@ module Polars
       elsif value.is_a?(::Date)
         return lit(::Time.utc(value.year, value.month, value.day)).cast(Date)
       elsif value.is_a?(Polars::Series)
-        name = value.name
         value = value._s
-        e = Utils.wrap_expr(Plr.lit(value, allow_object, false))
-        if name == ""
-          return e
-        end
-        return e.alias(name)
+        return Utils.wrap_expr(Plr.lit(value, allow_object, false))
       elsif (defined?(Numo::NArray) && value.is_a?(Numo::NArray)) || value.is_a?(::Array)
         return Utils.wrap_expr(Plr.lit(Series.new("literal", [value.to_a], dtype: dtype)._s, allow_object, true))
       elsif dtype

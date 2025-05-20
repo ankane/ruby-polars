@@ -11,6 +11,7 @@ class ExprTest < Minitest::Test
     assert_lit "\"hello\"", Polars.lit("hello")
     assert_lit "b\"hello\"", Polars.lit("hello".b)
     assert_lit "Series", Polars.lit(Polars::Series.new([1, 2, 3]))
+    assert_lit "Series[a]", Polars.lit(Polars::Series.new("a", [1, 2, 3]))
     assert_lit "[]", Polars.lit([])
     assert_lit "[1, 2, 3]", Polars.lit([1, 2, 3])
     assert_lit "[1, 2, 3]", Polars.lit(Numo::NArray.cast([1, 2, 3]))
