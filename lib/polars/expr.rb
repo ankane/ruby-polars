@@ -3734,15 +3734,7 @@ module Polars
     #   # │ [9, 10]   ┆ 3                ┆ false    │
     #   # └───────────┴──────────────────┴──────────┘
     def is_in(other, nulls_equal: false)
-      if other.is_a?(::Array)
-        if other.length == 0
-          other = Polars.lit(nil)._rbexpr
-        else
-          other = Polars.lit(Series.new(other))._rbexpr
-        end
-      else
-        other = Utils.parse_into_expression(other, str_as_lit: false)
-      end
+      other = Utils.parse_into_expression(other)
       _from_rbexpr(_rbexpr.is_in(other, nulls_equal))
     end
     alias_method :in?, :is_in

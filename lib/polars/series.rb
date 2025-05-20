@@ -2144,17 +2144,32 @@ module Polars
 
     # Check if elements of this Series are in the other Series.
     #
+    # @param nulls_equal [Boolean]
+    #   If true, treat null as a distinct value. Null values will not propagate.
+    #
     # @return [Series]
     #
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3])
-    #   s2 = Polars::Series.new("b", [2, 4])
+    #   s2 = Polars::Series.new("b", [2, 4, nil])
     #   s2.is_in(s)
     #   # =>
-    #   # shape: (2,)
+    #   # shape: (3,)
     #   # Series: 'b' [bool]
     #   # [
     #   #         true
+    #   #         false
+    #   #         null
+    #   # ]
+    #
+    # @example
+    #   s2.is_in(s, nulls_equal: true)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'b' [bool]
+    #   # [
+    #   #         true
+    #   #         false
     #   #         false
     #   # ]
     #
@@ -2190,7 +2205,7 @@ module Polars
     #   #         true
     #   #         false
     #   # ]
-    def is_in(other)
+    def is_in(other, nulls_equal: false)
       super
     end
     alias_method :in?, :is_in

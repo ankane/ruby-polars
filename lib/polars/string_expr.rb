@@ -1474,9 +1474,9 @@ module Polars
     #   # │ Can you feel the love tonight   ┆ Can me feel the love tonight    │
     #   # └─────────────────────────────────┴─────────────────────────────────┘
     def replace_many(patterns, replace_with, ascii_case_insensitive: false)
-      patterns = Utils.parse_into_expression(patterns, str_as_lit: false, list_as_series: true)
+      patterns = Utils.parse_into_expression(patterns, str_as_lit: false)
       replace_with = Utils.parse_into_expression(
-        replace_with, str_as_lit: true, list_as_series: true
+        replace_with, str_as_lit: true
       )
       Utils.wrap_expr(
         _rbexpr.str_replace_many(
