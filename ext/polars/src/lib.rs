@@ -559,7 +559,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("cols", function!(functions::lazy::cols, 1))?;
     class.define_singleton_method("fold", function!(functions::lazy::fold, 5))?;
     class.define_singleton_method("cum_fold", function!(functions::lazy::cum_fold, 4))?;
-    class.define_singleton_method("lit", function!(functions::lazy::lit, 2))?;
+    class.define_singleton_method("lit", function!(functions::lazy::lit, 3))?;
     class.define_singleton_method("int_range", function!(functions::range::int_range, 4))?;
     class.define_singleton_method("int_ranges", function!(functions::range::int_ranges, 4))?;
     class.define_singleton_method("repeat", function!(functions::lazy::repeat, 3))?;

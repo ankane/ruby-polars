@@ -18,18 +18,18 @@ module Polars
       elsif value.is_a?(Polars::Series)
         name = value.name
         value = value._s
-        e = Utils.wrap_expr(Plr.lit(value, allow_object))
+        e = Utils.wrap_expr(Plr.lit(value, allow_object, false))
         if name == ""
           return e
         end
         return e.alias(name)
       elsif (defined?(Numo::NArray) && value.is_a?(Numo::NArray)) || value.is_a?(::Array)
-        return lit(Series.new("", value))
+        return Utils.wrap_expr(Plr.lit(Series.new("literal", [value.to_a], dtype: dtype)._s, allow_object, true))
       elsif dtype
-        return Utils.wrap_expr(Plr.lit(value, allow_object)).cast(dtype)
+        return Utils.wrap_expr(Plr.lit(value, allow_object, true)).cast(dtype)
       end
 
-      Utils.wrap_expr(Plr.lit(value, allow_object))
+      Utils.wrap_expr(Plr.lit(value, allow_object, true))
     end
   end
 end

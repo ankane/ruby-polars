@@ -310,7 +310,7 @@ pub fn last() -> RbExpr {
     dsl::last().into()
 }
 
-pub fn lit(value: Value, allow_object: bool) -> RbResult<RbExpr> {
+pub fn lit(value: Value, allow_object: bool, is_scalar: bool) -> RbResult<RbExpr> {
     if value.is_kind_of(class::true_class()) || value.is_kind_of(class::false_class()) {
         Ok(dsl::lit(bool::try_convert(value)?).into())
     } else if let Some(v) = Integer::from_value(value) {
@@ -336,7 +336,16 @@ pub fn lit(value: Value, allow_object: bool) -> RbResult<RbExpr> {
             Ok(dsl::lit(unsafe { v.as_slice() }).into())
         }
     } else if let Ok(series) = Obj::<RbSeries>::try_convert(value) {
-        Ok(dsl::lit(series.series.borrow().clone()).into())
+        let s = series.series.borrow();
+        if is_scalar {
+            let av = s
+                .get(0)
+                .map_err(|_| RbValueError::new_err("expected at least 1 value"))?;
+            let av = av.into_static();
+            Ok(dsl::lit(Scalar::new(s.dtype().clone(), av)).into())
+        } else {
+            Ok(dsl::lit(s.clone()).into())
+        }
     } else if value.is_nil() {
         Ok(dsl::lit(Null {}).into())
     } else if allow_object {

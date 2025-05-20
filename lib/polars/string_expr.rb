@@ -1403,7 +1403,7 @@ module Polars
     #   # │ Can you feel the love tonight   ┆ true         │
     #   # └─────────────────────────────────┴──────────────┘
     def contains_any(patterns, ascii_case_insensitive: false)
-      patterns = Utils.parse_into_expression(patterns, str_as_lit: false, list_as_series: true)
+      patterns = Utils.parse_into_expression(patterns, str_as_lit: false)
       Utils.wrap_expr(
         _rbexpr.str_contains_any(patterns, ascii_case_insensitive)
       )
