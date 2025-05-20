@@ -173,7 +173,7 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
     }
 
     fn get_struct(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
-        let dict = RHash::from_value(ob).unwrap();
+        let dict = RHash::try_convert(ob)?;
         let len = dict.len();
         let mut keys = Vec::with_capacity(len);
         let mut vals = Vec::with_capacity(len);
