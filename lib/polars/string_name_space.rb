@@ -120,7 +120,7 @@ module Polars
     # Parse a Series of dtype Utf8 to a Date/Datetime Series.
     #
     # @param datatype [Symbol]
-    #   `:date`, `:dateime`, or `:time`.
+    #   `:date`, `:datetime`, or `:time`.
     # @param fmt [String]
     #   Format to use, refer to the
     #   [chrono strftime documentation](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)

@@ -206,7 +206,7 @@ module Polars
       end
     end
 
-    # Align a sequence of frames using the uique values from one or more columns as a key.
+    # Align a sequence of frames using the unique values from one or more columns as a key.
     #
     # Frames that do not contain the given key values have rows injected (with nulls
     # filling the non-key columns), and each resulting frame is sorted by the key.

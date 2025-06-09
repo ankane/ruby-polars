@@ -7117,7 +7117,7 @@ module Polars
     #   Accepts expression input. Sequences are parsed as Series,
     #   other non-expression inputs are parsed as literals.
     #   Also accepts a mapping of values to their replacement as syntactic sugar for
-    #   `replace_all(old: Series.new(mapping.keys), new: Serie.new(mapping.values))`.
+    #   `replace_all(old: Series.new(mapping.keys), new: Series.new(mapping.values))`.
     # @param new [Object]
     #   Value or sequence of values to replace by.
     #   Accepts expression input. Sequences are parsed as Series,
