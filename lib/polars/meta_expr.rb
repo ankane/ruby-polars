@@ -125,14 +125,14 @@ module Polars
     # @return [Array]
     #
     # @example
-    #   e = Polars.col("foo").alias("bar")
+    #   e = Polars.col("foo") + Polars.col("bar")
     #   first = e.meta.pop[0]
-    #   _ = first.meta == Polars.col("foo")
-    #   # => true
     #   _ = first.meta == Polars.col("bar")
+    #   # => true
+    #   _ = first.meta == Polars.col("foo")
     #   # => false
-    def pop
-      _rbexpr.meta_pop.map { |e| Utils.wrap_expr(e) }
+    def pop(schema: nil)
+      _rbexpr.meta_pop(schema).map { |e| Utils.wrap_expr(e) }
     end
 
     # Get a list with the root column name.
@@ -209,8 +209,8 @@ module Polars
     # @example
     #   e = (Polars.col("foo") * Polars.col("bar")).sum.over(Polars.col("ham")) / 2
     #   e.meta.tree_format(return_as_string: true)
-    def tree_format(return_as_string: false)
-      s = _rbexpr.meta_tree_format
+    def tree_format(return_as_string: false, schema: nil)
+      s = _rbexpr.meta_tree_format(schema)
       if return_as_string
         s
       else

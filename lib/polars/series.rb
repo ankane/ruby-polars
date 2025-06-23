@@ -1321,9 +1321,6 @@ module Polars
     # @param min_periods [Integer]
     #   Number of valid values there should be in the window before the expression
     #   is evaluated. valid values = `length - null_count`
-    # @param parallel [Boolean]
-    #   Run in parallel. Don't do this in a group by or another operation that
-    #   already has much parallelization.
     #
     # @return [Series]
     #
@@ -1348,7 +1345,7 @@ module Polars
     #   #         -15
     #   #         -24
     #   # ]
-    def cumulative_eval(expr, min_periods: 1, parallel: false)
+    def cumulative_eval(expr, min_periods: 1)
       super
     end
 
@@ -1879,6 +1876,13 @@ module Polars
     #
     # @param element [Object]
     #   Expression or scalar value.
+    # @param side ['any', 'left', 'right']
+    #   If 'any', the index of the first suitable location found is given.
+    #   If 'left', the index of the leftmost suitable location found is given.
+    #   If 'right', return the rightmost suitable location found is given.
+    # @param descending [Boolean]
+    #   Boolean indicating whether the values are descending or not (they
+    #   are required to be sorted either way).
     #
     # @return [Integer]
     #
@@ -1927,12 +1931,12 @@ module Polars
     #   #         5
     #   #         6
     #   # ]
-    def search_sorted(element, side: "any")
+    def search_sorted(element, side: "any", descending: false)
       if element.is_a?(Integer) || element.is_a?(Float)
-        return Polars.select(Polars.lit(self).search_sorted(element, side: side)).item
+        return Polars.select(Polars.lit(self).search_sorted(element, side: side, descending: descending)).item
       end
       element = Series.new(element)
-      Polars.select(Polars.lit(self).search_sorted(element, side: side)).to_series
+      Polars.select(Polars.lit(self).search_sorted(element, side: side, descending: descending)).to_series
     end
 
     # Get unique elements in series.
@@ -4366,7 +4370,7 @@ module Polars
     #   #         99
     #   # ]
     def extend_constant(value, n)
-      Utils.wrap_s(_s.extend_constant(value, n))
+      super
     end
 
     # Flags the Series as sorted.

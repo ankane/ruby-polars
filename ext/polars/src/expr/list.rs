@@ -43,12 +43,8 @@ impl RbExpr {
         Ok(self.inner.clone().list().diff(n, null_behavior.0).into())
     }
 
-    pub fn list_eval(&self, expr: &RbExpr, parallel: bool) -> Self {
-        self.inner
-            .clone()
-            .list()
-            .eval(expr.inner.clone(), parallel)
-            .into()
+    pub fn list_eval(&self, expr: &RbExpr) -> Self {
+        self.inner.clone().list().eval(expr.inner.clone()).into()
     }
 
     pub fn list_get(&self, index: &RbExpr, null_on_oob: bool) -> Self {
@@ -76,12 +72,7 @@ impl RbExpr {
     }
 
     pub fn list_mean(&self) -> Self {
-        self.inner
-            .clone()
-            .list()
-            .mean()
-            .with_fmt("list.mean")
-            .into()
+        self.inner.clone().list().mean().into()
     }
 
     pub fn list_min(&self) -> Self {
@@ -116,20 +107,20 @@ impl RbExpr {
         self.inner.clone().list().tail(n.inner.clone()).into()
     }
 
-    pub fn list_sort(&self, reverse: bool) -> Self {
+    pub fn list_sort(&self, descending: bool, nulls_last: bool) -> Self {
         self.inner
             .clone()
             .list()
-            .sort(SortOptions {
-                descending: reverse,
-                ..Default::default()
-            })
-            .with_fmt("list.sort")
+            .sort(
+                SortOptions::default()
+                    .with_order_descending(descending)
+                    .with_nulls_last(nulls_last),
+            )
             .into()
     }
 
     pub fn list_sum(&self) -> Self {
-        self.inner.clone().list().sum().with_fmt("list.sum").into()
+        self.inner.clone().list().sum().into()
     }
 
     pub fn list_drop_nulls(&self) -> Self {

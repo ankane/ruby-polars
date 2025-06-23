@@ -124,7 +124,7 @@ class GuideTest < Minitest::Test
         Polars.concat_list(Polars.all.exclude("student")).alias("all_grades")
       ).select([
         Polars.all.exclude("all_grades"),
-        Polars.col("all_grades").list.eval(rank_pct, parallel: true).alias("grades_rank")
+        Polars.col("all_grades").list.eval(rank_pct).alias("grades_rank")
       ])
   end
 

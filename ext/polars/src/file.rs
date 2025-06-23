@@ -93,7 +93,7 @@ impl RbFileLikeObject {
 
 /// Extracts a string repr from, and returns an IO error to send back to rust.
 fn rberr_to_io_err(e: Error) -> io::Error {
-    io::Error::new(io::ErrorKind::Other, e.to_string())
+    io::Error::other(e.to_string())
 }
 
 impl Read for RbFileLikeObject {

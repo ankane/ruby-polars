@@ -1512,6 +1512,13 @@ module Polars
     #
     # @param element [Object]
     #   Expression or scalar value.
+    # @param side ['any', 'left', 'right']
+    #   If 'any', the index of the first suitable location found is given.
+    #   If 'left', the index of the leftmost suitable location found is given.
+    #   If 'right', return the rightmost suitable location found is given.
+    # @param descending [Boolean]
+    #   Boolean indicating whether the values are descending or not (they
+    #   are required to be sorted either way).
     #
     # @return [Expr]
     #
@@ -1537,9 +1544,9 @@ module Polars
     #   # ╞══════╪═══════╪═════╡
     #   # │ 0    ┆ 2     ┆ 4   │
     #   # └──────┴───────┴─────┘
-    def search_sorted(element, side: "any")
+    def search_sorted(element, side: "any", descending: false)
       element = Utils.parse_into_expression(element, str_as_lit: false)
-      _from_rbexpr(_rbexpr.search_sorted(element, side))
+      _from_rbexpr(_rbexpr.search_sorted(element, side, descending))
     end
 
     # Sort this column by the ordering of another column, or multiple other columns.
@@ -6651,6 +6658,8 @@ module Polars
     #   # │ 99     │
     #   # └────────┘
     def extend_constant(value, n)
+      value = Utils.parse_into_expression(value, str_as_lit: true)
+      n = Utils.parse_into_expression(n)
       _from_rbexpr(_rbexpr.extend_constant(value, n))
     end
 
@@ -6814,9 +6823,6 @@ module Polars
     # @param min_periods [Integer]
     #   Number of valid values there should be in the window before the expression
     #   is evaluated. valid values = `length - null_count`
-    # @param parallel [Boolean]
-    #   Run in parallel. Don't do this in a group by or another operation that
-    #   already has much parallelization.
     #
     # @return [Expr]
     #
@@ -6850,9 +6856,9 @@ module Polars
     #   # │ -15    │
     #   # │ -24    │
     #   # └────────┘
-    def cumulative_eval(expr, min_periods: 1, parallel: false)
+    def cumulative_eval(expr, min_periods: 1)
       _from_rbexpr(
-        _rbexpr.cumulative_eval(expr._rbexpr, min_periods, parallel)
+        _rbexpr.cumulative_eval(expr._rbexpr, min_periods)
       )
     end
 

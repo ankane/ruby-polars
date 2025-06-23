@@ -1,6 +1,6 @@
 use std::ops::Neg;
 
-use magnus::{prelude::*, value::Opaque, IntoValue, RArray, Ruby, Value};
+use magnus::{RArray, Value};
 use polars::lazy::dsl;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
@@ -331,10 +331,15 @@ impl RbExpr {
         self.inner.clone().arg_min().into()
     }
 
-    pub fn search_sorted(&self, element: &Self, side: Wrap<SearchSortedSide>) -> Self {
+    pub fn search_sorted(
+        &self,
+        element: &Self,
+        side: Wrap<SearchSortedSide>,
+        descending: bool,
+    ) -> Self {
         self.inner
             .clone()
-            .search_sorted(element.inner.clone(), side.0)
+            .search_sorted(element.inner.clone(), side.0, descending)
             .into()
     }
 
@@ -389,16 +394,8 @@ impl RbExpr {
         strategy: String,
         limit: FillNullLimit,
     ) -> RbResult<Self> {
-        let strat = parse_fill_null_strategy(&strategy, limit)?;
-        Ok(self
-            .inner
-            .clone()
-            .apply(
-                move |s| s.fill_null(strat).map(Some),
-                GetOutput::same_type(),
-            )
-            .with_fmt("fill_null_with_strategy")
-            .into())
+        let strategy = parse_fill_null_strategy(&strategy, limit)?;
+        Ok(self.inner.clone().fill_null_with_strategy(strategy).into())
     }
 
     pub fn fill_nan(&self, expr: &Self) -> Self {
@@ -678,10 +675,10 @@ impl RbExpr {
         self.inner.clone().upper_bound().into()
     }
 
-    pub fn cumulative_eval(&self, expr: &Self, min_periods: usize, parallel: bool) -> Self {
+    pub fn cumulative_eval(&self, expr: &Self, min_samples: usize) -> Self {
         self.inner
             .clone()
-            .cumulative_eval(expr.inner.clone(), min_periods, parallel)
+            .cumulative_eval(expr.inner.clone(), min_samples)
             .into()
     }
 
@@ -807,20 +804,10 @@ impl RbExpr {
         self.inner.clone().ewm_var(options).into()
     }
 
-    pub fn extend_constant(&self, value: Wrap<AnyValue>, n: usize) -> Self {
-        let value = value.into_value();
-        let value = Opaque::from(value);
+    pub fn extend_constant(&self, value: &Self, n: &Self) -> Self {
         self.inner
             .clone()
-            .apply(
-                move |s| {
-                    let value = Ruby::get().unwrap().get_inner(value);
-                    let value = Wrap::<AnyValue>::try_convert(value).unwrap().0;
-                    s.extend_constant(value, n).map(Some)
-                },
-                GetOutput::same_type(),
-            )
-            .with_fmt("extend")
+            .extend_constant(value.inner.clone(), n.inner.clone())
             .into()
     }
 

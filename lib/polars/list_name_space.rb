@@ -586,12 +586,6 @@ module Polars
     # @param expr [Expr]
     #   Expression to run. Note that you can select an element with `Polars.first`, or
     #   `Polars.col`
-    # @param parallel [Boolean]
-    #   Run all expression parallel. Don't activate this blindly.
-    #   Parallelism is worth it if there is enough work to do per thread.
-    #
-    #   This likely should not be use in the group by context, because we already
-    #   parallel execution per group
     #
     # @return [Series]
     #
@@ -611,7 +605,7 @@ module Polars
     #   # │ 8   ┆ 5   ┆ [2.0, 1.0] │
     #   # │ 3   ┆ 2   ┆ [2.0, 1.0] │
     #   # └─────┴─────┴────────────┘
-    def eval(expr, parallel: false)
+    def eval(expr)
       super
     end
   end

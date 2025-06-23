@@ -245,6 +245,11 @@ module Polars
 
     # Sort the arrays in the list.
     #
+    # @param reverse [Boolean]
+    #   Sort in descending order.
+    # @param nulls_last [Boolean]
+    #   Place null values last.
+    #
     # @return [Expr]
     #
     # @example
@@ -264,8 +269,8 @@ module Polars
     #   # │ [1, 2, 3] │
     #   # │ [1, 2, 9] │
     #   # └───────────┘
-    def sort(reverse: false)
-      Utils.wrap_expr(_rbexpr.list_sort(reverse))
+    def sort(reverse: false, nulls_last: false)
+      Utils.wrap_expr(_rbexpr.list_sort(reverse, nulls_last))
     end
 
     # Reverse the arrays in the list.
@@ -758,12 +763,6 @@ module Polars
     # @param expr [Expr]
     #   Expression to run. Note that you can select an element with `Polars.first`, or
     #   `Polars.col`
-    # @param parallel [Boolean]
-    #   Run all expression parallel. Don't activate this blindly.
-    #   Parallelism is worth it if there is enough work to do per thread.
-    #
-    #   This likely should not be use in the group by context, because we already
-    #   parallel execution per group
     #
     # @return [Expr]
     #
@@ -783,8 +782,8 @@ module Polars
     #   # │ 8   ┆ 5   ┆ [2.0, 1.0] │
     #   # │ 3   ┆ 2   ┆ [2.0, 1.0] │
     #   # └─────┴─────┴────────────┘
-    def eval(expr, parallel: false)
-      Utils.wrap_expr(_rbexpr.list_eval(expr._rbexpr, parallel))
+    def eval(expr)
+      Utils.wrap_expr(_rbexpr.list_eval(expr._rbexpr))
     end
   end
 end

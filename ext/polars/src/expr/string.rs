@@ -225,7 +225,6 @@ impl RbExpr {
             .clone()
             .str()
             .to_integer(base.inner.clone(), strict)
-            .with_fmt("str.to_integer")
             .into()
     }
 

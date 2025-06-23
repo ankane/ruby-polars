@@ -217,7 +217,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("peak_max", method!(RbExpr::peak_max, 0))?;
     class.define_method("arg_max", method!(RbExpr::arg_max, 0))?;
     class.define_method("arg_min", method!(RbExpr::arg_min, 0))?;
-    class.define_method("search_sorted", method!(RbExpr::search_sorted, 2))?;
+    class.define_method("search_sorted", method!(RbExpr::search_sorted, 3))?;
     class.define_method("gather", method!(RbExpr::gather, 1))?;
     class.define_method("get", method!(RbExpr::get, 1))?;
     class.define_method("sort_by", method!(RbExpr::sort_by, 5))?;
@@ -464,7 +464,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("list_to_array", method!(RbExpr::list_to_array, 1))?;
     class.define_method("list_mean", method!(RbExpr::list_mean, 0))?;
     class.define_method("list_tail", method!(RbExpr::list_tail, 1))?;
-    class.define_method("list_sort", method!(RbExpr::list_sort, 1))?;
+    class.define_method("list_sort", method!(RbExpr::list_sort, 2))?;
     class.define_method("list_reverse", method!(RbExpr::list_reverse, 0))?;
     class.define_method("list_unique", method!(RbExpr::list_unique, 1))?;
     class.define_method("list_get", method!(RbExpr::list_get, 2))?;
@@ -476,8 +476,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("list_diff", method!(RbExpr::list_diff, 2))?;
     class.define_method("list_shift", method!(RbExpr::list_shift, 1))?;
     class.define_method("list_slice", method!(RbExpr::list_slice, 2))?;
-    class.define_method("list_eval", method!(RbExpr::list_eval, 2))?;
-    class.define_method("cumulative_eval", method!(RbExpr::cumulative_eval, 3))?;
+    class.define_method("list_eval", method!(RbExpr::list_eval, 1))?;
+    class.define_method("cumulative_eval", method!(RbExpr::cumulative_eval, 2))?;
     class.define_method("list_to_struct", method!(RbExpr::list_to_struct, 3))?;
     class.define_method("rank", method!(RbExpr::rank, 3))?;
     class.define_method("diff", method!(RbExpr::diff, 2))?;
@@ -520,7 +520,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("replace_strict", method!(RbExpr::replace_strict, 4))?;
 
     // meta
-    class.define_method("meta_pop", method!(RbExpr::meta_pop, 0))?;
+    class.define_method("meta_pop", method!(RbExpr::meta_pop, 1))?;
     class.define_method("meta_eq", method!(RbExpr::meta_eq, 1))?;
     class.define_method("meta_roots", method!(RbExpr::meta_root_names, 0))?;
     class.define_method("meta_output_name", method!(RbExpr::meta_output_name, 0))?;
@@ -538,7 +538,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("_meta_selector_sub", method!(RbExpr::_meta_selector_sub, 1))?;
     class.define_method("_meta_selector_and", method!(RbExpr::_meta_selector_and, 1))?;
     class.define_method("_meta_as_selector", method!(RbExpr::_meta_as_selector, 0))?;
-    class.define_method("meta_tree_format", method!(RbExpr::meta_tree_format, 0))?;
+    class.define_method("meta_tree_format", method!(RbExpr::meta_tree_format, 1))?;
 
     // name
     class.define_method("name_keep", method!(RbExpr::name_keep, 0))?;

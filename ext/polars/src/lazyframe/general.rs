@@ -305,7 +305,7 @@ impl RbLazyFrame {
             .with_predicate_pushdown(predicate_pushdown)
             .with_simplify_expr(simplify_expr)
             .with_slice_pushdown(slice_pushdown)
-            .with_streaming(allow_streaming)
+            .with_new_streaming(allow_streaming)
             ._with_eager(_eager)
             .with_projection_pushdown(projection_pushdown);
 

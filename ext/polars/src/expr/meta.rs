@@ -1,14 +1,21 @@
 use magnus::RArray;
+use polars::prelude::Schema;
 
-use crate::{RbExpr, RbPolarsErr, RbResult};
+use crate::{RbExpr, RbPolarsErr, RbResult, Wrap};
 
 impl RbExpr {
     pub fn meta_eq(&self, other: &RbExpr) -> bool {
         self.inner == other.inner
     }
 
-    pub fn meta_pop(&self) -> RbResult<RArray> {
-        let exprs = self.inner.clone().meta().pop().map_err(RbPolarsErr::from)?;
+    pub fn meta_pop(&self, schema: Option<Wrap<Schema>>) -> RbResult<RArray> {
+        let schema = schema.as_ref().map(|s| &s.0);
+        let exprs = self
+            .inner
+            .clone()
+            .meta()
+            .pop(schema)
+            .map_err(RbPolarsErr::from)?;
         Ok(RArray::from_iter(
             exprs.iter().map(|e| RbExpr::from(e.clone())),
         ))
@@ -84,17 +91,21 @@ impl RbExpr {
         self.inner.clone().meta()._into_selector().into()
     }
 
-    fn compute_tree_format(&self, display_as_dot: bool) -> RbResult<String> {
+    fn compute_tree_format(
+        &self,
+        display_as_dot: bool,
+        schema: Option<Wrap<Schema>>,
+    ) -> RbResult<String> {
         let e = self
             .inner
             .clone()
             .meta()
-            .into_tree_formatter(display_as_dot)
+            .into_tree_formatter(display_as_dot, schema.as_ref().map(|s| &s.0))
             .map_err(RbPolarsErr::from)?;
         Ok(format!("{e}"))
     }
 
-    pub fn meta_tree_format(&self) -> RbResult<String> {
-        self.compute_tree_format(false)
+    pub fn meta_tree_format(&self, schema: Option<Wrap<Schema>>) -> RbResult<String> {
+        self.compute_tree_format(false, schema)
     }
 }
