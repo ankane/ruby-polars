@@ -1,4 +1,4 @@
-## 0.20.0 (unreleased)
+## 0.20.0 (2025-06-23)
 
 - Updated Polars to 0.49.1
 
