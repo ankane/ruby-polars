@@ -1,4 +1,4 @@
-## 0.19.1 (unreleased)
+## 0.20.0 (unreleased)
 
 - Updated Polars to 0.49.1
 
