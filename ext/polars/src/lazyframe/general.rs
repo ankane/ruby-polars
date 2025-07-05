@@ -12,6 +12,7 @@ use super::SinkTarget;
 use crate::conversion::*;
 use crate::expr::rb_exprs_to_exprs;
 use crate::file::get_file_like;
+use crate::io::RbScanOptions;
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
 
 fn rbobject_to_first_path_and_scan_sources(obj: Value) -> RbResult<(Option<PathBuf>, ScanSources)> {
@@ -147,72 +148,34 @@ impl RbLazyFrame {
         Ok(r.finish().map_err(RbPolarsErr::from)?.into())
     }
 
-    pub fn new_from_parquet(arguments: &[Value]) -> RbResult<Self> {
-        let source = Option::<Value>::try_convert(arguments[0])?;
-        let sources = Wrap::<ScanSources>::try_convert(arguments[1])?;
-        let n_rows = Option::<usize>::try_convert(arguments[2])?;
-        let cache = bool::try_convert(arguments[3])?;
-        let parallel = Wrap::<ParallelStrategy>::try_convert(arguments[4])?;
-        let rechunk = bool::try_convert(arguments[5])?;
-        let row_index = Option::<(String, IdxSize)>::try_convert(arguments[6])?;
-        let low_memory = bool::try_convert(arguments[7])?;
-        let cloud_options = Option::<Vec<(String, String)>>::try_convert(arguments[8])?;
-        let _credential_provider = Option::<Value>::try_convert(arguments[9])?;
-        let use_statistics = bool::try_convert(arguments[10])?;
-        let hive_partitioning = Option::<bool>::try_convert(arguments[11])?;
-        let schema = Option::<Wrap<Schema>>::try_convert(arguments[12])?;
-        let hive_schema = Option::<Wrap<Schema>>::try_convert(arguments[13])?;
-        let try_parse_hive_dates = bool::try_convert(arguments[14])?;
-        let retries = usize::try_convert(arguments[15])?;
-        let glob = bool::try_convert(arguments[16])?;
-        let include_file_paths = Option::<String>::try_convert(arguments[17])?;
-        let allow_missing_columns = bool::try_convert(arguments[18])?;
+    pub fn new_from_parquet(
+        sources: Wrap<ScanSources>,
+        schema: Option<Wrap<Schema>>,
+        scan_options: RbScanOptions,
+        parallel: Wrap<ParallelStrategy>,
+        low_memory: bool,
+        use_statistics: bool,
+    ) -> RbResult<Self> {
+        use crate::utils::to_rb_err;
 
         let parallel = parallel.0;
-        let hive_schema = hive_schema.map(|s| Arc::new(s.0));
 
-        let row_index = row_index.map(|(name, offset)| RowIndex {
-            name: name.into(),
-            offset,
-        });
-
-        let hive_options = HiveOptions {
-            enabled: hive_partitioning,
-            hive_start_idx: 0,
-            schema: hive_schema,
-            try_parse_dates: try_parse_hive_dates,
-        };
-
-        let mut args = ScanArgsParquet {
-            n_rows,
-            cache,
-            parallel,
-            rechunk,
-            row_index,
-            low_memory,
-            cloud_options: None,
-            use_statistics,
+        let options = ParquetOptions {
             schema: schema.map(|x| Arc::new(x.0)),
-            hive_options,
-            glob,
-            include_file_paths: include_file_paths.map(|x| x.into()),
-            allow_missing_columns,
+            parallel,
+            low_memory,
+            use_statistics,
         };
 
         let sources = sources.0;
-        let (first_path, sources) = match source {
-            None => (sources.first_path().map(|p| p.to_path_buf()), sources),
-            Some(source) => rbobject_to_first_path_and_scan_sources(source)?,
-        };
+        let first_path = sources.first_path().map(|p| p.to_path_buf());
 
-        if let Some(first_path) = first_path {
-            let first_path_url = first_path.to_string_lossy();
-            let cloud_options =
-                parse_cloud_options(&first_path_url, cloud_options.unwrap_or_default())?;
-            args.cloud_options = Some(cloud_options.with_max_retries(retries));
-        }
+        let unified_scan_args = scan_options.extract_unified_scan_args(first_path.as_ref())?;
 
-        let lf = LazyFrame::scan_parquet_sources(sources, args).map_err(RbPolarsErr::from)?;
+        let lf: LazyFrame = DslBuilder::scan_parquet(sources, options, unified_scan_args)
+            .map_err(to_rb_err)?
+            .build()
+            .into();
 
         Ok(lf.into())
     }

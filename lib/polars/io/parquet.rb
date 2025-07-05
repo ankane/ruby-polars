@@ -177,6 +177,11 @@ module Polars
     #   raise an error. However, if `allow_missing_columns` is set to
     #   `true`, a full-NULL column is returned instead of erroring for the files
     #   that do not contain the column.
+    # @param extra_columns ['ignore', 'raise']
+    #   Configuration for behavior when extra columns outside of the
+    #   defined schema are encountered in the data:
+    #     * `ignore`: Silently ignores.
+    #     * `raise`: Raises an error.
     #
     # @return [LazyFrame]
     def scan_parquet(
@@ -198,8 +203,11 @@ module Polars
       credential_provider: nil,
       retries: 2,
       include_file_paths: nil,
-      allow_missing_columns: false
+      allow_missing_columns: false,
+      extra_columns: "raise"
     )
+      missing_columns = allow_missing_columns ? "insert" : "raise"
+
       if Utils.pathlike?(source)
         source = Utils.normalize_filepath(source, check_not_directory: false)
       elsif Utils.is_path_or_str_sequence(source)
@@ -210,56 +218,11 @@ module Polars
         raise Todo
       end
 
-      _scan_parquet_impl(
-        source,
-        n_rows: n_rows,
-        cache: cache,
-        parallel: parallel,
-        rechunk: rechunk,
-        row_index_name: row_count_name,
-        row_index_offset: row_count_offset,
-        storage_options: storage_options,
-        credential_provider: credential_provider,
-        low_memory: low_memory,
-        use_statistics: use_statistics,
-        hive_partitioning: hive_partitioning,
-        schema: schema,
-        hive_schema: hive_schema,
-        try_parse_hive_dates: try_parse_hive_dates,
-        retries: retries,
-        glob: glob,
-        include_file_paths: include_file_paths,
-        allow_missing_columns: allow_missing_columns
-      )
-    end
-
-    # @private
-    def _scan_parquet_impl(
-      source,
-      n_rows: nil,
-      cache: true,
-      parallel: "auto",
-      rechunk: true,
-      row_index_name: nil,
-      row_index_offset: 0,
-      storage_options: nil,
-      credential_provider: nil,
-      low_memory: false,
-      use_statistics: true,
-      hive_partitioning: nil,
-      glob: true,
-      schema: nil,
-      hive_schema: nil,
-      try_parse_hive_dates: true,
-      retries: 2,
-      include_file_paths: nil,
-      allow_missing_columns: false
-    )
       if source.is_a?(::Array)
         sources = source
         source = nil
       else
-        sources = []
+        sources = [source]
       end
 
       if storage_options
@@ -268,27 +231,34 @@ module Polars
         storage_options = nil
       end
 
+      row_index_name = row_count_name
+      row_index_offset = row_count_offset
+
       rblf =
         RbLazyFrame.new_from_parquet(
-          source,
           sources,
-          n_rows,
-          cache,
-          parallel,
-          rechunk,
-          Utils.parse_row_index_args(row_index_name, row_index_offset),
-          low_memory,
-          storage_options,
-          credential_provider,
-          use_statistics,
-          hive_partitioning,
           schema,
-          hive_schema,
-          try_parse_hive_dates,
-          retries,
-          glob,
-          include_file_paths,
-          allow_missing_columns
+          ScanOptions.new(
+            row_index: !row_index_name.nil? ? [row_index_name, row_index_offset] : nil,
+            pre_slice: !n_rows.nil? ? [0, n_rows] : nil,
+            # cast_options: cast_options,
+            extra_columns: extra_columns,
+            missing_columns: missing_columns,
+            include_file_paths: include_file_paths,
+            glob: glob,
+            hive_partitioning: hive_partitioning,
+            hive_schema: hive_schema,
+            try_parse_hive_dates: try_parse_hive_dates,
+            rechunk: rechunk,
+            cache: cache,
+            storage_options: storage_options,
+            # credential_provider: credential_provider_builder,
+            retries: retries,
+            # deletion_files: _deletion_files
+          ),
+          parallel,
+          low_memory,
+          use_statistics
         )
       Utils.wrap_ldf(rblf)
     end

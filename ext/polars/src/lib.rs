@@ -8,6 +8,7 @@ mod expr;
 mod file;
 mod functions;
 mod interop;
+mod io;
 mod lazyframe;
 mod lazygroupby;
 mod map;
@@ -729,7 +730,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("new_from_csv", function!(RbLazyFrame::new_from_csv, -1))?;
     class.define_singleton_method(
         "new_from_parquet",
-        function!(RbLazyFrame::new_from_parquet, -1),
+        function!(RbLazyFrame::new_from_parquet, 6),
     )?;
     class.define_singleton_method("new_from_ipc", function!(RbLazyFrame::new_from_ipc, 10))?;
     class.define_method("write_json", method!(RbLazyFrame::write_json, 1))?;

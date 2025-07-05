@@ -17,6 +17,7 @@ use polars::datatypes::AnyValue;
 use polars::frame::row::Row;
 use polars::io::avro::AvroCompression;
 use polars::io::cloud::CloudOptions;
+use polars::prelude::deletion::DeletionFilesList;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 use polars_core::utils::arrow::array::Array;
@@ -1126,6 +1127,16 @@ pub(crate) fn parse_cloud_options(uri: &str, kv: Vec<(String, String)>) -> RbRes
     Ok(out)
 }
 
+impl TryConvert for Wrap<CastColumnsPolicy> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        if ob.is_nil() {
+            let out = Wrap(CastColumnsPolicy::ERROR_ON_MISMATCH);
+            return Ok(out);
+        }
+        todo!();
+    }
+}
+
 pub fn parse_fill_null_strategy(
     strategy: &str,
     limit: FillNullLimit,
@@ -1243,5 +1254,41 @@ impl TryConvert for Wrap<Option<TimeZone>> {
         let tz = tz.map(|x| x.0);
 
         Ok(Wrap(TimeZone::opt_try_new(tz).map_err(RbPolarsErr::from)?))
+    }
+}
+
+impl TryConvert for Wrap<ExtraColumnsPolicy> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "ignore" => ExtraColumnsPolicy::Ignore,
+            "raise" => ExtraColumnsPolicy::Raise,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "extra column/field parameter must be one of {{'ignore', 'raise'}}, got {v}",
+                )));
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<MissingColumnsPolicy> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "insert" => MissingColumnsPolicy::Insert,
+            "raise" => MissingColumnsPolicy::Raise,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "missing column/field parameter must be one of {{'insert', 'raise'}}, got {v}",
+                )));
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<DeletionFilesList> {
+    fn try_convert(_ob: Value) -> RbResult<Self> {
+        todo!();
     }
 }

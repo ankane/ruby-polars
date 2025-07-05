@@ -66,6 +66,18 @@ class ParquetTest < Minitest::Test
     assert_frame expected, df.collect
   end
 
+  def test_scan_parquet_extra_columns
+    schema = {"a" => Polars::Int64}
+
+    error = assert_raises(Polars::Error) do
+      Polars.scan_parquet("test/support/data.parquet", schema: schema).collect
+    end
+    assert_match "extra column in file", error.message
+
+    df = Polars.scan_parquet("test/support/data.parquet", schema: schema, extra_columns: "ignore").collect
+    assert_equal ["a"], df.columns
+  end
+
   def test_read_parquet_schema
     schema = Polars.read_parquet_schema("test/support/data.parquet")
     assert_equal ({"a" => Polars::Int64, "b" => Polars::String}), schema

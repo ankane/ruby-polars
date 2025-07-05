@@ -1700,6 +1700,7 @@ dependencies = [
  "polars 0.49.1",
  "polars-arrow",
  "polars-core",
+ "polars-io",
  "polars-parquet",
  "polars-plan",
  "polars-utils",
@@ -1884,6 +1885,7 @@ dependencies = [
  "chrono",
  "chrono-tz",
  "fast-float2",
+ "flate2",
  "fs4",
  "futures",
  "glob",
@@ -1914,6 +1916,7 @@ dependencies = [
  "tokio",
  "tokio-util",
  "url",
+ "zstd",
 ]
 
 [[package]]

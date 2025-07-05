@@ -1,3 +1,5 @@
+use crate::{RbErr, RbPolarsErr};
+
 #[macro_export]
 macro_rules! apply_method_all_arrow_series2 {
     ($self:expr, $method:ident, $($args:expr),*) => {
@@ -21,4 +23,10 @@ macro_rules! apply_method_all_arrow_series2 {
             dt => panic!("dtype {:?} not supported", dt)
         }
     }
+}
+
+/// Boilerplate for `|e| RbPolarsErr::from(e).into()`
+#[allow(unused)]
+pub(crate) fn to_rb_err<E: Into<RbPolarsErr>>(e: E) -> RbErr {
+    e.into().into()
 }

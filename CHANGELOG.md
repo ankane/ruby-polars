@@ -1,3 +1,7 @@
+## 0.20.1 (unreleased)
+
+- Added `extra_columns` option to `scan_parquet` method
+
 ## 0.20.0 (2025-06-23)
 
 - Updated Polars to 0.49.1
