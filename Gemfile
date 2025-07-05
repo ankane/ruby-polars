@@ -12,6 +12,7 @@ gem "pg"
 gem "mysql2"
 gem "trilogy"
 gem "sqlite3"
+gem "webmock"
 
 if ENV["TEST_DELTA"]
   gem "deltalake-rb", ">= 0.1.4"
