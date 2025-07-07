@@ -1122,6 +1122,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "list_namespaces",
         method!(RbCatalogClient::list_namespaces, 1),
     )?;
+    class.define_method("list_tables", method!(RbCatalogClient::list_tables, 2))?;
 
     Ok(())
 }

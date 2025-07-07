@@ -2,7 +2,7 @@ use magnus::value::{Lazy, ReprValue};
 use magnus::{IntoValue, Module, RArray, RClass, RHash, RModule, Ruby, Value};
 use polars::prelude::{PlHashMap, PlSmallStr};
 use polars_io::catalog::unity::client::{CatalogClient, CatalogClientBuilder};
-use polars_io::catalog::unity::models::{CatalogInfo, NamespaceInfo};
+use polars_io::catalog::unity::models::{CatalogInfo, ColumnInfo, NamespaceInfo, TableInfo};
 use polars_io::pl_async;
 
 use crate::rb_modules::polars;
@@ -41,6 +41,26 @@ static NAMESPACE_INFO_CLS: Lazy<RClass> = Lazy::new(|_| {
         .const_get::<_, RModule>("Unity")
         .unwrap()
         .const_get("NamespaceInfo")
+        .unwrap()
+});
+
+static TABLE_INFO_CLS: Lazy<RClass> = Lazy::new(|_| {
+    polars()
+        .const_get::<_, RClass>("Catalog")
+        .unwrap()
+        .const_get::<_, RModule>("Unity")
+        .unwrap()
+        .const_get("TableInfo")
+        .unwrap()
+});
+
+static COLUMN_INFO_CLS: Lazy<RClass> = Lazy::new(|_| {
+    polars()
+        .const_get::<_, RClass>("Catalog")
+        .unwrap()
+        .const_get::<_, RModule>("Unity")
+        .unwrap()
+        .const_get("ColumnInfo")
         .unwrap()
 });
 
@@ -103,6 +123,30 @@ impl RbCatalogClient {
         opt_err.transpose()?;
 
         Ok(out.into_value())
+    }
+
+    pub fn list_tables(&self, catalog_name: String, namespace: String) -> RbResult<Value> {
+        let v = pl_async::get_runtime()
+            .block_in_place_on(self.client().list_tables(&catalog_name, &namespace))
+            .map_err(to_rb_err)?;
+
+        let mut opt_err = None;
+
+        let out = RArray::from_iter(v.into_iter().map(|table_info| {
+            let v = table_info_to_rbobject(table_info);
+
+            if let Ok(v) = v {
+                Some(v)
+            } else {
+                opt_err.replace(v);
+                None
+            }
+        }))
+        .into_value();
+
+        opt_err.transpose()?;
+
+        Ok(out)
     }
 }
 
@@ -178,6 +222,87 @@ fn namespace_info_to_rbobject(
     Ruby::get()
         .unwrap()
         .get_inner(&NAMESPACE_INFO_CLS)
+        .funcall("new", (dict,))
+}
+
+fn table_info_to_rbobject(table_info: TableInfo) -> RbResult<Value> {
+    let TableInfo {
+        name,
+        table_id,
+        table_type,
+        comment,
+        storage_location,
+        data_source_format,
+        columns,
+        properties,
+        created_at,
+        created_by,
+        updated_at,
+        updated_by,
+    } = table_info;
+
+    let column_info_cls = Ruby::get().unwrap().get_inner(&COLUMN_INFO_CLS);
+
+    let columns = columns
+        .map(|columns| {
+            Ruby::get()
+                .unwrap()
+                .ary_try_from_iter(columns.into_iter().map(
+                    |ColumnInfo {
+                         name,
+                         type_name,
+                         type_text,
+                         type_json,
+                         position,
+                         comment,
+                         partition_index,
+                     }| {
+                        let dict = RHash::new();
+
+                        let name = name.as_str();
+                        let type_name = type_name.as_str();
+                        let type_text = type_text.as_str();
+
+                        rbdict_insert_keys!(dict, {
+                            name,
+                            type_name,
+                            type_text,
+                            type_json,
+                            position,
+                            comment,
+                            partition_index,
+                        });
+
+                        column_info_cls.funcall::<_, _, Value>("new", (dict,))
+                    },
+                ))
+        })
+        .transpose()?;
+
+    let dict = RHash::new();
+
+    let data_source_format = data_source_format.map(|x| x.to_string());
+    let table_type = table_type.to_string();
+    let properties = properties_to_rbobject(properties);
+
+    rbdict_insert_keys!(dict, {
+        name,
+        comment,
+        table_id,
+        table_type,
+        storage_location,
+        data_source_format,
+        columns,
+        properties,
+        created_at,
+        created_by,
+        updated_at,
+        updated_by,
+    });
+
+    Ruby::get()
+        .unwrap()
+        .get_inner(&TABLE_INFO_CLS)
         .funcall("new", (dict,))
 }
 

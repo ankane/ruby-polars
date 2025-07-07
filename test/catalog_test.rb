@@ -7,9 +7,9 @@ class CatalogTest < Minitest::Test
   end
 
   def test_list_catalogs
-    catalog = Polars::Catalog.new("http://localhost:8080", require_https: false)
     catalogs = catalog.list_catalogs
     assert_equal 1, catalogs.size
+
     assert_equal "unity", catalogs[0].name
     assert_equal "Main catalog", catalogs[0].comment
     assert_equal ({}), catalogs[0].properties
@@ -22,9 +22,9 @@ class CatalogTest < Minitest::Test
   end
 
   def test_list_namespaces
-    catalog = Polars::Catalog.new("http://localhost:8080", require_https: false)
     namespaces = catalog.list_namespaces("unity")
     assert_equal 1, namespaces.size
+
     namespace = namespaces[0]
     assert_equal "default", namespace.name
     assert_equal "Default schema", namespace.comment
@@ -36,10 +36,35 @@ class CatalogTest < Minitest::Test
     assert_nil namespace.updated_by
   end
 
+  def test_list_tables
+    tables = catalog.list_tables("unity", "default")
+    assert_equal 4, tables.size
+
+    table = tables[0]
+    assert_equal "marksheet", table.name
+    assert_equal "Managed table", table.comment
+    assert_equal "MANAGED", table.table_type
+    assert_equal "DELTA", table.data_source_format
+    assert_equal 3, table.columns.size
+
+    column = table.columns[0]
+    assert_equal "id", column.name
+    assert_equal "INT", column.type_name
+    assert_equal "int", column.type_text
+    assert_equal %!{"name":"id","type":"integer","nullable":false,"metadata":{}}!, column.type_json
+    assert_equal 0, column.position
+    assert_equal "ID primary key", column.comment
+    assert_nil column.partition_index
+  end
+
   def test_require_https
     error = assert_raises(ArgumentError) do
       Polars::Catalog.new("http://localhost:8080")
     end
     assert_equal "a non-HTTPS workspace_url was given. To allow non-HTTPS URLs, pass require_https: false.", error.message
+  end
+
+  def catalog
+    @catalog ||= Polars::Catalog.new("http://localhost:8080", require_https: false)
   end
 end
