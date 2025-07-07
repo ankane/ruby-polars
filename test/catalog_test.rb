@@ -75,6 +75,13 @@ class CatalogTest < Minitest::Test
     assert_nil column.partition_index
   end
 
+  def test_scan_table
+    skip unless ENV["TEST_DELTA"]
+
+    df = catalog.scan_table("unity", "default", "marksheet").collect
+    assert_equal [15, 3], df.shape
+  end
+
   def test_require_https
     error = assert_raises(ArgumentError) do
       Polars::Catalog.new("http://localhost:8080")
