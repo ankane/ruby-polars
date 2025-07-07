@@ -148,6 +148,22 @@ impl RbCatalogClient {
 
         Ok(out)
     }
+
+    pub fn get_table_info(
+        &self,
+        table_name: String,
+        catalog_name: String,
+        namespace: String,
+    ) -> RbResult<Value> {
+        let table_info = pl_async::get_runtime()
+            .block_in_place_on(
+                self.client()
+                    .get_table_info(&table_name, &catalog_name, &namespace),
+            )
+            .map_err(to_rb_err)?;
+
+        table_info_to_rbobject(table_info).map(|x| x.into())
+    }
 }
 
 impl RbCatalogClient {

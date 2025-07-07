@@ -73,5 +73,23 @@ module Polars
     def list_tables(catalog_name, namespace)
       @client.list_tables(catalog_name, namespace)
     end
+
+    # Retrieve the metadata of the specified table.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param catalog_name [String]
+    #   Name of the catalog.
+    # @param namespace [String]
+    #   Name of the namespace (unity schema).
+    # @param table_name [String]
+    #   Name of the table.
+    #
+    # @return [TableInfo]
+    def get_table_info(catalog_name, namespace, table_name)
+      @client.get_table_info(catalog_name, namespace, table_name)
+    end
   end
 end

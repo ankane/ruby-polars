@@ -57,6 +57,24 @@ class CatalogTest < Minitest::Test
     assert_nil column.partition_index
   end
 
+  def test_get_table_info
+    table = catalog.get_table_info("unity", "default", "marksheet")
+    assert_equal "marksheet", table.name
+    assert_equal "Managed table", table.comment
+    assert_equal "MANAGED", table.table_type
+    assert_equal "DELTA", table.data_source_format
+    assert_equal 3, table.columns.size
+
+    column = table.columns[0]
+    assert_equal "id", column.name
+    assert_equal "INT", column.type_name
+    assert_equal "int", column.type_text
+    assert_equal %!{"name":"id","type":"integer","nullable":false,"metadata":{}}!, column.type_json
+    assert_equal 0, column.position
+    assert_equal "ID primary key", column.comment
+    assert_nil column.partition_index
+  end
+
   def test_require_https
     error = assert_raises(ArgumentError) do
       Polars::Catalog.new("http://localhost:8080")
