@@ -78,14 +78,18 @@ class CatalogTest < Minitest::Test
   end
 
   def test_create_catalog
-    self.catalog.delete_catalog("polars_ruby_test", force: true)
+    reset_catalog
+
     catalog = self.catalog.create_catalog("polars_ruby_test")
     assert_equal "polars_ruby_test", catalog.name
     assert_includes self.catalog.list_catalogs.map(&:name), "polars_ruby_test"
+
+    self.catalog.delete_catalog("polars_ruby_test")
+    refute_includes self.catalog.list_catalogs.map(&:name), "polars_ruby_test"
   end
 
   def test_create_namespace
-    catalog.delete_catalog("polars_ruby_test", force: true)
+    reset_catalog
     catalog.create_catalog("polars_ruby_test")
 
     namespace = catalog.create_namespace("polars_ruby_test", "test_namespace")
@@ -97,7 +101,7 @@ class CatalogTest < Minitest::Test
   end
 
   def test_create_table
-    catalog.delete_catalog("polars_ruby_test", force: true)
+    reset_catalog
     catalog.create_catalog("polars_ruby_test")
     catalog.create_namespace("polars_ruby_test", "test_namespace")
 
@@ -136,5 +140,11 @@ class CatalogTest < Minitest::Test
 
   def catalog
     @catalog ||= Polars::Catalog.new("http://localhost:8080", require_https: false)
+  end
+
+  def reset_catalog
+    catalog.delete_catalog("polars_ruby_test", force: true)
+  rescue Polars::ComputeError
+    # do nothing
   end
 end
