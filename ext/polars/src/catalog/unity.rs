@@ -166,6 +166,29 @@ impl RbCatalogClient {
         table_info_to_rbobject(table_info)
     }
 
+    pub fn create_catalog(
+        &self,
+        catalog_name: String,
+        comment: Option<String>,
+        storage_root: Option<String>,
+    ) -> RbResult<Value> {
+        let catalog_info = pl_async::get_runtime()
+            .block_in_place_on(self.client().create_catalog(
+                &catalog_name,
+                comment.as_deref(),
+                storage_root.as_deref(),
+            ))
+            .map_err(to_rb_err)?;
+
+        catalog_info_to_rbobject(catalog_info)
+    }
+
+    pub fn delete_catalog(&self, catalog_name: String, force: bool) -> RbResult<()> {
+        pl_async::get_runtime()
+            .block_in_place_on(self.client().delete_catalog(&catalog_name, force))
+            .map_err(to_rb_err)
+    }
+
     pub fn type_json_to_polars_type(type_json: String) -> RbResult<Value> {
         Ok(Wrap(parse_type_json_str(&type_json).map_err(to_rb_err)?).into_value())
     }

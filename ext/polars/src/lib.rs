@@ -1131,6 +1131,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "get_table_info",
         method!(RbCatalogClient::get_table_info, 3),
     )?;
+    class.define_method(
+        "create_catalog",
+        method!(RbCatalogClient::create_catalog, 3),
+    )?;
+    class.define_method(
+        "delete_catalog",
+        method!(RbCatalogClient::delete_catalog, 2),
+    )?;
 
     Ok(())
 }

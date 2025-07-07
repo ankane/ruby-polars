@@ -7,18 +7,17 @@ class CatalogTest < Minitest::Test
   end
 
   def test_list_catalogs
-    catalogs = catalog.list_catalogs
-    assert_equal 1, catalogs.size
-
-    assert_equal "unity", catalogs[0].name
-    assert_equal "Main catalog", catalogs[0].comment
-    assert_equal ({}), catalogs[0].properties
-    assert_equal ({}), catalogs[0].options
-    assert_nil catalogs[0].storage_location
-    assert_kind_of ::Time, catalogs[0].created_at
-    assert_nil catalogs[0].created_by
-    assert_nil catalogs[0].updated_at
-    assert_nil catalogs[0].updated_by
+    catalogs = self.catalog.list_catalogs
+    catalog = catalogs.find { |c| c.name == "unity" }
+    assert_equal "unity", catalog.name
+    assert_equal "Main catalog", catalog.comment
+    assert_equal ({}), catalog.properties
+    assert_equal ({}), catalog.options
+    assert_nil catalog.storage_location
+    assert_kind_of ::Time, catalog.created_at
+    assert_nil catalog.created_by
+    assert_nil catalog.updated_at
+    assert_nil catalog.updated_by
   end
 
   def test_list_namespaces
@@ -80,6 +79,13 @@ class CatalogTest < Minitest::Test
 
     df = catalog.scan_table("unity", "default", "marksheet").collect
     assert_equal [15, 3], df.shape
+  end
+
+  def test_create_catalog
+    self.catalog.delete_catalog("polars_ruby_test") rescue nil
+    catalog = self.catalog.create_catalog("polars_ruby_test")
+    assert_equal "polars_ruby_test", catalog.name
+    assert_includes self.catalog.list_catalogs.map(&:name), "polars_ruby_test"
   end
 
   def test_get_polars_schema

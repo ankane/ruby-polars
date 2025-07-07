@@ -172,6 +172,44 @@ module Polars
       raise Todo
     end
 
+    # Create a catalog.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param catalog_name [String]
+    #   Name of the catalog.
+    # @param comment [String]
+    #   Leaves a comment about the catalog.
+    # @param storage_root [String]
+    #   Base location at which to store the catalog.
+    #
+    # @return [CatalogInfo]
+    def create_catalog(catalog_name, comment: nil, storage_root: nil)
+      @client.create_catalog(catalog_name, comment, storage_root)
+    end
+
+    # Delete a catalog.
+    #
+    # Note that depending on the table type and catalog server, this may not
+    # delete the actual data files from storage. For more details, please
+    # consult the documentation of the catalog provider you are using.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param catalog_name [String]
+    #   Name of the catalog.
+    # @param force [Boolean]
+    #   Forcibly delete the catalog even if it is not empty.
+    #
+    # @return [Object]
+    def delete_catalog(catalog_name, force: false)
+      @client.delete_catalog(catalog_name, force)
+    end
+
     private
 
     def _extract_location_and_data_format(table_info, operation)
