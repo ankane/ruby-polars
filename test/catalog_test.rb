@@ -82,6 +82,15 @@ class CatalogTest < Minitest::Test
     assert_equal [15, 3], df.shape
   end
 
+  def test_get_polars_schema
+    table = catalog.get_table_info("unity", "default", "marksheet")
+    schema = table.get_polars_schema
+    assert_kind_of Polars::Schema, schema
+    assert_equal schema["id"], Polars::Int32
+    assert_equal schema["name"], Polars::String
+    assert_equal schema["marks"], Polars::Int32
+  end
+
   def test_require_https
     error = assert_raises(ArgumentError) do
       Polars::Catalog.new("http://localhost:8080")

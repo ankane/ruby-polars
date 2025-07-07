@@ -1,12 +1,17 @@
 module Polars
   class Schema
-    def initialize(schema, check_dtypes: true)
+    def initialize(schema = nil, check_dtypes: true)
       raise Todo if check_dtypes
       @schema = schema.to_h
     end
 
     def [](key)
       @schema[key]
+    end
+
+    def []=(name, dtype)
+      # TODO check dtype if needed
+      @schema[name] = dtype
     end
 
     def names

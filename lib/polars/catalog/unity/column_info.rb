@@ -13,6 +13,19 @@ module Polars
           :partition_index,
           keyword_init: true
         )
+
+      class ColumnInfo
+        # Get the native polars datatype of this column.
+        #
+        # @note
+        #   This functionality is considered **unstable**. It may be changed
+        #   at any point without it being considered a breaking change.
+        #
+        # @return [Object]
+        def get_polars_dtype
+          RbCatalogClient.type_json_to_polars_type(type_json)
+        end
+      end
     end
   end
 end

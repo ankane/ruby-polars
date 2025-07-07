@@ -3,11 +3,12 @@ use magnus::{IntoValue, Module, RArray, RClass, RHash, RModule, Ruby, Value};
 use polars::prelude::{PlHashMap, PlSmallStr};
 use polars_io::catalog::unity::client::{CatalogClient, CatalogClientBuilder};
 use polars_io::catalog::unity::models::{CatalogInfo, ColumnInfo, NamespaceInfo, TableInfo};
+use polars_io::catalog::unity::schema::parse_type_json_str;
 use polars_io::pl_async;
 
 use crate::rb_modules::polars;
 use crate::utils::to_rb_err;
-use crate::RbResult;
+use crate::{RbResult, Wrap};
 
 macro_rules! rbdict_insert_keys {
     ($dict:expr, {$a:expr}) => {
@@ -163,6 +164,10 @@ impl RbCatalogClient {
             .map_err(to_rb_err)?;
 
         table_info_to_rbobject(table_info)
+    }
+
+    pub fn type_json_to_polars_type(type_json: String) -> RbResult<Value> {
+        Ok(Wrap(parse_type_json_str(&type_json).map_err(to_rb_err)?).into_value())
     }
 }
 
