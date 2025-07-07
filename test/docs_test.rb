@@ -25,6 +25,10 @@ class DocsTest < Minitest::Test
     assert_docs Polars::CatNameSpace
   end
 
+  def test_catalog
+    assert_docs Polars::Catalog
+  end
+
   def test_config
     assert_docs Polars::Config
   end

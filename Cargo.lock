@@ -1395,9 +1395,9 @@ dependencies = [
 [[package]]
 name = "magnus"
 version = "0.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d87ae53030f3a22e83879e666cb94e58a7bdf31706878a0ba48752994146dab"
+source = "git+https://github.com/matsadler/magnus.git?rev=4125ee2ab5a405d17aa6d7503961c1ecdbe499ef#4125ee2ab5a405d17aa6d7503961c1ecdbe499ef"
 dependencies = [
+ "chrono",
  "magnus-macros",
  "rb-sys",
  "rb-sys-env",
@@ -1407,8 +1407,7 @@ dependencies = [
 [[package]]
 name = "magnus-macros"
 version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5968c820e2960565f647819f5928a42d6e874551cab9d88d75e3e0660d7f71e3"
+source = "git+https://github.com/matsadler/magnus.git?rev=4125ee2ab5a405d17aa6d7503961c1ecdbe499ef#4125ee2ab5a405d17aa6d7503961c1ecdbe499ef"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1701,6 +1700,7 @@ dependencies = [
  "polars-arrow",
  "polars-core",
  "polars-io",
+ "polars-lazy",
  "polars-parquet",
  "polars-plan",
  "polars-utils",
@@ -1913,6 +1913,8 @@ dependencies = [
  "serde_json",
  "simd-json",
  "simdutf8",
+ "strum",
+ "strum_macros",
  "tokio",
  "tokio-util",
  "url",
@@ -3026,6 +3028,12 @@ name = "strength_reduce"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fe895eb47f22e2ddd4dabc02bce419d2e643c8e3b585c78158b349195bc24d82"
+
+[[package]]
+name = "strum"
+version = "0.26.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8fec0f0aef304996cf250b31b5a10dee7980c85da9d759361292b8bca5a18f06"
 
 [[package]]
 name = "strum_macros"

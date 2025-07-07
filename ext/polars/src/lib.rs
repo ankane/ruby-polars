@@ -1,5 +1,6 @@
 mod allocator;
 mod batched_csv;
+mod catalog;
 mod conversion;
 mod dataframe;
 mod error;
@@ -21,6 +22,7 @@ mod sql;
 mod utils;
 
 use batched_csv::RbBatchedCsv;
+use catalog::unity::RbCatalogClient;
 use conversion::*;
 use dataframe::RbDataFrame;
 use error::RbPolarsErr;
@@ -1111,6 +1113,11 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     // arrow array stream
     let class = module.define_class("ArrowArrayStream", ruby.class_object())?;
     class.define_method("to_i", method!(RbArrowArrayStream::to_i, 0))?;
+
+    // catalog
+    let class = module.define_class("RbCatalogClient", ruby.class_object())?;
+    class.define_singleton_method("new", function!(RbCatalogClient::new, 2))?;
+    class.define_method("list_catalogs", method!(RbCatalogClient::list_catalogs, 0))?;
 
     Ok(())
 }
