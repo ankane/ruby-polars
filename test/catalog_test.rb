@@ -87,9 +87,35 @@ class CatalogTest < Minitest::Test
   def test_create_namespace
     catalog.delete_catalog("polars_ruby_test", force: true)
     catalog.create_catalog("polars_ruby_test")
+
     namespace = catalog.create_namespace("polars_ruby_test", "test_namespace")
     assert_equal "test_namespace", namespace.name
     assert_includes catalog.list_namespaces("polars_ruby_test").map(&:name), "test_namespace"
+
+    catalog.delete_namespace("polars_ruby_test", "test_namespace")
+    refute_includes catalog.list_namespaces("polars_ruby_test").map(&:name), "test_namespace"
+  end
+
+  def test_create_table
+    catalog.delete_catalog("polars_ruby_test", force: true)
+    catalog.create_catalog("polars_ruby_test")
+    catalog.create_namespace("polars_ruby_test", "test_namespace")
+
+    table =
+      catalog.create_table(
+        "polars_ruby_test",
+        "test_namespace",
+        "test_table",
+        schema: {},
+        table_type: "EXTERNAL",
+        data_source_format: "DELTA",
+        storage_root: File.join(Dir.tmpdir, "polars_ruby_test")
+      )
+    assert_equal "test_table", table.name
+    assert_includes catalog.list_tables("polars_ruby_test", "test_namespace").map(&:name), "test_table"
+
+    catalog.delete_table("polars_ruby_test", "test_namespace", "test_table")
+    refute_includes catalog.list_tables("polars_ruby_test", "test_namespace").map(&:name), "test_table"
   end
 
   def test_get_polars_schema

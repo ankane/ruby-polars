@@ -1147,6 +1147,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "delete_namespace",
         method!(RbCatalogClient::delete_namespace, 3),
     )?;
+    class.define_method("create_table", method!(RbCatalogClient::create_table, 9))?;
+    class.define_method("delete_table", method!(RbCatalogClient::delete_table, 3))?;
 
     Ok(())
 }

@@ -266,6 +266,89 @@ module Polars
       @client.delete_namespace(catalog_name, namespace, force)
     end
 
+    # Create a table in the catalog.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param catalog_name [String]
+    #   Name of the catalog.
+    # @param namespace [String]
+    #   Name of the namespace (unity schema).
+    # @param table_name [String]
+    #   Name of the table.
+    # @param schema [Object]
+    #   Schema of the table.
+    # @param table_type [Object]
+    #   Type of the table
+    # @param data_source_format [Object]
+    #   Storage format of the table.
+    # @param comment [String]
+    #   Leaves a comment about the table.
+    # @param storage_root [String]
+    #   Base location at which to store the table.
+    # @param properties [Hash]
+    #   Extra key-value metadata to store.
+    #
+    # @return [TableInfo]
+    def create_table(
+      catalog_name,
+      namespace,
+      table_name,
+      schema:,
+      table_type:,
+      data_source_format: nil,
+      comment: nil,
+      storage_root: nil,
+      properties: nil
+    )
+      @client.create_table(
+        catalog_name,
+        namespace,
+        table_name,
+        schema,
+        table_type,
+        data_source_format,
+        comment,
+        storage_root,
+        (properties || {}).to_a
+      )
+    end
+
+    # Delete the table stored at this location.
+    #
+    # Note that depending on the table type and catalog server, this may not
+    # delete the actual data files from storage. For more details, please
+    # consult the documentation of the catalog provider you are using.
+    #
+    # If you would like to perform manual deletions, the storage location of
+    # the files can be found using `get_table_info`.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param catalog_name [String]
+    #   Name of the catalog.
+    # @param namespace [String]
+    #   Name of the namespace (unity schema).
+    # @param table_name [String]
+    #   Name of the table.
+    #
+    # @return [Object]
+    def delete_table(
+      catalog_name,
+      namespace,
+      table_name
+    )
+      @client.delete_table(
+        catalog_name,
+        namespace,
+        table_name
+      )
+    end
+
     private
 
     def _extract_location_and_data_format(table_info, operation)

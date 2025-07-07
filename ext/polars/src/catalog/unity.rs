@@ -1,14 +1,18 @@
+use std::str::FromStr;
+
 use magnus::value::{Lazy, ReprValue};
 use magnus::{IntoValue, Module, RArray, RClass, RHash, RModule, Ruby, Value};
-use polars::prelude::{PlHashMap, PlSmallStr};
+use polars::prelude::{PlHashMap, PlSmallStr, Schema};
 use polars_io::catalog::unity::client::{CatalogClient, CatalogClientBuilder};
-use polars_io::catalog::unity::models::{CatalogInfo, ColumnInfo, NamespaceInfo, TableInfo};
+use polars_io::catalog::unity::models::{
+    CatalogInfo, ColumnInfo, DataSourceFormat, NamespaceInfo, TableInfo, TableType,
+};
 use polars_io::catalog::unity::schema::parse_type_json_str;
 use polars_io::pl_async;
 
 use crate::rb_modules::polars;
 use crate::utils::to_rb_err;
-use crate::{RbResult, Wrap};
+use crate::{RbResult, RbValueError, Wrap};
 
 macro_rules! rbdict_insert_keys {
     ($dict:expr, {$a:expr}) => {
@@ -218,6 +222,58 @@ impl RbCatalogClient {
             .block_in_place_on(
                 self.client()
                     .delete_namespace(&catalog_name, &namespace, force),
+            )
+            .map_err(to_rb_err)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_table(
+        &self,
+        catalog_name: String,
+        namespace: String,
+        table_name: String,
+        schema: Option<Wrap<Schema>>,
+        table_type: String,
+        data_source_format: Option<String>,
+        comment: Option<String>,
+        storage_root: Option<String>,
+        properties: Vec<(String, String)>,
+    ) -> RbResult<Value> {
+        let table_info = pl_async::get_runtime()
+            .block_in_place_on(
+                self.client().create_table(
+                    &catalog_name,
+                    &namespace,
+                    &table_name,
+                    schema.as_ref().map(|x| &x.0),
+                    &TableType::from_str(&table_type)
+                        .map_err(|e| RbValueError::new_err(e.to_string()))?,
+                    data_source_format
+                        .as_deref()
+                        .map(DataSourceFormat::from_str)
+                        .transpose()
+                        .map_err(|e| RbValueError::new_err(e.to_string()))?
+                        .as_ref(),
+                    comment.as_deref(),
+                    storage_root.as_deref(),
+                    &mut properties.iter().map(|(a, b)| (a.as_str(), b.as_str())),
+                ),
+            )
+            .map_err(to_rb_err)?;
+
+        table_info_to_rbobject(table_info)
+    }
+
+    pub fn delete_table(
+        &self,
+        catalog_name: String,
+        namespace: String,
+        table_name: String,
+    ) -> RbResult<()> {
+        pl_async::get_runtime()
+            .block_in_place_on(
+                self.client()
+                    .delete_table(&catalog_name, &namespace, &table_name),
             )
             .map_err(to_rb_err)
     }
