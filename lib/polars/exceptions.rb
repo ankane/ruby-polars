@@ -24,13 +24,15 @@ module Polars
   class TooManyRowsReturned < RowsException; end
 
   # @private
-  class AssertionError < Error; end
-
-  # @private
+  # Exception raised when Polars could not perform an underlying computation.
   class ComputeError < Error; end
 
   # @private
+  # Exception raised when a column name is duplicated.
   class DuplicateError < Error; end
+
+  # @private
+  class AssertionError < Error; end
 
   # @private
   class Todo < Error
