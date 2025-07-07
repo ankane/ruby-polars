@@ -30,6 +30,9 @@ module Polars
   class ComputeError < Error; end
 
   # @private
+  class DuplicateError < Error; end
+
+  # @private
   class Todo < Error
     def message
       "not implemented yet"
