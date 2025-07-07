@@ -189,6 +189,39 @@ impl RbCatalogClient {
             .map_err(to_rb_err)
     }
 
+    pub fn create_namespace(
+        &self,
+        catalog_name: String,
+        namespace: String,
+        comment: Option<String>,
+        storage_root: Option<String>,
+    ) -> RbResult<Value> {
+        let namespace_info = pl_async::get_runtime()
+            .block_in_place_on(self.client().create_namespace(
+                &catalog_name,
+                &namespace,
+                comment.as_deref(),
+                storage_root.as_deref(),
+            ))
+            .map_err(to_rb_err)?;
+
+        namespace_info_to_rbobject(namespace_info)
+    }
+
+    pub fn delete_namespace(
+        &self,
+        catalog_name: String,
+        namespace: String,
+        force: bool,
+    ) -> RbResult<()> {
+        pl_async::get_runtime()
+            .block_in_place_on(
+                self.client()
+                    .delete_namespace(&catalog_name, &namespace, force),
+            )
+            .map_err(to_rb_err)
+    }
+
     pub fn type_json_to_polars_type(type_json: String) -> RbResult<Value> {
         Ok(Wrap(parse_type_json_str(&type_json).map_err(to_rb_err)?).into_value())
     }

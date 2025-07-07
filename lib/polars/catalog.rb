@@ -210,6 +210,62 @@ module Polars
       @client.delete_catalog(catalog_name, force)
     end
 
+    # Create a namespace (unity schema) in the catalog.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param catalog_name [String]
+    #   Name of the catalog.
+    # @param namespace [String]
+    #   Name of the namespace (unity schema).
+    # @param comment [String]
+    #   Leaves a comment about the table.
+    # @param storage_root [String]
+    #   Base location at which to store the namespace.
+    #
+    # @return [NamespaceInfo]
+    def create_namespace(
+      catalog_name,
+      namespace,
+      comment: nil,
+      storage_root: nil
+    )
+      @client.create_namespace(
+        catalog_name,
+        namespace,
+        comment,
+        storage_root
+      )
+    end
+
+    # Delete a namespace (unity schema) in the catalog.
+    #
+    # Note that depending on the table type and catalog server, this may not
+    # delete the actual data files from storage. For more details, please
+    # consult the documentation of the catalog provider you are using.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param catalog_name [String]
+    #   Name of the catalog.
+    # @param namespace [String]
+    #   Name of the namespace (unity schema).
+    # @param force [Boolean]
+    #   Forcibly delete the namespace even if it is not empty.
+    #
+    # @return [Object]
+    def delete_namespace(
+      catalog_name,
+      namespace,
+      force: false
+    )
+      @client.delete_namespace(catalog_name, namespace, force)
+    end
+
     private
 
     def _extract_location_and_data_format(table_info, operation)

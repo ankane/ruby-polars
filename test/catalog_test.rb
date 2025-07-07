@@ -78,10 +78,18 @@ class CatalogTest < Minitest::Test
   end
 
   def test_create_catalog
-    self.catalog.delete_catalog("polars_ruby_test") rescue nil
+    self.catalog.delete_catalog("polars_ruby_test", force: true)
     catalog = self.catalog.create_catalog("polars_ruby_test")
     assert_equal "polars_ruby_test", catalog.name
     assert_includes self.catalog.list_catalogs.map(&:name), "polars_ruby_test"
+  end
+
+  def test_create_namespace
+    catalog.delete_catalog("polars_ruby_test", force: true)
+    catalog.create_catalog("polars_ruby_test")
+    namespace = catalog.create_namespace("polars_ruby_test", "test_namespace")
+    assert_equal "test_namespace", namespace.name
+    assert_includes catalog.list_namespaces("polars_ruby_test").map(&:name), "test_namespace"
   end
 
   def test_get_polars_schema
