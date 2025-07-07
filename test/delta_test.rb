@@ -3,6 +3,7 @@ require_relative "test_helper"
 class DeltaTest < Minitest::Test
   def setup
     skip unless ENV["TEST_DELTA"]
+    super
   end
 
   def test_read_delta

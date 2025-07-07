@@ -2,6 +2,7 @@ require_relative "test_helper"
 
 class DatabaseTest < Minitest::Test
   def setup
+    super
     User.delete_all
     ActiveRecord::Base.connection_pool.with_connection do |connection|
       connection.drop_table("items") if connection.table_exists?("items")
