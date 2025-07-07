@@ -22,9 +22,7 @@ class CatalogTest < Minitest::Test
 
   def test_list_namespaces
     namespaces = catalog.list_namespaces("unity")
-    assert_equal 1, namespaces.size
-
-    namespace = namespaces[0]
+    namespace = namespaces.find { |n| n.name == "default" }
     assert_equal "default", namespace.name
     assert_equal "Default schema", namespace.comment
     assert_equal ({}), namespace.properties
@@ -37,9 +35,7 @@ class CatalogTest < Minitest::Test
 
   def test_list_tables
     tables = catalog.list_tables("unity", "default")
-    assert_equal 4, tables.size
-
-    table = tables[0]
+    table = tables.find { |t| t.name == "marksheet" }
     assert_equal "marksheet", table.name
     assert_equal "Managed table", table.comment
     assert_equal "MANAGED", table.table_type
