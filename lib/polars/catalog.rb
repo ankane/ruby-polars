@@ -43,5 +43,19 @@ module Polars
     def list_catalogs
       @client.list_catalogs
     end
+
+    # List the available namespaces (unity schema) under the specified catalog.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param catalog_name [String]
+    #   Name of the catalog.
+    #
+    # @return [Array]
+    def list_namespaces(catalog_name)
+      @client.list_namespaces(catalog_name)
+    end
   end
 end

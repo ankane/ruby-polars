@@ -1118,6 +1118,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     let class = module.define_class("RbCatalogClient", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbCatalogClient::new, 2))?;
     class.define_method("list_catalogs", method!(RbCatalogClient::list_catalogs, 0))?;
+    class.define_method(
+        "list_namespaces",
+        method!(RbCatalogClient::list_namespaces, 1),
+    )?;
 
     Ok(())
 }

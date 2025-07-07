@@ -21,6 +21,21 @@ class CatalogTest < Minitest::Test
     assert_nil catalogs[0].updated_by
   end
 
+  def test_list_namespaces
+    catalog = Polars::Catalog.new("http://localhost:8080", require_https: false)
+    namespaces = catalog.list_namespaces("unity")
+    assert_equal 1, namespaces.size
+    namespace = namespaces[0]
+    assert_equal "default", namespace.name
+    assert_equal "Default schema", namespace.comment
+    assert_equal ({}), namespace.properties
+    assert_nil namespace.storage_location
+    assert_kind_of ::Time, namespace.created_at
+    assert_nil namespace.created_by
+    assert_nil namespace.updated_at
+    assert_nil namespace.updated_by
+  end
+
   def test_require_https
     error = assert_raises(ArgumentError) do
       Polars::Catalog.new("http://localhost:8080")
