@@ -162,7 +162,7 @@ impl RbCatalogClient {
             )
             .map_err(to_rb_err)?;
 
-        table_info_to_rbobject(table_info).map(|x| x.into())
+        table_info_to_rbobject(table_info)
     }
 }
 
