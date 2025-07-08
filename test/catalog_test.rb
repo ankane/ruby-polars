@@ -77,6 +77,29 @@ class CatalogTest < Minitest::Test
     assert_equal [15, 3], df.shape
   end
 
+  def test_write_table
+    skip unless ENV["TEST_DELTA"]
+
+    reset_catalog
+    catalog.create_catalog("polars_ruby_test")
+    catalog.create_namespace("polars_ruby_test", "test_namespace")
+    catalog.create_table(
+      "polars_ruby_test",
+      "test_namespace",
+      "test_table",
+      schema: {},
+      table_type: "EXTERNAL",
+      data_source_format: "DELTA",
+      storage_root: temp_path
+    )
+
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    catalog.write_table(df, "polars_ruby_test", "test_namespace", "test_table")
+
+    df2 = catalog.scan_table("polars_ruby_test", "test_namespace", "test_table").collect
+    assert_frame df, df2
+  end
+
   def test_create_catalog
     reset_catalog
 
@@ -113,7 +136,7 @@ class CatalogTest < Minitest::Test
         schema: {},
         table_type: "EXTERNAL",
         data_source_format: "DELTA",
-        storage_root: File.join(Dir.tmpdir, "polars_ruby_test")
+        storage_root: temp_path
       )
     assert_equal "test_table", table.name
     assert_includes catalog.list_tables("polars_ruby_test", "test_namespace").map(&:name), "test_table"

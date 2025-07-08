@@ -117,8 +117,8 @@ module Polars
     #   * [aws](https://docs.rs/object_store/latest/object_store/aws/enum.AmazonS3ConfigKey.html)
     #   * [gcp](https://docs.rs/object_store/latest/object_store/gcp/enum.GoogleConfigKey.html)
     #   * [azure](https://docs.rs/object_store/latest/object_store/azure/enum.AzureConfigKey.html)
-    #   * Hugging Face (`hf://`): Accepts an API key under the `token` parameter: \
-    #   `{'token': '...'}`, or by setting the `HF_TOKEN` environment variable.
+    #   * Hugging Face (`hf://`): Accepts an API key under the `token` parameter:
+    #     `{"token" => "..."}`, or by setting the `HF_TOKEN` environment variable.
     #
     #   If `storage_options` is not provided, Polars will try to infer the
     #   information from environment variables.
@@ -170,6 +170,86 @@ module Polars
       end
 
       raise Todo
+    end
+
+    # Write a DataFrame to a catalog table.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param df [DataFrame]
+    #   DataFrame to write.
+    # @param catalog_name [String]
+    #   Name of the catalog.
+    # @param namespace [String]
+    #   Name of the namespace (unity schema).
+    # @param table_name [String]
+    #   Name of the table.
+    # @param delta_mode ['error', 'append', 'overwrite', 'ignore', 'merge']
+    #   (For delta tables) How to handle existing data.
+    #
+    #   - If 'error', throw an error if the table already exists (default).
+    #   - If 'append', will add new data.
+    #   - If 'overwrite', will replace table with new data.
+    #   - If 'ignore', will not write anything if table already exists.
+    #   - If 'merge', return a `TableMerger` object to merge data from the DataFrame
+    #     with the existing data.
+    # @param delta_write_options [Hash]
+    #   (For delta tables) Additional keyword arguments while writing a
+    #   Delta lake Table.
+    #   See a list of supported write options [here](https://delta-io.github.io/delta-rs/api/delta_writer/#deltalake.write_deltalake).
+    # @param delta_merge_options [Hash]
+    #   (For delta tables) Keyword arguments which are required to `MERGE` a
+    #   Delta lake Table.
+    #   See a list of supported merge options [here](https://delta-io.github.io/delta-rs/api/delta_table/#deltalake.DeltaTable.merge).
+    # @param storage_options [Hash]
+    #   Options that indicate how to connect to a cloud provider.
+    #
+    #   The cloud providers currently supported are AWS, GCP, and Azure.
+    #   See supported keys here:
+    #
+    #   * [aws](https://docs.rs/object_store/latest/object_store/aws/enum.AmazonS3ConfigKey.html)
+    #   * [gcp](https://docs.rs/object_store/latest/object_store/gcp/enum.GoogleConfigKey.html)
+    #   * [azure](https://docs.rs/object_store/latest/object_store/azure/enum.AzureConfigKey.html)
+    #   * Hugging Face (`hf://`): Accepts an API key under the `token` parameter:
+    #     `{"token" => "..."}`, or by setting the `HF_TOKEN` environment variable.
+    #
+    #   If `storage_options` is not provided, Polars will try to infer the
+    #   information from environment variables.
+    #
+    # @return [Object]
+    def write_table(
+      df,
+      catalog_name,
+      namespace,
+      table_name,
+      delta_mode: "error",
+      delta_write_options: nil,
+      delta_merge_options: nil,
+      storage_options: nil
+    )
+      table_info = get_table_info(catalog_name, namespace, table_name)
+      storage_location, data_source_format = _extract_location_and_data_format(
+        table_info, "scan table"
+      )
+
+      if ["DELTA", "DELTASHARING"].include?(data_source_format)
+        return df.write_delta(
+          storage_location,
+          storage_options: storage_options,
+          mode: delta_mode,
+          delta_write_options: delta_write_options,
+          delta_merge_options: delta_merge_options
+        )
+      else
+        msg = (
+          "write_table: table format of " +
+          "#{catalog_name}.#{namespace}.#{table_name} " +
+          "(#{data_source_format}) is unsupported."
+        )
+        raise NotImplementedError, msg
+      end
     end
 
     # Create a catalog.
