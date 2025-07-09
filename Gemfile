@@ -19,3 +19,4 @@ end
 
 # https://github.com/lsegal/yard/issues/1321
 gem "yard", require: false
+gem "rdoc", require: false
