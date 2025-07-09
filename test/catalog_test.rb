@@ -107,7 +107,7 @@ class CatalogTest < Minitest::Test
     assert_equal "polars_ruby_test", catalog.name
     assert_includes self.catalog.list_catalogs.map(&:name), "polars_ruby_test"
 
-    self.catalog.delete_catalog("polars_ruby_test")
+    assert_nil self.catalog.delete_catalog("polars_ruby_test")
     refute_includes self.catalog.list_catalogs.map(&:name), "polars_ruby_test"
   end
 
@@ -119,7 +119,7 @@ class CatalogTest < Minitest::Test
     assert_equal "test_namespace", namespace.name
     assert_includes catalog.list_namespaces("polars_ruby_test").map(&:name), "test_namespace"
 
-    catalog.delete_namespace("polars_ruby_test", "test_namespace")
+    assert_nil catalog.delete_namespace("polars_ruby_test", "test_namespace")
     refute_includes catalog.list_namespaces("polars_ruby_test").map(&:name), "test_namespace"
   end
 
@@ -141,7 +141,7 @@ class CatalogTest < Minitest::Test
     assert_equal "test_table", table.name
     assert_includes catalog.list_tables("polars_ruby_test", "test_namespace").map(&:name), "test_table"
 
-    catalog.delete_table("polars_ruby_test", "test_namespace", "test_table")
+    assert_nil catalog.delete_table("polars_ruby_test", "test_namespace", "test_table")
     refute_includes catalog.list_tables("polars_ruby_test", "test_namespace").map(&:name), "test_table"
   end
 
