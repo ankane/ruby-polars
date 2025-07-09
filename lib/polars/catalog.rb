@@ -235,7 +235,7 @@ module Polars
       )
 
       if ["DELTA", "DELTASHARING"].include?(data_source_format)
-        return df.write_delta(
+        df.write_delta(
           storage_location,
           storage_options: storage_options,
           mode: delta_mode,

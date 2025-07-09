@@ -94,7 +94,7 @@ class CatalogTest < Minitest::Test
     )
 
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
-    catalog.write_table(df, "polars_ruby_test", "test_namespace", "test_table")
+    assert_nil catalog.write_table(df, "polars_ruby_test", "test_namespace", "test_table")
 
     df2 = catalog.scan_table("polars_ruby_test", "test_namespace", "test_table").collect
     assert_frame df, df2
