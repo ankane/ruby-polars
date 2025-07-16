@@ -132,7 +132,7 @@ impl RbSeries {
                     unreachable!()
                 }
             };
-            rblist
+            rblist.into_value()
         }
 
         to_a_recursive(series)
