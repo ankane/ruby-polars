@@ -1,5 +1,5 @@
 use crate::rb_modules;
-use magnus::{exception, Error};
+use magnus::{Error, exception};
 use std::borrow::Cow;
 
 macro_rules! create_exception {

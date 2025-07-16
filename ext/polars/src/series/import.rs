@@ -1,13 +1,13 @@
 use arrow::array::Array;
 use arrow::ffi::{ArrowArrayStream, ArrowArrayStreamReader};
-use magnus::prelude::*;
 use magnus::Value;
+use magnus::prelude::*;
 use polars::prelude::*;
 
 use super::RbSeries;
 
-use crate::exceptions::RbValueError;
 use crate::RbResult;
+use crate::exceptions::RbValueError;
 
 /// Import `arrow_c_stream` across Ruby boundary.
 fn call_arrow_c_stream(ob: Value) -> RbResult<Value> {

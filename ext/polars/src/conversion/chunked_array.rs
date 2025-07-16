@@ -1,10 +1,10 @@
-use magnus::{prelude::*, IntoValue, RArray, RString, Ruby, TryConvert, Value};
+use magnus::{IntoValue, RArray, RString, Ruby, TryConvert, Value, prelude::*};
 use polars::prelude::*;
 
-use super::{get_rbseq, struct_dict, Wrap};
+use super::{Wrap, get_rbseq, struct_dict};
 
-use crate::rb_modules::utils;
 use crate::RbResult;
+use crate::rb_modules::utils;
 
 impl TryConvert for Wrap<StringChunked> {
     fn try_convert(obj: Value) -> RbResult<Self> {

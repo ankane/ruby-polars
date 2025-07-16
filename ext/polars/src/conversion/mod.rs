@@ -8,8 +8,8 @@ use std::num::NonZeroUsize;
 use std::path::PathBuf;
 
 use magnus::{
-    class, exception, prelude::*, r_hash::ForEach, try_convert::TryConvertOwned, value::Opaque,
-    IntoValue, Module, RArray, RHash, Ruby, Symbol, TryConvert, Value,
+    IntoValue, Module, RArray, RHash, Ruby, Symbol, TryConvert, Value, class, exception,
+    prelude::*, r_hash::ForEach, try_convert::TryConvertOwned, value::Opaque,
 };
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
@@ -26,7 +26,7 @@ use polars_plan::dsl::ScanSources;
 use polars_utils::mmap::MemSlice;
 use polars_utils::total_ord::{TotalEq, TotalHash};
 
-use crate::file::{get_ruby_scan_source_input, RubyScanSourceInput};
+use crate::file::{RubyScanSourceInput, get_ruby_scan_source_input};
 use crate::object::OBJECT_NAME;
 use crate::rb_modules::series;
 use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
@@ -341,7 +341,7 @@ impl TryConvert for Wrap<DataType> {
                 dt => {
                     return Err(RbValueError::new_err(format!(
                         "{dt} is not a correct polars DataType.",
-                    )))
+                    )));
                 }
             }
         } else if String::try_convert(ob).is_err() {
@@ -422,7 +422,7 @@ impl TryConvert for Wrap<DataType> {
                     return Err(RbTypeError::new_err(format!(
                         "A {dt} object is not a correct polars DataType. \
                         Hint: use the class without instantiating it.",
-                    )))
+                    )));
                 }
             }
         } else {
@@ -452,7 +452,7 @@ impl TryConvert for Wrap<DataType> {
                 _ => {
                     return Err(RbValueError::new_err(format!(
                         "{ob} is not a supported DataType."
-                    )))
+                    )));
                 }
             }
         };
@@ -476,7 +476,7 @@ impl TryConvert for Wrap<StatisticsOptions> {
                 _ => {
                     return Err(RbTypeError::new_err(format!(
                         "'{key}' is not a valid statistic option",
-                    )))
+                    )));
                 }
             }
             Ok(ForEach::Continue)
@@ -561,7 +561,7 @@ impl TryConvert for Wrap<ScanSources> {
                     return Err(RbTypeError::new_err(
                         "Cannot combine in-memory bytes, paths and files for scan sources"
                             .to_string(),
-                    ))
+                    ));
                 }
             }
         }
@@ -679,7 +679,7 @@ impl TryConvert for Wrap<AsofStrategy> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "asof `strategy` must be one of {{'backward', 'forward', 'nearest'}}, got {v}",
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -694,7 +694,7 @@ impl TryConvert for Wrap<InterpolationMethod> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "method must be one of {{'linear', 'nearest'}}, got {v}",
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -710,7 +710,7 @@ impl TryConvert for Wrap<Option<AvroCompression>> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "compression must be one of {{'uncompressed', 'snappy', 'deflate'}}, got {v}"
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -725,7 +725,7 @@ impl TryConvert for Wrap<CategoricalOrdering> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "ordering must be one of {{'physical', 'lexical'}}, got {v}"
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -741,7 +741,7 @@ impl TryConvert for Wrap<StartBy> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "closed must be one of {{'window', 'datapoint', 'monday'}}, got {v}",
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -758,7 +758,7 @@ impl TryConvert for Wrap<ClosedWindow> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "closed must be one of {{'left', 'right', 'both', 'none'}}, got {v}"
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -788,7 +788,7 @@ impl TryConvert for Wrap<CsvEncoding> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "encoding must be one of {{'utf8', 'utf8-lossy'}}, got {v}"
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -804,7 +804,7 @@ impl TryConvert for Wrap<Option<IpcCompression>> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "compression must be one of {{'uncompressed', 'lz4', 'zstd'}}, got {v}"
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -822,8 +822,8 @@ impl TryConvert for Wrap<JoinType> {
             "cross" => JoinType::Cross,
             v => {
                 return Err(RbValueError::new_err(format!(
-                "how must be one of {{'inner', 'left', 'full', 'semi', 'anti', 'cross'}}, got {v}"
-            )))
+                    "how must be one of {{'inner', 'left', 'full', 'semi', 'anti', 'cross'}}, got {v}"
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -839,7 +839,7 @@ impl TryConvert for Wrap<Label> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "`label` must be one of {{'left', 'right', 'datapoint'}}, got {v}",
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -854,7 +854,7 @@ impl TryConvert for Wrap<ListToStructWidthStrategy> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "n_field_strategy must be one of {{'first_non_null', 'max_width'}}, got {v}"
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -869,7 +869,7 @@ impl TryConvert for Wrap<NonExistent> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "`non_existent` must be one of {{'null', 'raise'}}, got {v}",
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -884,7 +884,7 @@ impl TryConvert for Wrap<NullBehavior> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "null behavior must be one of {{'drop', 'ignore'}}, got {v}"
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -899,7 +899,7 @@ impl TryConvert for Wrap<NullStrategy> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "null strategy must be one of {{'ignore', 'propagate'}}, got {v}"
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -916,7 +916,7 @@ impl TryConvert for Wrap<ParallelStrategy> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "parallel must be one of {{'auto', 'columns', 'row_groups', 'none'}}, got {v}"
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -934,7 +934,7 @@ impl TryConvert for Wrap<QuantileMethod> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "interpolation must be one of {{'lower', 'higher', 'nearest', 'linear', 'midpoint'}}, got {v}"
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -953,7 +953,7 @@ impl TryConvert for Wrap<RankMethod> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "method must be one of {{'min', 'max', 'average', 'dense', 'ordinal', 'random'}}, got {v}"
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -969,7 +969,7 @@ impl TryConvert for Wrap<TimeUnit> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "time unit must be one of {{'ns', 'us', 'ms'}}, got {v}"
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -984,7 +984,7 @@ impl TryConvert for Wrap<UniqueKeepStrategy> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "keep must be one of {{'first', 'last'}}, got {v}"
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -999,7 +999,7 @@ impl TryConvert for Wrap<IpcCompression> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "compression must be one of {{'lz4', 'zstd'}}, got {v}"
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -1015,7 +1015,7 @@ impl TryConvert for Wrap<SearchSortedSide> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "side must be one of {{'any', 'left', 'right'}}, got {v}",
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -1032,7 +1032,7 @@ impl TryConvert for Wrap<ClosedInterval> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "`closed` must be one of {{'both', 'left', 'right', 'none'}}, got {v}",
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -1047,8 +1047,8 @@ impl TryConvert for Wrap<WindowMapping> {
             "explode" => WindowMapping::Explode,
             v => {
                 return Err(RbValueError::new_err(format!(
-                "`mapping_strategy` must be one of {{'group_to_rows', 'join', 'explode'}}, got {v}",
-            )))
+                    "`mapping_strategy` must be one of {{'group_to_rows', 'join', 'explode'}}, got {v}",
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -1065,7 +1065,7 @@ impl TryConvert for Wrap<JoinValidation> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "`validate` must be one of {{'m:m', 'm:1', '1:m', '1:1'}}, got {v}",
-                )))
+                )));
             }
         };
         Ok(Wrap(parsed))
@@ -1083,8 +1083,8 @@ impl TryConvert for Wrap<MaintainOrderJoin> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "`maintain_order` must be one of {{'none', 'left', 'right', 'left_right', 'right_left'}}, got {v}",
-                )))
-            },
+                )));
+            }
         };
         Ok(Wrap(parsed))
     }
@@ -1100,8 +1100,8 @@ impl TryConvert for Wrap<QuoteStyle> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "`quote_style` must be one of {{'always', 'necessary', 'non_numeric', 'never'}}, got {v}",
-                )))
-            },
+                )));
+            }
         };
         Ok(Wrap(parsed))
     }
@@ -1135,9 +1135,12 @@ pub fn parse_fill_null_strategy(
         "zero" => FillNullStrategy::Zero,
         "one" => FillNullStrategy::One,
         e => {
-            return Err(magnus::Error::new(exception::runtime_error(), format!(
-                "strategy must be one of {{'forward', 'backward', 'min', 'max', 'mean', 'zero', 'one'}}, got {e}",
-            )))
+            return Err(magnus::Error::new(
+                exception::runtime_error(),
+                format!(
+                    "strategy must be one of {{'forward', 'backward', 'min', 'max', 'mean', 'zero', 'one'}}, got {e}",
+                ),
+            ));
         }
     };
     Ok(parsed)
@@ -1171,15 +1174,14 @@ pub fn parse_parquet_compression(
         "zstd" => ParquetCompression::Zstd(
             compression_level
                 .map(|lvl| {
-                    ZstdLevel::try_new(lvl)
-                        .map_err(|e| RbValueError::new_err(format!("{e:?}")))
+                    ZstdLevel::try_new(lvl).map_err(|e| RbValueError::new_err(format!("{e:?}")))
                 })
                 .transpose()?,
         ),
         e => {
             return Err(RbValueError::new_err(format!(
                 "compression must be one of {{'uncompressed', 'snappy', 'gzip', 'lzo', 'brotli', 'lz4', 'zstd'}}, got {e}"
-            )))
+            )));
         }
     };
     Ok(parsed)

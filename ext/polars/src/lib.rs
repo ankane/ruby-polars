@@ -27,19 +27,19 @@ use conversion::*;
 use dataframe::RbDataFrame;
 use error::RbPolarsErr;
 use exceptions::{RbTypeError, RbValueError};
-use expr::rb_exprs_to_exprs;
 use expr::RbExpr;
+use expr::rb_exprs_to_exprs;
 use functions::string_cache::RbStringCacheHolder;
 use functions::whenthen::{RbChainedThen, RbChainedWhen, RbThen, RbWhen};
 use interop::arrow::to_ruby::RbArrowArrayStream;
 use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
-use magnus::{define_module, function, method, prelude::*, Ruby};
+use magnus::{Ruby, define_module, function, method, prelude::*};
 use series::RbSeries;
 use sql::RbSQLContext;
 
-use magnus::error::Result as RbResult;
 use magnus::Error as RbErr;
+use magnus::error::Result as RbResult;
 
 // TODO move
 fn re_escape(pattern: String) -> String {

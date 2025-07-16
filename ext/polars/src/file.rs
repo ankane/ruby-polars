@@ -3,7 +3,7 @@ use std::io;
 use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
 
-use magnus::{exception, prelude::*, value::Opaque, Error, RString, Ruby, Value};
+use magnus::{Error, RString, Ruby, Value, exception, prelude::*, value::Opaque};
 use polars::io::cloud::CloudOptions;
 use polars::io::mmap::MmapBytesReader;
 use polars::prelude::file::DynWriteable;
@@ -11,9 +11,9 @@ use polars::prelude::sync_on_close::SyncOnCloseType;
 use polars_utils::file::ClosableFile;
 use polars_utils::mmap::MemSlice;
 
+use crate::RbResult;
 use crate::error::RbPolarsErr;
 use crate::prelude::resolve_homedir;
-use crate::RbResult;
 
 #[derive(Clone)]
 pub struct RbFileLikeObject {

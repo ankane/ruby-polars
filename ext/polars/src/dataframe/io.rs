@@ -1,6 +1,6 @@
-use magnus::{prelude::*, Value};
-use polars::io::avro::AvroCompression;
+use magnus::{Value, prelude::*};
 use polars::io::RowIndex;
+use polars::io::avro::AvroCompression;
 use polars::prelude::*;
 use std::io::BufWriter;
 use std::num::NonZeroUsize;

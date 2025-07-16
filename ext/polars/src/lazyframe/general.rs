@@ -1,4 +1,4 @@
-use magnus::{r_hash::ForEach, typed_data::Obj, IntoValue, RArray, RHash, TryConvert, Value};
+use magnus::{IntoValue, RArray, RHash, TryConvert, Value, r_hash::ForEach, typed_data::Obj};
 use polars::io::{HiveOptions, RowIndex};
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
@@ -16,7 +16,7 @@ use crate::io::RbScanOptions;
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
 
 fn rbobject_to_first_path_and_scan_sources(obj: Value) -> RbResult<(Option<PathBuf>, ScanSources)> {
-    use crate::file::{get_ruby_scan_source_input, RubyScanSourceInput};
+    use crate::file::{RubyScanSourceInput, get_ruby_scan_source_input};
     Ok(match get_ruby_scan_source_input(obj, false)? {
         RubyScanSourceInput::Path(path) => (Some(path.clone()), ScanSources::Paths([path].into())),
         RubyScanSourceInput::File(file) => (None, ScanSources::Files([file].into())),

@@ -1,8 +1,8 @@
-use magnus::{prelude::*, RArray, RString};
+use magnus::{RArray, RString, prelude::*};
 use polars_core::prelude::*;
 
 use crate::any_value::rb_object_to_any_value;
-use crate::conversion::{slice_extract_wrapped, vec_extract_wrapped, Wrap};
+use crate::conversion::{Wrap, slice_extract_wrapped, vec_extract_wrapped};
 use crate::prelude::ObjectValue;
 use crate::series::to_series;
 use crate::{RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
@@ -122,13 +122,17 @@ impl RbSeries {
             .into_iter()
             .map(|v| rb_object_to_any_value(v, strict))
             .collect::<RbResult<Vec<AnyValue>>>()?;
-        let s =
-            Series::from_any_values_and_dtype(name.into(), any_values.as_slice(), &dtype.0, strict)
-                .map_err(|e| {
-                    RbTypeError::new_err(format!(
+        let s = Series::from_any_values_and_dtype(
+            name.into(),
+            any_values.as_slice(),
+            &dtype.0,
+            strict,
+        )
+        .map_err(|e| {
+            RbTypeError::new_err(format!(
                 "{e}\n\nHint: Try setting `strict: false` to allow passing data with mixed types."
             ))
-                })?;
+        })?;
         Ok(s.into())
     }
 

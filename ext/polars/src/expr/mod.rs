@@ -10,7 +10,7 @@ mod rolling;
 mod string;
 mod r#struct;
 
-use magnus::{prelude::*, RArray};
+use magnus::{RArray, prelude::*};
 use polars::lazy::dsl::Expr;
 
 use crate::RbResult;

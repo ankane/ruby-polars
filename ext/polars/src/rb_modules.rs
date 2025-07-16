@@ -1,4 +1,4 @@
-use magnus::{value::Lazy, ExceptionClass, Module, RClass, RModule, Ruby};
+use magnus::{ExceptionClass, Module, RClass, RModule, Ruby, value::Lazy};
 
 static POLARS: Lazy<RModule> = Lazy::new(|ruby| ruby.class_object().const_get("Polars").unwrap());
 

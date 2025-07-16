@@ -2,11 +2,11 @@ pub mod dataframe;
 pub mod lazy;
 pub mod series;
 
-use magnus::{prelude::*, RHash, Value};
+use magnus::{RHash, Value, prelude::*};
 use polars::chunked_array::builder::get_list_builder;
 use polars::prelude::*;
-use polars_core::utils::CustomIterTools;
 use polars_core::POOL;
+use polars_core::utils::CustomIterTools;
 use rayon::prelude::*;
 
 use crate::{ObjectValue, RbPolarsErr, RbResult, RbSeries, Wrap};
@@ -37,7 +37,7 @@ fn iterator_to_struct(
         _ => {
             return Err(crate::exceptions::ComputeError::new_err(format!(
                 "expected struct got {first_value:?}",
-            )))
+            )));
         }
     };
 
@@ -70,9 +70,11 @@ fn iterator_to_struct(
             Some(dict) => {
                 let dict = RHash::try_convert(dict)?;
                 if dict.len() != struct_width {
-                    return Err(crate::exceptions::ComputeError::new_err(
-                        format!("Cannot create struct type.\n> The struct dtype expects {} fields, but it got a dict with {} fields.", struct_width, dict.len())
-                    ));
+                    return Err(crate::exceptions::ComputeError::new_err(format!(
+                        "Cannot create struct type.\n> The struct dtype expects {} fields, but it got a dict with {} fields.",
+                        struct_width,
+                        dict.len()
+                    )));
                 }
                 // we ignore the keys of the rest of the dicts
                 // the first item determines the output name

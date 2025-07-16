@@ -1,11 +1,11 @@
 use magnus::encoding::{self, EncodingCapable};
 use magnus::{
-    class, prelude::*, typed_data::Obj, value::Opaque, Float, Integer, RArray, RString, Ruby, Value,
+    Float, Integer, RArray, RString, Ruby, Value, class, prelude::*, typed_data::Obj, value::Opaque,
 };
 use polars::lazy::dsl;
 use polars::prelude::*;
 
-use crate::conversion::{get_lf, get_rbseq, Wrap};
+use crate::conversion::{Wrap, get_lf, get_rbseq};
 use crate::map::lazy::binary_lambda;
 use crate::prelude::vec_extract_wrapped;
 use crate::rb_exprs_to_exprs;

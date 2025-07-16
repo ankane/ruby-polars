@@ -6,7 +6,7 @@ use polars::prelude::ArrowSchema;
 use polars_core::datatypes::create_enum_dtype;
 
 use crate::conversion::Wrap;
-use crate::file::{get_either_file, EitherRustRubyFile};
+use crate::file::{EitherRustRubyFile, get_either_file};
 use crate::prelude::ArrowDataType;
 use crate::{RbPolarsErr, RbResult};
 

@@ -1,4 +1,4 @@
-use magnus::{class, prelude::*, typed_data::Obj, IntoValue, TryConvert, Value};
+use magnus::{IntoValue, TryConvert, Value, class, prelude::*, typed_data::Obj};
 use polars::prelude::*;
 
 use super::*;

@@ -1,9 +1,9 @@
-use magnus::{prelude::*, IntoValue, RArray, Value};
+use magnus::{IntoValue, RArray, Value, prelude::*};
 
 use super::*;
+use crate::RbResult;
 use crate::conversion::{ObjectValue, Wrap};
 use crate::interop::arrow::to_ruby::dataframe_to_stream;
-use crate::RbResult;
 
 impl RbDataFrame {
     pub fn row_tuple(&self, idx: i64) -> Value {

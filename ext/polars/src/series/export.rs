@@ -1,8 +1,8 @@
-use magnus::{value::qnil, IntoValue, RArray, Value};
+use magnus::{IntoValue, RArray, Value, value::qnil};
 use polars_core::prelude::*;
 
-use crate::prelude::*;
 use crate::RbSeries;
+use crate::prelude::*;
 
 impl RbSeries {
     /// Convert this Series to a Ruby array.

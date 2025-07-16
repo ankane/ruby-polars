@@ -3,10 +3,10 @@ use num_traits::{Float, NumCast};
 use polars_core::prelude::*;
 
 use super::numo_rs::{Element, RbArray1};
+use crate::RbResult;
 use crate::error::RbPolarsErr;
 use crate::raise_err;
 use crate::series::RbSeries;
-use crate::RbResult;
 
 impl RbSeries {
     /// Convert this Series to a Numo array.

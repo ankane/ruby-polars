@@ -1,6 +1,6 @@
-use magnus::{class, prelude::*, typed_data::Obj, IntoValue, RArray, TryConvert, Value};
+use magnus::{IntoValue, RArray, TryConvert, Value, class, prelude::*, typed_data::Obj};
 use polars::prelude::*;
-use polars_core::frame::row::{rows_to_schema_first_non_null, Row};
+use polars_core::frame::row::{Row, rows_to_schema_first_non_null};
 use polars_core::series::SeriesIter;
 
 use super::*;

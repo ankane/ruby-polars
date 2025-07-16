@@ -2,10 +2,10 @@ use std::cell::RefCell;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
-use magnus::{prelude::*, RArray, Value};
+use magnus::{RArray, Value, prelude::*};
+use polars::io::RowIndex;
 use polars::io::csv::read::OwnedBatchedCsvReader;
 use polars::io::mmap::MmapBytesReader;
-use polars::io::RowIndex;
 use polars::prelude::*;
 
 use crate::conversion::*;

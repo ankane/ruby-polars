@@ -1,8 +1,8 @@
 use magnus::{IntoValue, Value};
 use polars_core;
+use polars_core::POOL;
 use polars_core::fmt::FloatFmt;
 use polars_core::prelude::IDX_DTYPE;
-use polars_core::POOL;
 
 use crate::conversion::Wrap;
 use crate::{RbResult, RbValueError};
@@ -22,7 +22,7 @@ pub fn set_float_fmt(fmt: String) -> RbResult<()> {
         e => {
             return Err(RbValueError::new_err(format!(
                 "fmt must be one of {{'full', 'mixed'}}, got {e}",
-            )))
+            )));
         }
     };
     polars_core::fmt::set_float_fmt(fmt);

@@ -1,5 +1,5 @@
-use magnus::{prelude::*, r_hash::ForEach, RArray, RHash, Symbol, Value};
-use polars::frame::row::{rows_to_schema_supertypes, rows_to_supertypes, Row};
+use magnus::{RArray, RHash, Symbol, Value, prelude::*, r_hash::ForEach};
+use polars::frame::row::{Row, rows_to_schema_supertypes, rows_to_supertypes};
 use polars::prelude::*;
 
 use super::*;

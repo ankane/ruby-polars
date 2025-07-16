@@ -1,4 +1,4 @@
-use magnus::{block::Proc, value::Opaque, Ruby};
+use magnus::{Ruby, block::Proc, value::Opaque};
 use polars::prelude::*;
 use polars_utils::format_pl_smallstr;
 

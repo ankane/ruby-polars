@@ -1,11 +1,11 @@
 use magnus::encoding::{EncodingCapable, Index};
 use magnus::{
-    class, prelude::*, r_hash::ForEach, IntoValue, RArray, RHash, RString, Ruby, TryConvert, Value,
+    IntoValue, RArray, RHash, RString, Ruby, TryConvert, Value, class, prelude::*, r_hash::ForEach,
 };
 use polars::prelude::*;
 use polars_core::utils::any_values_to_supertype_and_n_dtypes;
 
-use super::{struct_dict, ObjectValue, Wrap};
+use super::{ObjectValue, Wrap, struct_dict};
 
 use crate::exceptions::RbOverflowError;
 use crate::rb_modules::utils;

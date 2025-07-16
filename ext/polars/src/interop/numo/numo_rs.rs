@@ -1,4 +1,4 @@
-use magnus::{class, prelude::*, IntoValue, Module, RArray, RClass, RModule, Value};
+use magnus::{IntoValue, Module, RArray, RClass, RModule, Value, class, prelude::*};
 
 use crate::RbResult;
 

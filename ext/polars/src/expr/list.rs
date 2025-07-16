@@ -1,4 +1,4 @@
-use magnus::{prelude::*, value::Opaque, Ruby, Value};
+use magnus::{Ruby, Value, prelude::*, value::Opaque};
 use polars::lazy::dsl::lit;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;

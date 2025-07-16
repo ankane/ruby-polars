@@ -1,7 +1,7 @@
 use polars::prelude::*;
 
-use crate::conversion::Wrap;
 use crate::RbExpr;
+use crate::conversion::Wrap;
 
 impl RbExpr {
     pub fn rolling_sum(

@@ -1,10 +1,10 @@
-use magnus::{exception, Error, IntoValue, Value};
+use magnus::{Error, IntoValue, Value, exception};
 use polars::prelude::*;
 use polars::series::IsSorted;
 
 use crate::apply_method_all_arrow_series2;
 use crate::conversion::*;
-use crate::map::series::{call_lambda_and_extract, ApplyLambda};
+use crate::map::series::{ApplyLambda, call_lambda_and_extract};
 use crate::{RbDataFrame, RbPolarsErr, RbResult, RbSeries};
 
 impl RbSeries {

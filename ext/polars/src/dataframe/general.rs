@@ -1,7 +1,7 @@
 use std::hash::BuildHasher;
 
 use either::Either;
-use magnus::{prelude::*, typed_data::Obj, IntoValue, RArray, Value};
+use magnus::{IntoValue, RArray, Value, prelude::*, typed_data::Obj};
 use polars::prelude::pivot::{pivot, pivot_stable};
 use polars::prelude::*;
 

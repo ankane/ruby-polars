@@ -1,18 +1,18 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use magnus::{value::ReprValue, TryConvert, Value};
+use magnus::{TryConvert, Value, value::ReprValue};
 use polars::prelude::deletion::DeletionFilesList;
 use polars::prelude::{
     CastColumnsPolicy, ExtraColumnsPolicy, MissingColumnsPolicy, PlSmallStr, Schema,
     UnifiedScanArgs,
 };
 use polars_io::{HiveOptions, RowIndex};
-use polars_utils::slice_enum::Slice;
 use polars_utils::IdxSize;
+use polars_utils::slice_enum::Slice;
 
-use crate::prelude::Wrap;
 use crate::RbResult;
+use crate::prelude::Wrap;
 
 /// Interface to `class ScanOptions` on the Ruby side
 pub struct RbScanOptions(Value);

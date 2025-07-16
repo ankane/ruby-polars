@@ -9,8 +9,8 @@ use polars_core::chunked_array::object::registry;
 use polars_core::chunked_array::object::registry::AnonymousObjectBuilder;
 use polars_core::prelude::AnyValue;
 
-use crate::prelude::ObjectValue;
 use crate::Wrap;
+use crate::prelude::ObjectValue;
 
 static POLARS_REGISTRY_INIT_LOCK: OnceLock<()> = OnceLock::new();
 

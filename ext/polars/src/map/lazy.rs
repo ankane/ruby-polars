@@ -1,4 +1,4 @@
-use magnus::{prelude::*, RArray, Value};
+use magnus::{RArray, Value, prelude::*};
 use polars::prelude::*;
 
 use crate::rb_modules::*;

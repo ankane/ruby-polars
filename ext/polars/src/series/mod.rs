@@ -7,7 +7,7 @@ mod general;
 mod import;
 mod scatter;
 
-use magnus::{prelude::*, RArray};
+use magnus::{RArray, prelude::*};
 use polars::prelude::*;
 use std::cell::RefCell;
 
