@@ -144,7 +144,7 @@ where
         let tpl = (RArray::from_iter(iter),);
         match lambda.funcall::<_, _, Value>("call", tpl) {
             Ok(val) => T::try_convert(val).ok(),
-            Err(e) => panic!("ruby function failed {}", e),
+            Err(e) => panic!("ruby function failed {e}"),
         }
     })
 }
@@ -247,11 +247,11 @@ pub fn apply_lambda_with_list_out_type(
                         if val.is_nil() {
                             None
                         } else {
-                            panic!("should return a Series, got a {:?}", val)
+                            panic!("should return a Series, got a {val:?}")
                         }
                     }
                 },
-                Err(e) => panic!("ruby function failed {}", e),
+                Err(e) => panic!("ruby function failed {e}"),
             }
         });
         iterator_to_list(
@@ -302,7 +302,7 @@ pub fn apply_lambda_with_rows_output<'a>(
                     None => Ok(&null_row),
                 }
             }
-            Err(e) => panic!("ruby function failed {}", e),
+            Err(e) => panic!("ruby function failed {e}"),
         }
     });
 

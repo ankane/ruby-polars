@@ -228,7 +228,7 @@ impl RbLazyFrame {
     pub fn write_json(&self, rb_f: Value) -> RbResult<()> {
         let file = BufWriter::new(get_file_like(rb_f, true)?);
         serde_json::to_writer(file, &self.ldf.borrow().logical_plan)
-            .map_err(|err| RbValueError::new_err(format!("{:?}", err)))?;
+            .map_err(|err| RbValueError::new_err(format!("{err:?}")))?;
         Ok(())
     }
 

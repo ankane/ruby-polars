@@ -25,7 +25,7 @@ impl RbLazyFrame {
         let json = unsafe { std::mem::transmute::<&'_ str, &'static str>(json.as_str()) };
 
         let lp = serde_json::from_str::<DslPlan>(json)
-            .map_err(|err| RbValueError::new_err(format!("{:?}", err)))?;
+            .map_err(|err| RbValueError::new_err(format!("{err:?}")))?;
         Ok(LazyFrame::from(lp).into())
     }
 }

@@ -273,6 +273,6 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
     } else if ob.is_kind_of(crate::rb_modules::bigdecimal()) {
         get_decimal(ob, strict)
     } else {
-        Err(RbPolarsErr::Other(format!("object type not supported {:?}", ob)).into())
+        Err(RbPolarsErr::Other(format!("object type not supported {ob:?}")).into())
     }
 }

@@ -450,8 +450,7 @@ impl TryConvert for Wrap<DataType> {
                 "unk" => DataType::Unknown(Default::default()),
                 _ => {
                     return Err(RbValueError::new_err(format!(
-                        "{} is not a supported DataType.",
-                        ob
+                        "{ob} is not a supported DataType."
                     )))
                 }
             }
@@ -709,8 +708,7 @@ impl TryConvert for Wrap<Option<AvroCompression>> {
             "deflate" => Some(AvroCompression::Deflate),
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "compression must be one of {{'uncompressed', 'snappy', 'deflate'}}, got {}",
-                    v
+                    "compression must be one of {{'uncompressed', 'snappy', 'deflate'}}, got {v}"
                 )))
             }
         };
@@ -725,8 +723,7 @@ impl TryConvert for Wrap<CategoricalOrdering> {
             "lexical" => CategoricalOrdering::Lexical,
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "ordering must be one of {{'physical', 'lexical'}}, got {}",
-                    v
+                    "ordering must be one of {{'physical', 'lexical'}}, got {v}"
                 )))
             }
         };
@@ -759,8 +756,7 @@ impl TryConvert for Wrap<ClosedWindow> {
             "none" => ClosedWindow::None,
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "closed must be one of {{'left', 'right', 'both', 'none'}}, got {}",
-                    v
+                    "closed must be one of {{'left', 'right', 'both', 'none'}}, got {v}"
                 )))
             }
         };
@@ -790,8 +786,7 @@ impl TryConvert for Wrap<CsvEncoding> {
             "utf8-lossy" => CsvEncoding::LossyUtf8,
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "encoding must be one of {{'utf8', 'utf8-lossy'}}, got {}",
-                    v
+                    "encoding must be one of {{'utf8', 'utf8-lossy'}}, got {v}"
                 )))
             }
         };
@@ -807,8 +802,7 @@ impl TryConvert for Wrap<Option<IpcCompression>> {
             "zstd" => Some(IpcCompression::ZSTD),
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "compression must be one of {{'uncompressed', 'lz4', 'zstd'}}, got {}",
-                    v
+                    "compression must be one of {{'uncompressed', 'lz4', 'zstd'}}, got {v}"
                 )))
             }
         };
@@ -827,8 +821,7 @@ impl TryConvert for Wrap<JoinType> {
             "cross" => JoinType::Cross,
             v => {
                 return Err(RbValueError::new_err(format!(
-                "how must be one of {{'inner', 'left', 'full', 'semi', 'anti', 'cross'}}, got {}",
-                v
+                "how must be one of {{'inner', 'left', 'full', 'semi', 'anti', 'cross'}}, got {v}"
             )))
             }
         };
@@ -859,8 +852,7 @@ impl TryConvert for Wrap<ListToStructWidthStrategy> {
             "max_width" => ListToStructWidthStrategy::MaxWidth,
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "n_field_strategy must be one of {{'first_non_null', 'max_width'}}, got {}",
-                    v
+                    "n_field_strategy must be one of {{'first_non_null', 'max_width'}}, got {v}"
                 )))
             }
         };
@@ -890,8 +882,7 @@ impl TryConvert for Wrap<NullBehavior> {
             "ignore" => NullBehavior::Ignore,
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "null behavior must be one of {{'drop', 'ignore'}}, got {}",
-                    v
+                    "null behavior must be one of {{'drop', 'ignore'}}, got {v}"
                 )))
             }
         };
@@ -906,8 +897,7 @@ impl TryConvert for Wrap<NullStrategy> {
             "propagate" => NullStrategy::Propagate,
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "null strategy must be one of {{'ignore', 'propagate'}}, got {}",
-                    v
+                    "null strategy must be one of {{'ignore', 'propagate'}}, got {v}"
                 )))
             }
         };
@@ -924,8 +914,7 @@ impl TryConvert for Wrap<ParallelStrategy> {
             "none" => ParallelStrategy::None,
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "parallel must be one of {{'auto', 'columns', 'row_groups', 'none'}}, got {}",
-                    v
+                    "parallel must be one of {{'auto', 'columns', 'row_groups', 'none'}}, got {v}"
                 )))
             }
         };
@@ -943,8 +932,7 @@ impl TryConvert for Wrap<QuantileMethod> {
             "midpoint" => QuantileMethod::Midpoint,
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "interpolation must be one of {{'lower', 'higher', 'nearest', 'linear', 'midpoint'}}, got {}",
-                    v
+                    "interpolation must be one of {{'lower', 'higher', 'nearest', 'linear', 'midpoint'}}, got {v}"
                 )))
             }
         };
@@ -963,8 +951,7 @@ impl TryConvert for Wrap<RankMethod> {
             "random" => RankMethod::Random,
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "method must be one of {{'min', 'max', 'average', 'dense', 'ordinal', 'random'}}, got {}",
-                    v
+                    "method must be one of {{'min', 'max', 'average', 'dense', 'ordinal', 'random'}}, got {v}"
                 )))
             }
         };
@@ -980,8 +967,7 @@ impl TryConvert for Wrap<TimeUnit> {
             "ms" => TimeUnit::Milliseconds,
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "time unit must be one of {{'ns', 'us', 'ms'}}, got {}",
-                    v
+                    "time unit must be one of {{'ns', 'us', 'ms'}}, got {v}"
                 )))
             }
         };
@@ -996,8 +982,7 @@ impl TryConvert for Wrap<UniqueKeepStrategy> {
             "last" => UniqueKeepStrategy::Last,
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "keep must be one of {{'first', 'last'}}, got {}",
-                    v
+                    "keep must be one of {{'first', 'last'}}, got {v}"
                 )))
             }
         };
@@ -1012,8 +997,7 @@ impl TryConvert for Wrap<IpcCompression> {
             "zstd" => IpcCompression::ZSTD,
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "compression must be one of {{'lz4', 'zstd'}}, got {}",
-                    v
+                    "compression must be one of {{'lz4', 'zstd'}}, got {v}"
                 )))
             }
         };
@@ -1151,8 +1135,7 @@ pub fn parse_fill_null_strategy(
         "one" => FillNullStrategy::One,
         e => {
             return Err(magnus::Error::new(exception::runtime_error(), format!(
-                "strategy must be one of {{'forward', 'backward', 'min', 'max', 'mean', 'zero', 'one'}}, got {}",
-                e,
+                "strategy must be one of {{'forward', 'backward', 'min', 'max', 'mean', 'zero', 'one'}}, got {e}",
             )))
         }
     };
@@ -1170,7 +1153,7 @@ pub fn parse_parquet_compression(
             compression_level
                 .map(|lvl| {
                     GzipLevel::try_new(lvl as u8)
-                        .map_err(|e| RbValueError::new_err(format!("{:?}", e)))
+                        .map_err(|e| RbValueError::new_err(format!("{e:?}")))
                 })
                 .transpose()?,
         ),
@@ -1179,7 +1162,7 @@ pub fn parse_parquet_compression(
             compression_level
                 .map(|lvl| {
                     BrotliLevel::try_new(lvl as u32)
-                        .map_err(|e| RbValueError::new_err(format!("{:?}", e)))
+                        .map_err(|e| RbValueError::new_err(format!("{e:?}")))
                 })
                 .transpose()?,
         ),
@@ -1188,14 +1171,13 @@ pub fn parse_parquet_compression(
             compression_level
                 .map(|lvl| {
                     ZstdLevel::try_new(lvl)
-                        .map_err(|e| RbValueError::new_err(format!("{:?}", e)))
+                        .map_err(|e| RbValueError::new_err(format!("{e:?}")))
                 })
                 .transpose()?,
         ),
         e => {
             return Err(RbValueError::new_err(format!(
-                "compression must be one of {{'uncompressed', 'snappy', 'gzip', 'lzo', 'brotli', 'lz4', 'zstd'}}, got {}",
-                e
+                "compression must be one of {{'uncompressed', 'snappy', 'gzip', 'lzo', 'brotli', 'lz4', 'zstd'}}, got {e}"
             )))
         }
     };

@@ -143,7 +143,7 @@ where
 {
     match call_lambda(lambda, in_val) {
         Ok(out) => S::try_convert(out),
-        Err(e) => panic!("ruby function failed {}", e),
+        Err(e) => panic!("ruby function failed {e}"),
     }
 }
 

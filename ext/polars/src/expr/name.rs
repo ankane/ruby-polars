@@ -20,7 +20,7 @@ impl RbExpr {
                 match out {
                     Ok(out) => Ok(format_pl_smallstr!("{}", out)),
                     Err(e) => Err(PolarsError::ComputeError(
-                        format!("Ruby function in 'name.map' produced an error: {}.", e).into(),
+                        format!("Ruby function in 'name.map' produced an error: {e}.").into(),
                     )),
                 }
             })
