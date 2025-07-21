@@ -214,4 +214,15 @@ impl RbExpr {
             e.list().unique().into()
         }
     }
+
+    pub fn list_set_operation(&self, other: &RbExpr, operation: Wrap<SetOperation>) -> Self {
+        let e = self.inner.clone().list();
+        match operation.0 {
+            SetOperation::Intersection => e.set_intersection(other.inner.clone()),
+            SetOperation::Difference => e.set_difference(other.inner.clone()),
+            SetOperation::Union => e.union(other.inner.clone()),
+            SetOperation::SymmetricDifference => e.set_symmetric_difference(other.inner.clone()),
+        }
+        .into()
+    }
 }

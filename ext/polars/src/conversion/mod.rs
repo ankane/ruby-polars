@@ -1112,6 +1112,23 @@ pub(crate) fn parse_cloud_options(uri: &str, kv: Vec<(String, String)>) -> RbRes
     Ok(out)
 }
 
+impl TryConvert for Wrap<SetOperation> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "union" => SetOperation::Union,
+            "difference" => SetOperation::Difference,
+            "intersection" => SetOperation::Intersection,
+            "symmetric_difference" => SetOperation::SymmetricDifference,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "set operation must be one of {{'union', 'difference', 'intersection', 'symmetric_difference'}}, got {v}",
+                )));
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<CastColumnsPolicy> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         if ob.is_nil() {

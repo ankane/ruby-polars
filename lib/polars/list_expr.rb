@@ -813,5 +813,163 @@ module Polars
     def filter(predicate)
       Utils.wrap_expr(_rbexpr.list_filter(predicate._rbexpr))
     end
+
+    # Compute the SET UNION between the elements in this list and the elements of `other`.
+    #
+    # @param other [Object]
+    #   Right hand side of the set operation.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [[1, 2, 3], [], [nil, 3], [5, 6, 7]],
+    #       "b" => [[2, 3, 4], [3], [3, 4, nil], [6, 8]]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     union: Polars.col("a").list.set_union("b")
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌───────────┬──────────────┬──────────────┐
+    #   # │ a         ┆ b            ┆ union        │
+    #   # │ ---       ┆ ---          ┆ ---          │
+    #   # │ list[i64] ┆ list[i64]    ┆ list[i64]    │
+    #   # ╞═══════════╪══════════════╪══════════════╡
+    #   # │ [1, 2, 3] ┆ [2, 3, 4]    ┆ [1, 2, … 4]  │
+    #   # │ []        ┆ [3]          ┆ [3]          │
+    #   # │ [null, 3] ┆ [3, 4, null] ┆ [null, 3, 4] │
+    #   # │ [5, 6, 7] ┆ [6, 8]       ┆ [5, 6, … 8]  │
+    #   # └───────────┴──────────────┴──────────────┘
+    def set_union(other)
+      if other.respond_to?(:each)
+        if !other.is_a?(::Array) && !other.is_a?(Series) && !other.is_a?(DataFrame)
+          other = other.to_a
+        end
+        other = F.lit(other)._rbexpr
+      else
+        other = Utils.parse_into_expression(other)
+      end
+      Utils.wrap_expr(_rbexpr.list_set_operation(other, "union"))
+    end
+
+    # Compute the SET DIFFERENCE between the elements in this list and the elements of `other`.
+    #
+    # @param other [Object]
+    #   Right hand side of the set operation.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [[1, 2, 3], [], [nil, 3], [5, 6, 7]],
+    #       "b" => [[2, 3, 4], [3], [3, 4, nil], [6, 8]]
+    #     }
+    #   )
+    #   df.with_columns(difference: Polars.col("a").list.set_difference("b"))
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌───────────┬──────────────┬────────────┐
+    #   # │ a         ┆ b            ┆ difference │
+    #   # │ ---       ┆ ---          ┆ ---        │
+    #   # │ list[i64] ┆ list[i64]    ┆ list[i64]  │
+    #   # ╞═══════════╪══════════════╪════════════╡
+    #   # │ [1, 2, 3] ┆ [2, 3, 4]    ┆ [1]        │
+    #   # │ []        ┆ [3]          ┆ []         │
+    #   # │ [null, 3] ┆ [3, 4, null] ┆ []         │
+    #   # │ [5, 6, 7] ┆ [6, 8]       ┆ [5, 7]     │
+    #   # └───────────┴──────────────┴────────────┘
+    def set_difference(other)
+      if other.respond_to?(:each)
+        if !other.is_a?(::Array) && !other.is_a?(Series) && !other.is_a?(DataFrame)
+          other = other.to_a
+        end
+        other = F.lit(other)._rbexpr
+      else
+        other = Utils.parse_into_expression(other)
+      end
+      Utils.wrap_expr(_rbexpr.list_set_operation(other, "difference"))
+    end
+
+    # Compute the SET INTERSECTION between the elements in this list and the elements of `other`.
+    #
+    # @param other [Object]
+    #   Right hand side of the set operation.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [[1, 2, 3], [], [nil, 3], [5, 6, 7]],
+    #       "b" => [[2, 3, 4], [3], [3, 4, nil], [6, 8]]
+    #     }
+    #   )
+    #   df.with_columns(intersection: Polars.col("a").list.set_intersection("b"))
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌───────────┬──────────────┬──────────────┐
+    #   # │ a         ┆ b            ┆ intersection │
+    #   # │ ---       ┆ ---          ┆ ---          │
+    #   # │ list[i64] ┆ list[i64]    ┆ list[i64]    │
+    #   # ╞═══════════╪══════════════╪══════════════╡
+    #   # │ [1, 2, 3] ┆ [2, 3, 4]    ┆ [2, 3]       │
+    #   # │ []        ┆ [3]          ┆ []           │
+    #   # │ [null, 3] ┆ [3, 4, null] ┆ [null, 3]    │
+    #   # │ [5, 6, 7] ┆ [6, 8]       ┆ [6]          │
+    #   # └───────────┴──────────────┴──────────────┘
+    def set_intersection(other)
+      if other.respond_to?(:each)
+        if !other.is_a?(::Array) && !other.is_a?(Series) && !other.is_a?(DataFrame)
+          other = other.to_a
+        end
+        other = F.lit(other)._rbexpr
+      else
+        other = Utils.parse_into_expression(other)
+      end
+      Utils.wrap_expr(_rbexpr.list_set_operation(other, "intersection"))
+    end
+
+    # Compute the SET SYMMETRIC DIFFERENCE between the elements in this list and the elements of `other`.
+    #
+    # @param other [Object]
+    #   Right hand side of the set operation.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [[1, 2, 3], [], [nil, 3], [5, 6, 7]],
+    #       "b" => [[2, 3, 4], [3], [3, 4, nil], [6, 8]]
+    #     }
+    #   )
+    #   df.with_columns(sdiff: Polars.col("b").list.set_symmetric_difference("a"))
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌───────────┬──────────────┬───────────┐
+    #   # │ a         ┆ b            ┆ sdiff     │
+    #   # │ ---       ┆ ---          ┆ ---       │
+    #   # │ list[i64] ┆ list[i64]    ┆ list[i64] │
+    #   # ╞═══════════╪══════════════╪═══════════╡
+    #   # │ [1, 2, 3] ┆ [2, 3, 4]    ┆ [4, 1]    │
+    #   # │ []        ┆ [3]          ┆ [3]       │
+    #   # │ [null, 3] ┆ [3, 4, null] ┆ [4]       │
+    #   # │ [5, 6, 7] ┆ [6, 8]       ┆ [8, 5, 7] │
+    #   # └───────────┴──────────────┴───────────┘
+    def set_symmetric_difference(other)
+      if other.respond_to?(:each)
+        if !other.is_a?(::Array) && !other.is_a?(Series) && !other.is_a?(DataFrame)
+          other = other.to_a
+        end
+        other = F.lit(other)._rbexpr
+      else
+        other = Utils.parse_into_expression(other)
+      end
+      Utils.wrap_expr(_rbexpr.list_set_operation(other, "symmetric_difference"))
+    end
   end
 end

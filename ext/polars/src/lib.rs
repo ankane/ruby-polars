@@ -470,6 +470,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("list_sort", method!(RbExpr::list_sort, 2))?;
     class.define_method("list_reverse", method!(RbExpr::list_reverse, 0))?;
     class.define_method("list_unique", method!(RbExpr::list_unique, 1))?;
+    class.define_method("list_set_operation", method!(RbExpr::list_set_operation, 2))?;
     class.define_method("list_get", method!(RbExpr::list_get, 2))?;
     class.define_method("list_join", method!(RbExpr::list_join, 2))?;
     class.define_method("list_arg_min", method!(RbExpr::list_arg_min, 0))?;
