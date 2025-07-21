@@ -480,6 +480,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("list_shift", method!(RbExpr::list_shift, 1))?;
     class.define_method("list_slice", method!(RbExpr::list_slice, 2))?;
     class.define_method("list_eval", method!(RbExpr::list_eval, 1))?;
+    class.define_method("list_filter", method!(RbExpr::list_filter, 1))?;
     class.define_method("cumulative_eval", method!(RbExpr::cumulative_eval, 2))?;
     class.define_method("list_to_struct", method!(RbExpr::list_to_struct, 3))?;
     class.define_method("rank", method!(RbExpr::rank, 3))?;

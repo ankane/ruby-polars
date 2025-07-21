@@ -47,6 +47,14 @@ impl RbExpr {
         self.inner.clone().list().eval(expr.inner.clone()).into()
     }
 
+    pub fn list_filter(&self, predicate: &RbExpr) -> Self {
+        self.inner
+            .clone()
+            .list()
+            .eval(Expr::Column(PlSmallStr::EMPTY).filter(predicate.inner.clone()))
+            .into()
+    }
+
     pub fn list_get(&self, index: &RbExpr, null_on_oob: bool) -> Self {
         self.inner
             .clone()

@@ -785,5 +785,33 @@ module Polars
     def eval(expr)
       Utils.wrap_expr(_rbexpr.list_eval(expr._rbexpr))
     end
+
+    # Filter elements in each list by a boolean expression.
+    #
+    # @param predicate [Object]
+    #   A boolean expression that is evaluated per list element.
+    #   You can refer to the current element with `Polars.element`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 8, 3], "b" => [4, 5, 2]})
+    #   df.with_columns(
+    #     evens: Polars.concat_list("a", "b").list.filter(Polars.element % 2 == 0)
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬───────────┐
+    #   # │ a   ┆ b   ┆ evens     │
+    #   # │ --- ┆ --- ┆ ---       │
+    #   # │ i64 ┆ i64 ┆ list[i64] │
+    #   # ╞═════╪═════╪═══════════╡
+    #   # │ 1   ┆ 4   ┆ [4]       │
+    #   # │ 8   ┆ 5   ┆ [8]       │
+    #   # │ 3   ┆ 2   ┆ [2]       │
+    #   # └─────┴─────┴───────────┘
+    def filter(predicate)
+      Utils.wrap_expr(_rbexpr.list_filter(predicate._rbexpr))
+    end
   end
 end

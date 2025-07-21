@@ -1,6 +1,7 @@
 ## 0.20.1 (unreleased)
 
 - Added `Catalog` class
+- Added `filter` method to `ListExpr`
 - Added `extra_columns` option to `scan_parquet` method
 
 ## 0.20.0 (2025-06-23)
