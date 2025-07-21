@@ -608,5 +608,124 @@ module Polars
     def eval(expr)
       super
     end
+
+    # Filter elements in each list by a boolean expression, returning a new Series of lists.
+    #
+    # @param predicate [Object]
+    #   A boolean expression evaluated on each list element.
+    #   Use `Polars.element` to refer to the current element.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1, 4], [8, 5], [3, 2]])
+    #   s.list.filter(Polars.element % 2 == 0)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [list[i64]]
+    #   # [
+    #   #         [4]
+    #   #         [8]
+    #   #         [2]
+    #   # ]
+    def filter(predicate)
+      super
+    end
+
+    # Compute the SET UNION between the elements in this list and the elements of `other`.
+    #
+    # @param other [Object]
+    #   Right hand side of the set operation.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   a = Polars::Series.new([[1, 2, 3], [], [nil, 3], [5, 6, 7]])
+    #   b = Polars::Series.new([[2, 3, 4], [3], [3, 4, nil], [6, 8]])
+    #   a.list.set_union(b)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [list[i64]]
+    #   # [
+    #   #         [1, 2, … 4]
+    #   #         [3]
+    #   #         [null, 3, 4]
+    #   #         [5, 6, … 8]
+    #   # ]
+    def set_union(other)
+      super
+    end
+
+    # Compute the SET DIFFERENCE between the elements in this list and the elements of `other`.
+    #
+    # @param other [Object]
+    #   Right hand side of the set operation.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   a = Polars::Series.new([[1, 2, 3], [], [nil, 3], [5, 6, 7]])
+    #   b = Polars::Series.new([[2, 3, 4], [3], [3, 4, nil], [6, 8]])
+    #   a.list.set_difference(b)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [list[i64]]
+    #   # [
+    #   #         [1]
+    #   #         []
+    #   #         []
+    #   #         [5, 7]
+    #   # ]
+    def set_difference(other)
+      super
+    end
+
+    # Compute the SET INTERSECTION between the elements in this list and the elements of `other`.
+    #
+    # @param other [Object]
+    #   Right hand side of the set operation.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   a = Polars::Series.new([[1, 2, 3], [], [nil, 3], [5, 6, 7]])
+    #   b = Polars::Series.new([[2, 3, 4], [3], [3, 4, nil], [6, 8]])
+    #   a.list.set_intersection(b)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [list[i64]]
+    #   # [
+    #   #         [2, 3]
+    #   #         []
+    #   #         [null, 3]
+    #   #         [6]
+    #   # ]
+    def set_intersection(other)
+      super
+    end
+
+    # Compute the SET SYMMETRIC DIFFERENCE between the elements in this list and the elements of `other`.
+    #
+    # @param other [Object]
+    #   Right hand side of the set operation.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   a = Polars::Series.new([[1, 2, 3], [], [nil, 3], [5, 6, 7]])
+    #   b = Polars::Series.new([[2, 3, 4], [3], [3, 4, nil], [6, 8]])
+    #   a.list.set_symmetric_difference(b)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [list[i64]]
+    #   # [
+    #   #         [1, 4]
+    #   #         [3]
+    #   #         [4]
+    #   #         [5, 7, 8]
+    #   # ]
+    def set_symmetric_difference(other)
+      super
+    end
   end
 end
