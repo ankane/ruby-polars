@@ -4979,6 +4979,84 @@ module Polars
       end
     end
 
+    # Convert columnar data to rows as Ruby arrays in a hash keyed by some column.
+    #
+    # This method is like `rows`, but instead of returning rows in a flat list, rows
+    # are grouped by the values in the `key` column(s) and returned as a hash.
+    #
+    # Note that this method should not be used in place of native operations, due to
+    # the high cost of materializing all frame data out into a hash; it should
+    # be used only when you need to move the values out into a Ruby data structure
+    # or other object that cannot operate directly with Polars/Arrow.
+    #
+    # @param key [Object]
+    #   The column(s) to use as the key for the returned hash. If multiple
+    #   columns are specified, the key will be a tuple of those values, otherwise
+    #   it will be a string.
+    #
+    # @param named [Boolean]
+    #   Return hashes instead of arrays. The hashes are a mapping of
+    #   column name to row value. This is more expensive than returning an
+    #   array, but allows for accessing values by column name.
+    #
+    # @param include_key [Boolean]
+    #   Include key values inline with the associated data (by default the key
+    #   values are omitted as a memory/performance optimisation, as they can be
+    #   reoconstructed from the key).
+    #
+    # @param unique [Boolean]
+    #     Indicate that the key is unique; this will result in a 1:1 mapping from
+    #     key to a single associated row. Note that if the key is *not* actually
+    #     unique the last row with the given key will be returned.
+    #
+    # @return [Hash]
+    #
+    # @example Group rows by the given key column(s):
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "w" => ["a", "b", "b", "a"],
+    #       "x": ["q", "q", "q", "k"],
+    #       "y": [1.0, 2.5, 3.0, 4.5],
+    #       "z": [9, 8, 7, 6],
+    #     }
+    #   )
+    #   df.rows_by_key(key: ["w"])
+    #   # => {"a"=>[["q", 1.0, 9], ["k", 4.5, 6]], "b"=>[["q", 2.5, 8], ["q", 3.0, 7]]}
+    # @example Return the same row groupings as hashes:
+    #   df.rows_by_key(key: ["w"], named: true)
+    #   # => {"a"=>[{"x"=>"q", "y"=>1.0, "z"=>9}, {"x"=>"k", "y"=>4.5, "z"=>6}], "b"=>[{"x"=>"q", "y"=>2.5, "z"=>8}, {"x"=>"q", "y"=>3.0, "z"=>7}]}
+    # @example Return row groupings, assuming keys are unique:
+    #   df.rows_by_key(key: ["z"], unique: true)
+    #   # => {9=>["a", "q", 1.0], 8=>["b", "q", 2.5], 7=>["b", "q", 3.0], 6=>["a", "k", 4.5]}
+    # @example Return row groupings as hashes, assuming keys are unique:
+    #   df.rows_by_key(key: ["z"], named: true, unique: true)
+    #   # => {9=>{"w"=>"a", "x"=>"q", "y"=>1.0}, 8=>{"w"=>"b", "x"=>"q", "y"=>2.5}, 7=>{"w"=>"b", "x"=>"q", "y"=>3.0}, 6=>{"w"=>"a", "x"=>"k", "y"=>4.5}}
+    # @example Return hash rows grouped by a compound key, including key values:
+    #   df.rows_by_key(key: ["w", "x"], named: true, include_key: true)
+    #   # => {["a", "q"]=>[{"w"=>"a", "x"=>"q", "y"=>1.0, "z"=>9}], ["b", "q"]=>[{"w"=>"b", "x"=>"q", "y"=>2.5, "z"=>8}, {"w"=>"b", "x"=>"q", "y"=>3.0, "z"=>7}], ["a", "k"]=>[{"w"=>"a", "x"=>"k", "y"=>4.5, "z"=>6}]}
+    def rows_by_key(key:, named: false, include_key: false, unique: false)
+      key = Utils._expand_selectors(self, key)
+
+      keys = key.size == 1 ? get_column(key[0]) : select(key).iter_rows
+
+      if include_key
+        values = self
+      else
+        data_cols = schema.keys - key
+        values = select(data_cols)
+      end
+
+      zipped = keys.each.zip(values.iter_rows(named: named))
+
+      # if unique, we expect to write just one entry per key; otherwise, we're
+      # returning a list of rows for each key, so append into a hash of arrays.
+      if unique
+        zipped.to_h
+      else
+        zipped.each_with_object({}) { |(key, data), h| (h[key] ||= []) << data }
+      end
+    end
+
     # Returns an iterator over the DataFrame of rows of Ruby-native values.
     #
     # @param named [Boolean]
