@@ -4993,17 +4993,14 @@ module Polars
     #   The column(s) to use as the key for the returned hash. If multiple
     #   columns are specified, the key will be a tuple of those values, otherwise
     #   it will be a string.
-    #
     # @param named [Boolean]
     #   Return hashes instead of arrays. The hashes are a mapping of
     #   column name to row value. This is more expensive than returning an
     #   array, but allows for accessing values by column name.
-    #
     # @param include_key [Boolean]
     #   Include key values inline with the associated data (by default the key
     #   values are omitted as a memory/performance optimisation, as they can be
     #   reoconstructed from the key).
-    #
     # @param unique [Boolean]
     #   Indicate that the key is unique; this will result in a 1:1 mapping from
     #   key to a single associated row. Note that if the key is *not* actually
