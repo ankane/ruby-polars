@@ -5005,9 +5005,9 @@ module Polars
     #   reoconstructed from the key).
     #
     # @param unique [Boolean]
-    #     Indicate that the key is unique; this will result in a 1:1 mapping from
-    #     key to a single associated row. Note that if the key is *not* actually
-    #     unique the last row with the given key will be returned.
+    #   Indicate that the key is unique; this will result in a 1:1 mapping from
+    #   key to a single associated row. Note that if the key is *not* actually
+    #   unique the last row with the given key will be returned.
     #
     # @return [Hash]
     #
@@ -5015,26 +5015,30 @@ module Polars
     #   df = Polars::DataFrame.new(
     #     {
     #       "w" => ["a", "b", "b", "a"],
-    #       "x": ["q", "q", "q", "k"],
-    #       "y": [1.0, 2.5, 3.0, 4.5],
-    #       "z": [9, 8, 7, 6],
+    #       "x" => ["q", "q", "q", "k"],
+    #       "y" => [1.0, 2.5, 3.0, 4.5],
+    #       "z" => [9, 8, 7, 6]
     #     }
     #   )
-    #   df.rows_by_key(key: ["w"])
+    #   df.rows_by_key(["w"])
     #   # => {"a"=>[["q", 1.0, 9], ["k", 4.5, 6]], "b"=>[["q", 2.5, 8], ["q", 3.0, 7]]}
+    #
     # @example Return the same row groupings as hashes:
-    #   df.rows_by_key(key: ["w"], named: true)
+    #   df.rows_by_key(["w"], named: true)
     #   # => {"a"=>[{"x"=>"q", "y"=>1.0, "z"=>9}, {"x"=>"k", "y"=>4.5, "z"=>6}], "b"=>[{"x"=>"q", "y"=>2.5, "z"=>8}, {"x"=>"q", "y"=>3.0, "z"=>7}]}
+    #
     # @example Return row groupings, assuming keys are unique:
-    #   df.rows_by_key(key: ["z"], unique: true)
+    #   df.rows_by_key(["z"], unique: true)
     #   # => {9=>["a", "q", 1.0], 8=>["b", "q", 2.5], 7=>["b", "q", 3.0], 6=>["a", "k", 4.5]}
+    #
     # @example Return row groupings as hashes, assuming keys are unique:
-    #   df.rows_by_key(key: ["z"], named: true, unique: true)
+    #   df.rows_by_key(["z"], named: true, unique: true)
     #   # => {9=>{"w"=>"a", "x"=>"q", "y"=>1.0}, 8=>{"w"=>"b", "x"=>"q", "y"=>2.5}, 7=>{"w"=>"b", "x"=>"q", "y"=>3.0}, 6=>{"w"=>"a", "x"=>"k", "y"=>4.5}}
+    #
     # @example Return hash rows grouped by a compound key, including key values:
-    #   df.rows_by_key(key: ["w", "x"], named: true, include_key: true)
+    #   df.rows_by_key(["w", "x"], named: true, include_key: true)
     #   # => {["a", "q"]=>[{"w"=>"a", "x"=>"q", "y"=>1.0, "z"=>9}], ["b", "q"]=>[{"w"=>"b", "x"=>"q", "y"=>2.5, "z"=>8}, {"w"=>"b", "x"=>"q", "y"=>3.0, "z"=>7}], ["a", "k"]=>[{"w"=>"a", "x"=>"k", "y"=>4.5, "z"=>6}]}
-    def rows_by_key(key:, named: false, include_key: false, unique: false)
+    def rows_by_key(key, named: false, include_key: false, unique: false)
       key = Utils._expand_selectors(self, key)
 
       keys = key.size == 1 ? get_column(key[0]) : select(key).iter_rows

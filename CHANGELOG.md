@@ -1,6 +1,7 @@
 ## 0.20.1 (unreleased)
 
 - Added `Catalog` class
+- Added `rows_by_key` method to `DataFrame`
 - Added set methods to `ListExpr` and `ListNameSpace`
 - Added `filter` method to `ListExpr` and `ListNameSpace`
 - Added `extra_columns` option to `scan_parquet` method
