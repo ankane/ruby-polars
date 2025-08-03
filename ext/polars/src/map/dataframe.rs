@@ -157,7 +157,7 @@ pub fn apply_lambda_with_primitive_out_type<D>(
     first_value: Option<D::Native>,
 ) -> ChunkedArray<D>
 where
-    D: RbArrowPrimitiveType,
+    D: RbPolarsNumericType,
     D::Native: IntoValue + TryConvert,
 {
     let skip = usize::from(first_value.is_some());

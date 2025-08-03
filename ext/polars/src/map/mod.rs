@@ -11,18 +11,18 @@ use rayon::prelude::*;
 
 use crate::{ObjectValue, RbPolarsErr, RbResult, RbSeries, Wrap};
 
-pub trait RbArrowPrimitiveType: PolarsNumericType {}
+pub trait RbPolarsNumericType: PolarsNumericType {}
 
-impl RbArrowPrimitiveType for UInt8Type {}
-impl RbArrowPrimitiveType for UInt16Type {}
-impl RbArrowPrimitiveType for UInt32Type {}
-impl RbArrowPrimitiveType for UInt64Type {}
-impl RbArrowPrimitiveType for Int8Type {}
-impl RbArrowPrimitiveType for Int16Type {}
-impl RbArrowPrimitiveType for Int32Type {}
-impl RbArrowPrimitiveType for Int64Type {}
-impl RbArrowPrimitiveType for Float32Type {}
-impl RbArrowPrimitiveType for Float64Type {}
+impl RbPolarsNumericType for UInt8Type {}
+impl RbPolarsNumericType for UInt16Type {}
+impl RbPolarsNumericType for UInt32Type {}
+impl RbPolarsNumericType for UInt64Type {}
+impl RbPolarsNumericType for Int8Type {}
+impl RbPolarsNumericType for Int16Type {}
+impl RbPolarsNumericType for Int32Type {}
+impl RbPolarsNumericType for Int64Type {}
+impl RbPolarsNumericType for Float32Type {}
+impl RbPolarsNumericType for Float64Type {}
 
 fn iterator_to_struct(
     it: impl Iterator<Item = Option<Value>>,
@@ -111,7 +111,7 @@ fn iterator_to_primitive<T>(
     capacity: usize,
 ) -> ChunkedArray<T>
 where
-    T: RbArrowPrimitiveType,
+    T: RbPolarsNumericType,
 {
     // safety: we know the iterators len
     let mut ca: ChunkedArray<T> = unsafe {

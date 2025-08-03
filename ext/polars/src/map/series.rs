@@ -85,7 +85,7 @@ pub trait ApplyLambda<'a> {
         first_value: Option<D::Native>,
     ) -> RbResult<ChunkedArray<D>>
     where
-        D: RbArrowPrimitiveType,
+        D: RbPolarsNumericType,
         D::Native: IntoValue + TryConvert;
 
     /// Apply a lambda with a boolean output type
@@ -219,7 +219,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
         first_value: Option<D::Native>,
     ) -> RbResult<ChunkedArray<D>>
     where
-        D: RbArrowPrimitiveType,
+        D: RbPolarsNumericType,
         D::Native: IntoValue + TryConvert,
     {
         let skip = usize::from(first_value.is_some());
@@ -438,7 +438,7 @@ impl<'a> ApplyLambda<'a> for BooleanChunked {
 
 impl<'a, T> ApplyLambda<'a> for ChunkedArray<T>
 where
-    T: RbArrowPrimitiveType + PolarsNumericType,
+    T: RbPolarsNumericType + PolarsNumericType,
     T::Native: IntoValue + TryConvert,
     ChunkedArray<T>: IntoSeries,
 {
@@ -503,7 +503,7 @@ where
         first_value: Option<D::Native>,
     ) -> RbResult<ChunkedArray<D>>
     where
-        D: RbArrowPrimitiveType,
+        D: RbPolarsNumericType,
         D::Native: IntoValue + TryConvert,
     {
         let skip = usize::from(first_value.is_some());
@@ -782,7 +782,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
         first_value: Option<D::Native>,
     ) -> RbResult<ChunkedArray<D>>
     where
-        D: RbArrowPrimitiveType,
+        D: RbPolarsNumericType,
         D::Native: IntoValue + TryConvert,
     {
         let skip = usize::from(first_value.is_some());
@@ -1047,7 +1047,7 @@ impl<'a> ApplyLambda<'a> for StructChunked {
         first_value: Option<D::Native>,
     ) -> RbResult<ChunkedArray<D>>
     where
-        D: RbArrowPrimitiveType,
+        D: RbPolarsNumericType,
         D::Native: IntoValue + TryConvert,
     {
         let skip = usize::from(first_value.is_some());
