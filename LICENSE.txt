@@ -1,4 +1,4 @@
-Copyright (c) 2020 Ritchie Vink
+Copyright (c) 2025 Ritchie Vink
 Copyright (c) 2022-2025 Andrew Kane
 Some portions Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 
