@@ -913,7 +913,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("median", method!(RbSeries::median, 0))?;
     class.define_method("quantile", method!(RbSeries::quantile, 2))?;
     class.define_method("_clone", method!(RbSeries::clone, 0))?;
-    class.define_method("apply_lambda", method!(RbSeries::apply_lambda, 3))?;
+    class.define_method("map_elements", method!(RbSeries::map_elements, 3))?;
     class.define_method("zip_with", method!(RbSeries::zip_with, 2))?;
     class.define_method("to_dummies", method!(RbSeries::to_dummies, 2))?;
     class.define_method("n_unique", method!(RbSeries::n_unique, 0))?;

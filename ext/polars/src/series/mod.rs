@@ -5,6 +5,7 @@ mod construction;
 mod export;
 mod general;
 mod import;
+mod map;
 mod scatter;
 
 use magnus::{RArray, prelude::*};

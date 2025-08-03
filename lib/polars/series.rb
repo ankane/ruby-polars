@@ -3147,7 +3147,7 @@ module Polars
       else
         pl_return_dtype = Utils.rb_type_to_dtype(return_dtype)
       end
-      Utils.wrap_s(_s.apply_lambda(func, pl_return_dtype, skip_nulls))
+      Utils.wrap_s(_s.map_elements(func, pl_return_dtype, skip_nulls))
     end
     alias_method :map, :map_elements
     alias_method :apply, :map_elements
