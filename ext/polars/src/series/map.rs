@@ -1,11 +1,11 @@
 use magnus::Value;
 
 use super::RbSeries;
-use crate::RbResult;
-use crate::apply_method_all_arrow_series2;
 use crate::map::check_nested_object;
 use crate::map::series::{ApplyLambda, call_lambda_and_extract};
 use crate::prelude::*;
+use crate::{RbPolarsErr, RbResult};
+use crate::{apply_method_all_arrow_series2, raise_err};
 
 impl RbSeries {
     pub fn map_elements(
@@ -15,6 +15,18 @@ impl RbSeries {
         skip_nulls: bool,
     ) -> RbResult<Self> {
         let series = &self.series.borrow();
+
+        if skip_nulls && (series.null_count() == series.len()) {
+            if let Some(return_dtype) = return_dtype {
+                return Ok(
+                    Series::full_null(series.name().clone(), series.len(), &return_dtype.0).into(),
+                );
+            }
+            let msg = "The output type of the 'map_elements' function cannot be determined.\n\
+            The function was never called because 'skip_nulls=True' and all values are null.\n\
+            Consider setting 'skip_nulls=False' or setting the 'return_dtype'.";
+            raise_err!(msg, ComputeError)
+        }
 
         let return_dtype = return_dtype.map(|dt| dt.0);
 
