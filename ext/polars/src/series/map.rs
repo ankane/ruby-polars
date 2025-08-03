@@ -181,31 +181,14 @@ impl RbSeries {
                     dispatch_apply!(series, apply_lambda_with_bool_out_type, function, 0, None)?;
                 ca.into_series()
             }
-            Some(DataType::Date) => {
-                let ca: Int32Chunked = dispatch_apply!(
-                    series,
-                    apply_lambda_with_primitive_out_type,
-                    function,
-                    0,
-                    None
-                )?;
-                ca.into_date().into_series()
-            }
-            Some(DataType::Datetime(tu, tz)) => {
-                let ca: Int64Chunked = dispatch_apply!(
-                    series,
-                    apply_lambda_with_primitive_out_type,
-                    function,
-                    0,
-                    None
-                )?;
-                ca.into_datetime(tu, tz).into_series()
-            }
             Some(DataType::String) => {
                 let ca =
                     dispatch_apply!(series, apply_lambda_with_utf8_out_type, function, 0, None)?;
 
                 ca.into_series()
+            }
+            Some(DataType::List(_inner)) => {
+                todo!()
             }
             Some(DataType::Object(_)) => {
                 let ca =
