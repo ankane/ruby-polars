@@ -1,12 +1,13 @@
 pub(crate) mod any_value;
+mod categorical;
 mod chunked_array;
 
 use std::fmt::{Debug, Display, Formatter};
 use std::fs::File;
 use std::hash::{Hash, Hasher};
 use std::num::NonZeroUsize;
-use std::path::PathBuf;
 
+pub use categorical::RbCategories;
 use magnus::{
     IntoValue, Module, RArray, RHash, Ruby, Symbol, TryConvert, Value, class, exception,
     prelude::*, r_hash::ForEach, try_convert::TryConvertOwned, value::Opaque,
@@ -227,18 +228,25 @@ impl IntoValue for Wrap<DataType> {
                 let class = pl.const_get::<_, Value>("Object").unwrap();
                 class.funcall("new", ()).unwrap()
             }
-            DataType::Categorical(_, ordering) => {
-                let class = pl.const_get::<_, Value>("Categorical").unwrap();
-                class.funcall("new", (Wrap(ordering),)).unwrap()
+            DataType::Categorical(cats, _) => {
+                let categories_class = pl.const_get::<_, Value>("Categories").unwrap();
+                let categorical_class = pl.const_get::<_, Value>("Categorical").unwrap();
+                let categories: Value = categories_class
+                    .funcall("_from_rb_categories", (RbCategories::from(cats.clone()),))
+                    .unwrap();
+                let kwargs = RHash::new();
+                kwargs.aset(Symbol::new("categories"), categories).unwrap();
+                categorical_class.funcall("new", (kwargs,)).unwrap()
             }
-            DataType::Enum(rev_map, _) => {
-                // we should always have an initialized rev_map coming from rust
-                let categories = rev_map.as_ref().unwrap().get_categories();
+            DataType::Enum(_, mapping) => {
+                let categories = unsafe {
+                    StringChunked::from_chunks(
+                        PlSmallStr::from_static("category"),
+                        vec![mapping.to_arrow(true)],
+                    )
+                };
                 let class = pl.const_get::<_, Value>("Enum").unwrap();
-                let s =
-                    Series::from_arrow(PlSmallStr::from_static("category"), categories.to_boxed())
-                        .unwrap();
-                let series = to_series(s.into());
+                let series = to_series(categories.into_series().into());
                 class.funcall::<_, _, Value>("new", (series,)).unwrap()
             }
             DataType::Time => {
@@ -278,13 +286,13 @@ impl IntoValue for Wrap<DataType> {
     }
 }
 
+enum CategoricalOrdering {
+    Lexical,
+}
+
 impl IntoValue for Wrap<CategoricalOrdering> {
     fn into_value_with(self, _: &Ruby) -> Value {
-        let ordering = match self.0 {
-            CategoricalOrdering::Physical => "physical",
-            CategoricalOrdering::Lexical => "lexical",
-        };
-        ordering.into_value()
+        "lexical".into_value()
     }
 }
 
@@ -325,8 +333,10 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Boolean" => DataType::Boolean,
                 "Polars::String" => DataType::String,
                 "Polars::Binary" => DataType::Binary,
-                "Polars::Categorical" => DataType::Categorical(None, Default::default()),
-                "Polars::Enum" => DataType::Enum(None, Default::default()),
+                "Polars::Categorical" => DataType::from_categories(Categories::global()),
+                "Polars::Enum" => {
+                    DataType::from_frozen_categories(FrozenCategories::new([]).unwrap())
+                }
                 "Polars::Date" => DataType::Date,
                 "Polars::Time" => DataType::Time,
                 "Polars::Datetime" => DataType::Datetime(TimeUnit::Microseconds, None),
@@ -362,17 +372,20 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::String" => DataType::String,
                 "Polars::Binary" => DataType::Binary,
                 "Polars::Categorical" => {
-                    let ordering = ob
-                        .funcall::<_, _, Wrap<CategoricalOrdering>>("ordering", ())?
-                        .0;
-                    DataType::Categorical(None, ordering)
+                    let categories: Value = ob.funcall("categories", ()).unwrap();
+                    let rb_categories: &RbCategories =
+                        categories.funcall("_categories", ()).unwrap();
+                    DataType::from_categories(rb_categories.categories().clone())
                 }
                 "Polars::Enum" => {
-                    let categories = ob.funcall("categories", ()).unwrap();
+                    let categories: Value = ob.funcall("categories", ()).unwrap();
                     let s = get_series(categories)?;
                     let ca = s.str().map_err(RbPolarsErr::from)?;
                     let categories = ca.downcast_iter().next().unwrap().clone();
-                    create_enum_dtype(categories)
+                    assert!(!categories.has_nulls());
+                    DataType::from_frozen_categories(
+                        FrozenCategories::new(categories.values_iter()).unwrap(),
+                    )
                 }
                 "Polars::Date" => DataType::Date,
                 "Polars::Time" => DataType::Time,
@@ -438,7 +451,7 @@ impl TryConvert for Wrap<DataType> {
                 "str" => DataType::String,
                 "bin" => DataType::Binary,
                 "bool" => DataType::Boolean,
-                "cat" => DataType::Categorical(None, Default::default()),
+                "cat" => DataType::from_categories(Categories::global()),
                 "date" => DataType::Date,
                 "datetime" => DataType::Datetime(TimeUnit::Microseconds, None),
                 "f32" => DataType::Float32,
@@ -520,7 +533,7 @@ impl TryConvert for Wrap<ScanSources> {
         }
 
         enum MutableSources {
-            Paths(Vec<PathBuf>),
+            Paths(Vec<PlPath>),
             Files(Vec<File>),
             Buffers(Vec<MemSlice>),
         }
@@ -720,8 +733,14 @@ impl TryConvert for Wrap<Option<AvroCompression>> {
 impl TryConvert for Wrap<CategoricalOrdering> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match String::try_convert(ob)?.as_str() {
-            "physical" => CategoricalOrdering::Physical,
             "lexical" => CategoricalOrdering::Lexical,
+            "physical" => {
+                polars_warn!(
+                    Deprecation,
+                    "physical ordering is deprecated, will use lexical ordering instead"
+                );
+                CategoricalOrdering::Lexical
+            }
             v => {
                 return Err(RbValueError::new_err(format!(
                     "ordering must be one of {{'physical', 'lexical'}}, got {v}"
@@ -975,6 +994,8 @@ impl TryConvert for Wrap<TimeUnit> {
         Ok(Wrap(parsed))
     }
 }
+
+unsafe impl TryConvertOwned for Wrap<TimeUnit> {}
 
 impl TryConvert for Wrap<UniqueKeepStrategy> {
     fn try_convert(ob: Value) -> RbResult<Self> {
@@ -1259,6 +1280,8 @@ impl TryConvert for Wrap<Option<TimeZone>> {
     }
 }
 
+unsafe impl TryConvertOwned for Wrap<Option<TimeZone>> {}
+
 impl TryConvert for Wrap<ExtraColumnsPolicy> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match String::try_convert(ob)?.as_str() {
@@ -1286,6 +1309,12 @@ impl TryConvert for Wrap<MissingColumnsPolicy> {
             }
         };
         Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<ColumnMapping> {
+    fn try_convert(_ob: Value) -> RbResult<Self> {
+        todo!()
     }
 }
 

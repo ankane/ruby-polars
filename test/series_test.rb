@@ -773,7 +773,7 @@ class SeriesTest < Minitest::Test
 
   def test_shuffle
     s = Polars::Series.new("a", [1, 2, 3])
-    assert_series [2, 1, 3], s.shuffle(seed: 1)
+    assert_series [2, 3, 1], s.shuffle(seed: 1)
   end
 
   def test_extend_constant

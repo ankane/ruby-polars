@@ -362,24 +362,8 @@ module Polars
     #   # │ 2   ┆ 2.5  │
     #   # │ 3   ┆ 1.5  │
     #   # └─────┴──────┘
-    def exclude(columns)
-      if columns.is_a?(::String)
-        columns = [columns]
-        return _from_rbexpr(_rbexpr.exclude(columns))
-      elsif !columns.is_a?(::Array)
-        columns = [columns]
-        return _from_rbexpr(_rbexpr.exclude_dtype(columns))
-      end
-
-      if !columns.all? { |a| a.is_a?(::String) } || !columns.all? { |a| Utils.is_polars_dtype(a) }
-        raise ArgumentError, "input should be all string or all DataType"
-      end
-
-      if columns[0].is_a?(::String)
-        _from_rbexpr(_rbexpr.exclude(columns))
-      else
-        _from_rbexpr(_rbexpr.exclude_dtype(columns))
-      end
+    def exclude(columns, *more_columns)
+      meta.as_selector.exclude(columns, *more_columns).as_expr
     end
 
     # Keep the original root name of the expression.
@@ -5626,10 +5610,10 @@ module Polars
     #   # ╞══════╡
     #   # │ null │
     #   # │ null │
-    #   # │ 1.0  │
     #   # │ 2.0  │
     #   # │ 3.0  │
     #   # │ 4.0  │
+    #   # │ 6.0  │
     #   # └──────┘
     def rolling_quantile(
       quantile,
@@ -6471,8 +6455,8 @@ module Polars
     #   # │ i64 │
     #   # ╞═════╡
     #   # │ 2   │
-    #   # │ 1   │
     #   # │ 3   │
+    #   # │ 1   │
     #   # └─────┘
     def shuffle(seed: nil)
       if seed.nil?
@@ -6508,7 +6492,7 @@ module Polars
     #   # │ i64 │
     #   # ╞═════╡
     #   # │ 3   │
-    #   # │ 1   │
+    #   # │ 3   │
     #   # │ 1   │
     #   # └─────┘
     def sample(

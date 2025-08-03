@@ -458,7 +458,7 @@ module Polars
     #   # └─────┴─────┘
     def first(*columns)
       if columns.empty?
-        return Utils.wrap_expr(Plr.first)
+        return cs.first.as_expr
       end
 
       col(*columns).first
@@ -518,7 +518,7 @@ module Polars
     #   # └─────┴─────┘
     def last(*columns)
       if columns.empty?
-        return Utils.wrap_expr(Plr.last)
+        return cs.last.as_expr
       end
 
       col(*columns).last
@@ -565,12 +565,8 @@ module Polars
     #   # │ bar ┆ 8   │
     #   # │ baz ┆ 3   │
     #   # └─────┴─────┘
-    def nth(*indices)
-      if indices.length == 1 && indices[0].is_a?(Array)
-        indices = indices[0]
-      end
-
-      Utils.wrap_expr(Plr.index_cols(indices))
+    def nth(*indices, strict: true)
+      cs.by_index(*indices, require_all: strict).as_expr
     end
 
     # Get the first `n` rows.
@@ -795,14 +791,82 @@ module Polars
     # Accumulate over multiple columns horizontally/row wise with a left fold.
     #
     # @return [Expr]
-    def fold(acc, f, exprs)
+    #
+    # @example Horizontally sum over all columns and add 1.
+    #   df = Polars::DataFrame.new(
+    #    {
+    #      "a" => [1, 2, 3],
+    #      "b" => [3, 4, 5],
+    #      "c" => [5, 6, 7]
+    #    }
+    #   )
+    #   df.select(
+    #     Polars.fold(
+    #       Polars.lit(1), ->(acc, x) { acc + x }, Polars.col("*")
+    #     ).alias("sum")
+    #   )
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ sum │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 10  │
+    #   # │ 13  │
+    #   # │ 16  │
+    #   # └─────┘
+    #
+    # @example You can also apply a condition/predicate on all columns:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3],
+    #       "b" => [0, 1, 2]
+    #     }
+    #   )
+    #   df.filter(
+    #     Polars.fold(
+    #       Polars.lit(true),
+    #       ->(acc, x) { acc & x },
+    #       Polars.col("*") > 1
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (1, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 3   ┆ 2   │
+    #   # └─────┴─────┘
+    def fold(
+      acc,
+      function,
+      exprs,
+      returns_scalar: false,
+      return_dtype: nil
+    )
       acc = Utils.parse_into_expression(acc, str_as_lit: true)
       if exprs.is_a?(Expr)
         exprs = [exprs]
       end
 
+      rt = nil
+      if !return_dtype.nil?
+        rt = Utils.parse_into_datatype_expr(return_dtype)._rbdatatype_expr
+      end
+
       exprs = Utils.parse_into_list_of_expressions(exprs)
-      Utils.wrap_expr(Plr.fold(acc, f, exprs))
+      Utils.wrap_expr(
+        Plr.fold(
+          acc,
+          function,
+          exprs,
+          returns_scalar,
+          rt
+        )
+      )
     end
 
     # def reduce
@@ -815,7 +879,7 @@ module Polars
     # @param acc [Object]
     #   Accumulator Expression. This is the value that will be initialized when the fold
     #   starts. For a sum this could for instance be lit(0).
-    # @param f [Object]
+    # @param function [Object]
     #   Function to apply over the accumulator and the value.
     #   Fn(acc, value) -> new_value
     # @param exprs [Object]
@@ -851,14 +915,35 @@ module Polars
     #   # │ 2   ┆ 4   ┆ 6   ┆ {3,7,13}  │
     #   # │ 3   ┆ 5   ┆ 7   ┆ {4,9,16}  │
     #   # └─────┴─────┴─────┴───────────┘
-    def cum_fold(acc, f, exprs, include_init: false)
+    def cum_fold(
+      acc,
+      function,
+      exprs,
+      returns_scalar: false,
+      return_dtype: nil,
+      include_init: false
+    )
       acc = Utils.parse_into_expression(acc, str_as_lit: true)
       if exprs.is_a?(Expr)
         exprs = [exprs]
       end
 
+      rt = nil
+      if !return_dtype.nil?
+        rt = Utils.parse_into_datatype_expr(return_dtype)._rbdatatype_expr
+      end
+
       exprs = Utils.parse_into_list_of_expressions(exprs)
-      Utils.wrap_expr(Plr.cum_fold(acc, f, exprs, include_init)._alias("cum_fold"))
+      Utils.wrap_expr(
+        Plr.cum_fold(
+          acc,
+          function,
+          exprs,
+          returns_scalar,
+          rt,
+          include_init
+        )._alias("cum_fold")
+      )
     end
     alias_method :cumfold, :cum_fold
 

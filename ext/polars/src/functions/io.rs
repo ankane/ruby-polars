@@ -1,13 +1,10 @@
 use std::io::BufReader;
 
-use arrow::array::Utf8ViewArray;
 use magnus::{RHash, Value};
 use polars::prelude::ArrowSchema;
-use polars_core::datatypes::create_enum_dtype;
 
 use crate::conversion::Wrap;
 use crate::file::{EitherRustRubyFile, get_either_file};
-use crate::prelude::ArrowDataType;
 use crate::{RbPolarsErr, RbResult};
 
 pub fn read_ipc_schema(rb_f: Value) -> RbResult<RHash> {
@@ -42,13 +39,7 @@ pub fn read_parquet_schema(rb_f: Value) -> RbResult<RHash> {
 
 fn fields_to_rbdict(schema: &ArrowSchema, dict: &RHash) -> RbResult<()> {
     for field in schema.iter_values() {
-        let dt = if field.is_enum() {
-            Wrap(create_enum_dtype(Utf8ViewArray::new_empty(
-                ArrowDataType::Utf8View,
-            )))
-        } else {
-            Wrap(polars::prelude::DataType::from_arrow_field(field))
-        };
+        let dt = Wrap(polars::prelude::DataType::from_arrow_field(field));
         dict.aset(field.name.as_str(), dt)?;
     }
     Ok(())

@@ -4581,11 +4581,11 @@ module Polars
     #   # │ 1     ┆ 0     ┆ 1     ┆ 0     ┆ 1     ┆ 0     │
     #   # │ 0     ┆ 1     ┆ 0     ┆ 1     ┆ 0     ┆ 1     │
     #   # └───────┴───────┴───────┴───────┴───────┴───────┘
-    def to_dummies(columns: nil, separator: "_", drop_first: false)
+    def to_dummies(columns: nil, separator: "_", drop_first: false, drop_nulls: false)
       if columns.is_a?(::String)
         columns = [columns]
       end
-      _from_rbdf(_df.to_dummies(columns, separator, drop_first))
+      _from_rbdf(_df.to_dummies(columns, separator, drop_first, drop_nulls))
     end
 
     # Drop duplicate rows from this DataFrame.
@@ -4753,7 +4753,7 @@ module Polars
     #   # │ --- ┆ --- ┆ --- │
     #   # │ i64 ┆ i64 ┆ str │
     #   # ╞═════╪═════╪═════╡
-    #   # │ 3   ┆ 8   ┆ c   │
+    #   # │ 1   ┆ 6   ┆ a   │
     #   # │ 2   ┆ 7   ┆ b   │
     #   # └─────┴─────┴─────┘
     def sample(

@@ -1004,6 +1004,13 @@ module Polars
 
     # Get dummy variables.
     #
+    # @param separator [String]
+    #   Separator/delimiter used when generating column names.
+    # @param drop_first [Boolean]
+    #   Remove the first category from the variable being encoded.
+    # @param drop_nulls [Boolean]
+    #   If there are `nil` values in the series, a `null` column is not generated.
+    #
     # @return [DataFrame]
     #
     # @example
@@ -1020,8 +1027,8 @@ module Polars
     #   # │ 0   ┆ 1   ┆ 0   │
     #   # │ 0   ┆ 0   ┆ 1   │
     #   # └─────┴─────┴─────┘
-    def to_dummies(separator: "_", drop_first: false)
-      Utils.wrap_df(_s.to_dummies(separator, drop_first))
+    def to_dummies(separator: "_", drop_first: false, drop_nulls: false)
+      Utils.wrap_df(_s.to_dummies(separator, drop_first, drop_nulls))
     end
 
     # Bin continuous values into discrete categories.
@@ -3560,10 +3567,10 @@ module Polars
     #   # [
     #   #         null
     #   #         null
-    #   #         1.0
     #   #         2.0
     #   #         3.0
     #   #         4.0
+    #   #         6.0
     #   # ]
     #
     # @example
@@ -3644,7 +3651,7 @@ module Polars
     #   # Series: 'a' [i64]
     #   # [
     #   #         5
-    #   #         3
+    #   #         2
     #   # ]
     def sample(
       n: nil,
@@ -4256,8 +4263,8 @@ module Polars
     #   # Series: 'a' [i64]
     #   # [
     #   #         2
-    #   #         1
     #   #         3
+    #   #         1
     #   # ]
     def shuffle(seed: nil)
       super

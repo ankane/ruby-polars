@@ -1,12 +1,14 @@
 mod array;
 mod binary;
 mod categorical;
+pub mod datatype;
 mod datetime;
 mod general;
 mod list;
 mod meta;
 mod name;
 mod rolling;
+pub mod selector;
 mod string;
 mod r#struct;
 

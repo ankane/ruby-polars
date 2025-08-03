@@ -416,17 +416,19 @@ impl RbDataFrame {
         columns: Option<Vec<String>>,
         separator: Option<String>,
         drop_first: bool,
+        drop_nulls: bool,
     ) -> RbResult<Self> {
         let df = match columns {
             Some(cols) => self.df.borrow().columns_to_dummies(
                 cols.iter().map(|x| x as &str).collect(),
                 separator.as_deref(),
                 drop_first,
+                drop_nulls,
             ),
             None => self
                 .df
                 .borrow()
-                .to_dummies(separator.as_deref(), drop_first),
+                .to_dummies(separator.as_deref(), drop_first, drop_nulls),
         }
         .map_err(RbPolarsErr::from)?;
         Ok(df.into())

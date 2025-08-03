@@ -294,12 +294,56 @@ module Polars
     end
   end
 
+  # A named collection of categories for `Categorical`.
+  #
+  # Two categories are considered equal (and will use the same physical mapping of
+  # categories to strings) if they have the same name, namespace and physical backing
+  # type, even if they are created in separate calls to `Categories`.
+  #
+  # @note
+  #   This functionality is currently considered **unstable**. It may be
+  #   changed at any point without it being considered a breaking change.
+  class Categories
+    attr_accessor :_categories
+
+    def initialize
+      # TODO fix
+      name = nil
+      if name.nil? || name == ""
+        @_categories = RbCategories.global_categories
+        return
+      end
+
+      raise Todo
+    end
+
+    def self._from_rb_categories(rb_categories)
+      slf = new
+      slf._categories = rb_categories
+      slf
+    end
+  end
+
   # A categorical encoding of a set of strings.
   class Categorical < DataType
-    attr_reader :ordering
+    attr_reader :ordering, :categories
 
-    def initialize(ordering = "physical")
-      @ordering = ordering
+    def initialize(ordering = "physical", **kwargs)
+      if ordering.is_a?(Categories)
+        @ordering = "lexical"
+        @categories = ordering
+        # assert kwargs.length == 0
+        return
+      end
+
+      @ordering = "lexical"
+      if kwargs[:categories]
+        # assert kwargs.length == 1
+        @categories = kwargs[:categories]
+      else
+        # assert kwargs.length == 0
+        @categories = Categories.new
+      end
     end
   end
 

@@ -171,32 +171,17 @@ module Polars
       Utils.wrap_expr(_rbexpr.meta_undo_aliases)
     end
 
-    # Turn this expression in a selector.
+    # Try to turn this expression in a selector.
+    #
+    # Raises if the underlying expressions is not a column or selector.
     #
     # @return [Expr]
-    def _as_selector
-      Utils.wrap_expr(_rbexpr._meta_as_selector)
-    end
-
-    # Add selectors.
     #
-    # @return [Expr]
-    def _selector_add(other)
-      Utils.wrap_expr(_rbexpr._meta_selector_add(other._rbexpr))
-    end
-
-    # Subtract selectors.
-    #
-    # @return [Expr]
-    def _selector_sub(other)
-      Utils.wrap_expr(_rbexpr._meta_selector_sub(other._rbexpr))
-    end
-
-    # & selectors.
-    #
-    # @return [Expr]
-    def _selector_and(other)
-      Utils.wrap_expr(_rbexpr._meta_selector_and(other._rbexpr))
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    def as_selector
+      Selector._from_rbselector(_rbexpr.into_selector)
     end
 
     # Format the expression as a tree.

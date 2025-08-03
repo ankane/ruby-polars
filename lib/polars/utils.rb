@@ -107,7 +107,7 @@ module Polars
     end
 
     def self.is_selector(obj)
-      obj.is_a?(Selectors::SelectorProxy)
+      obj.is_a?(Selector)
     end
 
     def self.expand_selector(target, selector, strict: true)

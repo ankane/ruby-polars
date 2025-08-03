@@ -6,10 +6,11 @@ use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 use polars_core::series::IsSorted;
 
+use super::selector::RbSelector;
 use crate::conversion::{Wrap, parse_fill_null_strategy};
 use crate::map::lazy::map_single;
 use crate::rb_exprs_to_exprs;
-use crate::{RbExpr, RbResult};
+use crate::{RbExpr, RbPolarsErr, RbResult};
 
 impl RbExpr {
     pub fn add(&self, rhs: &Self) -> RbResult<Self> {
@@ -276,17 +277,8 @@ impl RbExpr {
             .into()
     }
 
-    pub fn arg_sort(&self, reverse: bool, nulls_last: bool) -> Self {
-        self.clone()
-            .inner
-            .arg_sort(SortOptions {
-                descending: reverse,
-                nulls_last,
-                multithreaded: true,
-                maintain_order: false,
-                limit: None,
-            })
-            .into()
+    pub fn arg_sort(&self, descending: bool, nulls_last: bool) -> Self {
+        self.inner.clone().arg_sort(descending, nulls_last).into()
     }
 
     pub fn top_k(&self, k: &Self) -> Self {
@@ -655,10 +647,6 @@ impl RbExpr {
         self.inner.clone().mode().into()
     }
 
-    pub fn exclude(&self, columns: Vec<String>) -> Self {
-        self.inner.clone().exclude(columns).into()
-    }
-
     pub fn interpolate(&self, method: Wrap<InterpolationMethod>) -> Self {
         self.inner.clone().interpolate(method.0).into()
     }
@@ -867,5 +855,22 @@ impl RbExpr {
                 return_dtype.map(|dt| dt.0),
             )
             .into()
+    }
+
+    #[allow(clippy::wrong_self_convention)]
+    pub fn into_selector(&self) -> RbResult<RbSelector> {
+        Ok(self
+            .inner
+            .clone()
+            .into_selector()
+            .ok_or_else(
+                || polars_err!(InvalidOperation: "expr `{}` is not a selector", &self.inner),
+            )
+            .map_err(RbPolarsErr::from)?
+            .into())
+    }
+
+    pub fn new_selector(selector: &RbSelector) -> Self {
+        Expr::Selector(selector.inner.clone()).into()
     }
 }

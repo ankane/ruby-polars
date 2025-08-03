@@ -25,7 +25,9 @@ impl RbSeries {
                 DataType::Float32 => RArray::from_iter(series.f32().unwrap()).into_value(),
                 DataType::Float64 => RArray::from_iter(series.f64().unwrap()).into_value(),
                 DataType::Categorical(_, _) | DataType::Enum(_, _) => {
-                    RArray::from_iter(series.categorical().unwrap().iter_str()).into_value()
+                    with_match_categorical_physical_type!(series.dtype().cat_physical().unwrap(), |$C| {
+                        RArray::from_iter(series.cat::<$C>().unwrap().iter_str()).into_value()
+                    })
                 }
                 DataType::Object(_) => {
                     let v = RArray::with_capacity(series.len());

@@ -1,119 +1,6 @@
 module Polars
   module Selectors
     # @private
-    class SelectorProxy < Expr
-      attr_accessor :_attrs
-      attr_accessor :_repr_override
-
-      def initialize(
-        expr,
-        name:,
-        parameters: nil
-      )
-        self._rbexpr = expr._rbexpr
-        self._attrs = {
-          name: name,
-          params: parameters
-        }
-      end
-
-      def inspect
-        if !_attrs
-          as_expr.inspect
-        elsif _repr_override
-          _repr_override
-        else
-          selector_name = _attrs[:name]
-          params = _attrs[:params] || {}
-          set_ops = {"and" => "&", "or" => "|", "sub" => "-", "xor" => "^"}
-          if set_ops.include?(selector_name)
-            op = set_ops[selector_name]
-            "(#{params.values.map(&:inspect).join(" #{op} ")})"
-          else
-            str_params = params.map { |k, v| k.start_with?("*") ? v.inspect[1..-2] : "#{k}=#{v.inspect}" }.join(", ")
-            "Polars.cs.#{selector_name}(#{str_params})"
-          end
-        end
-      end
-
-      def ~
-        if Utils.is_selector(self)
-          inverted = Selectors.all - self
-          inverted._repr_override = "~#{inspect}"
-        else
-          inverted = ~as_expr
-        end
-        inverted
-      end
-
-      def -(other)
-        if Utils.is_selector(other)
-          SelectorProxy.new(
-            meta._as_selector.meta._selector_sub(other),
-            parameters: {"self" => self, "other" => other},
-            name: "sub"
-          )
-        else
-          as_expr - other
-        end
-      end
-
-      def &(other)
-        if Utils.is_column(other)
-          raise Todo
-        end
-        if Utils.is_selector(other)
-          SelectorProxy.new(
-            meta._as_selector.meta._selector_and(other),
-            parameters: {"self" => self, "other" => other},
-            name: "and"
-          )
-        else
-          as_expr & other
-        end
-      end
-
-      def |(other)
-        if Utils.is_column(other)
-          raise Todo
-        end
-        if Utils.is_selector(other)
-          SelectorProxy.new(
-            meta._as_selector.meta._selector_and(other),
-            parameters: {"self" => self, "other" => other},
-            name: "or"
-          )
-        else
-          as_expr | other
-        end
-      end
-
-      def ^(other)
-        if Utils.is_column(other)
-          raise Todo
-        end
-        if Utils.is_selector(other)
-          SelectorProxy.new(
-            meta._as_selector.meta._selector_and(other),
-            parameters: {"self" => self, "other" => other},
-            name: "xor"
-          )
-        else
-          as_expr ^ other
-        end
-      end
-
-      def as_expr
-        Expr._from_rbexpr(_rbexpr)
-      end
-    end
-
-    # @private
-    def self._selector_proxy_(...)
-      SelectorProxy.new(...)
-    end
-
-    # @private
     def self._re_string(string, escape: true)
       if string.is_a?(::String)
         rx = escape ? Utils.re_escape(string) : string
@@ -131,9 +18,26 @@ module Polars
       "(#{rx})"
     end
 
+    # Select no columns.
+    #
+    # This is useful for composition with other selectors.
+    #
+    # @return [Selector]
+    #
+    # @example
+    #   Polars::DataFrame.new({"a" => 1, "b" => 2}).select(Polars.cs.empty)
+    #   # =>
+    #   # shape: (0, 0)
+    #   # ┌┐
+    #   # ╞╡
+    #   # └┘
+    def self.empty
+      Selector._from_rbselector(RbSelector.empty)
+    end
+
     # Select all columns.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -170,7 +74,7 @@ module Polars
     #   # │ 2024-01-01 │
     #   # └────────────┘
     def self.all
-      _selector_proxy_(F.all, name: "all")
+      Selector._from_rbselector(RbSelector.all)
     end
 
     # Select all columns with alphabetic names (eg: only letters).
@@ -182,7 +86,7 @@ module Polars
     #   Indicate whether to ignore the presence of spaces in column names; if so,
     #   only the other (non-space) characters are considered.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @note
     #   Matching column names cannot contain *any* non-alphabetic characters. Note
@@ -274,11 +178,7 @@ module Polars
       # note that we need to supply a pattern compatible with the *rust* regex crate
       re_alpha = ascii_only ? "a-zA-Z" : "\\p{Alphabetic}"
       re_space = ignore_spaces ? " " : ""
-      _selector_proxy_(
-        F.col("^[#{re_alpha}#{re_space}]+$"),
-        name: "alpha",
-        parameters: {"ascii_only" => ascii_only, "ignore_spaces" => ignore_spaces},
-      )
+      Selector._from_rbselector(RbSelector.matches("^[#{re_alpha}#{re_space}]+$"))
     end
 
     # TODO
@@ -287,7 +187,7 @@ module Polars
 
     # Select all binary columns.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new({"a" => ["hello".b], "b" => ["world"], "c" => ["!".b], "d" => [":)"]})
@@ -309,12 +209,12 @@ module Polars
     #   df.select(~Polars.cs.binary).to_h(as_series: false)
     #   # => {"b"=>["world"], "d"=>[":)"]}
     def self.binary
-      _selector_proxy_(F.col(Binary), name: "binary")
+      by_dtype([Binary])
     end
 
     # Select all boolean columns.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new({"n" => 1..4}).with_columns(n_even: Polars.col("n") % 2 == 0)
@@ -361,16 +261,60 @@ module Polars
     #   # │ 4   │
     #   # └─────┘
     def self.boolean
-      _selector_proxy_(F.col(Boolean), name: "boolean")
+      by_dtype([Boolean])
     end
 
-    # TODO
-    # def by_dtype
-    # end
+    # Select all columns matching the given dtypes.
+    #
+    # @return [Selector]
+    def self.by_dtype(*dtypes)
+      all_dtypes = []
+      dtypes.each do |tp|
+        if Utils.is_polars_dtype(tp) || tp.is_a?(Class)
+          all_dtypes << tp
+        elsif tp.is_a?(::Array)
+          tp.each do |t|
+            if !(Utils.is_polars_dtype(t) || t.is_a?(Class))
+              msg = "invalid dtype: #{t.inspect}"
+              raise TypeError, msg
+            end
+            all_dtypes << t
+          end
+        else
+          msg = "invalid dtype: #{tp.inspect}"
+          raise TypeError, msg
+        end
+      end
 
-    # TODO
-    # def by_index
-    # end
+      Selector._by_dtype(all_dtypes)
+    end
+
+    # Select all columns matching the given indices (or range objects).
+    #
+    # @param indices [Array]
+    #   One or more column indices (or range objects).
+    #   Negative indexing is supported.
+    #
+    # @return [Selector]
+    #
+    # @note
+    #   Matching columns are returned in the order in which their indexes
+    #   appear in the selector, not the underlying schema order.
+    def self.by_index(*indices, require_all: true)
+      all_indices = []
+      indices.each do |idx|
+        if idx.is_a?(Range) || idx.is_a?(::Array)
+          all_indices.concat(idx)
+        elsif idx.is_a?(Integer)
+          all_indices << idx
+        else
+          msg = "invalid index value: #{idx.inspect}"
+          raise TypeError, msg
+        end
+      end
+
+      Selector._from_rbselector(RbSelector.by_index(all_indices, require_all))
+    end
 
     # Select all columns matching the given names.
     #
@@ -379,7 +323,7 @@ module Polars
     # @param require_all [Boolean]
     #   Whether to match *all* names (the default) or *any* of the names.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @note
     #   Matching columns are returned in the order in which they are declared in
@@ -413,12 +357,12 @@ module Polars
     #   # =>
     #   # shape: (2, 2)
     #   # ┌─────┬─────┐
-    #   # │ foo ┆ baz │
+    #   # │ baz ┆ foo │
     #   # │ --- ┆ --- │
-    #   # │ str ┆ f64 │
+    #   # │ f64 ┆ str │
     #   # ╞═════╪═════╡
-    #   # │ x   ┆ 2.0 │
-    #   # │ y   ┆ 5.5 │
+    #   # │ 2.0 ┆ x   │
+    #   # │ 5.5 ┆ y   │
     #   # └─────┴─────┘
     #
     # @example Match all columns *except* for those given:
@@ -438,29 +382,26 @@ module Polars
       names.each do |nm|
         if nm.is_a?(::String)
           all_names << nm
+        elsif nm.is_a?(::Array)
+          nm.each do |n|
+            if !n.is_a?(::String)
+              msg = "invalid name: #{n.inspect}"
+              raise TypeError, msg
+            end
+            all_names << n
+          end
         else
           msg = "invalid name: #{nm.inspect}"
           raise TypeError, msg
         end
       end
 
-      selector_params = {"*names" => all_names}
-      match_cols = all_names
-      if !require_all
-        match_cols = "^(#{all_names.map { |nm| Utils.re_escape(nm) }.join("|")})$"
-        selector_params["require_all"] = require_all
-      end
-
-      _selector_proxy_(
-        F.col(match_cols),
-        name: "by_name",
-        parameters: selector_params
-      )
+      Selector._by_name(all_names, strict: require_all)
     end
 
     # Select all categorical columns.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -498,7 +439,7 @@ module Polars
     #   # │ 456 ┆ 5.5 │
     #   # └─────┴─────┘
     def self.categorical
-      _selector_proxy_(F.col(Categorical), name: "categorical")
+      Selector._from_rbselector(RbSelector.categorical())
     end
 
     # Select columns whose names contain the given literal substring(s).
@@ -506,7 +447,7 @@ module Polars
     # @param substring [Object]
     #   Substring(s) that matching column names should contain.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -560,16 +501,12 @@ module Polars
       escaped_substring = _re_string(substring)
       raw_params = "^.*#{escaped_substring}.*$"
 
-      _selector_proxy_(
-        F.col(raw_params),
-        name: "contains",
-        parameters: {"*substring" => escaped_substring}
-      )
+      Selector._from_rbselector(RbSelector.matches(raw_params))
     end
 
     # Select all date columns.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -605,7 +542,7 @@ module Polars
     #   # │ 2031-12-31 00:30:00 │
     #   # └─────────────────────┘
     def self.date
-      _selector_proxy_(F.col(Date), name: "date")
+      by_dtype([Date])
     end
 
     # TODO
@@ -614,7 +551,7 @@ module Polars
 
     # Select all decimal columns.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -654,7 +591,7 @@ module Polars
     #   # └─────┘
     def self.decimal
       # TODO: allow explicit selection by scale/precision?
-      _selector_proxy_(F.col(Decimal), name: "decimal")
+      Selector._from_rbselector(RbSelector.decimal)
     end
 
     # Select columns that end with the given substring(s).
@@ -662,7 +599,7 @@ module Polars
     # @param suffix [Object]
     #   Substring(s) that matching column names should end with.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -716,16 +653,12 @@ module Polars
       escaped_suffix = _re_string(suffix)
       raw_params = "^.*#{escaped_suffix}$"
 
-      _selector_proxy_(
-        F.col(raw_params),
-        name: "ends_with",
-        parameters: {"*suffix" => escaped_suffix},
-      )
+      Selector._from_rbselector(RbSelector.matches(raw_params))
     end
 
     # Select the first column in the current scope.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -762,13 +695,13 @@ module Polars
     #   # │ 123 ┆ 2.0 ┆ 0   │
     #   # │ 456 ┆ 5.5 ┆ 1   │
     #   # └─────┴─────┴─────┘
-    def self.first
-      _selector_proxy_(F.first, name: "first")
+    def self.first(strict: true)
+      Selector._from_rbselector(RbSelector.first(strict))
     end
 
     # Select all float columns.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -807,12 +740,12 @@ module Polars
     #   # │ y   ┆ 456 │
     #   # └─────┴─────┘
     def self.float
-      _selector_proxy_(F.col(FLOAT_DTYPES), name: "float")
+      Selector._from_rbselector(RbSelector.float)
     end
 
     # Select all integer columns.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -850,12 +783,12 @@ module Polars
     #   # │ y   ┆ 5.5 │
     #   # └─────┴─────┘
     def self.integer
-      _selector_proxy_(F.col(INTEGER_DTYPES), name: "integer")
+      Selector._from_rbselector(RbSelector.integer)
     end
 
     # Select all signed integer columns.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -907,12 +840,12 @@ module Polars
     #   # │ -456 ┆ 6789 ┆ 4321 │
     #   # └──────┴──────┴──────┘
     def self.signed_integer
-      _selector_proxy_(F.col(SIGNED_INTEGER_DTYPES), name: "signed_integer")
+      Selector._from_rbselector(RbSelector.signed_integer)
     end
 
     # Select all unsigned integer columns.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -964,12 +897,12 @@ module Polars
     #   # │ -456 ┆ 6789 ┆ 4321 │
     #   # └──────┴──────┴──────┘
     def self.unsigned_integer
-      _selector_proxy_(F.col(UNSIGNED_INTEGER_DTYPES), name: "unsigned_integer")
+      Selector._from_rbselector(RbSelector.unsigned_integer)
     end
 
     # Select the last column in the current scope.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -1006,13 +939,13 @@ module Polars
     #   # │ x   ┆ 123 ┆ 2.0 │
     #   # │ y   ┆ 456 ┆ 5.5 │
     #   # └─────┴─────┴─────┘
-    def self.last
-      _selector_proxy_(F.last, name: "last")
+    def self.last(strict: true)
+      Selector._from_rbselector(RbSelector.last(strict))
     end
 
     # Select all numeric columns.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -1051,7 +984,7 @@ module Polars
     #   # │ y   │
     #   # └─────┘
     def self.numeric
-      _selector_proxy_(F.col(NUMERIC_DTYPES), name: "numeric")
+      Selector._from_rbselector(RbSelector.numeric)
     end
 
     # Select columns that start with the given substring(s).
@@ -1059,7 +992,7 @@ module Polars
     # @param prefix [Object]
     #   Substring(s) that matching column names should start with.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -1113,16 +1046,12 @@ module Polars
       escaped_prefix = _re_string(prefix)
       raw_params = "^#{escaped_prefix}.*$"
 
-      _selector_proxy_(
-        F.col(raw_params),
-        name: "starts_with",
-        parameters: {"*prefix" => prefix}
-      )
+      Selector._from_rbselector(RbSelector.matches(raw_params))
     end
 
     # Select all String (and, optionally, Categorical) string columns.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -1169,16 +1098,12 @@ module Polars
         string_dtypes << Categorical
       end
 
-      _selector_proxy_(
-        F.col(string_dtypes),
-        name: "string",
-        parameters: {"include_categorical" => include_categorical},
-      )
+      by_dtype(string_dtypes)
     end
 
     # Select all time columns.
     #
-    # @return [SelectorProxy]
+    # @return [Selector]
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -1216,7 +1141,7 @@ module Polars
     #   # │ 2031-12-31 00:30:00 ┆ 2024-08-09 │
     #   # └─────────────────────┴────────────┘
     def self.time
-      _selector_proxy_(F.col(Time), name: "time")
+      by_dtype([Time])
     end
   end
 

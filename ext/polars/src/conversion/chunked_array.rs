@@ -75,7 +75,7 @@ impl IntoValue for Wrap<&DurationChunked> {
     fn into_value_with(self, _: &Ruby) -> Value {
         let utils = utils();
         let time_unit = Wrap(self.0.time_unit()).into_value();
-        let iter = self.0.into_iter().map(|opt_v| {
+        let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| {
                 utils
                     .funcall::<_, _, Value>("_to_ruby_duration", (v, time_unit))
@@ -91,7 +91,7 @@ impl IntoValue for Wrap<&DatetimeChunked> {
         let utils = utils();
         let time_unit = Wrap(self.0.time_unit()).into_value();
         let time_zone = self.0.time_zone().as_deref().map(|v| v.into_value());
-        let iter = self.0.into_iter().map(|opt_v| {
+        let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| {
                 utils
                     .funcall::<_, _, Value>("_to_ruby_datetime", (v, time_unit, time_zone))
@@ -105,7 +105,7 @@ impl IntoValue for Wrap<&DatetimeChunked> {
 impl IntoValue for Wrap<&TimeChunked> {
     fn into_value_with(self, _: &Ruby) -> Value {
         let utils = utils();
-        let iter = self.0.into_iter().map(|opt_v| {
+        let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_time", (v,)).unwrap())
         });
         RArray::from_iter(iter).into_value()
@@ -115,7 +115,7 @@ impl IntoValue for Wrap<&TimeChunked> {
 impl IntoValue for Wrap<&DateChunked> {
     fn into_value_with(self, _: &Ruby) -> Value {
         let utils = utils();
-        let iter = self.0.into_iter().map(|opt_v| {
+        let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_date", (v,)).unwrap())
         });
         RArray::from_iter(iter).into_value()
@@ -126,7 +126,7 @@ impl IntoValue for Wrap<&DecimalChunked> {
     fn into_value_with(self, _: &Ruby) -> Value {
         let utils = utils();
         let rb_scale = (-(self.0.scale() as i32)).into_value();
-        let iter = self.0.into_iter().map(|opt_v| {
+        let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| {
                 utils
                     .funcall::<_, _, Value>("_to_ruby_decimal", (v.to_string(), rb_scale))

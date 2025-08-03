@@ -590,6 +590,7 @@ module Polars
     #   # │ null         ┆ null         │
     #   # └──────────────┴──────────────┘
     def pad_start(length, fill_char = " ")
+      length = Utils.parse_into_expression(length)
       Utils.wrap_expr(_rbexpr.str_pad_start(length, fill_char))
     end
     alias_method :rjust, :pad_start
@@ -620,6 +621,7 @@ module Polars
     #   # │ null         ┆ null         │
     #   # └──────────────┴──────────────┘
     def pad_end(length, fill_char = " ")
+      length = Utils.parse_into_expression(length)
       Utils.wrap_expr(_rbexpr.str_pad_end(length, fill_char))
     end
     alias_method :ljust, :pad_end
@@ -1328,9 +1330,9 @@ module Polars
     #   # │ cafe ┆ 51966  │
     #   # │ null ┆ null   │
     #   # └──────┴────────┘
-    def to_integer(base: 10, strict: true)
+    def to_integer(base: 10, dtype: Int64, strict: true)
       base = Utils.parse_into_expression(base, str_as_lit: false)
-      Utils.wrap_expr(_rbexpr.str_to_integer(base, strict))
+      Utils.wrap_expr(_rbexpr.str_to_integer(base, dtype, strict))
     end
 
     # Parse integers with base radix from strings.

@@ -123,7 +123,7 @@ module Polars
     #   # shape: (2,)
     #   # Series: 'values' [list[i64]]
     #   # [
-    #   #         [2, 1]
+    #   #         [2, 3]
     #   #         [5]
     #   # ]
     def sample(n: nil, fraction: nil, with_replacement: false, shuffle: false, seed: nil)

@@ -136,7 +136,7 @@ module Polars
     #   # │ ---       ┆ --- ┆ ---       │
     #   # │ list[i64] ┆ i64 ┆ list[i64] │
     #   # ╞═══════════╪═════╪═══════════╡
-    #   # │ [1, 2, 3] ┆ 2   ┆ [2, 1]    │
+    #   # │ [1, 2, 3] ┆ 2   ┆ [2, 3]    │
     #   # │ [4, 5]    ┆ 1   ┆ [5]       │
     #   # └───────────┴─────┴───────────┘
     def sample(n: nil, fraction: nil, with_replacement: false, shuffle: false, seed: nil)

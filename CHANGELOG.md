@@ -1,5 +1,6 @@
-## 0.20.1 (unreleased)
+## 0.21.0 (unreleased)
 
+- Updated Polars to 0.50.0
 - Added `Catalog` class
 - Added `rows_by_key` method to `DataFrame`
 - Added set methods to `ListExpr` and `ListNameSpace`

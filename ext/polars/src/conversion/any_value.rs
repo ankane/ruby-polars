@@ -40,22 +40,12 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
         AnyValue::Boolean(v) => ruby.into_value(v),
         AnyValue::String(v) => ruby.into_value(v),
         AnyValue::StringOwned(v) => ruby.into_value(v.as_str()),
-        AnyValue::Categorical(idx, rev, arr) | AnyValue::Enum(idx, rev, arr) => {
-            let s = if arr.is_null() {
-                rev.get(idx)
-            } else {
-                unsafe { arr.deref_unchecked().value(idx as usize) }
-            };
-            s.into_value()
-        }
-        AnyValue::CategoricalOwned(idx, rev, arr) | AnyValue::EnumOwned(idx, rev, arr) => {
-            let s = if arr.is_null() {
-                rev.get(idx)
-            } else {
-                unsafe { arr.deref_unchecked().value(idx as usize) }
-            };
-            s.into_value()
-        }
+        AnyValue::Categorical(cat, map) | AnyValue::Enum(cat, map) => unsafe {
+            map.cat_to_str_unchecked(cat).into_value()
+        },
+        AnyValue::CategoricalOwned(cat, map) | AnyValue::EnumOwned(cat, map) => unsafe {
+            map.cat_to_str_unchecked(cat).into_value()
+        },
         AnyValue::Date(v) => utils().funcall("_to_ruby_date", (v,)).unwrap(),
         AnyValue::Datetime(v, time_unit, time_zone) => {
             datetime_to_rb_object(v, time_unit, time_zone)

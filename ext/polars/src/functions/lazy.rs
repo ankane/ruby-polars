@@ -6,8 +6,8 @@ use polars::lazy::dsl;
 use polars::prelude::*;
 
 use crate::conversion::{Wrap, get_lf, get_rbseq};
+use crate::expr::datatype::RbDataTypeExpr;
 use crate::map::lazy::binary_lambda;
-use crate::prelude::vec_extract_wrapped;
 use crate::rb_exprs_to_exprs;
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
 
@@ -103,10 +103,6 @@ pub fn collect_all(lfs: RArray) -> RbResult<RArray> {
     })))
 }
 
-pub fn cols(names: Vec<String>) -> RbExpr {
-    dsl::cols(names).into()
-}
-
 pub fn concat_lf(
     lfs: Value,
     rechunk: bool,
@@ -166,20 +162,24 @@ pub fn cum_fold(
     acc: &RbExpr,
     lambda: Value,
     exprs: RArray,
+    returns_scalar: bool,
+    return_dtype: Option<&RbDataTypeExpr>,
     include_init: bool,
 ) -> RbResult<RbExpr> {
     let exprs = rb_exprs_to_exprs(exprs)?;
     let lambda = Opaque::from(lambda);
-
-    let func = move |a: Column, b: Column| {
-        binary_lambda(
-            Ruby::get().unwrap().get_inner(lambda),
-            a.take_materialized_series(),
-            b.take_materialized_series(),
-        )
-        .map(|v| v.map(Column::from))
-    };
-    Ok(dsl::cum_fold_exprs(acc.inner.clone(), func, exprs, include_init).into())
+    let func = PlanCallback::new(move |(a, b): (Series, Series)| {
+        binary_lambda(Ruby::get().unwrap().get_inner(lambda), a, b).map(|v| v.unwrap())
+    });
+    Ok(dsl::cum_fold_exprs(
+        acc.inner.clone(),
+        func,
+        exprs,
+        returns_scalar,
+        return_dtype.map(|v| v.inner.clone()),
+        include_init,
+    )
+    .into())
 }
 
 pub fn concat_lf_diagonal(
@@ -220,24 +220,6 @@ pub fn concat_lf_horizontal(lfs: RArray, parallel: bool) -> RbResult<RbLazyFrame
     Ok(lf.into())
 }
 
-pub fn dtype_cols(dtypes: RArray) -> RbResult<RbExpr> {
-    let dtypes = dtypes
-        .into_iter()
-        .map(Wrap::<DataType>::try_convert)
-        .collect::<RbResult<Vec<Wrap<DataType>>>>()?;
-    let dtypes = vec_extract_wrapped(dtypes);
-    Ok(dsl::dtype_cols(dtypes).into())
-}
-
-pub fn index_cols(indices: Vec<i64>) -> RbExpr {
-    if indices.len() == 1 {
-        dsl::nth(indices[0])
-    } else {
-        dsl::index_cols(indices)
-    }
-    .into()
-}
-
 #[allow(clippy::too_many_arguments)]
 pub fn duration(
     weeks: Option<&RbExpr>,
@@ -274,40 +256,26 @@ pub fn duration(
     dsl::duration(args).into()
 }
 
-pub fn first() -> RbExpr {
-    dsl::first().into()
-}
-
 pub fn fold(
     acc: &RbExpr,
     lambda: Value,
     exprs: RArray,
     returns_scalar: bool,
-    return_dtype: Option<Wrap<DataType>>,
+    return_dtype: Option<&RbDataTypeExpr>,
 ) -> RbResult<RbExpr> {
     let exprs = rb_exprs_to_exprs(exprs)?;
     let lambda = Opaque::from(lambda);
-
-    let func = move |a: Column, b: Column| {
-        binary_lambda(
-            Ruby::get().unwrap().get_inner(lambda),
-            a.take_materialized_series(),
-            b.take_materialized_series(),
-        )
-        .map(|v| v.map(Column::from))
-    };
+    let func = PlanCallback::new(move |(a, b): (Series, Series)| {
+        binary_lambda(Ruby::get().unwrap().get_inner(lambda), a, b).map(|v| v.unwrap())
+    });
     Ok(dsl::fold_exprs(
         acc.inner.clone(),
         func,
         exprs,
         returns_scalar,
-        return_dtype.map(|w| w.0),
+        return_dtype.map(|w| w.inner.clone()),
     )
     .into())
-}
-
-pub fn last() -> RbExpr {
-    dsl::last().into()
 }
 
 pub fn lit(value: Value, allow_object: bool, is_scalar: bool) -> RbResult<RbExpr> {

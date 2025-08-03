@@ -163,12 +163,20 @@ impl RbExpr {
         self.inner.clone().str().reverse().into()
     }
 
-    pub fn str_pad_start(&self, length: usize, fillchar: char) -> Self {
-        self.clone().inner.str().pad_start(length, fillchar).into()
+    pub fn str_pad_start(&self, length: &RbExpr, fillchar: char) -> Self {
+        self.clone()
+            .inner
+            .str()
+            .pad_start(length.inner.clone(), fillchar)
+            .into()
     }
 
-    pub fn str_pad_end(&self, length: usize, fillchar: char) -> Self {
-        self.clone().inner.str().pad_end(length, fillchar).into()
+    pub fn str_pad_end(&self, length: &RbExpr, fillchar: char) -> Self {
+        self.clone()
+            .inner
+            .str()
+            .pad_end(length.inner.clone(), fillchar)
+            .into()
     }
 
     pub fn str_zfill(&self, length: &Self) -> Self {
@@ -220,11 +228,11 @@ impl RbExpr {
         self.inner.clone().str().base64_decode(strict).into()
     }
 
-    pub fn str_to_integer(&self, base: &Self, strict: bool) -> Self {
+    pub fn str_to_integer(&self, base: &Self, dtype: Option<Wrap<DataType>>, strict: bool) -> Self {
         self.inner
             .clone()
             .str()
-            .to_integer(base.inner.clone(), strict)
+            .to_integer(base.inner.clone(), dtype.map(|wrap| wrap.0), strict)
             .into()
     }
 

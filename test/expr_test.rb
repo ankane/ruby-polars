@@ -36,7 +36,7 @@ class ExprTest < Minitest::Test
     error = assert_raises(TypeError) do
       df.select(Polars.nth(1, "a"))
     end
-    assert_equal "no implicit conversion of String into Integer", error.message
+    assert_equal %!invalid index value: "a"!, error.message
     assert_frame ({"a" => [2]}), df.select(Polars.col("a").get(1))
   end
 

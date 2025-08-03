@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use magnus::{Error, RString, Ruby, Value, exception, prelude::*, value::Opaque};
 use polars::io::cloud::CloudOptions;
 use polars::io::mmap::MmapBytesReader;
+use polars::prelude::PlPath;
 use polars::prelude::file::DynWriteable;
 use polars::prelude::sync_on_close::SyncOnCloseType;
 use polars_utils::file::ClosableFile;
@@ -188,7 +189,7 @@ impl EitherRustRubyFile {
 
 pub enum RubyScanSourceInput {
     Buffer(MemSlice),
-    Path(PathBuf),
+    Path(PlPath),
     #[allow(dead_code)]
     File(File),
 }
@@ -202,8 +203,13 @@ pub(crate) fn try_get_rbfile(
 }
 
 pub fn get_ruby_scan_source_input(rb_f: Value, write: bool) -> RbResult<RubyScanSourceInput> {
-    if let Ok(file_path) = PathBuf::try_convert(rb_f) {
-        // TODO resolve_homedir
+    if let Ok(s) = String::try_convert(rb_f) {
+        let mut file_path = PlPath::new(&s);
+        if let Some(p) = file_path.as_ref().as_local_path() {
+            if p.starts_with("~/") {
+                file_path = PlPath::Local(resolve_homedir(&p).into());
+            }
+        }
         Ok(RubyScanSourceInput::Path(file_path))
     } else {
         let f = RbFileLikeObject::with_requirements(rb_f, !write, write, !write)?;

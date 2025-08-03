@@ -29,6 +29,7 @@ use error::RbPolarsErr;
 use exceptions::{RbTypeError, RbValueError};
 use expr::RbExpr;
 use expr::rb_exprs_to_exprs;
+use expr::selector::RbSelector;
 use functions::string_cache::RbStringCacheHolder;
 use functions::whenthen::{RbChainedThen, RbChainedWhen, RbThen, RbWhen};
 use interop::arrow::to_ruby::RbArrowArrayStream;
@@ -146,7 +147,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("pivot_expr", method!(RbDataFrame::pivot_expr, 7))?;
     class.define_method("partition_by", method!(RbDataFrame::partition_by, 3))?;
     class.define_method("lazy", method!(RbDataFrame::lazy, 0))?;
-    class.define_method("to_dummies", method!(RbDataFrame::to_dummies, 3))?;
+    class.define_method("to_dummies", method!(RbDataFrame::to_dummies, 4))?;
     class.define_method("null_count", method!(RbDataFrame::null_count, 0))?;
     class.define_method("map_rows", method!(RbDataFrame::map_rows, 3))?;
     class.define_method("shrink_to_fit", method!(RbDataFrame::shrink_to_fit, 0))?;
@@ -332,7 +333,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_hex_decode", method!(RbExpr::str_hex_decode, 1))?;
     class.define_method("str_base64_encode", method!(RbExpr::str_base64_encode, 0))?;
     class.define_method("str_base64_decode", method!(RbExpr::str_base64_decode, 1))?;
-    class.define_method("str_to_integer", method!(RbExpr::str_to_integer, 2))?;
+    class.define_method("str_to_integer", method!(RbExpr::str_to_integer, 3))?;
     class.define_method("str_json_decode", method!(RbExpr::str_json_decode, 2))?;
     class.define_method("binary_hex_encode", method!(RbExpr::bin_hex_encode, 0))?;
     class.define_method("binary_hex_decode", method!(RbExpr::bin_hex_decode, 1))?;
@@ -429,7 +430,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("dot", method!(RbExpr::dot, 1))?;
     class.define_method("reinterpret", method!(RbExpr::reinterpret, 1))?;
     class.define_method("mode", method!(RbExpr::mode, 0))?;
-    class.define_method("exclude", method!(RbExpr::exclude, 1))?;
     class.define_method("interpolate", method!(RbExpr::interpolate, 1))?;
     class.define_method("interpolate_by", method!(RbExpr::interpolate_by, 1))?;
     class.define_method("rolling_sum", method!(RbExpr::rolling_sum, 4))?;
@@ -523,6 +523,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("set_sorted_flag", method!(RbExpr::set_sorted_flag, 1))?;
     class.define_method("replace", method!(RbExpr::replace, 2))?;
     class.define_method("replace_strict", method!(RbExpr::replace_strict, 4))?;
+    class.define_method("into_selector", method!(RbExpr::into_selector, 0))?;
+    class.define_singleton_method("new_selector", function!(RbExpr::new_selector, 1))?;
 
     // meta
     class.define_method("meta_pop", method!(RbExpr::meta_pop, 1))?;
@@ -539,10 +541,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "meta_is_regex_projection",
         method!(RbExpr::meta_is_regex_projection, 0),
     )?;
-    class.define_method("_meta_selector_add", method!(RbExpr::_meta_selector_add, 1))?;
-    class.define_method("_meta_selector_sub", method!(RbExpr::_meta_selector_sub, 1))?;
-    class.define_method("_meta_selector_and", method!(RbExpr::_meta_selector_and, 1))?;
-    class.define_method("_meta_as_selector", method!(RbExpr::_meta_as_selector, 0))?;
     class.define_method("meta_tree_format", method!(RbExpr::meta_tree_format, 1))?;
 
     // name
@@ -555,15 +553,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     // maybe add to different class
     let class = module.define_module("Plr")?;
-    class.define_singleton_method("dtype_cols", function!(functions::lazy::dtype_cols, 1))?;
-    class.define_singleton_method("index_cols", function!(functions::lazy::index_cols, 1))?;
     class.define_singleton_method("col", function!(functions::lazy::col, 1))?;
     class.define_singleton_method("len", function!(functions::lazy::len, 0))?;
-    class.define_singleton_method("first", function!(functions::lazy::first, 0))?;
-    class.define_singleton_method("last", function!(functions::lazy::last, 0))?;
-    class.define_singleton_method("cols", function!(functions::lazy::cols, 1))?;
     class.define_singleton_method("fold", function!(functions::lazy::fold, 5))?;
-    class.define_singleton_method("cum_fold", function!(functions::lazy::cum_fold, 4))?;
+    class.define_singleton_method("cum_fold", function!(functions::lazy::cum_fold, 6))?;
     class.define_singleton_method("lit", function!(functions::lazy::lit, 3))?;
     class.define_singleton_method("int_range", function!(functions::range::int_range, 4))?;
     class.define_singleton_method("int_ranges", function!(functions::range::int_ranges, 4))?;
@@ -755,7 +748,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("sink_ipc", method!(RbLazyFrame::sink_ipc, 5))?;
     class.define_method("sink_csv", method!(RbLazyFrame::sink_csv, -1))?;
     class.define_method("sink_json", method!(RbLazyFrame::sink_json, 4))?;
-    class.define_method("fetch", method!(RbLazyFrame::fetch, 1))?;
     class.define_method("filter", method!(RbLazyFrame::filter, 1))?;
     class.define_method("select", method!(RbLazyFrame::select, 1))?;
     class.define_method("select_seq", method!(RbLazyFrame::select_seq, 1))?;
@@ -915,7 +907,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("_clone", method!(RbSeries::clone, 0))?;
     class.define_method("map_elements", method!(RbSeries::map_elements, 3))?;
     class.define_method("zip_with", method!(RbSeries::zip_with, 2))?;
-    class.define_method("to_dummies", method!(RbSeries::to_dummies, 2))?;
+    class.define_method("to_dummies", method!(RbSeries::to_dummies, 3))?;
     class.define_method("n_unique", method!(RbSeries::n_unique, 0))?;
     class.define_method("floor", method!(RbSeries::floor, 0))?;
     class.define_method("shrink_to_fit", method!(RbSeries::shrink_to_fit, 0))?;
@@ -1151,6 +1143,51 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("create_table", method!(RbCatalogClient::create_table, 9))?;
     class.define_method("delete_table", method!(RbCatalogClient::delete_table, 3))?;
+
+    // categories
+    let class = module.define_class("RbCategories", ruby.class_object())?;
+    class.define_singleton_method(
+        "global_categories",
+        function!(RbCategories::global_categories, 0),
+    )?;
+
+    // data type expr
+    let _class = module.define_class("RbDataTypeExpr", ruby.class_object())?;
+
+    // selector
+    let class = module.define_class("RbSelector", ruby.class_object())?;
+    class.define_method("union", method!(RbSelector::union, 1))?;
+    class.define_method("difference", method!(RbSelector::difference, 1))?;
+    class.define_method("exclusive_or", method!(RbSelector::exclusive_or, 1))?;
+    class.define_method("intersect", method!(RbSelector::intersect, 1))?;
+    class.define_singleton_method("by_dtype", function!(RbSelector::by_dtype, 1))?;
+    class.define_singleton_method("by_name", function!(RbSelector::by_name, 2))?;
+    class.define_singleton_method("by_index", function!(RbSelector::by_index, 2))?;
+    class.define_singleton_method("first", function!(RbSelector::first, 1))?;
+    class.define_singleton_method("last", function!(RbSelector::last, 1))?;
+    class.define_singleton_method("matches", function!(RbSelector::matches, 1))?;
+    class.define_singleton_method("enum_", function!(RbSelector::enum_, 0))?;
+    class.define_singleton_method("categorical", function!(RbSelector::categorical, 0))?;
+    class.define_singleton_method("nested", function!(RbSelector::nested, 0))?;
+    class.define_singleton_method("list", function!(RbSelector::list, 1))?;
+    class.define_singleton_method("array", function!(RbSelector::array, 2))?;
+    class.define_singleton_method("struct_", function!(RbSelector::struct_, 0))?;
+    class.define_singleton_method("integer", function!(RbSelector::integer, 0))?;
+    class.define_singleton_method("signed_integer", function!(RbSelector::signed_integer, 0))?;
+    class.define_singleton_method(
+        "unsigned_integer",
+        function!(RbSelector::unsigned_integer, 0),
+    )?;
+    class.define_singleton_method("float", function!(RbSelector::float, 0))?;
+    class.define_singleton_method("decimal", function!(RbSelector::decimal, 0))?;
+    class.define_singleton_method("numeric", function!(RbSelector::numeric, 0))?;
+    class.define_singleton_method("temporal", function!(RbSelector::temporal, 0))?;
+    class.define_singleton_method("datetime", function!(RbSelector::datetime, 2))?;
+    class.define_singleton_method("duration", function!(RbSelector::duration, 1))?;
+    class.define_singleton_method("object", function!(RbSelector::object, 0))?;
+    class.define_singleton_method("empty", function!(RbSelector::empty, 0))?;
+    class.define_singleton_method("all", function!(RbSelector::all, 0))?;
+    class.define_method("_hash", method!(RbSelector::hash, 0))?;
 
     Ok(())
 }

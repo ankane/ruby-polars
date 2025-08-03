@@ -6,16 +6,16 @@ use polars_plan::dsl::ScanSources;
 use std::cell::RefCell;
 use std::io::BufWriter;
 use std::num::NonZeroUsize;
-use std::path::PathBuf;
 
 use super::SinkTarget;
 use crate::conversion::*;
 use crate::expr::rb_exprs_to_exprs;
+use crate::expr::selector::RbSelector;
 use crate::file::get_file_like;
 use crate::io::RbScanOptions;
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
 
-fn rbobject_to_first_path_and_scan_sources(obj: Value) -> RbResult<(Option<PathBuf>, ScanSources)> {
+fn rbobject_to_first_path_and_scan_sources(obj: Value) -> RbResult<(Option<PlPath>, ScanSources)> {
     use crate::file::{RubyScanSourceInput, get_ruby_scan_source_input};
     Ok(match get_ruby_scan_source_input(obj, false)? {
         RubyScanSourceInput::Path(path) => (Some(path.clone()), ScanSources::Paths([path].into())),
@@ -44,7 +44,7 @@ impl RbLazyFrame {
 
         let sources = sources.0;
         let (_first_path, sources) = match source {
-            None => (sources.first_path().map(|p| p.to_path_buf()), sources),
+            None => (sources.first_path().map(|p| p.into_owned()), sources),
             Some(source) => rbobject_to_first_path_and_scan_sources(source)?,
         };
 
@@ -112,7 +112,7 @@ impl RbLazyFrame {
 
         let sources = sources.0;
         let (_first_path, sources) = match source {
-            None => (sources.first_path().map(|p| p.to_path_buf()), sources),
+            None => (sources.first_path().map(|p| p.into_owned()), sources),
             Some(source) => rbobject_to_first_path_and_scan_sources(source)?,
         };
 
@@ -168,9 +168,10 @@ impl RbLazyFrame {
         };
 
         let sources = sources.0;
-        let first_path = sources.first_path().map(|p| p.to_path_buf());
+        let first_path = sources.first_path().map(|p| p.into_owned());
 
-        let unified_scan_args = scan_options.extract_unified_scan_args(first_path.as_ref())?;
+        let unified_scan_args =
+            scan_options.extract_unified_scan_args(first_path.as_ref().map(|p| p.as_ref()))?;
 
         let lf: LazyFrame = DslBuilder::scan_parquet(sources, options, unified_scan_args)
             .map_err(to_rb_err)?
@@ -217,7 +218,7 @@ impl RbLazyFrame {
 
         let sources = sources.0;
         let (_first_path, sources) = match source {
-            None => (sources.first_path().map(|p| p.to_path_buf()), sources),
+            None => (sources.first_path().map(|p| p.into_owned()), sources),
             Some(source) => rbobject_to_first_path_and_scan_sources(source)?,
         };
 
@@ -362,10 +363,8 @@ impl RbLazyFrame {
         let cloud_options = match target.base_path() {
             None => None,
             Some(base_path) => {
-                let cloud_options = parse_cloud_options(
-                    base_path.to_str().unwrap(),
-                    cloud_options.unwrap_or_default(),
-                )?;
+                let cloud_options =
+                    parse_cloud_options(base_path.to_str(), cloud_options.unwrap_or_default())?;
                 Some(cloud_options.with_max_retries(retries))
             }
         };
@@ -397,10 +396,8 @@ impl RbLazyFrame {
         let cloud_options = match target.base_path() {
             None => None,
             Some(base_path) => {
-                let cloud_options = parse_cloud_options(
-                    base_path.to_str().unwrap(),
-                    cloud_options.unwrap_or_default(),
-                )?;
+                let cloud_options =
+                    parse_cloud_options(base_path.to_str(), cloud_options.unwrap_or_default())?;
                 Some(cloud_options.with_max_retries(retries))
             }
         };
@@ -429,11 +426,12 @@ impl RbLazyFrame {
         let time_format = Option::<String>::try_convert(arguments[9])?;
         let float_scientific = Option::<bool>::try_convert(arguments[10])?;
         let float_precision = Option::<usize>::try_convert(arguments[11])?;
-        let null_value = Option::<String>::try_convert(arguments[12])?;
-        let quote_style = Option::<Wrap<QuoteStyle>>::try_convert(arguments[13])?;
-        let cloud_options = Option::<Vec<(String, String)>>::try_convert(arguments[14])?;
-        let retries = usize::try_convert(arguments[15])?;
-        let sink_options = Wrap::<SinkOptions>::try_convert(arguments[16])?;
+        let decimal_comma = bool::try_convert(arguments[12])?;
+        let null_value = Option::<String>::try_convert(arguments[13])?;
+        let quote_style = Option::<Wrap<QuoteStyle>>::try_convert(arguments[14])?;
+        let cloud_options = Option::<Vec<(String, String)>>::try_convert(arguments[15])?;
+        let retries = usize::try_convert(arguments[16])?;
+        let sink_options = Wrap::<SinkOptions>::try_convert(arguments[17])?;
 
         let quote_style = quote_style.map_or(QuoteStyle::default(), |wrap| wrap.0);
         let null_value = null_value.unwrap_or(SerializeOptions::default().null);
@@ -444,6 +442,7 @@ impl RbLazyFrame {
             datetime_format,
             float_scientific,
             float_precision,
+            decimal_comma,
             separator,
             quote_char,
             null: null_value,
@@ -461,10 +460,8 @@ impl RbLazyFrame {
         let cloud_options = match target.base_path() {
             None => None,
             Some(base_path) => {
-                let cloud_options = parse_cloud_options(
-                    base_path.to_str().unwrap(),
-                    cloud_options.unwrap_or_default(),
-                )?;
+                let cloud_options =
+                    parse_cloud_options(base_path.to_str(), cloud_options.unwrap_or_default())?;
                 Some(cloud_options.with_max_retries(retries))
             }
         };
@@ -492,10 +489,8 @@ impl RbLazyFrame {
         let cloud_options = match target.base_path() {
             None => None,
             Some(base_path) => {
-                let cloud_options = parse_cloud_options(
-                    base_path.to_str().unwrap(),
-                    cloud_options.unwrap_or_default(),
-                )?;
+                let cloud_options =
+                    parse_cloud_options(base_path.to_str(), cloud_options.unwrap_or_default())?;
                 Some(cloud_options.with_max_retries(retries))
             }
         };
@@ -507,12 +502,6 @@ impl RbLazyFrame {
         .map_err(RbPolarsErr::from)
         .map(Into::into)
         .map_err(Into::into)
-    }
-
-    pub fn fetch(&self, n_rows: usize) -> RbResult<RbDataFrame> {
-        let ldf = self.ldf.borrow().clone();
-        let df = ldf.fetch(n_rows).map_err(RbPolarsErr::from)?;
-        Ok(df.into())
     }
 
     pub fn filter(&self, predicate: &RbExpr) -> Self {
@@ -652,15 +641,19 @@ impl RbLazyFrame {
             .allow_parallel(allow_parallel)
             .force_parallel(force_parallel)
             .coalesce(coalesce)
-            .how(JoinType::AsOf(AsOfOptions {
+            .how(JoinType::AsOf(Box::new(AsOfOptions {
                 strategy: strategy.0,
                 left_by: left_by.map(strings_to_pl_smallstr),
                 right_by: right_by.map(strings_to_pl_smallstr),
-                tolerance: tolerance.map(|t| t.0.into_static()),
+                tolerance: tolerance.map(|t| {
+                    let av = t.0.into_static();
+                    let dtype = av.dtype();
+                    Scalar::new(dtype, av)
+                }),
                 tolerance_str: tolerance_str.map(|s| s.into()),
                 allow_eq,
                 check_sortedness,
-            }))
+            })))
             .suffix(suffix)
             .finish()
             .into())
@@ -795,10 +788,12 @@ impl RbLazyFrame {
         out.into()
     }
 
-    pub fn explode(&self, column: RArray) -> RbResult<Self> {
-        let ldf = self.ldf.borrow().clone();
-        let column = rb_exprs_to_exprs(column)?;
-        Ok(ldf.explode(column).into())
+    pub fn explode(&self, subset: &RbSelector) -> Self {
+        self.ldf
+            .borrow()
+            .clone()
+            .explode(subset.inner.clone())
+            .into()
     }
 
     pub fn null_count(&self) -> Self {
@@ -809,10 +804,11 @@ impl RbLazyFrame {
     pub fn unique(
         &self,
         maintain_order: bool,
-        subset: Option<Vec<String>>,
+        subset: Option<&RbSelector>,
         keep: Wrap<UniqueKeepStrategy>,
     ) -> RbResult<Self> {
         let ldf = self.ldf.borrow().clone();
+        let subset = subset.map(|e| e.inner.clone());
         Ok(match maintain_order {
             true => ldf.unique_stable_generic(subset, keep.0),
             false => ldf.unique_generic(subset, keep.0),
@@ -820,9 +816,11 @@ impl RbLazyFrame {
         .into())
     }
 
-    pub fn drop_nulls(&self, subset: Option<Vec<String>>) -> Self {
-        let ldf = self.ldf.borrow().clone();
-        ldf.drop_nulls(subset.map(|v| v.into_iter().map(|s| col(&s)).collect()))
+    pub fn drop_nulls(&self, subset: Option<&RbSelector>) -> Self {
+        self.ldf
+            .borrow()
+            .clone()
+            .drop_nulls(subset.map(|e| e.inner.clone()))
             .into()
     }
 
@@ -838,16 +836,14 @@ impl RbLazyFrame {
 
     pub fn unpivot(
         &self,
-        on: RArray,
-        index: RArray,
+        on: &RbSelector,
+        index: &RbSelector,
         value_name: Option<String>,
         variable_name: Option<String>,
     ) -> RbResult<Self> {
-        let on = rb_exprs_to_exprs(on)?;
-        let index = rb_exprs_to_exprs(index)?;
         let args = UnpivotArgsDSL {
-            on: on.into_iter().map(|e| e.into()).collect(),
-            index: index.into_iter().map(|e| e.into()).collect(),
+            on: on.inner.clone(),
+            index: index.inner.clone(),
             value_name: value_name.map(|s| s.into()),
             variable_name: variable_name.map(|s| s.into()),
         };
@@ -861,9 +857,8 @@ impl RbLazyFrame {
         ldf.with_row_index(&name, offset).into()
     }
 
-    pub fn drop(&self, cols: Vec<String>) -> Self {
-        let ldf = self.ldf.borrow().clone();
-        ldf.drop(cols).into()
+    pub fn drop(&self, columns: &RbSelector) -> Self {
+        self.ldf.borrow().clone().drop(columns.inner.clone()).into()
     }
 
     pub fn cast(&self, rb_dtypes: RHash, strict: bool) -> RbResult<Self> {
@@ -904,8 +899,12 @@ impl RbLazyFrame {
         Ok(schema_dict)
     }
 
-    pub fn unnest(&self, cols: Vec<String>) -> Self {
-        self.ldf.borrow().clone().unnest(cols).into()
+    pub fn unnest(&self, columns: &RbSelector) -> Self {
+        self.ldf
+            .borrow()
+            .clone()
+            .unnest(columns.inner.clone())
+            .into()
     }
 
     pub fn count(&self) -> Self {

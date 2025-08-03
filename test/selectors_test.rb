@@ -2,12 +2,12 @@ require_relative "test_helper"
 
 class SelectorsTest < Minitest::Test
   def test_inspect
-    assert_inspect "Polars.cs.numeric()", Polars.cs.numeric
-    assert_inspect "~Polars.cs.numeric()", ~Polars.cs.numeric
-    assert_inspect "(Polars.cs.all() - Polars.cs.numeric())", Polars.cs.all - Polars.cs.numeric
-    assert_inspect "(Polars.cs.float() & Polars.cs.integer())", Polars.cs.float & Polars.cs.integer
-    assert_inspect "(Polars.cs.float() | Polars.cs.integer())", Polars.cs.float | Polars.cs.integer
-    assert_inspect "(Polars.cs.float() ^ Polars.cs.integer())", Polars.cs.float ^ Polars.cs.integer
+    assert_inspect "cs.numeric()", Polars.cs.numeric
+    assert_inspect "[cs.all() - cs.numeric()]", ~Polars.cs.numeric
+    assert_inspect "[cs.all() - cs.numeric()]", Polars.cs.all - Polars.cs.numeric
+    assert_inspect "[cs.float() & cs.integer()]", Polars.cs.float & Polars.cs.integer
+    assert_inspect "[cs.float() | cs.integer()]", Polars.cs.float | Polars.cs.integer
+    assert_inspect "[cs.float() ^ cs.integer()]", Polars.cs.float ^ Polars.cs.integer
   end
 
   def test_starts_with_escape

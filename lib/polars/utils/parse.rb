@@ -33,6 +33,46 @@ module Polars
       exprs
     end
 
+    def self.parse_into_selector(i, strict: true)
+      if i.is_a?(::String)
+        cs = Selectors
+
+        cs.by_name([i], require_all: strict)
+      elsif i.is_a?(Selector)
+        i
+      elsif i.is_a?(Expr)
+        i.meta.as_selector
+      else
+        msg = "cannot turn #{i.inspect} into selector"
+        raise TypeError, msg
+      end
+    end
+
+    def self.parse_list_into_selector(inputs, strict: true)
+      if inputs.is_a?(::Array)
+        cs = Selectors
+
+        columns = inputs.select { |i| i.is_a?(::String) }
+        selector = cs.by_name(columns, require_all: strict)
+
+        if columns.length == inputs.length
+          return selector
+        end
+
+        # A bit cleaner
+        if columns.length == 0
+          selector = cs.empty
+        end
+
+        inputs.each do |i|
+          selector |= parse_into_selector(i, strict: strict)
+        end
+        selector
+      else
+        parse_into_selector(inputs, strict: strict)
+      end
+    end
+
     def self._parse_positional_inputs(inputs, structify: false)
       inputs_iter = _parse_inputs_as_iterable(inputs)
       inputs_iter.map { |e| parse_into_expression(e, structify: structify) }

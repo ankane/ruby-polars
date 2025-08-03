@@ -1,9 +1,9 @@
-use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use magnus::{RHash, TryConvert, Value};
 use polars::prelude::sync_on_close::SyncOnCloseType;
-use polars::prelude::{SinkOptions, SpecialEq};
+use polars::prelude::{PlPath, SinkOptions, SpecialEq};
+use polars_utils::plpath::PlPathRef;
 
 use crate::prelude::Wrap;
 use crate::{RbResult, RbValueError};
@@ -15,8 +15,8 @@ pub enum SinkTarget {
 
 impl TryConvert for Wrap<polars_plan::dsl::SinkTarget> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        if let Ok(v) = PathBuf::try_convert(ob) {
-            Ok(Wrap(polars::prelude::SinkTarget::Path(Arc::new(v))))
+        if let Ok(v) = String::try_convert(ob) {
+            Ok(Wrap(polars::prelude::SinkTarget::Path(PlPath::new(&v))))
         } else {
             let writer = {
                 let rb_f = ob;
@@ -39,10 +39,10 @@ impl TryConvert for SinkTarget {
 }
 
 impl SinkTarget {
-    pub fn base_path(&self) -> Option<&Path> {
+    pub fn base_path(&self) -> Option<PlPathRef<'_>> {
         match self {
             Self::File(t) => match t {
-                polars::prelude::SinkTarget::Path(p) => Some(p.as_path()),
+                polars::prelude::SinkTarget::Path(p) => Some(p.as_ref()),
                 polars::prelude::SinkTarget::Dyn(_) => None,
             },
         }

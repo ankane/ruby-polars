@@ -57,40 +57,6 @@ impl RbExpr {
         self.inner.clone().meta().is_regex_projection()
     }
 
-    pub fn _meta_selector_add(&self, other: &RbExpr) -> RbResult<RbExpr> {
-        let out = self
-            .inner
-            .clone()
-            .meta()
-            ._selector_add(other.inner.clone())
-            .map_err(RbPolarsErr::from)?;
-        Ok(out.into())
-    }
-
-    pub fn _meta_selector_sub(&self, other: &RbExpr) -> RbResult<RbExpr> {
-        let out = self
-            .inner
-            .clone()
-            .meta()
-            ._selector_sub(other.inner.clone())
-            .map_err(RbPolarsErr::from)?;
-        Ok(out.into())
-    }
-
-    pub fn _meta_selector_and(&self, other: &RbExpr) -> RbResult<RbExpr> {
-        let out = self
-            .inner
-            .clone()
-            .meta()
-            ._selector_and(other.inner.clone())
-            .map_err(RbPolarsErr::from)?;
-        Ok(out.into())
-    }
-
-    pub fn _meta_as_selector(&self) -> RbExpr {
-        self.inner.clone().meta()._into_selector().into()
-    }
-
     fn compute_tree_format(
         &self,
         display_as_dot: bool,

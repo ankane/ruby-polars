@@ -617,6 +617,9 @@ module Polars
     # @param float_precision [Integer]
     #   Number of decimal places to write, applied to both `Float32` and
     #   `Float64` datatypes.
+    # @param decimal_comma [Boolean]
+    #   Use a comma as the decimal separator instead of a point. Floats will be
+    #   encapsulated in quotes if necessary; set the field separator to override.
     # @param null_value [String]
     #   A string representing null values (defaulting to the empty string).
     # @param quote_style ["necessary", "always", "non_numeric", "never"]
@@ -674,6 +677,7 @@ module Polars
       time_format: nil,
       float_scientific: nil,
       float_precision: nil,
+      decimal_comma: false,
       null_value: nil,
       quote_style: nil,
       maintain_order: true,
@@ -726,6 +730,7 @@ module Polars
         time_format,
         float_scientific,
         float_precision,
+        decimal_comma,
         null_value,
         quote_style,
         storage_options,
@@ -854,25 +859,6 @@ module Polars
     #
     # @param n_rows [Integer]
     #   Collect n_rows from the data sources.
-    # @param type_coercion [Boolean]
-    #   Run type coercion optimization.
-    # @param predicate_pushdown [Boolean]
-    #   Run predicate pushdown optimization.
-    # @param projection_pushdown [Boolean]
-    #   Run projection pushdown optimization.
-    # @param simplify_expression [Boolean]
-    #   Run simplify expressions optimization.
-    # @param string_cache [Boolean]
-    #   This argument is deprecated. Please set the string cache globally.
-    #   The argument will be ignored
-    # @param no_optimization [Boolean]
-    #   Turn off optimizations.
-    # @param slice_pushdown [Boolean]
-    #   Slice pushdown optimization
-    # @param common_subplan_elimination [Boolean]
-    #   Will try to cache branching subplans that occur on self-joins or unions.
-    # @param allow_streaming [Boolean]
-    #   Run parts of the query in a streaming fashion (this is in an alpha state)
     #
     # @return [DataFrame]
     #
@@ -892,41 +878,11 @@ module Polars
     #   # │ --- ┆ --- ┆ --- │
     #   # │ str ┆ i64 ┆ i64 │
     #   # ╞═════╪═════╪═════╡
-    #   # │ a   ┆ 1   ┆ 6   │
-    #   # │ b   ┆ 2   ┆ 5   │
+    #   # │ a   ┆ 4   ┆ 10  │
+    #   # │ b   ┆ 11  ┆ 10  │
     #   # └─────┴─────┴─────┘
-    def fetch(
-      n_rows = 500,
-      type_coercion: true,
-      predicate_pushdown: true,
-      projection_pushdown: true,
-      simplify_expression: true,
-      string_cache: false,
-      no_optimization: false,
-      slice_pushdown: true,
-      common_subplan_elimination: true,
-      comm_subexpr_elim: true,
-      allow_streaming: false
-    )
-      if no_optimization
-        predicate_pushdown = false
-        projection_pushdown = false
-        slice_pushdown = false
-        common_subplan_elimination = false
-      end
-
-      ldf = _ldf.optimization_toggle(
-        type_coercion,
-        predicate_pushdown,
-        projection_pushdown,
-        simplify_expression,
-        slice_pushdown,
-        common_subplan_elimination,
-        comm_subexpr_elim,
-        allow_streaming,
-        false
-      )
-      Utils.wrap_df(ldf.fetch(n_rows))
+    def fetch(n_rows = 500, **kwargs)
+      head(n_rows).collect(**kwargs)
     end
 
     # Return lazy representation, i.e. itself.
@@ -2350,9 +2306,18 @@ module Polars
     #   # │ 7.0 │
     #   # │ 8.0 │
     #   # └─────┘
-    def drop(*columns)
-      drop_cols = Utils._expand_selectors(self, *columns)
-      _from_rbldf(_ldf.drop(drop_cols))
+    def drop(*columns, strict: true)
+      selectors = []
+      columns.each do |c|
+        if c.is_a?(Enumerable)
+          selectors += c
+        else
+          selectors += [c]
+        end
+      end
+
+      drop_cols = Utils.parse_list_into_selector(selectors, strict: strict)
+      _from_rbldf(_ldf.drop(drop_cols._rbselector))
     end
 
     # Rename column names.
@@ -3153,9 +3118,11 @@ module Polars
     #   # │ c       ┆ 7       │
     #   # │ c       ┆ 8       │
     #   # └─────────┴─────────┘
-    def explode(columns)
-      columns = Utils.parse_into_list_of_expressions(columns)
-      _from_rbldf(_ldf.explode(columns))
+    def explode(columns, *more_columns)
+      subset = Utils.parse_list_into_selector(columns) | Utils.parse_list_into_selector(
+        more_columns
+      )
+      _from_rbldf(_ldf.explode(subset._rbselector))
     end
 
     # Drop duplicate rows from this DataFrame.
@@ -3220,10 +3187,11 @@ module Polars
     #   # │ 1   ┆ a   ┆ b   │
     #   # └─────┴─────┴─────┘
     def unique(maintain_order: true, subset: nil, keep: "first")
-      if !subset.nil? && !subset.is_a?(::Array)
-        subset = [subset]
+      selector_subset = nil
+      if !subset.nil?
+        selector_subset = Utils.parse_list_into_selector(subset)._rbselector
       end
-      _from_rbldf(_ldf.unique(maintain_order, subset, keep))
+      _from_rbldf(_ldf.unique(maintain_order, selector_subset, keep))
     end
 
     # Drop rows with null values from this LazyFrame.
@@ -3318,11 +3286,16 @@ module Polars
         warn "The `streamable` parameter for `LazyFrame.unpivot` is deprecated"
       end
 
-      on = on.nil? ? [] : Utils.parse_into_list_of_expressions(on)
-      index = index.nil? ? [] : Utils.parse_into_list_of_expressions(index)
+      selector_on = on.nil? ? Selectors.empty : Utils.parse_list_into_selector(on)
+      selector_index = index.nil? ? Selectors.empty : Utils.parse_list_into_selector(index)
 
       _from_rbldf(
-        _ldf.unpivot(on, index, value_name, variable_name)
+        _ldf.unpivot(
+          selector_on._rbselector,
+          selector_index._rbselector,
+          value_name,
+          variable_name
+        )
       )
     end
     alias_method :melt, :unpivot
@@ -3364,7 +3337,7 @@ module Polars
     # The fields will be inserted into the `DataFrame` on the location of the
     # `struct` type.
     #
-    # @param names [Object]
+    # @param columns [Object]
     #   Names of the struct columns that will be decomposed by its fields
     #
     # @return [LazyFrame]
@@ -3410,11 +3383,11 @@ module Polars
     #   # │ foo    ┆ 1   ┆ a   ┆ true ┆ [1, 2]    ┆ baz   │
     #   # │ bar    ┆ 2   ┆ b   ┆ null ┆ [3]       ┆ womp  │
     #   # └────────┴─────┴─────┴──────┴───────────┴───────┘
-    def unnest(names)
-      if names.is_a?(::String)
-        names = [names]
-      end
-      _from_rbldf(_ldf.unnest(names))
+    def unnest(columns, *more_columns)
+      subset = Utils.parse_list_into_selector(columns) | Utils.parse_list_into_selector(
+        more_columns
+      )
+      _from_rbldf(_ldf.unnest(subset._rbselector))
     end
 
     # Take two sorted DataFrames and merge them by the sorted key.

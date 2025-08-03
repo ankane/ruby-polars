@@ -201,7 +201,7 @@ class DocsTest < Minitest::Test
         end
 
         # non-deterministic output
-        next if [:sort, :mode, :duration, :_hash, :hash_rows, :flatten, :value_counts, :agg, :top_k, :bottom_k].include?(method.name)
+        next if [:sort, :mode, :duration, :_hash, :hash_rows, :flatten, :value_counts, :agg, :top_k, :bottom_k, :get_categories, :to_physical].include?(method.name)
 
         # check output
         lines = code.split("\n")

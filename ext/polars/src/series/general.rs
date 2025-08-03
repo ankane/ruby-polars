@@ -40,21 +40,15 @@ impl RbSeries {
     }
 
     pub fn cat_uses_lexical_ordering(&self) -> RbResult<bool> {
-        let binding = self.series.borrow();
-        let ca = binding.categorical().map_err(RbPolarsErr::from)?;
-        Ok(ca.uses_lexical_ordering())
+        Ok(true)
     }
 
     pub fn cat_is_local(&self) -> RbResult<bool> {
-        let binding = self.series.borrow();
-        let ca = binding.categorical().map_err(RbPolarsErr::from)?;
-        Ok(ca.get_rev_map().is_local())
+        Ok(false)
     }
 
     pub fn cat_to_local(&self) -> RbResult<Self> {
-        let binding = self.series.borrow();
-        let ca = binding.categorical().map_err(RbPolarsErr::from)?;
-        Ok(ca.to_local().into_series().into())
+        Ok(self.clone())
     }
 
     pub fn estimated_size(&self) -> usize {
@@ -314,11 +308,16 @@ impl RbSeries {
         Ok(RbSeries::new(s))
     }
 
-    pub fn to_dummies(&self, sep: Option<String>, drop_first: bool) -> RbResult<RbDataFrame> {
+    pub fn to_dummies(
+        &self,
+        sep: Option<String>,
+        drop_first: bool,
+        drop_nulls: bool,
+    ) -> RbResult<RbDataFrame> {
         let df = self
             .series
             .borrow()
-            .to_dummies(sep.as_deref(), drop_first)
+            .to_dummies(sep.as_deref(), drop_first, drop_nulls)
             .map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }
