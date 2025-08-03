@@ -16,6 +16,14 @@ impl RbSeries {
     ) -> RbResult<Self> {
         let series = &self.series.borrow();
 
+        if return_dtype.is_none() {
+            polars_warn!(
+                MapWithoutReturnDtypeWarning,
+                "Calling `map_elements` without specifying `return_dtype` can lead to unpredictable results. \
+                Specify `return_dtype` to silence this warning."
+            )
+        }
+
         if skip_nulls && (series.null_count() == series.len()) {
             if let Some(return_dtype) = return_dtype {
                 return Ok(

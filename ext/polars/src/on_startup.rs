@@ -39,6 +39,9 @@ pub(crate) fn register_startup_deps() {
             object_converter,
             rbobject_converter,
             physical_dtype,
-        )
+        );
+        // TODO
+        // Register warning function for `polars_warn!`.
+        // polars_error::set_warning_function(warning_function);
     });
 }
