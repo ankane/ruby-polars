@@ -40,18 +40,20 @@ impl RbSeries {
 
         macro_rules! dispatch_apply {
             ($self:expr, $method:ident, $($args:expr),*) => {
-                if matches!($self.dtype(), DataType::Object(_)) {
-                    // let ca = $self.0.unpack::<ObjectType<ObjectValue>>().unwrap();
-                    // ca.$method($($args),*)
-                    todo!()
-                } else {
-                    apply_method_all_arrow_series2!(
-                        $self,
-                        $method,
-                        $($args),*
-                    )
+                match $self.dtype() {
+                    DataType::Object(_) => {
+                        // let ca = $self.0.unpack::<ObjectType<ObjectValue>>().unwrap();
+                        // ca.$method($($args),*)
+                        todo!()
+                    }
+                    _ => {
+                        apply_method_all_arrow_series2!(
+                            $self,
+                            $method,
+                            $($args),*
+                        )
+                    }
                 }
-
             }
 
         }
