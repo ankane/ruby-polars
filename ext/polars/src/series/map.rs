@@ -3,6 +3,7 @@ use magnus::Value;
 use super::RbSeries;
 use crate::RbResult;
 use crate::apply_method_all_arrow_series2;
+use crate::map::check_nested_object;
 use crate::map::series::{ApplyLambda, call_lambda_and_extract};
 use crate::prelude::*;
 
@@ -41,18 +42,37 @@ impl RbSeries {
                 | DataType::Date
                 | DataType::Duration(_)
                 | DataType::Categorical(_, _)
+                | DataType::Enum(_, _)
+                | DataType::Binary
+                | DataType::Array(_, _)
                 | DataType::Time
+                | DataType::Decimal(_, _)
         ) || !skip_nulls
         {
             let mut avs = Vec::with_capacity(series.len());
-            let iter = series.iter().map(|av| {
-                let input = Wrap(av);
-                call_lambda_and_extract::<_, Wrap<AnyValue>>(function, input)
-                    .unwrap()
-                    .0
-            });
-            avs.extend(iter);
-            return Ok(Series::new(self.name().into(), &avs).into());
+            let s = series.rechunk();
+
+            for av in s.iter() {
+                let out = match (skip_nulls, av) {
+                    (true, AnyValue::Null) => AnyValue::Null,
+                    (_, av) => {
+                        let av: Option<Wrap<AnyValue>> =
+                            call_lambda_and_extract(function, Wrap(av))?;
+                        match av {
+                            None => AnyValue::Null,
+                            Some(av) => av.0,
+                        }
+                    }
+                };
+                avs.push(out)
+            }
+            let out = Series::new(series.name().clone(), &avs);
+            let dtype = out.dtype();
+            if dtype.is_nested() {
+                check_nested_object(dtype)?;
+            }
+
+            return Ok(out.into());
         }
 
         let out = match return_dtype {

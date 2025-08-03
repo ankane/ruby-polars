@@ -9,7 +9,7 @@ use polars_core::POOL;
 use polars_core::utils::CustomIterTools;
 use rayon::prelude::*;
 
-use crate::{ObjectValue, RbPolarsErr, RbResult, RbSeries, Wrap};
+use crate::{ObjectValue, RbPolarsErr, RbResult, RbSeries, RbValueError, Wrap};
 
 pub trait RbPolarsNumericType: PolarsNumericType {}
 
@@ -23,6 +23,16 @@ impl RbPolarsNumericType for Int32Type {}
 impl RbPolarsNumericType for Int64Type {}
 impl RbPolarsNumericType for Float32Type {}
 impl RbPolarsNumericType for Float64Type {}
+
+pub(super) fn check_nested_object(dt: &DataType) -> RbResult<()> {
+    if dt.contains_objects() {
+        Err(RbValueError::new_err(
+            "nested objects are not allowed\n\nSet `return_dtype: Polars::Object` to use Ruby's native nesting.",
+        ))
+    } else {
+        Ok(())
+    }
+}
 
 fn iterator_to_struct(
     it: impl Iterator<Item = Option<Value>>,
