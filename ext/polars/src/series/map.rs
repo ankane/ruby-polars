@@ -9,7 +9,7 @@ use crate::prelude::*;
 impl RbSeries {
     pub fn map_elements(
         &self,
-        lambda: Value,
+        function: Value,
         return_dtype: Option<Wrap<DataType>>,
         skip_nulls: bool,
     ) -> RbResult<Self> {
@@ -47,7 +47,7 @@ impl RbSeries {
             let mut avs = Vec::with_capacity(series.len());
             let iter = series.iter().map(|av| {
                 let input = Wrap(av);
-                call_lambda_and_extract::<_, Wrap<AnyValue>>(lambda, input)
+                call_lambda_and_extract::<_, Wrap<AnyValue>>(function, input)
                     .unwrap()
                     .0
             });
@@ -60,7 +60,7 @@ impl RbSeries {
                 let ca: Int8Chunked = dispatch_apply!(
                     series,
                     apply_lambda_with_primitive_out_type,
-                    lambda,
+                    function,
                     0,
                     None
                 )?;
@@ -70,7 +70,7 @@ impl RbSeries {
                 let ca: Int16Chunked = dispatch_apply!(
                     series,
                     apply_lambda_with_primitive_out_type,
-                    lambda,
+                    function,
                     0,
                     None
                 )?;
@@ -80,7 +80,7 @@ impl RbSeries {
                 let ca: Int32Chunked = dispatch_apply!(
                     series,
                     apply_lambda_with_primitive_out_type,
-                    lambda,
+                    function,
                     0,
                     None
                 )?;
@@ -90,7 +90,7 @@ impl RbSeries {
                 let ca: Int64Chunked = dispatch_apply!(
                     series,
                     apply_lambda_with_primitive_out_type,
-                    lambda,
+                    function,
                     0,
                     None
                 )?;
@@ -100,7 +100,7 @@ impl RbSeries {
                 let ca: UInt8Chunked = dispatch_apply!(
                     series,
                     apply_lambda_with_primitive_out_type,
-                    lambda,
+                    function,
                     0,
                     None
                 )?;
@@ -110,7 +110,7 @@ impl RbSeries {
                 let ca: UInt16Chunked = dispatch_apply!(
                     series,
                     apply_lambda_with_primitive_out_type,
-                    lambda,
+                    function,
                     0,
                     None
                 )?;
@@ -120,7 +120,7 @@ impl RbSeries {
                 let ca: UInt32Chunked = dispatch_apply!(
                     series,
                     apply_lambda_with_primitive_out_type,
-                    lambda,
+                    function,
                     0,
                     None
                 )?;
@@ -130,7 +130,7 @@ impl RbSeries {
                 let ca: UInt64Chunked = dispatch_apply!(
                     series,
                     apply_lambda_with_primitive_out_type,
-                    lambda,
+                    function,
                     0,
                     None
                 )?;
@@ -140,7 +140,7 @@ impl RbSeries {
                 let ca: Float32Chunked = dispatch_apply!(
                     series,
                     apply_lambda_with_primitive_out_type,
-                    lambda,
+                    function,
                     0,
                     None
                 )?;
@@ -150,7 +150,7 @@ impl RbSeries {
                 let ca: Float64Chunked = dispatch_apply!(
                     series,
                     apply_lambda_with_primitive_out_type,
-                    lambda,
+                    function,
                     0,
                     None
                 )?;
@@ -158,14 +158,14 @@ impl RbSeries {
             }
             Some(DataType::Boolean) => {
                 let ca: BooleanChunked =
-                    dispatch_apply!(series, apply_lambda_with_bool_out_type, lambda, 0, None)?;
+                    dispatch_apply!(series, apply_lambda_with_bool_out_type, function, 0, None)?;
                 ca.into_series()
             }
             Some(DataType::Date) => {
                 let ca: Int32Chunked = dispatch_apply!(
                     series,
                     apply_lambda_with_primitive_out_type,
-                    lambda,
+                    function,
                     0,
                     None
                 )?;
@@ -175,25 +175,26 @@ impl RbSeries {
                 let ca: Int64Chunked = dispatch_apply!(
                     series,
                     apply_lambda_with_primitive_out_type,
-                    lambda,
+                    function,
                     0,
                     None
                 )?;
                 ca.into_datetime(tu, tz).into_series()
             }
             Some(DataType::String) => {
-                let ca = dispatch_apply!(series, apply_lambda_with_utf8_out_type, lambda, 0, None)?;
+                let ca =
+                    dispatch_apply!(series, apply_lambda_with_utf8_out_type, function, 0, None)?;
 
                 ca.into_series()
             }
             Some(DataType::Object(_)) => {
                 let ca =
-                    dispatch_apply!(series, apply_lambda_with_object_out_type, lambda, 0, None)?;
+                    dispatch_apply!(series, apply_lambda_with_object_out_type, function, 0, None)?;
                 ca.into_series()
             }
-            None => return dispatch_apply!(series, apply_lambda_unknown, lambda),
+            None => return dispatch_apply!(series, apply_lambda_unknown, function),
 
-            _ => return dispatch_apply!(series, apply_lambda_unknown, lambda),
+            _ => return dispatch_apply!(series, apply_lambda_unknown, function),
         };
 
         Ok(RbSeries::new(out))
