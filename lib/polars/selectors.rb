@@ -434,11 +434,76 @@ module Polars
     # @note
     #   Matching columns are returned in the order in which their indexes
     #   appear in the selector, not the underlying schema order.
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "key" => ["abc"],
+    #       **100.times.to_h { |i| ["c%02d" % i, 0.5 * i] }
+    #     }
+    #   )
+    #   # =>
+    #   # shape: (1, 101)
+    #   # ┌─────┬─────┬─────┬─────┬───┬──────┬──────┬──────┬──────┐
+    #   # │ key ┆ c00 ┆ c01 ┆ c02 ┆ … ┆ c96  ┆ c97  ┆ c98  ┆ c99  │
+    #   # │ --- ┆ --- ┆ --- ┆ --- ┆   ┆ ---  ┆ ---  ┆ ---  ┆ ---  │
+    #   # │ str ┆ f64 ┆ f64 ┆ f64 ┆   ┆ f64  ┆ f64  ┆ f64  ┆ f64  │
+    #   # ╞═════╪═════╪═════╪═════╪═══╪══════╪══════╪══════╪══════╡
+    #   # │ abc ┆ 0.0 ┆ 0.5 ┆ 1.0 ┆ … ┆ 48.0 ┆ 48.5 ┆ 49.0 ┆ 49.5 │
+    #   # └─────┴─────┴─────┴─────┴───┴──────┴──────┴──────┴──────┘
+    #
+    # @example Select columns by index ("key" column and the two first/last columns):
+    #   df.select(Polars.cs.by_index(0, 1, 2, -2, -1))
+    #   # =>
+    #   # shape: (1, 5)
+    #   # ┌─────┬─────┬─────┬──────┬──────┐
+    #   # │ key ┆ c00 ┆ c01 ┆ c98  ┆ c99  │
+    #   # │ --- ┆ --- ┆ --- ┆ ---  ┆ ---  │
+    #   # │ str ┆ f64 ┆ f64 ┆ f64  ┆ f64  │
+    #   # ╞═════╪═════╪═════╪══════╪══════╡
+    #   # │ abc ┆ 0.0 ┆ 0.5 ┆ 49.0 ┆ 49.5 │
+    #   # └─────┴─────┴─────┴──────┴──────┘
+    #
+    # @example Select the "key" column and use a `range` object to select various columns.
+    #   df.select(Polars.cs.by_index(0, (1...101).step(20)))
+    #   # =>
+    #   # shape: (1, 6)
+    #   # ┌─────┬─────┬──────┬──────┬──────┬──────┐
+    #   # │ key ┆ c00 ┆ c20  ┆ c40  ┆ c60  ┆ c80  │
+    #   # │ --- ┆ --- ┆ ---  ┆ ---  ┆ ---  ┆ ---  │
+    #   # │ str ┆ f64 ┆ f64  ┆ f64  ┆ f64  ┆ f64  │
+    #   # ╞═════╪═════╪══════╪══════╪══════╪══════╡
+    #   # │ abc ┆ 0.0 ┆ 10.0 ┆ 20.0 ┆ 30.0 ┆ 40.0 │
+    #   # └─────┴─────┴──────┴──────┴──────┴──────┘
+    #
+    # @example
+    #   df.select(Polars.cs.by_index(0, (101...0).step(-25), require_all: false))
+    #   # =>
+    #   # shape: (1, 5)
+    #   # ┌─────┬──────┬──────┬──────┬─────┐
+    #   # │ key ┆ c75  ┆ c50  ┆ c25  ┆ c00 │
+    #   # │ --- ┆ ---  ┆ ---  ┆ ---  ┆ --- │
+    #   # │ str ┆ f64  ┆ f64  ┆ f64  ┆ f64 │
+    #   # ╞═════╪══════╪══════╪══════╪═════╡
+    #   # │ abc ┆ 37.5 ┆ 25.0 ┆ 12.5 ┆ 0.0 │
+    #   # └─────┴──────┴──────┴──────┴─────┘
+    #
+    # @example Select all columns *except* for the even-indexed ones:
+    #   df.select(~Polars.cs.by_index((1...100).step(2)))
+    #   # =>
+    #   # shape: (1, 51)
+    #   # ┌─────┬─────┬─────┬─────┬───┬──────┬──────┬──────┬──────┐
+    #   # │ key ┆ c01 ┆ c03 ┆ c05 ┆ … ┆ c93  ┆ c95  ┆ c97  ┆ c99  │
+    #   # │ --- ┆ --- ┆ --- ┆ --- ┆   ┆ ---  ┆ ---  ┆ ---  ┆ ---  │
+    #   # │ str ┆ f64 ┆ f64 ┆ f64 ┆   ┆ f64  ┆ f64  ┆ f64  ┆ f64  │
+    #   # ╞═════╪═════╪═════╪═════╪═══╪══════╪══════╪══════╪══════╡
+    #   # │ abc ┆ 0.5 ┆ 1.5 ┆ 2.5 ┆ … ┆ 46.5 ┆ 47.5 ┆ 48.5 ┆ 49.5 │
+    #   # └─────┴─────┴─────┴─────┴───┴──────┴──────┴──────┴──────┘
     def self.by_index(*indices, require_all: true)
       all_indices = []
       indices.each do |idx|
-        if idx.is_a?(Range) || idx.is_a?(::Array)
-          all_indices.concat(idx)
+        if idx.is_a?(Enumerable)
+          all_indices.concat(idx.to_a)
         elsif idx.is_a?(Integer)
           all_indices << idx
         else
