@@ -804,6 +804,39 @@ module Polars
     # @note
     #   This functionality is considered **unstable**. It may be changed
     #   at any point without it being considered a breaking change.
+    #
+    # @example Select all struct columns:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [{"a": "xx", "b": "z"}, {"a": "x", "b": "y"}],
+    #       "bar" => [123, 456],
+    #       "baz" => [2.0, 5.5]
+    #     }
+    #   )
+    #   df.select(Polars.cs.struct)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌────────────┐
+    #   # │ foo        │
+    #   # │ ---        │
+    #   # │ struct[2]  │
+    #   # ╞════════════╡
+    #   # │ {"xx","z"} │
+    #   # │ {"x","y"}  │
+    #   # └────────────┘
+    #
+    # @example Select all columns *except* for those that are struct:
+    #   df.select(~Polars.cs.struct)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ bar ┆ baz │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 123 ┆ 2.0 │
+    #   # │ 456 ┆ 5.5 │
+    #   # └─────┴─────┘
     def self.struct
       Selector._from_rbselector(RbSelector.struct_)
     end
