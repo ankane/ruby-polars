@@ -650,6 +650,60 @@ module Polars
     # @note
     #   This functionality is considered **unstable**. It may be changed
     #   at any point without it being considered a breaking change.
+    #
+    # @example Select all list columns:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [["xx", "yy"], ["x"]],
+    #       "bar" => [123, 456],
+    #       "baz" => [2.0, 5.5]
+    #     }
+    #   )
+    #   df.select(Polars.cs.list)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌──────────────┐
+    #   # │ foo          │
+    #   # │ ---          │
+    #   # │ list[str]    │
+    #   # ╞══════════════╡
+    #   # │ ["xx", "yy"] │
+    #   # │ ["x"]        │
+    #   # └──────────────┘
+    #
+    # @example Select all columns *except* for those that are list:
+    #   df.select(~Polars.cs.list)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ bar ┆ baz │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 123 ┆ 2.0 │
+    #   # │ 456 ┆ 5.5 │
+    #   # └─────┴─────┘
+    #
+    # @example Select all list columns with a certain matching inner type:
+    #   df.select(Polars.cs.list(Polars.cs.string))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌──────────────┐
+    #   # │ foo          │
+    #   # │ ---          │
+    #   # │ list[str]    │
+    #   # ╞══════════════╡
+    #   # │ ["xx", "yy"] │
+    #   # │ ["x"]        │
+    #   # └──────────────┘
+    #
+    # @example
+    #   df.select(Polars.cs.list(Polars.cs.integer))
+    #   # =>
+    #   # shape: (0, 0)
+    #   # ┌┐
+    #   # ╞╡
+    #   # └┘
     def self.list(inner = nil)
       inner_s = !inner.nil? ? inner._rbselector : nil
       Selector._from_rbselector(RbSelector.list(inner_s))
