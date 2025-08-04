@@ -3307,7 +3307,63 @@ module Polars
       _from_rbldf(_ldf.unique(maintain_order, selector_subset, keep))
     end
 
-    # Drop all rows that contain one or more null values.
+    # Drop all rows that contain one or more NaN values.
+    # The original order of the remaining rows is preserved.
+    #
+    # @param subset [Object]
+    #   Column name(s) for which NaN values are considered; if set to `nil`
+    #   (default), use all columns (note that only floating-point columns
+    #   can contain NaNs).
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, Float::NAN, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.lazy.drop_nans.collect
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ f64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6.0 ┆ a   │
+    #   # │ 3   ┆ 8.0 ┆ c   │
+    #   # └─────┴─────┴─────┘
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, Float::NAN],
+    #       "bar" => [6, Float::NAN, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.lazy.drop_nans(subset: "bar").collect
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ f64 ┆ f64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1.0 ┆ 6.0 ┆ a   │
+    #   # │ NaN ┆ 8.0 ┆ c   │
+    #   # └─────┴─────┴─────┘
+    def drop_nans(subset: nil)
+      selector_subset = nil
+      if !subset.nil?
+        selector_subset = Utils.parse_list_into_selector(subset)._rbselector
+      end
+      _from_rbldf(_ldf.drop_nans(selector_subset))
+    end
+
+    # Drop rows with null values from this LazyFrame.
     #
     # The original order of the remaining rows is preserved.
     #

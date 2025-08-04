@@ -1848,7 +1848,37 @@ module Polars
       _from_rbdf(_df.tail(n))
     end
 
-    # Drop all rows that contain one or more null values.
+    # Return a new DataFrame where the NaN values are dropped.
+    #
+    # @param subset [Object]
+    #   Subset of column(s) on which `drop_nans` will be applied.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, Float::NAN, 8],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   df.drop_nans
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ f64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6.0 ┆ a   │
+    #   # │ 3   ┆ 8.0 ┆ c   │
+    #   # └─────┴─────┴─────┘
+    def drop_nans(subset: nil)
+      lazy.drop_nans(subset: subset).collect(_eager: true)
+    end
+
+    # Return a new DataFrame where the null values are dropped.
     #
     # The original order of the remaining rows is preserved.
     #
