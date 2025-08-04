@@ -1122,6 +1122,10 @@ module Polars
       Selector._from_rbselector(RbSelector.last(strict))
     end
 
+    # TODO
+    # def matches
+    # end
+
     # Select all numeric columns.
     #
     # @return [Selector]
@@ -1164,6 +1168,13 @@ module Polars
     #   # └─────┘
     def self.numeric
       Selector._from_rbselector(RbSelector.numeric)
+    end
+
+    # Select all object columns.
+    #
+    # @return [Selector]
+    def self.object
+      Selector._from_rbselector(RbSelector.object)
     end
 
     # Select columns that start with the given substring(s).
@@ -1280,6 +1291,13 @@ module Polars
       by_dtype(string_dtypes)
     end
 
+    # Select all temporal columns.
+    #
+    # @return [Selector]
+    def self.temporal
+      Selector._from_rbselector(RbSelector.temporal)
+    end
+
     # Select all time columns.
     #
     # @return [Selector]
@@ -1325,6 +1343,6 @@ module Polars
   end
 
   def self.cs
-    Polars::Selectors
+    Selectors
   end
 end
