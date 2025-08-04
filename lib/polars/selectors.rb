@@ -850,6 +850,40 @@ module Polars
     # @note
     #   This functionality is considered **unstable**. It may be changed
     #   at any point without it being considered a breaking change.
+    #
+    # @example Select all nested columns:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [{"a" => "xx", "b" => "z"}, {"a" => "x", "b" => "y"}],
+    #       "bar" => [123, 456],
+    #       "baz" => [2.0, 5.5],
+    #       "wow" => [[1, 2], [3]]
+    #     }
+    #   )
+    #   df.select(Polars.cs.nested)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────────┬───────────┐
+    #   # │ foo        ┆ wow       │
+    #   # │ ---        ┆ ---       │
+    #   # │ struct[2]  ┆ list[i64] │
+    #   # ╞════════════╪═══════════╡
+    #   # │ {"xx","z"} ┆ [1, 2]    │
+    #   # │ {"x","y"}  ┆ [3]       │
+    #   # └────────────┴───────────┘
+    #
+    # @example Select all columns *except* for those that are nested:
+    #   df.select(~Polars.cs.nested)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ bar ┆ baz │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 123 ┆ 2.0 │
+    #   # │ 456 ┆ 5.5 │
+    #   # └─────┴─────┘
     def self.nested
       Selector._from_rbselector(RbSelector.nested)
     end
