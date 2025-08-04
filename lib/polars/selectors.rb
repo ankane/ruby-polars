@@ -939,6 +939,58 @@ module Polars
       Selector._from_rbselector(RbSelector.matches(raw_params))
     end
 
+    # Select all columns except those matching the given columns, datatypes, or selectors.
+    #
+    # @param columns [Object]
+    #   One or more columns (col or name), datatypes, columns, or selectors representing
+    #   the columns to exclude.
+    # @param more_columns [Array]
+    #   Additional columns, datatypes, or selectors to exclude, specified as positional
+    #   arguments.
+    #
+    # @return [Selector]
+    #
+    # @note
+    #   If excluding a single selector it is simpler to write as `~selector` instead.
+    #
+    # @example Exclude by column name(s):
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "aa" => [1, 2, 3],
+    #       "ba" => ["a", "b", nil],
+    #       "cc" => [nil, 2.5, 1.5]
+    #     }
+    #   )
+    #   df.select(Polars.cs.exclude("ba", "xx"))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬──────┐
+    #   # │ aa  ┆ cc   │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ f64  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ null │
+    #   # │ 2   ┆ 2.5  │
+    #   # │ 3   ┆ 1.5  │
+    #   # └─────┴──────┘
+    #
+    # @example Exclude using a column name, a selector, and a dtype:
+    #   df.select(Polars.cs.exclude("aa", Polars.cs.string, Polars::UInt32))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ cc   │
+    #   # │ ---  │
+    #   # │ f64  │
+    #   # ╞══════╡
+    #   # │ null │
+    #   # │ 2.5  │
+    #   # │ 1.5  │
+    #   # └──────┘
+    def self.exclude(columns, *more_columns)
+      ~_combine_as_selector(columns, *more_columns)
+    end
+
     # Select the first column in the current scope.
     #
     # @return [Selector]
@@ -1544,6 +1596,46 @@ module Polars
     #   # └─────────────────────┴────────────┘
     def self.time
       by_dtype([Time])
+    end
+
+    # @private
+    def self._combine_as_selector(items, *more_items)
+      names, regexes, dtypes = [], [], []
+      selectors = []
+      ((items.is_a?(::Array) ? items : [items]) + more_items).each do |item|
+        if Utils.is_selector(item)
+          selectors << item
+        elsif item.is_a?(::String)
+          if item.start_with?("^") && item.end_with?("$")
+            regexes << item
+          else
+            names << item
+          end
+        elsif Utils.is_polars_dtype(item)
+          dtypes << item
+        elsif Utils.is_column(item)
+          names << item.meta.output_name
+        else
+          msg = "expected one or more `str`, `DataType` or selector; found #{item.inspect} instead."
+          raise TypeError, msg
+        end
+      end
+
+      selected = []
+      if names.any?
+        selected << by_name(*names, require_all: false)
+      end
+      if dtypes.any?
+        selected << by_dtype(*dtypes)
+      end
+      if regexes.any?
+        raise Todo
+      end
+      if selectors.any?
+        selected.concat(selectors)
+      end
+
+      selected.reduce(empty, :|)
     end
   end
 
