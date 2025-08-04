@@ -734,9 +734,21 @@ module Polars
     #
     # @param n_field_strategy ["first_non_null", "max_width"]
     #   Strategy to determine the number of fields of the struct.
-    # @param name_generator [Object]
-    #   A custom function that can be used to generate the field names.
-    #   Default field names are `field_0, field_1 .. field_n`
+    # @param fields pArray
+    #   If the name and number of the desired fields is known in advance
+    #   a list of field names can be given, which will be assigned by index.
+    #   Otherwise, to dynamically assign field names, a custom function can be
+    #   used; if neither are set, fields will be `field_0, field_1 .. field_n`.
+    # @param upper_bound [Object]
+    #   A polars `LazyFrame` needs to know the schema at all times, so the
+    #   caller must provide an upper bound of the number of struct fields that
+    #   will be created; if set incorrectly, subsequent operations may fail.
+    #   (For example, an `all.sum` expression will look in the current
+    #   schema to determine which columns to select).
+    #
+    #   When operating on a `DataFrame`, the schema does not need to be
+    #   tracked or pre-determined, as the result will be eagerly evaluated,
+    #   so you can leave this parameter unset.
     #
     # @return [Expr]
     #
@@ -753,9 +765,8 @@ module Polars
     #   # │ {1,2,3}    │
     #   # │ {1,2,null} │
     #   # └────────────┘
-    def to_struct(n_field_strategy: "first_non_null", name_generator: nil, upper_bound: nil)
-      raise Todo if name_generator
-      Utils.wrap_expr(_rbexpr.list_to_struct(n_field_strategy, name_generator, nil))
+    def to_struct(n_field_strategy: "first_non_null", fields: nil, upper_bound: nil)
+      Utils.wrap_expr(_rbexpr.list_to_struct(n_field_strategy, fields, nil))
     end
 
     # Run any polars expression against the lists' elements.
