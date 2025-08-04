@@ -1,4 +1,4 @@
-## 0.21.0 (unreleased)
+## 0.21.0 (2025-08-03)
 
 - Updated Polars to 0.50.0
 - Added `Catalog` class
