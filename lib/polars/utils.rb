@@ -161,5 +161,9 @@ module Polars
       # escapes _only_ those metachars with meaning to the rust regex crate
       Plr.re_escape(s)
     end
+
+    def self.parse_into_datatype_expr(input)
+      raise Todo
+    end
   end
 end
