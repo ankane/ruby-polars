@@ -1829,7 +1829,7 @@ module Polars
     #   # └─────────────┴────────────┴────────────┘
     #
     # @example
-    #   pop2.join_asof(gdp2, by: "country", on: "date", strategy: "nearest").collect
+    #   pop2.join_asof(gdp2, by: "country", on: "date", strategy: "nearest", check_sortedness: false).collect
     #   # =>
     #   # shape: (6, 4)
     #   # ┌─────────────┬────────────┬────────────┬──────┐
