@@ -1,6 +1,6 @@
 module Polars
   module Convert
-    # Construct a DataFrame from a dictionary of sequences.
+    # Construct a DataFrame from a hash of arrays.
     #
     # This operation clones data, unless you pass in a `Hash<String, Series>`.
     #
@@ -10,11 +10,11 @@ module Polars
     # @param schema [Object]
     #   The DataFrame schema may be declared in several ways:
     #
-    #   * As a dict of {name:type} pairs; if type is None, it will be auto-inferred.
-    #   * As a list of column names; in this case types are automatically inferred.
-    #   * As a list of (name,type) pairs; this is equivalent to the dictionary form.
+    #   * As a hash of \\\\{name:type} pairs; if type is nil, it will be auto-inferred.
+    #   * As an array of column names; in this case types are automatically inferred.
+    #   * As an array of [name,type] pairs; this is equivalent to the hash form.
     #
-    #   If you supply a list of column names that does not match the names in the
+    #   If you supply an array of column names that does not match the names in the
     #   underlying data, the names given here will overwrite them. The number
     #   of names given in the schema should match the underlying data dimensions.
     # @param columns [Array]
