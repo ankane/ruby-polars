@@ -3333,11 +3333,31 @@ module Polars
     #   # │ 1   ┆ 6   ┆ a   │
     #   # │ 3   ┆ 8   ┆ c   │
     #   # └─────┴─────┴─────┘
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, nil],
+    #       "bar" => [6, nil, 8],
+    #       "ham" => [nil, "b", "c"]
+    #     }
+    #   )
+    #   df.lazy.drop_nulls(subset: "bar").collect
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────┬─────┬──────┐
+    #   # │ foo  ┆ bar ┆ ham  │
+    #   # │ ---  ┆ --- ┆ ---  │
+    #   # │ i64  ┆ i64 ┆ str  │
+    #   # ╞══════╪═════╪══════╡
+    #   # │ 1    ┆ 6   ┆ null │
+    #   # │ null ┆ 8   ┆ c    │
+    #   # └──────┴─────┴──────┘
     def drop_nulls(subset: nil)
-      if !subset.nil? && !subset.is_a?(::Array)
-        subset = [subset]
+      selector_subset = nil
+      if !subset.nil?
+        selector_subset = Utils.parse_list_into_selector(subset)._rbselector
       end
-      _from_rbldf(_ldf.drop_nulls(subset))
+      _from_rbldf(_ldf.drop_nulls(selector_subset))
     end
 
     # Unpivot a DataFrame from wide to long format.
