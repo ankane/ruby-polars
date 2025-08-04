@@ -717,7 +717,7 @@ module Polars
     # @param file [String, nil]
     #   File path to which the result should be written. If set to `nil`
     #   (default), the output is returned as a string instead.
-    # @param has_header [Boolean]
+    # @param include_header [Boolean]
     #   Whether to include header in the CSV output.
     # @param sep [String]
     #   Separate CSV fields with this symbol.
@@ -758,8 +758,7 @@ module Polars
     #   df.write_csv("file.csv")
     def write_csv(
       file = nil,
-      has_header: true,
-      include_header: nil,
+      include_header: true,
       sep: ",",
       quote: '"',
       batch_size: 1024,
@@ -769,8 +768,6 @@ module Polars
       float_precision: nil,
       null_value: nil
     )
-      include_header = has_header if include_header.nil?
-
       if sep.length > 1
         raise ArgumentError, "only single byte separator is allowed"
       elsif quote.length > 1

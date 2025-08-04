@@ -7,6 +7,7 @@
 - Added `filter` method to `ListExpr` and `ListNameSpace`
 - Added `extra_columns` option to `scan_parquet` method
 - Removed `columns` option from `DataFrame` constructor (use `schema` instead)
+- Removed `has_header` option from `write_csv` (use `include_header` instead)
 
 ## 0.20.0 (2025-06-23)
 
