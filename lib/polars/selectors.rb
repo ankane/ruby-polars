@@ -353,6 +353,54 @@ module Polars
     # Select all columns matching the given dtypes.
     #
     # @return [Selector]
+    #
+    # @example Select all columns with date or string dtypes:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "dt" => [Date.new(1999, 12, 31), Date.new(2024, 1, 1), Date.new(2010, 7, 5)],
+    #       "value" => [1_234_500, 5_000_555, -4_500_000],
+    #       "other" => ["foo", "bar", "foo"]
+    #     }
+    #   )
+    #   df.select(Polars.cs.by_dtype(Polars::Date, Polars::String))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌────────────┬───────┐
+    #   # │ dt         ┆ other │
+    #   # │ ---        ┆ ---   │
+    #   # │ date       ┆ str   │
+    #   # ╞════════════╪═══════╡
+    #   # │ 1999-12-31 ┆ foo   │
+    #   # │ 2024-01-01 ┆ bar   │
+    #   # │ 2010-07-05 ┆ foo   │
+    #   # └────────────┴───────┘
+    #
+    # @example Select all columns that are not of date or string dtype:
+    #   df.select(~Polars.cs.by_dtype(Polars::Date, Polars::String))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────────┐
+    #   # │ value    │
+    #   # │ ---      │
+    #   # │ i64      │
+    #   # ╞══════════╡
+    #   # │ 1234500  │
+    #   # │ 5000555  │
+    #   # │ -4500000 │
+    #   # └──────────┘
+    #
+    # Group by string columns and sum the numeric columns:
+    #   df.group_by(Polars.cs.string).agg(Polars.cs.numeric.sum).sort("other")
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌───────┬──────────┐
+    #   # │ other ┆ value    │
+    #   # │ ---   ┆ ---      │
+    #   # │ str   ┆ i64      │
+    #   # ╞═══════╪══════════╡
+    #   # │ bar   ┆ 5000555  │
+    #   # │ foo   ┆ -3265500 │
+    #   # └───────┴──────────┘
     def self.by_dtype(*dtypes)
       all_dtypes = []
       dtypes.each do |tp|
