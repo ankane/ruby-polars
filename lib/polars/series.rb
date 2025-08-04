@@ -3139,7 +3139,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3])
-    #   s.map_elements { |x| x + 10 }
+    #   s.map_elements(return_dtype: Polars::Int64) { |x| x + 10 }
     #   # =>
     #   # shape: (3,)
     #   # Series: 'a' [i64]
