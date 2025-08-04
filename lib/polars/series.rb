@@ -2161,7 +2161,7 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s = Polars::Series.new("a", [[1, 2, 3]])
     #   s2 = Polars::Series.new("b", [2, 4, nil])
     #   s2.is_in(s)
     #   # =>
