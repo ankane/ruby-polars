@@ -485,6 +485,51 @@ module Polars
       Selector._by_name(all_names, strict: require_all)
     end
 
+    # Select all enum columns.
+    #
+    # @return [Selector]
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @example Select all enum columns:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => ["xx", "yy"],
+    #       "bar" => [123, 456],
+    #       "baz" => [2.0, 5.5],
+    #     },
+    #     schema_overrides: {"foo" => Polars::Enum.new(["xx", "yy"])}
+    #   )
+    #   df.select(Polars.cs.enum)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌──────┐
+    #   # │ foo  │
+    #   # │ ---  │
+    #   # │ enum │
+    #   # ╞══════╡
+    #   # │ xx   │
+    #   # │ yy   │
+    #   # └──────┘
+    #
+    # @example Select all columns *except* for those that are enum:
+    #   df.select(~Polars.cs.enum())
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ bar ┆ baz │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 123 ┆ 2.0 │
+    #   # │ 456 ┆ 5.5 │
+    #   # └─────┴─────┘
+    def self.enum
+      Selector._from_rbselector(RbSelector.enum_)
+    end
+
     # Select all categorical columns.
     #
     # @return [Selector]
