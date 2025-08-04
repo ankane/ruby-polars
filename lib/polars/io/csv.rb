@@ -347,6 +347,9 @@ module Polars
     #   - `String`: All values equal to this string will be null.
     #   - `Array`: All values equal to any string in this array will be null.
     #   - `Hash`: A hash that maps column name to a null value string.
+    # @param missing_utf8_is_empty_string [Boolean]
+    #   By default a missing value is considered to be null; if you would prefer missing
+    #   utf8 values to be treated as the empty string you can set this param true.
     # @param ignore_errors [Boolean]
     #   Try to keep reading lines if some lines yield errors.
     #   First try `infer_schema_length: 0` to read all columns as
@@ -387,8 +390,13 @@ module Polars
     #   Offset to start the row_count column (only used if the name is set).
     # @param eol_char [String]
     #   Single byte end of line character.
+    # @param raise_if_empty [Boolean]
+    #   When there is no data in the source,`NoDataError` is raised. If this parameter
+    #   is set to false, `nil` will be returned from `next_batches(n)` instead.
     # @param truncate_ragged_lines [Boolean]
     #   Truncate lines that are longer than the schema.
+    # @param decimal_comma [Boolean]
+    #   Parse floats using a comma as the decimal separator instead of a period.
     #
     # @return [BatchedCsvReader]
     #
@@ -503,6 +511,9 @@ module Polars
     #   - `String`: All values equal to this string will be null.
     #   - `Array`: All values equal to any string in this array will be null.
     #   - `Hash`: A hash that maps column name to a null value string.
+    # @param missing_utf8_is_empty_string [Boolean]
+    #   By default a missing value is considered to be null; if you would prefer missing
+    #   utf8 values to be treated as the empty string you can set this param true.
     # @param ignore_errors [Boolean]
     #   Try to keep reading lines if some lines yield errors.
     #   First try `infer_schema_length: 0` to read all columns as
@@ -538,8 +549,15 @@ module Polars
     #   the column remains of data type `:str`.
     # @param eol_char [String]
     #   Single byte end of line character.
+    # @param raise_if_empty [Boolean]
+    #   When there is no data in the source, `NoDataError` is raised. If this parameter
+    #   is set to false, an empty LazyFrame (with no columns) is returned instead.
     # @param truncate_ragged_lines [Boolean]
     #   Truncate lines that are longer than the schema.
+    # @param decimal_comma [Boolean]
+    #   Parse floats using a comma as the decimal separator instead of a period.
+    # @param glob [Boolean]
+    #   Expand path given via globbing rules.
     #
     # @return [LazyFrame]
     def scan_csv(

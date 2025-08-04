@@ -49,6 +49,12 @@ module Polars
     #   Number of retries if accessing a cloud instance fails.
     # @param include_file_paths [String]
     #   Include the path of the source file(s) as a column with this name.
+    # @param allow_missing_columns [Boolean]
+    #   When reading a list of parquet files, if a column existing in the first
+    #   file cannot be found in subsequent files, the default behavior is to
+    #   raise an error. However, if `allow_missing_columns` is set to
+    #   `true`, a full-NULL column is returned instead of erroring for the files
+    #   that do not contain the column.
     #
     # @return [DataFrame]
     def read_parquet(
