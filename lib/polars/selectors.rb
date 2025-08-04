@@ -530,6 +530,54 @@ module Polars
       Selector._from_rbselector(RbSelector.enum_)
     end
 
+    # Select all list columns.
+    #
+    # @return [Selector]
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    def self.list(inner = nil)
+      inner_s = !inner.nil? ? inner._rbselector : nil
+      Selector._from_rbselector(RbSelector.list(inner_s))
+    end
+
+    # Select all array columns.
+    #
+    # @return [Selector]
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    def self.array(inner = nil, width: nil)
+      inner_s = !inner.nil? ? inner._rbselector : nil
+      Selector._from_rbselector(RbSelector.array(inner_s, width))
+    end
+
+    # Select all struct columns.
+    #
+    # @return [Selector]
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    def self.struct
+      Selector._from_rbselector(RbSelector.struct_)
+    end
+
+    # Select all nested columns.
+    #
+    # A nested column is a list, array or struct.
+    #
+    # @return [Selector]
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    def self.nested
+      Selector._from_rbselector(RbSelector.nested)
+    end
+
     # Select all categorical columns.
     #
     # @return [Selector]
