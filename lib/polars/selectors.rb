@@ -716,6 +716,82 @@ module Polars
     # @note
     #   This functionality is considered **unstable**. It may be changed
     #   at any point without it being considered a breaking change.
+    #
+    # @example Select all array columns:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [["xx", "yy"], ["x", "y"]],
+    #       "bar" => [123, 456],
+    #       "baz" => [2.0, 5.5]
+    #     },
+    #     schema_overrides: {"foo" => Polars::Array.new(Polars::String, 2)}
+    #   )
+    #   df.select(Polars.cs.array)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌───────────────┐
+    #   # │ foo           │
+    #   # │ ---           │
+    #   # │ array[str, 2] │
+    #   # ╞═══════════════╡
+    #   # │ ["xx", "yy"]  │
+    #   # │ ["x", "y"]    │
+    #   # └───────────────┘
+    #
+    # @example Select all columns *except* for those that are array:
+    #   df.select(~Polars.cs.array)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ bar ┆ baz │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 123 ┆ 2.0 │
+    #   # │ 456 ┆ 5.5 │
+    #   # └─────┴─────┘
+    #
+    # @example Select all array columns with a certain matching inner type:
+    #   df.select(Polars.cs.array(Polars.cs.string))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌───────────────┐
+    #   # │ foo           │
+    #   # │ ---           │
+    #   # │ array[str, 2] │
+    #   # ╞═══════════════╡
+    #   # │ ["xx", "yy"]  │
+    #   # │ ["x", "y"]    │
+    #   # └───────────────┘
+    #
+    # @example
+    #   df.select(Polars.cs.array(Polars.cs.integer))
+    #   # =>
+    #   # shape: (0, 0)
+    #   # ┌┐
+    #   # ╞╡
+    #   # └┘
+    #
+    # @example
+    #   df.select(Polars.cs.array(width: 2))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌───────────────┐
+    #   # │ foo           │
+    #   # │ ---           │
+    #   # │ array[str, 2] │
+    #   # ╞═══════════════╡
+    #   # │ ["xx", "yy"]  │
+    #   # │ ["x", "y"]    │
+    #   # └───────────────┘
+    #
+    # @example
+    #   df.select(Polars.cs.array(width: 3))
+    #   # =>
+    #   # shape: (0, 0)
+    #   # ┌┐
+    #   # ╞╡
+    #   # └┘
     def self.array(inner = nil, width: nil)
       inner_s = !inner.nil? ? inner._rbselector : nil
       Selector._from_rbselector(RbSelector.array(inner_s, width))
