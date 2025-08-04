@@ -63,6 +63,13 @@ module Polars
     #   in the target string.
     # @param cache [Boolean]
     #   Use a cache of unique, converted datetimes to apply the conversion.
+    # @param ambiguous ['raise', 'earliest', 'latest', 'null']
+    #   Determine how to deal with ambiguous datetimes:
+    #
+    #   - `'raise'` (default): raise
+    #   - `'earliest'`: use the earliest datetime
+    #   - `'latest'`: use the latest datetime
+    #   - `'null'`: set to null
     #
     # @return [Series]
     #
@@ -229,6 +236,10 @@ module Polars
     #
     # @param delimiter [String]
     #   The delimiter to insert between consecutive string values.
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default).
+    #   If set to `False`, null values will be propagated. This means that
+    #   if the column contains any null values, the output is null.
     #
     # @return [Series]
     #
