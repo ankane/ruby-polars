@@ -724,9 +724,16 @@ module Polars
       by_dtype([Date])
     end
 
-    # TODO
-    # def datetime
-    # end
+    # Select all datetime columns, optionally filtering by time unit/zone.
+    #
+    # @return [Selector]
+    def self.datetime
+      time_unit = ["ms", "us", "ns"]
+
+      time_zone = [nil]
+
+      Selector._from_rbselector(RbSelector.datetime(time_unit, time_zone))
+    end
 
     # Select all decimal columns.
     #
