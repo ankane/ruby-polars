@@ -181,9 +181,95 @@ module Polars
       Selector._from_rbselector(RbSelector.matches("^[#{re_alpha}#{re_space}]+$"))
     end
 
-    # TODO
-    # def alphanumeric
-    # end
+    # Select all columns with alphanumeric names (eg: only letters and the digits 0-9).
+    #
+    # @param ascii_only [Boolean]
+    #   Indicate whether to consider only ASCII alphabetic characters, or the full
+    #   Unicode range of valid letters (accented, idiographic, etc).
+    # @param ignore_spaces [Boolean]
+    #   Indicate whether to ignore the presence of spaces in column names; if so,
+    #   only the other (non-space) characters are considered.
+    #
+    # @return [Selector]
+    #
+    # @note
+    #   Matching column names cannot contain *any* non-alphabetic or integer characters.
+    #   Note that the definition of "alphabetic" consists of all valid Unicode alphabetic
+    #   characters (`\p{Alphabetic}`) and digit characters (`\d`) by default; this
+    #   can be changed by setting `ascii_only: true`.
+    #
+    # @example Select columns with alphanumeric names:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "1st_col" => [100, 200, 300],
+    #       "flagged" => [true, false, true],
+    #       "00prefix" => ["01:aa", "02:bb", "03:cc"],
+    #       "last col" => ["x", "y", "z"]
+    #     }
+    #   )
+    #   df.select(Polars.cs.alphanumeric)
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────────┬──────────┐
+    #   # │ flagged ┆ 00prefix │
+    #   # │ ---     ┆ ---      │
+    #   # │ bool    ┆ str      │
+    #   # ╞═════════╪══════════╡
+    #   # │ true    ┆ 01:aa    │
+    #   # │ false   ┆ 02:bb    │
+    #   # │ true    ┆ 03:cc    │
+    #   # └─────────┴──────────┘
+    #
+    # @example
+    #   df.select(Polars.cs.alphanumeric(ignore_spaces: true))
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────────┬──────────┬──────────┐
+    #   # │ flagged ┆ 00prefix ┆ last col │
+    #   # │ ---     ┆ ---      ┆ ---      │
+    #   # │ bool    ┆ str      ┆ str      │
+    #   # ╞═════════╪══════════╪══════════╡
+    #   # │ true    ┆ 01:aa    ┆ x        │
+    #   # │ false   ┆ 02:bb    ┆ y        │
+    #   # │ true    ┆ 03:cc    ┆ z        │
+    #   # └─────────┴──────────┴──────────┘
+    #
+    # @example Select all columns *except* for those with alphanumeric names:
+    #   df.select(~Polars.cs.alphanumeric)
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────────┬──────────┐
+    #   # │ 1st_col ┆ last col │
+    #   # │ ---     ┆ ---      │
+    #   # │ i64     ┆ str      │
+    #   # ╞═════════╪══════════╡
+    #   # │ 100     ┆ x        │
+    #   # │ 200     ┆ y        │
+    #   # │ 300     ┆ z        │
+    #   # └─────────┴──────────┘
+    #
+    # @example
+    #   df.select(~Polars.cs.alphanumeric(ignore_spaces: true))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────────┐
+    #   # │ 1st_col │
+    #   # │ ---     │
+    #   # │ i64     │
+    #   # ╞═════════╡
+    #   # │ 100     │
+    #   # │ 200     │
+    #   # │ 300     │
+    #   # └─────────┘
+    def self.alphanumeric(ascii_only: false, ignore_spaces: false)
+      # note that we need to supply patterns compatible with the *rust* regex crate
+      re_alpha = ascii_only ? "a-zA-Z" : "\\p{Alphabetic}"
+      re_digit = ascii_only ? "0-9" : "\\d"
+      re_space = ignore_spaces ? " " : ""
+      return Selector._from_rbselector(
+        RbSelector.matches("^[#{re_alpha}#{re_digit}#{re_space}]+$")
+      )
+    end
 
     # Select all binary columns.
     #
