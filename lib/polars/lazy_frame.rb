@@ -1014,7 +1014,7 @@ module Polars
     #   # │ null ┆ null ┆ null │
     #   # └──────┴──────┴──────┘
     def clear(n = 0)
-      DataFrame.new(columns: schema).clear(n).lazy
+      DataFrame.new(schema: schema).clear(n).lazy
     end
     alias_method :cleared, :clear
 
