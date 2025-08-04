@@ -234,10 +234,18 @@ module Polars
     #
     # @param by [Object]
     #   Column (expressions) to sort by.
+    # @param more_by [Array]
+    #   Additional columns to sort by, specified as positional arguments.
     # @param reverse [Boolean]
     #   Sort in descending order.
     # @param nulls_last [Boolean]
     #   Place null values last. Can only be used if sorted by a single column.
+    # @param maintain_order [Boolean]
+    #   Whether the order should be maintained if elements are equal.
+    #   Note that if `true` streaming is not possible and performance might be
+    #   worse since this requires a stable search.
+    # @param multithreaded [Boolean]
+    #   Sort using multiple threads.
     #
     # @return [LazyFrame]
     #
@@ -305,6 +313,8 @@ module Polars
     #   Slice pushdown optimization.
     # @param common_subplan_elimination [Boolean]
     #   Will try to cache branching subplans that occur on self-joins or unions.
+    # @param comm_subexpr_elim [Boolean]
+    #   Common subexpressions will be cached and reused.
     # @param allow_streaming [Boolean]
     #   Run parts of the query in a streaming fashion (this is in an alpha state)
     #
@@ -412,6 +422,31 @@ module Polars
     #   Turn off (certain) optimizations.
     # @param slice_pushdown [Boolean]
     #   Slice pushdown optimization.
+    # @param storage_options [String]
+    #   Options that indicate how to connect to a cloud provider.
+    #
+    #   The cloud providers currently supported are AWS, GCP, and Azure.
+    #   See supported keys here:
+    #
+    #   * [aws](https://docs.rs/object_store/latest/object_store/aws/enum.AmazonS3ConfigKey.html)
+    #   * [gcp](https://docs.rs/object_store/latest/object_store/gcp/enum.GoogleConfigKey.html)
+    #   * [azure](https://docs.rs/object_store/latest/object_store/azure/enum.AzureConfigKey.html)
+    #   * Hugging Face (`hf://`): Accepts an API key under the `token` parameter: `{'token': '...'}`, or by setting the `HF_TOKEN` environment variable.
+    #
+    #   If `storage_options` is not provided, Polars will try to infer the
+    #   information from environment variables.
+    # @param retries [Integer]
+    #   Number of retries if accessing a cloud instance fails.
+    # @param sync_on_close ['data', 'all']
+    #   Sync to disk when before closing a file.
+    #
+    #   * `nil` does not sync.
+    #   * `data` syncs the file contents.
+    #   * `all` syncs the file contents and metadata.
+    # @param mkdir [Boolean]
+    #   Recursively create all the directories in the path.
+    # @param lazy [Boolean]
+    #     Wait to start execution until `collect` is called.
     #
     # @return [DataFrame]
     #
@@ -521,6 +556,16 @@ module Polars
     #   Slice pushdown optimization.
     # @param no_optimization [Boolean]
     #   Turn off (certain) optimizations.
+    # @param sync_on_close ['data', 'all']
+    #     Sync to disk when before closing a file.
+    #
+    #     * `nil` does not sync.
+    #     * `data` syncs the file contents.
+    #     * `all` syncs the file contents and metadata.
+    # @param mkdir [Boolean]
+    #     Recursively create all the directories in the path.
+    # @param lazy [Boolean]
+    #     Wait to start execution until `collect` is called.
     #
     # @return [DataFrame]
     #
@@ -614,6 +659,9 @@ module Polars
     #   A format string, with the specifiers defined by the
     #   `chrono <https://docs.rs/chrono/latest/chrono/format/strftime/index.html>`_
     #   Rust crate.
+    # @param float_scientific [Integer]
+    #   Whether to use scientific form always (true), never (false), or
+    #   automatically (nil) for `Float32` and `Float64` datatypes.
     # @param float_precision [Integer]
     #   Number of decimal places to write, applied to both `Float32` and
     #   `Float64` datatypes.
@@ -658,6 +706,16 @@ module Polars
     #   Options that indicate how to connect to a cloud provider.
     # @param retries [Integer]
     #   Number of retries if accessing a cloud instance fails.
+    # @param sync_on_close ['data', 'all']
+    #     Sync to disk when before closing a file.
+    #
+    #     * `nil` does not sync.
+    #     * `data` syncs the file contents.
+    #     * `all` syncs the file contents and metadata.
+    # @param mkdir [Boolean]
+    #     Recursively create all the directories in the path.
+    # @param lazy [Boolean]
+    #     Wait to start execution until `collect` is called.
     #
     # @return [DataFrame]
     #
@@ -767,6 +825,31 @@ module Polars
     #   Slice pushdown optimization.
     # @param no_optimization [Boolean]
     #   Turn off (certain) optimizations.
+    # @param storage_options [String]
+    #   Options that indicate how to connect to a cloud provider.
+    #
+    #   The cloud providers currently supported are AWS, GCP, and Azure.
+    #   See supported keys here:
+    #
+    #   * [aws](https://docs.rs/object_store/latest/object_store/aws/enum.AmazonS3ConfigKey.html)
+    #   * [gcp](https://docs.rs/object_store/latest/object_store/gcp/enum.GoogleConfigKey.html)
+    #   * [azure](https://docs.rs/object_store/latest/object_store/azure/enum.AzureConfigKey.html)
+    #   * Hugging Face (`hf://`): Accepts an API key under the `token` parameter: `{'token': '...'}`, or by setting the `HF_TOKEN` environment variable.
+    #
+    #   If `storage_options` is not provided, Polars will try to infer the
+    #   information from environment variables.
+    # @param retries [Integer]
+    #   Number of retries if accessing a cloud instance fails.
+    # @param sync_on_close ['data', 'all']
+    #   Sync to disk when before closing a file.
+    #
+    #   * `nil` does not sync.
+    #   * `data` syncs the file contents.
+    #   * `all` syncs the file contents and metadata.
+    # @param mkdir [Boolean]
+    #   Recursively create all the directories in the path.
+    # @param lazy [Boolean]
+    #     Wait to start execution until `collect` is called.
     #
     # @return [DataFrame]
     #
@@ -1369,8 +1452,32 @@ module Polars
     #   parallelize
     # @param closed ["right", "left", "both", "none"]
     #   Define whether the temporal window interval is closed or not.
+    # @param label ['left', 'right', 'datapoint']
+    #   Define which label to use for the window:
+    #
+    #   - 'left': lower boundary of the window
+    #   - 'right': upper boundary of the window
+    #   - 'datapoint': the first value of the index column in the given window.
+    #     If you don't need the label to be at one of the boundaries, choose this
+    #     option for maximum performance
     # @param by [Object]
     #   Also group by this column/these columns
+    # @param start_by ['window', 'datapoint', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    #   The strategy to determine the start of the first window by.
+    #
+    #   * 'window': Start by taking the earliest timestamp, truncating it with
+    #     `every`, and then adding `offset`.
+    #     Note that weekly windows start on Monday.
+    #   * 'datapoint': Start from the first encountered data point.
+    #   * a day of the week (only takes effect if `every` contains `'w'`):
+    #
+    #     * 'monday': Start the window on the Monday before the first data point.
+    #     * 'tuesday': Start the window on the Tuesday before the first data point.
+    #     * ...
+    #     * 'sunday': Start the window on the Sunday before the first data point.
+    #
+    #     The resulting window is then shifted back until the earliest datapoint
+    #     is in or in front of it.
     #
     # @return [DataFrame]
     #
@@ -2131,6 +2238,9 @@ module Polars
     #
     # @param exprs [Object]
     #   List of Expressions that evaluate to columns.
+    # @param named_exprs [Hash]
+    #   Additional columns to add, specified as keyword arguments.
+    #   The columns will be renamed to the keyword used.
     #
     # @return [LazyFrame]
     #
@@ -2255,6 +2365,9 @@ module Polars
     # @param columns [Object]
     #   - Name of the column that should be removed.
     #   - List of column names.
+    # @param strict [Boolean]
+    #   Validate that all column names exist in the current schema,
+    #   and throw an exception if any do not.
     #
     # @return [LazyFrame]
     #
@@ -3339,6 +3452,8 @@ module Polars
     #
     # @param columns [Object]
     #   Names of the struct columns that will be decomposed by its fields
+    # @param more_columns [Array]
+    #   Additional columns to unnest, specified as positional arguments.
     #
     # @return [LazyFrame]
     #
