@@ -1,7 +1,10 @@
 module Polars
+  # Base column selector expression/proxy.
   class Selector < Expr
+    # @private
     attr_accessor :_rbselector
 
+    # @private
     def self._from_rbselector(rbselector)
       slf = new
       slf._rbselector = rbselector
@@ -13,6 +16,7 @@ module Polars
       Expr._from_rbexpr(_rbexpr).to_s
     end
 
+    # @private
     def self._by_dtype(dtypes)
       selectors = []
       concrete_dtypes = []
@@ -41,6 +45,7 @@ module Polars
       end
     end
 
+    # @private
     def self._by_name(names, strict:)
       _from_rbselector(RbSelector.by_name(names, strict))
     end
