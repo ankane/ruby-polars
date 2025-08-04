@@ -1294,6 +1294,53 @@ module Polars
     # Select all temporal columns.
     #
     # @return [Selector]
+    #
+    # @example Match all temporal columns:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "dt" => [Date.new(2021, 1, 1), Date.new(2021, 1, 2)],
+    #       "tm" => [DateTime.new(2000, 1, 1, 12, 0, 0), DateTime.new(2000, 1, 1, 20, 30, 45)],
+    #       "value" => [1.2345, 2.3456],
+    #     },
+    #     schema_overrides: {"tm" => Polars::Time}
+    #   )
+    #   df.select(Polars.cs.temporal)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────────┬──────────┐
+    #   # │ dt         ┆ tm       │
+    #   # │ ---        ┆ ---      │
+    #   # │ date       ┆ time     │
+    #   # ╞════════════╪══════════╡
+    #   # │ 2021-01-01 ┆ 12:00:00 │
+    #   # │ 2021-01-02 ┆ 20:30:45 │
+    #   # └────────────┴──────────┘
+    #
+    # @example Match all temporal columns *except* for time columns:
+    #   df.select(Polars.cs.temporal - Polars.cs.time)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌────────────┐
+    #   # │ dt         │
+    #   # │ ---        │
+    #   # │ date       │
+    #   # ╞════════════╡
+    #   # │ 2021-01-01 │
+    #   # │ 2021-01-02 │
+    #   # └────────────┘
+    #
+    # @example Match all columns *except* for temporal columns:
+    #   df.select(~Polars.cs.temporal)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌────────┐
+    #   # │ value  │
+    #   # │ ---    │
+    #   # │ f64    │
+    #   # ╞════════╡
+    #   # │ 1.2345 │
+    #   # │ 2.3456 │
+    #   # └────────┘
     def self.temporal
       Selector._from_rbselector(RbSelector.temporal)
     end
