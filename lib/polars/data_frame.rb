@@ -826,6 +826,8 @@ module Polars
     #   File path to which the file should be written.
     # @param compression ["uncompressed", "snappy", "deflate"]
     #   Compression method. Defaults to "uncompressed".
+    # @param name [String]
+    #   Schema name. Defaults to empty string.
     #
     # @return [nil]
     def write_avro(file, compression = "uncompressed", name: "")
@@ -848,6 +850,24 @@ module Polars
     #   File path to which the file should be written.
     # @param compression ["uncompressed", "lz4", "zstd"]
     #   Compression method. Defaults to "uncompressed".
+    # @param compat_level [Object]
+    #   Use a specific compatibility level
+    #   when exporting Polars' internal data structures.
+    # @param storage_options [Hash]
+    #   Options that indicate how to connect to a cloud provider.
+    #
+    #   The cloud providers currently supported are AWS, GCP, and Azure.
+    #   See supported keys here:
+    #
+    #   * [aws](https://docs.rs/object_store/latest/object_store/aws/enum.AmazonS3ConfigKey.html)
+    #   * [gcp](https://docs.rs/object_store/latest/object_store/gcp/enum.GoogleConfigKey.html)
+    #   * [azure](https://docs.rs/object_store/latest/object_store/azure/enum.AzureConfigKey.html)
+    #   * Hugging Face (`hf://`): Accepts an API key under the `token` parameter: `{'token': '...'}`, or by setting the `HF_TOKEN` environment variable.
+    #
+    #   If `storage_options` is not provided, Polars will try to infer the
+    #   information from environment variables.
+    # @param retries [Integer]
+    #   Number of retries if accessing a cloud instance fails.
     #
     # @return [nil]
     def write_ipc(
@@ -893,6 +913,9 @@ module Polars
     #   be written. If set to `None`, the output is returned as a BytesIO object.
     # @param compression ['uncompressed', 'lz4', 'zstd']
     #   Compression method. Defaults to "uncompressed".
+    # @param compat_level [Object]
+    #   Use a specific compatibility level
+    #   when exporting Polars' internal data structures.
     #
     # @return [Object]
     #
@@ -2130,6 +2153,22 @@ module Polars
     #   Define whether the temporal window interval is closed or not.
     # @param by
     #   Also group by this column/these columns
+    # @param start_by ['window', 'datapoint', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    #   The strategy to determine the start of the first window by.
+    #
+    #   * 'window': Start by taking the earliest timestamp, truncating it with
+    #     `every`, and then adding `offset`.
+    #     Note that weekly windows start on Monday.
+    #   * 'datapoint': Start from the first encountered data point.
+    #   * a day of the week (only takes effect if `every` contains `'w'`):
+    #
+    #     * 'monday': Start the window on the Monday before the first data point.
+    #     * 'tuesday': Start the window on the Tuesday before the first data point.
+    #     * ...
+    #     * 'sunday': Start the window on the Sunday before the first data point.
+    #
+    #     The resulting window is then shifted back until the earliest datapoint
+    #     is in or in front of it.
     #
     # @return [DataFrame]
     #
@@ -3441,6 +3480,9 @@ module Polars
     #   Sort the grouped keys so that the output order is predictable.
     # @param sort_columns [Object]
     #   Sort the transposed columns by name. Default is by order of discovery.
+    # @param separator [String]
+    #   Used as separator/delimiter in generated column names in case of multiple
+    #   `values` columns.
     #
     # @return [DataFrame]
     #
@@ -3704,6 +3746,8 @@ module Polars
     # @param maintain_order [Boolean]
     #   Keep predictable output order. This is slower as it requires an extra sort
     #   operation.
+    # @param include_key [Boolean]
+    #   Include the columns used to partition the DataFrame in the output.
     # @param as_dict [Boolean]
     #   If true, return the partitions in a dictionary keyed by the distinct group
     #   values instead of a list.
@@ -4548,9 +4592,15 @@ module Polars
 
     # Get one hot encoded dummy variables.
     #
-    # @param columns
+    # @param columns [Array]
     #   A subset of columns to convert to dummy variables. `nil` means
     #   "all columns".
+    # @param separator [String]
+    #   Separator/delimiter used when generating column names.
+    # @param drop_first [Boolean]
+    #   Remove the first category from the variables being encoded.
+    # @param drop_nulls [Boolean]
+    #   If there are `None` values in the series, a `null` column is not generated
     #
     # @return [DataFrame]
     #
