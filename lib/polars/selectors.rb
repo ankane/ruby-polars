@@ -773,6 +773,94 @@ module Polars
       Selector._from_rbselector(RbSelector.decimal)
     end
 
+    # Select all columns having names consisting only of digits.
+    #
+    # @return [Selector]
+    #
+    # @note
+    #   Matching column names cannot contain *any* non-digit characters. Note that the
+    #   definition of "digit" consists of all valid Unicode digit characters (`\d`)
+    #   by default; this can be changed by setting `ascii_only: true`.
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "key" => ["aaa", "bbb", "aaa", "bbb", "bbb"],
+    #       "year" => [2001, 2001, 2025, 2025, 2001],
+    #       "value" => [-25, 100, 75, -15, -5]
+    #     }
+    #   ).pivot(
+    #     "year",
+    #     values: "value",
+    #     index: "key",
+    #     aggregate_function: "sum"
+    #   )
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬──────┬──────┐
+    #   # │ key ┆ 2001 ┆ 2025 │
+    #   # │ --- ┆ ---  ┆ ---  │
+    #   # │ str ┆ i64  ┆ i64  │
+    #   # ╞═════╪══════╪══════╡
+    #   # │ aaa ┆ -25  ┆ 75   │
+    #   # │ bbb ┆ 95   ┆ -15  │
+    #   # └─────┴──────┴──────┘
+    #
+    # @example Select columns with digit names:
+    #   df.select(Polars.cs.digit)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌──────┬──────┐
+    #   # │ 2001 ┆ 2025 │
+    #   # │ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  │
+    #   # ╞══════╪══════╡
+    #   # │ -25  ┆ 75   │
+    #   # │ 95   ┆ -15  │
+    #   # └──────┴──────┘
+    #
+    # @example Select all columns *except* for those with digit names:
+    #   df.select(~Polars.cs.digit)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ key │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ aaa │
+    #   # │ bbb │
+    #   # └─────┘
+    #
+    # @example Demonstrate use of `ascii_only` flag (by default all valid unicode digits are considered, but this can be constrained to ascii 0-9):
+    #   df = Polars::DataFrame.new({"१९९९" => [1999], "२०७७" => [2077], "3000": [3000]})
+    #   df.select(Polars.cs.digit)
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ १९९९ ┆ २०७७ ┆ 3000 │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ i64  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ 1999 ┆ 2077 ┆ 3000 │
+    #   # └──────┴──────┴──────┘
+    #
+    # @example
+    #   df.select(Polars.cs.digit(ascii_only: true))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────┐
+    #   # │ 3000 │
+    #   # │ ---  │
+    #   # │ i64  │
+    #   # ╞══════╡
+    #   # │ 3000 │
+    #   # └──────┘
+    def self.digit(ascii_only: false)
+      re_digit = ascii_only ? "[0-9]" : "\\d"
+      Selector._from_rbselector(RbSelector.matches("^#{re_digit}+$"))
+    end
+
     # Select columns that end with the given substring(s).
     #
     # @param suffix [Object]
