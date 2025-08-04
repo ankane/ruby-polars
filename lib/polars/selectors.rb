@@ -1122,9 +1122,63 @@ module Polars
       Selector._from_rbselector(RbSelector.last(strict))
     end
 
-    # TODO
-    # def matches
-    # end
+    # Select all columns that match the given regex pattern.
+    #
+    # @param pattern [String]
+    #   A valid regular expression pattern, compatible with the [regex crate](https://docs.rs/regex/latest/regex/).
+    #
+    # @return [Selector]
+    #
+    # @example Match column names containing an 'a', preceded by a character that is not 'z':
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => ["x", "y"],
+    #       "bar" => [123, 456],
+    #       "baz" => [2.0, 5.5],
+    #       "zap" => [0, 1]
+    #     }
+    #   )
+    #   df.select(Polars.cs.matches("[^z]a"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ bar ┆ baz │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 123 ┆ 2.0 │
+    #   # │ 456 ┆ 5.5 │
+    #   # └─────┴─────┘
+    #
+    # @example Do not match column names ending in 'R' or 'z' (case-insensitively):
+    #   df.select(~Polars.cs.matches("(?i)R|z$"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ zap │
+    #   # │ --- ┆ --- │
+    #   # │ str ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ x   ┆ 0   │
+    #   # │ y   ┆ 1   │
+    #   # └─────┴─────┘
+    def self.matches(pattern)
+      if pattern == ".*"
+        all
+      else
+        if pattern.start_with?(".*")
+          pattern = pattern[2..]
+        elsif pattern.end_with?(".*")
+          pattern = pattern[..-3]
+        end
+
+        pfx = !pattern.start_with?("^") ? "^.*" : ""
+        sfx = !pattern.end_with?("$") ? ".*$" : ""
+        raw_params = "#{pfx}#{pattern}#{sfx}"
+
+        Selector._from_rbselector(RbSelector.matches(raw_params))
+      end
+    end
 
     # Select all numeric columns.
     #
