@@ -63,6 +63,13 @@ module Polars
     #   in the target string.
     # @param cache [Boolean]
     #   Use a cache of unique, converted datetimes to apply the conversion.
+    # @param ambiguous ['raise', 'earliest', 'latest', 'null']
+    #   Determine how to deal with ambiguous datetimes:
+    #
+    #   - `'raise'` (default): raise
+    #   - `'earliest'`: use the earliest datetime
+    #   - `'latest'`: use the latest datetime
+    #   - `'null'`: set to null
     #
     # @return [Expr]
     #
@@ -148,6 +155,8 @@ module Polars
     # @param utc [Boolean]
     #   Parse timezone aware datetimes as UTC. This may be useful if you have data
     #   with mixed offsets.
+    # @param cache [Boolean]
+    #   Use a cache of unique, converted dates to apply the datetime conversion.
     #
     # @return [Expr]
     #
@@ -666,6 +675,9 @@ module Polars
     #   A valid regex pattern.
     # @param literal [Boolean]
     #   Treat pattern as a literal string.
+    # @param strict [Boolean]
+    #   Raise an error if the underlying pattern is not a valid regex,
+    #   otherwise mask out with a null value.
     #
     # @return [Expr]
     #
@@ -782,6 +794,9 @@ module Polars
     # @param dtype [Object]
     #   The dtype to cast the extracted value to. If nil, the dtype will be
     #   inferred from the JSON value.
+    # @param infer_schema_length [Integer]
+    #   The maximum number of rows to scan for schema inference.
+    #   If set to `nil`, the full data may be scanned *(this is slow)*.
     #
     # @return [Expr]
     #
@@ -1038,6 +1053,8 @@ module Polars
     #
     # @param pattern [String]
     #   A valid regex pattern
+    # @param literal [Boolean]
+    #   Treat `pattern` as a literal string, not as a regular expression.
     #
     # @return [Expr]
     #
@@ -1179,6 +1196,8 @@ module Polars
     #   Replacement string.
     # @param literal [Boolean]
     #   Treat pattern as a literal string.
+    # @param n [Integer]
+    #   Number of matches to replace.
     #
     # @return [Expr]
     #

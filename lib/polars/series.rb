@@ -1241,6 +1241,14 @@ module Polars
     #
     # @param sort [Boolean]
     #   Ensure the output is sorted from most values to least.
+    # @param parallel [Boolean]
+    #   Execute the computation in parallel.
+    # @param name [String]
+    #   Give the resulting count column a specific name; if `normalize` is
+    #   true this defaults to "proportion", otherwise defaults to "count".
+    # @param normalize [Boolean]
+    #   If true, the count is returned as the relative frequency of unique
+    #   values normalized to 1.0.
     #
     # @return [DataFrame]
     #
@@ -1729,6 +1737,10 @@ module Polars
     #
     # @param reverse [Boolean]
     #   Reverse sort.
+    # @param nulls_last [Boolean]
+    #   Place null values last instead of first.
+    # @param multithreaded [Boolean]
+    #   Sort using multiple threads.
     # @param in_place [Boolean]
     #   Sort in place.
     #
@@ -3428,6 +3440,8 @@ module Polars
     #   a result. If None, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
+    # @param ddof [Integer]
+    #   "Delta Degrees of Freedom": The divisor for a length N window is N - ddof
     #
     # @return [Series]
     #
@@ -3471,6 +3485,8 @@ module Polars
     #   a result. If None, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
+    # @param ddof [Integer]
+    #   "Delta Degrees of Freedom": The divisor for a length N window is N - ddof
     #
     # @return [Series]
     #
