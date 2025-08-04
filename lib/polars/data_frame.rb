@@ -2470,11 +2470,11 @@ module Polars
     # @param on [String]
     #   Join column of both DataFrames. If set, `left_on` and `right_on` should be
     #   None.
-    # @param by [Object]
-    #   join on these columns before doing asof join
     # @param by_left [Object]
     #   join on these columns before doing asof join
     # @param by_right [Object]
+    #   join on these columns before doing asof join
+    # @param by [Object]
     #   join on these columns before doing asof join
     # @param strategy ["backward", "forward"]
     #   Join strategy.
@@ -2485,14 +2485,6 @@ module Polars
     #   keys are within this distance. If an asof join is done on columns of dtype
     #   "Date", "Datetime", "Duration" or "Time" you use the following string
     #   language:
-    # @param allow_exact_matches [Boolean]
-    #   Whether exact matches are valid join predicates.
-    #     - If true, allow matching with the same `on` value (i.e. less-than-or-equal-to / greater-than-or-equal-to).
-    #     - If false, don't match the same `on` value (i.e., strictly less-than / strictly greater-than).
-    # @param check_sortedness [Boolean]
-    #   Check the sortedness of the asof keys. If the keys are not sorted Polars
-    #   will error, or in case of 'by' argument raise a warning. This might become
-    #   a hard error in the future.
     #
     #    - 1ns   (1 nanosecond)
     #    - 1us   (1 microsecond)
@@ -2520,6 +2512,14 @@ module Polars
     #     - true: -> Always coalesce join columns.
     #     - false: -> Never coalesce join columns.
     #   Note that joining on any other expressions than `col` will turn off coalescing.
+    # @param allow_exact_matches [Boolean]
+    #   Whether exact matches are valid join predicates.
+    #     - If true, allow matching with the same `on` value (i.e. less-than-or-equal-to / greater-than-or-equal-to).
+    #     - If false, don't match the same `on` value (i.e., strictly less-than / strictly greater-than).
+    # @param check_sortedness [Boolean]
+    #   Check the sortedness of the asof keys. If the keys are not sorted Polars
+    #   will error, or in case of 'by' argument raise a warning. This might become
+    #   a hard error in the future.
     #
     # @return [DataFrame]
     #
@@ -3467,13 +3467,13 @@ module Polars
 
     # Create a spreadsheet-style pivot table as a DataFrame.
     #
+    # @param on [Object]
+    #   Columns whose values will be used as the header of the output DataFrame
+    # @param index [Object]
+    #   One or multiple keys to group by
     # @param values [Object]
     #   Column values to aggregate. Can be multiple columns if the *columns*
     #   arguments contains multiple columns as well
-    # @param index [Object]
-    #   One or multiple keys to group by
-    # @param on [Object]
-    #   Columns whose values will be used as the header of the output DataFrame
     # @param aggregate_function ["first", "sum", "max", "min", "mean", "median", "last", "count"]
     #   A predefined aggregate function str or an expression.
     # @param maintain_order [Object]

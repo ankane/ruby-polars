@@ -1715,11 +1715,11 @@ module Polars
     # @param on [String]
     #   Join column of both DataFrames. If set, `left_on` and `right_on` should be
     #   None.
-    # @param by [Object]
-    #   Join on these columns before doing asof join.
     # @param by_left [Object]
     #   Join on these columns before doing asof join.
     # @param by_right [Object]
+    #   Join on these columns before doing asof join.
+    # @param by [Object]
     #   Join on these columns before doing asof join.
     # @param strategy ["backward", "forward"]
     #   Join strategy.

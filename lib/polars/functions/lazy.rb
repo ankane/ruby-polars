@@ -671,12 +671,12 @@ module Polars
     #   Column name or Expression.
     # @param b [Object]
     #   Column name or Expression.
+    # @param method ["pearson", "spearman"]
+    #   Correlation method.
     # @param ddof [Integer]
     #   "Delta Degrees of Freedom": the divisor used in the calculation is N - ddof,
     #   where N represents the number of elements.
     #   By default ddof is 1.
-    # @param method ["pearson", "spearman"]
-    #   Correlation method.
     # @param propagate_nans [Boolean]
     #   If `true` any `NaN` encountered will lead to `NaN` in the output.
     #   Defaults to `False` where `NaN` are regarded as larger than any finite number

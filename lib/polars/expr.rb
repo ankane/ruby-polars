@@ -4907,10 +4907,6 @@ module Polars
     #
     # @param by [String]
     #   This column must be of dtype Datetime or Date.
-    # @param quantile [Float]
-    #   Quantile between 0.0 and 1.0.
-    # @param interpolation ['nearest', 'higher', 'lower', 'midpoint', 'linear']
-    #   Interpolation method.
     # @param window_size  [String]
     #   The length of the window. Can be a dynamic
     #   temporal size indicated by a timedelta or the following string language:
@@ -4931,6 +4927,10 @@ module Polars
     #   (which may not be 24 hours, due to daylight savings). Similarly for
     #   "calendar week", "calendar month", "calendar quarter", and
     #   "calendar year".
+    # @param quantile [Float]
+    #   Quantile between 0.0 and 1.0.
+    # @param interpolation ['nearest', 'higher', 'lower', 'midpoint', 'linear']
+    #   Interpolation method.
     # @param min_periods [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result.

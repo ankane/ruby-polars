@@ -156,7 +156,12 @@ class DocsTest < Minitest::Test
       # puts "Missing @param tags (#{method}) #{missing}"
     end
     if extra.any? && expected.any?
-      # puts "Extra @param tags (#{method}) #{extra}"
+      puts "Extra @param tags (#{method}) #{extra}"
+    end
+    if actual.length == expected.length && actual != expected
+      puts "Unordered @param tags (#{method})"
+      p actual
+      p expected
     end
   end
 

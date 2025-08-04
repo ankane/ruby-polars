@@ -152,11 +152,11 @@ module Polars
     # @param exact [Boolean]
     #   - If true, require an exact format match.
     #   - If false, allow the format to match anywhere in the target string.
+    # @param cache [Boolean]
+    #   Use a cache of unique, converted dates to apply the datetime conversion.
     # @param utc [Boolean]
     #   Parse timezone aware datetimes as UTC. This may be useful if you have data
     #   with mixed offsets.
-    # @param cache [Boolean]
-    #   Use a cache of unique, converted dates to apply the datetime conversion.
     #
     # @return [Expr]
     #
