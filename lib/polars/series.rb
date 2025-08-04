@@ -563,7 +563,7 @@ module Polars
     #   # => false
     def any?(ignore_nulls: true, &block)
       if block_given?
-        apply(skip_nulls: ignore_nulls, &block).any?
+        apply(return_dtype: Boolean, skip_nulls: ignore_nulls, &block).any?
       else
         _s.any(ignore_nulls)
       end
@@ -587,7 +587,7 @@ module Polars
     #   # => true
     def all?(ignore_nulls: true, &block)
       if block_given?
-        apply(skip_nulls: ignore_nulls, &block).all?
+        apply(return_dtype: Boolean, skip_nulls: ignore_nulls, &block).all?
       else
         _s.all(ignore_nulls)
       end
@@ -611,7 +611,7 @@ module Polars
     #   # => true
     def none?(&block)
       if block_given?
-        apply(&block).none?
+        apply(return_dtype: Boolean, &block).none?
       else
         to_frame.select(Polars.col(name).is_not.all).to_series[0]
       end
