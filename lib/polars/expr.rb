@@ -333,12 +333,11 @@ module Polars
     # with `$`.
     #
     # @param columns [Object]
-    #   Column(s) to exclude from selection.
-    #   This can be:
-    #
-    #   - a column name, or multiple column names
-    #   - a regular expression starting with `^` and ending with `$`
-    #   - a dtype or multiple dtypes
+    #   The name or datatype of the column(s) to exclude. Accepts regular expression
+    #   input. Regular expressions should start with `^` and end with `$`.
+    # @param more_columns [Array]
+    #   Additional names or datatypes of columns to exclude, specified as positional
+    #   arguments.
     #
     # @return [Expr]
     #
@@ -1142,6 +1141,13 @@ module Polars
     #
     # @param decimals [Integer]
     #   Number of decimals to round by.
+    # @param mode ['half_to_even', 'half_away_from_zero']
+    #   RoundMode.
+    #
+    #   * *half_to_even*
+    #     round to the nearest even number
+    #   * *half_away_from_zero*
+    #     round to the nearest number away from zero
     #
     # @return [Expr]
     #
@@ -1540,9 +1546,18 @@ module Polars
     #
     # @param by [Object]
     #   The column(s) used for sorting.
+    # @param more_by [Array]
+    #   Additional columns to sort by, specified as positional arguments.
     # @param reverse [Boolean]
     #   false -> order from small to large.
     #   true -> order from large to small.
+    # @param nulls_last [Boolean]
+    #   Place null values last; can specify a single boolean applying to all columns
+    #   or a sequence of booleans for per-column control.
+    # @param multithreaded [Boolean]
+    #   Sort using multiple threads.
+    # @param maintain_order [Boolean]
+    #   Whether the order should be maintained if elements are equal.
     #
     # @return [Expr]
     #
@@ -5350,6 +5365,8 @@ module Polars
     #   a result. If None, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
+    # @param ddof [Integer]
+    #   "Delta Degrees of Freedom": The divisor for a length N window is N - ddof
     #
     # @note
     #   This functionality is experimental and may change without it being considered a
@@ -5429,6 +5446,8 @@ module Polars
     #   a result. If None, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
+    # @param ddof [Integer]
+    #   "Delta Degrees of Freedom": The divisor for a length N window is N - ddof
     #
     # @note
     #   This functionality is experimental and may change without it being considered a
