@@ -861,6 +861,15 @@ module Polars
       Selector._from_rbselector(RbSelector.matches("^#{re_digit}+$"))
     end
 
+    # Select all duration columns, optionally filtering by time unit.
+    #
+    # @return [Selector]
+    def self.duration
+      time_unit = ["ms", "us", "ns"]
+
+      Selector._from_rbselector(RbSelector.duration(time_unit))
+    end
+
     # Select columns that end with the given substring(s).
     #
     # @param suffix [Object]
