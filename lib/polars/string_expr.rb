@@ -1439,7 +1439,7 @@ module Polars
     #     Polars.col("lyrics")
     #     .str.replace_many(
     #       ["me", "you", "they"],
-    #       ""
+    #       [""]
     #     )
     #     .alias("removes_pronouns")
     #   )
