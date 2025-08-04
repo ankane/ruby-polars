@@ -6,6 +6,10 @@ module Polars
     #   Value to repeat.
     # @param n [Integer]
     #   Repeat `n` times.
+    # @param dtype [Object]
+    #   Data type of the resulting column. If set to `nil` (default), data type is
+    #   inferred from the given value. Defaults to Int32 for integer values, unless
+    #   Int64 is required to fit the given value. Defaults to Float64 for float values.
     # @param eager [Boolean]
     #   Run eagerly and collect into a `Series`.
     # @param name [String]

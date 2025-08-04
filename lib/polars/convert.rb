@@ -7,6 +7,16 @@ module Polars
     # @param data [Hash]
     #   Two-dimensional data represented as a hash. Hash must contain
     #   arrays.
+    # @param schema [Object]
+    #   The DataFrame schema may be declared in several ways:
+    #
+    #   * As a dict of {name:type} pairs; if type is None, it will be auto-inferred.
+    #   * As a list of column names; in this case types are automatically inferred.
+    #   * As a list of (name,type) pairs; this is equivalent to the dictionary form.
+    #
+    #   If you supply a list of column names that does not match the names in the
+    #   underlying data, the names given here will overwrite them. The number
+    #   of names given in the schema should match the underlying data dimensions.
     # @param columns [Array]
     #   Column labels to use for resulting DataFrame. If specified, overrides any
     #   labels already present in the data. Must match data dimensions.

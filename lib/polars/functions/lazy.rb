@@ -884,6 +884,12 @@ module Polars
     #   Fn(acc, value) -> new_value
     # @param exprs [Object]
     #   Expressions to aggregate over. May also be a wildcard expression.
+    # @param returns_scalar [Boolean]
+    #   Whether or not `function` applied returns a scalar. This must be set correctly
+    #   by the user.
+    # @param return_dtype [Object]
+    #   Output datatype.
+    #   If not set, the dtype will be inferred based on the dtype of the accumulator.
     # @param include_init [Boolean]
     #   Include the initial accumulator state as struct field.
     #
@@ -1132,8 +1138,16 @@ module Polars
     #
     # @param exprs [Object]
     #   Columns use to determine the ordering.
+    # @param more_exprs [Array]
+    #   Additional columns to arg sort by, specified as positional arguments.
     # @param reverse [Boolean]
     #   Default is ascending.
+    # @param nulls_last [Boolean]
+    #   Place null values last.
+    # @param multithreaded [Boolean]
+    #   Sort using multiple threads.
+    # @param maintain_order [Boolean]
+    #   Whether the order should be maintained if elements are equal.
     #
     # @return [Expr]
     #
