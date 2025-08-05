@@ -287,7 +287,7 @@ module Polars
       self != other
     end
 
-    # Method equivalent of equality operator `series != other` where `None == None`.
+    # Method equivalent of equality operator `series != other` where `nil == nil`.
     #
     # This differs from the standard `ne` where null values are propagated.
     #
@@ -3209,7 +3209,7 @@ module Polars
     # @param periods [Integer]
     #   Number of places to shift (may be negative).
     # @param fill_value [Object]
-    #   Fill None values with the result of this expression.
+    #   Fill nil values with the result of this expression.
     #
     # @return [Series]
     def shift_and_fill(periods, fill_value)
@@ -3273,7 +3273,7 @@ module Polars
     #   elementwise with the values in the window.
     # @param min_periods [Integer]
     #   The number of values in the window that should be non-null before computing
-    #   a result. If None, it will be set equal to window size.
+    #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
     #
@@ -3314,7 +3314,7 @@ module Polars
     #   elementwise with the values in the window.
     # @param min_periods [Integer]
     #   The number of values in the window that should be non-null before computing
-    #   a result. If None, it will be set equal to window size.
+    #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
     #
@@ -3355,7 +3355,7 @@ module Polars
     #   elementwise with the values in the window.
     # @param min_periods [Integer]
     #   The number of values in the window that should be non-null before computing
-    #   a result. If None, it will be set equal to window size.
+    #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
     #
@@ -3396,7 +3396,7 @@ module Polars
     #   elementwise with the values in the window.
     # @param min_periods [Integer]
     #   The number of values in the window that should be non-null before computing
-    #   a result. If None, it will be set equal to window size.
+    #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
     #
@@ -3437,7 +3437,7 @@ module Polars
     #   elementwise with the values in the window.
     # @param min_periods [Integer]
     #   The number of values in the window that should be non-null before computing
-    #   a result. If None, it will be set equal to window size.
+    #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
     # @param ddof [Integer]
@@ -3482,7 +3482,7 @@ module Polars
     #   elementwise with the values in the window.
     # @param min_periods [Integer]
     #   The number of values in the window that should be non-null before computing
-    #   a result. If None, it will be set equal to window size.
+    #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
     # @param ddof [Integer]
@@ -3526,7 +3526,7 @@ module Polars
     #   elementwise with the values in the window.
     # @param min_periods [Integer]
     #   The number of values in the window that should be non-null before computing
-    #   a result. If None, it will be set equal to window size.
+    #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
     #
@@ -3568,7 +3568,7 @@ module Polars
     #   elementwise with the values in the window.
     # @param min_periods [Integer]
     #   The number of values in the window that should be non-null before computing
-    #   a result. If None, it will be set equal to window size.
+    #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
     #
@@ -3646,7 +3646,7 @@ module Polars
     #
     # @param n [Integer]
     #   Number of items to return. Cannot be used with `frac`. Defaults to 1 if
-    #   `frac` is None.
+    #   `frac` is nil.
     # @param frac [Float]
     #   Fraction of items to return. Cannot be used with `n`.
     # @param with_replacement [Boolean]
@@ -3654,7 +3654,7 @@ module Polars
     # @param shuffle [Boolean]
     #   Shuffle the order of sampled data points.
     # @param seed [Integer]
-    #   Seed for the random number generator. If set to None (default), a random
+    #   Seed for the random number generator. If set to nil (default), a random
     #   seed is used.
     #
     # @return [Series]

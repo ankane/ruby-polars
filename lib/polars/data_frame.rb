@@ -910,7 +910,7 @@ module Polars
     #
     # @param file [Object]
     #   Path or writable file-like object to which the IPC record batch data will
-    #   be written. If set to `None`, the output is returned as a BytesIO object.
+    #   be written. If set to `nil`, the output is returned as a BytesIO object.
     # @param compression ['uncompressed', 'lz4', 'zstd']
     #   Compression method. Defaults to "uncompressed".
     # @param compat_level [Object]
@@ -2139,9 +2139,9 @@ module Polars
     # @param every
     #   Interval of the window.
     # @param period
-    #   Length of the window, if None it is equal to 'every'.
+    #   Length of the window, if nil it is equal to 'every'.
     # @param offset
-    #   Offset of the window if None and period is None it will be equal to negative
+    #   Offset of the window if nil and period is nil it will be equal to negative
     #   `every`.
     # @param truncate
     #   Truncate the time value to the window lower bound.
@@ -2469,7 +2469,7 @@ module Polars
     #   Join column of the right DataFrame.
     # @param on [String]
     #   Join column of both DataFrames. If set, `left_on` and `right_on` should be
-    #   None.
+    #   nil.
     # @param by_left [Object]
     #   join on these columns before doing asof join
     # @param by_right [Object]
@@ -4600,7 +4600,7 @@ module Polars
     # @param drop_first [Boolean]
     #   Remove the first category from the variables being encoded.
     # @param drop_nulls [Boolean]
-    #   If there are `None` values in the series, a `null` column is not generated
+    #   If there are `nil` values in the series, a `null` column is not generated
     #
     # @return [DataFrame]
     #

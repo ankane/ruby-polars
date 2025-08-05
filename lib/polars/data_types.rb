@@ -401,7 +401,7 @@ module Polars
   class Object < DataType
   end
 
-  # Type representing Null / None values.
+  # Type representing Null / nil values.
   class Null < DataType
   end
 

@@ -292,7 +292,7 @@ module Polars
     #
     # So index `0` would return the first item of every sublist
     # and index `-1` would return the last item of every sublist
-    # if an index is out of bounds, it will return a `None`.
+    # if an index is out of bounds, it will return a `nil`.
     #
     # @param index [Integer]
     #   Index to return per sublist

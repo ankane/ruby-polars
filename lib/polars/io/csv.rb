@@ -499,7 +499,7 @@ module Polars
     #   for instance `#`.
     # @param quote_char [String]
     #   Single byte character used for csv quoting.
-    #   Set to None to turn off special handling and escaping of quotes.
+    #   Set to nil to turn off special handling and escaping of quotes.
     # @param skip_rows [Integer]
     #   Start reading after `skip_rows` lines. The header will be parsed at this
     #   offset.
