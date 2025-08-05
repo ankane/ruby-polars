@@ -3307,51 +3307,46 @@ module Polars
       _from_rbldf(_ldf.unique(maintain_order, selector_subset, keep))
     end
 
-    # Drop rows with null values from this LazyFrame.
+    # Drop all rows that contain one or more null values.
+    #
+    # The original order of the remaining rows is preserved.
     #
     # @param subset [Object]
-    #   Subset of column(s) on which `drop_nulls` will be applied.
+    #   Column name(s) for which null values are considered.
+    #   If set to `nil` (default), use all columns.
     #
     # @return [LazyFrame]
     #
     # @example
-    #   df = Polars::DataFrame.new(
+    #   lf = Polars::LazyFrame.new(
     #     {
-    #       "foo" => [1, 2, 3],
-    #       "bar" => [6, nil, 8],
-    #       "ham" => ["a", "b", "c"]
+    #       "foo": [1, 2, 3],
+    #       "bar": [6, nil, 8],
+    #       "ham": ["a", "b", nil],
     #     }
     #   )
-    #   df.lazy.drop_nulls.collect
+    #   lf.drop_nulls.collect
     #   # =>
-    #   # shape: (2, 3)
+    #   # shape: (1, 3)
     #   # ┌─────┬─────┬─────┐
     #   # │ foo ┆ bar ┆ ham │
     #   # │ --- ┆ --- ┆ --- │
     #   # │ i64 ┆ i64 ┆ str │
     #   # ╞═════╪═════╪═════╡
     #   # │ 1   ┆ 6   ┆ a   │
-    #   # │ 3   ┆ 8   ┆ c   │
     #   # └─────┴─────┴─────┘
     # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "foo" => [1, 2, nil],
-    #       "bar" => [6, nil, 8],
-    #       "ham" => [nil, "b", "c"]
-    #     }
-    #   )
-    #   df.lazy.drop_nulls(subset: "bar").collect
+    #   lf.drop_nulls(subset: Polars.cs.integer).collect
     #   # =>
     #   # shape: (2, 3)
-    #   # ┌──────┬─────┬──────┐
-    #   # │ foo  ┆ bar ┆ ham  │
-    #   # │ ---  ┆ --- ┆ ---  │
-    #   # │ i64  ┆ i64 ┆ str  │
-    #   # ╞══════╪═════╪══════╡
-    #   # │ 1    ┆ 6   ┆ null │
-    #   # │ null ┆ 8   ┆ c    │
-    #   # └──────┴─────┴──────┘
+    #   # ┌─────┬─────┬──────┐
+    #   # │ foo ┆ bar ┆ ham  │
+    #   # │ --- ┆ --- ┆ ---  │
+    #   # │ i64 ┆ i64 ┆ str  │
+    #   # ╞═════╪═════╪══════╡
+    #   # │ 1   ┆ 6   ┆ a    │
+    #   # │ 3   ┆ 8   ┆ null │
+    #   # └─────┴─────┴──────┘
     def drop_nulls(subset: nil)
       selector_subset = nil
       if !subset.nil?

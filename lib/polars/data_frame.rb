@@ -1848,10 +1848,13 @@ module Polars
       _from_rbdf(_df.tail(n))
     end
 
-    # Return a new DataFrame where the null values are dropped.
+    # Drop all rows that contain one or more null values.
+    #
+    # The original order of the remaining rows is preserved.
     #
     # @param subset [Object]
-    #   Subset of column(s) on which `drop_nulls` will be applied.
+    #   Column name(s) for which null values are considered.
+    #   If set to `nil` (default), use all columns.
     #
     # @return [DataFrame]
     #
@@ -1860,20 +1863,31 @@ module Polars
     #     {
     #       "foo" => [1, 2, 3],
     #       "bar" => [6, nil, 8],
-    #       "ham" => ["a", "b", "c"]
+    #       "ham" => ["a", "b", nil],
     #     }
     #   )
     #   df.drop_nulls
     #   # =>
-    #   # shape: (2, 3)
+    #   # shape: (1, 3)
     #   # ┌─────┬─────┬─────┐
     #   # │ foo ┆ bar ┆ ham │
     #   # │ --- ┆ --- ┆ --- │
     #   # │ i64 ┆ i64 ┆ str │
     #   # ╞═════╪═════╪═════╡
     #   # │ 1   ┆ 6   ┆ a   │
-    #   # │ 3   ┆ 8   ┆ c   │
     #   # └─────┴─────┴─────┘
+    # @example
+    #   df.drop_nulls(subset: Polars.cs.integer)
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬──────┐
+    #   # │ foo ┆ bar ┆ ham  │
+    #   # │ --- ┆ --- ┆ ---  │
+    #   # │ i64 ┆ i64 ┆ str  │
+    #   # ╞═════╪═════╪══════╡
+    #   # │ 1   ┆ 6   ┆ a    │
+    #   # │ 3   ┆ 8   ┆ null │
+    #   # └─────┴─────┴──────┘
     def drop_nulls(subset: nil)
       lazy.drop_nulls(subset: subset).collect(_eager: true)
     end
