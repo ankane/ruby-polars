@@ -1863,7 +1863,7 @@ module Polars
     #     {
     #       "foo" => [1, 2, 3],
     #       "bar" => [6, nil, 8],
-    #       "ham" => ["a", "b", nil],
+    #       "ham" => ["a", "b", nil]
     #     }
     #   )
     #   df.drop_nulls
@@ -1876,6 +1876,7 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ 1   ┆ 6   ┆ a   │
     #   # └─────┴─────┴─────┘
+    #
     # @example
     #   df.drop_nulls(subset: Polars.cs.integer)
     #   # =>

@@ -3320,9 +3320,9 @@ module Polars
     # @example
     #   lf = Polars::LazyFrame.new(
     #     {
-    #       "foo": [1, 2, 3],
-    #       "bar": [6, nil, 8],
-    #       "ham": ["a", "b", nil],
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, nil, 8],
+    #       "ham" => ["a", "b", nil]
     #     }
     #   )
     #   lf.drop_nulls.collect
@@ -3335,6 +3335,7 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ 1   ┆ 6   ┆ a   │
     #   # └─────┴─────┴─────┘
+    #
     # @example
     #   lf.drop_nulls(subset: Polars.cs.integer).collect
     #   # =>
