@@ -80,11 +80,11 @@ module Polars
       options
     end
 
-    # Show the current state of all Config variables as a dict.
+    # Show the current state of all Config variables as a hash.
     #
     # @param if_set [Boolean]
     #   by default this will show the state of all `Config` environment variables.
-    #   change this to `true` to restrict the returned dictionary to include only
+    #   change this to `true` to restrict the returned hash to include only
     #   those that have been set to a specific value.
     # @param env_only [Boolean]
     #   include only Config environment variables in the output; some options (such

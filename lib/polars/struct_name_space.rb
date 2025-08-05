@@ -80,7 +80,7 @@ module Polars
       super
     end
 
-    # Get the struct definition as a name/dtype schema dict.
+    # Get the struct definition as a name/dtype schema hash.
     #
     # @return [Object]
     #

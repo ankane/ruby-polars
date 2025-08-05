@@ -287,7 +287,7 @@ module Polars
     #   # │ b"hello" ┆ world ┆ b"!"   ┆ :)  │
     #   # └──────────┴───────┴────────┴─────┘
     #
-    # @example Select binary columns and export as a dict:
+    # @example Select binary columns and export as a hash:
     #   df.select(Polars.cs.binary).to_h(as_series: false)
     #   # => {"a"=>["hello"], "c"=>["!"]}
     #

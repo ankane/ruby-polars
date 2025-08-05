@@ -17,7 +17,7 @@ module Polars
     #
     #   * As a hash of name:type pairs; if type is nil, it will be auto-inferred.
     #   * As an array of column names; in this case types are automatically inferred.
-    #   * As an array of (name,type) pairs; this is equivalent to the dictionary form.
+    #   * As an array of (name,type) pairs; this is equivalent to the hash form.
     #
     #   If you supply a list of column names that does not match the names in the
     #   underlying data, the names given here will overwrite them. The number
@@ -560,7 +560,7 @@ module Polars
       end
     end
 
-    # Convert every row to a dictionary.
+    # Convert every row to a hash.
     #
     # Note that this is slow.
     #
@@ -3749,8 +3749,8 @@ module Polars
     # @param include_key [Boolean]
     #   Include the columns used to partition the DataFrame in the output.
     # @param as_dict [Boolean]
-    #   If true, return the partitions in a dictionary keyed by the distinct group
-    #   values instead of a list.
+    #   If true, return the partitions in a hash keyed by the distinct group
+    #   values instead of an array.
     #
     # @return [Object]
     #

@@ -45,7 +45,7 @@ module Polars
       )
     end
 
-    # Construct a DataFrame from a sequence of dictionaries. This operation clones data.
+    # Construct a DataFrame from an array of hashes. This operation clones data.
     #
     # @param hashes [Array]
     #   Array with hashes mapping column name to value.
