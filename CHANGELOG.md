@@ -1,5 +1,6 @@
 ## 0.21.1 (unreleased)
 
+- Added `drop_nans` method to `DataFrame` and `LazyFrame`
 - Fixed `subset` option for `drop_nulls` method
 
 ## 0.21.0 (2025-08-03)
