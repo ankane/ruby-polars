@@ -1848,6 +1848,51 @@ module Polars
       _from_rbdf(_df.tail(n))
     end
 
+    # Drop all rows that contain one or more NaN values.
+    #
+    # The original order of the remaining rows is preserved.
+    #
+    # @param subset [Object]
+    #   Column name(s) for which NaN values are considered; if set to `nil`
+    #   (default), use all columns (note that only floating-point columns
+    #   can contain NaNs).
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [-20.5, Float::NAN, 80.0],
+    #       "bar" => [Float::NAN, 110.0, 25.5],
+    #       "ham" => ["xxx", "yyy", nil],
+    #     }
+    #   )
+    #   df.drop_nans
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ f64  ┆ f64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ 80.0 ┆ 25.5 ┆ null │
+    #   # └──────┴──────┴──────┘
+    # @example
+    #   df.drop_nans(subset: ["bar"])
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────┬───────┬──────┐
+    #   # │ foo  ┆ bar   ┆ ham  │
+    #   # │ ---  ┆ ---   ┆ ---  │
+    #   # │ f64  ┆ f64   ┆ str  │
+    #   # ╞══════╪═══════╪══════╡
+    #   # │ NaN  ┆ 110.0 ┆ yyy  │
+    #   # │ 80.0 ┆ 25.5  ┆ null │
+    #   # └──────┴───────┴──────┘
+    def drop_nans(subset: nil)
+      lazy.drop_nans(subset: subset).collect(_eager: true)
+    end
+
     # Drop all rows that contain one or more null values.
     #
     # The original order of the remaining rows is preserved.

@@ -781,6 +781,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("explode", method!(RbLazyFrame::explode, 1))?;
     class.define_method("null_count", method!(RbLazyFrame::null_count, 0))?;
     class.define_method("unique", method!(RbLazyFrame::unique, 3))?;
+    class.define_method("drop_nans", method!(RbLazyFrame::drop_nans, 1))?;
     class.define_method("drop_nulls", method!(RbLazyFrame::drop_nulls, 1))?;
     class.define_method("slice", method!(RbLazyFrame::slice, 2))?;
     class.define_method("tail", method!(RbLazyFrame::tail, 1))?;

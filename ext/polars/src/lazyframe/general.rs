@@ -816,6 +816,14 @@ impl RbLazyFrame {
         .into())
     }
 
+    pub fn drop_nans(&self, subset: Option<&RbSelector>) -> Self {
+        self.ldf
+            .borrow()
+            .clone()
+            .drop_nans(subset.map(|e| e.inner.clone()))
+            .into()
+    }
+
     pub fn drop_nulls(&self, subset: Option<&RbSelector>) -> Self {
         self.ldf
             .borrow()
