@@ -1848,37 +1848,52 @@ module Polars
       _from_rbdf(_df.tail(n))
     end
 
-    # Return a new DataFrame where the NaN values are dropped.
+    # Drop all rows that contain one or more NaN values.
+    #
+    # The original order of the remaining rows is preserved.
     #
     # @param subset [Object]
-    #   Subset of column(s) on which `drop_nans` will be applied.
+    #   Column name(s) for which NaN values are considered; if set to `nil`
+    #   (default), use all columns (note that only floating-point columns
+    #   can contain NaNs).
     #
     # @return [DataFrame]
     #
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "foo" => [1, 2, 3],
-    #       "bar" => [6, Float::NAN, 8],
-    #       "ham" => ["a", "b", "c"]
+    #       "foo" => [-20.5, Float::NAN, 80.0],
+    #       "bar" => [Float::NAN, 110.0, 25.5],
+    #       "ham" => ["xxx", "yyy", nil],
     #     }
     #   )
     #   df.drop_nans
     #   # =>
+    #   # shape: (1, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ f64  ┆ f64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ 80.0 ┆ 25.5 ┆ null │
+    #   # └──────┴──────┴──────┘
+    # @example
+    #   df.drop_nans(subset: ["bar"])
+    #   # =>
     #   # shape: (2, 3)
-    #   # ┌─────┬─────┬─────┐
-    #   # │ foo ┆ bar ┆ ham │
-    #   # │ --- ┆ --- ┆ --- │
-    #   # │ i64 ┆ f64 ┆ str │
-    #   # ╞═════╪═════╪═════╡
-    #   # │ 1   ┆ 6.0 ┆ a   │
-    #   # │ 3   ┆ 8.0 ┆ c   │
-    #   # └─────┴─────┴─────┘
+    #   # ┌──────┬───────┬──────┐
+    #   # │ foo  ┆ bar   ┆ ham  │
+    #   # │ ---  ┆ ---   ┆ ---  │
+    #   # │ f64  ┆ f64   ┆ str  │
+    #   # ╞══════╪═══════╪══════╡
+    #   # │ NaN  ┆ 110.0 ┆ yyy  │
+    #   # │ 80.0 ┆ 25.5  ┆ null │
+    #   # └──────┴───────┴──────┘
     def drop_nans(subset: nil)
       lazy.drop_nans(subset: subset).collect(_eager: true)
     end
 
-    # Return a new DataFrame where the null values are dropped.
+    # Drop all rows that contain one or more null values.
     #
     # The original order of the remaining rows is preserved.
     #
