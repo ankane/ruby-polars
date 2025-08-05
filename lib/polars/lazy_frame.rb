@@ -3323,7 +3323,7 @@ module Polars
     #     {
     #       "foo" => [-20.5, Float::NAN, 80.0],
     #       "bar" => [Float::NAN, 110.0, 25.5],
-    #       "ham" => ["xxx", "yyy", nil],
+    #       "ham" => ["xxx", "yyy", nil]
     #     }
     #   )
     #   lf.drop_nans.collect
@@ -3336,6 +3336,7 @@ module Polars
     #   # ╞══════╪══════╪══════╡
     #   # │ 80.0 ┆ 25.5 ┆ null │
     #   # └──────┴──────┴──────┘
+    #
     # @example
     #   lf.drop_nans(subset: ["bar"]).collect
     #   # =>
