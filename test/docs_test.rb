@@ -97,6 +97,10 @@ class DocsTest < Minitest::Test
     assert_docs Polars::Schema
   end
 
+  def test_selector
+    assert_docs Polars::Selector
+  end
+
   def test_selectors
     assert_docs Polars::Selectors
   end

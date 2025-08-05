@@ -134,6 +134,7 @@ module Polars
     def !
       is_not
     end
+    alias_method :~, :!
 
     # Performs negation.
     #
