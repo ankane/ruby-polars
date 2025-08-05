@@ -7268,6 +7268,156 @@ module Polars
       )
     end
 
+    # Evaluate the number of set bits.
+    #
+    # @return [Expr]
+    def bitwise_count_ones
+      wrap_expr(_rbexpr.bitwise_count_ones)
+    end
+
+    # Evaluate the number of unset bits.
+    #
+    # @return [Expr]
+    def bitwise_count_zeros
+      wrap_expr(_rbexpr.bitwise_count_zeros)
+    end
+
+    # Evaluate the number most-significant set bits before seeing an unset bit.
+    #
+    # @return [Expr]
+    def bitwise_leading_ones
+      wrap_expr(_rbexpr.bitwise_leading_ones)
+    end
+
+    # Evaluate the number most-significant unset bits before seeing a set bit.
+    #
+    # @return [Expr]
+    def bitwise_leading_zeros
+      wrap_expr(_rbexpr.bitwise_leading_zeros)
+    end
+
+    # Evaluate the number least-significant set bits before seeing an unset bit.
+    #
+    # @return [Expr]
+    def bitwise_trailing_ones
+      wrap_expr(_rbexpr.bitwise_trailing_ones)
+    end
+
+    # Evaluate the number least-significant unset bits before seeing a set bit.
+    #
+    # @return [Expr]
+    def bitwise_trailing_zeros
+      wrap_expr(_rbexpr.bitwise_trailing_zeros)
+    end
+
+    # Perform an aggregation of bitwise ANDs.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"n" => [-1, 0, 1]})
+    #   df.select(Polars.col("n").bitwise_and)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ n   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 0   │
+    #   # └─────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"grouper" => ["a", "a", "a", "b", "b"], "n" => [-1, 0, 1, -1, 1]}
+    #   )
+    #   df.group_by("grouper", maintain_order: true).agg(Polars.col("n").bitwise_and)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────────┬─────┐
+    #   # │ grouper ┆ n   │
+    #   # │ ---     ┆ --- │
+    #   # │ str     ┆ i64 │
+    #   # ╞═════════╪═════╡
+    #   # │ a       ┆ 0   │
+    #   # │ b       ┆ 1   │
+    #   # └─────────┴─────┘
+    def bitwise_and
+      wrap_expr(_rbexpr.bitwise_and)
+    end
+
+    # Perform an aggregation of bitwise ORs.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"n" => [-1, 0, 1]})
+    #   df.select(Polars.col("n").bitwise_or)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ n   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ -1  │
+    #   # └─────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"grouper" => ["a", "a", "a", "b", "b"], "n" => [-1, 0, 1, -1, 1]}
+    #   )
+    #   df.group_by("grouper", maintain_order: true).agg(Polars.col("n").bitwise_or)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────────┬─────┐
+    #   # │ grouper ┆ n   │
+    #   # │ ---     ┆ --- │
+    #   # │ str     ┆ i64 │
+    #   # ╞═════════╪═════╡
+    #   # │ a       ┆ -1  │
+    #   # │ b       ┆ -1  │
+    #   # └─────────┴─────┘
+    def bitwise_or
+      wrap_expr(_rbexpr.bitwise_or)
+    end
+
+    # Perform an aggregation of bitwise XORs.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"n" => [-1, 0, 1]})
+    #   df.select(Polars.col("n").bitwise_xor)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ n   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ -2  │
+    #   # └─────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"grouper" => ["a", "a", "a", "b", "b"], "n" => [-1, 0, 1, -1, 1]}
+    #   )
+    #   df.group_by("grouper", maintain_order: true).agg(Polars.col("n").bitwise_xor)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────────┬─────┐
+    #   # │ grouper ┆ n   │
+    #   # │ ---     ┆ --- │
+    #   # │ str     ┆ i64 │
+    #   # ╞═════════╪═════╡
+    #   # │ a       ┆ -2  │
+    #   # │ b       ┆ -2  │
+    #   # └─────────┴─────┘
+    def bitwise_xor
+      wrap_expr(_rbexpr.bitwise_xor)
+    end
+
     # Create an object namespace of all list related methods.
     #
     # @return [ListExpr]
@@ -7336,6 +7486,7 @@ module Polars
     def _from_rbexpr(expr)
       Utils.wrap_expr(expr)
     end
+    alias_method :wrap_expr, :_from_rbexpr
 
     def _to_rbexpr(other)
       _to_expr(other)._rbexpr

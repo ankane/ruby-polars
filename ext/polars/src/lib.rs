@@ -526,6 +526,32 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("into_selector", method!(RbExpr::into_selector, 0))?;
     class.define_singleton_method("new_selector", function!(RbExpr::new_selector, 1))?;
 
+    // bitwise
+    class.define_method("bitwise_count_ones", method!(RbExpr::bitwise_count_ones, 0))?;
+    class.define_method(
+        "bitwise_count_zeros",
+        method!(RbExpr::bitwise_count_zeros, 0),
+    )?;
+    class.define_method(
+        "bitwise_leading_ones",
+        method!(RbExpr::bitwise_leading_ones, 0),
+    )?;
+    class.define_method(
+        "bitwise_leading_zeros",
+        method!(RbExpr::bitwise_leading_zeros, 0),
+    )?;
+    class.define_method(
+        "bitwise_trailing_ones",
+        method!(RbExpr::bitwise_trailing_ones, 0),
+    )?;
+    class.define_method(
+        "bitwise_trailing_zeros",
+        method!(RbExpr::bitwise_trailing_zeros, 0),
+    )?;
+    class.define_method("bitwise_and", method!(RbExpr::bitwise_and, 0))?;
+    class.define_method("bitwise_or", method!(RbExpr::bitwise_or, 0))?;
+    class.define_method("bitwise_xor", method!(RbExpr::bitwise_xor, 0))?;
+
     // meta
     class.define_method("meta_pop", method!(RbExpr::meta_pop, 1))?;
     class.define_method("meta_eq", method!(RbExpr::meta_eq, 1))?;

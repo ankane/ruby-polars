@@ -42,6 +42,7 @@ features = [
     "aws",
     "azure",
     "binary_encoding",
+    "bitwise",
     "business",
     "cloud",
     "concat_str",
