@@ -1100,8 +1100,8 @@ module Polars
 
     # Bin continuous values into discrete categories based on their quantiles.
     #
-    # @param quantiles [Array]
-    #   Either a list of quantile probabilities between 0 and 1 or a positive
+    # @param quantiles [Object]
+    #   Either an array of quantile probabilities between 0 and 1 or a positive
     #   integer determining the number of bins with uniform probability.
     # @param labels [Array]
     #   Names of the categories. The number of labels must be equal to the number
