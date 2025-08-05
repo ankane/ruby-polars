@@ -317,6 +317,7 @@ module Polars
       raise Todo
     end
 
+    # @private
     def self._from_rb_categories(rb_categories)
       slf = new
       slf._categories = rb_categories
