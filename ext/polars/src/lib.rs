@@ -520,6 +520,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("struct_json_encode", method!(RbExpr::struct_json_encode, 0))?;
     class.define_method("log", method!(RbExpr::log, 1))?;
+    class.define_method("log1p", method!(RbExpr::log1p, 0))?;
     class.define_method("exp", method!(RbExpr::exp, 0))?;
     class.define_method("entropy", method!(RbExpr::entropy, 2))?;
     class.define_method("_hash", method!(RbExpr::hash, 4))?;

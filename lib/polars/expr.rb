@@ -6900,6 +6900,30 @@ module Polars
       _from_rbexpr(_rbexpr.log(base))
     end
 
+    # Compute the natural logarithm of each element plus one.
+    #
+    # This computes `log(1 + x)` but is more numerically stable for `x` close to zero.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    #   df.select(Polars.col("a").log1p)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 0.693147 │
+    #   # │ 1.098612 │
+    #   # │ 1.386294 │
+    #   # └──────────┘
+    def log1p
+      wrap_expr(_rbexpr.log1p)
+    end
+
     # Computes the entropy.
     #
     # Uses the formula `-sum(pk * log(pk)` where `pk` are discrete probabilities.
