@@ -325,6 +325,30 @@ impl RbLazyFrame {
             .into())
     }
 
+    pub fn top_k(&self, k: IdxSize, by: RArray, reverse: Vec<bool>) -> RbResult<Self> {
+        let ldf = self.ldf.borrow().clone();
+        let exprs = rb_exprs_to_exprs(by)?;
+        Ok(ldf
+            .top_k(
+                k,
+                exprs,
+                SortMultipleOptions::new().with_order_descending_multi(reverse),
+            )
+            .into())
+    }
+
+    pub fn bottom_k(&self, k: IdxSize, by: RArray, reverse: Vec<bool>) -> RbResult<Self> {
+        let ldf = self.ldf.borrow().clone();
+        let exprs = rb_exprs_to_exprs(by)?;
+        Ok(ldf
+            .bottom_k(
+                k,
+                exprs,
+                SortMultipleOptions::new().with_order_descending_multi(reverse),
+            )
+            .into())
+    }
+
     pub fn cache(&self) -> Self {
         let ldf = self.ldf.borrow().clone();
         ldf.cache().into()

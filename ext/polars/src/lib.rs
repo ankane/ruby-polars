@@ -781,6 +781,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("sort", method!(RbLazyFrame::sort, 5))?;
     class.define_method("sort_by_exprs", method!(RbLazyFrame::sort_by_exprs, 5))?;
+    class.define_method("top_k", method!(RbLazyFrame::top_k, 3))?;
+    class.define_method("bottom_k", method!(RbLazyFrame::bottom_k, 3))?;
     class.define_method("cache", method!(RbLazyFrame::cache, 0))?;
     class.define_method("collect", method!(RbLazyFrame::collect, 0))?;
     class.define_method("sink_parquet", method!(RbLazyFrame::sink_parquet, 9))?;
