@@ -1727,29 +1727,6 @@ module Polars
     end
     alias_method :cumprod, :cum_prod
 
-    # Get the first `n` rows.
-    #
-    # Alias for {#head}.
-    #
-    # @param n [Integer]
-    #   Number of rows to return.
-    #
-    # @return [Series]
-    #
-    # @example
-    #   s = Polars::Series.new("a", [1, 2, 3])
-    #   s.limit(2)
-    #   # =>
-    #   # shape: (2,)
-    #   # Series: 'a' [i64]
-    #   # [
-    #   #         1
-    #   #         2
-    #   # ]
-    def limit(n = 10)
-      to_frame.select(F.col(name).limit(n)).to_series
-    end
-
     # Get a slice of this Series.
     #
     # @param offset [Integer]
@@ -1903,13 +1880,41 @@ module Polars
       to_frame.select(F.col(name).tail(n)).to_series
     end
 
+    # Get the first `n` rows.
+    #
+    # Alias for {#head}.
+    #
+    # @param n [Integer]
+    #   Number of rows to return.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.limit(2)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   # ]
+    def limit(n = 10)
+      to_frame.select(F.col(name).limit(n)).to_series
+    end
+
     # Take every nth value in the Series and return as new Series.
+    #
+    # @param n [Integer]
+    #   Gather every *n*-th row.
+    # @param offset [Integer]
+    #   Start the row index at this offset.
     #
     # @return [Series]
     #
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3, 4])
-    #   s.take_every(2)
+    #   s.gather_every(2)
     #   # =>
     #   # shape: (2,)
     #   # Series: 'a' [i64]
@@ -1917,9 +1922,20 @@ module Polars
     #   #         1
     #   #         3
     #   # ]
-    def take_every(n)
+    #
+    # @example
+    #   s.gather_every(2, 1)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         2
+    #   #         4
+    #   # ]
+    def gather_every(n, offset = 0)
       super
     end
+    alias_method :take_every, :gather_every
 
     # Sort this Series.
     #
