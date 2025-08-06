@@ -2767,6 +2767,29 @@ module Polars
     end
     alias_method :set_at_idx, :scatter
 
+    # Get the index of the first occurrence of a value, or `nil` if it's not found.
+    #
+    # @param element [Object]
+    #   Value to find.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, nil, 17])
+    #   s.index_of(17)
+    #   # => 2
+    #
+    # @example
+    #   s.index_of(nil) # search for a null
+    #   # => 1
+    #
+    # @example
+    #   s.index_of(55).nil?
+    #   # => true
+    def index_of(element)
+      F.select(F.lit(self).index_of(element)).item
+    end
+
     # Create an empty copy of the current Series.
     #
     # The copy has identical name/dtype but no data.
