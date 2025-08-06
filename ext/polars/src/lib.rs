@@ -28,6 +28,7 @@ use dataframe::RbDataFrame;
 use error::RbPolarsErr;
 use exceptions::{RbTypeError, RbValueError};
 use expr::RbExpr;
+use expr::datatype::RbDataTypeExpr;
 use expr::rb_exprs_to_exprs;
 use expr::selector::RbSelector;
 use functions::string_cache::RbStringCacheHolder;
@@ -365,6 +366,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "binary_base64_decode",
         method!(RbExpr::bin_base64_decode, 1),
     )?;
+    class.define_method("bin_reinterpret", method!(RbExpr::bin_reinterpret, 2))?;
+    class.define_method("bin_size_bytes", method!(RbExpr::bin_size_bytes, 0))?;
     class.define_method(
         "str_json_path_match",
         method!(RbExpr::str_json_path_match, 1),
@@ -1217,7 +1220,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
 
     // data type expr
-    let _class = module.define_class("RbDataTypeExpr", ruby.class_object())?;
+    let class = module.define_class("RbDataTypeExpr", ruby.class_object())?;
+    class.define_singleton_method("from_dtype", function!(RbDataTypeExpr::from_dtype, 1))?;
+    class.define_singleton_method("of_expr", function!(RbDataTypeExpr::of_expr, 1))?;
+    class.define_method("collect_dtype", method!(RbDataTypeExpr::collect_dtype, 1))?;
 
     // selector
     let class = module.define_class("RbSelector", ruby.class_object())?;

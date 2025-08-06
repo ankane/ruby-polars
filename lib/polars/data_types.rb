@@ -99,7 +99,18 @@ module Polars
       self < NestedType
     end
 
-    [:numeric?, :decimal?, :integer?, :signed_integer?, :unsigned_integer?, :float?, :temporal?, :nested?].each do |v|
+    # Return a `DataTypeExpr` with a static `DataType`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   Polars::Int16.new.to_dtype_expr.collect_dtype({})
+    #   # => Polars::Int16
+    def self.to_dtype_expr
+      DataTypeExpr._from_rbdatatype_expr(RbDataTypeExpr.from_dtype(self))
+    end
+
+    [:numeric?, :decimal?, :integer?, :signed_integer?, :unsigned_integer?, :float?, :temporal?, :nested?, :to_dtype_expr].each do |v|
       define_method(v) do
         self.class.public_send(v)
       end

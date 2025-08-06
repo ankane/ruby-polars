@@ -163,7 +163,11 @@ module Polars
     end
 
     def self.parse_into_datatype_expr(input)
-      raise Todo
+      if input.is_a?(DataTypeExpr)
+        input
+      else
+        parse_into_dtype(input).to_dtype_expr
+      end
     end
   end
 end

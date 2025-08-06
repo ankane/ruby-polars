@@ -5,6 +5,7 @@
 - Added more methods to `DataFrame`
 - Added more methods to `Series`
 - Added more methods to `ArrayExpr`
+- Added more methods to `BinaryExpr`
 - Fixed `subset` option for `drop_nulls` method
 
 ## 0.21.0 (2025-08-03)

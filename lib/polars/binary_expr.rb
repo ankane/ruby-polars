@@ -197,5 +197,72 @@ module Polars
         raise ArgumentError, "encoding must be one of {{'hex', 'base64'}}, got #{encoding}"
       end
     end
+
+    # Get the size of binary values in the given unit.
+    #
+    # @param unit ['b', 'kb', 'mb', 'gb', 'tb']
+    #   Scale the returned size to the given unit.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"data" => [512, 256, 1024].map { |n| "\x00".b * n }})
+    #   df.with_columns(
+    #     n_bytes: Polars.col("data").bin.size,
+    #     n_kilobytes: Polars.col("data").bin.size("kb")
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────────────────────────────────┬─────────┬─────────────┐
+    #   # │ data                            ┆ n_bytes ┆ n_kilobytes │
+    #   # │ ---                             ┆ ---     ┆ ---         │
+    #   # │ binary                          ┆ u32     ┆ f64         │
+    #   # ╞═════════════════════════════════╪═════════╪═════════════╡
+    #   # │ b"\x00\x00\x00\x00\x00\x00\x00… ┆ 512     ┆ 0.5         │
+    #   # │ b"\x00\x00\x00\x00\x00\x00\x00… ┆ 256     ┆ 0.25        │
+    #   # │ b"\x00\x00\x00\x00\x00\x00\x00… ┆ 1024    ┆ 1.0         │
+    #   # └─────────────────────────────────┴─────────┴─────────────┘
+    def size(unit = "b")
+      sz = Utils.wrap_expr(_rbexpr.bin_size_bytes)
+      sz = Utils.scale_bytes(sz, to: unit)
+      sz
+    end
+
+    # Interpret a buffer as a numerical Polars type.
+    #
+    # @param dtype [Object]
+    #   Which type to interpret binary column into.
+    # @param endianness : ["big", "little"]
+    #   Which endianness to use when interpreting bytes, by default "little".
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"data" => ["\x05\x00\x00\x00".b, "\x10\x00\x01\x00".b]})
+    #   df.with_columns(
+    #     bin2int: Polars.col("data").bin.reinterpret(
+    #      dtype: Polars::Int32, endianness: "little"
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────────────────────┬─────────┐
+    #   # │ data                ┆ bin2int │
+    #   # │ ---                 ┆ ---     │
+    #   # │ binary              ┆ i32     │
+    #   # ╞═════════════════════╪═════════╡
+    #   # │ b"\x05\x00\x00\x00" ┆ 5       │
+    #   # │ b"\x10\x00\x01\x00" ┆ 65552   │
+    #   # └─────────────────────┴─────────┘
+    def reinterpret(
+      dtype:,
+      endianness: "little"
+    )
+      dtype = Utils.parse_into_datatype_expr(dtype)
+
+      Utils.wrap_expr(
+        _rbexpr.bin_reinterpret(dtype._rbdatatype_expr, endianness)
+      )
+    end
   end
 end

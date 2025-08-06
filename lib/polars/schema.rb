@@ -78,19 +78,28 @@ module Polars
     end
     alias_method :inspect, :to_s
 
+    # @private
+    def to_h
+      @schema.to_h
+    end
+
     private
 
     def _check_dtype(tp)
       if !tp.is_a?(DataType)
-        raise Todo
         # note: if nested/decimal, or has signature params, this implies required args
-        if tp.is_nested || tp.is_decimal || _required_init_args(tp)
+        if tp.nested? || tp.decimal? || _required_init_args(tp)
           msg = "dtypes must be fully-specified, got: #{tp.inspect}"
           raise TypeError, msg
         end
         tp = tp.new
       end
       tp
+    end
+
+    def _required_init_args(tp)
+      arity = tp.method(:new).arity
+      arity > 0 || arity < -1
     end
   end
 end
