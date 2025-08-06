@@ -267,6 +267,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arcsinh", method!(RbExpr::arcsinh, 0))?;
     class.define_method("arccosh", method!(RbExpr::arccosh, 0))?;
     class.define_method("arctanh", method!(RbExpr::arctanh, 0))?;
+    class.define_method("degrees", method!(RbExpr::degrees, 0))?;
+    class.define_method("radians", method!(RbExpr::radians, 0))?;
     class.define_method("sign", method!(RbExpr::sign, 0))?;
     class.define_method("is_duplicated", method!(RbExpr::is_duplicated, 0))?;
     class.define_method("over", method!(RbExpr::over, 1))?;

@@ -6410,6 +6410,62 @@ module Polars
       _from_rbexpr(_rbexpr.arctanh)
     end
 
+    # Convert from radians to degrees.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => (-4...5).map { |x| x * Math::PI }})
+    #   df.select(Polars.col("a").degrees)
+    #   # =>
+    #   # shape: (9, 1)
+    #   # ┌────────┐
+    #   # │ a      │
+    #   # │ ---    │
+    #   # │ f64    │
+    #   # ╞════════╡
+    #   # │ -720.0 │
+    #   # │ -540.0 │
+    #   # │ -360.0 │
+    #   # │ -180.0 │
+    #   # │ 0.0    │
+    #   # │ 180.0  │
+    #   # │ 360.0  │
+    #   # │ 540.0  │
+    #   # │ 720.0  │
+    #   # └────────┘
+    def degrees
+      wrap_expr(_rbexpr.degrees)
+    end
+
+    # Convert from degrees to radians.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [-720, -540, -360, -180, 0, 180, 360, 540, 720]})
+    #   df.select(Polars.col("a").radians)
+    #   # =>
+    #   # shape: (9, 1)
+    #   # ┌────────────┐
+    #   # │ a          │
+    #   # │ ---        │
+    #   # │ f64        │
+    #   # ╞════════════╡
+    #   # │ -12.566371 │
+    #   # │ -9.424778  │
+    #   # │ -6.283185  │
+    #   # │ -3.141593  │
+    #   # │ 0.0        │
+    #   # │ 3.141593   │
+    #   # │ 6.283185   │
+    #   # │ 9.424778   │
+    #   # │ 12.566371  │
+    #   # └────────────┘
+    def radians
+      wrap_expr(_rbexpr.radians)
+    end
+
     # Reshape this Expr to a flat Series or a Series of Lists.
     #
     # @param dims [Array]

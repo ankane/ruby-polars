@@ -553,6 +553,14 @@ impl RbExpr {
         self.inner.clone().arctanh().into()
     }
 
+    pub fn degrees(&self) -> Self {
+        self.inner.clone().degrees().into()
+    }
+
+    pub fn radians(&self) -> Self {
+        self.inner.clone().radians().into()
+    }
+
     pub fn sign(&self) -> Self {
         self.inner.clone().sign().into()
     }
