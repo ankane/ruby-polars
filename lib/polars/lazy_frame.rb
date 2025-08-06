@@ -1214,6 +1214,140 @@ module Polars
       )
     end
 
+    # Remove rows, dropping those that match the given predicate expression(s).
+    #
+    # The original order of the remaining rows is preserved.
+    #
+    # Rows where the filter predicate does not evaluate to true are retained
+    # (this includes rows where the predicate evaluates as `null`).
+    #
+    # @param predicates [Array]
+    #   Expression that evaluates to a boolean Series.
+    # @param constraints [Hash]
+    #   Column filters; use `name = value` to filter columns using the supplied
+    #   value. Each constraint behaves the same as `Polars.col(name).eq(value)`,
+    #   and is implicitly joined with the other filter conditions using `&`.
+    #
+    # @return [LazyFrame]
+    #
+    # @example Remove rows matching a condition:
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "foo" => [2, 3, nil, 4, 0],
+    #       "bar" => [5, 6, nil, nil, 0],
+    #       "ham" => ["a", "b", nil, "c", "d"]
+    #     }
+    #   )
+    #   lf.remove(
+    #     Polars.col("bar") >= 5
+    #   ).collect
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ null ┆ null ┆ null │
+    #   # │ 4    ┆ null ┆ c    │
+    #   # │ 0    ┆ 0    ┆ d    │
+    #   # └──────┴──────┴──────┘
+    #
+    # @example Discard rows based on multiple conditions, combined with and/or operators:
+    #   lf.remove(
+    #     (Polars.col("foo") >= 0) & (Polars.col("bar") >= 0)
+    #   ).collect
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ null ┆ null ┆ null │
+    #   # │ 4    ┆ null ┆ c    │
+    #   # └──────┴──────┴──────┘
+    #
+    # @example
+    #   lf.remove(
+    #     (Polars.col("foo") >= 0) | (Polars.col("bar") >= 0)
+    #   ).collect
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ null ┆ null ┆ null │
+    #   # └──────┴──────┴──────┘
+    #
+    # @example Provide multiple constraints using `*args` syntax:
+    #   lf.remove(
+    #     Polars.col("ham").is_not_null(),
+    #     Polars.col("bar") >= 0
+    #   ).collect
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ null ┆ null ┆ null │
+    #   # │ 4    ┆ null ┆ c    │
+    #   # └──────┴──────┴──────┘
+    #
+    # @example Provide constraints(s) using `**kwargs` syntax:
+    #   lf.remove(foo: 0, bar: 0).collect
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ 2    ┆ 5    ┆ a    │
+    #   # │ 3    ┆ 6    ┆ b    │
+    #   # │ null ┆ null ┆ null │
+    #   # │ 4    ┆ null ┆ c    │
+    #   # └──────┴──────┴──────┘
+    #
+    # @example Remove rows by comparing two columns against each other; in this case, we remove rows where the two columns are not equal (using `ne_missing` to ensure that null values compare equal):
+    #   lf.remove(
+    #     Polars.col("foo").ne_missing(Polars.col("bar"))
+    #   ).collect
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ null ┆ null ┆ null │
+    #   # │ 0    ┆ 0    ┆ d    │
+    #   # └──────┴──────┴──────┘
+    def remove(
+      *predicates,
+      **constraints
+    )
+      if constraints.empty?
+        # early-exit conditions (exclude/include all rows)
+        if predicates.empty? || (predicates.length == 1 && predicates[0].is_a?(TrueClass))
+          return clear
+        end
+        if predicates.length == 1 && predicates[0].is_a?(FalseClass)
+          return dup
+        end
+      end
+
+      _filter(
+        predicates: predicates,
+        constraints: constraints,
+        invert: true
+      )
+    end
+
     # Select columns from this DataFrame.
     #
     # @param exprs [Array]
@@ -3862,6 +3996,65 @@ module Polars
 
     def _from_rbldf(rb_ldf)
       self.class._from_rbldf(rb_ldf)
+    end
+
+    def _filter(
+      predicates:,
+      constraints:,
+      invert: false
+    )
+      all_predicates = []
+      boolean_masks = []
+
+      predicates.each do |p|
+        # quick exit/skip conditions
+        if (p.is_a?(FalseClass) && invert) || (p.is_a?(TrueClass) && !invert)
+          next # ignore; doesn't filter/remove anything
+        end
+        if (p.is_a?(TrueClass) && invert) || (p.is_a?(FalseClass) && !invert)
+          return clear # discard all rows
+        end
+
+        # note: identify masks separately from predicates
+        if Utils.is_bool_sequence(p, include_series: true)
+          boolean_masks << Polars::Series.new(p, dtype: Boolean)
+        elsif (
+          (is_seq = Utils.is_sequence(p)) && p.any? { |x| !x.is_a?(Expr) }) ||
+          (!is_seq && !p.is_a?(Expr) && !(p.is_a?(::String) && collect_schema.include?(p))
+        )
+          err = p.is_a?(Series) ? "Series(…, dtype: #{p.dtype})" : p.inspect
+          msg = "invalid predicate for `filter`: #{err}"
+          raise TypeError, msg
+        else
+          all_predicates.concat(
+            Utils.parse_into_list_of_expressions(p).map { |x| Utils.wrap_expr(x) }
+          )
+        end
+      end
+
+      # unpack equality constraints from kwargs
+      all_predicates.concat(
+        constraints.map { |name, value| F.col(name).eq(value) }
+      )
+      if !(all_predicates.any? || boolean_masks.any?)
+        msg = "at least one predicate or constraint must be provided"
+        raise TypeError, msg
+      end
+
+      # if multiple predicates, combine as 'horizontal' expression
+      combined_predicate = all_predicates ? (all_predicates.length > 1 ? F.all_horizontal(*all_predicates) : all_predicates[0]) : nil
+
+      # apply reduced boolean mask first, if applicable, then predicates
+      if boolean_masks.any?
+        raise Todo
+      end
+
+      if combined_predicate.nil?
+        return _from_rbldf(_ldf)
+      end
+
+      filter_method = invert ? _ldf.method(:remove) : _ldf.method(:filter)
+      _from_rbldf(filter_method.(combined_predicate._rbexpr))
     end
   end
 end

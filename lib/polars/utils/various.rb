@@ -16,12 +16,19 @@ module Polars
       val.is_a?(::Array) && val.all? { |x| pathlike?(x) }
     end
 
-    def self.is_bool_sequence(val)
+    def self.is_bool_sequence(val, include_series: false)
+      if include_series && val.is_a?(Series)
+        return val.dtype == Boolean
+      end
       val.is_a?(::Array) && val.all? { |x| x == true || x == false }
     end
 
     def self.is_int_sequence(val)
       val.is_a?(::Array) && _is_iterable_of(val, Integer)
+    end
+
+    def self.is_sequence(val, include_series: false)
+      val.is_a?(::Array) || (include_series && val.is_a?(Series))
     end
 
     def self.is_str_sequence(val, allow_str: false)

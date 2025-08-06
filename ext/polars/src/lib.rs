@@ -788,6 +788,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("sink_csv", method!(RbLazyFrame::sink_csv, -1))?;
     class.define_method("sink_json", method!(RbLazyFrame::sink_json, 4))?;
     class.define_method("filter", method!(RbLazyFrame::filter, 1))?;
+    class.define_method("remove", method!(RbLazyFrame::remove, 1))?;
     class.define_method("select", method!(RbLazyFrame::select, 1))?;
     class.define_method("select_seq", method!(RbLazyFrame::select_seq, 1))?;
     class.define_method("group_by", method!(RbLazyFrame::group_by, 2))?;

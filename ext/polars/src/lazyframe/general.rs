@@ -509,6 +509,11 @@ impl RbLazyFrame {
         ldf.filter(predicate.inner.clone()).into()
     }
 
+    pub fn remove(&self, predicate: &RbExpr) -> Self {
+        let ldf = self.ldf.borrow().clone();
+        ldf.remove(predicate.inner.clone()).into()
+    }
+
     pub fn select(&self, exprs: RArray) -> RbResult<Self> {
         let ldf = self.ldf.borrow().clone();
         let exprs = rb_exprs_to_exprs(exprs)?;
