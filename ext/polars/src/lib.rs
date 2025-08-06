@@ -948,7 +948,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("gt_eq", method!(RbSeries::gt_eq, 1))?;
     class.define_method("lt", method!(RbSeries::lt, 1))?;
     class.define_method("lt_eq", method!(RbSeries::lt_eq, 1))?;
-    class.define_method("not", method!(RbSeries::not, 0))?;
+    class.define_method("not_", method!(RbSeries::not_, 0))?;
     class.define_method("to_s", method!(RbSeries::to_s, 0))?;
     class.define_method("len", method!(RbSeries::len, 0))?;
     class.define_method("to_a", method!(RbSeries::to_a, 0))?;

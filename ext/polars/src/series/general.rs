@@ -281,7 +281,7 @@ impl RbSeries {
         }
     }
 
-    pub fn not(&self) -> RbResult<Self> {
+    pub fn not_(&self) -> RbResult<Self> {
         let binding = self.series.borrow();
         let bool = binding.bool().map_err(RbPolarsErr::from)?;
         Ok((!bool).into_series().into())

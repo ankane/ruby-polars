@@ -407,7 +407,7 @@ module Polars
     # @return [Series]
     def !
       if dtype == Boolean
-        return Utils.wrap_s(_s.not)
+        return Utils.wrap_s(_s.not_)
       end
       raise NotImplementedError
     end
@@ -2264,6 +2264,25 @@ module Polars
       _s.is_sorted(descending, nulls_last)
     end
     alias_method :sorted?, :is_sorted
+
+    # Negate a boolean Series.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [true, false, false])
+    #   s.not_
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         false
+    #   #         true
+    #   #         true
+    #   # ]
+    def not_
+      self.class._from_rbseries(_s.not_)
+    end
 
     # Returns a boolean Series indicating which values are null.
     #
