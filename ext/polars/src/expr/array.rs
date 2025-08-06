@@ -19,6 +19,22 @@ impl RbExpr {
         self.inner.clone().arr().sum().into()
     }
 
+    pub fn arr_std(&self, ddof: u8) -> Self {
+        self.inner.clone().arr().std(ddof).into()
+    }
+
+    pub fn arr_var(&self, ddof: u8) -> Self {
+        self.inner.clone().arr().var(ddof).into()
+    }
+
+    pub fn arr_mean(&self) -> Self {
+        self.inner.clone().arr().mean().into()
+    }
+
+    pub fn arr_median(&self) -> Self {
+        self.inner.clone().arr().median().into()
+    }
+
     pub fn arr_unique(&self, maintain_order: bool) -> Self {
         if maintain_order {
             self.inner.clone().arr().unique_stable().into()

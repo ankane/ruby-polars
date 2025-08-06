@@ -256,6 +256,102 @@ module Polars
       Utils.wrap_expr(_rbexpr.arr_sum)
     end
 
+    # Compute the std of the values of the sub-arrays.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [[1, 2], [4, 3]]},
+    #     schema: {"a" => Polars::Array.new(2, Polars::Int64)}
+    #   )
+    #   df.select(Polars.col("a").arr.std)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 0.707107 │
+    #   # │ 0.707107 │
+    #   # └──────────┘
+    def std(ddof: 1)
+      Utils.wrap_expr(_rbexpr.arr_std(ddof))
+    end
+
+    # Compute the var of the values of the sub-arrays.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [[1, 2], [4, 3]]},
+    #     schema: {"a" => Polars::Array.new(2, Polars::Int64)}
+    #   )
+    #   df.select(Polars.col("a").arr.var)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 0.5 │
+    #   # │ 0.5 │
+    #   # └─────┘
+    def var(ddof: 1)
+      Utils.wrap_expr(_rbexpr.arr_var(ddof))
+    end
+
+    # Compute the mean of the values of the sub-arrays.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [[1, 2, 3], [1, 1, 16]]},
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 3)}
+    #   )
+    #   df.select(Polars.col("a").arr.mean)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 2.0 │
+    #   # │ 6.0 │
+    #   # └─────┘
+    def mean
+      Utils.wrap_expr(_rbexpr.arr_mean)
+    end
+
+    # Compute the median of the values of the sub-arrays.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [[1, 2], [4, 3]]},
+    #     schema: {"a" => Polars::Array.new(2, Polars::Int64)}
+    #   )
+    #   df.select(Polars.col("a").arr.median)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ f64 │
+    #   # ╞═════╡
+    #   # │ 1.5 │
+    #   # │ 3.5 │
+    #   # └─────┘
+    def median
+      Utils.wrap_expr(_rbexpr.arr_median)
+    end
+
     # Get the unique/distinct values in the array.
     #
     # @param maintain_order [Boolean]
