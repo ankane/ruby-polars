@@ -2221,6 +2221,32 @@ module Polars
       _from_rbexpr(_rbexpr.null_count)
     end
 
+    # Check whether the expression contains one or more null values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [nil, 1, nil],
+    #       "b" => [10, nil, 300],
+    #       "c" => [350, 650, 850]
+    #     }
+    #   )
+    #   df.select(Polars.all.has_nulls)
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌──────┬──────┬───────┐
+    #   # │ a    ┆ b    ┆ c     │
+    #   # │ ---  ┆ ---  ┆ ---   │
+    #   # │ bool ┆ bool ┆ bool  │
+    #   # ╞══════╪══════╪═══════╡
+    #   # │ true ┆ true ┆ false │
+    #   # └──────┴──────┴───────┘
+    def has_nulls
+      null_count > 0
+    end
+
     # Get index of first unique value.
     #
     # @return [Expr]
