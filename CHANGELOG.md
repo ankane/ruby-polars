@@ -1,8 +1,6 @@
 ## 0.21.1 (unreleased)
 
-- Added bitwise methods to `Expr`
-- Added `degrees` and `radians` methods to `Expr`
-- Added `arg_true`, `cbrt`, `cot`, `has_nulls`, `is_close`, `is_last_distinct`, `index_of`, `log1p`, and `round_sig_figs` methods to `Expr`
+- Added more methods to `Expr`
 - Added `drop_nans` method to `DataFrame` and `LazyFrame`
 - Fixed `subset` option for `drop_nulls` method
 
