@@ -2970,6 +2970,25 @@ module Polars
       super
     end
 
+    # Compute the element-wise value for the cotangent.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [0.0, Math::PI / 2.0, Math::PI])
+    #   s.cot
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         inf
+    #   #         6.1232e-17
+    #   #         -8.1656e15
+    #   # ]
+    def cot
+      super
+    end
+
     # Compute the element-wise value for the inverse sine.
     #
     # @return [Series]
