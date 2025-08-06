@@ -1,8 +1,12 @@
 use polars::prelude::*;
 
-use crate::RbExpr;
+use crate::{RbExpr, RbPolarsErr, RbResult};
 
 impl RbExpr {
+    pub fn arr_len(&self) -> Self {
+        self.inner.clone().arr().len().into()
+    }
+
     pub fn array_max(&self) -> Self {
         self.inner.clone().arr().max().into()
     }
@@ -89,5 +93,42 @@ impl RbExpr {
             .arr()
             .count_matches(expr.inner.clone())
             .into()
+    }
+
+    pub fn arr_slice(
+        &self,
+        offset: &RbExpr,
+        length: Option<&RbExpr>,
+        as_array: bool,
+    ) -> RbResult<Self> {
+        let length = match length {
+            Some(i) => i.inner.clone(),
+            None => lit(i64::MAX),
+        };
+        Ok(self
+            .inner
+            .clone()
+            .arr()
+            .slice(offset.inner.clone(), length, as_array)
+            .map_err(RbPolarsErr::from)?
+            .into())
+    }
+
+    pub fn arr_tail(&self, n: &RbExpr, as_array: bool) -> RbResult<Self> {
+        Ok(self
+            .inner
+            .clone()
+            .arr()
+            .tail(n.inner.clone(), as_array)
+            .map_err(RbPolarsErr::from)?
+            .into())
+    }
+
+    pub fn arr_shift(&self, n: &RbExpr) -> Self {
+        self.inner.clone().arr().shift(n.inner.clone()).into()
+    }
+
+    pub fn arr_explode(&self) -> Self {
+        self.inner.clone().arr().explode().into()
     }
 }

@@ -9,6 +9,181 @@ module Polars
       self._rbexpr = expr._rbexpr
     end
 
+    # Return the number of elements in each array.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [[1, 2], [4, 3]]},
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 2)}
+    #   )
+    #   df.select(Polars.col("a").arr.len)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 2   │
+    #   # │ 2   │
+    #   # └─────┘
+    def len
+      Utils.wrap_expr(_rbexpr.arr_len)
+    end
+
+    # Slice every subarray.
+    #
+    # @param offset [Integer]
+    #   Start index. Negative indexing is supported.
+    # @param length [Integer]
+    #   Length of the slice. If set to `None` (default), the slice is taken to the
+    #   end of the list.
+    # @param as_array [Boolean]
+    #   Return result as a fixed-length `Array`, otherwise as a `List`.
+    #   If true `length` and `offset` must be constant values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [[1, 2], [4, 3]]},
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 2)}
+    #   )
+    #   df.select(Polars.col("a").arr.slice(0, 1))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌───────────┐
+    #   # │ a         │
+    #   # │ ---       │
+    #   # │ list[i64] │
+    #   # ╞═══════════╡
+    #   # │ [1]       │
+    #   # │ [4]       │
+    #   # └───────────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [[1, 2], [4, 3]]},
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 2)}
+    #   )
+    #   df.select(Polars.col("a").arr.slice(0, 1, as_array: true))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌───────────────┐
+    #   # │ a             │
+    #   # │ ---           │
+    #   # │ array[i64, 1] │
+    #   # ╞═══════════════╡
+    #   # │ [1]           │
+    #   # │ [4]           │
+    #   # └───────────────┘
+    def slice(
+      offset,
+      length = nil,
+      as_array: false
+    )
+      offset = Utils.parse_into_expression(offset)
+      length = !length.nil? ? Utils.parse_into_expression(length) : nil
+      Utils.wrap_expr(_rbexpr.arr_slice(offset, length, as_array))
+    end
+
+    # Get the first `n` elements of the sub-arrays.
+    #
+    # @param n [Integer]
+    #   Number of values to return for each sublist.
+    # @param as_array [Boolean]
+    #   Return result as a fixed-length `Array`, otherwise as a `List`.
+    #   If true `n` must be a constant value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [[1, 2], [4, 3]]},
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 2)}
+    #   )
+    #   df.select(Polars.col("a").arr.head(1))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌───────────┐
+    #   # │ a         │
+    #   # │ ---       │
+    #   # │ list[i64] │
+    #   # ╞═══════════╡
+    #   # │ [1]       │
+    #   # │ [4]       │
+    #   # └───────────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [[1, 2], [4, 3]]},
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 2)}
+    #   )
+    #   df.select(Polars.col("a").arr.head(1, as_array: true))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌───────────────┐
+    #   # │ a             │
+    #   # │ ---           │
+    #   # │ array[i64, 1] │
+    #   # ╞═══════════════╡
+    #   # │ [1]           │
+    #   # │ [4]           │
+    #   # └───────────────┘
+    def head(n = 5, as_array: false)
+      slice(0, n, as_array: as_array)
+    end
+
+    # Slice the last `n` values of every sublist.
+    #
+    # @param n [Integer]
+    #   Number of values to return for each sublist.
+    # @param as_array [Boolean]
+    #   Return result as a fixed-length `Array`, otherwise as a `List`.
+    #   If true `n` must be a constant value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [[1, 2], [4, 3]]},
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 2)}
+    #   )
+    #   df.select(Polars.col("a").arr.tail(1))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌───────────┐
+    #   # │ a         │
+    #   # │ ---       │
+    #   # │ list[i64] │
+    #   # ╞═══════════╡
+    #   # │ [2]       │
+    #   # │ [3]       │
+    #   # └───────────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [[1, 2], [4, 3]]},
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 2)}
+    #   )
+    #   df.select(Polars.col("a").arr.tail(1, as_array: true))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌───────────────┐
+    #   # │ a             │
+    #   # │ ---           │
+    #   # │ array[i64, 1] │
+    #   # ╞═══════════════╡
+    #   # │ [2]           │
+    #   # │ [3]           │
+    #   # └───────────────┘
+    def tail(n = 5, as_array: false)
+      n = Utils.parse_into_expression(n)
+      Utils.wrap_expr(_rbexpr.arr_tail(n, as_array))
+    end
+
     # Compute the min values of the sub-arrays.
     #
     # @return [Expr]
