@@ -379,6 +379,21 @@ impl RbSeries {
             .collect()
     }
 
+    pub fn is_sorted(&self, descending: bool, nulls_last: bool) -> RbResult<bool> {
+        let options = SortOptions {
+            descending,
+            nulls_last,
+            multithreaded: true,
+            maintain_order: false,
+            limit: None,
+        };
+        Ok(self
+            .series
+            .borrow()
+            .is_sorted(options)
+            .map_err(RbPolarsErr::from)?)
+    }
+
     pub fn clear(&self) -> Self {
         self.series.borrow().clear().into()
     }

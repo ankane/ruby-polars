@@ -966,6 +966,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("kurtosis", method!(RbSeries::kurtosis, 2))?;
     class.define_method("cast", method!(RbSeries::cast, 2))?;
     class.define_method("get_chunks", method!(RbSeries::get_chunks, 0))?;
+    class.define_method("is_sorted", method!(RbSeries::is_sorted, 2))?;
     class.define_method("clear", method!(RbSeries::clear, 0))?;
     class.define_method("time_unit", method!(RbSeries::time_unit, 0))?;
     class.define_method("scatter", method!(RbSeries::scatter, 2))?;

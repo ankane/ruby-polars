@@ -2242,6 +2242,29 @@ module Polars
     end
     alias_method :empty?, :is_empty
 
+    # Check if the Series is sorted.
+    #
+    # @param descending [Boolean]
+    #   Check if the Series is sorted in descending order
+    # @param nulls_last [Boolean]
+    #   Set nulls at the end of the Series in sorted check.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   s = Polars::Series.new([1, 3, 2])
+    #   s.is_sorted
+    #   # => false
+    #
+    # @example
+    #   s = Polars::Series.new([3, 2, 1])
+    #   s.is_sorted(descending: true)
+    #   # => true
+    def is_sorted(descending: false, nulls_last: false)
+      _s.is_sorted(descending, nulls_last)
+    end
+    alias_method :sorted?, :is_sorted
+
     # Returns a boolean Series indicating which values are null.
     #
     # @return [Series]
@@ -2487,6 +2510,28 @@ module Polars
     end
     alias_method :is_first, :is_first_distinct
 
+
+    # Return a boolean mask indicating the last occurrence of each distinct value.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([1, 1, 2, 3, 2])
+    #   s.is_last_distinct
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: '' [bool]
+    #   # [
+    #   #         false
+    #   #         true
+    #   #         false
+    #   #         true
+    #   #         true
+    #   # ]
+    def is_last_distinct
+      super
+    end
+
     # Get mask of all duplicated values.
     #
     # @return [Series]
@@ -2702,6 +2747,124 @@ module Polars
     #   # ]
     def reverse
       super
+    end
+
+    # Get a boolean mask of the values that are between the given lower/upper bounds.
+    #
+    # @param lower_bound [Object]
+    #   Lower bound value. Accepts expression input. Non-expression inputs
+    #   (including strings) are parsed as literals.
+    # @param upper_bound [Object]
+    #   Upper bound value. Accepts expression input. Non-expression inputs
+    #   (including strings) are parsed as literals.
+    # @param closed ['both', 'left', 'right', 'none']
+    #   Define which sides of the interval are closed (inclusive).
+    #
+    # @return [Series]
+    #
+    # @note
+    #   If the value of the `lower_bound` is greater than that of the `upper_bound`
+    #   then the result will be False, as no value can satisfy the condition.
+    #
+    # @example
+    #   s = Polars::Series.new("num", [1, 2, 3, 4, 5])
+    #   s.is_between(2, 4)
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'num' [bool]
+    #   # [
+    #   #         false
+    #   #         true
+    #   #         true
+    #   #         true
+    #   #         false
+    #   # ]
+    #
+    # @example Use the `closed` argument to include or exclude the values at the bounds:
+    #   s.is_between(2, 4, closed: "left")
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'num' [bool]
+    #   # [
+    #   #         false
+    #   #         true
+    #   #         true
+    #   #         false
+    #   #         false
+    #   # ]
+    #
+    # @example You can also use strings as well as numeric/temporal values:
+    #   s = Polars::Series.new("s", ["a", "b", "c", "d", "e"])
+    #   s.is_between("b", "d", closed: "both")
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 's' [bool]
+    #   # [
+    #   #         false
+    #   #         true
+    #   #         true
+    #   #         true
+    #   #         false
+    #   # ]
+    def is_between(
+      lower_bound,
+      upper_bound,
+      closed: "both"
+    )
+      if closed == "none"
+        out = (self > lower_bound) & (self < upper_bound)
+      elsif closed == "both"
+        out = (self >= lower_bound) & (self <= upper_bound)
+      elsif closed == "right"
+        out = (self > lower_bound) & (self <= upper_bound)
+      elsif closed == "left"
+        out = (self >= lower_bound) & (self < upper_bound)
+      end
+
+      if out.is_a?(Expr)
+        out = F.select(out).to_series
+      end
+
+      out
+    end
+
+    # Get a boolean mask of the values being close to the other values.
+    #
+    # @param abs_tol [Float]
+    #   Absolute tolerance. This is the maximum allowed absolute difference between
+    #   two values. Must be non-negative.
+    # @param rel_tol [Float]
+    #   Relative tolerance. This is the maximum allowed difference between two
+    #   values, relative to the larger absolute value. Must be in the range [0, 1).
+    # @param nans_equal [Boolean]
+    #   Whether NaN values should be considered equal.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("s", [1.0, 1.2, 1.4, 1.45, 1.6])
+    #   s.is_close(1.4, abs_tol: 0.1)
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 's' [bool]
+    #   # [
+    #   #         false
+    #   #         false
+    #   #         true
+    #   #         true
+    #   #         false
+    #   # ]
+    def is_close(
+      other,
+      abs_tol: 0.0,
+      rel_tol: 1e-09,
+      nans_equal: false
+    )
+      F.select(
+        F.lit(self).is_close(
+          other, abs_tol: abs_tol, rel_tol: rel_tol, nans_equal: nans_equal
+        )
+      ).to_series
     end
 
     # Check if this Series datatype is numeric.
