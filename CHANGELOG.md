@@ -8,6 +8,7 @@
 - Added more methods to `BinaryExpr`
 - Added more methods to `CatExpr`
 - Added more methods to `DateTimeExpr`
+- Added more methods to `ListExpr`
 - Fixed `subset` option for `drop_nulls` method
 
 ## 0.21.0 (2025-08-03)

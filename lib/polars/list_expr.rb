@@ -702,7 +702,32 @@ module Polars
       Utils.wrap_expr(_rbexpr.list_tail(n))
     end
 
-    # Count how often the value produced by ``element`` occurs.
+    # Returns a column with a separate row for every list element.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [[1, 2, 3], [4, 5, 6]]})
+    #   df.select(Polars.col("a").list.explode)
+    #   # =>
+    #   # shape: (6, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 2   │
+    #   # │ 3   │
+    #   # │ 4   │
+    #   # │ 5   │
+    #   # │ 6   │
+    #   # └─────┘
+    def explode
+      Utils.wrap_expr(_rbexpr.explode)
+    end
+
+    # Count how often the value produced by `element` occurs.
     #
     # @param element [Expr]
     #   An expression that produces a single value
