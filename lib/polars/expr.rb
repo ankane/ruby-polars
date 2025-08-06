@@ -2518,6 +2518,30 @@ module Polars
     end
     alias_method :is_first, :is_first_distinct
 
+    # Return a boolean mask indicating the last occurrence of each distinct value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 1, 2, 3, 2]})
+    #   df.with_columns(Polars.col("a").is_last_distinct.alias("last"))
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────┬───────┐
+    #   # │ a   ┆ last  │
+    #   # │ --- ┆ ---   │
+    #   # │ i64 ┆ bool  │
+    #   # ╞═════╪═══════╡
+    #   # │ 1   ┆ false │
+    #   # │ 1   ┆ true  │
+    #   # │ 2   ┆ false │
+    #   # │ 3   ┆ true  │
+    #   # │ 2   ┆ true  │
+    #   # └─────┴───────┘
+    def is_last_distinct
+      wrap_expr(_rbexpr.is_last_distinct)
+    end
+
     # Get mask of duplicated values.
     #
     # @return [Expr]
