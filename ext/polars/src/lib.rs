@@ -329,6 +329,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arr_mean", method!(RbExpr::arr_mean, 0))?;
     class.define_method("arr_median", method!(RbExpr::arr_median, 0))?;
     class.define_method("arr_unique", method!(RbExpr::arr_unique, 1))?;
+    class.define_method("arr_n_unique", method!(RbExpr::arr_n_unique, 0))?;
     class.define_method("arr_to_list", method!(RbExpr::arr_to_list, 0))?;
     class.define_method("arr_all", method!(RbExpr::arr_all, 0))?;
     class.define_method("arr_any", method!(RbExpr::arr_any, 0))?;

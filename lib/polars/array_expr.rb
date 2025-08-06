@@ -380,6 +380,32 @@ module Polars
       Utils.wrap_expr(_rbexpr.arr_unique(maintain_order))
     end
 
+    # Count the number of unique values in every sub-arrays.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [[1, 1, 2], [2, 3, 4]],
+    #     },
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 3)}
+    #   )
+    #   df.with_columns(n_unique: Polars.col("a").arr.n_unique)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌───────────────┬──────────┐
+    #   # │ a             ┆ n_unique │
+    #   # │ ---           ┆ ---      │
+    #   # │ array[i64, 3] ┆ u32      │
+    #   # ╞═══════════════╪══════════╡
+    #   # │ [1, 1, 2]     ┆ 2        │
+    #   # │ [2, 3, 4]     ┆ 3        │
+    #   # └───────────────┴──────────┘
+    def n_unique
+      Utils.wrap_expr(_rbexpr.arr_n_unique)
+    end
+
     # Convert an Array column into a List column with the same inner data type.
     #
     # @return [Expr]
