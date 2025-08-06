@@ -341,6 +341,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arr_join", method!(RbExpr::arr_join, 2))?;
     class.define_method("arr_contains", method!(RbExpr::arr_contains, 2))?;
     class.define_method("arr_count_matches", method!(RbExpr::arr_count_matches, 1))?;
+    class.define_method("arr_to_struct", method!(RbExpr::arr_to_struct, 1))?;
     class.define_method("arr_slice", method!(RbExpr::arr_slice, 3))?;
     class.define_method("arr_tail", method!(RbExpr::arr_tail, 2))?;
     class.define_method("arr_shift", method!(RbExpr::arr_shift, 1))?;

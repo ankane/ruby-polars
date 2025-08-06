@@ -1,3 +1,4 @@
+use magnus::Value;
 use polars::prelude::*;
 
 use crate::{RbExpr, RbPolarsErr, RbResult};
@@ -113,6 +114,13 @@ impl RbExpr {
             .arr()
             .count_matches(expr.inner.clone())
             .into()
+    }
+
+    pub fn arr_to_struct(&self, name_gen: Option<Value>) -> Self {
+        if name_gen.is_some() {
+            todo!();
+        }
+        self.inner.clone().arr().to_struct(None).into()
     }
 
     pub fn arr_slice(

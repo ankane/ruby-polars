@@ -832,5 +832,87 @@ module Polars
       element = Utils.parse_into_expression(element, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.arr_count_matches(element))
     end
+
+    # Convert the Series of type `Array` to a Series of type `Struct`.
+    #
+    # @param fields [Object]
+    #   If the name and number of the desired fields is known in advance
+    #   a list of field names can be given, which will be assigned by index.
+    #   Otherwise, to dynamically assign field names, a custom function can be
+    #   used; if neither are set, fields will be `field_0, field_1 .. field_n`.
+    #
+    # @return [Expr]
+    #
+    # @example Convert array to struct with default field name assignment:
+    #   df = Polars::DataFrame.new(
+    #     {"n" => [[0, 1, 2], [3, 4, 5]]}, schema: {"n" => Polars::Array.new(Polars::Int8, 3)}
+    #   )
+    #   df.with_columns(struct: Polars.col("n").arr.to_struct)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌──────────────┬───────────┐
+    #   # │ n            ┆ struct    │
+    #   # │ ---          ┆ ---       │
+    #   # │ array[i8, 3] ┆ struct[3] │
+    #   # ╞══════════════╪═══════════╡
+    #   # │ [0, 1, 2]    ┆ {0,1,2}   │
+    #   # │ [3, 4, 5]    ┆ {3,4,5}   │
+    #   # └──────────────┴───────────┘
+    def to_struct(fields: nil)
+      raise Todo if fields
+      if fields.is_a?(Enumerable)
+        field_names = fields.to_a
+        rbexpr = _rbexpr.arr_to_struct(nil)
+        Utils.wrap_expr(rbexpr).struct.rename_fields(field_names)
+      else
+        rbexpr = _rbexpr.arr_to_struct(fields)
+        Utils.wrap_expr(rbexpr)
+      end
+    end
+
+    # Shift array values by the given number of indices.
+    #
+    # @param n [Integer]
+    #   Number of indices to shift forward. If a negative value is passed, values
+    #   are shifted in the opposite direction instead.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   This method is similar to the `LAG` operation in SQL when the value for `n`
+    #   is positive. With a negative value for `n`, it is similar to `LEAD`.
+    #
+    # @example By default, array values are shifted forward by one index.
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [[1, 2, 3], [4, 5, 6]]}, schema: {"a" => Polars::Array.new(Polars::Int64, 3)}
+    #   )
+    #   df.with_columns(shift: Polars.col("a").arr.shift)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌───────────────┬───────────────┐
+    #   # │ a             ┆ shift         │
+    #   # │ ---           ┆ ---           │
+    #   # │ array[i64, 3] ┆ array[i64, 3] │
+    #   # ╞═══════════════╪═══════════════╡
+    #   # │ [1, 2, 3]     ┆ [null, 1, 2]  │
+    #   # │ [4, 5, 6]     ┆ [null, 4, 5]  │
+    #   # └───────────────┴───────────────┘
+    #
+    # @example Pass a negative value to shift in the opposite direction instead.
+    #   df.with_columns(shift: Polars.col("a").arr.shift(-2))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌───────────────┬─────────────────┐
+    #   # │ a             ┆ shift           │
+    #   # │ ---           ┆ ---             │
+    #   # │ array[i64, 3] ┆ array[i64, 3]   │
+    #   # ╞═══════════════╪═════════════════╡
+    #   # │ [1, 2, 3]     ┆ [3, null, null] │
+    #   # │ [4, 5, 6]     ┆ [6, null, null] │
+    #   # └───────────────┴─────────────────┘
+    def shift(n = 1)
+      n = Utils.parse_into_expression(n)
+      Utils.wrap_expr(_rbexpr.arr_shift(n))
+    end
   end
 end

@@ -37,6 +37,7 @@ features = [
     "arg_where",
     "array_any_all",
     "array_count",
+    "array_to_struct",
     "asof_join",
     "avro",
     "aws",
