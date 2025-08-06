@@ -104,6 +104,34 @@ impl RbExpr {
         self.inner.clone().dt().round(every.inner.clone()).into()
     }
 
+    #[allow(clippy::too_many_arguments)]
+    pub fn dt_replace(
+        &self,
+        year: &Self,
+        month: &Self,
+        day: &Self,
+        hour: &Self,
+        minute: &Self,
+        second: &Self,
+        microsecond: &Self,
+        ambiguous: &Self,
+    ) -> Self {
+        self.inner
+            .clone()
+            .dt()
+            .replace(
+                year.inner.clone(),
+                month.inner.clone(),
+                day.inner.clone(),
+                hour.inner.clone(),
+                minute.inner.clone(),
+                second.inner.clone(),
+                microsecond.inner.clone(),
+                ambiguous.inner.clone(),
+            )
+            .into()
+    }
+
     pub fn dt_combine(&self, time: &Self, time_unit: Wrap<TimeUnit>) -> Self {
         self.inner
             .clone()

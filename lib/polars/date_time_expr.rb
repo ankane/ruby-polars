@@ -254,6 +254,93 @@ module Polars
       Utils.wrap_expr(_rbexpr.dt_round(every))
     end
 
+    # Replace time unit.
+    #
+    # @param year [Object]
+    #   Column or literal.
+    # @param month [Object]
+    #   Column or literal, ranging from 1-12.
+    # @param day [Object]
+    #   Column or literal, ranging from 1-31.
+    # @param hour [Object]
+    #   Column or literal, ranging from 0-23.
+    # @param minute [Object]
+    #   Column or literal, ranging from 0-59.
+    # @param second [Object]
+    #   Column or literal, ranging from 0-59.
+    # @param microsecond [Object]
+    #   Column or literal, ranging from 0-999999.
+    # @param ambiguous [String]
+    #   Determine how to deal with ambiguous datetimes:
+    #
+    #   - `'raise'` (default): raise
+    #   - `'earliest'`: use the earliest datetime
+    #   - `'latest'`: use the latest datetime
+    #   - `'null'`: set to null
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => [Date.new(2024, 4, 1), Date.new(2025, 3, 16)],
+    #       "new_day" => [10, 15]
+    #     }
+    #   )
+    #   df.with_columns(Polars.col("date").dt.replace(day: "new_day").alias("replaced"))
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌────────────┬─────────┬────────────┐
+    #   # │ date       ┆ new_day ┆ replaced   │
+    #   # │ ---        ┆ ---     ┆ ---        │
+    #   # │ date       ┆ i64     ┆ date       │
+    #   # ╞════════════╪═════════╪════════════╡
+    #   # │ 2024-04-01 ┆ 10      ┆ 2024-04-10 │
+    #   # │ 2025-03-16 ┆ 15      ┆ 2025-03-15 │
+    #   # └────────────┴─────────┴────────────┘
+    #
+    # @example
+    #   df.with_columns(Polars.col("date").dt.replace(year: 1800).alias("replaced"))
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌────────────┬─────────┬────────────┐
+    #   # │ date       ┆ new_day ┆ replaced   │
+    #   # │ ---        ┆ ---     ┆ ---        │
+    #   # │ date       ┆ i64     ┆ date       │
+    #   # ╞════════════╪═════════╪════════════╡
+    #   # │ 2024-04-01 ┆ 10      ┆ 1800-04-01 │
+    #   # │ 2025-03-16 ┆ 15      ┆ 1800-03-16 │
+    #   # └────────────┴─────────┴────────────┘
+    def replace(
+      year: nil,
+      month: nil,
+      day: nil,
+      hour: nil,
+      minute: nil,
+      second: nil,
+      microsecond: nil,
+      ambiguous: "raise"
+    )
+      day, month, year, hour, minute, second, microsecond = (
+        Utils.parse_into_list_of_expressions(
+          day, month, year, hour, minute, second, microsecond
+        )
+      )
+      ambiguous_expr = Utils.parse_into_expression(ambiguous, str_as_lit: true)
+      Utils.wrap_expr(
+        _rbexpr.dt_replace(
+          year,
+          month,
+          day,
+          hour,
+          minute,
+          second,
+          microsecond,
+          ambiguous_expr
+        )
+      )
+    end
+
     # Create a naive Datetime from an existing Date/Datetime expression and a Time.
     #
     # If the underlying expression is a Datetime then its time component is replaced,
