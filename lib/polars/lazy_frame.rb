@@ -2705,6 +2705,34 @@ module Polars
       _from_rbldf(_ldf.with_columns(rbexprs))
     end
 
+    # Add columns to this LazyFrame.
+    #
+    # Added columns will replace existing columns with the same name.
+    #
+    # This will run all expression sequentially instead of in parallel.
+    # Use this when the work per expression is cheap.
+    #
+    # @param exprs [Array]
+    #   Column(s) to add, specified as positional arguments.
+    #   Accepts expression input. Strings are parsed as column names, other
+    #   non-expression inputs are parsed as literals.
+    # @param named_exprs [Hash]
+    #   Additional columns to add, specified as keyword arguments.
+    #   The columns will be renamed to the keyword used.
+    #
+    # @return [LazyFrame]
+    def with_columns_seq(
+      *exprs,
+      **named_exprs
+    )
+      structify = ENV.fetch("POLARS_AUTO_STRUCTIFY", 0).to_i != 0
+
+      rbexprs = Utils.parse_into_list_of_expressions(
+        *exprs, **named_exprs, __structify: structify
+      )
+      _from_rbldf(_ldf.with_columns_seq(rbexprs))
+    end
+
     # Add an external context to the computation graph.
     #
     # This allows expressions to also access columns from DataFrames
