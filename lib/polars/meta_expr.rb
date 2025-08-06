@@ -97,6 +97,70 @@ module Polars
       _rbexpr.meta_is_regex_projection
     end
 
+    # Indicate if this expression only selects columns (optionally with aliasing).
+    #
+    # This can include bare columns, columns matched by regex or dtype, selectors
+    # and exclude ops, and (optionally) column/expression aliasing.
+    #
+    # @param allow_aliasing [Boolean]
+    #   If false (default), any aliasing is not considered to be column selection.
+    #   Set true to allow for column selection that also includes aliasing.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   e = Polars.col("foo")
+    #   e.meta.is_column_selection
+    #   # => true
+    #
+    # @example
+    #   e = Polars.col("foo").alias("bar")
+    #   e.meta.is_column_selection
+    #   # => false
+    #
+    # @example
+    #   e.meta.is_column_selection(allow_aliasing: true)
+    #   # => true
+    #
+    # @example
+    #   e = Polars.col("foo") * Polars.col("bar")
+    #   e.meta.is_column_selection
+    #   # => false
+    #
+    # @example
+    #   e = Polars.cs.starts_with("foo")
+    #   e.meta.is_column_selection
+    #   # => true
+    #
+    # @example
+    #   e = Polars.cs.starts_with("foo").exclude("foo!")
+    #   e.meta.is_column_selection
+    #   # => true
+    def is_column_selection(allow_aliasing: false)
+      _rbexpr.meta_is_column_selection(allow_aliasing)
+    end
+
+    # Indicate if this expression is a literal value (optionally aliased).
+    #
+    # @param allow_aliasing [Boolean]
+    #   If false (default), only a bare literal will match.
+    #   Set true to also allow for aliased literals.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   e = Polars.lit(123)
+    #   e.meta.is_literal
+    #   # => true
+    #
+    # @example
+    #   e = Polars.lit(987.654321).alias("foo")
+    #   e.meta.is_literal
+    #   # => false
+    def is_literal(allow_aliasing: false)
+      _rbexpr.meta_is_literal(allow_aliasing)
+    end
+
     # Get the column name that this expression would produce.
     #
     # @return [String]

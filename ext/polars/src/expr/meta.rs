@@ -57,6 +57,17 @@ impl RbExpr {
         self.inner.clone().meta().is_regex_projection()
     }
 
+    pub fn meta_is_column_selection(&self, allow_aliasing: bool) -> bool {
+        self.inner
+            .clone()
+            .meta()
+            .is_column_selection(allow_aliasing)
+    }
+
+    pub fn meta_is_literal(&self, allow_aliasing: bool) -> bool {
+        self.inner.clone().meta().is_literal(allow_aliasing)
+    }
+
     fn compute_tree_format(
         &self,
         display_as_dot: bool,
