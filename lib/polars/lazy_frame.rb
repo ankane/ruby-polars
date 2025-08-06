@@ -288,6 +288,73 @@ module Polars
       )
     end
 
+    # Execute a SQL query against the LazyFrame.
+    #
+    # @note
+    #   This functionality is considered **unstable**, although it is close to
+    #   being considered stable. It may be changed at any point without it being
+    #   considered a breaking change.
+    #
+    # @param query [String]
+    #   SQL query to execute.
+    # @param table_name [String]
+    #   Optionally provide an explicit name for the table that represents the
+    #   calling frame (defaults to "self").
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   * The calling frame is automatically registered as a table in the SQL context
+    #     under the name "self". If you want access to the DataFrames and LazyFrames
+    #     found in the current globals, use the top-level `Polars.sql`.
+    #   * More control over registration and execution behaviour is available by
+    #     using the `SQLContext` object.
+    #
+    # @example Query the LazyFrame using SQL:
+    #   lf1 = Polars::LazyFrame.new({"a" => [1, 2, 3], "b" => [6, 7, 8], "c" => ["z", "y", "x"]})
+    #   lf2 = Polars::LazyFrame.new({"a" => [3, 2, 1], "d" => [125, -654, 888]})
+    #   lf1.sql("SELECT c, b FROM self WHERE a > 1").collect
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ c   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ str ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ y   ┆ 7   │
+    #   # │ x   ┆ 8   │
+    #   # └─────┴─────┘
+    #
+    # @example Apply SQL transforms (aliasing "self" to "frame") then filter natively (you can freely mix SQL and native operations):
+    #   lf1.sql(
+    #     "
+    #       SELECT
+    #           a,
+    #           (a % 2 == 0) AS a_is_even,
+    #           (b::float4 / 2) AS \"b/2\",
+    #           CONCAT_WS(':', c, c, c) AS c_c_c
+    #       FROM frame
+    #       ORDER BY a
+    #     ",
+    #     table_name: "frame",
+    #   ).filter(~Polars.col("c_c_c").str.starts_with("x")).collect
+    #   # =>
+    #   # shape: (2, 4)
+    #   # ┌─────┬───────────┬─────┬───────┐
+    #   # │ a   ┆ a_is_even ┆ b/2 ┆ c_c_c │
+    #   # │ --- ┆ ---       ┆ --- ┆ ---   │
+    #   # │ i64 ┆ bool      ┆ f32 ┆ str   │
+    #   # ╞═════╪═══════════╪═════╪═══════╡
+    #   # │ 1   ┆ false     ┆ 3.0 ┆ z:z:z │
+    #   # │ 2   ┆ true      ┆ 3.5 ┆ y:y:y │
+    #   # └─────┴───────────┴─────┴───────┘
+    def sql(query, table_name: "self")
+      ctx = Polars::SQLContext.new
+      name = table_name || "self"
+      ctx.register(name, self)
+      ctx.execute(query)
+    end
+
     # def profile
     # end
 
