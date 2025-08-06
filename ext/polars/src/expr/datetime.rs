@@ -124,6 +124,14 @@ impl RbExpr {
         self.clone().inner.dt().year().into()
     }
 
+    pub fn dt_is_business_day(&self, week_mask: [bool; 7], holidays: Vec<i32>) -> Self {
+        self.inner
+            .clone()
+            .dt()
+            .is_business_day(week_mask, holidays)
+            .into()
+    }
+
     pub fn dt_is_leap_year(&self) -> Self {
         self.clone().inner.dt().is_leap_year().into()
     }

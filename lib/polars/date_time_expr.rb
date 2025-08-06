@@ -475,6 +475,43 @@ module Polars
       Utils.wrap_expr(_rbexpr.dt_year)
     end
 
+    # Determine whether each day lands on a business day.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param week_mask [Array]
+    #   Which days of the week to count. The default is Monday to Friday.
+    #   If you wanted to count only Monday to Thursday, you would pass
+    #   `[true, true, true, true, false, false, false]`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"start" => [Date.new(2020, 1, 3), Date.new(2020, 1, 5)]})
+    #   df.with_columns(is_business_day: Polars.col("start").dt.is_business_day)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────────┬─────────────────┐
+    #   # │ start      ┆ is_business_day │
+    #   # │ ---        ┆ ---             │
+    #   # │ date       ┆ bool            │
+    #   # ╞════════════╪═════════════════╡
+    #   # │ 2020-01-03 ┆ true            │
+    #   # │ 2020-01-05 ┆ false           │
+    #   # └────────────┴─────────────────┘
+    def is_business_day(
+      week_mask: [true, true, true, true, true, false, false]
+    )
+      Utils.wrap_expr(
+        _rbexpr.dt_is_business_day(
+          week_mask,
+          []
+        )
+      )
+    end
+
     # Determine whether the year of the underlying date is a leap year.
     #
     # Applies to Date and Datetime columns.

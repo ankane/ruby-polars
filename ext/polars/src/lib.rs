@@ -401,6 +401,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("dt_millennium", method!(RbExpr::dt_millennium, 0))?;
     class.define_method("dt_century", method!(RbExpr::dt_century, 0))?;
     class.define_method("dt_year", method!(RbExpr::dt_year, 0))?;
+    class.define_method("dt_is_business_day", method!(RbExpr::dt_is_business_day, 2))?;
     class.define_method("dt_is_leap_year", method!(RbExpr::dt_is_leap_year, 0))?;
     class.define_method("dt_iso_year", method!(RbExpr::dt_iso_year, 0))?;
     class.define_method("dt_quarter", method!(RbExpr::dt_quarter, 0))?;
