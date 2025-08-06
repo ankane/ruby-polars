@@ -2794,19 +2794,42 @@ module Polars
     #
     # The copy has identical name/dtype but no data.
     #
+    # @param n [Integer]
+    #   Number of (empty) elements to return in the cleared frame.
+    #
     # @return [Series]
     #
     # @example
     #   s = Polars::Series.new("a", [nil, true, false])
-    #   s.cleared
+    #   s.clear
     #   # =>
     #   # shape: (0,)
     #   # Series: 'a' [bool]
     #   # [
     #   # ]
-    def cleared
-      len > 0 ? limit(0) : clone
+    #
+    # @example
+    #   s.clear(n: 2)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [bool]
+    #   # [
+    #   #         null
+    #   #         null
+    #   # ]
+    def clear(n: 0)
+      if n < 0
+        msg = "`n` should be greater than or equal to 0, got #{n}"
+        raise ArgumentError, msg
+      end
+      # faster path
+      if n == 0
+        return self.class._from_rbseries(_s.clear)
+      end
+      s = len > 0 ? self.class.new(name, [], dtype: dtype) : clone
+      n > 0 ? s.extend_constant(nil, n) : s
     end
+    alias_method :cleared, :clear
 
     # clone handled by initialize_copy
 

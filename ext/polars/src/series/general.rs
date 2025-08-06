@@ -379,6 +379,10 @@ impl RbSeries {
             .collect()
     }
 
+    pub fn clear(&self) -> Self {
+        self.series.borrow().clear().into()
+    }
+
     pub fn time_unit(&self) -> Option<String> {
         if let DataType::Datetime(tu, _) | DataType::Duration(tu) = self.series.borrow().dtype() {
             Some(
