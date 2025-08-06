@@ -574,6 +574,41 @@ module Polars
       Utils.wrap_df(ldf.collect)
     end
 
+    # Resolve the schema of this LazyFrame.
+    #
+    # @return [Schema]
+    #
+    # @example Determine the schema.
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6.0, 7.0, 8.0],
+    #       "ham" => ["a", "b", "c"]
+    #     }
+    #   )
+    #   lf.collect_schema
+    #   # => Polars::Schema({"foo"=>Polars::Int64, "bar"=>Polars::Float64, "ham"=>Polars::String})
+    #
+    # @example Access various properties of the schema.
+    #   schema = lf.collect_schema
+    #   schema["bar"]
+    #   # => Polars::Float64
+    #
+    # @example
+    #   schema.names
+    #   # => ["foo", "bar", "ham"]
+    #
+    # @example
+    #   schema.dtypes()
+    #   # => [Polars::Int64, Polars::Float64, Polars::String]
+    #
+    # @example
+    #   schema.length
+    #   # => 3
+    def collect_schema
+      Schema.new(_ldf.collect_schema, check_dtypes: false)
+    end
+
     # Persists a LazyFrame at the provided path.
     #
     # This allows streaming results that are larger than RAM to be written to disk.
