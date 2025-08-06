@@ -515,6 +515,11 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("kurtosis", method!(RbExpr::kurtosis, 2))?;
     class.define_method("str_join", method!(RbExpr::str_join, 2))?;
     class.define_method("cat_get_categories", method!(RbExpr::cat_get_categories, 0))?;
+    class.define_method("cat_len_bytes", method!(RbExpr::cat_len_bytes, 0))?;
+    class.define_method("cat_len_chars", method!(RbExpr::cat_len_chars, 0))?;
+    class.define_method("cat_starts_with", method!(RbExpr::cat_starts_with, 1))?;
+    class.define_method("cat_ends_with", method!(RbExpr::cat_ends_with, 1))?;
+    class.define_method("cat_slice", method!(RbExpr::cat_slice, 2))?;
     class.define_method("reshape", method!(RbExpr::reshape, 1))?;
     class.define_method("cum_count", method!(RbExpr::cum_count, 1))?;
     class.define_method("to_physical", method!(RbExpr::to_physical, 0))?;

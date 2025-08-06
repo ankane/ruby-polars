@@ -6,6 +6,7 @@
 - Added more methods to `Series`
 - Added more methods to `ArrayExpr`
 - Added more methods to `BinaryExpr`
+- Added more methods to `CatExpr`
 - Fixed `subset` option for `drop_nulls` method
 
 ## 0.21.0 (2025-08-03)
