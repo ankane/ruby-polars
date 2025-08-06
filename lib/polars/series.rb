@@ -543,7 +543,26 @@ module Polars
     #   #         1.732051
     #   # ]
     def sqrt
-      self**0.5
+      super
+    end
+
+    # Compute the cube root of the elements.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([1, 2, 3])
+    #   s.cbrt
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         1.0
+    #   #         1.259921
+    #   #         1.44225
+    #   # ]
+    def cbrt
+      super
     end
 
     # Check if any boolean value in the column is `true`.
