@@ -6338,6 +6338,63 @@ module Polars
       wrap_expr(_rbexpr.rolling_skew(window_size, bias, min_samples, center))
     end
 
+    # Compute a rolling kurtosis.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # The window at a given row will include the row itself, and the `window_size - 1`
+    # elements before it.
+    #
+    # @param window_size [Integer]
+    #   Integer size of the rolling window.
+    # @param fisher [Boolean]
+    #   If true, Fisher's definition is used (normal ==> 0.0). If false,
+    #   Pearson's definition is used (normal ==> 3.0).
+    # @param bias [Boolean]
+    #   If false, the calculations are corrected for statistical bias.
+    # @param min_samples [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If set to `nil` (default), it will be set equal to `window_size`.
+    # @param center
+    #   Set the labels at the center of the window.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 4, 2, 9]})
+    #   df.select(Polars.col("a").rolling_kurtosis(3))
+    #   # =>
+    #   # shape: (4, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ f64  │
+    #   # ╞══════╡
+    #   # │ null │
+    #   # │ null │
+    #   # │ -1.5 │
+    #   # │ -1.5 │
+    #   # └──────┘
+    def rolling_kurtosis(
+      window_size,
+      fisher: true,
+      bias: true,
+      min_samples: nil,
+      center: false
+    )
+      wrap_expr(
+        _rbexpr.rolling_kurtosis(
+          window_size,
+          fisher,
+          bias,
+          min_samples,
+          center
+        )
+      )
+    end
+
     # Compute absolute values.
     #
     # @return [Expr]
