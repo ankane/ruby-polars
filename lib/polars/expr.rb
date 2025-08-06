@@ -6341,6 +6341,26 @@ module Polars
       _from_rbexpr(_rbexpr.tan)
     end
 
+    # Compute the element-wise value for the cotangent.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1.0]})
+    #   df.select(Polars.col("a").cot.round(2))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ f64  │
+    #   # ╞══════╡
+    #   # │ 0.64 │
+    #   # └──────┘
+    def cot
+      wrap_expr(_rbexpr.cot)
+    end
+
     # Compute the element-wise value for the inverse sine.
     #
     # @return [Expr]

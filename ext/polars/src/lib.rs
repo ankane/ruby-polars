@@ -259,6 +259,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("sin", method!(RbExpr::sin, 0))?;
     class.define_method("cos", method!(RbExpr::cos, 0))?;
     class.define_method("tan", method!(RbExpr::tan, 0))?;
+    class.define_method("cot", method!(RbExpr::cot, 0))?;
     class.define_method("arcsin", method!(RbExpr::arcsin, 0))?;
     class.define_method("arccos", method!(RbExpr::arccos, 0))?;
     class.define_method("arctan", method!(RbExpr::arctan, 0))?;

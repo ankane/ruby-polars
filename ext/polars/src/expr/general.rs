@@ -524,6 +524,10 @@ impl RbExpr {
         self.inner.clone().tan().into()
     }
 
+    pub fn cot(&self) -> Self {
+        self.inner.clone().cot().into()
+    }
+
     pub fn arcsin(&self) -> Self {
         self.inner.clone().arcsin().into()
     }
