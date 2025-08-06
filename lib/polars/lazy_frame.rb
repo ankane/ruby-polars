@@ -3667,6 +3667,28 @@ module Polars
     # def update
     # end
 
+    # Return the number of non-null elements for each column.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new(
+    #     {"a" => [1, 2, 3, 4], "b" => [1, 2, 1, nil], "c" => [nil, nil, nil, nil]}
+    #   )
+    #   lf.count.collect
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ a   ┆ b   ┆ c   │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ u32 ┆ u32 ┆ u32 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 4   ┆ 3   ┆ 0   │
+    #   # └─────┴─────┴─────┘
+    def count
+      _from_rbldf(_ldf.count)
+    end
+
     private
 
     def initialize_copy(other)
