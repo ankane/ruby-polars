@@ -1457,6 +1457,112 @@ module Polars
       wrap_expr(_rbexpr.top_k(k))
     end
 
+    # Return the elements corresponding to the `k` largest elements of the `by` column(s).
+    #
+    # Non-null elements are always preferred over null elements, regardless of
+    # the value of `reverse`. The output is not guaranteed to be in any
+    # particular order, call :func:`sort` after this function if you wish the
+    # output to be sorted.
+    #
+    # @param by [Object]
+    #   Column(s) used to determine the largest elements.
+    #   Accepts expression input. Strings are parsed as column names.
+    # @param k [Integer]
+    #   Number of elements to return.
+    # @param reverse [Boolean]
+    #   Consider the `k` smallest elements of the `by` column(s) (instead of the `k`
+    #   largest). This can be specified per column by passing a sequence of
+    #   booleans.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3, 4, 5, 6],
+    #       "b" => [6, 5, 4, 3, 2, 1],
+    #       "c" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   )
+    #   # =>
+    #   # shape: (6, 3)
+    #   # ┌─────┬─────┬────────┐
+    #   # │ a   ┆ b   ┆ c      │
+    #   # │ --- ┆ --- ┆ ---    │
+    #   # │ i64 ┆ i64 ┆ str    │
+    #   # ╞═════╪═════╪════════╡
+    #   # │ 1   ┆ 6   ┆ Apple  │
+    #   # │ 2   ┆ 5   ┆ Orange │
+    #   # │ 3   ┆ 4   ┆ Apple  │
+    #   # │ 4   ┆ 3   ┆ Apple  │
+    #   # │ 5   ┆ 2   ┆ Banana │
+    #   # │ 6   ┆ 1   ┆ Banana │
+    #   # └─────┴─────┴────────┘
+    #
+    # @example Get the top 2 rows by column `a` or `b`.
+    #   df.select(
+    #     Polars.all.top_k_by("a", k: 2).name.suffix("_top_by_a"),
+    #     Polars.all.top_k_by("b", k: 2).name.suffix("_top_by_b")
+    #   )
+    #   # =>
+    #   # shape: (2, 6)
+    #   # ┌────────────┬────────────┬────────────┬────────────┬────────────┬────────────┐
+    #   # │ a_top_by_a ┆ b_top_by_a ┆ c_top_by_a ┆ a_top_by_b ┆ b_top_by_b ┆ c_top_by_b │
+    #   # │ ---        ┆ ---        ┆ ---        ┆ ---        ┆ ---        ┆ ---        │
+    #   # │ i64        ┆ i64        ┆ str        ┆ i64        ┆ i64        ┆ str        │
+    #   # ╞════════════╪════════════╪════════════╪════════════╪════════════╪════════════╡
+    #   # │ 6          ┆ 1          ┆ Banana     ┆ 1          ┆ 6          ┆ Apple      │
+    #   # │ 5          ┆ 2          ┆ Banana     ┆ 2          ┆ 5          ┆ Orange     │
+    #   # └────────────┴────────────┴────────────┴────────────┴────────────┴────────────┘
+    #
+    # @example Get the top 2 rows by multiple columns with given order.
+    #   df.select(
+    #     Polars.all
+    #     .top_k_by(["c", "a"], k: 2, reverse: [false, true])
+    #     .name.suffix("_by_ca"),
+    #     Polars.all
+    #     .top_k_by(["c", "b"], k: 2, reverse: [false, true])
+    #     .name.suffix("_by_cb")
+    #   )
+    #   # =>
+    #   # shape: (2, 6)
+    #   # ┌─────────┬─────────┬─────────┬─────────┬─────────┬─────────┐
+    #   # │ a_by_ca ┆ b_by_ca ┆ c_by_ca ┆ a_by_cb ┆ b_by_cb ┆ c_by_cb │
+    #   # │ ---     ┆ ---     ┆ ---     ┆ ---     ┆ ---     ┆ ---     │
+    #   # │ i64     ┆ i64     ┆ str     ┆ i64     ┆ i64     ┆ str     │
+    #   # ╞═════════╪═════════╪═════════╪═════════╪═════════╪═════════╡
+    #   # │ 2       ┆ 5       ┆ Orange  ┆ 2       ┆ 5       ┆ Orange  │
+    #   # │ 5       ┆ 2       ┆ Banana  ┆ 6       ┆ 1       ┆ Banana  │
+    #   # └─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+    #
+    # @example Get the top 2 rows by column `a` in each group.
+    #   df.group_by("c", maintain_order: true)
+    #     .agg(Polars.all.top_k_by("a", k: 2))
+    #     .explode(Polars.all.exclude("c"))
+    #   # =>
+    #   # shape: (5, 3)
+    #   # ┌────────┬─────┬─────┐
+    #   # │ c      ┆ a   ┆ b   │
+    #   # │ ---    ┆ --- ┆ --- │
+    #   # │ str    ┆ i64 ┆ i64 │
+    #   # ╞════════╪═════╪═════╡
+    #   # │ Apple  ┆ 4   ┆ 3   │
+    #   # │ Apple  ┆ 3   ┆ 4   │
+    #   # │ Orange ┆ 2   ┆ 5   │
+    #   # │ Banana ┆ 6   ┆ 1   │
+    #   # │ Banana ┆ 5   ┆ 2   │
+    #   # └────────┴─────┴─────┘
+    def top_k_by(
+      by,
+      k: 5,
+      reverse: false
+    )
+      k = Utils.parse_into_expression(k)
+      by = Utils.parse_into_list_of_expressions(by)
+      reverse = Utils.extend_bool(reverse, by.length, "reverse", "by")
+      wrap_expr(_rbexpr.top_k_by(by, k, reverse))
+    end
+
     # Return the `k` smallest elements.
     #
     # If 'reverse: true` the smallest elements will be given.
