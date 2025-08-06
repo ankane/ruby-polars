@@ -3426,6 +3426,89 @@ module Polars
       head(n)
     end
 
+    # Method equivalent of bitwise "and" operator `expr & other & ...`.
+    #
+    # @param others [Array]
+    #   One or more integer or boolean expressions to evaluate/combine.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "x" => [5, 6, 7, 4, 8],
+    #       "y" => [1.5, 2.5, 1.0, 4.0, -5.75],
+    #       "z" => [-9, 2, -1, 4, 8]
+    #     }
+    #   )
+    #   df.select(
+    #     (Polars.col("x") >= Polars.col("z"))
+    #     .and_(
+    #       Polars.col("y") >= Polars.col("z"),
+    #       Polars.col("y") == Polars.col("y"),
+    #       Polars.col("z") <= Polars.col("x"),
+    #       Polars.col("y") != Polars.col("x"),
+    #     )
+    #     .alias("all")
+    #   )
+    #   # =>
+    #   # shape: (5, 1)
+    #   # ┌───────┐
+    #   # │ all   │
+    #   # │ ---   │
+    #   # │ bool  │
+    #   # ╞═══════╡
+    #   # │ true  │
+    #   # │ true  │
+    #   # │ true  │
+    #   # │ false │
+    #   # │ false │
+    #   # └───────┘
+    def and_(*others)
+      ([self] + others).reduce(:&)
+    end
+
+    # Method equivalent of bitwise "or" operator `expr | other | ...`.
+    #
+    # @param others [Array]
+    #   One or more integer or boolean expressions to evaluate/combine.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "x" => [5, 6, 7, 4, 8],
+    #       "y" => [1.5, 2.5, 1.0, 4.0, -5.75],
+    #       "z" => [-9, 2, -1, 4, 8]
+    #     }
+    #   )
+    #   df.select(
+    #     (Polars.col("x") == Polars.col("y"))
+    #     .or_(
+    #       Polars.col("x") == Polars.col("y"),
+    #       Polars.col("y") == Polars.col("z"),
+    #       Polars.col("y").cast(Integer) == Polars.col("z"),
+    #     )
+    #     .alias("any")
+    #   )
+    #   # =>
+    #   # shape: (5, 1)
+    #   # ┌───────┐
+    #   # │ any   │
+    #   # │ ---   │
+    #   # │ bool  │
+    #   # ╞═══════╡
+    #   # │ false │
+    #   # │ true  │
+    #   # │ false │
+    #   # │ true  │
+    #   # │ false │
+    #   # └───────┘
+    def or_(*others)
+      ([self] + others).reduce(:|)
+    end
+
     # Method equivalent of equality operator `expr == other`.
     #
     # @param other [Object]
