@@ -225,6 +225,32 @@ module Polars
       _from_rbexpr(_rbexpr.all(drop_nulls))
     end
 
+    # Return indices where expression evaluates `true`.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   Modifies number of rows returned, so will fail in combination with other
+    #   expressions. Use as only expression in `select` / `with_columns`.
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 1, 2, 1]})
+    #   df.select((Polars.col("a") == 1).arg_true)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 0   │
+    #   # │ 1   │
+    #   # │ 3   │
+    #   # └─────┘
+    def arg_true
+      wrap_expr(Plr.arg_where(_rbexpr))
+    end
+
     # Compute the square root of the elements.
     #
     # @return [Expr]
