@@ -4199,6 +4199,51 @@ module Polars
       super
     end
 
+    # Compute a rolling kurtosis.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # The window at a given row will include the row itself, and the `window_size - 1`
+    # elements before it.
+    #
+    # @param window_size [Integer]
+    #   Integer size of the rolling window.
+    # @param fisher [Boolean]
+    #   If true, Fisher's definition is used (normal ==> 0.0). If false,
+    #   Pearson's definition is used (normal ==> 3.0).
+    # @param bias [Boolean]
+    #   If false, the calculations are corrected for statistical bias.
+    # @param min_samples [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If set to `nil` (default), it will be set equal to `window_size`.
+    # @param center [Boolean]
+    #   Set the labels at the center of the window.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   Polars::Series.new([1, 4, 2, 9]).rolling_kurtosis(3)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         null
+    #   #         null
+    #   #         -1.5
+    #   #         -1.5
+    #   # ]
+    def rolling_kurtosis(
+      window_size,
+      fisher: true,
+      bias: true,
+      min_samples: nil,
+      center: false
+    )
+      super
+    end
+
     # Sample from this Series.
     #
     # @param n [Integer]
@@ -5429,6 +5474,20 @@ module Polars
     # @return [StructNameSpace]
     def struct
       StructNameSpace.new(self)
+    end
+
+    # Repeat the elements in this Series as specified in the given expression.
+    #
+    # The repeated elements are expanded into a List.
+    #
+    # @param by [Object]
+    #   Numeric column that determines how often the values will be repeated.
+    #   The column will be coerced to UInt32. Give this dtype to make the coercion
+    #   a no-op.
+    #
+    # @return [Object]
+    def repeat_by(by)
+      super
     end
 
     private
