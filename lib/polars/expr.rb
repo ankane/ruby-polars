@@ -1469,7 +1469,7 @@ module Polars
     #   Accepts expression input. Strings are parsed as column names.
     # @param k [Integer]
     #   Number of elements to return.
-    # @param reverse [Boolean]
+    # @param reverse [Object]
     #   Consider the `k` smallest elements of the `by` column(s) (instead of the `k`
     #   largest). This can be specified per column by passing a sequence of
     #   booleans.
@@ -1600,6 +1600,112 @@ module Polars
     def bottom_k(k: 5)
       k = Utils.parse_into_expression(k)
       wrap_expr(_rbexpr.bottom_k(k))
+    end
+
+    # Return the elements corresponding to the `k` smallest elements of the `by` column(s).
+    #
+    # Non-null elements are always preferred over null elements, regardless of
+    # the value of `reverse`. The output is not guaranteed to be in any
+    # particular order, call :func:`sort` after this function if you wish the
+    # output to be sorted.
+    #
+    # @param by [Object]
+    #   Column(s) used to determine the smallest elements.
+    #   Accepts expression input. Strings are parsed as column names.
+    # @param k [Integer]
+    #   Number of elements to return.
+    # @param reverse [Object]
+    #   Consider the `k` largest elements of the `by` column(s) (instead of the `k`
+    #   smallest). This can be specified per column by passing a sequence of
+    #   booleans.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3, 4, 5, 6],
+    #       "b" => [6, 5, 4, 3, 2, 1],
+    #       "c" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"],
+    #     }
+    #   )
+    #   # =>
+    #   # shape: (6, 3)
+    #   # ┌─────┬─────┬────────┐
+    #   # │ a   ┆ b   ┆ c      │
+    #   # │ --- ┆ --- ┆ ---    │
+    #   # │ i64 ┆ i64 ┆ str    │
+    #   # ╞═════╪═════╪════════╡
+    #   # │ 1   ┆ 6   ┆ Apple  │
+    #   # │ 2   ┆ 5   ┆ Orange │
+    #   # │ 3   ┆ 4   ┆ Apple  │
+    #   # │ 4   ┆ 3   ┆ Apple  │
+    #   # │ 5   ┆ 2   ┆ Banana │
+    #   # │ 6   ┆ 1   ┆ Banana │
+    #   # └─────┴─────┴────────┘
+    #
+    # @example Get the bottom 2 rows by column `a` or `b`.
+    #   df.select(
+    #     Polars.all.bottom_k_by("a", k: 2).name.suffix("_btm_by_a"),
+    #     Polars.all.bottom_k_by("b", k: 2).name.suffix("_btm_by_b")
+    #   )
+    #   # =>
+    #   # shape: (2, 6)
+    #   # ┌────────────┬────────────┬────────────┬────────────┬────────────┬────────────┐
+    #   # │ a_btm_by_a ┆ b_btm_by_a ┆ c_btm_by_a ┆ a_btm_by_b ┆ b_btm_by_b ┆ c_btm_by_b │
+    #   # │ ---        ┆ ---        ┆ ---        ┆ ---        ┆ ---        ┆ ---        │
+    #   # │ i64        ┆ i64        ┆ str        ┆ i64        ┆ i64        ┆ str        │
+    #   # ╞════════════╪════════════╪════════════╪════════════╪════════════╪════════════╡
+    #   # │ 1          ┆ 6          ┆ Apple      ┆ 6          ┆ 1          ┆ Banana     │
+    #   # │ 2          ┆ 5          ┆ Orange     ┆ 5          ┆ 2          ┆ Banana     │
+    #   # └────────────┴────────────┴────────────┴────────────┴────────────┴────────────┘
+    #
+    # @example Get the bottom 2 rows by multiple columns with given order.
+    #   df.select(
+    #     Polars.all
+    #     .bottom_k_by(["c", "a"], k: 2, reverse: [false, true])
+    #     .name.suffix("_by_ca"),
+    #     Polars.all
+    #     .bottom_k_by(["c", "b"], k: 2, reverse: [false, true])
+    #     .name.suffix("_by_cb"),
+    #   )
+    #   # =>
+    #   # shape: (2, 6)
+    #   # ┌─────────┬─────────┬─────────┬─────────┬─────────┬─────────┐
+    #   # │ a_by_ca ┆ b_by_ca ┆ c_by_ca ┆ a_by_cb ┆ b_by_cb ┆ c_by_cb │
+    #   # │ ---     ┆ ---     ┆ ---     ┆ ---     ┆ ---     ┆ ---     │
+    #   # │ i64     ┆ i64     ┆ str     ┆ i64     ┆ i64     ┆ str     │
+    #   # ╞═════════╪═════════╪═════════╪═════════╪═════════╪═════════╡
+    #   # │ 4       ┆ 3       ┆ Apple   ┆ 1       ┆ 6       ┆ Apple   │
+    #   # │ 3       ┆ 4       ┆ Apple   ┆ 3       ┆ 4       ┆ Apple   │
+    #   # └─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+    #
+    # @example Get the bottom 2 rows by column `a` in each group.
+    #   df.group_by("c", maintain_order: true)
+    #     .agg(Polars.all.bottom_k_by("a", k: 2))
+    #     .explode(Polars.all.exclude("c"))
+    #   # =>
+    #   # shape: (5, 3)
+    #   # ┌────────┬─────┬─────┐
+    #   # │ c      ┆ a   ┆ b   │
+    #   # │ ---    ┆ --- ┆ --- │
+    #   # │ str    ┆ i64 ┆ i64 │
+    #   # ╞════════╪═════╪═════╡
+    #   # │ Apple  ┆ 1   ┆ 6   │
+    #   # │ Apple  ┆ 3   ┆ 4   │
+    #   # │ Orange ┆ 2   ┆ 5   │
+    #   # │ Banana ┆ 5   ┆ 2   │
+    #   # │ Banana ┆ 6   ┆ 1   │
+    #   # └────────┴─────┴─────┘
+    def bottom_k_by(
+      by,
+      k: 5,
+      reverse: false
+    )
+      k = Utils.parse_into_expression(k)
+      by = Utils.parse_into_list_of_expressions(by)
+      reverse = Utils.extend_bool(reverse, by.length, "reverse", "by")
+      wrap_expr(_rbexpr.bottom_k_by(by, k, reverse))
     end
 
     # Get the index values that would sort this column.
