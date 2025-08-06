@@ -429,6 +429,13 @@ impl RbExpr {
             .into()
     }
 
+    pub fn is_close(&self, other: &Self, abs_tol: f64, rel_tol: f64, nans_equal: bool) -> Self {
+        self.inner
+            .clone()
+            .is_close(other.inner.clone(), abs_tol, rel_tol, nans_equal)
+            .into()
+    }
+
     pub fn approx_n_unique(&self) -> Self {
         self.inner.clone().approx_n_unique().into()
     }

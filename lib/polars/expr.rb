@@ -3882,6 +3882,43 @@ module Polars
       )
     end
 
+    # Check if this expression is close, i.e. almost equal, to the other expression.
+    #
+    # @param abs_tol [Float]
+    #   Absolute tolerance. This is the maximum allowed absolute difference between
+    #   two values. Must be non-negative.
+    # @param rel_tol [Float]
+    #   Relative tolerance. This is the maximum allowed difference between two
+    #   values, relative to the larger absolute value. Must be in the range [0, 1).
+    # @param nans_equal [Boolean]
+    #   Whether NaN values should be considered equal.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1.5, 2.0, 2.5], "b" => [1.55, 2.2, 3.0]})
+    #   df.with_columns(Polars.col("a").is_close("b", abs_tol: 0.1).alias("is_close"))
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬──────┬──────────┐
+    #   # │ a   ┆ b    ┆ is_close │
+    #   # │ --- ┆ ---  ┆ ---      │
+    #   # │ f64 ┆ f64  ┆ bool     │
+    #   # ╞═════╪══════╪══════════╡
+    #   # │ 1.5 ┆ 1.55 ┆ true     │
+    #   # │ 2.0 ┆ 2.2  ┆ false    │
+    #   # │ 2.5 ┆ 3.0  ┆ false    │
+    #   # └─────┴──────┴──────────┘
+    def is_close(
+      other,
+      abs_tol: 0.0,
+      rel_tol: 1e-09,
+      nans_equal: false
+    )
+      other = Utils.parse_into_expression(other)
+      wrap_expr(_rbexpr.is_close(other, abs_tol, rel_tol, nans_equal))
+    end
+
     # Hash the elements in the selection.
     #
     # The hash value is of type `:u64`.
