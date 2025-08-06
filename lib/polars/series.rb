@@ -659,6 +659,25 @@ module Polars
       super
     end
 
+    # Compute the natural logarithm of the input array plus one, element-wise.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([1, 2, 3])
+    #   s.log1p
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         0.693147
+    #   #         1.098612
+    #   #         1.386294
+    #   # ]
+    def log1p
+      super
+    end
+
     # Compute the base 10 logarithm of the input array, element-wise.
     #
     # @return [Series]
@@ -1256,6 +1275,64 @@ module Polars
       super
     end
 
+    # Bin values into buckets and count their occurrences.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param bins [Object]
+    #   Bin edges. If nil given, we determine the edges based on the data.
+    # @param bin_count [Integer]
+    #   If `bins` is not provided, `bin_count` uniform bins are created that fully
+    #   encompass the data.
+    # @param include_category [Boolean]
+    #   Include a column that shows the intervals as categories.
+    # @param include_breakpoint [Boolean]
+    #   Include a column that indicates the upper breakpoint.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   a = Polars::Series.new("a", [1, 3, 8, 8, 2, 1, 3])
+    #   a.hist(bin_count: 4)
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌────────────┬─────────────┬───────┐
+    #   # │ breakpoint ┆ category    ┆ count │
+    #   # │ ---        ┆ ---         ┆ ---   │
+    #   # │ f64        ┆ cat         ┆ u32   │
+    #   # ╞════════════╪═════════════╪═══════╡
+    #   # │ 2.75       ┆ [1.0, 2.75] ┆ 3     │
+    #   # │ 4.5        ┆ (2.75, 4.5] ┆ 2     │
+    #   # │ 6.25       ┆ (4.5, 6.25] ┆ 0     │
+    #   # │ 8.0        ┆ (6.25, 8.0] ┆ 2     │
+    #   # └────────────┴─────────────┴───────┘
+    def hist(
+      bins: nil,
+      bin_count: nil,
+      include_category: true,
+      include_breakpoint: true
+    )
+      out = (
+        to_frame
+        .select_seq(
+          F.col(name).hist(
+            bins: bins,
+            bin_count: bin_count,
+            include_category: include_category,
+            include_breakpoint: include_breakpoint
+          )
+        )
+        .to_series
+      )
+      if !include_breakpoint && !include_category
+        out.to_frame
+      else
+        out.struct.unnest
+      end
+    end
+
     # Count the unique values in a Series.
     #
     # @param sort [Boolean]
@@ -1484,6 +1561,29 @@ module Polars
       super
     end
     alias_method :cumsum, :cum_sum
+
+    # Return the cumulative count of the non-null values in the column.
+    #
+    # @param reverse [Boolean]
+    #   Reverse the operation.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(["x", "k", nil, "d"])
+    #   s.cum_count
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         2
+    #   #         3
+    #   # ]
+    def cum_count(reverse: false)
+      super
+    end
 
     # Get an array with the cumulative min computed at every element.
     #
@@ -4493,6 +4593,68 @@ module Polars
       adjust: true,
       min_periods: 1,
       ignore_nulls: true
+    )
+      super
+    end
+
+    # Compute time-based exponentially weighted moving average.
+    #
+    # @param by [Object]
+    #   Times to calculate average by. Should be `DateTime`, `Date`, `UInt64`,
+    #   `UInt32`, `Int64`, or `Int32` data type.
+    # @param half_life [String]
+    #   Unit over which observation decays to half its value.
+    #
+    #   Can be created either from a timedelta, or
+    #   by using the following string language:
+    #
+    #   - 1ns   (1 nanosecond)
+    #   - 1us   (1 microsecond)
+    #   - 1ms   (1 millisecond)
+    #   - 1s    (1 second)
+    #   - 1m    (1 minute)
+    #   - 1h    (1 hour)
+    #   - 1d    (1 day)
+    #   - 1w    (1 week)
+    #   - 1i    (1 index count)
+    #
+    #   Or combine them:
+    #   "3d12h4m25s" # 3 days, 12 hours, 4 minutes, and 25 seconds
+    #
+    #   Note that `half_life` is treated as a constant duration - calendar
+    #   durations such as months (or even days in the time-zone-aware case)
+    #   are not supported, please express your duration in an approximately
+    #   equivalent number of hours (e.g. '370h' instead of '1mo').
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "values" => [0, 1, 2, nil, 4],
+    #       "times" => [
+    #         Date.new(2020, 1, 1),
+    #         Date.new(2020, 1, 3),
+    #         Date.new(2020, 1, 10),
+    #         Date.new(2020, 1, 15),
+    #         Date.new(2020, 1, 17)
+    #       ]
+    #     }
+    #   ).sort("times")
+    #   df["values"].ewm_mean_by(df["times"], half_life: "4d")
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'values' [f64]
+    #   # [
+    #   #         0.0
+    #   #         0.292893
+    #   #         1.492474
+    #   #         null
+    #   #         3.254508
+    #   # ]
+    def ewm_mean_by(
+      by,
+      half_life:
     )
       super
     end

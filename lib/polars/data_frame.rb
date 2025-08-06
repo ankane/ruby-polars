@@ -4444,6 +4444,26 @@ module Polars
       lazy.select(*exprs, **named_exprs).collect(_eager: true)
     end
 
+    # Select columns from this DataFrame.
+    #
+    # This will run all expression sequentially instead of in parallel.
+    # Use this when the work per expression is cheap.
+    #
+    # @param exprs [Array]
+    #   Column(s) to select, specified as positional arguments.
+    #   Accepts expression input. Strings are parsed as column names,
+    #   other non-expression inputs are parsed as literals.
+    # @param named_exprs [Hash]
+    #   Additional columns to select, specified as keyword arguments.
+    #   The columns will be renamed to the keyword used.
+    #
+    # @return [DataFrame]
+    def select_seq(*exprs, **named_exprs)
+      lazy
+      .select_seq(*exprs, **named_exprs)
+      .collect(_eager: true)
+    end
+
     # Add columns to this DataFrame.
     #
     # Added columns will replace existing columns with the same name.
