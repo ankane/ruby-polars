@@ -2270,7 +2270,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3, 4])
-    #   s.take([1, 3])
+    #   s.gather([1, 3])
     #   # =>
     #   # shape: (2,)
     #   # Series: 'a' [i64]
@@ -2278,9 +2278,10 @@ module Polars
     #   #         2
     #   #         4
     #   # ]
-    def take(indices)
-      to_frame.select(Polars.col(name).take(indices)).to_series
+    def gather(indices)
+      super
     end
+    alias_method :take, :gather
 
     # Count the null values in this Series.
     #
