@@ -143,6 +143,7 @@ class DocsTest < Minitest::Test
     in_temp_dir do
       P(cls.to_s).meths.each do |method|
         next if method.visibility != :public || method.tags(:private).any?
+        next if method.namespace.to_s == cls.ancestors[1].to_s
 
         if method.docstring.empty?
           raise "Missing docs (#{method.name})"
