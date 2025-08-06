@@ -979,6 +979,22 @@ impl TryConvert for Wrap<RankMethod> {
     }
 }
 
+impl TryConvert for Wrap<Roll> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "raise" => Roll::Raise,
+            "forward" => Roll::Forward,
+            "backward" => Roll::Backward,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "`roll` must be one of {{'raise', 'forward', 'backward'}}, got {v}",
+                )));
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<TimeUnit> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match String::try_convert(ob)?.as_str() {

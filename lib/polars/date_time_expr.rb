@@ -9,6 +9,57 @@ module Polars
       self._rbexpr = expr._rbexpr
     end
 
+    # Offset by `n` business days.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param n
+    #   Number of business days to offset by. Can be a single number of an
+    #   expression.
+    # @param week_mask
+    #   Which days of the week to count. The default is Monday to Friday.
+    #   If you wanted to count only Monday to Thursday, you would pass
+    #   `[true, true, true, true, false, false, false]`.
+    # @param roll
+    #   What to do when the start date lands on a non-business day. Options are:
+    #
+    #   - `'raise'`: raise an error
+    #   - `'forward'`: move to the next business day
+    #   - `'backward'`: move to the previous business day
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"start" => [Date.new(2020, 1, 1), Date.new(2020, 1, 2)]})
+    #   df.with_columns(result: Polars.col("start").dt.add_business_days(5))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────────┬────────────┐
+    #   # │ start      ┆ result     │
+    #   # │ ---        ┆ ---        │
+    #   # │ date       ┆ date       │
+    #   # ╞════════════╪════════════╡
+    #   # │ 2020-01-01 ┆ 2020-01-08 │
+    #   # │ 2020-01-02 ┆ 2020-01-09 │
+    #   # └────────────┴────────────┘
+    def add_business_days(
+      n,
+      week_mask: [true, true, true, true, true, false, false],
+      roll: "raise"
+    )
+      n_rbexpr = Utils.parse_into_expression(n)
+      Utils.wrap_expr(
+        _rbexpr.dt_add_business_days(
+          n_rbexpr,
+          week_mask,
+          [],
+          roll
+        )
+      )
+    end
+
     # Divide the date/datetime range into buckets.
     #
     # Each date/datetime is mapped to the start of its bucket.

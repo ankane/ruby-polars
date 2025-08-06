@@ -376,7 +376,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_extract_all", method!(RbExpr::str_extract_all, 1))?;
     class.define_method("str_extract_groups", method!(RbExpr::str_extract_groups, 1))?;
     class.define_method("str_count_matches", method!(RbExpr::str_count_matches, 2))?;
-    class.define_method("strftime", method!(RbExpr::dt_to_string, 1))?;
     class.define_method("str_split", method!(RbExpr::str_split, 1))?;
     class.define_method(
         "str_split_inclusive",
@@ -394,6 +393,11 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("list_len", method!(RbExpr::list_len, 0))?;
     class.define_method("list_contains", method!(RbExpr::list_contains, 2))?;
     class.define_method("list_count_matches", method!(RbExpr::list_count_matches, 1))?;
+    class.define_method(
+        "dt_add_business_days",
+        method!(RbExpr::dt_add_business_days, 4),
+    )?;
+    class.define_method("strftime", method!(RbExpr::dt_to_string, 1))?;
     class.define_method("dt_year", method!(RbExpr::dt_year, 0))?;
     class.define_method("dt_is_leap_year", method!(RbExpr::dt_is_leap_year, 0))?;
     class.define_method("dt_iso_year", method!(RbExpr::dt_iso_year, 0))?;

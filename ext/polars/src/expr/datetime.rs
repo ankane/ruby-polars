@@ -4,6 +4,20 @@ use crate::conversion::Wrap;
 use crate::{RbExpr, RbPolarsErr, RbResult};
 
 impl RbExpr {
+    pub fn dt_add_business_days(
+        &self,
+        n: &RbExpr,
+        week_mask: [bool; 7],
+        holidays: Vec<i32>,
+        roll: Wrap<Roll>,
+    ) -> Self {
+        self.inner
+            .clone()
+            .dt()
+            .add_business_days(n.inner.clone(), week_mask, holidays, roll.0)
+            .into()
+    }
+
     pub fn dt_to_string(&self, format: String) -> Self {
         self.inner.clone().dt().to_string(&format).into()
     }
