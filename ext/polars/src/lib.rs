@@ -398,6 +398,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbExpr::dt_add_business_days, 4),
     )?;
     class.define_method("strftime", method!(RbExpr::dt_to_string, 1))?;
+    class.define_method("dt_millennium", method!(RbExpr::dt_millennium, 0))?;
+    class.define_method("dt_century", method!(RbExpr::dt_century, 0))?;
     class.define_method("dt_year", method!(RbExpr::dt_year, 0))?;
     class.define_method("dt_is_leap_year", method!(RbExpr::dt_is_leap_year, 0))?;
     class.define_method("dt_iso_year", method!(RbExpr::dt_iso_year, 0))?;

@@ -368,6 +368,82 @@ module Polars
       Utils.wrap_expr(_rbexpr.strftime(fmt))
     end
 
+    # Extract the millennium from underlying representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the millennium number in the calendar date.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => [
+    #         Date.new(999, 12, 31),
+    #         Date.new(1897, 5, 7),
+    #         Date.new(2000, 1, 1),
+    #         Date.new(2001, 7, 5),
+    #         Date.new(3002, 10, 20)
+    #       ]
+    #     }
+    #   )
+    #   df.with_columns(mlnm: Polars.col("date").dt.millennium)
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌────────────┬──────┐
+    #   # │ date       ┆ mlnm │
+    #   # │ ---        ┆ ---  │
+    #   # │ date       ┆ i32  │
+    #   # ╞════════════╪══════╡
+    #   # │ 0999-12-31 ┆ 1    │
+    #   # │ 1897-05-07 ┆ 2    │
+    #   # │ 2000-01-01 ┆ 2    │
+    #   # │ 2001-07-05 ┆ 3    │
+    #   # │ 3002-10-20 ┆ 4    │
+    #   # └────────────┴──────┘
+    def millennium
+      Utils.wrap_expr(_rbexpr.dt_millennium)
+    end
+
+    # Extract the century from underlying representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the century number in the calendar date.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "date" => [
+    #         Date.new(999, 12, 31),
+    #         Date.new(1897, 5, 7),
+    #         Date.new(2000, 1, 1),
+    #         Date.new(2001, 7, 5),
+    #         Date.new(3002, 10, 20)
+    #       ]
+    #     }
+    #   )
+    #   df.with_columns(cent: Polars.col("date").dt.century)
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌────────────┬──────┐
+    #   # │ date       ┆ cent │
+    #   # │ ---        ┆ ---  │
+    #   # │ date       ┆ i32  │
+    #   # ╞════════════╪══════╡
+    #   # │ 0999-12-31 ┆ 10   │
+    #   # │ 1897-05-07 ┆ 19   │
+    #   # │ 2000-01-01 ┆ 20   │
+    #   # │ 2001-07-05 ┆ 21   │
+    #   # │ 3002-10-20 ┆ 31   │
+    #   # └────────────┴──────┘
+    def century
+      Utils.wrap_expr(_rbexpr.dt_century)
+    end
+
     # Extract year from underlying Date representation.
     #
     # Applies to Date and Datetime columns.

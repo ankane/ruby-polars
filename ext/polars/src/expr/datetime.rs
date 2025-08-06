@@ -112,6 +112,14 @@ impl RbExpr {
             .into()
     }
 
+    pub fn dt_millennium(&self) -> Self {
+        self.inner.clone().dt().millennium().into()
+    }
+
+    pub fn dt_century(&self) -> Self {
+        self.inner.clone().dt().century().into()
+    }
+
     pub fn dt_year(&self) -> Self {
         self.clone().inner.dt().year().into()
     }
