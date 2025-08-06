@@ -4,6 +4,7 @@ use polars::series::IsSorted;
 use polars_core::utils::flatten::flatten_series;
 
 use crate::conversion::*;
+use crate::exceptions::RbIndexError;
 use crate::rb_modules;
 use crate::{RbDataFrame, RbPolarsErr, RbResult, RbSeries};
 
@@ -86,8 +87,39 @@ impl RbSeries {
         }
     }
 
-    pub fn get_idx(&self, idx: usize) -> RbResult<Value> {
-        Ok(Wrap(self.series.borrow().get(idx).map_err(RbPolarsErr::from)?).into_value())
+    pub fn get_index(&self, index: usize) -> RbResult<Value> {
+        let binding = self.series.borrow();
+        let av = match binding.get(index) {
+            Ok(v) => v,
+            Err(PolarsError::OutOfBounds(err)) => {
+                return Err(RbIndexError::new_err(err.to_string()));
+            }
+            Err(e) => return Err(RbPolarsErr::from(e).into()),
+        };
+
+        match av {
+            AnyValue::List(s) | AnyValue::Array(s, _) => {
+                let rbseries = RbSeries::new(s);
+                rb_modules::utils().funcall("wrap_s", (rbseries,))
+            }
+            _ => Ok(Wrap(av).into_value()),
+        }
+    }
+
+    pub fn get_index_signed(&self, index: isize) -> RbResult<Value> {
+        let index = if index < 0 {
+            match self.len().checked_sub(index.unsigned_abs()) {
+                Some(v) => v,
+                None => {
+                    return Err(RbIndexError::new_err(
+                        polars_err!(oob = index, self.len()).to_string(),
+                    ));
+                }
+            }
+        } else {
+            usize::try_from(index).unwrap()
+        };
+        self.get_index(index)
     }
 
     pub fn bitand(&self, other: &RbSeries) -> RbResult<Self> {

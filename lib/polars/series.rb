@@ -447,7 +447,7 @@ module Polars
           item = len + item
         end
 
-        return _s.get_idx(item)
+        return _s.get_index(item)
       end
 
       if item.is_a?(Range)
@@ -494,6 +494,37 @@ module Polars
       else
         raise ArgumentError, "cannot use #{key} for indexing"
       end
+    end
+
+    # Return the Series as a scalar, or return the element at the given index.
+    #
+    # If no index is provided, this is equivalent to `s[0]`, with a check
+    # that the shape is (1,). With an index, this is equivalent to `s[index]`.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   s1 = Polars::Series.new("a", [1])
+    #   s1.item
+    #   # => 1
+    #
+    # @example
+    #   s2 = Polars::Series.new("a", [9, 8, 7])
+    #   s2.cum_sum.item(-1)
+    #   # => 24
+    def item(index = nil)
+      if index.nil?
+        if len != 1
+          msg = (
+            "can only call '.item()' if the Series is of length 1," +
+            " or an explicit index is provided (Series is of length #{len})"
+          )
+          raise ArgumentError, msg
+        end
+        return _s.get_index(0)
+      end
+
+      _s.get_index_signed(index)
     end
 
     # Return an estimation of the total (heap) allocated size of the Series.

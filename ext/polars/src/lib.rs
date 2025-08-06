@@ -899,7 +899,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("estimated_size", method!(RbSeries::estimated_size, 0))?;
     class.define_method("get_fmt", method!(RbSeries::get_fmt, 2))?;
     class.define_method("rechunk", method!(RbSeries::rechunk, 1))?;
-    class.define_method("get_idx", method!(RbSeries::get_idx, 1))?;
+    class.define_method("get_index", method!(RbSeries::get_index, 1))?;
+    class.define_method("get_index_signed", method!(RbSeries::get_index_signed, 1))?;
     class.define_method("bitand", method!(RbSeries::bitand, 1))?;
     class.define_method("bitor", method!(RbSeries::bitor, 1))?;
     class.define_method("bitxor", method!(RbSeries::bitxor, 1))?;

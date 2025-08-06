@@ -20,5 +20,6 @@ macro_rules! create_exception {
 create_exception!(RbTypeError, exception::type_error());
 create_exception!(RbValueError, exception::arg_error());
 create_exception!(RbOverflowError, exception::range_error());
+create_exception!(RbIndexError, exception::index_error());
 create_exception!(ComputeError, rb_modules::compute_error());
 create_exception!(InvalidOperationError, rb_modules::invalid_operation_error());
