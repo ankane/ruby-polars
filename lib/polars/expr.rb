@@ -7238,6 +7238,75 @@ module Polars
       wrap_expr(_rbexpr.ewm_mean(alpha, adjust, min_periods, ignore_nulls))
     end
 
+    # Compute time-based exponentially weighted moving average.
+    #
+    # @param by [Object]
+    #   Times to calculate average by. Should be `DateTime`, `Date`, `UInt64`,
+    #   `UInt32`, `Int64`, or `Int32` data type.
+    # @param half_life [Object]
+    #   Unit over which observation decays to half its value.
+    #
+    #   Can be created either from a timedelta, or
+    #   by using the following string language:
+    #
+    #   - 1ns   (1 nanosecond)
+    #   - 1us   (1 microsecond)
+    #   - 1ms   (1 millisecond)
+    #   - 1s    (1 second)
+    #   - 1m    (1 minute)
+    #   - 1h    (1 hour)
+    #   - 1d    (1 day)
+    #   - 1w    (1 week)
+    #   - 1i    (1 index count)
+    #
+    #   Or combine them:
+    #   "3d12h4m25s" # 3 days, 12 hours, 4 minutes, and 25 seconds
+    #
+    #   Note that `half_life` is treated as a constant duration - calendar
+    #   durations such as months (or even days in the time-zone-aware case)
+    #   are not supported, please express your duration in an approximately
+    #   equivalent number of hours (e.g. '370h' instead of '1mo').
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "values": [0, 1, 2, nil, 4],
+    #       "times": [
+    #           Date.new(2020, 1, 1),
+    #           Date.new(2020, 1, 3),
+    #           Date.new(2020, 1, 10),
+    #           Date.new(2020, 1, 15),
+    #           Date.new(2020, 1, 17)
+    #       ]
+    #     }
+    #   ).sort("times")
+    #   df.with_columns(
+    #     result: Polars.col("values").ewm_mean_by("times", half_life: "4d")
+    #   )
+    #   # =>
+    #   # shape: (5, 3)
+    #   # ┌────────┬────────────┬──────────┐
+    #   # │ values ┆ times      ┆ result   │
+    #   # │ ---    ┆ ---        ┆ ---      │
+    #   # │ i64    ┆ date       ┆ f64      │
+    #   # ╞════════╪════════════╪══════════╡
+    #   # │ 0      ┆ 2020-01-01 ┆ 0.0      │
+    #   # │ 1      ┆ 2020-01-03 ┆ 0.292893 │
+    #   # │ 2      ┆ 2020-01-10 ┆ 1.492474 │
+    #   # │ null   ┆ 2020-01-15 ┆ null     │
+    #   # │ 4      ┆ 2020-01-17 ┆ 3.254508 │
+    #   # └────────┴────────────┴──────────┘
+    def ewm_mean_by(
+      by,
+      half_life:
+    )
+      by = Utils.parse_into_expression(by)
+      half_life = Utils.parse_as_duration_string(half_life)
+      wrap_expr(_rbexpr.ewm_mean_by(by, half_life))
+    end
+
     # Exponentially-weighted moving standard deviation.
     #
     # @return [Expr]

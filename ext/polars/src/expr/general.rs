@@ -808,6 +808,15 @@ impl RbExpr {
         self.inner.clone().ewm_mean(options).into()
     }
 
+    pub fn ewm_mean_by(&self, times: &RbExpr, half_life: String) -> RbResult<Self> {
+        let half_life = Duration::try_parse(&half_life).map_err(RbPolarsErr::from)?;
+        Ok(self
+            .inner
+            .clone()
+            .ewm_mean_by(times.inner.clone(), half_life)
+            .into())
+    }
+
     pub fn ewm_std(
         &self,
         alpha: f64,

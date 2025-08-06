@@ -507,6 +507,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("sample_n", method!(RbExpr::sample_n, 4))?;
     class.define_method("sample_frac", method!(RbExpr::sample_frac, 4))?;
     class.define_method("ewm_mean", method!(RbExpr::ewm_mean, 4))?;
+    class.define_method("ewm_mean_by", method!(RbExpr::ewm_mean_by, 2))?;
     class.define_method("ewm_std", method!(RbExpr::ewm_std, 5))?;
     class.define_method("ewm_var", method!(RbExpr::ewm_var, 5))?;
     class.define_method("extend_constant", method!(RbExpr::extend_constant, 2))?;
