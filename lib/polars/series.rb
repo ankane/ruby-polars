@@ -2786,6 +2786,30 @@ module Polars
       super
     end
 
+    # Fill missing values with the next non-null value.
+    #
+    # This is an alias of `.fill_null(strategy: "backward")`.
+    #
+    # @param limit [Integer]
+    #   The number of consecutive null values to backward fill.
+    #
+    # @return [Series]
+    def backward_fill(limit: nil)
+      fill_null(strategy: "backward", limit: limit)
+    end
+
+    # Fill missing values with the next non-null value.
+    #
+    # This is an alias of `.fill_null(strategy: "forward")`.
+    #
+    # @param limit [Integer]
+    #   The number of consecutive null values to forward fill.
+    #
+    # @return [Series]
+    def forward_fill(limit: nil)
+      fill_null(strategy: "forward", limit: limit)
+    end
+
     # Rounds down to the nearest integer value.
     #
     # Only works on floating point Series.
