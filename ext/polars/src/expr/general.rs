@@ -593,6 +593,23 @@ impl RbExpr {
         Ok(self.inner.clone().over(partition_by).into())
     }
 
+    pub fn rolling(
+        &self,
+        index_column: String,
+        period: String,
+        offset: String,
+        closed: Wrap<ClosedWindow>,
+    ) -> RbResult<Self> {
+        let options = RollingGroupOptions {
+            index_column: index_column.into(),
+            period: Duration::try_parse(&period).map_err(RbPolarsErr::from)?,
+            offset: Duration::try_parse(&offset).map_err(RbPolarsErr::from)?,
+            closed_window: closed.0,
+        };
+
+        Ok(self.inner.clone().rolling(options).into())
+    }
+
     pub fn _and(&self, expr: &Self) -> Self {
         self.inner.clone().and(expr.inner.clone()).into()
     }
