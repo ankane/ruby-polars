@@ -4804,6 +4804,120 @@ module Polars
       super
     end
 
+    # Replace all values by different values.
+    #
+    # @param old [Object]
+    #   Value or sequence of values to replace.
+    #   Also accepts a mapping of values to their replacement as syntactic sugar for
+    #   `replace_strict(old: Polars::Series.new(mapping.keys), new: Polars::Series.new(mapping.values))`.
+    # @param new [Object]
+    #   Value or sequence of values to replace by.
+    #   Length must match the length of `old` or have length 1.
+    # @param default [Object]
+    #   Set values that were not replaced to this value. If no default is specified,
+    #   (default), an error is raised if any values were not replaced.
+    #   Accepts expression input. Non-expression inputs are parsed as literals.
+    # @param return_dtype [Object]
+    #   The data type of the resulting Series. If set to `nil` (default),
+    #   the data type is determined automatically based on the other inputs.
+    #
+    # @return [Series]
+    #
+    # @example Replace values by passing sequences to the `old` and `new` parameters.
+    #   s = Polars::Series.new([1, 2, 2, 3])
+    #   s.replace_strict([1, 2, 3], [100, 200, 300])
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [i64]
+    #   # [
+    #   #         100
+    #   #         200
+    #   #         200
+    #   #         300
+    #   # ]
+    #
+    # @example Passing a mapping with replacements is also supported as syntactic sugar.
+    #   mapping = {1 => 100, 2 => 200, 3 => 300}
+    #   s.replace_strict(mapping)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [i64]
+    #   # [
+    #   #         100
+    #   #         200
+    #   #         200
+    #   #         300
+    #   # ]
+    #
+    # @example By default, an error is raised if any non-null values were not replaced. Specify a default to set all values that were not matched.
+    #   mapping = {2 => 200, 3 => 300}
+    #   s.replace_strict(mapping, default: -1)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [i64]
+    #   # [
+    #   #         -1
+    #   #         200
+    #   #         200
+    #   #         300
+    #   # ]
+    #
+    # @example The default can be another Series.
+    #   default = Polars::Series.new([2.5, 5.0, 7.5, 10.0])
+    #   s.replace_strict(2, 200, default: default)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         2.5
+    #   #         200.0
+    #   #         200.0
+    #   #         10.0
+    #   # ]
+    #
+    # @example Replacing by values of a different data type sets the return type based on a combination of the `new` data type and the `default` data type.
+    #   s = Polars::Series.new(["x", "y", "z"])
+    #   mapping = {"x" => 1, "y" => 2, "z" => 3}
+    #   s.replace_strict(mapping)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ]
+    #
+    # @example
+    #   s.replace_strict(mapping, default: "x")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "1"
+    #   #         "2"
+    #   #         "3"
+    #   # ]
+    #
+    # @example Set the `return_dtype` parameter to control the resulting data type directly.
+    #   s.replace_strict(mapping, return_dtype: Polars::UInt8)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [u8]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ]
+    def replace_strict(
+      old,
+      new = Expr::NO_DEFAULT,
+      default: Expr::NO_DEFAULT,
+      return_dtype: nil
+    )
+      super
+    end
+
     # Reshape this Series to a flat Series or a Series of Lists.
     #
     # @param dims [Array]
