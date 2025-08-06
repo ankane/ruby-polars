@@ -83,6 +83,18 @@ impl RbExpr {
         self.inner.clone().list().mean().into()
     }
 
+    pub fn list_median(&self) -> Self {
+        self.inner.clone().list().median().into()
+    }
+
+    pub fn list_std(&self, ddof: u8) -> Self {
+        self.inner.clone().list().std(ddof).into()
+    }
+
+    pub fn list_var(&self, ddof: u8) -> Self {
+        self.inner.clone().list().var(ddof).into()
+    }
+
     pub fn list_min(&self) -> Self {
         self.inner.clone().list().min().into()
     }
@@ -171,6 +183,14 @@ impl RbExpr {
             .into()
     }
 
+    pub fn list_gather_every(&self, n: &RbExpr, offset: &RbExpr) -> Self {
+        self.inner
+            .clone()
+            .list()
+            .gather_every(n.inner.clone(), offset.inner.clone())
+            .into()
+    }
+
     pub fn list_to_array(&self, width: usize) -> Self {
         self.inner.clone().list().to_array(width).into()
     }
@@ -203,6 +223,10 @@ impl RbExpr {
                 max_fields: upper_bound,
             })
             .into())
+    }
+
+    pub fn list_n_unique(&self) -> Self {
+        self.inner.clone().list().n_unique().into()
     }
 
     pub fn list_unique(&self, maintain_order: bool) -> Self {

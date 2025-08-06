@@ -243,6 +243,79 @@ module Polars
       Utils.wrap_expr(_rbexpr.list_mean)
     end
 
+    # Compute the median value of the lists in the array.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"values" => [[-1, 0, 1], [1, 10]]})
+    #   df.with_columns(Polars.col("values").list.median.alias("median"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────────┬────────┐
+    #   # │ values     ┆ median │
+    #   # │ ---        ┆ ---    │
+    #   # │ list[i64]  ┆ f64    │
+    #   # ╞════════════╪════════╡
+    #   # │ [-1, 0, 1] ┆ 0.0    │
+    #   # │ [1, 10]    ┆ 5.5    │
+    #   # └────────────┴────────┘
+    def median
+      Utils.wrap_expr(_rbexpr.list_median)
+    end
+
+    # Compute the std value of the lists in the array.
+    #
+    # @param ddof [Integer]
+    #   “Delta Degrees of Freedom”: the divisor used in the calculation is N - ddof,
+    #   where N represents the number of elements.
+    #   By default ddof is 1.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"values" => [[-1, 0, 1], [1, 10]]})
+    #   df.with_columns(Polars.col("values").list.std.alias("std"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────────┬──────────┐
+    #   # │ values     ┆ std      │
+    #   # │ ---        ┆ ---      │
+    #   # │ list[i64]  ┆ f64      │
+    #   # ╞════════════╪══════════╡
+    #   # │ [-1, 0, 1] ┆ 1.0      │
+    #   # │ [1, 10]    ┆ 6.363961 │
+    #   # └────────────┴──────────┘
+    def std(ddof: 1)
+      Utils.wrap_expr(_rbexpr.list_std(ddof))
+    end
+
+    # Compute the var value of the lists in the array.
+    #
+    # @param ddof [Integer]
+    #   “Delta Degrees of Freedom”: the divisor used in the calculation is N - ddof,
+    #   where N represents the number of elements.
+    #   By default ddof is 1.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"values" => [[-1, 0, 1], [1, 10]]})
+    #   df.with_columns(Polars.col("values").list.var.alias("var"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────────┬──────┐
+    #   # │ values     ┆ var  │
+    #   # │ ---        ┆ ---  │
+    #   # │ list[i64]  ┆ f64  │
+    #   # ╞════════════╪══════╡
+    #   # │ [-1, 0, 1] ┆ 1.0  │
+    #   # │ [1, 10]    ┆ 40.5 │
+    #   # └────────────┴──────┘
+    def var(ddof: 1)
+      Utils.wrap_expr(_rbexpr.list_var(ddof))
+    end
+
     # Sort the arrays in the list.
     #
     # @param reverse [Boolean]
@@ -320,6 +393,31 @@ module Polars
     #   # └───────────┘
     def unique(maintain_order: false)
       Utils.wrap_expr(_rbexpr.list_unique(maintain_order))
+    end
+
+    # Count the number of unique values in every sub-lists.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [[1, 1, 2], [2, 3, 4]]
+    #     }
+    #   )
+    #   df.with_columns(n_unique: Polars.col("a").list.n_unique)
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌───────────┬──────────┐
+    #   # │ a         ┆ n_unique │
+    #   # │ ---       ┆ ---      │
+    #   # │ list[i64] ┆ u32      │
+    #   # ╞═══════════╪══════════╡
+    #   # │ [1, 1, 2] ┆ 2        │
+    #   # │ [2, 3, 4] ┆ 3        │
+    #   # └───────────┴──────────┘
+    def n_unique
+      Utils.wrap_expr(_rbexpr.list_n_unique)
     end
 
     # Concat the arrays in a Series dtype List in linear time.
@@ -437,6 +535,48 @@ module Polars
       Utils.wrap_expr(_rbexpr.list_gather(indices, null_on_oob))
     end
     alias_method :take, :gather
+
+    # Take every n-th value start from offset in sublists.
+    #
+    # @param n [Integer]
+    #   Gather every n-th element.
+    # @param offset [Integer]
+    #   Starting index.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [[1, 2, 3, 4, 5], [6, 7, 8], [9, 10, 11, 12]],
+    #       "n" => [2, 1, 3],
+    #       "offset" => [0, 1, 0]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     gather_every: Polars.col("a").list.gather_every(
+    #       Polars.col("n"), Polars.col("offset")
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌───────────────┬─────┬────────┬──────────────┐
+    #   # │ a             ┆ n   ┆ offset ┆ gather_every │
+    #   # │ ---           ┆ --- ┆ ---    ┆ ---          │
+    #   # │ list[i64]     ┆ i64 ┆ i64    ┆ list[i64]    │
+    #   # ╞═══════════════╪═════╪════════╪══════════════╡
+    #   # │ [1, 2, … 5]   ┆ 2   ┆ 0      ┆ [1, 3, 5]    │
+    #   # │ [6, 7, 8]     ┆ 1   ┆ 1      ┆ [7, 8]       │
+    #   # │ [9, 10, … 12] ┆ 3   ┆ 0      ┆ [9, 12]      │
+    #   # └───────────────┴─────┴────────┴──────────────┘
+    def gather_every(
+      n,
+      offset = 0
+    )
+      n = Utils.parse_into_expression(n)
+      offset = Utils.parse_into_expression(offset)
+      Utils.wrap_expr(_rbexpr.list_gather_every(n, offset))
+    end
 
     # Get the first value of the sublists.
     #
@@ -754,6 +894,33 @@ module Polars
       Utils.wrap_expr(_rbexpr.list_count_matches(Utils.parse_into_expression(element)))
     end
     alias_method :count_match, :count_matches
+
+    # Convert a List column into an Array column with the same inner data type.
+    #
+    # @param width [Integer]
+    #   Width of the resulting Array column.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [[1, 2], [3, 4]]},
+    #     schema: {"a" => Polars::List.new(Polars::Int8)}
+    #   )
+    #   df.with_columns(array: Polars.col("a").list.to_array(2))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌──────────┬──────────────┐
+    #   # │ a        ┆ array        │
+    #   # │ ---      ┆ ---          │
+    #   # │ list[i8] ┆ array[i8, 2] │
+    #   # ╞══════════╪══════════════╡
+    #   # │ [1, 2]   ┆ [1, 2]       │
+    #   # │ [3, 4]   ┆ [3, 4]       │
+    #   # └──────────┴──────────────┘
+    def to_array(width)
+      Utils.wrap_expr(_rbexpr.list_to_array(width))
+    end
 
     # Convert the series of type `List` to a series of type `Struct`.
     #

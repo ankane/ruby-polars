@@ -496,11 +496,16 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbExpr::list_sample_fraction, 4),
     )?;
     class.define_method("list_gather", method!(RbExpr::list_gather, 2))?;
+    class.define_method("list_gather_every", method!(RbExpr::list_gather_every, 2))?;
     class.define_method("list_to_array", method!(RbExpr::list_to_array, 1))?;
     class.define_method("list_mean", method!(RbExpr::list_mean, 0))?;
+    class.define_method("list_median", method!(RbExpr::list_median, 0))?;
+    class.define_method("list_std", method!(RbExpr::list_std, 1))?;
+    class.define_method("list_var", method!(RbExpr::list_var, 1))?;
     class.define_method("list_tail", method!(RbExpr::list_tail, 1))?;
     class.define_method("list_sort", method!(RbExpr::list_sort, 2))?;
     class.define_method("list_reverse", method!(RbExpr::list_reverse, 0))?;
+    class.define_method("list_n_unique", method!(RbExpr::list_n_unique, 0))?;
     class.define_method("list_unique", method!(RbExpr::list_unique, 1))?;
     class.define_method("list_set_operation", method!(RbExpr::list_set_operation, 2))?;
     class.define_method("list_get", method!(RbExpr::list_get, 2))?;
