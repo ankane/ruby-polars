@@ -26,56 +26,56 @@ module Polars
     #
     # @return [Expr]
     def ^(other)
-      _from_rbexpr(_rbexpr._xor(_to_rbexpr(other)))
+      wrap_expr(_rbexpr._xor(_to_rbexpr(other)))
     end
 
     # Bitwise AND.
     #
     # @return [Expr]
     def &(other)
-      _from_rbexpr(_rbexpr._and(_to_rbexpr(other)))
+      wrap_expr(_rbexpr._and(_to_rbexpr(other)))
     end
 
     # Bitwise OR.
     #
     # @return [Expr]
     def |(other)
-      _from_rbexpr(_rbexpr._or(_to_rbexpr(other)))
+      wrap_expr(_rbexpr._or(_to_rbexpr(other)))
     end
 
     # Performs addition.
     #
     # @return [Expr]
     def +(other)
-      _from_rbexpr(_rbexpr + _to_rbexpr(other))
+      wrap_expr(_rbexpr + _to_rbexpr(other))
     end
 
     # Performs subtraction.
     #
     # @return [Expr]
     def -(other)
-      _from_rbexpr(_rbexpr - _to_rbexpr(other))
+      wrap_expr(_rbexpr - _to_rbexpr(other))
     end
 
     # Performs multiplication.
     #
     # @return [Expr]
     def *(other)
-      _from_rbexpr(_rbexpr * _to_rbexpr(other))
+      wrap_expr(_rbexpr * _to_rbexpr(other))
     end
 
     # Performs division.
     #
     # @return [Expr]
     def /(other)
-      _from_rbexpr(_rbexpr / _to_rbexpr(other))
+      wrap_expr(_rbexpr / _to_rbexpr(other))
     end
 
     # Returns the modulo.
     #
     # @return [Expr]
     def %(other)
-      _from_rbexpr(_rbexpr % _to_rbexpr(other))
+      wrap_expr(_rbexpr % _to_rbexpr(other))
     end
 
     # Raises to the power of exponent.
@@ -83,49 +83,49 @@ module Polars
     # @return [Expr]
     def **(power)
       exponent = Utils.parse_into_expression(power)
-      _from_rbexpr(_rbexpr.pow(exponent))
+      wrap_expr(_rbexpr.pow(exponent))
     end
 
     # Greater than or equal.
     #
     # @return [Expr]
     def >=(other)
-      _from_rbexpr(_rbexpr.gt_eq(_to_expr(other)._rbexpr))
+      wrap_expr(_rbexpr.gt_eq(_to_expr(other)._rbexpr))
     end
 
     # Less than or equal.
     #
     # @return [Expr]
     def <=(other)
-      _from_rbexpr(_rbexpr.lt_eq(_to_expr(other)._rbexpr))
+      wrap_expr(_rbexpr.lt_eq(_to_expr(other)._rbexpr))
     end
 
     # Equal.
     #
     # @return [Expr]
     def ==(other)
-      _from_rbexpr(_rbexpr.eq(_to_expr(other)._rbexpr))
+      wrap_expr(_rbexpr.eq(_to_expr(other)._rbexpr))
     end
 
     # Not equal.
     #
     # @return [Expr]
     def !=(other)
-      _from_rbexpr(_rbexpr.neq(_to_expr(other)._rbexpr))
+      wrap_expr(_rbexpr.neq(_to_expr(other)._rbexpr))
     end
 
     # Less than.
     #
     # @return [Expr]
     def <(other)
-      _from_rbexpr(_rbexpr.lt(_to_expr(other)._rbexpr))
+      wrap_expr(_rbexpr.lt(_to_expr(other)._rbexpr))
     end
 
     # Greater than.
     #
     # @return [Expr]
     def >(other)
-      _from_rbexpr(_rbexpr.gt(_to_expr(other)._rbexpr))
+      wrap_expr(_rbexpr.gt(_to_expr(other)._rbexpr))
     end
 
     # Performs boolean not.
@@ -140,7 +140,7 @@ module Polars
     #
     # @return [Expr]
     def -@
-      _from_rbexpr(_rbexpr.neg)
+      wrap_expr(_rbexpr.neg)
     end
 
     # Cast to physical representation of the logical dtype.
@@ -177,7 +177,7 @@ module Polars
     #   # │ a    ┆ 0             │
     #   # └──────┴───────────────┘
     def to_physical
-      _from_rbexpr(_rbexpr.to_physical)
+      wrap_expr(_rbexpr.to_physical)
     end
 
     # Check if any boolean value in a Boolean column is `true`.
@@ -197,7 +197,7 @@ module Polars
     #   # │ true ┆ false │
     #   # └──────┴───────┘
     def any(drop_nulls: true)
-      _from_rbexpr(_rbexpr.any(drop_nulls))
+      wrap_expr(_rbexpr.any(drop_nulls))
     end
 
     # Check if all boolean values in a Boolean column are `true`.
@@ -222,7 +222,7 @@ module Polars
     #   # │ true ┆ false ┆ false │
     #   # └──────┴───────┴───────┘
     def all(drop_nulls: true)
-      _from_rbexpr(_rbexpr.all(drop_nulls))
+      wrap_expr(_rbexpr.all(drop_nulls))
     end
 
     # Return indices where expression evaluates `true`.
@@ -336,7 +336,7 @@ module Polars
     #   # │ 54.59815 │
     #   # └──────────┘
     def exp
-      _from_rbexpr(_rbexpr.exp)
+      wrap_expr(_rbexpr.exp)
     end
 
     # Rename the output of an expression.
@@ -371,7 +371,7 @@ module Polars
     #   # │ 3   ┆ null │
     #   # └─────┴──────┘
     def alias(name)
-      _from_rbexpr(_rbexpr._alias(name))
+      wrap_expr(_rbexpr._alias(name))
     end
 
     # TODO support symbols for exclude
@@ -559,7 +559,7 @@ module Polars
     #   # │ true  │
     #   # └───────┘
     def is_not
-      _from_rbexpr(_rbexpr.not_)
+      wrap_expr(_rbexpr.not_)
     end
     alias_method :not_, :is_not
 
@@ -589,7 +589,7 @@ module Polars
     #   # │ 5    ┆ 5.0 ┆ false    ┆ false    │
     #   # └──────┴─────┴──────────┴──────────┘
     def is_null
-      _from_rbexpr(_rbexpr.is_null)
+      wrap_expr(_rbexpr.is_null)
     end
 
     # Returns a boolean Series indicating which values are not null.
@@ -618,7 +618,7 @@ module Polars
     #   # │ 5    ┆ 5.0 ┆ true       ┆ true       │
     #   # └──────┴─────┴────────────┴────────────┘
     def is_not_null
-      _from_rbexpr(_rbexpr.is_not_null)
+      wrap_expr(_rbexpr.is_not_null)
     end
 
     # Returns a boolean Series indicating which values are finite.
@@ -644,7 +644,7 @@ module Polars
     #   # │ true ┆ false │
     #   # └──────┴───────┘
     def is_finite
-      _from_rbexpr(_rbexpr.is_finite)
+      wrap_expr(_rbexpr.is_finite)
     end
 
     # Returns a boolean Series indicating which values are infinite.
@@ -670,7 +670,7 @@ module Polars
     #   # │ false ┆ true  │
     #   # └───────┴───────┘
     def is_infinite
-      _from_rbexpr(_rbexpr.is_infinite)
+      wrap_expr(_rbexpr.is_infinite)
     end
 
     # Returns a boolean Series indicating which values are NaN.
@@ -703,7 +703,7 @@ module Polars
     #   # │ 5    ┆ 5.0 ┆ false   │
     #   # └──────┴─────┴─────────┘
     def is_nan
-      _from_rbexpr(_rbexpr.is_nan)
+      wrap_expr(_rbexpr.is_nan)
     end
 
     # Returns a boolean Series indicating which values are not NaN.
@@ -736,7 +736,7 @@ module Polars
     #   # │ 5    ┆ 5.0 ┆ true         │
     #   # └──────┴─────┴──────────────┘
     def is_not_nan
-      _from_rbexpr(_rbexpr.is_not_nan)
+      wrap_expr(_rbexpr.is_not_nan)
     end
 
     # Get the group indexes of the group by operation.
@@ -771,7 +771,7 @@ module Polars
     #   # │ two   ┆ [3, 4, 5] │
     #   # └───────┴───────────┘
     def agg_groups
-      _from_rbexpr(_rbexpr.agg_groups)
+      wrap_expr(_rbexpr.agg_groups)
     end
 
     # Count the number of values in this expression.
@@ -791,7 +791,7 @@ module Polars
     #   # │ 3   ┆ 2   │
     #   # └─────┴─────┘
     def count
-      _from_rbexpr(_rbexpr.count)
+      wrap_expr(_rbexpr.count)
     end
 
     # Count the number of values in this expression.
@@ -811,7 +811,7 @@ module Polars
     #   # │ 3   ┆ 3   │
     #   # └─────┴─────┘
     def len
-      _from_rbexpr(_rbexpr.len)
+      wrap_expr(_rbexpr.len)
     end
     alias_method :length, :len
 
@@ -850,7 +850,7 @@ module Polars
       if !length.is_a?(Expr)
         length = Polars.lit(length)
       end
-      _from_rbexpr(_rbexpr.slice(offset._rbexpr, length._rbexpr))
+      wrap_expr(_rbexpr.slice(offset._rbexpr, length._rbexpr))
     end
 
     # Append expressions.
@@ -884,7 +884,7 @@ module Polars
     #   # └─────┴──────┘
     def append(other, upcast: true)
       other = Utils.parse_into_expression(other)
-      _from_rbexpr(_rbexpr.append(other, upcast))
+      wrap_expr(_rbexpr.append(other, upcast))
     end
 
     # Create a single chunk of memory for this Series.
@@ -909,7 +909,7 @@ module Polars
     #   # │ 2      │
     #   # └────────┘
     def rechunk
-      _from_rbexpr(_rbexpr.rechunk)
+      wrap_expr(_rbexpr.rechunk)
     end
 
     # Drop null values.
@@ -936,7 +936,7 @@ module Polars
     #   # │ NaN │
     #   # └─────┘
     def drop_nulls
-      _from_rbexpr(_rbexpr.drop_nulls)
+      wrap_expr(_rbexpr.drop_nulls)
     end
 
     # Drop floating point NaN values.
@@ -963,7 +963,7 @@ module Polars
     #   # │ 4.0  │
     #   # └──────┘
     def drop_nans
-      _from_rbexpr(_rbexpr.drop_nans)
+      wrap_expr(_rbexpr.drop_nans)
     end
 
     # Get an array with the cumulative sum computed at every element.
@@ -998,7 +998,7 @@ module Polars
     #   # │ 10  ┆ 4         │
     #   # └─────┴───────────┘
     def cum_sum(reverse: false)
-      _from_rbexpr(_rbexpr.cum_sum(reverse))
+      wrap_expr(_rbexpr.cum_sum(reverse))
     end
     alias_method :cumsum, :cum_sum
 
@@ -1034,7 +1034,7 @@ module Polars
     #   # │ 24  ┆ 4         │
     #   # └─────┴───────────┘
     def cum_prod(reverse: false)
-      _from_rbexpr(_rbexpr.cum_prod(reverse))
+      wrap_expr(_rbexpr.cum_prod(reverse))
     end
     alias_method :cumprod, :cum_prod
 
@@ -1066,7 +1066,7 @@ module Polars
     #   # │ 1   ┆ 4         │
     #   # └─────┴───────────┘
     def cum_min(reverse: false)
-      _from_rbexpr(_rbexpr.cum_min(reverse))
+      wrap_expr(_rbexpr.cum_min(reverse))
     end
     alias_method :cummin, :cum_min
 
@@ -1098,7 +1098,7 @@ module Polars
     #   # │ 4   ┆ 4         │
     #   # └─────┴───────────┘
     def cum_max(reverse: false)
-      _from_rbexpr(_rbexpr.cum_max(reverse))
+      wrap_expr(_rbexpr.cum_max(reverse))
     end
     alias_method :cummax, :cum_max
 
@@ -1132,7 +1132,7 @@ module Polars
     #   # │ d    ┆ 3         ┆ 1                 │
     #   # └──────┴───────────┴───────────────────┘
     def cum_count(reverse: false)
-      _from_rbexpr(_rbexpr.cum_count(reverse))
+      wrap_expr(_rbexpr.cum_count(reverse))
     end
     alias_method :cumcount, :cum_count
 
@@ -1158,7 +1158,7 @@ module Polars
     #   # │ 1.0 │
     #   # └─────┘
     def floor
-      _from_rbexpr(_rbexpr.floor)
+      wrap_expr(_rbexpr.floor)
     end
 
     # Rounds up to the nearest integer value.
@@ -1183,7 +1183,7 @@ module Polars
     #   # │ 2.0 │
     #   # └─────┘
     def ceil
-      _from_rbexpr(_rbexpr.ceil)
+      wrap_expr(_rbexpr.ceil)
     end
 
     # Round underlying floating point data by `decimals` digits.
@@ -1216,7 +1216,7 @@ module Polars
     #   # │ 1.2 │
     #   # └─────┘
     def round(decimals = 0, mode: "half_to_even")
-      _from_rbexpr(_rbexpr.round(decimals, mode))
+      wrap_expr(_rbexpr.round(decimals, mode))
     end
 
     # Round to a number of significant figures.
@@ -1270,7 +1270,7 @@ module Polars
     #   # └─────┘
     def dot(other)
       other = Utils.parse_into_expression(other, str_as_lit: false)
-      _from_rbexpr(_rbexpr.dot(other))
+      wrap_expr(_rbexpr.dot(other))
     end
 
     # Compute the most occurring value(s).
@@ -1298,7 +1298,7 @@ module Polars
     #   # │ 1   ┆ 2   │
     #   # └─────┴─────┘
     def mode
-      _from_rbexpr(_rbexpr.mode)
+      wrap_expr(_rbexpr.mode)
     end
 
     # Cast between data types.
@@ -1337,7 +1337,7 @@ module Polars
     #   # └─────┴─────┘
     def cast(dtype, strict: true)
       dtype = Utils.rb_type_to_dtype(dtype)
-      _from_rbexpr(_rbexpr.cast(dtype, strict))
+      wrap_expr(_rbexpr.cast(dtype, strict))
     end
 
     # Sort this column. In projection/ selection context the whole column is sorted.
@@ -1412,7 +1412,7 @@ module Polars
     #   # │ one   ┆ [1, 2, 98] │
     #   # └───────┴────────────┘
     def sort(reverse: false, nulls_last: false)
-      _from_rbexpr(_rbexpr.sort_with(reverse, nulls_last))
+      wrap_expr(_rbexpr.sort_with(reverse, nulls_last))
     end
 
     # Return the `k` largest elements.
@@ -1451,7 +1451,7 @@ module Polars
     #   # └───────┴──────────┘
     def top_k(k: 5)
       k = Utils.parse_into_expression(k)
-      _from_rbexpr(_rbexpr.top_k(k))
+      wrap_expr(_rbexpr.top_k(k))
     end
 
     # Return the `k` smallest elements.
@@ -1490,7 +1490,7 @@ module Polars
     #   # └───────┴──────────┘
     def bottom_k(k: 5)
       k = Utils.parse_into_expression(k)
-      _from_rbexpr(_rbexpr.bottom_k(k))
+      wrap_expr(_rbexpr.bottom_k(k))
     end
 
     # Get the index values that would sort this column.
@@ -1521,7 +1521,7 @@ module Polars
     #   # │ 2   │
     #   # └─────┘
     def arg_sort(reverse: false, nulls_last: false)
-      _from_rbexpr(_rbexpr.arg_sort(reverse, nulls_last))
+      wrap_expr(_rbexpr.arg_sort(reverse, nulls_last))
     end
 
     # Get the index of the maximal value.
@@ -1545,7 +1545,7 @@ module Polars
     #   # │ 2   │
     #   # └─────┘
     def arg_max
-      _from_rbexpr(_rbexpr.arg_max)
+      wrap_expr(_rbexpr.arg_max)
     end
 
     # Get the index of the minimal value.
@@ -1569,7 +1569,7 @@ module Polars
     #   # │ 1   │
     #   # └─────┘
     def arg_min
-      _from_rbexpr(_rbexpr.arg_min)
+      wrap_expr(_rbexpr.arg_min)
     end
 
     # Get the index of the first occurrence of a value, or ``None`` if it's not found.
@@ -1640,7 +1640,7 @@ module Polars
     #   # └──────┴───────┴─────┘
     def search_sorted(element, side: "any", descending: false)
       element = Utils.parse_into_expression(element, str_as_lit: false)
-      _from_rbexpr(_rbexpr.search_sorted(element, side, descending))
+      wrap_expr(_rbexpr.search_sorted(element, side, descending))
     end
 
     # Sort this column by the ordering of another column, or multiple other columns.
@@ -1698,7 +1698,7 @@ module Polars
       by = Utils.parse_into_list_of_expressions(by, *more_by)
       reverse = Utils.extend_bool(reverse, by.length, "reverse", "by")
       nulls_last = Utils.extend_bool(nulls_last, by.length, "nulls_last", "by")
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.sort_by(
           by, reverse, nulls_last, multithreaded, maintain_order
         )
@@ -1743,7 +1743,7 @@ module Polars
       else
         indices_lit = Utils.parse_into_expression(indices, str_as_lit: false)
       end
-      _from_rbexpr(_rbexpr.gather(indices_lit))
+      wrap_expr(_rbexpr.gather(indices_lit))
     end
     alias_method :take, :gather
 
@@ -1781,7 +1781,7 @@ module Polars
     #   # └───────┴───────┘
     def get(index)
       index_lit = Utils.parse_into_expression(index)
-      _from_rbexpr(_rbexpr.get(index_lit))
+      wrap_expr(_rbexpr.get(index_lit))
     end
 
     # Shift the values by a given period.
@@ -1813,7 +1813,7 @@ module Polars
         fill_value = Utils.parse_into_expression(fill_value, str_as_lit: true)
       end
       n = Utils.parse_into_expression(n)
-      _from_rbexpr(_rbexpr.shift(n, fill_value))
+      wrap_expr(_rbexpr.shift(n, fill_value))
     end
 
     # Shift the values by a given period and fill the resulting null values.
@@ -1916,9 +1916,9 @@ module Polars
 
       if !value.nil?
         value = Utils.parse_into_expression(value, str_as_lit: true)
-        _from_rbexpr(_rbexpr.fill_null(value))
+        wrap_expr(_rbexpr.fill_null(value))
       else
-        _from_rbexpr(_rbexpr.fill_null_with_strategy(strategy, limit))
+        wrap_expr(_rbexpr.fill_null_with_strategy(strategy, limit))
       end
     end
 
@@ -1947,7 +1947,7 @@ module Polars
     #   # └──────┴──────┘
     def fill_nan(fill_value)
       fill_value = Utils.parse_into_expression(fill_value, str_as_lit: true)
-      _from_rbexpr(_rbexpr.fill_nan(fill_value))
+      wrap_expr(_rbexpr.fill_nan(fill_value))
     end
 
     # Fill missing values with the latest seen values.
@@ -2043,7 +2043,7 @@ module Polars
     #   # │ 5   ┆ banana ┆ 1   ┆ beetle ┆ 1         ┆ banana         ┆ 5         ┆ beetle       │
     #   # └─────┴────────┴─────┴────────┴───────────┴────────────────┴───────────┴──────────────┘
     def reverse
-      _from_rbexpr(_rbexpr.reverse)
+      wrap_expr(_rbexpr.reverse)
     end
 
     # Get standard deviation.
@@ -2066,7 +2066,7 @@ module Polars
     #   # │ 1.0 │
     #   # └─────┘
     def std(ddof: 1)
-      _from_rbexpr(_rbexpr.std(ddof))
+      wrap_expr(_rbexpr.std(ddof))
     end
 
     # Get variance.
@@ -2089,7 +2089,7 @@ module Polars
     #   # │ 1.0 │
     #   # └─────┘
     def var(ddof: 1)
-      _from_rbexpr(_rbexpr.var(ddof))
+      wrap_expr(_rbexpr.var(ddof))
     end
 
     # Get maximum value.
@@ -2109,7 +2109,7 @@ module Polars
     #   # │ 1.0 │
     #   # └─────┘
     def max
-      _from_rbexpr(_rbexpr.max)
+      wrap_expr(_rbexpr.max)
     end
 
     # Get minimum value.
@@ -2129,7 +2129,7 @@ module Polars
     #   # │ -1.0 │
     #   # └──────┘
     def min
-      _from_rbexpr(_rbexpr.min)
+      wrap_expr(_rbexpr.min)
     end
 
     # Get maximum value, but propagate/poison encountered NaN values.
@@ -2149,7 +2149,7 @@ module Polars
     #   # │ NaN │
     #   # └─────┘
     def nan_max
-      _from_rbexpr(_rbexpr.nan_max)
+      wrap_expr(_rbexpr.nan_max)
     end
 
     # Get minimum value, but propagate/poison encountered NaN values.
@@ -2169,7 +2169,7 @@ module Polars
     #   # │ NaN │
     #   # └─────┘
     def nan_min
-      _from_rbexpr(_rbexpr.nan_min)
+      wrap_expr(_rbexpr.nan_min)
     end
 
     # Get sum value.
@@ -2193,7 +2193,7 @@ module Polars
     #   # │ 0   │
     #   # └─────┘
     def sum
-      _from_rbexpr(_rbexpr.sum)
+      wrap_expr(_rbexpr.sum)
     end
 
     # Get mean value.
@@ -2213,7 +2213,7 @@ module Polars
     #   # │ 0.0 │
     #   # └─────┘
     def mean
-      _from_rbexpr(_rbexpr.mean)
+      wrap_expr(_rbexpr.mean)
     end
 
     # Get median value using linear interpolation.
@@ -2233,7 +2233,7 @@ module Polars
     #   # │ 0.0 │
     #   # └─────┘
     def median
-      _from_rbexpr(_rbexpr.median)
+      wrap_expr(_rbexpr.median)
     end
 
     # Compute the product of an expression.
@@ -2253,7 +2253,7 @@ module Polars
     #   # │ 6   │
     #   # └─────┘
     def product
-      _from_rbexpr(_rbexpr.product)
+      wrap_expr(_rbexpr.product)
     end
 
     # Count unique values.
@@ -2273,7 +2273,7 @@ module Polars
     #   # │ 2   │
     #   # └─────┘
     def n_unique
-      _from_rbexpr(_rbexpr.n_unique)
+      wrap_expr(_rbexpr.n_unique)
     end
 
     # Approx count unique values.
@@ -2295,7 +2295,7 @@ module Polars
     #   # │ 2   │
     #   # └─────┘
     def approx_n_unique
-      _from_rbexpr(_rbexpr.approx_n_unique)
+      wrap_expr(_rbexpr.approx_n_unique)
     end
     alias_method :approx_unique, :approx_n_unique
 
@@ -2321,7 +2321,7 @@ module Polars
     #   # │ 2   ┆ 0   │
     #   # └─────┴─────┘
     def null_count
-      _from_rbexpr(_rbexpr.null_count)
+      wrap_expr(_rbexpr.null_count)
     end
 
     # Check whether the expression contains one or more null values.
@@ -2387,7 +2387,7 @@ module Polars
     #   # │ 1   │
     #   # └─────┘
     def arg_unique
-      _from_rbexpr(_rbexpr.arg_unique)
+      wrap_expr(_rbexpr.arg_unique)
     end
 
     # Get unique values of this expression.
@@ -2412,9 +2412,9 @@ module Polars
     #   # └─────┘
     def unique(maintain_order: false)
       if maintain_order
-        _from_rbexpr(_rbexpr.unique_stable)
+        wrap_expr(_rbexpr.unique_stable)
       else
-        _from_rbexpr(_rbexpr.unique)
+        wrap_expr(_rbexpr.unique)
       end
     end
 
@@ -2435,7 +2435,7 @@ module Polars
     #   # │ 1   │
     #   # └─────┘
     def first
-      _from_rbexpr(_rbexpr.first)
+      wrap_expr(_rbexpr.first)
     end
 
     # Get the last value.
@@ -2455,7 +2455,7 @@ module Polars
     #   # │ 2   │
     #   # └─────┘
     def last
-      _from_rbexpr(_rbexpr.last)
+      wrap_expr(_rbexpr.last)
     end
 
     # Apply window function over a subgroup.
@@ -2519,7 +2519,7 @@ module Polars
     #   # └────────┘
     def over(expr)
       rbexprs = Utils.parse_into_list_of_expressions(expr)
-      _from_rbexpr(_rbexpr.over(rbexprs))
+      wrap_expr(_rbexpr.over(rbexprs))
     end
 
     # Create rolling groups based on a temporal or integer column.
@@ -2644,7 +2644,7 @@ module Polars
     #   # │ true  │
     #   # └───────┘
     def is_unique
-      _from_rbexpr(_rbexpr.is_unique)
+      wrap_expr(_rbexpr.is_unique)
     end
 
     # Get a mask of the first unique value.
@@ -2672,7 +2672,7 @@ module Polars
     #   # │ 5   ┆ true     │
     #   # └─────┴──────────┘
     def is_first_distinct
-      _from_rbexpr(_rbexpr.is_first_distinct)
+      wrap_expr(_rbexpr.is_first_distinct)
     end
     alias_method :is_first, :is_first_distinct
 
@@ -2719,7 +2719,7 @@ module Polars
     #   # │ false │
     #   # └───────┘
     def is_duplicated
-      _from_rbexpr(_rbexpr.is_duplicated)
+      wrap_expr(_rbexpr.is_duplicated)
     end
 
     # Get a boolean mask of the local maximum peaks.
@@ -2743,7 +2743,7 @@ module Polars
     #   # │ true  │
     #   # └───────┘
     def peak_max
-      _from_rbexpr(_rbexpr.peak_max)
+      wrap_expr(_rbexpr.peak_max)
     end
 
     # Get a boolean mask of the local minimum peaks.
@@ -2767,7 +2767,7 @@ module Polars
     #   # │ false │
     #   # └───────┘
     def peak_min
-      _from_rbexpr(_rbexpr.peak_min)
+      wrap_expr(_rbexpr.peak_min)
     end
 
     # Get quantile value.
@@ -2841,7 +2841,7 @@ module Polars
     #   # └─────┘
     def quantile(quantile, interpolation: "nearest")
       quantile = Utils.parse_into_expression(quantile, str_as_lit: false)
-      _from_rbexpr(_rbexpr.quantile(quantile, interpolation))
+      wrap_expr(_rbexpr.quantile(quantile, interpolation))
     end
 
     # Bin continuous values into discrete categories.
@@ -2897,7 +2897,7 @@ module Polars
     #   # │ 2   ┆ inf        ┆ (1, inf]   │
     #   # └─────┴────────────┴────────────┘
     def cut(breaks, labels: nil, left_closed: false, include_breaks: false)
-      _from_rbexpr(_rbexpr.cut(breaks, labels, left_closed, include_breaks))
+      wrap_expr(_rbexpr.cut(breaks, labels, left_closed, include_breaks))
     end
 
     # Bin continuous values into discrete categories based on their quantiles.
@@ -2988,7 +2988,7 @@ module Polars
         )
       end
 
-      _from_rbexpr(rbexpr)
+      wrap_expr(rbexpr)
     end
 
     # Get the lengths of runs of identical values.
@@ -3013,7 +3013,7 @@ module Polars
     #   # │ 2   ┆ 3     │
     #   # └─────┴───────┘
     def rle
-      _from_rbexpr(_rbexpr.rle)
+      wrap_expr(_rbexpr.rle)
     end
 
     # Map values to run IDs.
@@ -3041,7 +3041,7 @@ module Polars
     #   # │ 1   ┆ y    ┆ 2   ┆ 3    │
     #   # └─────┴──────┴─────┴──────┘
     def rle_id
-      _from_rbexpr(_rbexpr.rle_id)
+      wrap_expr(_rbexpr.rle_id)
     end
 
     # Filter a single column.
@@ -3080,7 +3080,7 @@ module Polars
     #   # │ g2        ┆ 0   ┆ 3   │
     #   # └───────────┴─────┴─────┘
     def filter(predicate)
-      _from_rbexpr(_rbexpr.filter(predicate._rbexpr))
+      wrap_expr(_rbexpr.filter(predicate._rbexpr))
     end
 
     # Filter a single column.
@@ -3161,7 +3161,7 @@ module Polars
     #   if !return_dtype.nil?
     #     return_dtype = Utils.rb_type_to_dtype(return_dtype)
     #   end
-    #   _from_rbexpr(
+    #   wrap_expr(
     #     _rbexpr.map_batches(
     #       # TODO _map_batches_wrapper
     #       f,
@@ -3293,7 +3293,7 @@ module Polars
     #  # │ b     ┆ [2, 3, 4] │
     #  # └───────┴───────────┘
     def flatten
-      _from_rbexpr(_rbexpr.explode)
+      wrap_expr(_rbexpr.explode)
     end
 
     # Explode a list or utf8 Series.
@@ -3320,7 +3320,7 @@ module Polars
     #   # │ 6   │
     #   # └─────┘
     def explode
-      _from_rbexpr(_rbexpr.explode)
+      wrap_expr(_rbexpr.explode)
     end
 
     # Take every nth value in the Series and return as a new Series.
@@ -3342,7 +3342,7 @@ module Polars
     #   # │ 7   │
     #   # └─────┘
     def gather_every(n, offset = 0)
-      _from_rbexpr(_rbexpr.gather_every(n, offset))
+      wrap_expr(_rbexpr.gather_every(n, offset))
     end
     alias_method :take_every, :gather_every
 
@@ -3368,7 +3368,7 @@ module Polars
     #   # │ 3   │
     #   # └─────┘
     def head(n = 10)
-      _from_rbexpr(_rbexpr.head(n))
+      wrap_expr(_rbexpr.head(n))
     end
 
     # Get the last `n` rows.
@@ -3393,7 +3393,7 @@ module Polars
     #   # │ 7   │
     #   # └─────┘
     def tail(n = 10)
-      _from_rbexpr(_rbexpr.tail(n))
+      wrap_expr(_rbexpr.tail(n))
     end
 
     # Get the first `n` rows.
@@ -3491,7 +3491,7 @@ module Polars
     #   # └──────┴──────┴────────┴────────────────┘
     def eq_missing(other)
       other = Utils.parse_into_expression(other, str_as_lit: true)
-      _from_rbexpr(_rbexpr.eq_missing(other))
+      wrap_expr(_rbexpr.eq_missing(other))
     end
 
     # Method equivalent of "greater than or equal" operator `expr >= other`.
@@ -3695,7 +3695,7 @@ module Polars
     #   # └──────┴──────┴────────┴────────────────┘
     def ne_missing(other)
       other = Utils.parse_into_expression(other, str_as_lit: true)
-      _from_rbexpr(_rbexpr.neq_missing(other))
+      wrap_expr(_rbexpr.neq_missing(other))
     end
 
     # Method equivalent of addition operator `expr + other`.
@@ -3772,7 +3772,7 @@ module Polars
     #   # │ 5   ┆ 2.5 ┆ 2    │
     #   # └─────┴─────┴──────┘
     def floordiv(other)
-      _from_rbexpr(_rbexpr.floordiv(_to_rbexpr(other)))
+      wrap_expr(_rbexpr.floordiv(_to_rbexpr(other)))
     end
 
     # Method equivalent of modulus operator `expr % other`.
@@ -3998,7 +3998,7 @@ module Polars
     #   # └───────────┴──────────────────┴──────────┘
     def is_in(other, nulls_equal: false)
       other = Utils.parse_into_expression(other)
-      _from_rbexpr(_rbexpr.is_in(other, nulls_equal))
+      wrap_expr(_rbexpr.is_in(other, nulls_equal))
     end
     alias_method :in?, :is_in
 
@@ -4034,7 +4034,7 @@ module Polars
     #   # └─────────────────┘
     def repeat_by(by)
       by = Utils.parse_into_expression(by, str_as_lit: false)
-      _from_rbexpr(_rbexpr.repeat_by(by))
+      wrap_expr(_rbexpr.repeat_by(by))
     end
 
     # Check if this expression is between start and end.
@@ -4107,7 +4107,7 @@ module Polars
       lower_bound = Utils.parse_into_expression(lower_bound)
       upper_bound = Utils.parse_into_expression(upper_bound)
 
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.is_between(lower_bound, upper_bound, closed)
       )
     end
@@ -4188,7 +4188,7 @@ module Polars
       k1 = seed_1.nil? ? seed : seed_1
       k2 = seed_2.nil? ? seed : seed_2
       k3 = seed_3.nil? ? seed : seed_3
-      _from_rbexpr(_rbexpr._hash(k0, k1, k2, k3))
+      wrap_expr(_rbexpr._hash(k0, k1, k2, k3))
     end
 
     # Reinterpret the underlying bits as a signed/unsigned integer.
@@ -4222,7 +4222,7 @@ module Polars
     #   # │ 2             ┆ 2        │
     #   # └───────────────┴──────────┘
     def reinterpret(signed: false)
-      _from_rbexpr(_rbexpr.reinterpret(signed))
+      wrap_expr(_rbexpr.reinterpret(signed))
     end
 
     # Print the value that this expression evaluates to and pass on the value.
@@ -4285,7 +4285,7 @@ module Polars
     #   # │ 3.0 ┆ 3.0 │
     #   # └─────┴─────┘
     def interpolate(method: "linear")
-      _from_rbexpr(_rbexpr.interpolate(method))
+      wrap_expr(_rbexpr.interpolate(method))
     end
 
     # Fill null values using interpolation based on another column.
@@ -4316,7 +4316,7 @@ module Polars
     #   # └──────┴─────┴────────────────┘
     def interpolate_by(by)
       by = Utils.parse_into_expression(by)
-      _from_rbexpr(_rbexpr.interpolate_by(by))
+      wrap_expr(_rbexpr.interpolate_by(by))
     end
 
     # Apply a rolling min based on another column.
@@ -4417,7 +4417,7 @@ module Polars
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_min_by(by, window_size, min_periods, closed)
       )
     end
@@ -4546,7 +4546,7 @@ module Polars
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_max_by(by, window_size, min_periods, closed)
       )
     end
@@ -4677,7 +4677,7 @@ module Polars
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_mean_by(
           by,
           window_size,
@@ -4811,7 +4811,7 @@ module Polars
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_sum_by(by, window_size, min_periods, closed)
       )
     end
@@ -4943,7 +4943,7 @@ module Polars
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_std_by(
           by,
           window_size,
@@ -5081,7 +5081,7 @@ module Polars
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_var_by(
           by,
           window_size,
@@ -5192,7 +5192,7 @@ module Polars
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_median_by(by, window_size, min_periods, closed)
       )
     end
@@ -5303,7 +5303,7 @@ module Polars
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_quantile_by(
           by,
           quantile,
@@ -5386,7 +5386,7 @@ module Polars
       min_periods: nil,
       center: false
     )
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_min(
           window_size, weights, min_periods, center
         )
@@ -5464,7 +5464,7 @@ module Polars
       min_periods: nil,
       center: false
     )
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_max(
           window_size, weights, min_periods, center
         )
@@ -5542,7 +5542,7 @@ module Polars
       min_periods: nil,
       center: false
     )
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_mean(
           window_size, weights, min_periods, center
         )
@@ -5620,7 +5620,7 @@ module Polars
       min_periods: nil,
       center: false
     )
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_sum(
           window_size, weights, min_periods, center
         )
@@ -5701,7 +5701,7 @@ module Polars
       center: false,
       ddof: 1
     )
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_std(
           window_size, weights, min_periods, center, ddof
         )
@@ -5782,7 +5782,7 @@ module Polars
       center: false,
       ddof: 1
     )
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_var(
           window_size, weights, min_periods, center, ddof
         )
@@ -5856,7 +5856,7 @@ module Polars
       min_periods: nil,
       center: false
     )
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_median(
           window_size, weights, min_periods, center
         )
@@ -5936,7 +5936,7 @@ module Polars
       min_periods: nil,
       center: false
     )
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.rolling_quantile(
           quantile, interpolation, window_size, weights, min_periods, center
         )
@@ -6000,7 +6000,7 @@ module Polars
     #   if min_periods.nil?
     #     min_periods = window_size
     #   end
-    #   _from_rbexpr(
+    #   wrap_expr(
     #     _rbexpr.rolling_apply(
     #       function, window_size, weights, min_periods, center
     #     )
@@ -6037,7 +6037,7 @@ module Polars
     #   # │ 0.47033  │
     #   # └──────────┘
     def rolling_skew(window_size, bias: true, min_samples: nil, center: false)
-      _from_rbexpr(_rbexpr.rolling_skew(window_size, bias, min_samples, center))
+      wrap_expr(_rbexpr.rolling_skew(window_size, bias, min_samples, center))
     end
 
     # Compute absolute values.
@@ -6064,7 +6064,7 @@ module Polars
     #   # │ 2.0 │
     #   # └─────┘
     def abs
-      _from_rbexpr(_rbexpr.abs)
+      wrap_expr(_rbexpr.abs)
     end
 
     # Get the index values that would sort this column.
@@ -6161,7 +6161,7 @@ module Polars
     #   # │ 5   │
     #   # └─────┘
     def rank(method: "average", reverse: false, seed: nil)
-      _from_rbexpr(_rbexpr.rank(method, reverse, seed))
+      wrap_expr(_rbexpr.rank(method, reverse, seed))
     end
 
     # Calculate the n-th discrete difference.
@@ -6193,7 +6193,7 @@ module Polars
     #   # └──────┘
     def diff(n: 1, null_behavior: "ignore")
       n = Utils.parse_into_expression(n)
-      _from_rbexpr(_rbexpr.diff(n, null_behavior))
+      wrap_expr(_rbexpr.diff(n, null_behavior))
     end
 
     # Computes percentage change between values.
@@ -6230,7 +6230,7 @@ module Polars
     #   # └──────┴────────────┘
     def pct_change(n: 1)
       n = Utils.parse_into_expression(n)
-      _from_rbexpr(_rbexpr.pct_change(n))
+      wrap_expr(_rbexpr.pct_change(n))
     end
 
     # Compute the sample skewness of a data set.
@@ -6259,7 +6259,7 @@ module Polars
     #   # │ 0.343622 │
     #   # └──────────┘
     def skew(bias: true)
-      _from_rbexpr(_rbexpr.skew(bias))
+      wrap_expr(_rbexpr.skew(bias))
     end
 
     # Compute the kurtosis (Fisher or Pearson) of a dataset.
@@ -6291,7 +6291,7 @@ module Polars
     #   # │ -1.153061 │
     #   # └───────────┘
     def kurtosis(fisher: true, bias: true)
-      _from_rbexpr(_rbexpr.kurtosis(fisher, bias))
+      wrap_expr(_rbexpr.kurtosis(fisher, bias))
     end
 
     # Set values outside the given boundaries to the boundary value.
@@ -6328,7 +6328,7 @@ module Polars
       if !upper_bound.nil?
         upper_bound = Utils.parse_into_expression(upper_bound)
       end
-      _from_rbexpr(_rbexpr.clip(lower_bound, upper_bound))
+      wrap_expr(_rbexpr.clip(lower_bound, upper_bound))
     end
 
     # Clip (limit) the values in an array to a `min` boundary.
@@ -6413,7 +6413,7 @@ module Polars
     #   # │ -9223372036854775808 │
     #   # └──────────────────────┘
     def lower_bound
-      _from_rbexpr(_rbexpr.lower_bound)
+      wrap_expr(_rbexpr.lower_bound)
     end
 
     # Calculate the upper bound.
@@ -6436,7 +6436,7 @@ module Polars
     #   # │ 9223372036854775807 │
     #   # └─────────────────────┘
     def upper_bound
-      _from_rbexpr(_rbexpr.upper_bound)
+      wrap_expr(_rbexpr.upper_bound)
     end
 
     # Compute the element-wise indication of the sign.
@@ -6460,7 +6460,7 @@ module Polars
     #   # │ null │
     #   # └──────┘
     def sign
-      _from_rbexpr(_rbexpr.sign)
+      wrap_expr(_rbexpr.sign)
     end
 
     # Compute the element-wise value for the sine.
@@ -6480,7 +6480,7 @@ module Polars
     #   # │ 0.0 │
     #   # └─────┘
     def sin
-      _from_rbexpr(_rbexpr.sin)
+      wrap_expr(_rbexpr.sin)
     end
 
     # Compute the element-wise value for the cosine.
@@ -6500,7 +6500,7 @@ module Polars
     #   # │ 1.0 │
     #   # └─────┘
     def cos
-      _from_rbexpr(_rbexpr.cos)
+      wrap_expr(_rbexpr.cos)
     end
 
     # Compute the element-wise value for the tangent.
@@ -6520,7 +6520,7 @@ module Polars
     #   # │ 1.557408 │
     #   # └──────────┘
     def tan
-      _from_rbexpr(_rbexpr.tan)
+      wrap_expr(_rbexpr.tan)
     end
 
     # Compute the element-wise value for the cotangent.
@@ -6560,7 +6560,7 @@ module Polars
     #   # │ 1.570796 │
     #   # └──────────┘
     def arcsin
-      _from_rbexpr(_rbexpr.arcsin)
+      wrap_expr(_rbexpr.arcsin)
     end
 
     # Compute the element-wise value for the inverse cosine.
@@ -6580,7 +6580,7 @@ module Polars
     #   # │ 1.570796 │
     #   # └──────────┘
     def arccos
-      _from_rbexpr(_rbexpr.arccos)
+      wrap_expr(_rbexpr.arccos)
     end
 
     # Compute the element-wise value for the inverse tangent.
@@ -6600,7 +6600,7 @@ module Polars
     #   # │ 0.785398 │
     #   # └──────────┘
     def arctan
-      _from_rbexpr(_rbexpr.arctan)
+      wrap_expr(_rbexpr.arctan)
     end
 
     # Compute the element-wise value for the hyperbolic sine.
@@ -6620,7 +6620,7 @@ module Polars
     #   # │ 1.175201 │
     #   # └──────────┘
     def sinh
-      _from_rbexpr(_rbexpr.sinh)
+      wrap_expr(_rbexpr.sinh)
     end
 
     # Compute the element-wise value for the hyperbolic cosine.
@@ -6640,7 +6640,7 @@ module Polars
     #   # │ 1.543081 │
     #   # └──────────┘
     def cosh
-      _from_rbexpr(_rbexpr.cosh)
+      wrap_expr(_rbexpr.cosh)
     end
 
     # Compute the element-wise value for the hyperbolic tangent.
@@ -6660,7 +6660,7 @@ module Polars
     #   # │ 0.761594 │
     #   # └──────────┘
     def tanh
-      _from_rbexpr(_rbexpr.tanh)
+      wrap_expr(_rbexpr.tanh)
     end
 
     # Compute the element-wise value for the inverse hyperbolic sine.
@@ -6680,7 +6680,7 @@ module Polars
     #   # │ 0.881374 │
     #   # └──────────┘
     def arcsinh
-      _from_rbexpr(_rbexpr.arcsinh)
+      wrap_expr(_rbexpr.arcsinh)
     end
 
     # Compute the element-wise value for the inverse hyperbolic cosine.
@@ -6700,7 +6700,7 @@ module Polars
     #   # │ 0.0 │
     #   # └─────┘
     def arccosh
-      _from_rbexpr(_rbexpr.arccosh)
+      wrap_expr(_rbexpr.arccosh)
     end
 
     # Compute the element-wise value for the inverse hyperbolic tangent.
@@ -6720,7 +6720,7 @@ module Polars
     #   # │ inf │
     #   # └─────┘
     def arctanh
-      _from_rbexpr(_rbexpr.arctanh)
+      wrap_expr(_rbexpr.arctanh)
     end
 
     # Convert from radians to degrees.
@@ -6822,7 +6822,7 @@ module Polars
     #   # │ 9   │
     #   # └─────┘
     def reshape(dims)
-      _from_rbexpr(_rbexpr.reshape(dims))
+      wrap_expr(_rbexpr.reshape(dims))
     end
 
     # Shuffle the contents of this expr.
@@ -6851,7 +6851,7 @@ module Polars
       if seed.nil?
         seed = rand(10000)
       end
-      _from_rbexpr(_rbexpr.shuffle(seed))
+      wrap_expr(_rbexpr.shuffle(seed))
     end
 
     # Sample from this expression.
@@ -6897,14 +6897,14 @@ module Polars
 
       if !n.nil? && frac.nil?
         n = Utils.parse_into_expression(n)
-        return _from_rbexpr(_rbexpr.sample_n(n, with_replacement, shuffle, seed))
+        return wrap_expr(_rbexpr.sample_n(n, with_replacement, shuffle, seed))
       end
 
       if frac.nil?
         frac = 1.0
       end
       frac = Utils.parse_into_expression(frac)
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.sample_frac(frac, with_replacement, shuffle, seed)
       )
     end
@@ -6937,7 +6937,7 @@ module Polars
       ignore_nulls: true
     )
       alpha = _prepare_alpha(com, span, half_life, alpha)
-      _from_rbexpr(_rbexpr.ewm_mean(alpha, adjust, min_periods, ignore_nulls))
+      wrap_expr(_rbexpr.ewm_mean(alpha, adjust, min_periods, ignore_nulls))
     end
 
     # Exponentially-weighted moving standard deviation.
@@ -6969,7 +6969,7 @@ module Polars
       ignore_nulls: true
     )
       alpha = _prepare_alpha(com, span, half_life, alpha)
-      _from_rbexpr(_rbexpr.ewm_std(alpha, adjust, bias, min_periods, ignore_nulls))
+      wrap_expr(_rbexpr.ewm_std(alpha, adjust, bias, min_periods, ignore_nulls))
     end
 
     # Exponentially-weighted moving variance.
@@ -7001,7 +7001,7 @@ module Polars
       ignore_nulls: true
     )
       alpha = _prepare_alpha(com, span, half_life, alpha)
-      _from_rbexpr(_rbexpr.ewm_var(alpha, adjust, bias, min_periods, ignore_nulls))
+      wrap_expr(_rbexpr.ewm_var(alpha, adjust, bias, min_periods, ignore_nulls))
     end
 
     # Extend the Series with given number of values.
@@ -7033,7 +7033,7 @@ module Polars
     def extend_constant(value, n)
       value = Utils.parse_into_expression(value, str_as_lit: true)
       n = Utils.parse_into_expression(n)
-      _from_rbexpr(_rbexpr.extend_constant(value, n))
+      wrap_expr(_rbexpr.extend_constant(value, n))
     end
 
     # Count all unique values and create a struct mapping value to count.
@@ -7087,7 +7087,7 @@ module Polars
           name = "count"
         end
       end
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.value_counts(sort, parallel, name, normalize)
       )
     end
@@ -7122,7 +7122,7 @@ module Polars
     #   # │ 3   │
     #   # └─────┘
     def unique_counts
-      _from_rbexpr(_rbexpr.unique_counts)
+      wrap_expr(_rbexpr.unique_counts)
     end
 
     # Compute the logarithm to a given base.
@@ -7147,7 +7147,7 @@ module Polars
     #   # │ 1.584963 │
     #   # └──────────┘
     def log(base = Math::E)
-      _from_rbexpr(_rbexpr.log(base))
+      wrap_expr(_rbexpr.log(base))
     end
 
     # Compute the natural logarithm of each element plus one.
@@ -7210,7 +7210,7 @@ module Polars
     #   # │ -6.754888 │
     #   # └───────────┘
     def entropy(base: 2, normalize: true)
-      _from_rbexpr(_rbexpr.entropy(base, normalize))
+      wrap_expr(_rbexpr.entropy(base, normalize))
     end
 
     # Run an expression over a sliding window that increases `1` slot every iteration.
@@ -7254,7 +7254,7 @@ module Polars
     #   # │ -24    │
     #   # └────────┘
     def cumulative_eval(expr, min_periods: 1)
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.cumulative_eval(expr._rbexpr, min_periods)
       )
     end
@@ -7285,7 +7285,7 @@ module Polars
     #   # │ 3      │
     #   # └────────┘
     def set_sorted(descending: false)
-      _from_rbexpr(_rbexpr.set_sorted_flag(descending))
+      wrap_expr(_rbexpr.set_sorted_flag(descending))
     end
 
     # Aggregate to list.
@@ -7310,7 +7310,7 @@ module Polars
     #   # │ [1, 2, 3] ┆ [4, 5, 6] │
     #   # └───────────┴───────────┘
     def implode
-      _from_rbexpr(_rbexpr.implode)
+      wrap_expr(_rbexpr.implode)
     end
 
     # Shrink numeric columns to the minimal required datatype.
@@ -7345,7 +7345,7 @@ module Polars
     #   # │ 3   ┆ 8589934592 ┆ 1073741824 ┆ 112  ┆ 129  ┆ c   ┆ 0.12 ┆ false │
     #   # └─────┴────────────┴────────────┴──────┴──────┴─────┴──────┴───────┘
     def shrink_dtype
-      _from_rbexpr(_rbexpr.shrink_dtype)
+      wrap_expr(_rbexpr.shrink_dtype)
     end
 
     # Replace values by different values.
@@ -7504,7 +7504,7 @@ module Polars
       old = Utils.parse_into_expression(old, str_as_lit: true)
       new = Utils.parse_into_expression(new, str_as_lit: true)
 
-      result = _from_rbexpr(_rbexpr.replace(old, new))
+      result = wrap_expr(_rbexpr.replace(old, new))
 
       if !return_dtype.nil?
         result = result.cast(return_dtype)
@@ -7656,7 +7656,7 @@ module Polars
 
       default = default.eql?(NO_DEFAULT) ? nil : Utils.parse_into_expression(default, str_as_lit: true)
 
-      _from_rbexpr(
+      wrap_expr(
         _rbexpr.replace_strict(old, new, default, return_dtype)
       )
     end
@@ -7876,10 +7876,9 @@ module Polars
 
     private
 
-    def _from_rbexpr(expr)
+    def wrap_expr(expr)
       Utils.wrap_expr(expr)
     end
-    alias_method :wrap_expr, :_from_rbexpr
 
     def _to_rbexpr(other)
       _to_expr(other)._rbexpr
