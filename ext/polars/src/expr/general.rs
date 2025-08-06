@@ -913,6 +913,20 @@ impl RbExpr {
             .into()
     }
 
+    pub fn hist(
+        &self,
+        bins: Option<&RbExpr>,
+        bin_count: Option<usize>,
+        include_category: bool,
+        include_breakpoint: bool,
+    ) -> Self {
+        let bins = bins.map(|e| e.inner.clone());
+        self.inner
+            .clone()
+            .hist(bins, bin_count, include_category, include_breakpoint)
+            .into()
+    }
+
     #[allow(clippy::wrong_self_convention)]
     pub fn into_selector(&self) -> RbResult<RbSelector> {
         Ok(self

@@ -533,6 +533,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("set_sorted_flag", method!(RbExpr::set_sorted_flag, 1))?;
     class.define_method("replace", method!(RbExpr::replace, 2))?;
     class.define_method("replace_strict", method!(RbExpr::replace_strict, 4))?;
+    class.define_method("hist", method!(RbExpr::hist, 4))?;
     class.define_method("into_selector", method!(RbExpr::into_selector, 0))?;
     class.define_singleton_method("new_selector", function!(RbExpr::new_selector, 1))?;
 

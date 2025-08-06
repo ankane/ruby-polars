@@ -7434,6 +7434,71 @@ module Polars
       wrap_expr(_rbexpr.shrink_dtype)
     end
 
+    # Bin values into buckets and count their occurrences.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param bins [Object]
+    #   Bin edges. If nil given, we determine the edges based on the data.
+    # @param bin_count [Integer]
+    #   If `bins` is not provided, `bin_count` uniform bins are created that fully
+    #   encompass the data.
+    # @param include_category [Boolean]
+    #   Include a column that shows the intervals as categories.
+    # @param include_breakpoint [Boolean]
+    #   Include a column that indicates the upper breakpoint.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 3, 8, 8, 2, 1, 3]})
+    #   df.select(Polars.col("a").hist(bins: [1, 2, 3]))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ u32 │
+    #   # ╞═════╡
+    #   # │ 3   │
+    #   # │ 2   │
+    #   # └─────┘
+    #
+    # @example
+    #   df.select(
+    #     Polars.col("a").hist(
+    #       bins: [1, 2, 3], include_breakpoint: true, include_category: true
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌──────────────────────┐
+    #   # │ a                    │
+    #   # │ ---                  │
+    #   # │ struct[3]            │
+    #   # ╞══════════════════════╡
+    #   # │ {2.0,"[1.0, 2.0]",3} │
+    #   # │ {3.0,"(2.0, 3.0]",2} │
+    #   # └──────────────────────┘
+    def hist(
+      bins: nil,
+      bin_count: nil,
+      include_category: false,
+      include_breakpoint: false
+    )
+      if !bins.nil?
+        if bins.is_a?(::Array)
+          bins = Polars::Series.new(bins)
+        end
+        bins = Utils.parse_into_expression(bins)
+      end
+      wrap_expr(
+        _rbexpr.hist(bins, bin_count, include_category, include_breakpoint)
+      )
+    end
+
     # Replace values by different values.
     #
     # @param old [Object]

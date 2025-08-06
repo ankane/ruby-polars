@@ -66,6 +66,7 @@ features = [
     "find_many",
     "fmt",
     "gcp",
+    "hist",
     "http",
     "index_of",
     "interpolate",
