@@ -1307,6 +1307,130 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_slice(offset, length))
     end
 
+    # Return the first n characters of each string in a String Series.
+    #
+    # @param n [Integer]
+    #   Length of the slice (integer or expression). Negative indexing is supported;
+    #   see note (2) below.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   1) The `n` input is defined in terms of the number of characters in the (UTF8)
+    #      string. A character is defined as a [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value). A single
+    #      character is represented by a single byte when working with ASCII text, and a
+    #      maximum of 4 bytes otherwise.
+    #
+    #   2) When the `n` input is negative, `head` returns characters up to the `n`th
+    #      from the end of the string. For example, if `n = -3`, then all characters
+    #      except the last three are returned.
+    #
+    #   3) If the length of the string has fewer than `n` characters, the full string is
+    #      returned.
+    #
+    # @example Return up to the first 5 characters:
+    #   df = Polars::DataFrame.new({"s" => ["pear", nil, "papaya", "dragonfruit"]})
+    #   df.with_columns(Polars.col("s").str.head(5).alias("s_head_5"))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────────────┬──────────┐
+    #   # │ s           ┆ s_head_5 │
+    #   # │ ---         ┆ ---      │
+    #   # │ str         ┆ str      │
+    #   # ╞═════════════╪══════════╡
+    #   # │ pear        ┆ pear     │
+    #   # │ null        ┆ null     │
+    #   # │ papaya      ┆ papay    │
+    #   # │ dragonfruit ┆ drago    │
+    #   # └─────────────┴──────────┘
+    #
+    # @example Return characters determined by column `n`:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "s" => ["pear", nil, "papaya", "dragonfruit"],
+    #       "n" => [3, 4, -2, -5]
+    #     }
+    #   )
+    #   df.with_columns(Polars.col("s").str.head("n").alias("s_head_n"))
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────────────┬─────┬──────────┐
+    #   # │ s           ┆ n   ┆ s_head_n │
+    #   # │ ---         ┆ --- ┆ ---      │
+    #   # │ str         ┆ i64 ┆ str      │
+    #   # ╞═════════════╪═════╪══════════╡
+    #   # │ pear        ┆ 3   ┆ pea      │
+    #   # │ null        ┆ 4   ┆ null     │
+    #   # │ papaya      ┆ -2  ┆ papa     │
+    #   # │ dragonfruit ┆ -5  ┆ dragon   │
+    #   # └─────────────┴─────┴──────────┘
+    def head(n)
+      n = Utils.parse_into_expression(n)
+      Utils.wrap_expr(_rbexpr.str_head(n))
+    end
+
+    # Return the last n characters of each string in a String Series.
+    #
+    # @param n [Integer]
+    #   Length of the slice (integer or expression). Negative indexing is supported;
+    #   see note (2) below.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   1) The `n` input is defined in terms of the number of characters in the (UTF8)
+    #      string. A character is defined as a [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value). A single
+    #      character is represented by a single byte when working with ASCII text, and a
+    #      maximum of 4 bytes otherwise.
+    #
+    #   2) When the `n` input is negative, `tail` returns characters starting from the
+    #      `n`th from the beginning of the string. For example, if `n = -3`, then all
+    #      characters except the first three are returned.
+    #
+    #   3) If the length of the string has fewer than `n` characters, the full string is
+    #      returned.
+    #
+    # @example Return up to the last 5 characters:
+    #   df = Polars::DataFrame.new({"s" => ["pear", nil, "papaya", "dragonfruit"]})
+    #   df.with_columns(Polars.col("s").str.tail(5).alias("s_tail_5"))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────────────┬──────────┐
+    #   # │ s           ┆ s_tail_5 │
+    #   # │ ---         ┆ ---      │
+    #   # │ str         ┆ str      │
+    #   # ╞═════════════╪══════════╡
+    #   # │ pear        ┆ pear     │
+    #   # │ null        ┆ null     │
+    #   # │ papaya      ┆ apaya    │
+    #   # │ dragonfruit ┆ fruit    │
+    #   # └─────────────┴──────────┘
+    #
+    # @example Return characters determined by column `n`:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "s" => ["pear", nil, "papaya", "dragonfruit"],
+    #       "n" => [3, 4, -2, -5]
+    #     }
+    #   )
+    #   df.with_columns(Polars.col("s").str.tail("n").alias("s_tail_n"))
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────────────┬─────┬──────────┐
+    #   # │ s           ┆ n   ┆ s_tail_n │
+    #   # │ ---         ┆ --- ┆ ---      │
+    #   # │ str         ┆ i64 ┆ str      │
+    #   # ╞═════════════╪═════╪══════════╡
+    #   # │ pear        ┆ 3   ┆ ear      │
+    #   # │ null        ┆ 4   ┆ null     │
+    #   # │ papaya      ┆ -2  ┆ paya     │
+    #   # │ dragonfruit ┆ -5  ┆ nfruit   │
+    #   # └─────────────┴─────┴──────────┘
+    def tail(n)
+      n = Utils.parse_into_expression(n)
+      Utils.wrap_expr(_rbexpr.str_tail(n))
+    end
+
     # Convert an Utf8 column into an Int64 column with base radix.
     #
     # @param base [Integer]

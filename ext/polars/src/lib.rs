@@ -307,6 +307,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_strip_prefix", method!(RbExpr::str_strip_prefix, 1))?;
     class.define_method("str_strip_suffix", method!(RbExpr::str_strip_suffix, 1))?;
     class.define_method("str_slice", method!(RbExpr::str_slice, 2))?;
+    class.define_method("str_head", method!(RbExpr::str_head, 1))?;
+    class.define_method("str_tail", method!(RbExpr::str_tail, 1))?;
     class.define_method("str_to_uppercase", method!(RbExpr::str_to_uppercase, 0))?;
     class.define_method("str_to_lowercase", method!(RbExpr::str_to_lowercase, 0))?;
     // class.define_method("str_to_titlecase", method!(RbExpr::str_to_titlecase, 0))?;

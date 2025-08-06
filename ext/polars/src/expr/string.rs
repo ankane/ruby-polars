@@ -122,6 +122,14 @@ impl RbExpr {
             .into()
     }
 
+    pub fn str_head(&self, n: &Self) -> Self {
+        self.inner.clone().str().head(n.inner.clone()).into()
+    }
+
+    pub fn str_tail(&self, n: &Self) -> Self {
+        self.inner.clone().str().tail(n.inner.clone()).into()
+    }
+
     pub fn str_to_uppercase(&self) -> Self {
         self.inner.clone().str().to_uppercase().into()
     }
