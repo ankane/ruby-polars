@@ -321,9 +321,9 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_ends_with", method!(RbExpr::str_ends_with, 1))?;
     class.define_method("str_starts_with", method!(RbExpr::str_starts_with, 1))?;
     class.define_method("arr_len", method!(RbExpr::arr_len, 0))?;
-    class.define_method("array_max", method!(RbExpr::array_max, 0))?;
-    class.define_method("array_min", method!(RbExpr::array_min, 0))?;
-    class.define_method("array_sum", method!(RbExpr::array_sum, 0))?;
+    class.define_method("arr_max", method!(RbExpr::arr_max, 0))?;
+    class.define_method("arr_min", method!(RbExpr::arr_min, 0))?;
+    class.define_method("arr_sum", method!(RbExpr::arr_sum, 0))?;
     class.define_method("arr_unique", method!(RbExpr::arr_unique, 1))?;
     class.define_method("arr_to_list", method!(RbExpr::arr_to_list, 0))?;
     class.define_method("arr_all", method!(RbExpr::arr_all, 0))?;

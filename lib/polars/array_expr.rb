@@ -205,7 +205,7 @@ module Polars
     #   # │ 3   │
     #   # └─────┘
     def min
-      Utils.wrap_expr(_rbexpr.array_min)
+      Utils.wrap_expr(_rbexpr.arr_min)
     end
 
     # Compute the max values of the sub-arrays.
@@ -229,7 +229,7 @@ module Polars
     #   # │ 4   │
     #   # └─────┘
     def max
-      Utils.wrap_expr(_rbexpr.array_max)
+      Utils.wrap_expr(_rbexpr.arr_max)
     end
 
     # Compute the sum values of the sub-arrays.
@@ -253,7 +253,7 @@ module Polars
     #   # │ 7   │
     #   # └─────┘
     def sum
-      Utils.wrap_expr(_rbexpr.array_sum)
+      Utils.wrap_expr(_rbexpr.arr_sum)
     end
 
     # Get the unique/distinct values in the array.
