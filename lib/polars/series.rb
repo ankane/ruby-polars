@@ -1818,6 +1818,44 @@ module Polars
       super
     end
 
+    # Return the `k` largest elements of the `by` column.
+    #
+    # Non-null elements are always preferred over null elements, regardless of
+    # the value of `reverse`. The output is not guaranteed to be in any
+    # particular order, call `sort` after this function if you wish the
+    # output to be sorted.
+    #
+    # @param by [Object]
+    #   Column used to determine the largest elements.
+    #   Accepts expression input. Strings are parsed as column names.
+    # @param k [Integer]
+    #   Number of elements to return.
+    # @param reverse [Object]
+    #   Consider the `k` smallest elements of the `by` column (instead of the `k`
+    #   largest). This can be specified per column by passing a sequence of
+    #   booleans.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [2, 5, 1, 4, 3])
+    #   s.top_k_by("a", k: 3)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         5
+    #   #         4
+    #   #         3
+    #   # ]
+    def top_k_by(
+      by,
+      k: 5,
+      reverse: false
+    )
+      super
+    end
+
     # Return the `k` smallest elements.
     #
     # @param k [Integer]
@@ -1837,6 +1875,44 @@ module Polars
     #   #         3
     #   # ]
     def bottom_k(k: 5)
+      super
+    end
+
+    # Return the `k` smallest elements of the `by` column.
+    #
+    # Non-null elements are always preferred over null elements, regardless of
+    # the value of `reverse`. The output is not guaranteed to be in any
+    # particular order, call `sort` after this function if you wish the
+    # output to be sorted.
+    #
+    # @param by [Object]
+    #   Column used to determine the smallest elements.
+    #   Accepts expression input. Strings are parsed as column names.
+    # @param k [Integer]
+    #   Number of elements to return.
+    # @param reverse [Object]
+    #   Consider the `k` largest elements of the `by` column( (instead of the `k`
+    #   smallest). This can be specified per column by passing a sequence of
+    #   booleans.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [2, 5, 1, 4, 3])
+    #   s.bottom_k_by("a", k: 3)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ]
+    def bottom_k_by(
+      by,
+      k: 5,
+      reverse: false
+    )
       super
     end
 
