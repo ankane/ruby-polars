@@ -493,6 +493,10 @@ impl RbExpr {
         self.inner.clone().round(decimals, mode.0).into()
     }
 
+    pub fn round_sig_figs(&self, digits: i32) -> Self {
+        self.clone().inner.round_sig_figs(digits).into()
+    }
+
     pub fn floor(&self) -> Self {
         self.inner.clone().floor().into()
     }

@@ -1219,6 +1219,31 @@ module Polars
       _from_rbexpr(_rbexpr.round(decimals, mode))
     end
 
+    # Round to a number of significant figures.
+    #
+    # @param digits [Integer]
+    #   Number of significant figures to round to.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [0.01234, 3.333, 1234.0]})
+    #   df.with_columns(Polars.col("a").round_sig_figs(2).alias("round_sig_figs"))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────────┬────────────────┐
+    #   # │ a       ┆ round_sig_figs │
+    #   # │ ---     ┆ ---            │
+    #   # │ f64     ┆ f64            │
+    #   # ╞═════════╪════════════════╡
+    #   # │ 0.01234 ┆ 0.012          │
+    #   # │ 3.333   ┆ 3.3            │
+    #   # │ 1234.0  ┆ 1200.0         │
+    #   # └─────────┴────────────────┘
+    def round_sig_figs(digits)
+      wrap_expr(_rbexpr.round_sig_figs(digits))
+    end
+
     # Compute the dot/inner product between two Expressions.
     #
     # @param other [Expr]
