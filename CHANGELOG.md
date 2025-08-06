@@ -1,7 +1,7 @@
 ## 0.21.1 (unreleased)
 
 - Added more methods to `Expr`
-- Added `count` and `null_count` methods to `LazyFrame`
+- Added more methods to `LazyFrame`
 - Added `drop_nans` method to `DataFrame` and `LazyFrame`
 - Fixed `subset` option for `drop_nulls` method
 

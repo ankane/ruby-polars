@@ -701,6 +701,20 @@ impl RbLazyFrame {
             .into())
     }
 
+    pub fn join_where(&self, other: &Self, predicates: RArray, suffix: String) -> RbResult<Self> {
+        let ldf = self.ldf.borrow().clone();
+        let other = other.ldf.borrow().clone();
+
+        let predicates = rb_exprs_to_exprs(predicates)?;
+
+        Ok(ldf
+            .join_builder()
+            .with(other)
+            .suffix(suffix)
+            .join_where(predicates)
+            .into())
+    }
+
     pub fn with_column(&self, expr: &RbExpr) -> Self {
         let ldf = self.ldf.borrow().clone();
         ldf.with_column(expr.inner.clone()).into()

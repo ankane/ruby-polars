@@ -76,5 +76,15 @@ module Polars
       end
       values
     end
+
+    def self.require_same_type(current, other)
+      if !other.is_a?(current.class) && !current.is_a?(other.class)
+        msg = (
+          "expected `other` to be a #{current.inspect}, " +
+          "not #{other.inspect}"
+        )
+        raise TypeError, msg
+      end
+    end
   end
 end

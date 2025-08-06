@@ -68,6 +68,7 @@ features = [
     "gcp",
     "hist",
     "http",
+    "iejoin",
     "index_of",
     "interpolate",
     "interpolate_by",

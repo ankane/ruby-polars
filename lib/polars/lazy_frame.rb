@@ -2234,6 +2234,103 @@ module Polars
       )
     end
 
+    # Perform a join based on one or multiple (in)equality predicates.
+    #
+    # This performs an inner join, so only rows where all predicates are true
+    # are included in the result, and a row from either DataFrame may be included
+    # multiple times in the result.
+    #
+    # @note
+    #   The row order of the input DataFrames is not preserved.
+    #
+    # @note
+    #   This functionality is experimental. It may be
+    #   changed at any point without it being considered a breaking change.
+    #
+    # @param other [Object]
+    #   DataFrame to join with.
+    # @param predicates [Object]
+    #   (In)Equality condition to join the two tables on.
+    #   When a column name occurs in both tables, the proper suffix must
+    #   be applied in the predicate.
+    # @param suffix [String]
+    #   Suffix to append to columns with a duplicate name.
+    #
+    # @return [LazyFrame]
+    #
+    # @example Join two lazyframes together based on two predicates which get AND-ed together.
+    #   east = Polars::LazyFrame.new(
+    #     {
+    #       "id" => [100, 101, 102],
+    #       "dur" => [120, 140, 160],
+    #       "rev" => [12, 14, 16],
+    #       "cores" => [2, 8, 4]
+    #     }
+    #   )
+    #   west = Polars::LazyFrame.new(
+    #     {
+    #       "t_id" => [404, 498, 676, 742],
+    #       "time" => [90, 130, 150, 170],
+    #       "cost" => [9, 13, 15, 16],
+    #       "cores" => [4, 2, 1, 4]
+    #     }
+    #   )
+    #   east.join_where(
+    #     west,
+    #     Polars.col("dur") < Polars.col("time"),
+    #     Polars.col("rev") < Polars.col("cost")
+    #   ).collect()
+    #   # =>
+    #   # shape: (5, 8)
+    #   # ┌─────┬─────┬─────┬───────┬──────┬──────┬──────┬─────────────┐
+    #   # │ id  ┆ dur ┆ rev ┆ cores ┆ t_id ┆ time ┆ cost ┆ cores_right │
+    #   # │ --- ┆ --- ┆ --- ┆ ---   ┆ ---  ┆ ---  ┆ ---  ┆ ---         │
+    #   # │ i64 ┆ i64 ┆ i64 ┆ i64   ┆ i64  ┆ i64  ┆ i64  ┆ i64         │
+    #   # ╞═════╪═════╪═════╪═══════╪══════╪══════╪══════╪═════════════╡
+    #   # │ 100 ┆ 120 ┆ 12  ┆ 2     ┆ 498  ┆ 130  ┆ 13   ┆ 2           │
+    #   # │ 100 ┆ 120 ┆ 12  ┆ 2     ┆ 676  ┆ 150  ┆ 15   ┆ 1           │
+    #   # │ 100 ┆ 120 ┆ 12  ┆ 2     ┆ 742  ┆ 170  ┆ 16   ┆ 4           │
+    #   # │ 101 ┆ 140 ┆ 14  ┆ 8     ┆ 676  ┆ 150  ┆ 15   ┆ 1           │
+    #   # │ 101 ┆ 140 ┆ 14  ┆ 8     ┆ 742  ┆ 170  ┆ 16   ┆ 4           │
+    #   # └─────┴─────┴─────┴───────┴──────┴──────┴──────┴─────────────┘
+    #
+    # @example To OR them together, use a single expression and the `|` operator.
+    #   east.join_where(
+    #     west,
+    #     (Polars.col("dur") < Polars.col("time")) | (Polars.col("rev") < Polars.col("cost"))
+    #   ).collect
+    #   # =>
+    #   # shape: (6, 8)
+    #   # ┌─────┬─────┬─────┬───────┬──────┬──────┬──────┬─────────────┐
+    #   # │ id  ┆ dur ┆ rev ┆ cores ┆ t_id ┆ time ┆ cost ┆ cores_right │
+    #   # │ --- ┆ --- ┆ --- ┆ ---   ┆ ---  ┆ ---  ┆ ---  ┆ ---         │
+    #   # │ i64 ┆ i64 ┆ i64 ┆ i64   ┆ i64  ┆ i64  ┆ i64  ┆ i64         │
+    #   # ╞═════╪═════╪═════╪═══════╪══════╪══════╪══════╪═════════════╡
+    #   # │ 100 ┆ 120 ┆ 12  ┆ 2     ┆ 498  ┆ 130  ┆ 13   ┆ 2           │
+    #   # │ 100 ┆ 120 ┆ 12  ┆ 2     ┆ 676  ┆ 150  ┆ 15   ┆ 1           │
+    #   # │ 100 ┆ 120 ┆ 12  ┆ 2     ┆ 742  ┆ 170  ┆ 16   ┆ 4           │
+    #   # │ 101 ┆ 140 ┆ 14  ┆ 8     ┆ 676  ┆ 150  ┆ 15   ┆ 1           │
+    #   # │ 101 ┆ 140 ┆ 14  ┆ 8     ┆ 742  ┆ 170  ┆ 16   ┆ 4           │
+    #   # │ 102 ┆ 160 ┆ 16  ┆ 4     ┆ 742  ┆ 170  ┆ 16   ┆ 4           │
+    #   # └─────┴─────┴─────┴───────┴──────┴──────┴──────┴─────────────┘
+    def join_where(
+      other,
+      *predicates,
+      suffix: "_right"
+    )
+      Utils.require_same_type(self, other)
+
+      rbexprs = Utils.parse_into_list_of_expressions(*predicates)
+
+      _from_rbldf(
+        _ldf.join_where(
+          other._ldf,
+          rbexprs,
+          suffix
+        )
+      )
+    end
+
     # Add or overwrite multiple columns in a DataFrame.
     #
     # @param exprs [Object]
