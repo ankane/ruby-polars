@@ -277,9 +277,9 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("is_duplicated", method!(RbExpr::is_duplicated, 0))?;
     class.define_method("over", method!(RbExpr::over, 1))?;
     class.define_method("rolling", method!(RbExpr::rolling, 4))?;
-    class.define_method("_and", method!(RbExpr::_and, 1))?;
-    class.define_method("_xor", method!(RbExpr::_xor, 1))?;
-    class.define_method("_or", method!(RbExpr::_or, 1))?;
+    class.define_method("and_", method!(RbExpr::and_, 1))?;
+    class.define_method("or_", method!(RbExpr::or_, 1))?;
+    class.define_method("xor_", method!(RbExpr::xor_, 1))?;
     class.define_method("is_in", method!(RbExpr::is_in, 2))?;
     class.define_method("repeat_by", method!(RbExpr::repeat_by, 1))?;
     class.define_method("pow", method!(RbExpr::pow, 1))?;

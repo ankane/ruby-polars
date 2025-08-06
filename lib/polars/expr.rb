@@ -26,21 +26,24 @@ module Polars
     #
     # @return [Expr]
     def ^(other)
-      wrap_expr(_rbexpr._xor(_to_rbexpr(other)))
+      other = Utils.parse_into_expression(other)
+      wrap_expr(_rbexpr.xor_(other))
     end
 
     # Bitwise AND.
     #
     # @return [Expr]
     def &(other)
-      wrap_expr(_rbexpr._and(_to_rbexpr(other)))
+      other = Utils.parse_into_expression(other)
+      wrap_expr(_rbexpr.and_(other))
     end
 
     # Bitwise OR.
     #
     # @return [Expr]
     def |(other)
-      wrap_expr(_rbexpr._or(_to_rbexpr(other)))
+      other = Utils.parse_into_expression(other)
+      wrap_expr(_rbexpr.or_(other))
     end
 
     # Performs addition.

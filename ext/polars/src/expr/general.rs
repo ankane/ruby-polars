@@ -610,16 +610,16 @@ impl RbExpr {
         Ok(self.inner.clone().rolling(options).into())
     }
 
-    pub fn _and(&self, expr: &Self) -> Self {
+    pub fn and_(&self, expr: &Self) -> Self {
         self.inner.clone().and(expr.inner.clone()).into()
     }
 
-    pub fn _xor(&self, expr: &Self) -> Self {
-        self.inner.clone().xor(expr.inner.clone()).into()
+    pub fn or_(&self, expr: &Self) -> Self {
+        self.inner.clone().or(expr.inner.clone()).into()
     }
 
-    pub fn _or(&self, expr: &Self) -> Self {
-        self.inner.clone().or(expr.inner.clone()).into()
+    pub fn xor_(&self, expr: &Self) -> Self {
+        self.inner.clone().xor(expr.inner.clone()).into()
     }
 
     pub fn is_in(&self, expr: &Self, nulls_equal: bool) -> Self {
