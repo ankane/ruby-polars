@@ -221,6 +221,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("peak_max", method!(RbExpr::peak_max, 0))?;
     class.define_method("arg_max", method!(RbExpr::arg_max, 0))?;
     class.define_method("arg_min", method!(RbExpr::arg_min, 0))?;
+    class.define_method("index_of", method!(RbExpr::index_of, 1))?;
     class.define_method("search_sorted", method!(RbExpr::search_sorted, 3))?;
     class.define_method("gather", method!(RbExpr::gather, 1))?;
     class.define_method("get", method!(RbExpr::get, 1))?;

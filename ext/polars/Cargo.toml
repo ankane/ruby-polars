@@ -67,6 +67,7 @@ features = [
     "fmt",
     "gcp",
     "http",
+    "index_of",
     "interpolate",
     "interpolate_by",
     "ipc",

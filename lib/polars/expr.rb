@@ -1547,6 +1547,36 @@ module Polars
       _from_rbexpr(_rbexpr.arg_min)
     end
 
+    # Get the index of the first occurrence of a value, or ``None`` if it's not found.
+    #
+    # @param element [Object]
+    #   Value to find.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, nil, 17]})
+    #   df.select(
+    #     [
+    #       Polars.col("a").index_of(17).alias("seventeen"),
+    #       Polars.col("a").index_of(nil).alias("null"),
+    #       Polars.col("a").index_of(55).alias("fiftyfive")
+    #     ]
+    #   )
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌───────────┬──────┬───────────┐
+    #   # │ seventeen ┆ null ┆ fiftyfive │
+    #   # │ ---       ┆ ---  ┆ ---       │
+    #   # │ u32       ┆ u32  ┆ u32       │
+    #   # ╞═══════════╪══════╪═══════════╡
+    #   # │ 2         ┆ 1    ┆ null      │
+    #   # └───────────┴──────┴───────────┘
+    def index_of(element)
+      element = Utils.parse_into_expression(element, str_as_lit: true)
+      wrap_expr(_rbexpr.index_of(element))
+    end
+
     # Find indices where elements should be inserted to maintain order.
     #
     # @param element [Object]

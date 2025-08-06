@@ -323,6 +323,10 @@ impl RbExpr {
         self.inner.clone().arg_min().into()
     }
 
+    pub fn index_of(&self, element: &Self) -> Self {
+        self.inner.clone().index_of(element.inner.clone()).into()
+    }
+
     pub fn search_sorted(
         &self,
         element: &Self,
