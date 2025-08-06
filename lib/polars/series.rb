@@ -913,6 +913,44 @@ module Polars
       to_frame.select(Polars.col(name).product).to_series[0]
     end
 
+    # Raise to the power of the given exponent.
+    #
+    # If the exponent is float, the result follows the dtype of exponent.
+    # Otherwise, it follows dtype of base.
+    #
+    # @param exponent [Numeric]
+    #   The exponent. Accepts Series input.
+    #
+    # @return [Series]
+    #
+    # @example Raising integers to positive integers results in integers:
+    #   s = Polars::Series.new("foo", [1, 2, 3, 4])
+    #   s.pow(3)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'foo' [i64]
+    #   # [
+    #   #         1
+    #   #         8
+    #   #         27
+    #   #         64
+    #   # ]
+    #
+    # @example In order to raise integers to negative integers, you can cast either the base or the exponent to float:
+    #   s.pow(-3.0)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'foo' [f64]
+    #   # [
+    #   #         1.0
+    #   #         0.125
+    #   #         0.037037
+    #   #         0.015625
+    #   # ]
+    def pow(exponent)
+      to_frame.select_seq(F.col(name).pow(exponent)).to_series
+    end
+
     # Get the minimal value in this Series.
     #
     # @return [Object]
@@ -3278,6 +3316,28 @@ module Polars
       super
     end
 
+    # Round to a number of significant figures.
+    #
+    # @param digits [Integer]
+    #   Number of significant figures to round to.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([0.01234, 3.333, 3450.0])
+    #   s.round_sig_figs(2)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         0.012
+    #   #         3.3
+    #   #         3500.0
+    #   # ]
+    def round_sig_figs(digits)
+      super
+    end
+
     # Compute the dot/inner product between two Series.
     #
     # @param other [Object]
@@ -4615,6 +4675,60 @@ module Polars
     #
     # @return [Series]
     def clip_max(max_val)
+      super
+    end
+
+    # Return the lower bound of this Series' dtype as a unit Series.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("s", [-1, 0, 1], dtype: Polars::Int32)
+    #   s.lower_bound
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: 's' [i32]
+    #   # [
+    #   #         -2147483648
+    #   # ]
+    #
+    # @example
+    #   s = Polars::Series.new("s", [1.0, 2.5, 3.0], dtype: Polars::Float32)
+    #   s.lower_bound
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: 's' [f32]
+    #   # [
+    #   #         -inf
+    #   # ]
+    def lower_bound
+      super
+    end
+
+    # Return the upper bound of this Series' dtype as a unit Series.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("s", [-1, 0, 1], dtype: Polars::Int8)
+    #   s.upper_bound
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: 's' [i8]
+    #   # [
+    #   #         127
+    #   # ]
+    #
+    # @example
+    #   s = Polars::Series.new("s", [1.0, 2.5, 3.0], dtype: Polars::Float64)
+    #   s.upper_bound
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: 's' [f64]
+    #   # [
+    #   #         inf
+    #   # ]
+    def upper_bound
       super
     end
 
