@@ -1,8 +1,10 @@
-use magnus::{Error, IntoValue, Value, exception};
+use magnus::{Error, IntoValue, RArray, Value, exception, value::ReprValue};
 use polars::prelude::*;
 use polars::series::IsSorted;
+use polars_core::utils::flatten::flatten_series;
 
 use crate::conversion::*;
+use crate::rb_modules;
 use crate::{RbDataFrame, RbPolarsErr, RbResult, RbSeries};
 
 impl RbSeries {
@@ -368,6 +370,13 @@ impl RbSeries {
         };
         let out = out.map_err(RbPolarsErr::from)?;
         Ok(out.into())
+    }
+
+    pub fn get_chunks(&self) -> RbResult<RArray> {
+        flatten_series(&self.series.borrow())
+            .into_iter()
+            .map(|s| rb_modules::utils().funcall::<_, _, Value>("wrap_s", (Self::new(s),)))
+            .collect()
     }
 
     pub fn time_unit(&self) -> Option<String> {

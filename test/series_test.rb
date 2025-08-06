@@ -826,4 +826,18 @@ class SeriesTest < Minitest::Test
     s = Polars::Series.new(["a", "a", "b", "c", "c", "c"])
     assert_equal ["len", "value"], s.rle.struct.unnest.columns
   end
+
+  def test_first
+    assert_equal 1, Polars::Series.new([1, 2, 3]).first
+    assert_nil Polars::Series.new([]).first
+  end
+
+  def test_last
+    assert_equal 3, Polars::Series.new([1, 2, 3]).last
+    assert_nil Polars::Series.new([]).last
+  end
+
+  def test_approx_n_unique
+    assert_equal 3, Polars::Series.new([1, 1, 2, 2, 3]).approx_n_unique
+  end
 end

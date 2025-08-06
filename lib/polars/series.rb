@@ -4461,6 +4461,140 @@ module Polars
       super
     end
 
+    # Get the chunks of this Series as a list of Series.
+    #
+    # @return [Array]
+    #
+    # @example
+    #   s1 = Polars::Series.new("a", [1, 2, 3])
+    #   s2 = Polars::Series.new("a", [4, 5, 6])
+    #   s = Polars.concat([s1, s2], rechunk: false)
+    #   s.get_chunks
+    #   # =>
+    #   # [shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ], shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         4
+    #   #         5
+    #   #         6
+    #   # ]]
+    def get_chunks
+      _s.get_chunks
+    end
+
+    # Aggregate values into a list.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.implode
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: 'a' [list[i64]]
+    #   # [
+    #   #         [1, 2, 3]
+    #   # ]
+    def implode
+      super
+    end
+
+    # Evaluate the number of set bits.
+    #
+    # @return [Series]
+    def bitwise_count_ones
+      super
+    end
+
+    # Evaluate the number of unset bits.
+    #
+    # @return [Series]
+    def bitwise_count_zeros
+      super
+    end
+
+    # Evaluate the number most-significant set bits before seeing an unset bit.
+    #
+    # @return [Series]
+    def bitwise_leading_ones
+      super
+    end
+
+    # Evaluate the number most-significant unset bits before seeing a set bit.
+    #
+    # @return [Series]
+    def bitwise_leading_zeros
+      super
+    end
+
+    # Evaluate the number least-significant set bits before seeing an unset bit.
+    #
+    # @return [Series]
+    def bitwise_trailing_ones
+      super
+    end
+
+    # Evaluate the number least-significant unset bits before seeing a set bit.
+    #
+    # @return [Series]
+    def bitwise_trailing_zeros
+      super
+    end
+
+    # Perform an aggregation of bitwise ANDs.
+    #
+    # @return [Object]
+    def bitwise_and
+      _s.bitwise_and
+    end
+
+    # Perform an aggregation of bitwise ORs.
+    #
+    # @return [Object]
+    def bitwise_or
+      _s.bitwise_or
+    end
+
+    # Perform an aggregation of bitwise XORs.
+    #
+    # @return [Object]
+    def bitwise_xor
+      _s.bitwise_xor
+    end
+
+    # Get the first element of the Series.
+    #
+    # Returns `nil` if the Series is empty.
+    #
+    # @return [Object]
+    def first
+      _s.first
+    end
+
+    # Get the last element of the Series.
+    #
+    # Returns `nil` if the Series is empty.
+    #
+    # @return [Object]
+    def last
+      _s.last
+    end
+
+    # Approximate count of unique values.
+    #
+    # This is done using the HyperLogLog++ algorithm for cardinality estimation.
+    #
+    # @return [Object]
+    def approx_n_unique
+      _s.approx_n_unique
+    end
+
     # Create an object namespace of all list related methods.
     #
     # @return [ListNameSpace]

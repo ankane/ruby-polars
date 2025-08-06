@@ -3,6 +3,10 @@ use crate::prelude::*;
 use crate::{RbResult, RbSeries};
 use magnus::{IntoValue, Value};
 
+fn scalar_to_rb(scalar: RbResult<Scalar>) -> RbResult<Value> {
+    Ok(Wrap(scalar?.as_any_value()).into_value())
+}
+
 impl RbSeries {
     pub fn any(&self, ignore_nulls: bool) -> RbResult<Option<bool>> {
         let binding = self.series.borrow();
@@ -117,5 +121,45 @@ impl RbSeries {
                 .as_any_value(),
         )
         .into_value())
+    }
+
+    pub fn first(&self) -> RbResult<Value> {
+        scalar_to_rb(Ok(self.series.borrow().first()))
+    }
+
+    pub fn last(&self) -> RbResult<Value> {
+        scalar_to_rb(Ok(self.series.borrow().last()))
+    }
+
+    pub fn approx_n_unique(&self) -> RbResult<IdxSize> {
+        Ok(self
+            .series
+            .borrow()
+            .approx_n_unique()
+            .map_err(RbPolarsErr::from)?)
+    }
+
+    pub fn bitwise_and(&self) -> RbResult<Value> {
+        scalar_to_rb(Ok(self
+            .series
+            .borrow()
+            .and_reduce()
+            .map_err(RbPolarsErr::from)?))
+    }
+
+    pub fn bitwise_or(&self) -> RbResult<Value> {
+        scalar_to_rb(Ok(self
+            .series
+            .borrow()
+            .or_reduce()
+            .map_err(RbPolarsErr::from)?))
+    }
+
+    pub fn bitwise_xor(&self) -> RbResult<Value> {
+        scalar_to_rb(Ok(self
+            .series
+            .borrow()
+            .xor_reduce()
+            .map_err(RbPolarsErr::from)?))
     }
 }

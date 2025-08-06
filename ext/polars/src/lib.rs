@@ -913,6 +913,12 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("max", method!(RbSeries::max, 0))?;
     class.define_method("min", method!(RbSeries::min, 0))?;
     class.define_method("sum", method!(RbSeries::sum, 0))?;
+    class.define_method("first", method!(RbSeries::first, 0))?;
+    class.define_method("last", method!(RbSeries::last, 0))?;
+    class.define_method("approx_n_unique", method!(RbSeries::approx_n_unique, 0))?;
+    class.define_method("bitwise_and", method!(RbSeries::bitwise_and, 0))?;
+    class.define_method("bitwise_or", method!(RbSeries::bitwise_or, 0))?;
+    class.define_method("bitwise_xor", method!(RbSeries::bitwise_xor, 0))?;
     class.define_method("n_chunks", method!(RbSeries::n_chunks, 0))?;
     class.define_method("append", method!(RbSeries::append, 1))?;
     class.define_method("extend", method!(RbSeries::extend, 1))?;
@@ -959,6 +965,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("skew", method!(RbSeries::skew, 1))?;
     class.define_method("kurtosis", method!(RbSeries::kurtosis, 2))?;
     class.define_method("cast", method!(RbSeries::cast, 2))?;
+    class.define_method("get_chunks", method!(RbSeries::get_chunks, 0))?;
     class.define_method("time_unit", method!(RbSeries::time_unit, 0))?;
     class.define_method("scatter", method!(RbSeries::scatter, 2))?;
 
