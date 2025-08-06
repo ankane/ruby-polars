@@ -42,4 +42,12 @@ impl RbExpr {
     pub fn name_to_uppercase(&self) -> Self {
         self.inner.clone().name().to_uppercase().into()
     }
+
+    pub fn name_prefix_fields(&self, prefix: String) -> Self {
+        self.inner.clone().name().prefix_fields(&prefix).into()
+    }
+
+    pub fn name_suffix_fields(&self, suffix: String) -> Self {
+        self.inner.clone().name().suffix_fields(&suffix).into()
+    }
 }

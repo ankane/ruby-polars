@@ -194,5 +194,41 @@ module Polars
     def to_uppercase
       Utils.wrap_expr(_rbexpr.name_to_uppercase)
     end
+
+    # Add a prefix to all field names of a struct.
+    #
+    # @note
+    #   This only takes effect for struct columns.
+    #
+    # @param prefix [String]
+    #   Prefix to add to the field name.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => {"a" => 1, "b" => 2}})
+    #   df.select(Polars.col("x").name.prefix_fields("prefix_")).schema
+    #   # => {"x"=>Polars::Struct({"prefix_a"=>Polars::Int64, "prefix_b"=>Polars::Int64})}
+    def prefix_fields(prefix)
+      Utils.wrap_expr(_rbexpr.name_prefix_fields(prefix))
+    end
+
+    # Add a suffix to all field names of a struct.
+    #
+    # @note
+    #   This only takes effect for struct columns.
+    #
+    # @param suffix [String]
+    #   Suffix to add to the field name.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => {"a" => 1, "b" => 2}})
+    #   df.select(Polars.col("x").name.suffix_fields("_suffix")).schema
+    #   # => {"x"=>Polars::Struct({"a_suffix"=>Polars::Int64, "b_suffix"=>Polars::Int64})}
+    def suffix_fields(suffix)
+      Utils.wrap_expr(_rbexpr.name_suffix_fields(suffix))
+    end
   end
 end

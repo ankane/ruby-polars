@@ -10,6 +10,7 @@
 - Added more methods to `DateTimeExpr`
 - Added more methods to `ListExpr`
 - Added more methods to `MetaExpr`
+- Added more methods to `NameExpr`
 - Fixed `subset` option for `drop_nulls` method
 
 ## 0.21.0 (2025-08-03)
