@@ -244,7 +244,29 @@ module Polars
     #   # │ 2.0      │
     #   # └──────────┘
     def sqrt
-      self**0.5
+      wrap_expr(_rbexpr.sqrt)
+    end
+
+    # Compute the cube root of the elements.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"values" => [1.0, 2.0, 4.0]})
+    #   df.select(Polars.col("values").cbrt)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────────┐
+    #   # │ values   │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 1.0      │
+    #   # │ 1.259921 │
+    #   # │ 1.587401 │
+    #   # └──────────┘
+    def cbrt
+      wrap_expr(_rbexpr.cbrt)
     end
 
     # Compute the base 10 logarithm of the input array, element-wise.

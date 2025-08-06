@@ -279,6 +279,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("is_in", method!(RbExpr::is_in, 2))?;
     class.define_method("repeat_by", method!(RbExpr::repeat_by, 1))?;
     class.define_method("pow", method!(RbExpr::pow, 1))?;
+    class.define_method("sqrt", method!(RbExpr::sqrt, 0))?;
+    class.define_method("cbrt", method!(RbExpr::cbrt, 0))?;
     class.define_method("cum_sum", method!(RbExpr::cum_sum, 1))?;
     class.define_method("cum_max", method!(RbExpr::cum_max, 1))?;
     class.define_method("cum_min", method!(RbExpr::cum_min, 1))?;

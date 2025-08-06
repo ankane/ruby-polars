@@ -2,7 +2,7 @@
 
 - Added bitwise methods to `Expr`
 - Added `degrees` and `radians` methods to `Expr`
-- Added `has_nulls`, `is_close`, `log1p` methods to `Expr`
+- Added `cbrt`, `has_nulls`, `is_close`, and `log1p` methods to `Expr`
 - Added `drop_nans` method to `DataFrame` and `LazyFrame`
 - Fixed `subset` option for `drop_nulls` method
 

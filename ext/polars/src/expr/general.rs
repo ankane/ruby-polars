@@ -608,6 +608,14 @@ impl RbExpr {
         self.inner.clone().pow(exponent.inner.clone()).into()
     }
 
+    pub fn sqrt(&self) -> Self {
+        self.inner.clone().sqrt().into()
+    }
+
+    pub fn cbrt(&self) -> Self {
+        self.inner.clone().cbrt().into()
+    }
+
     pub fn cum_sum(&self, reverse: bool) -> Self {
         self.inner.clone().cum_sum(reverse).into()
     }
