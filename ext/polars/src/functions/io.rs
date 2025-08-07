@@ -21,6 +21,25 @@ pub fn read_ipc_schema(rb_f: Value) -> RbResult<RHash> {
     Ok(dict)
 }
 
+pub fn read_parquet_metadata(rb_f: Value) -> RbResult<RHash> {
+    use polars_parquet::read::read_metadata;
+    use polars_parquet::read::schema::read_custom_key_value_metadata;
+
+    let metadata = match get_either_file(rb_f, false)? {
+        EitherRustRubyFile::Rust(r) => {
+            read_metadata(&mut BufReader::new(r)).map_err(RbPolarsErr::from)?
+        }
+        EitherRustRubyFile::Rb(mut r) => read_metadata(&mut r).map_err(RbPolarsErr::from)?,
+    };
+
+    let key_value_metadata = read_custom_key_value_metadata(metadata.key_value_metadata());
+    let dict = RHash::new();
+    for (key, value) in key_value_metadata.into_iter() {
+        dict.aset(key.as_str(), value.as_str())?;
+    }
+    Ok(dict)
+}
+
 pub fn read_parquet_schema(rb_f: Value) -> RbResult<RHash> {
     use polars_parquet::read::{infer_schema, read_metadata};
 

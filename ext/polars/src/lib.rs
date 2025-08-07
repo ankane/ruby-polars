@@ -719,6 +719,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("duration", function!(functions::lazy::duration, 9))?;
     class.define_singleton_method("ipc_schema", function!(functions::io::read_ipc_schema, 1))?;
     class.define_singleton_method(
+        "read_parquet_metadata",
+        function!(functions::io::read_parquet_metadata, 1),
+    )?;
+    class.define_singleton_method(
         "parquet_schema",
         function!(functions::io::read_parquet_schema, 1),
     )?;

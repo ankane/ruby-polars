@@ -1,5 +1,6 @@
 ## 0.21.1 (unreleased)
 
+- Added `read_parquet_metadata` method to `Polars`
 - Added more methods to `Series` and `Expr`
 - Added more methods to `DataFrame` and `LazyFrame`
 - Added more methods to `ArrayExpr` and `ArrayNameSpace`

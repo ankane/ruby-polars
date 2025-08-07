@@ -126,6 +126,27 @@ module Polars
       Plr.parquet_schema(source)
     end
 
+    # Get file-level custom metadata of a Parquet file without reading data.
+    #
+    # @note
+    #   This functionality is considered **experimental**. It may be removed or
+    #   changed at any point without it being considered a breaking change.
+    #
+    # @param source [Object]
+    #   Path to a file or a file-like object (by "file-like object" we refer to objects
+    #   that have a `read()` method, such as a file handler like the builtin `open`
+    #   function, or a `BytesIO` instance). For file-like objects, the stream position
+    #   may not be updated accordingly after reading.
+    #
+    # @return [Hash]
+    def read_parquet_metadata(source)
+      if Utils.pathlike?(source)
+        source = Utils.normalize_filepath(source, check_not_directory: false)
+      end
+
+      Plr.read_parquet_metadata(source)
+    end
+
     # Lazily read from a parquet file or multiple files via glob patterns.
     #
     # This allows the query optimizer to push down predicates and projections to the scan
