@@ -57,6 +57,36 @@ module Polars
       Utils.wrap_expr(_rbexpr.struct_field_by_name(name))
     end
 
+    # Expand the struct into its individual fields.
+    #
+    # Alias for `Expr.struct.field("*")`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "aaa" => [1, 2],
+    #       "bbb" => ["ab", "cd"],
+    #       "ccc" => [true, nil],
+    #       "ddd" => [[1, 2], [3]]
+    #     }
+    #   ).select(Polars.struct("aaa", "bbb", "ccc", "ddd").alias("struct_col"))
+    #   df.select(Polars.col("struct_col").struct.unnest)
+    #   # =>
+    #   # shape: (2, 4)
+    #   # ┌─────┬─────┬──────┬───────────┐
+    #   # │ aaa ┆ bbb ┆ ccc  ┆ ddd       │
+    #   # │ --- ┆ --- ┆ ---  ┆ ---       │
+    #   # │ i64 ┆ str ┆ bool ┆ list[i64] │
+    #   # ╞═════╪═════╪══════╪═══════════╡
+    #   # │ 1   ┆ ab  ┆ true ┆ [1, 2]    │
+    #   # │ 2   ┆ cd  ┆ null ┆ [3]       │
+    #   # └─────┴─────┴──────┴───────────┘
+    def unnest
+      field("*")
+    end
+
     # Rename the fields of the struct.
     #
     # @param names [Array]
