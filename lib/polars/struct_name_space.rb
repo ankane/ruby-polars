@@ -116,5 +116,23 @@ module Polars
     def unnest
       Utils.wrap_df(_s.struct_unnest)
     end
+
+    # Convert this struct to a string column with json values.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [{"a" => [1, 2], "b" => [45]}, {"a" => [9, 1, 3], "b" => nil}])
+    #   s.struct.json_encode
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [str]
+    #   # [
+    #   #         "{"a":[1,2],"b":[45]}"
+    #   #         "{"a":[9,1,3],"b":null}"
+    #   # ]
+    def json_encode
+      super
+    end
   end
 end
