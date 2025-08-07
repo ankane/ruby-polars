@@ -291,6 +291,46 @@ module Polars
       super
     end
 
+    # Determine whether each day lands on a business day.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param week_mask [Array]
+    #   Which days of the week to count. The default is Monday to Friday.
+    #   If you wanted to count only Monday to Thursday, you would pass
+    #   `(True, True, True, True, False, False, False)`.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([Date.new(2020, 1, 3), Date.new(2020, 1, 5)])
+    #   s.dt.is_business_day
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [bool]
+    #   # [
+    #   #         true
+    #   #         false
+    #   # ]
+    #
+    # @example You can pass a custom weekend - for example, if you only take Sunday off:
+    #   week_mask = [true, true, true, true, true, true, false]
+    #   s.dt.is_business_day(week_mask: week_mask)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [bool]
+    #   # [
+    #   #         true
+    #   #         false
+    #   # ]
+    def is_business_day(
+      week_mask: [true, true, true, true, true, false, false]
+    )
+      super
+    end
+
     # Determine whether the year of the underlying date representation is a leap year.
     #
     # Applies to Date and Datetime columns.
