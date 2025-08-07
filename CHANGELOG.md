@@ -14,6 +14,7 @@
 - Added more methods to `StringExpr`
 - Added more methods to `StructExpr`
 - Added more methods to `ArrayNameSpace`
+- Added more methods to `BinaryNameSpace`
 - Added `json_encode` method to `StructNameSpace`
 - Fixed `subset` option for `drop_nulls` method
 

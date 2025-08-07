@@ -157,5 +157,48 @@ module Polars
     def encode(encoding)
       super
     end
+
+    # Get the size of the binary values in a Series in the given unit.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("data", [512, 256, 2560, 1024].map { |n| "\x00".b * n })
+    #   s.bin.size("kb")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'data' [f64]
+    #   # [
+    #   #         0.5
+    #   #         0.25
+    #   #         2.5
+    #   #         1.0
+    #   # ]
+    def size(unit = "b")
+      super
+    end
+
+    # Interpret a buffer as a numerical polars type.
+    #
+    # @param dtype [Object]
+    #   Which type to interpret binary column into.
+    # @param endianness ["big", "little"]
+    #   Which endianness to use when interpreting bytes, by default "little".
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("data", ["\x05\x00\x00\x00".b, "\x10\x00\x01\x00".b])
+    #   s.bin.reinterpret(dtype: Polars::Int32, endianness: "little")
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'data' [i32]
+    #   # [
+    #   #         5
+    #   #         65552
+    #   # ]
+    def reinterpret(dtype:, endianness: "little")
+      super
+    end
   end
 end
