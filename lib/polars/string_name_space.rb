@@ -498,6 +498,39 @@ module Polars
       super
     end
 
+    # Extract all capture groups for the given regex pattern.
+    #
+    # @param pattern [String]
+    #   A valid regular expression pattern containing at least one capture group,
+    #   compatible with the [regex crate](https://docs.rs/regex/latest/regex/).
+    #
+    # @return [Series]
+    #
+    # @note
+    #   All group names are **strings**.
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     "url",
+    #     [
+    #       "http://vote.com/ballon_dor?candidate=messi&ref=python",
+    #       "http://vote.com/ballon_dor?candidate=weghorst&ref=polars",
+    #       "http://vote.com/ballon_dor?error=404&ref=rust"
+    #     ]
+    #   )
+    #   s.str.extract_groups("candidate=(?<candidate>\\w+)&ref=(?<ref>\\w+)")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'url' [struct[2]]
+    #   # [
+    #   #         {"messi","python"}
+    #   #         {"weghorst","polars"}
+    #   #         {null,null}
+    #   # ]
+    def extract_groups(pattern)
+      super
+    end
+
     # Count all successive non-overlapping regex matches.
     #
     # @param pattern [String]
