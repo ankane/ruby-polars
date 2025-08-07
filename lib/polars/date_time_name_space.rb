@@ -1511,6 +1511,21 @@ module Polars
       super
     end
 
+    # Create a naive Datetime from an existing Date/Datetime expression and a Time.
+    #
+    # If the underlying expression is a Datetime then its time component is replaced,
+    # and if it is a Date then a new Datetime is created by combining the two values.
+    #
+    # @param time [Object]
+    #   A Ruby time literal or Series of the same length as this Series.
+    # @param time_unit ['ns', 'us', 'ms']
+    #   Unit of time.
+    #
+    # @return [Series]
+    def combine(time, time_unit: "us")
+      super
+    end
+
     # Roll backward to the first day of the month.
     #
     # @return [Series]
@@ -1603,6 +1618,55 @@ module Polars
     #   #         0ms
     #   # ]
     def dst_offset
+      super
+    end
+
+    # Replace time unit.
+    #
+    # @param year [Object]
+    #   Literal or Series.
+    # @param month [Object]
+    #   Literal or Series, ranging from 1-12.
+    # @param day [Object]
+    #   Literal or Series, ranging from 1-31.
+    # @param hour [Object]
+    #   Literal or Series, ranging from 0-23.
+    # @param minute [Object]
+    #   Literal or Series, ranging from 0-59.
+    # @param second [Object]
+    #   Literal or Series, ranging from 0-59.
+    # @param microsecond [Object]
+    #   Literal or Series, ranging from 0-999999.
+    # @param ambiguous [String]
+    #   Determine how to deal with ambiguous datetimes:
+    #
+    #   - `'raise'` (default): raise
+    #   - `'earliest'`: use the earliest datetime
+    #   - `'latest'`: use the latest datetime
+    #   - `'null'`: set to null
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("date", [Date.new(2013, 1, 1), Date.new(2024, 1, 2)])
+    #   s.dt.replace(year: 1800)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'date' [date]
+    #   # [
+    #   #         1800-01-01
+    #   #         1800-01-02
+    #   # ]
+    def replace(
+      year: nil,
+      month: nil,
+      day: nil,
+      hour: nil,
+      minute: nil,
+      second: nil,
+      microsecond: nil,
+      ambiguous: "raise"
+    )
       super
     end
   end
