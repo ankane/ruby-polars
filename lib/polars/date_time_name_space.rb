@@ -539,6 +539,48 @@ module Polars
       super
     end
 
+    # Extract (local) time.
+    #
+    # Applies to Date/Datetime/Time columns.
+    #
+    # @return
+    #
+    # @example
+    #   ser = Polars::Series.new([DateTime.new(2021, 1, 2, 5)]).dt.replace_time_zone(
+    #     "Asia/Kathmandu"
+    #   )
+    #   ser.dt.time
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: '' [time]
+    #   # [
+    #   #         05:00:00
+    #   # ]
+    def time
+      super
+    end
+
+    # Extract (local) date.
+    #
+    # Applies to Date/Datetime columns.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   ser = Polars::Series.new([DateTime.new(2021, 1, 2, 5)]).dt.replace_time_zone(
+    #     "Asia/Kathmandu"
+    #   )
+    #   ser.dt.date
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: '' [date]
+    #   # [
+    #   #         2021-01-02
+    #   # ]
+    def date
+      super
+    end
+
     # Extract the hour from the underlying DateTime representation.
     #
     # Applies to Datetime columns.
