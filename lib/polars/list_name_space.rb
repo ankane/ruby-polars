@@ -66,7 +66,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new([[1, 2, 3], [5]])
-    #   s.list.lengths
+    #   s.list.len
     #   # =>
     #   # shape: (2,)
     #   # Series: '' [u32]
@@ -74,9 +74,10 @@ module Polars
     #   #         3
     #   #         1
     #   # ]
-    def lengths
+    def len
       super
     end
+    alias_method :lengths, :len
 
     # Drop all null values in the list.
     #
@@ -199,6 +200,60 @@ module Polars
     #   #         3.0
     #   # ]
     def mean
+      super
+    end
+
+    # Compute the median value of the arrays in the list.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("values", [[-1, 0, 1], [1, 10]])
+    #   s.list.median
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'values' [f64]
+    #   # [
+    #   #         0.0
+    #   #         5.5
+    #   # ]
+    def median
+      super
+    end
+
+    # Compute the std value of the arrays in the list.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("values", [[-1, 0, 1], [1, 10]])
+    #   s.list.std
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'values' [f64]
+    #   # [
+    #   #         1.0
+    #   #         6.363961
+    #   # ]
+    def std(ddof: 1)
+      super
+    end
+
+    # Compute the var value of the arrays in the list.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("values", [[-1, 0, 1], [1, 10]])
+    #   s.list.var
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'values' [f64]
+    #   # [
+    #   #         1.0
+    #   #         40.5
+    #   # ]
+    def var(ddof: 1)
       super
     end
 

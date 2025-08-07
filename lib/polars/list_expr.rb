@@ -80,10 +80,10 @@ module Polars
     #   # │ 2   │
     #   # │ 1   │
     #   # └─────┘
-    def lengths
+    def len
       Utils.wrap_expr(_rbexpr.list_len)
     end
-    alias_method :len, :lengths
+    alias_method :lengths, :len
 
     # Drop all null values in the list.
     #
