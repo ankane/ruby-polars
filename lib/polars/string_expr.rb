@@ -1745,11 +1745,22 @@ module Polars
     #   # │ Tell me what you want, what yo… ┆ Tell you what me want, what me… │
     #   # │ Can you feel the love tonight   ┆ Can me feel the love tonight    │
     #   # └─────────────────────────────────┴─────────────────────────────────┘
-    def replace_many(patterns, replace_with, ascii_case_insensitive: false)
+    def replace_many(patterns, replace_with = Expr::NO_DEFAULT, ascii_case_insensitive: false)
+      if replace_with == Expr::NO_DEFAULT
+        if !patterns.is_a?(Hash)
+          msg = "`replace_with` argument is required if `patterns` argument is not a Hash type"
+          raise TypeError, msg
+        end
+        # Early return in case of an empty mapping.
+        if patterns.empty?
+          return Utils.wrap_expr(_rbexpr)
+        end
+        replace_with = patterns.values
+        patterns = patterns.keys
+      end
+
       patterns = Utils.parse_into_expression(patterns, str_as_lit: false)
-      replace_with = Utils.parse_into_expression(
-        replace_with, str_as_lit: true
-      )
+      replace_with = Utils.parse_into_expression(replace_with, str_as_lit: true)
       Utils.wrap_expr(
         _rbexpr.str_replace_many(
           patterns, replace_with, ascii_case_insensitive

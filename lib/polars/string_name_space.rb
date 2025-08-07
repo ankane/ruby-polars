@@ -1104,6 +1104,287 @@ module Polars
       super
     end
 
+    # Convert an String column into a column of dtype with base radix.
+    #
+    # @param base [Integer]
+    #   Positive integer or expression which is the base of the string
+    #   we are parsing.
+    #   Default: 10.
+    # @param dtype [Object]
+    #   Polars integer type to cast to.
+    #   Default: `Int64`.
+    # @param strict [Object]
+    #   Bool, Default=true will raise any ParseError or overflow as ComputeError.
+    #   false silently convert to Null.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("bin", ["110", "101", "010", "invalid"])
+    #   s.str.to_integer(base: 2, dtype: Polars::Int32, strict: false)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'bin' [i32]
+    #   # [
+    #   #         6
+    #   #         5
+    #   #         2
+    #   #         null
+    #   # ]
+    #
+    # @example
+    #   s = Polars::Series.new("hex", ["fa1e", "ff00", "cafe", nil])
+    #   s.str.to_integer(base: 16)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'hex' [i64]
+    #   # [
+    #   #         64030
+    #   #         65280
+    #   #         51966
+    #   #         null
+    #   # ]
+    def to_integer(
+      base: 10,
+      dtype: Int64,
+      strict: true
+    )
+      super
+    end
+
+    # Use the Aho-Corasick algorithm to find matches.
+    #
+    # Determines if any of the patterns are contained in the string.
+    #
+    # @param patterns [Object]
+    #   String patterns to search.
+    # @param ascii_case_insensitive [Boolean]
+    #   Enable ASCII-aware case-insensitive matching.
+    #   When this option is enabled, searching will be performed without respect
+    #   to case for ASCII letters (a-z and A-Z) only.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   This method supports matching on string literals only, and does not support
+    #   regular expression matching.
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     "lyrics",
+    #     [
+    #       "Everybody wants to rule the world",
+    #       "Tell me what you want, what you really really want",
+    #       "Can you feel the love tonight"
+    #     ]
+    #   )
+    #   s.str.contains_any(["you", "me"])
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'lyrics' [bool]
+    #   # [
+    #   #         false
+    #   #         true
+    #   #         true
+    #   # ]
+    def contains_any(
+      patterns,
+      ascii_case_insensitive: false
+    )
+      super
+    end
+
+    # Use the Aho-Corasick algorithm to replace many matches.
+    #
+    # @param patterns
+    #   String patterns to search and replace.
+    #   Also accepts a mapping of patterns to their replacement as syntactic sugar
+    #   for `replace_many(Polars::Series.new(mapping.keys), Polars::Series.new(mapping.values))`.
+    # @param replace_with
+    #   Strings to replace where a pattern was a match.
+    #   Length must match the length of `patterns` or have length 1. This can be
+    #   broadcasted, so it supports many:one and many:many.
+    # @param ascii_case_insensitive
+    #   Enable ASCII-aware case-insensitive matching.
+    #   When this option is enabled, searching will be performed without respect
+    #   to case for ASCII letters (a-z and A-Z) only.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   This method supports matching on string literals only, and does not support
+    #   regular expression matching.
+    #
+    # @example Replace many patterns by passing lists of equal length to the `patterns` and `replace_with` parameters.
+    #   s = Polars::Series.new(
+    #     "lyrics",
+    #     [
+    #       "Everybody wants to rule the world",
+    #       "Tell me what you want, what you really really want",
+    #       "Can you feel the love tonight"
+    #     ]
+    #   )
+    #   s.str.replace_many(["you", "me"], ["me", "you"])
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'lyrics' [str]
+    #   # [
+    #   #         "Everybody wants to rule the wo…
+    #   #         "Tell you what me want, what me…
+    #   #         "Can me feel the love tonight"
+    #   # ]
+    #
+    # @example Broadcast a replacement for many patterns by passing a sequence of length 1 to the `replace_with` parameter.
+    #   s = Polars::Series.new(
+    #     "lyrics",
+    #     [
+    #       "Everybody wants to rule the world",
+    #       "Tell me what you want, what you really really want",
+    #       "Can you feel the love tonight",
+    #     ]
+    #   )
+    #   s.str.replace_many(["me", "you", "they"], [""])
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'lyrics' [str]
+    #   # [
+    #   #         "Everybody wants to rule the wo…
+    #   #         "Tell  what  want, what  really…
+    #   #         "Can  feel the love tonight"
+    #   # ]
+    #
+    # @example Passing a mapping with patterns and replacements is also supported as syntactic sugar.
+    #   s = Polars::Series.new(
+    #     "lyrics",
+    #     [
+    #       "Everybody wants to rule the world",
+    #       "Tell me what you want, what you really really want",
+    #       "Can you feel the love tonight"
+    #     ]
+    #   )
+    #   mapping = {"me" => "you", "you" => "me", "want" => "need"}
+    #   s.str.replace_many(mapping)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'lyrics' [str]
+    #   # [
+    #   #         "Everybody needs to rule the wo…
+    #   #         "Tell you what me need, what me…
+    #   #         "Can me feel the love tonight"
+    #   # ]
+    def replace_many(
+      patterns,
+      replace_with = Expr::NO_DEFAULT,
+      ascii_case_insensitive: false
+    )
+      super
+    end
+
+    # Use the Aho-Corasick algorithm to extract many matches.
+    #
+    # @param patterns [Object]
+    #   String patterns to search.
+    # @param ascii_case_insensitive [Boolean]
+    #   Enable ASCII-aware case-insensitive matching.
+    #   When this option is enabled, searching will be performed without respect
+    #   to case for ASCII letters (a-z and A-Z) only.
+    # @param overlapping [Boolean]
+    #   Whether matches may overlap.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   This method supports matching on string literals only, and does not support
+    #   regular expression matching.
+    #
+    # @example
+    #   s = Polars::Series.new("values", ["discontent"])
+    #   patterns = ["winter", "disco", "onte", "discontent"]
+    #   s.str.extract_many(patterns, overlapping: true)
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: 'values' [list[str]]
+    #   # [
+    #   #         ["disco", "onte", "discontent"]
+    #   # ]
+    def extract_many(
+      patterns,
+      ascii_case_insensitive: false,
+      overlapping: false
+    )
+      super
+    end
+
+    # Use the Aho-Corasick algorithm to find all matches.
+    #
+    # The function returns the byte offset of the start of each match.
+    # The return type will be `List<UInt32>`
+    #
+    # @param patterns [Object]
+    #   String patterns to search.
+    # @param ascii_case_insensitive [Boolean]
+    #   Enable ASCII-aware case-insensitive matching.
+    #   When this option is enabled, searching will be performed without respect
+    #   to case for ASCII letters (a-z and A-Z) only.
+    # @param overlapping [Boolean]
+    #   Whether matches may overlap.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   This method supports matching on string literals only, and does not support
+    #   regular expression matching.
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"values" => ["discontent"]})
+    #   patterns = ["winter", "disco", "onte", "discontent"]
+    #   df.with_columns(
+    #     Polars.col("values")
+    #     .str.extract_many(patterns, overlapping: false)
+    #     .alias("matches"),
+    #     Polars.col("values")
+    #     .str.extract_many(patterns, overlapping: true)
+    #     .alias("matches_overlapping")
+    #   )
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌────────────┬───────────┬─────────────────────────────────┐
+    #   # │ values     ┆ matches   ┆ matches_overlapping             │
+    #   # │ ---        ┆ ---       ┆ ---                             │
+    #   # │ str        ┆ list[str] ┆ list[str]                       │
+    #   # ╞════════════╪═══════════╪═════════════════════════════════╡
+    #   # │ discontent ┆ ["disco"] ┆ ["disco", "onte", "discontent"… │
+    #   # └────────────┴───────────┴─────────────────────────────────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "values" => ["discontent", "rhapsody"],
+    #       "patterns" => [
+    #         ["winter", "disco", "onte", "discontent"],
+    #         ["rhap", "ody", "coalesce"]
+    #       ]
+    #     }
+    #   )
+    #   df.select(Polars.col("values").str.find_many("patterns"))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌───────────┐
+    #   # │ values    │
+    #   # │ ---       │
+    #   # │ list[u32] │
+    #   # ╞═══════════╡
+    #   # │ [0]       │
+    #   # │ [0, 5]    │
+    #   # └───────────┘
+    def find_many(
+      patterns,
+      ascii_case_insensitive: false,
+      overlapping: false
+    )
+      super
+    end
+
     # Vertically concat the values in the Series to a single string value.
     #
     # @param delimiter [String]
