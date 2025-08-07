@@ -229,6 +229,29 @@ module Polars
       super
     end
 
+    # Determine whether the year of the underlying date representation is a leap year.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     "date", [Date.new(2000, 1, 1), Date.new(2001, 1, 1), Date.new(2002, 1, 1)]
+    #   )
+    #   s.dt.is_leap_year
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'date' [bool]
+    #   # [
+    #   #         true
+    #   #         false
+    #   #         false
+    #   # ]
+    def is_leap_year
+      super
+    end
+
     # Extract ISO year from underlying Date representation.
     #
     # Applies to Date and Datetime columns.
