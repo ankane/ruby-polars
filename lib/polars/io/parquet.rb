@@ -133,10 +133,7 @@ module Polars
     #   changed at any point without it being considered a breaking change.
     #
     # @param source [Object]
-    #   Path to a file or a file-like object (by "file-like object" we refer to objects
-    #   that have a `read()` method, such as a file handler like the builtin `open`
-    #   function, or a `BytesIO` instance). For file-like objects, the stream position
-    #   may not be updated accordingly after reading.
+    #   Path to a file or a file-like object.
     #
     # @return [Hash]
     def read_parquet_metadata(source)
