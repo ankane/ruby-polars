@@ -167,6 +167,10 @@ impl RbExpr {
             .into()
     }
 
+    pub fn str_normalize(&self, form: Wrap<UnicodeForm>) -> Self {
+        self.inner.clone().str().normalize(form.0).into()
+    }
+
     pub fn str_reverse(&self) -> Self {
         self.inner.clone().str().reverse().into()
     }
@@ -358,5 +362,9 @@ impl RbExpr {
                 ascii_case_insensitive,
             )
             .into()
+    }
+
+    pub fn str_escape_regex(&self) -> Self {
+        self.inner.clone().str().escape_regex().into()
     }
 }

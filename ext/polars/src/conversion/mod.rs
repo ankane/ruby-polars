@@ -1286,6 +1286,23 @@ impl TryConvert for RbCompatLevel {
     }
 }
 
+impl TryConvert for Wrap<UnicodeForm> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "NFC" => UnicodeForm::NFC,
+            "NFKC" => UnicodeForm::NFKC,
+            "NFD" => UnicodeForm::NFD,
+            "NFKD" => UnicodeForm::NFKD,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "`form` must be one of {{'NFC', 'NFKC', 'NFD', 'NFKD'}}, got {v}",
+                )));
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<Option<TimeZone>> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let tz = Option::<Wrap<PlSmallStr>>::try_convert(ob)?;

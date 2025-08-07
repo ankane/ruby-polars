@@ -316,6 +316,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_len_chars", method!(RbExpr::str_len_chars, 0))?;
     class.define_method("str_replace_n", method!(RbExpr::str_replace_n, 4))?;
     class.define_method("str_replace_all", method!(RbExpr::str_replace_all, 3))?;
+    class.define_method("str_normalize", method!(RbExpr::str_normalize, 1))?;
     class.define_method("str_reverse", method!(RbExpr::str_reverse, 0))?;
     class.define_method("str_zfill", method!(RbExpr::str_zfill, 1))?;
     class.define_method("str_pad_start", method!(RbExpr::str_pad_start, 2))?;
@@ -392,6 +393,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_to_decimal", method!(RbExpr::str_to_decimal, 1))?;
     class.define_method("str_contains_any", method!(RbExpr::str_contains_any, 2))?;
     class.define_method("str_replace_many", method!(RbExpr::str_replace_many, 3))?;
+    class.define_method("str_escape_regex", method!(RbExpr::str_escape_regex, 0))?;
     class.define_method("list_len", method!(RbExpr::list_len, 0))?;
     class.define_method("list_contains", method!(RbExpr::list_contains, 2))?;
     class.define_method("list_count_matches", method!(RbExpr::list_count_matches, 1))?;

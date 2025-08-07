@@ -368,6 +368,71 @@ module Polars
     end
     alias_method :concat, :join
 
+    # Returns string values with all regular expression meta characters escaped.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"text" => ["abc", "def", nil, "abc(\\w+)"]})
+    #   df.with_columns(Polars.col("text").str.escape_regex.alias("escaped"))
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌──────────┬──────────────┐
+    #   # │ text     ┆ escaped      │
+    #   # │ ---      ┆ ---          │
+    #   # │ str      ┆ str          │
+    #   # ╞══════════╪══════════════╡
+    #   # │ abc      ┆ abc          │
+    #   # │ def      ┆ def          │
+    #   # │ null     ┆ null         │
+    #   # │ abc(\w+) ┆ abc\(\\w\+\) │
+    #   # └──────────┴──────────────┘
+    def escape_regex
+      Utils.wrap_expr(_rbexpr.str_escape_regex)
+    end
+
+    # Returns the Unicode normal form of the string values.
+    #
+    # This uses the forms described in Unicode Standard Annex 15: <https://www.unicode.org/reports/tr15/>.
+    #
+    # @param form ['NFC', 'NFKC', 'NFD', 'NFKD']
+    #   Unicode form to use.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"text" => ["01²", "ＫＡＤＯＫＡＷＡ"]})
+    #   new = df.with_columns(
+    #     nfc: Polars.col("text").str.normalize("NFC"),
+    #     nfkc: Polars.col("text").str.normalize("NFKC")
+    #   )
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────────────────┬──────────────────┬──────────┐
+    #   # │ text             ┆ nfc              ┆ nfkc     │
+    #   # │ ---              ┆ ---              ┆ ---      │
+    #   # │ str              ┆ str              ┆ str      │
+    #   # ╞══════════════════╪══════════════════╪══════════╡
+    #   # │ 01²              ┆ 01²              ┆ 012      │
+    #   # │ ＫＡＤＯＫＡＷＡ ┆ ＫＡＤＯＫＡＷＡ ┆ KADOKAWA │
+    #   # └──────────────────┴──────────────────┴──────────┘
+    #
+    # @example
+    #   new.select(Polars.all.str.len_bytes)
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────┬─────┬──────┐
+    #   # │ text ┆ nfc ┆ nfkc │
+    #   # │ ---  ┆ --- ┆ ---  │
+    #   # │ u32  ┆ u32 ┆ u32  │
+    #   # ╞══════╪═════╪══════╡
+    #   # │ 4    ┆ 4   ┆ 3    │
+    #   # │ 24   ┆ 24  ┆ 8    │
+    #   # └──────┴─────┴──────┘
+    def normalize(form = "NFC")
+      Utils.wrap_expr(_rbexpr.str_normalize(form))
+    end
+
     # Transform to uppercase variant.
     #
     # @return [Expr]
