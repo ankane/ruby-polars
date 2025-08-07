@@ -364,6 +364,32 @@ impl RbExpr {
             .into()
     }
 
+    pub fn str_extract_many(
+        &self,
+        patterns: &RbExpr,
+        ascii_case_insensitive: bool,
+        overlapping: bool,
+    ) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .extract_many(patterns.inner.clone(), ascii_case_insensitive, overlapping)
+            .into()
+    }
+
+    pub fn str_find_many(
+        &self,
+        patterns: &RbExpr,
+        ascii_case_insensitive: bool,
+        overlapping: bool,
+    ) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .find_many(patterns.inner.clone(), ascii_case_insensitive, overlapping)
+            .into()
+    }
+
     pub fn str_escape_regex(&self) -> Self {
         self.inner.clone().str().escape_regex().into()
     }

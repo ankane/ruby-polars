@@ -1695,6 +1695,149 @@ module Polars
       )
     end
 
+    # Use the Aho-Corasick algorithm to extract many matches.
+    #
+    # @param patterns [String]
+    #   String patterns to search.
+    # @param ascii_case_insensitive [Boolean]
+    #   Enable ASCII-aware case-insensitive matching.
+    #   When this option is enabled, searching will be performed without respect
+    #   to case for ASCII letters (a-z and A-Z) only.
+    # @param overlapping [Boolean]
+    #   Whether matches may overlap.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   This method supports matching on string literals only, and does not support
+    #   regular expression matching.
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"values" => ["discontent"]})
+    #   patterns = ["winter", "disco", "onte", "discontent"]
+    #   df.with_columns(
+    #     Polars.col("values")
+    #     .str.extract_many(patterns, overlapping: false)
+    #     .alias("matches"),
+    #     Polars.col("values")
+    #     .str.extract_many(patterns, overlapping: true)
+    #     .alias("matches_overlapping"),
+    #   )
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌────────────┬───────────┬─────────────────────────────────┐
+    #   # │ values     ┆ matches   ┆ matches_overlapping             │
+    #   # │ ---        ┆ ---       ┆ ---                             │
+    #   # │ str        ┆ list[str] ┆ list[str]                       │
+    #   # ╞════════════╪═══════════╪═════════════════════════════════╡
+    #   # │ discontent ┆ ["disco"] ┆ ["disco", "onte", "discontent"… │
+    #   # └────────────┴───────────┴─────────────────────────────────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "values" => ["discontent", "rhapsody"],
+    #       "patterns" => [
+    #         ["winter", "disco", "onte", "discontent"],
+    #         ["rhap", "ody", "coalesce"]
+    #       ]
+    #     }
+    #   )
+    #   df.select(Polars.col("values").str.extract_many("patterns"))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────────────────┐
+    #   # │ values          │
+    #   # │ ---             │
+    #   # │ list[str]       │
+    #   # ╞═════════════════╡
+    #   # │ ["disco"]       │
+    #   # │ ["rhap", "ody"] │
+    #   # └─────────────────┘
+    def extract_many(
+      patterns,
+      ascii_case_insensitive: false,
+      overlapping: false
+    )
+      patterns = Utils.parse_into_expression(patterns, str_as_lit: false)
+      Utils.wrap_expr(
+        _rbexpr.str_extract_many(patterns, ascii_case_insensitive, overlapping)
+      )
+    end
+
+    # Use the Aho-Corasick algorithm to find many matches.
+    #
+    # The function will return the bytes offset of the start of each match.
+    # The return type will be `List<UInt32>`
+    #
+    # @param patterns [String]
+    #   String patterns to search.
+    # @param ascii_case_insensitive [Boolean]
+    #   Enable ASCII-aware case-insensitive matching.
+    #   When this option is enabled, searching will be performed without respect
+    #   to case for ASCII letters (a-z and A-Z) only.
+    # @param overlapping [Boolean]
+    #   Whether matches may overlap.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   This method supports matching on string literals only, and does not support
+    #   regular expression matching.
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"values" => ["discontent"]})
+    #   patterns = ["winter", "disco", "onte", "discontent"]
+    #   df.with_columns(
+    #     Polars.col("values")
+    #     .str.extract_many(patterns, overlapping: false)
+    #     .alias("matches"),
+    #     Polars.col("values")
+    #     .str.extract_many(patterns, overlapping: true)
+    #     .alias("matches_overlapping"),
+    #   )
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌────────────┬───────────┬─────────────────────────────────┐
+    #   # │ values     ┆ matches   ┆ matches_overlapping             │
+    #   # │ ---        ┆ ---       ┆ ---                             │
+    #   # │ str        ┆ list[str] ┆ list[str]                       │
+    #   # ╞════════════╪═══════════╪═════════════════════════════════╡
+    #   # │ discontent ┆ ["disco"] ┆ ["disco", "onte", "discontent"… │
+    #   # └────────────┴───────────┴─────────────────────────────────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "values" => ["discontent", "rhapsody"],
+    #       "patterns" => [
+    #         ["winter", "disco", "onte", "discontent"],
+    #         ["rhap", "ody", "coalesce"]
+    #       ]
+    #     }
+    #   )
+    #   df.select(Polars.col("values").str.find_many("patterns"))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌───────────┐
+    #   # │ values    │
+    #   # │ ---       │
+    #   # │ list[u32] │
+    #   # ╞═══════════╡
+    #   # │ [0]       │
+    #   # │ [0, 5]    │
+    #   # └───────────┘
+    def find_many(
+      patterns,
+      ascii_case_insensitive: false,
+      overlapping: false
+    )
+      patterns = Utils.parse_into_expression(patterns, str_as_lit: false)
+      Utils.wrap_expr(
+        _rbexpr.str_find_many(patterns, ascii_case_insensitive, overlapping)
+      )
+    end
+
     private
 
     def _validate_format_argument(format)
