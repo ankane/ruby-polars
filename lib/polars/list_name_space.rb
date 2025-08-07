@@ -373,6 +373,63 @@ module Polars
       super
     end
 
+    # Take sublists by multiple indices.
+    #
+    # The indices may be defined in a single column, or by sublists in another
+    # column of dtype `List`.
+    #
+    # @param indices [Object]
+    #   Indices to return per sublist
+    # @param null_on_oob [Boolean]
+    #   Behavior if an index is out of bounds:
+    #   True -> set as null
+    #   False -> raise an error
+    #   Note that defaulting to raising an error is much cheaper
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[3, 2, 1], [], [1, 2]])
+    #   s.list.gather([0, 2], null_on_oob: true)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [list[i64]]
+    #   # [
+    #   #         [3, 1]
+    #   #         [null, null]
+    #   #         [1, null]
+    #   # ]
+    def gather(
+      indices,
+      null_on_oob: false
+    )
+      super
+    end
+
+    # Take every n-th value start from offset in sublists.
+    #
+    # @param n [Integer]
+    #   Gather every n-th element.
+    # @param offset [Integer]
+    #   Starting index.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1, 2, 3], [], [6, 7, 8, 9]])
+    #   s.list.gather_every(2, 1)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [list[i64]]
+    #   # [
+    #   #         [2]
+    #   #         []
+    #   #         [7, 9]
+    #   # ]
+    def gather_every(n, offset = 0)
+      super
+    end
+
     # Get the value by index in the sublists.
     #
     # @return [Series]
