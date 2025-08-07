@@ -123,7 +123,8 @@ module Polars
         source = Utils.normalize_filepath(source)
       end
 
-      Plr.parquet_schema(source)
+      # TODO return Schema
+      scan_parquet(source).collect_schema.to_h
     end
 
     # Get file-level custom metadata of a Parquet file without reading data.
