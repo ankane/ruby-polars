@@ -781,6 +781,108 @@ module Polars
     end
     alias_method :rstrip, :strip_chars_end
 
+    # Remove prefix.
+    #
+    # The prefix will be removed from the string exactly once, if found.
+    #
+    # @param prefix [String]
+    #   The prefix to be removed.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(["foobar", "foofoobar", "foo", "bar"])
+    #   s.str.strip_prefix("foo")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "bar"
+    #   #         "foobar"
+    #   #         ""
+    #   #         "bar"
+    #   # ]
+    def strip_prefix(prefix)
+      super
+    end
+
+    # Remove suffix.
+    #
+    # The suffix will be removed from the string exactly once, if found.
+    #
+    # @param suffix [String]
+    #   The suffix to be removed.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(["foobar", "foobarbar", "foo", "bar"])
+    #   s.str.strip_suffix("bar")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "foo"
+    #   #         "foobar"
+    #   #         "foo"
+    #   #         ""
+    #   # ]
+    def strip_suffix(suffix)
+      super
+    end
+
+    # Pad the start of the string until it reaches the given length.
+    #
+    # @param length [Integer]
+    #   Pad the string until it reaches this length. Strings with length equal to or
+    #   greater than this value are returned as-is.
+    # @param fill_char [String]
+    #   The character to pad the string with.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", ["cow", "monkey", "hippopotamus", nil])
+    #   s.str.pad_start(8, "*")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'a' [str]
+    #   # [
+    #   #         "*****cow"
+    #   #         "**monkey"
+    #   #         "hippopotamus"
+    #   #         null
+    #   # ]
+    def pad_start(length, fill_char = " ")
+      super
+    end
+
+    # Pad the end of the string until it reaches the given length.
+    #
+    # @param length [Integer]
+    #   Pad the string until it reaches this length. Strings with length equal to or
+    #   greater than this value are returned as-is.
+    # @param fill_char [String]
+    #   The character to pad the string with.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(["cow", "monkey", "hippopotamus", nil])
+    #   s.str.pad_end(8, "*")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "cow*****"
+    #   #         "monkey**"
+    #   #         "hippopotamus"
+    #   #         null
+    #   # ]
+    def pad_end(length, fill_char = " ")
+      super
+    end
+
     # Fills the string with zeroes.
     #
     # Return a copy of the string left filled with ASCII '0' digits to make a string
