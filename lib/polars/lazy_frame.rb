@@ -599,7 +599,7 @@ module Polars
     #   # => ["foo", "bar", "ham"]
     #
     # @example
-    #   schema.dtypes()
+    #   schema.dtypes
     #   # => [Polars::Int64, Polars::Float64, Polars::String]
     #
     # @example
@@ -1447,7 +1447,7 @@ module Polars
     #
     # @example Provide multiple constraints using `*args` syntax:
     #   lf.remove(
-    #     Polars.col("ham").is_not_null(),
+    #     Polars.col("ham").is_not_null,
     #     Polars.col("bar") >= 0
     #   ).collect
     #   # =>
@@ -2666,7 +2666,7 @@ module Polars
     #     west,
     #     Polars.col("dur") < Polars.col("time"),
     #     Polars.col("rev") < Polars.col("cost")
-    #   ).collect()
+    #   ).collect
     #   # =>
     #   # shape: (5, 8)
     #   # ┌─────┬─────┬─────┬───────┬──────┬──────┬──────┬─────────────┐

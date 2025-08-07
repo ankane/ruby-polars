@@ -309,7 +309,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [[1, 1, 2], [2, 3, 3]])
-    #   s.list.unique()
+    #   s.list.unique
     #   # =>
     #   # shape: (2,)
     #   # Series: 'a' [list[i64]]

@@ -628,7 +628,7 @@ module Polars
     #   # └──────┘
     #
     # @example Select all columns *except* for those that are enum:
-    #   df.select(~Polars.cs.enum())
+    #   df.select(~Polars.cs.enum)
     #   # =>
     #   # shape: (2, 2)
     #   # ┌─────┬─────┐
@@ -928,7 +928,7 @@ module Polars
     #   # │ 456 ┆ 5.5 │
     #   # └─────┴─────┘
     def self.categorical
-      Selector._from_rbselector(RbSelector.categorical())
+      Selector._from_rbselector(RbSelector.categorical)
     end
 
     # Select columns whose names contain the given literal substring(s).

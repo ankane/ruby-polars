@@ -516,7 +516,7 @@ module Polars
       if index.nil?
         if len != 1
           msg = (
-            "can only call '.item()' if the Series is of length 1," +
+            "can only call '.item' if the Series is of length 1," +
             " or an explicit index is provided (Series is of length #{len})"
           )
           raise ArgumentError, msg

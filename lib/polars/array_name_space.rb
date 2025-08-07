@@ -336,7 +336,7 @@ module Polars
     #     [[1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 11, 12]],
     #     dtype: Polars::Array.new(Polars::Int64, 6)
     #   )
-    #   s.arr.tail()
+    #   s.arr.tail
     #   # =>
     #   # shape: (2,)
     #   # Series: '' [list[i64]]
@@ -679,7 +679,7 @@ module Polars
     #
     # @example By default, array values are shifted forward by one index.
     #   s = Polars::Series.new([[1, 2, 3], [4, 5, 6]], dtype: Polars::Array.new(Polars::Int64, 3))
-    #   s.arr.shift()
+    #   s.arr.shift
     #   # =>
     #   # shape: (2,)
     #   # Series: '' [array[i64, 3]]
