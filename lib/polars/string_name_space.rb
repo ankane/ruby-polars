@@ -540,7 +540,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("foo", ["123 bla 45 asd", "xyz 678 910t"])
-    #   s.str.count_match('\d')
+    #   s.str.count_matches('\d')
     #   # =>
     #   # shape: (2,)
     #   # Series: 'foo' [u32]
@@ -548,9 +548,10 @@ module Polars
     #   #         5
     #   #         6
     #   # ]
-    def count_match(pattern)
+    def count_matches(pattern)
       super
     end
+    alias_method :count_match, :count_matches
 
     # Split the string by a substring.
     #
@@ -939,6 +940,58 @@ module Polars
     def slice(offset, length = nil)
       s = Utils.wrap_s(_s)
       s.to_frame.select(Polars.col(s.name).str.slice(offset, length)).to_series
+    end
+
+    # Returns string values with all regular expression meta characters escaped.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   Polars::Series.new(["abc", "def", nil, "abc(\\w+)"]).str.escape_regex
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "abc"
+    #   #         "def"
+    #   #         null
+    #   #         "abc\(\\w\+\)"
+    #   # ]
+    def escape_regex
+      super
+    end
+
+    # Returns the Unicode normal form of the string values.
+    #
+    # This uses the forms described in Unicode Standard Annex 15: <https://www.unicode.org/reports/tr15/>.
+    #
+    # @param form ['NFC', 'NFKC', 'NFD', 'NFKD']
+    #   Unicode form to use.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(["01²", "ＫＡＤＯＫＡＷＡ"])
+    #   s.str.normalize("NFC")
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "01²"
+    #   #         "ＫＡＤＯＫＡＷＡ"
+    #   # ]
+    #
+    # @example
+    #   s.str.normalize("NFKC")
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "012"
+    #   #         "KADOKAWA"
+    #   # ]
+    def normalize(form = "NFC")
+      super
     end
   end
 end
