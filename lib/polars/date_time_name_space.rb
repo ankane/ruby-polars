@@ -18,6 +18,68 @@ module Polars
       s[item]
     end
 
+    # Offset by `n` business days.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param n [Object]
+    #   Number of business days to offset by. Can be a single number of an
+    #   expression.
+    # @param week_mask [Array]
+    #   Which days of the week to count. The default is Monday to Friday.
+    #   If you wanted to count only Monday to Thursday, you would pass
+    #   `[true, true, true, true, false, false, false]`.
+    # roll
+    #   What to do when the start date lands on a non-business day. Options are:
+    #
+    #   - `'raise'`: raise an error
+    #   - `'forward'`: move to the next business day
+    #   - `'backward'`: move to the previous business day
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("start", [Date.new(2020, 1, 1), Date.new(2020, 1, 2)])
+    #   s.dt.add_business_days(5)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'start' [date]
+    #   # [
+    #   #         2020-01-08
+    #   #         2020-01-09
+    #   # ]
+    #
+    # @example You can pass a custom weekend - for example, if you only take Sunday off:
+    #   week_mask = [true, true, true, true, true, true, false]
+    #   s.dt.add_business_days(5, week_mask: week_mask)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'start' [date]
+    #   # [
+    #   #         2020-01-07
+    #   #         2020-01-08
+    #   # ]
+    #
+    # @example Roll all dates forwards to the next business day:
+    #   s = Polars::Series.new("start", [Date.new(2020, 1, 5), Date.new(2020, 1, 6)])
+    #   s.dt.add_business_days(0, roll: "forward")
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'start' [date]
+    #   # [
+    #   #         2020-01-06
+    #   #         2020-01-06
+    #   # ]
+    def add_business_days(
+      n,
+      week_mask: [true, true, true, true, true, false, false],
+      roll: "raise"
+    )
+      super
+    end
+
     # Return minimum as Ruby object.
     #
     # @return [Object]
