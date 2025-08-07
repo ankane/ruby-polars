@@ -156,6 +156,24 @@ module Polars
       super
     end
 
+    # Count the number of unique values in every sub-arrays.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1, 2], [4, 4]], dtype: Polars::Array.new(Polars::Int64, 2))
+    #   s.arr.n_unique
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [u32]
+    #   # [
+    #   #         2
+    #   #         1
+    #   # ]
+    def n_unique
+      super
+    end
+
     # Convert an Array column into a List column with the same inner data type.
     #
     # @return [Series]
@@ -195,6 +213,148 @@ module Polars
     #   #         null
     #   # ]
     def any
+      super
+    end
+
+    # Return the number of elements in each array.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1, 2], [4, 3]], dtype: Polars::Array.new(Polars::Int8, 2))
+    #   s.arr.len
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [u32]
+    #   # [
+    #   #         2
+    #   #         2
+    #   # ]
+    def len
+      super
+    end
+
+    # Slice the sub-arrays.
+    #
+    # @param offset [Integer]
+    #   The starting index of the slice.
+    # @param length [Integer]
+    #   The length of the slice.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     [[1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 11, 12]],
+    #     dtype: Polars::Array.new(Polars::Int64, 6)
+    #   )
+    #   s.arr.slice(1)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [list[i64]]
+    #   # [
+    #   #         [2, 3, … 6]
+    #   #         [8, 9, … 12]
+    #   # ]
+    #
+    # @example
+    #   s.arr.slice(1, 3, as_array: true)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [array[i64, 3]]
+    #   # [
+    #   #         [2, 3, 4]
+    #   #         [8, 9, 10]
+    #   # ]
+    #
+    # @example
+    #   s.arr.slice(-2)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [list[i64]]
+    #   # [
+    #   #         [5, 6]
+    #   #         [11, 12]
+    #   # ]
+    def slice(
+      offset,
+      length = nil,
+      as_array: false
+    )
+      super
+    end
+
+    # Get the first `n` elements of the sub-arrays.
+    #
+    # @param n [Integer]
+    #   Number of values to return for each sublist.
+    # @param as_array [Boolean]
+    #   Return result as a fixed-length `Array`, otherwise as a `List`.
+    #   If true `n` must be a constant value.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     [[1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 11, 12]],
+    #     dtype: Polars::Array.new(Polars::Int64, 6)
+    #   )
+    #   s.arr.head
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [list[i64]]
+    #   # [
+    #   #         [1, 2, … 5]
+    #   #         [7, 8, … 11]
+    #   # ]
+    #
+    # @example
+    #   s.arr.head(3, as_array: true)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [array[i64, 3]]
+    #   # [
+    #   #         [1, 2, 3]
+    #   #         [7, 8, 9]
+    #   # ]
+    def head(n = 5, as_array: false)
+      super
+    end
+
+    # Slice the last `n` values of every sublist.
+    #
+    # @param n [Integer]
+    #   Number of values to return for each sublist.
+    # @param as_array [Boolean]
+    #   Return result as a fixed-length `Array`, otherwise as a `List`.
+    #   If true `n` must be a constant value.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     [[1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 11, 12]],
+    #     dtype: Polars::Array.new(Polars::Int64, 6)
+    #   )
+    #   s.arr.tail()
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [list[i64]]
+    #   # [
+    #   #         [2, 3, … 6]
+    #   #         [8, 9, … 12]
+    #   # ]
+    #
+    # @example
+    #   s.arr.tail(3, as_array: true)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [array[i64, 3]]
+    #   # [
+    #   #         [4, 5, 6]
+    #   #         [10, 11, 12]
+    #   # ]
+    def tail(n = 5, as_array: false)
       super
     end
 
