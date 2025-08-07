@@ -1,4 +1,6 @@
-use crate::RbExpr;
+use magnus::RArray;
+
+use crate::{RbExpr, RbResult, rb_exprs_to_exprs};
 
 impl RbExpr {
     pub fn struct_field_by_index(&self, index: i64) -> Self {
@@ -15,5 +17,11 @@ impl RbExpr {
 
     pub fn struct_json_encode(&self) -> Self {
         self.inner.clone().struct_().json_encode().into()
+    }
+
+    pub fn struct_with_fields(&self, fields: RArray) -> RbResult<Self> {
+        let fields = rb_exprs_to_exprs(fields)?;
+        let e = self.inner.clone().struct_().with_fields(fields);
+        Ok(e.into())
     }
 }

@@ -94,5 +94,78 @@ module Polars
     def rename_fields(names)
       Utils.wrap_expr(_rbexpr.struct_rename_fields(names))
     end
+
+    # Convert this struct to a string column with json values.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   Polars::DataFrame.new(
+    #     {"a" => [{"a" => [1, 2], "b" => [45]}, {"a" => [9, 1, 3], "b" => nil}]}
+    #   ).with_columns(Polars.col("a").struct.json_encode.alias("encoded"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌──────────────────┬────────────────────────┐
+    #   # │ a                ┆ encoded                │
+    #   # │ ---              ┆ ---                    │
+    #   # │ struct[2]        ┆ str                    │
+    #   # ╞══════════════════╪════════════════════════╡
+    #   # │ {[1, 2],[45]}    ┆ {"a":[1,2],"b":[45]}   │
+    #   # │ {[9, 1, 3],null} ┆ {"a":[9,1,3],"b":null} │
+    #   # └──────────────────┴────────────────────────┘
+    def json_encode
+      Utils.wrap_expr(_rbexpr.struct_json_encode)
+    end
+
+    # Add or overwrite fields of this struct.
+    #
+    # This is similar to `with_columns` on `DataFrame`.
+    #
+    # @param exprs [Array]
+    #   Field(s) to add, specified as positional arguments.
+    #   Accepts expression input. Strings are parsed as column names, other
+    #   non-expression inputs are parsed as literals.
+    # @param named_exprs [Hash]
+    #   Additional fields to add, specified as keyword arguments.
+    #   The columns will be renamed to the keyword used.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "coords" => [{"x" => 1, "y" => 4}, {"x" => 4, "y" => 9}, {"x" => 9, "y" => 16}],
+    #       "multiply" => [10, 2, 3]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("coords").struct.with_fields(
+    #       Polars.field("x").sqrt,
+    #       y_mul: Polars.field("y") * Polars.col("multiply")
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────────────┬──────────┐
+    #   # │ coords      ┆ multiply │
+    #   # │ ---         ┆ ---      │
+    #   # │ struct[3]   ┆ i64      │
+    #   # ╞═════════════╪══════════╡
+    #   # │ {1.0,4,40}  ┆ 10       │
+    #   # │ {2.0,9,18}  ┆ 2        │
+    #   # │ {3.0,16,48} ┆ 3        │
+    #   # └─────────────┴──────────┘
+    def with_fields(
+      *exprs,
+      **named_exprs
+    )
+      structify = ENV.fetch("POLARS_AUTO_STRUCTIFY", 0).to_i != 0
+
+      rbexprs = Utils.parse_into_list_of_expressions(
+        *exprs, **named_exprs, __structify: structify
+      )
+
+      Utils.wrap_expr(_rbexpr.struct_with_fields(rbexprs))
+    end
   end
 end

@@ -566,6 +566,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbExpr::struct_rename_fields, 1),
     )?;
     class.define_method("struct_json_encode", method!(RbExpr::struct_json_encode, 0))?;
+    class.define_method("struct_with_fields", method!(RbExpr::struct_with_fields, 1))?;
     class.define_method("log", method!(RbExpr::log, 1))?;
     class.define_method("log1p", method!(RbExpr::log1p, 0))?;
     class.define_method("exp", method!(RbExpr::exp, 0))?;
@@ -690,6 +691,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(functions::aggregation::mean_horizontal, 2),
     )?;
     class.define_singleton_method("as_struct", function!(functions::lazy::as_struct, 1))?;
+    class.define_singleton_method("field", function!(functions::lazy::field, 1))?;
     class.define_singleton_method("coalesce", function!(functions::lazy::coalesce, 1))?;
     class.define_singleton_method("arg_where", function!(functions::lazy::arg_where, 1))?;
     class.define_singleton_method(

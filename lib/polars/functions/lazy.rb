@@ -1,5 +1,18 @@
 module Polars
   module Functions
+    # Select a field in the current `struct.with_fields` scope.
+    #
+    # @param name [Object]
+    #   Name of the field(s) to select.
+    #
+    # @return [Expr]
+    def field(name)
+      if name.is_a?(::String)
+        name = [name]
+      end
+      Utils.wrap_expr(Plr.field(name))
+    end
+
     # Alias for an element in evaluated in an `eval` expression.
     #
     # @return [Expr]

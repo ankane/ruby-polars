@@ -12,6 +12,7 @@
 - Added more methods to `MetaExpr`
 - Added more methods to `NameExpr`
 - Added more methods to `StringExpr`
+- Added more methods to `StructExpr`
 - Fixed `subset` option for `drop_nulls` method
 
 ## 0.21.0 (2025-08-03)

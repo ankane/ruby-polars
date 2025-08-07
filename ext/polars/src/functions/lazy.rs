@@ -85,6 +85,10 @@ pub fn as_struct(exprs: RArray) -> RbResult<RbExpr> {
     Ok(dsl::as_struct(exprs).into())
 }
 
+pub fn field(names: Vec<String>) -> RbExpr {
+    dsl::Expr::Field(names.into_iter().map(|x| x.into()).collect()).into()
+}
+
 pub fn coalesce(exprs: RArray) -> RbResult<RbExpr> {
     let exprs = rb_exprs_to_exprs(exprs)?;
     Ok(dsl::coalesce(&exprs).into())
