@@ -4176,9 +4176,239 @@ module Polars
       with_columns(F.col(column).set_sorted(descending: descending))
     end
 
-    # TODO
-    # def update
-    # end
+    # Update the values in this `LazyFrame` with the values in `other`.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param other [LazyFrame]
+    #   LazyFrame that will be used to update the values
+    # @param on [Object]
+    #   Column names that will be joined on. If set to `nil` (default),
+    #   the implicit row index of each frame is used as a join key.
+    # @param how ['left', 'inner', 'full']
+    #   * 'left' will keep all rows from the left table; rows may be duplicated
+    #     if multiple rows in the right frame match the left row's key.
+    #   * 'inner' keeps only those rows where the key exists in both frames.
+    #   * 'full' will update existing rows where the key matches while also
+    #     adding any new rows contained in the given frame.
+    # @param left_on [Object]
+    #  Join column(s) of the left DataFrame.
+    # @param right_on [Object]
+    #  Join column(s) of the right DataFrame.
+    # @param include_nulls [Boolean]
+    #   Overwrite values in the left frame with null values from the right frame.
+    #   If set to `false` (default), null values in the right frame are ignored.
+    # @param maintain_order ['none', 'left', 'right', 'left_right', 'right_left']
+    #   Which order of rows from the inputs to preserve. See `LazyFrame.join`
+    #   for details. Unlike `join` this function preserves the left order by
+    #   default.
+    #
+    # @return [LazyFrame]
+    #
+    # @note
+    #   This is syntactic sugar for a left/inner join that preserves the order
+    #   of the left `DataFrame` by default, with an optional coalesce when
+    #   `include_nulls: False`.
+    #
+    # @example Update `df` values with the non-null values in `new_df`, by row index:
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "A" => [1, 2, 3, 4],
+    #       "B" => [400, 500, 600, 700]
+    #     }
+    #   )
+    #   new_lf = Polars::LazyFrame.new(
+    #     {
+    #       "B" => [-66, nil, -99],
+    #       "C" => [5, 3, 1]
+    #     }
+    #   )
+    #   lf.update(new_lf).collect
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬─────┐
+    #   # │ A   ┆ B   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ -66 │
+    #   # │ 2   ┆ 500 │
+    #   # │ 3   ┆ -99 │
+    #   # │ 4   ┆ 700 │
+    #   # └─────┴─────┘
+    #
+    # @example Update `df` values with the non-null values in `new_df`, by row index, but only keeping those rows that are common to both frames:
+    #   lf.update(new_lf, how: "inner").collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ A   ┆ B   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ -66 │
+    #   # │ 2   ┆ 500 │
+    #   # │ 3   ┆ -99 │
+    #   # └─────┴─────┘
+    #
+    # @example Update `df` values with the non-null values in `new_df`, using a full outer join strategy that defines explicit join columns in each frame:
+    #   lf.update(new_lf, left_on: ["A"], right_on: ["C"], how: "full").collect
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────┬─────┐
+    #   # │ A   ┆ B   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ -99 │
+    #   # │ 2   ┆ 500 │
+    #   # │ 3   ┆ 600 │
+    #   # │ 4   ┆ 700 │
+    #   # │ 5   ┆ -66 │
+    #   # └─────┴─────┘
+    #
+    # @example Update `df` values including null values in `new_df`, using a full outer join strategy that defines explicit join columns in each frame:
+    #   lf.update(
+    #     new_lf, left_on: "A", right_on: "C", how: "full", include_nulls: true
+    #   ).collect
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────┬──────┐
+    #   # │ A   ┆ B    │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ i64  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ -99  │
+    #   # │ 2   ┆ 500  │
+    #   # │ 3   ┆ null │
+    #   # │ 4   ┆ 700  │
+    #   # │ 5   ┆ -66  │
+    #   # └─────┴──────┘
+    def update(
+      other,
+      on: nil,
+      how: "left",
+      left_on: nil,
+      right_on: nil,
+      include_nulls: false,
+      maintain_order: "left"
+    )
+      Utils.require_same_type(self, other)
+      if ["outer", "outer_coalesce"].include?(how)
+        how = "full"
+      end
+
+      if !["left", "inner", "full"].include?(how)
+        msg = "`how` must be one of {{'left', 'inner', 'full'}}; found #{how.inspect}"
+        raise ArgumentError, msg
+      end
+
+      slf = self
+      row_index_used = false
+      if on.nil?
+        if left_on.nil? && right_on.nil?
+          # no keys provided--use row index
+          row_index_used = true
+          row_index_name = "__POLARS_ROW_INDEX"
+          slf = slf.with_row_index(name: row_index_name)
+          other = other.with_row_index(name: row_index_name)
+          left_on = right_on = [row_index_name]
+        else
+          # one of left or right is missing, raise error
+          if left_on.nil?
+            msg = "missing join columns for left frame"
+            raise ArgumentError, msg
+          end
+          if right_on.nil?
+            msg = "missing join columns for right frame"
+            raise ArgumentError, msg
+          end
+        end
+      else
+        # move on into left/right_on to simplify logic
+        left_on = right_on = on
+      end
+
+      if left_on.is_a?(::String)
+        left_on = [left_on]
+      end
+      if right_on.is_a?(::String)
+        right_on = [right_on]
+      end
+
+      left_schema = slf.collect_schema
+      left_on.each do |name|
+        if !left_schema.include?(name)
+          msg = "left join column #{name.inspect} not found"
+          raise ArgumentError, msg
+        end
+      end
+      right_schema = other.collect_schema
+      right_on.each do |name|
+        if !right_schema.include?(name)
+          msg = "right join column #{name.inspect} not found"
+          raise ArgumentError, msg
+        end
+      end
+
+      # no need to join if *only* join columns are in other (inner/left update only)
+      if how != "full" && right_schema.length == right_on.length
+        if row_index_used
+          return slf.drop(row_index_name)
+        end
+        return slf
+      end
+
+      # only use non-idx right columns present in left frame
+      right_other = Set.new(right_schema.to_h.keys).intersection(left_schema.to_h.keys) - Set.new(right_on)
+
+      # When include_nulls is True, we need to distinguish records after the join that
+      # were originally null in the right frame, as opposed to records that were null
+      # because the key was missing from the right frame.
+      # Add a validity column to track whether row was matched or not.
+      if include_nulls
+        validity = ["__POLARS_VALIDITY"]
+        other = other.with_columns(F.lit(true).alias(validity[0]))
+      else
+        validity = []
+      end
+
+      tmp_name = "__POLARS_RIGHT"
+      drop_columns = right_other.map { |name| "#{name}#{tmp_name}" } + validity
+      result = (
+        slf.join(
+          other.select(*right_on, *right_other, *validity),
+          left_on: left_on,
+          right_on: right_on,
+          how: how,
+          suffix: tmp_name,
+          coalesce: true,
+          maintain_order: maintain_order
+        )
+        .with_columns(
+          right_other.map do |name|
+            (
+              if include_nulls
+                # use left value only when right value failed to join
+                F.when(F.col(validity).is_null)
+                .then(F.col(name))
+                .otherwise(F.col("#{name}#{tmp_name}"))
+              else
+                F.coalesce(["#{name}#{tmp_name}", F.col(name)])
+              end
+            ).alias(name)
+          end
+        )
+        .drop(drop_columns)
+      )
+      if row_index_used
+        result = result.drop(row_index_name)
+      end
+
+      _from_rbldf(result._ldf)
+    end
 
     # Return the number of non-null elements for each column.
     #

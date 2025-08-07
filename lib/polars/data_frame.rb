@@ -6059,9 +6059,136 @@ module Polars
         .collect(no_optimization: true)
     end
 
-    # TODO
-    # def update
-    # end
+    # Update the values in this `DataFrame` with the values in `other`.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param other [DataFrame]
+    #   DataFrame that will be used to update the values
+    # @param on [Object]
+    #   Column names that will be joined on. If set to `nil` (default),
+    #   the implicit row index of each frame is used as a join key.
+    # @param how ['left', 'inner', 'full']
+    #   * 'left' will keep all rows from the left table; rows may be duplicated
+    #     if multiple rows in the right frame match the left row's key.
+    #   * 'inner' keeps only those rows where the key exists in both frames.
+    #   * 'full' will update existing rows where the key matches while also
+    #     adding any new rows contained in the given frame.
+    # @param left_on [Object]
+    #   Join column(s) of the left DataFrame.
+    # @param right_on [Object]
+    #   Join column(s) of the right DataFrame.
+    # @param include_nulls [Boolean]
+    #   Overwrite values in the left frame with null values from the right frame.
+    #   If set to `false` (default), null values in the right frame are ignored.
+    # @param maintain_order ['none', 'left', 'right', 'left_right', 'right_left']
+    #   Which order of rows from the inputs to preserve. See `DataFrame.join`
+    #   for details. Unlike `join` this function preserves the left order by
+    #   default.
+    #
+    # @return [DataFrame]
+    #
+    # @note
+    #   This is syntactic sugar for a left/inner join that preserves the order
+    #   of the left `DataFrame` by default, with an optional coalesce when
+    #   `include_nulls: false`.
+    #
+    # @example Update `df` values with the non-null values in `new_df`, by row index:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "A" => [1, 2, 3, 4],
+    #       "B" => [400, 500, 600, 700]
+    #     }
+    #   )
+    #   new_df = Polars::DataFrame.new(
+    #     {
+    #       "B" => [-66, nil, -99],
+    #       "C" => [5, 3, 1]
+    #     }
+    #   )
+    #   df.update(new_df)
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬─────┐
+    #   # │ A   ┆ B   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ -66 │
+    #   # │ 2   ┆ 500 │
+    #   # │ 3   ┆ -99 │
+    #   # │ 4   ┆ 700 │
+    #   # └─────┴─────┘
+    #
+    # @example Update `df` values with the non-null values in `new_df`, by row index, but only keeping those rows that are common to both frames:
+    #   df.update(new_df, how: "inner")
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ A   ┆ B   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ -66 │
+    #   # │ 2   ┆ 500 │
+    #   # │ 3   ┆ -99 │
+    #   # └─────┴─────┘
+    #
+    # @example Update `df` values with the non-null values in `new_df`, using a full outer join strategy that defines explicit join columns in each frame:
+    #   df.update(new_df, left_on: ["A"], right_on: ["C"], how: "full")
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────┬─────┐
+    #   # │ A   ┆ B   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ -99 │
+    #   # │ 2   ┆ 500 │
+    #   # │ 3   ┆ 600 │
+    #   # │ 4   ┆ 700 │
+    #   # │ 5   ┆ -66 │
+    #   # └─────┴─────┘
+    #
+    # @example Update `df` values including null values in `new_df`, using a full outer join strategy that defines explicit join columns in each frame:
+    #   df.update(new_df, left_on: "A", right_on: "C", how: "full", include_nulls: true)
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────┬──────┐
+    #   # │ A   ┆ B    │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ i64  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ -99  │
+    #   # │ 2   ┆ 500  │
+    #   # │ 3   ┆ null │
+    #   # │ 4   ┆ 700  │
+    #   # │ 5   ┆ -66  │
+    #   # └─────┴──────┘
+    def update(
+      other,
+      on: nil,
+      how: "left",
+      left_on: nil,
+      right_on: nil,
+      include_nulls: false,
+      maintain_order: "left"
+    )
+      Utils.require_same_type(self, other)
+      lazy
+      .update(
+        other.lazy,
+        on: on,
+        how: how,
+        left_on: left_on,
+        right_on: right_on,
+        include_nulls: include_nulls,
+        maintain_order: maintain_order
+      )
+      .collect(_eager: true)
+    end
 
     private
 

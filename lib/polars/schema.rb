@@ -79,6 +79,11 @@ module Polars
     alias_method :inspect, :to_s
 
     # @private
+    def include?(name)
+      @schema.include?(name)
+    end
+
+    # @private
     def to_h
       @schema.to_h
     end
