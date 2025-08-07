@@ -609,6 +609,51 @@ module Polars
       super
     end
 
+    # Count how often the value produced by `element` occurs.
+    #
+    # @param element [Object]
+    #   An expression that produces a single value
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[0], [1], [1, 2, 3, 2], [1, 2, 1], [4, 4]])
+    #   s.list.count_matches(1)
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'a' [u32]
+    #   # [
+    #   #         0
+    #   #         1
+    #   #         1
+    #   #         2
+    #   #         0
+    #   # ]
+    def count_matches(element)
+      super
+    end
+
+    # Convert a List column into an Array column with the same inner data type.
+    #
+    # @param width [Integer]
+    #   Width of the resulting Array column.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([[1, 2], [3, 4]], dtype: Polars::List.new(Polars::Int8))
+    #   s.list.to_array(2)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [array[i8, 2]]
+    #   # [
+    #   #         [1, 2]
+    #   #         [3, 4]
+    #   # ]
+    def to_array(width)
+      super
+    end
+
     # Convert the series of type `List` to a series of type `Struct`.
     #
     # @param n_field_strategy ["first_non_null", "max_width"]
