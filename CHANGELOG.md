@@ -4,7 +4,7 @@
 - Added more methods to `DataFrame` and `LazyFrame`
 - Added more methods to `ArrayExpr` and `ArrayNameSpace`
 - Added more methods to `BinaryExpr` and `BinaryNameSpace`
-- Added more methods to `CatExpr`
+- Added more methods to `CatExpr` and `CatNameSpace`
 - Added more methods to `DateTimeExpr`
 - Added more methods to `ListExpr`
 - Added more methods to `MetaExpr`

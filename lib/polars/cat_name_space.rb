@@ -44,5 +44,143 @@ module Polars
     def to_local
       Utils.wrap_s(_s.cat_to_local)
     end
+
+    # Indicate whether the Series uses lexical ordering.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   s = Polars::Series.new(["b", "a", "b"]).cast(Polars::Categorical)
+    #   s.cat.uses_lexical_ordering
+    #   # => true
+    def uses_lexical_ordering
+      _s.cat_uses_lexical_ordering
+    end
+
+    # Return the byte-length of the string representation of each value.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(["Café", "345", "東京", nil], dtype: Polars::Categorical)
+    #   s.cat.len_bytes
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         5
+    #   #         3
+    #   #         6
+    #   #         null
+    #   # ]
+    def len_bytes
+      super
+    end
+
+    # Return the number of characters of the string representation of each value.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(["Café", "345", "東京", nil], dtype: Polars::Categorical)
+    #   s.cat.len_chars
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [u32]
+    #   # [
+    #   #         4
+    #   #         3
+    #   #         2
+    #   #         null
+    #   # ]
+    def len_chars
+      super
+    end
+
+    # Check if string representations of values start with a substring.
+    #
+    # @param prefix [String]
+    #     Prefix substring.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("fruits", ["apple", "mango", nil], dtype: Polars::Categorical)
+    #   s.cat.starts_with("app")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'fruits' [bool]
+    #   # [
+    #   #         true
+    #   #         false
+    #   #         null
+    #   # ]
+    def starts_with(prefix)
+      super
+    end
+
+    # Check if string representations of values end with a substring.
+    #
+    # @param suffix [String]
+    #   Suffix substring.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("fruits", ["apple", "mango", nil], dtype: Polars::Categorical)
+    #   s.cat.ends_with("go")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'fruits' [bool]
+    #   # [
+    #   #         false
+    #   #         true
+    #   #         null
+    #   # ]
+    def ends_with(suffix)
+      super
+    end
+
+    # Extract a substring from the string representation of each string value.
+    #
+    # @param offset [Integer]
+    #   Start index. Negative indexing is supported.
+    # @param length [Integer]
+    #   Length of the slice. If set to `nil` (default), the slice is taken to the
+    #   end of the string.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(["pear", nil, "papaya", "dragonfruit"], dtype: Polars::Categorical)
+    #   s.cat.slice(-3)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "ear"
+    #   #         null
+    #   #         "aya"
+    #   #         "uit"
+    #   # ]
+    #
+    # @example Using the optional `length` parameter
+    #   s.cat.slice(4, 3)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         ""
+    #   #         null
+    #   #         "ya"
+    #   #         "onf"
+    #   # ]
+    def slice(offset, length = nil)
+      super
+    end
   end
 end
