@@ -256,39 +256,6 @@ module Polars
     end
     alias_method :n_chars, :len_chars
 
-    # Vertically concat the values in the Series to a single string value.
-    #
-    # @param delimiter [String]
-    #   The delimiter to insert between consecutive string values.
-    # @param ignore_nulls [Boolean]
-    #   Ignore null values (default).
-    #   If set to `False`, null values will be propagated. This means that
-    #   if the column contains any null values, the output is null.
-    #
-    # @return [Series]
-    #
-    # @example
-    #   Polars::Series.new([1, nil, 2]).str.join("-")
-    #   # =>
-    #   # shape: (1,)
-    #   # Series: '' [str]
-    #   # [
-    #   #         "1-2"
-    #   # ]
-    #
-    # @example
-    #   Polars::Series.new([1, nil, 2]).str.join("-", ignore_nulls: false)
-    #   # =>
-    #   # shape: (1,)
-    #   # Series: '' [str]
-    #   # [
-    #   #         null
-    #   # ]
-    def join(delimiter = "-", ignore_nulls: true)
-      super
-    end
-    alias_method :concat, :join
-
     # Check if strings in Series contain a substring that matches a regex.
     #
     # @param pattern [String]
@@ -1062,6 +1029,39 @@ module Polars
       s = Utils.wrap_s(_s)
       s.to_frame.select(Polars.col(s.name).str.slice(offset, length)).to_series
     end
+
+    # Vertically concat the values in the Series to a single string value.
+    #
+    # @param delimiter [String]
+    #   The delimiter to insert between consecutive string values.
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default).
+    #   If set to `False`, null values will be propagated. This means that
+    #   if the column contains any null values, the output is null.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   Polars::Series.new([1, nil, 2]).str.join("-")
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "1-2"
+    #   # ]
+    #
+    # @example
+    #   Polars::Series.new([1, nil, 2]).str.join("-", ignore_nulls: false)
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         null
+    #   # ]
+    def join(delimiter = "-", ignore_nulls: true)
+      super
+    end
+    alias_method :concat, :join
 
     # Returns string values with all regular expression meta characters escaped.
     #
