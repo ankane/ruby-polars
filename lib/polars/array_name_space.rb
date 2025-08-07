@@ -633,5 +633,72 @@ module Polars
     def count_matches(element)
       super
     end
+
+    # Convert the series of type `Array` to a series of type `Struct`.
+    #
+    # @param fields [Object]
+    #   If the name and number of the desired fields is known in advance
+    #   a list of field names can be given, which will be assigned by index.
+    #   Otherwise, to dynamically assign field names, a custom function can be
+    #   used; if neither are set, fields will be `field_0, field_1 .. field_n`.
+    #
+    # @return [Series]
+    #
+    # @example Convert array to struct with default field name assignment:
+    #   s1 = Polars::Series.new("n", [[0, 1, 2], [3, 4, 5]], dtype: Polars::Array.new(Polars::Int8, 3))
+    #   s2 = s1.arr.to_struct
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'n' [struct[3]]
+    #   # [
+    #   #         {0,1,2}
+    #   #         {3,4,5}
+    #   # ]
+    #
+    # @example
+    #   s2.struct.fields
+    #   # => ["field_0", "field_1", "field_2"]
+    def to_struct(
+      fields: nil
+    )
+      s = Utils.wrap_s(_s)
+      s.to_frame.select(F.col(s.name).arr.to_struct(fields: fields)).to_series
+    end
+
+    # Shift array values by the given number of indices.
+    #
+    # @param n [Integer]
+    #   Number of indices to shift forward. If a negative value is passed, values
+    #   are shifted in the opposite direction instead.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   This method is similar to the `LAG` operation in SQL when the value for `n`
+    #   is positive. With a negative value for `n`, it is similar to `LEAD`.
+    #
+    # @example By default, array values are shifted forward by one index.
+    #   s = Polars::Series.new([[1, 2, 3], [4, 5, 6]], dtype: Polars::Array.new(Polars::Int64, 3))
+    #   s.arr.shift()
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [array[i64, 3]]
+    #   # [
+    #   #         [null, 1, 2]
+    #   #         [null, 4, 5]
+    #   # ]
+    #
+    # @example Pass a negative value to shift in the opposite direction instead.
+    #   s.arr.shift(-2)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: '' [array[i64, 3]]
+    #   # [
+    #   #         [3, null, null]
+    #   #         [6, null, null]
+    #   # ]
+    def shift(n = 1)
+      super
+    end
   end
 end
