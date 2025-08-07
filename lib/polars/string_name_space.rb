@@ -184,53 +184,77 @@ module Polars
       super
     end
 
-    # Get length of the string values in the Series (as number of bytes).
+    # Convert a String column into a Decimal column.
+    #
+    # This method infers the needed parameters `precision` and `scale`.
+    #
+    # @param inference_length [Integer]
+    #   Number of elements to parse to determine the `precision` and `scale`
     #
     # @return [Series]
     #
-    # @note
-    #   The returned lengths are equal to the number of bytes in the UTF8 string. If you
-    #   need the length in terms of the number of characters, use `n_chars` instead.
+    # @example
+    #   s = Polars::Series.new(
+    #     ["40.12", "3420.13", "120134.19", "3212.98", "12.90", "143.09", "143.9"]
+    #   )
+    #   s.str.to_decimal
+    #   # =>
+    #   # shape: (7,)
+    #   # Series: '' [decimal[*,2]]
+    #   # [
+    #   #         40.12
+    #   #         3420.13
+    #   #         120134.19
+    #   #         3212.98
+    #   #         12.90
+    #   #         143.09
+    #   #         143.90
+    #   # ]
+    def to_decimal(inference_length = 100)
+      super
+    end
+
+    # Return the length of each string as the number of bytes.
+    #
+    # @return [Series]
     #
     # @example
-    #   s = Polars::Series.new(["Café", nil, "345", "東京"])
-    #   s.str.lengths
+    #   s = Polars::Series.new(["Café", "345", "東京", nil])
+    #   s.str.len_bytes
     #   # =>
     #   # shape: (4,)
     #   # Series: '' [u32]
     #   # [
     #   #         5
-    #   #         null
     #   #         3
     #   #         6
+    #   #         null
     #   # ]
-    def lengths
+    def len_bytes
       super
     end
+    alias_method :lengths, :len_bytes
 
-    # Get length of the string values in the Series (as number of chars).
+    # Return the length of each string as the number of characters.
     #
     # @return [Series]
     #
-    # @note
-    #   If you know that you are working with ASCII text, `lengths` will be
-    #   equivalent, and faster (returns length in terms of the number of bytes).
-    #
     # @example
-    #   s = Polars::Series.new(["Café", nil, "345", "東京"])
-    #   s.str.n_chars
+    #   s = Polars::Series.new(["Café", "345", "東京", nil])
+    #   s.str.len_chars
     #   # =>
     #   # shape: (4,)
     #   # Series: '' [u32]
     #   # [
     #   #         4
-    #   #         null
     #   #         3
     #   #         2
+    #   #         null
     #   # ]
-    def n_chars
+    def len_chars
       super
     end
+    alias_method :n_chars, :len_chars
 
     # Vertically concat the values in the Series to a single string value.
     #
