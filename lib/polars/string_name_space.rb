@@ -293,6 +293,65 @@ module Polars
       super
     end
 
+    # Return the bytes offset of the first substring matching a pattern.
+    #
+    # If the pattern is not found, returns nil.
+    #
+    # @param pattern
+    #   A valid regular expression pattern, compatible with the [regex crate](https://docs.rs/regex/latest/regex/).
+    # @param literal
+    #   Treat `pattern` as a literal string, not as a regular expression.
+    # @param strict
+    #   Raise an error if the underlying pattern is not a valid regex,
+    #   otherwise mask out with a null value.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   To modify regular expression behaviour (such as case-sensitivity) with
+    #   flags, use the inline `(?iLmsuxU)` syntax.
+    #
+    # @example Find the index of the first substring matching a regex pattern:
+    #   s = Polars::Series.new("txt", ["Crab", "Lobster", nil, "Crustacean"])
+    #   s.str.find("a|e").rename("idx_rx")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'idx_rx' [u32]
+    #   # [
+    #   #         2
+    #   #         5
+    #   #         null
+    #   #         5
+    #   # ]
+    #
+    # @example Find the index of the first substring matching a literal pattern:
+    #   s.str.find("e", literal: true).rename("idx_lit")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'idx_lit' [u32]
+    #   # [
+    #   #         null
+    #   #         5
+    #   #         null
+    #   #         7
+    #   # ]
+    #
+    # @example Match against a pattern found in another column or (expression):
+    #   p = Polars::Series.new("pat", ["a[bc]", "b.t", "[aeiuo]", "(?i)A[BC]"])
+    #   s.str.find(p).rename("idx")
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'idx' [u32]
+    #   # [
+    #   #         2
+    #   #         2
+    #   #         null
+    #   #         5
+    #   # ]
+    def find(pattern, literal: false, strict: true)
+      super
+    end
+
     # Check if string values end with a substring.
     #
     # @param sub [String]
