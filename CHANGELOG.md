@@ -1,22 +1,16 @@
 ## 0.21.1 (unreleased)
 
-- Added more methods to `Expr`
-- Added more methods to `LazyFrame`
-- Added more methods to `DataFrame`
-- Added more methods to `Series`
-- Added more methods to `ArrayExpr`
-- Added more methods to `BinaryExpr`
+- Added more methods to `Series` and `Expr`
+- Added more methods to `DataFrame` and `LazyFrame`
+- Added more methods to `ArrayExpr` and `ArrayNameSpace`
+- Added more methods to `BinaryExpr` and `BinaryNameSpace`
 - Added more methods to `CatExpr`
 - Added more methods to `DateTimeExpr`
 - Added more methods to `ListExpr`
 - Added more methods to `MetaExpr`
 - Added more methods to `NameExpr`
-- Added more methods to `StringExpr`
-- Added more methods to `StructExpr`
-- Added more methods to `ArrayNameSpace`
-- Added more methods to `BinaryNameSpace`
-- Added more methods to `StringNameSpace`
-- Added `json_encode` method to `StructNameSpace`
+- Added more methods to `StringExpr` and `StringNameSpace`
+- Added more methods to `StructExpr` and `StructNameSpace`
 - Fixed `subset` option for `drop_nulls` method
 
 ## 0.21.0 (2025-08-03)
