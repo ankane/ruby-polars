@@ -74,6 +74,60 @@ module Polars
       super
     end
 
+    # Compute the std of the values of the sub-arrays.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1, 2], [4, 3]], dtype: Polars::Array.new(Polars::Int64, 2))
+    #   s.arr.std
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         0.707107
+    #   #         0.707107
+    #   # ]
+    def std(ddof: 1)
+      super
+    end
+
+    # Compute the var of the values of the sub-arrays.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1, 2], [4, 3]], dtype: Polars::Array.new(Polars::Int64, 2))
+    #   s.arr.var
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         0.5
+    #   #         0.5
+    #   # ]
+    def var(ddof: 1)
+      super
+    end
+
+    # Compute the median of the values of the sub-arrays.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1, 2], [4, 3]], dtype: Polars::Array.new(Polars::Int64, 2))
+    #   s.arr.median
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         1.5
+    #   #         3.5
+    #   # ]
+    def median
+      super
+    end
+
     # Get the unique/distinct values in the array.
     #
     # @param maintain_order [Boolean]

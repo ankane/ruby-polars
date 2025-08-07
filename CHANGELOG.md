@@ -13,6 +13,7 @@
 - Added more methods to `NameExpr`
 - Added more methods to `StringExpr`
 - Added more methods to `StructExpr`
+- Added more methods to `ArrayNameSpace`
 - Added `json_encode` method to `StructNameSpace`
 - Fixed `subset` option for `drop_nulls` method
 
