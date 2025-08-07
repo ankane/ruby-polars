@@ -212,6 +212,23 @@ impl RbExpr {
         }
     }
 
+    pub fn str_find(&self, pat: &Self, literal: Option<bool>, strict: bool) -> Self {
+        match literal {
+            Some(true) => self
+                .inner
+                .clone()
+                .str()
+                .find_literal(pat.inner.clone())
+                .into(),
+            _ => self
+                .inner
+                .clone()
+                .str()
+                .find(pat.inner.clone(), strict)
+                .into(),
+        }
+    }
+
     pub fn str_ends_with(&self, sub: &RbExpr) -> Self {
         self.inner.clone().str().ends_with(sub.inner.clone()).into()
     }

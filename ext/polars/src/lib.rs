@@ -322,6 +322,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_pad_start", method!(RbExpr::str_pad_start, 2))?;
     class.define_method("str_pad_end", method!(RbExpr::str_pad_end, 2))?;
     class.define_method("str_contains", method!(RbExpr::str_contains, 3))?;
+    class.define_method("str_find", method!(RbExpr::str_find, 3))?;
     class.define_method("str_ends_with", method!(RbExpr::str_ends_with, 1))?;
     class.define_method("str_starts_with", method!(RbExpr::str_starts_with, 1))?;
     class.define_method("arr_len", method!(RbExpr::arr_len, 0))?;

@@ -772,6 +772,68 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_contains(pattern, literal, strict))
     end
 
+    # Return the bytes offset of the first substring matching a pattern.
+    #
+    # If the pattern is not found, returns None.
+    #
+    # @param pattern [String]
+    #   A valid regular expression pattern, compatible with the [regex crate](https://docs.rs/regex/latest/regex/).
+    # @param literal [Boolean]
+    #   Treat `pattern` as a literal string, not as a regular expression.
+    # @param strict [Boolean]
+    #   Raise an error if the underlying pattern is not a valid regex,
+    #   otherwise mask out with a null value.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   To modify regular expression behaviour (such as case-sensitivity) with
+    #   flags, use the inline `(?iLmsuxU)` syntax.
+    #
+    # @example Find the index of the first substring matching a regex or literal pattern:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "txt" => ["Crab", "Lobster", nil, "Crustacean"],
+    #       "pat" => ["a[bc]", "b.t", "[aeiuo]", "(?i)A[BC]"]
+    #     }
+    #   )
+    #   df.select(
+    #     Polars.col("txt"),
+    #     Polars.col("txt").str.find("a|e").alias("a|e (regex)"),
+    #     Polars.col("txt").str.find("e", literal: true).alias("e (lit)"),
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌────────────┬─────────────┬─────────┐
+    #   # │ txt        ┆ a|e (regex) ┆ e (lit) │
+    #   # │ ---        ┆ ---         ┆ ---     │
+    #   # │ str        ┆ u32         ┆ u32     │
+    #   # ╞════════════╪═════════════╪═════════╡
+    #   # │ Crab       ┆ 2           ┆ null    │
+    #   # │ Lobster    ┆ 5           ┆ 5       │
+    #   # │ null       ┆ null        ┆ null    │
+    #   # │ Crustacean ┆ 5           ┆ 7       │
+    #   # └────────────┴─────────────┴─────────┘
+    #
+    # @example Match against a pattern found in another column or (expression):
+    #   df.with_columns(Polars.col("txt").str.find(Polars.col("pat")).alias("find_pat"))
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌────────────┬───────────┬──────────┐
+    #   # │ txt        ┆ pat       ┆ find_pat │
+    #   # │ ---        ┆ ---       ┆ ---      │
+    #   # │ str        ┆ str       ┆ u32      │
+    #   # ╞════════════╪═══════════╪══════════╡
+    #   # │ Crab       ┆ a[bc]     ┆ 2        │
+    #   # │ Lobster    ┆ b.t       ┆ 2        │
+    #   # │ null       ┆ [aeiuo]   ┆ null     │
+    #   # │ Crustacean ┆ (?i)A[BC] ┆ 5        │
+    #   # └────────────┴───────────┴──────────┘
+    def find(pattern, literal: false, strict: true)
+      pattern = Utils.parse_into_expression(pattern, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.str_find(pattern, literal, strict))
+    end
+
     # Check if string values end with a substring.
     #
     # @param sub [String]
@@ -1621,9 +1683,9 @@ module Polars
 
     # Use the aho-corasick algorithm to replace many matches.
     #
-    # @param patterns [String]
+    # @param patterns [Object]
     #   String patterns to search and replace.
-    # @param replace_with [String]
+    # @param replace_with [Object]
     #   Strings to replace where a pattern was a match.
     #   This can be broadcasted. So it supports many:one and many:many.
     # @param ascii_case_insensitive [Boolean]
@@ -1697,7 +1759,7 @@ module Polars
 
     # Use the Aho-Corasick algorithm to extract many matches.
     #
-    # @param patterns [String]
+    # @param patterns [Object]
     #   String patterns to search.
     # @param ascii_case_insensitive [Boolean]
     #   Enable ASCII-aware case-insensitive matching.
@@ -1770,7 +1832,7 @@ module Polars
     # The function will return the bytes offset of the start of each match.
     # The return type will be `List<UInt32>`
     #
-    # @param patterns [String]
+    # @param patterns [Object]
     #   String patterns to search.
     # @param ascii_case_insensitive [Boolean]
     #   Enable ASCII-aware case-insensitive matching.
