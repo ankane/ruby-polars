@@ -1463,6 +1463,126 @@ module Polars
       lazy.filter(predicate).collect
     end
 
+    # Remove rows, dropping those that match the given predicate expression(s).
+    #
+    # The original order of the remaining rows is preserved.
+    #
+    # Rows where the filter predicate does not evaluate to True are retained
+    # (this includes rows where the predicate evaluates as `null`).
+    #
+    # @param predicates [Array]
+    #   Expression that evaluates to a boolean Series.
+    # @param constraints [Hash]
+    #   Column filters; use `name = value` to filter columns using the supplied
+    #   value. Each constraint behaves the same as `Polars.col(name).eq(value)`,
+    #   and is implicitly joined with the other filter conditions using `&`.
+    #
+    # @return [DataFrame]
+    #
+    # @example Remove rows matching a condition:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [2, 3, nil, 4, 0],
+    #       "bar" => [5, 6, nil, nil, 0],
+    #       "ham" => ["a", "b", nil, "c", "d"]
+    #     }
+    #   )
+    #   df.remove(Polars.col("bar") >= 5)
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ null ┆ null ┆ null │
+    #   # │ 4    ┆ null ┆ c    │
+    #   # │ 0    ┆ 0    ┆ d    │
+    #   # └──────┴──────┴──────┘
+    #
+    # @example Discard rows based on multiple conditions, combined with and/or operators:
+    #   df.remove(
+    #     (Polars.col("foo") >= 0) & (Polars.col("bar") >= 0),
+    #   )
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ null ┆ null ┆ null │
+    #   # │ 4    ┆ null ┆ c    │
+    #   # └──────┴──────┴──────┘
+    #
+    # @example
+    #   df.remove(
+    #     (Polars.col("foo") >= 0) | (Polars.col("bar") >= 0),
+    #   )
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ null ┆ null ┆ null │
+    #   # └──────┴──────┴──────┘
+    #
+    # @example Provide multiple constraints using `*args` syntax:
+    #   df.remove(
+    #     Polars.col("ham").is_not_null,
+    #     Polars.col("bar") >= 0
+    #   )
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ null ┆ null ┆ null │
+    #   # │ 4    ┆ null ┆ c    │
+    #   # └──────┴──────┴──────┘
+    #
+    # @example Provide constraints(s) using `**kwargs` syntax:
+    #   df.remove(foo: 0, bar: 0)
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ 2    ┆ 5    ┆ a    │
+    #   # │ 3    ┆ 6    ┆ b    │
+    #   # │ null ┆ null ┆ null │
+    #   # │ 4    ┆ null ┆ c    │
+    #   # └──────┴──────┴──────┘
+    #
+    # @example Remove rows by comparing two columns against each other:
+    #   df.remove(
+    #     Polars.col("foo").ne_missing(Polars.col("bar"))
+    #   )
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────┬──────┬──────┐
+    #   # │ foo  ┆ bar  ┆ ham  │
+    #   # │ ---  ┆ ---  ┆ ---  │
+    #   # │ i64  ┆ i64  ┆ str  │
+    #   # ╞══════╪══════╪══════╡
+    #   # │ null ┆ null ┆ null │
+    #   # │ 0    ┆ 0    ┆ d    │
+    #   # └──────┴──────┴──────┘
+    def remove(
+      *predicates,
+      **constraints
+    )
+      lazy
+      .remove(*predicates, **constraints)
+      .collect(_eager: true)
+    end
+
     # Summary statistics for a DataFrame.
     #
     # @return [DataFrame]
