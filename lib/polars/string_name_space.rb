@@ -1005,6 +1005,25 @@ module Polars
       super
     end
 
+    # Returns string values in reversed order.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("text", ["foo", "bar", "man\u0303ana"])
+    #   s.str.reverse
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'text' [str]
+    #   # [
+    #   #         "oof"
+    #   #         "rab"
+    #   #         "anañam"
+    #   # ]
+    def reverse
+      super
+    end
+
     # Create subslices of the string values of a Utf8 Series.
     #
     # @param offset [Integer]
