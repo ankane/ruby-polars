@@ -139,6 +139,74 @@ module Polars
       super
     end
 
+    # Extract the millennium from underlying representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the millennium number in the calendar date.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     "dt",
+    #     [
+    #       Date.new(999, 12, 31),
+    #       Date.new(1897, 5, 7),
+    #       Date.new(2000, 1, 1),
+    #       Date.new(2001, 7, 5),
+    #       Date.new(3002, 10, 20)
+    #     ]
+    #   )
+    #   s.dt.millennium
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'dt' [i32]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         2
+    #   #         3
+    #   #         4
+    #   # ]
+    def millennium
+      super
+    end
+
+    # Extract the century from underlying representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the century number in the calendar date.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     "dt",
+    #     [
+    #       Date.new(999, 12, 31),
+    #       Date.new(1897, 5, 7),
+    #       Date.new(2000, 1, 1),
+    #       Date.new(2001, 7, 5),
+    #       Date.new(3002, 10, 20)
+    #     ]
+    #   )
+    #   s.dt.century
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'dt' [i32]
+    #   # [
+    #   #         10
+    #   #         19
+    #   #         20
+    #   #         21
+    #   #         31
+    #   # ]
+    def century
+      super
+    end
+
     # Extract the year from the underlying date representation.
     #
     # Applies to Date and Datetime columns.

@@ -5,7 +5,7 @@
 - Added more methods to `ArrayExpr` and `ArrayNameSpace`
 - Added more methods to `BinaryExpr` and `BinaryNameSpace`
 - Added more methods to `CatExpr` and `CatNameSpace`
-- Added more methods to `DateTimeExpr`
+- Added more methods to `DateTimeExpr` ane `DateTimeNameSpace`
 - Added more methods to `ListExpr` and `ListNameSpace`
 - Added more methods to `MetaExpr`
 - Added more methods to `NameExpr`
