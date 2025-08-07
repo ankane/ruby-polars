@@ -4696,6 +4696,31 @@ module Polars
       lazy.with_columns(*exprs, **named_exprs).collect(_eager: true)
     end
 
+    # Add columns to this DataFrame.
+    #
+    # Added columns will replace existing columns with the same name.
+    #
+    # This will run all expression sequentially instead of in parallel.
+    # Use this when the work per expression is cheap.
+    #
+    # @param exprs [Array]
+    #   Column(s) to add, specified as positional arguments.
+    #   Accepts expression input. Strings are parsed as column names, other
+    #   non-expression inputs are parsed as literals.
+    # @param named_exprs [Hash]
+    #   Additional columns to add, specified as keyword arguments.
+    #   The columns will be renamed to the keyword used.
+    #
+    # @return [DataFrame]
+    def with_columns_seq(
+      *exprs,
+      **named_exprs
+    )
+      lazy
+      .with_columns_seq(*exprs, **named_exprs)
+      .collect(_eager: true)
+    end
+
     # Get number of chunks used by the ChunkedArrays of this DataFrame.
     #
     # @param strategy ["first", "all"]
