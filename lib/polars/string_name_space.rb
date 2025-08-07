@@ -1030,6 +1030,80 @@ module Polars
       s.to_frame.select(Polars.col(s.name).str.slice(offset, length)).to_series
     end
 
+    # Return the first n characters of each string in a String Series.
+    #
+    # @param n [Object]
+    #   Length of the slice (integer or expression). Negative indexing is supported;
+    #   see note (2) below.
+    #
+    # @return [Series]
+    #
+    # @example Return up to the first 5 characters.
+    #   s = Polars::Series.new(["pear", nil, "papaya", "dragonfruit"])
+    #   s.str.head(5)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "pear"
+    #   #         null
+    #   #         "papay"
+    #   #         "drago"
+    #   # ]
+    #
+    # @example Return up to the 3rd character from the end.
+    #   s = Polars::Series.new(["pear", nil, "papaya", "dragonfruit"])
+    #   s.str.head(-3)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "p"
+    #   #         null
+    #   #         "pap"
+    #   #         "dragonfr"
+    #   # ]
+    def head(n)
+      super
+    end
+
+    # Return the last n characters of each string in a String Series.
+    #
+    # @param n [Object]
+    #   Length of the slice (integer or expression). Negative indexing is supported;
+    #   see note (2) below.
+    #
+    # @return [Series]
+    #
+    # @example Return up to the last 5 characters:
+    #   s = Polars::Series.new(["pear", nil, "papaya", "dragonfruit"])
+    #   s.str.tail(5)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "pear"
+    #   #         null
+    #   #         "apaya"
+    #   #         "fruit"
+    #   # ]
+    #
+    # @example Return from the 3rd character to the end:
+    #   s = Polars::Series.new(["pear", nil, "papaya", "dragonfruit"])
+    #   s.str.tail(-3)
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: '' [str]
+    #   # [
+    #   #         "r"
+    #   #         null
+    #   #         "aya"
+    #   #         "gonfruit"
+    #   # ]
+    def tail(n)
+      super
+    end
+
     # Vertically concat the values in the Series to a single string value.
     #
     # @param delimiter [String]
