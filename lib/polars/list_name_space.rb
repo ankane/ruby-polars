@@ -321,6 +321,24 @@ module Polars
       super
     end
 
+    # Count the number of unique values in every sub-lists.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1, 1, 2], [2, 3, 4]])
+    #   s.list.n_unique
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [u32]
+    #   # [
+    #   #         2
+    #   #         3
+    #   # ]
+    def n_unique
+      super
+    end
+
     # Concat the arrays in a Series dtype List in linear time.
     #
     # @param other [Object]
