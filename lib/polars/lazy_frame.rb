@@ -3399,7 +3399,7 @@ module Polars
     #
     # @example
     #   s = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => [5, 6, 7, 8]}).lazy
-    #   s.take_every(2).collect
+    #   s.gather_every(2).collect
     #   # =>
     #   # shape: (2, 2)
     #   # ┌─────┬─────┐
@@ -3410,9 +3410,10 @@ module Polars
     #   # │ 1   ┆ 5   │
     #   # │ 3   ┆ 7   │
     #   # └─────┴─────┘
-    def take_every(n)
-      select(F.col("*").take_every(n))
+    def gather_every(n)
+      select(F.col("*").gather_every(n))
     end
+    alias_method :take_every, :gather_every
 
     # Fill null values using the specified value or strategy.
     #
