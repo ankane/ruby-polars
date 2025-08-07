@@ -419,6 +419,34 @@ module Polars
       super
     end
 
+    # Parse string values as JSON.
+    #
+    # Throws an error if invalid JSON strings are encountered.
+    #
+    # @param dtype [Object]
+    #   The dtype to cast the extracted value to. If None, the dtype will be
+    #   inferred from the JSON value.
+    # @param infer_schema_length [Integer]
+    #   The maximum number of rows to scan for schema inference.
+    #   If set to `nil`, the full data may be scanned *(this is slow)*.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("json", ['{"a":1, "b": true}', nil, '{"a":2, "b": false}'])
+    #   s.str.json_decode
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'json' [struct[2]]
+    #   # [
+    #   #         {1,true}
+    #   #         null
+    #   #         {2,false}
+    #   # ]
+    def json_decode(dtype = nil, infer_schema_length: 100)
+      super
+    end
+
     # Extract the first match of json string with provided JSONPath expression.
     #
     # Throw errors if encounter invalid json strings.
