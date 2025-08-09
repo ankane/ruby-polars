@@ -999,7 +999,7 @@ impl<'a> ApplyLambda<'a> for StringChunked {
     }
 }
 
-fn iter_struct(ca: &StructChunked) -> impl Iterator<Item = AnyValue> {
+fn iter_struct(ca: &StructChunked) -> impl Iterator<Item = AnyValue<'_>> {
     (0..ca.len()).map(|i| unsafe { ca.get_any_value_unchecked(i) })
 }
 
