@@ -21,6 +21,7 @@ use polars::io::cloud::CloudOptions;
 use polars::prelude::deletion::DeletionFilesList;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
+use polars_core::schema::iceberg::IcebergSchema;
 use polars_core::utils::arrow::array::Array;
 use polars_core::utils::materialize_dyn_int;
 use polars_plan::dsl::ScanSources;
@@ -30,6 +31,7 @@ use polars_utils::total_ord::{TotalEq, TotalHash};
 use crate::file::{RubyScanSourceInput, get_ruby_scan_source_input};
 use crate::object::OBJECT_NAME;
 use crate::rb_modules::series;
+use crate::utils::to_rb_err;
 use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
 
 pub(crate) fn slice_extract_wrapped<T>(slice: &[Wrap<T>]) -> &[T] {
@@ -521,6 +523,12 @@ impl TryConvert for Wrap<Schema> {
         })?;
 
         Ok(Wrap(schema.into_iter().collect::<RbResult<Schema>>()?))
+    }
+}
+
+impl TryConvert for Wrap<ArrowSchema> {
+    fn try_convert(_ob: Value) -> RbResult<Self> {
+        todo!();
     }
 }
 
@@ -1346,8 +1354,23 @@ impl TryConvert for Wrap<MissingColumnsPolicy> {
 }
 
 impl TryConvert for Wrap<ColumnMapping> {
-    fn try_convert(_ob: Value) -> RbResult<Self> {
-        todo!()
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let (column_mapping_type, ob) = <(String, Value)>::try_convert(ob)?;
+
+        Ok(Wrap(match column_mapping_type.as_str() {
+            "iceberg-column-mapping" => {
+                let arrow_schema = Wrap::<ArrowSchema>::try_convert(ob)?;
+                ColumnMapping::Iceberg(Arc::new(
+                    IcebergSchema::from_arrow_schema(&arrow_schema.0).map_err(to_rb_err)?,
+                ))
+            }
+
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "unknown column mapping type: {v}"
+                )));
+            }
+        }))
     }
 }
 
