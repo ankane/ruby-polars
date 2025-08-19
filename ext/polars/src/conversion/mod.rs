@@ -1352,7 +1352,39 @@ impl TryConvert for Wrap<ColumnMapping> {
 }
 
 impl TryConvert for Wrap<DeletionFilesList> {
-    fn try_convert(_ob: Value) -> RbResult<Self> {
-        todo!();
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let (deletion_file_type, ob) = <(String, Value)>::try_convert(ob)?;
+
+        Ok(Wrap(match deletion_file_type.as_str() {
+            "iceberg-position-delete" => {
+                let dict = RHash::try_convert(ob)?;
+
+                let mut out = PlIndexMap::new();
+
+                dict.foreach(|k: usize, v: RArray| {
+                    let files = v
+                        .into_iter()
+                        .map(|x| {
+                            let x = String::try_convert(x)?;
+                            Ok(x)
+                        })
+                        .collect::<RbResult<Arc<[String]>>>()?;
+
+                    if !files.is_empty() {
+                        out.insert(k, files);
+                    }
+
+                    Ok(ForEach::Continue)
+                })?;
+
+                DeletionFilesList::IcebergPositionDelete(Arc::new(out))
+            }
+
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "unknown deletion file type: {v}"
+                )));
+            }
+        }))
     }
 }

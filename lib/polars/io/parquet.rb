@@ -229,7 +229,9 @@ module Polars
       retries: 2,
       include_file_paths: nil,
       allow_missing_columns: false,
-      extra_columns: "raise"
+      extra_columns: "raise",
+      _column_mapping: nil,
+      _deletion_files: nil
     )
       missing_columns = allow_missing_columns ? "insert" : "raise"
 
@@ -279,7 +281,8 @@ module Polars
             storage_options: storage_options,
             # credential_provider: credential_provider_builder,
             retries: retries,
-            # deletion_files: _deletion_files
+            deletion_files: _deletion_files,
+            column_mapping: _column_mapping
           ),
           parallel,
           low_memory,
