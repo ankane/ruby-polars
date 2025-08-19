@@ -1,4 +1,4 @@
 module Polars
   # @private
-  VERSION = "0.21.0"
+  VERSION = "0.21.1"
 end

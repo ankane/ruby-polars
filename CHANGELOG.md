@@ -1,4 +1,4 @@
-## 0.21.1 (unreleased)
+## 0.21.1 (2025-08-18)
 
 - Added `read_parquet_metadata` method to `Polars`
 - Added more methods to `Series` and `Expr`
