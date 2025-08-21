@@ -2,6 +2,7 @@ pub(crate) mod any_value;
 mod categorical;
 mod chunked_array;
 
+use std::collections::BTreeMap;
 use std::fmt::{Debug, Display, Formatter};
 use std::fs::File;
 use std::hash::{Hash, Hasher};
@@ -527,8 +528,31 @@ impl TryConvert for Wrap<Schema> {
 }
 
 impl TryConvert for Wrap<ArrowSchema> {
-    fn try_convert(_ob: Value) -> RbResult<Self> {
-        todo!();
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        // TODO improve
+        let fields: RArray = ob.funcall("[]", (Symbol::new("fields"),))?;
+        let mut arrow_schema = ArrowSchema::with_capacity(fields.len());
+        for f in fields {
+            let name: String = f.funcall("[]", (Symbol::new("name"),))?;
+            let rb_dtype: String = f.funcall("[]", (Symbol::new("type"),))?;
+            let dtype = match rb_dtype.as_str() {
+                "int32" => ArrowDataType::Int32,
+                "int64" => ArrowDataType::Int64,
+                _ => todo!(),
+            };
+            let is_nullable = f.funcall("[]", (Symbol::new("nullable"),))?;
+            let rb_metadata: RHash = f.funcall("[]", (Symbol::new("metadata"),))?;
+            let mut metadata = BTreeMap::new();
+            rb_metadata.foreach(|k: String, v: String| {
+                metadata.insert(k.into(), v.into());
+                Ok(ForEach::Continue)
+            })?;
+            arrow_schema.insert(
+                name.clone().into(),
+                ArrowField::new(name.into(), dtype, is_nullable).with_metadata(metadata),
+            );
+        }
+        Ok(Wrap(arrow_schema))
     }
 }
 
