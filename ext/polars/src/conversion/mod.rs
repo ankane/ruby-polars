@@ -530,18 +530,20 @@ impl TryConvert for Wrap<Schema> {
 impl TryConvert for Wrap<ArrowSchema> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         // TODO improve
-        let fields: RArray = ob.funcall("[]", (Symbol::new("fields"),))?;
+        let ob = RHash::try_convert(ob)?;
+        let fields: RArray = ob.aref(Symbol::new("fields"))?;
         let mut arrow_schema = ArrowSchema::with_capacity(fields.len());
         for f in fields {
-            let name: String = f.funcall("[]", (Symbol::new("name"),))?;
-            let rb_dtype: String = f.funcall("[]", (Symbol::new("type"),))?;
+            let f = RHash::try_convert(f)?;
+            let name: String = f.aref(Symbol::new("name"))?;
+            let rb_dtype: String = f.aref(Symbol::new("type"))?;
             let dtype = match rb_dtype.as_str() {
                 "int32" => ArrowDataType::Int32,
                 "int64" => ArrowDataType::Int64,
                 _ => todo!(),
             };
-            let is_nullable = f.funcall("[]", (Symbol::new("nullable"),))?;
-            let rb_metadata: RHash = f.funcall("[]", (Symbol::new("metadata"),))?;
+            let is_nullable = f.aref(Symbol::new("nullable"))?;
+            let rb_metadata: RHash = f.aref(Symbol::new("metadata"))?;
             let mut metadata = BTreeMap::new();
             rb_metadata.foreach(|k: String, v: String| {
                 metadata.insert(k.into(), v.into());
