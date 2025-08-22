@@ -540,6 +540,7 @@ impl TryConvert for Wrap<ArrowSchema> {
             let dtype = match rb_dtype.as_str() {
                 "int32" => ArrowDataType::Int32,
                 "int64" => ArrowDataType::Int64,
+                "large_string" => ArrowDataType::LargeUtf8,
                 _ => todo!(),
             };
             let is_nullable = f.aref(Symbol::new("nullable"))?;
