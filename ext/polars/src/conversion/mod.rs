@@ -530,8 +530,7 @@ impl TryConvert for Wrap<Schema> {
 impl TryConvert for Wrap<ArrowSchema> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         // TODO improve
-        let ob = RHash::try_convert(ob)?;
-        let fields: RArray = ob.aref(Symbol::new("fields"))?;
+        let fields: RArray = ob.funcall("fields", ())?;
         let mut arrow_schema = ArrowSchema::with_capacity(fields.len());
         for f in fields {
             let f = RHash::try_convert(f)?;
