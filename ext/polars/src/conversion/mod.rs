@@ -550,10 +550,12 @@ impl TryConvert for Wrap<ArrowSchema> {
                 metadata.insert(k.into(), v.into());
                 Ok(ForEach::Continue)
             })?;
-            arrow_schema.insert(
-                name.clone().into(),
-                ArrowField::new(name.into(), dtype, is_nullable).with_metadata(metadata),
-            );
+            arrow_schema
+                .try_insert(
+                    name.clone().into(),
+                    ArrowField::new(name.into(), dtype, is_nullable).with_metadata(metadata),
+                )
+                .map_err(to_rb_err)?;
         }
         Ok(Wrap(arrow_schema))
     }
