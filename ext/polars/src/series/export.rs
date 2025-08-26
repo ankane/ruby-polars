@@ -1,4 +1,4 @@
-use magnus::{IntoValue, Ruby, Value};
+use magnus::{IntoValue, Ruby, Value, value::ReprValue};
 use polars_core::prelude::*;
 
 use crate::RbSeries;
@@ -13,45 +13,21 @@ impl RbSeries {
         fn to_a_recursive(series: &Series) -> Value {
             let ruby = Ruby::get().unwrap();
             let rblist = match series.dtype() {
-                DataType::Boolean => ruby
-                    .ary_from_iter(series.bool().unwrap())
-                    .into_value_with(&ruby),
-                DataType::UInt8 => ruby
-                    .ary_from_iter(series.u8().unwrap())
-                    .into_value_with(&ruby),
-                DataType::UInt16 => ruby
-                    .ary_from_iter(series.u16().unwrap())
-                    .into_value_with(&ruby),
-                DataType::UInt32 => ruby
-                    .ary_from_iter(series.u32().unwrap())
-                    .into_value_with(&ruby),
-                DataType::UInt64 => ruby
-                    .ary_from_iter(series.u64().unwrap())
-                    .into_value_with(&ruby),
-                DataType::Int8 => ruby
-                    .ary_from_iter(series.i8().unwrap())
-                    .into_value_with(&ruby),
-                DataType::Int16 => ruby
-                    .ary_from_iter(series.i16().unwrap())
-                    .into_value_with(&ruby),
-                DataType::Int32 => ruby
-                    .ary_from_iter(series.i32().unwrap())
-                    .into_value_with(&ruby),
-                DataType::Int64 => ruby
-                    .ary_from_iter(series.i64().unwrap())
-                    .into_value_with(&ruby),
-                DataType::Int128 => ruby
-                    .ary_from_iter(series.i128().unwrap())
-                    .into_value_with(&ruby),
-                DataType::Float32 => ruby
-                    .ary_from_iter(series.f32().unwrap())
-                    .into_value_with(&ruby),
-                DataType::Float64 => ruby
-                    .ary_from_iter(series.f64().unwrap())
-                    .into_value_with(&ruby),
+                DataType::Boolean => ruby.ary_from_iter(series.bool().unwrap()).as_value(),
+                DataType::UInt8 => ruby.ary_from_iter(series.u8().unwrap()).as_value(),
+                DataType::UInt16 => ruby.ary_from_iter(series.u16().unwrap()).as_value(),
+                DataType::UInt32 => ruby.ary_from_iter(series.u32().unwrap()).as_value(),
+                DataType::UInt64 => ruby.ary_from_iter(series.u64().unwrap()).as_value(),
+                DataType::Int8 => ruby.ary_from_iter(series.i8().unwrap()).as_value(),
+                DataType::Int16 => ruby.ary_from_iter(series.i16().unwrap()).as_value(),
+                DataType::Int32 => ruby.ary_from_iter(series.i32().unwrap()).as_value(),
+                DataType::Int64 => ruby.ary_from_iter(series.i64().unwrap()).as_value(),
+                DataType::Int128 => ruby.ary_from_iter(series.i128().unwrap()).as_value(),
+                DataType::Float32 => ruby.ary_from_iter(series.f32().unwrap()).as_value(),
+                DataType::Float64 => ruby.ary_from_iter(series.f64().unwrap()).as_value(),
                 DataType::Categorical(_, _) | DataType::Enum(_, _) => {
                     with_match_categorical_physical_type!(series.dtype().cat_physical().unwrap(), |$C| {
-                        ruby.ary_from_iter(series.cat::<$C>().unwrap().iter_str()).into_value_with(&ruby)
+                        ruby.ary_from_iter(series.cat::<$C>().unwrap().iter_str()).as_value()
                     })
                 }
                 DataType::Object(_) => {
@@ -63,7 +39,7 @@ impl RbSeries {
                             None => v.push(ruby.qnil()).unwrap(),
                         };
                     }
-                    v.into_value_with(&ruby)
+                    v.as_value()
                 }
                 DataType::List(_) => {
                     let v = ruby.ary_new();
@@ -79,7 +55,7 @@ impl RbSeries {
                             }
                         }
                     }
-                    v.into_value_with(&ruby)
+                    v.as_value()
                 }
                 DataType::Array(_, _) => {
                     let v = ruby.ary_new();
@@ -95,7 +71,7 @@ impl RbSeries {
                             }
                         }
                     }
-                    v.into_value_with(&ruby)
+                    v.as_value()
                 }
                 DataType::Date => {
                     let ca = series.date().unwrap();
@@ -153,7 +129,7 @@ impl RbSeries {
                     Ruby::get()
                         .unwrap()
                         .ary_from_iter(NullIter { iter, n })
-                        .into_value_with(&ruby)
+                        .as_value()
                 }
                 DataType::Unknown(_) => {
                     panic!("to_a not implemented for unknown")
@@ -162,7 +138,7 @@ impl RbSeries {
                     unreachable!()
                 }
             };
-            rblist.into_value_with(&ruby)
+            rblist.as_value()
         }
 
         to_a_recursive(series)

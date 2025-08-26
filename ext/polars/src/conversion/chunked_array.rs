@@ -41,7 +41,7 @@ impl TryConvert for Wrap<BinaryChunked> {
 impl IntoValue for Wrap<&StringChunked> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
         let iter = self.0.into_iter();
-        ruby.ary_from_iter(iter).into_value_with(ruby)
+        ruby.ary_from_iter(iter).as_value()
     }
 }
 
@@ -51,7 +51,7 @@ impl IntoValue for Wrap<&BinaryChunked> {
             .0
             .into_iter()
             .map(|opt_bytes| opt_bytes.map(|v| ruby.str_from_slice(v)));
-        ruby.ary_from_iter(iter).into_value_with(ruby)
+        ruby.ary_from_iter(iter).as_value()
     }
 }
 
@@ -67,7 +67,7 @@ impl IntoValue for Wrap<&StructChunked> {
             _ => unreachable!(),
         });
 
-        ruby.ary_from_iter(iter).into_value_with(ruby)
+        ruby.ary_from_iter(iter).as_value()
     }
 }
 
@@ -82,7 +82,7 @@ impl IntoValue for Wrap<&DurationChunked> {
                     .unwrap()
             })
         });
-        ruby.ary_from_iter(iter).into_value_with(ruby)
+        ruby.ary_from_iter(iter).as_value()
     }
 }
 
@@ -102,7 +102,7 @@ impl IntoValue for Wrap<&DatetimeChunked> {
                     .unwrap()
             })
         });
-        ruby.ary_from_iter(iter).into_value_with(ruby)
+        ruby.ary_from_iter(iter).as_value()
     }
 }
 
@@ -112,7 +112,7 @@ impl IntoValue for Wrap<&TimeChunked> {
         let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_time", (v,)).unwrap())
         });
-        ruby.ary_from_iter(iter).into_value_with(ruby)
+        ruby.ary_from_iter(iter).as_value()
     }
 }
 
@@ -122,7 +122,7 @@ impl IntoValue for Wrap<&DateChunked> {
         let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_date", (v,)).unwrap())
         });
-        ruby.ary_from_iter(iter).into_value_with(ruby)
+        ruby.ary_from_iter(iter).as_value()
     }
 }
 
@@ -137,6 +137,6 @@ impl IntoValue for Wrap<&DecimalChunked> {
                     .unwrap()
             })
         });
-        ruby.ary_from_iter(iter).into_value_with(ruby)
+        ruby.ary_from_iter(iter).as_value()
     }
 }

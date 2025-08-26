@@ -104,7 +104,7 @@ impl RbCatalogClient {
 
         opt_err.transpose()?;
 
-        Ok(out.into_value_with(ruby))
+        Ok(out.as_value())
     }
 
     pub fn list_namespaces(ruby: &Ruby, rb_self: &Self, catalog_name: String) -> RbResult<Value> {
@@ -127,7 +127,7 @@ impl RbCatalogClient {
 
         opt_err.transpose()?;
 
-        Ok(out.into_value_with(ruby))
+        Ok(out.as_value())
     }
 
     pub fn list_tables(
@@ -153,7 +153,7 @@ impl RbCatalogClient {
                     None
                 }
             }))
-            .into_value_with(ruby);
+            .as_value();
 
         opt_err.transpose()?;
 

@@ -127,7 +127,7 @@ fn struct_dict<'a>(vals: impl Iterator<Item = AnyValue<'a>>, flds: &[Field]) -> 
     for (fld, val) in flds.iter().zip(vals) {
         dict.aset(fld.name().as_str(), Wrap(val)).unwrap()
     }
-    dict.into_value_with(&ruby)
+    dict.as_value()
 }
 
 impl IntoValue for Wrap<DataType> {

@@ -60,7 +60,7 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
                 .unwrap()
         }
         AnyValue::Time(v) => utils().funcall("_to_ruby_time", (v,)).unwrap(),
-        AnyValue::Array(v, _) | AnyValue::List(v) => RbSeries::new(v).to_a().into_value_with(ruby),
+        AnyValue::Array(v, _) | AnyValue::List(v) => RbSeries::new(v).to_a().as_value(),
         ref av @ AnyValue::Struct(_, _, flds) => struct_dict(av._iter_struct_av(), flds),
         AnyValue::StructOwned(payload) => struct_dict(payload.0.into_iter(), &payload.1),
         AnyValue::Object(v) => {
@@ -71,8 +71,8 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
             let object = v.0.as_any().downcast_ref::<ObjectValue>().unwrap();
             object.to_value()
         }
-        AnyValue::Binary(v) => ruby.str_from_slice(v).into_value_with(ruby),
-        AnyValue::BinaryOwned(v) => ruby.str_from_slice(&v).into_value_with(ruby),
+        AnyValue::Binary(v) => ruby.str_from_slice(v).as_value(),
+        AnyValue::BinaryOwned(v) => ruby.str_from_slice(&v).as_value(),
         AnyValue::Decimal(v, scale) => utils()
             .funcall("_to_ruby_decimal", (v.to_string(), -(scale as i32)))
             .unwrap(),
