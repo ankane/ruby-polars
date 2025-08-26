@@ -30,13 +30,12 @@ impl RbLazyFrame {
         source: Option<Value>,
         sources: Wrap<ScanSources>,
         infer_schema_length: Option<usize>,
-        batch_size: Option<Wrap<NonZeroUsize>>,
+        batch_size: Option<NonZeroUsize>,
         n_rows: Option<usize>,
         low_memory: bool,
         rechunk: bool,
         row_index: Option<(String, IdxSize)>,
     ) -> RbResult<Self> {
-        let batch_size = batch_size.map(|v| v.0);
         let row_index = row_index.map(|(name, offset)| RowIndex {
             name: name.into(),
             offset,
@@ -444,7 +443,7 @@ impl RbLazyFrame {
         let separator = u8::try_convert(arguments[3])?;
         let line_terminator = String::try_convert(arguments[4])?;
         let quote_char = u8::try_convert(arguments[5])?;
-        let batch_size = Wrap::<NonZeroUsize>::try_convert(arguments[6])?;
+        let batch_size = NonZeroUsize::try_convert(arguments[6])?;
         let datetime_format = Option::<String>::try_convert(arguments[7])?;
         let date_format = Option::<String>::try_convert(arguments[8])?;
         let time_format = Option::<String>::try_convert(arguments[9])?;
@@ -477,7 +476,7 @@ impl RbLazyFrame {
         let options = CsvWriterOptions {
             include_bom,
             include_header,
-            batch_size: batch_size.0,
+            batch_size,
             serialize_options,
         };
 

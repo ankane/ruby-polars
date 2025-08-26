@@ -6,7 +6,6 @@ use std::collections::BTreeMap;
 use std::fmt::{Debug, Display, Formatter};
 use std::fs::File;
 use std::hash::{Hash, Hasher};
-use std::num::NonZeroUsize;
 
 pub use categorical::RbCategories;
 use magnus::{
@@ -1295,15 +1294,6 @@ pub fn parse_parquet_compression(
         }
     };
     Ok(parsed)
-}
-
-impl TryConvert for Wrap<NonZeroUsize> {
-    fn try_convert(ob: Value) -> RbResult<Self> {
-        let v = usize::try_convert(ob)?;
-        NonZeroUsize::new(v)
-            .map(Wrap)
-            .ok_or(RbValueError::new_err("must be non-zero"))
-    }
 }
 
 pub(crate) fn strings_to_pl_smallstr<I, S>(container: I) -> Vec<PlSmallStr>

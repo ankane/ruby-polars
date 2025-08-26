@@ -249,14 +249,13 @@ impl RbDataFrame {
         include_header: bool,
         separator: u8,
         quote_char: u8,
-        batch_size: Wrap<NonZeroUsize>,
+        batch_size: NonZeroUsize,
         datetime_format: Option<String>,
         date_format: Option<String>,
         time_format: Option<String>,
         float_precision: Option<usize>,
         null_value: Option<String>,
     ) -> RbResult<()> {
-        let batch_size = batch_size.0;
         let null = null_value.unwrap_or_default();
         let mut buf = get_file_like(rb_f, true)?;
         CsvWriter::new(&mut buf)
