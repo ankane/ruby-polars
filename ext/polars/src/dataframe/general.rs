@@ -155,7 +155,7 @@ impl RbDataFrame {
                 .df
                 .borrow()
                 .iter()
-                .map(|s| Wrap(s.dtype().clone()).into_value_with(&ruby)),
+                .map(|s| Wrap(s.dtype().clone()).into_value_with(ruby)),
         )
     }
 
