@@ -8,7 +8,7 @@ mod import;
 mod map;
 mod scatter;
 
-use magnus::{RArray, prelude::*};
+use magnus::{RArray, Ruby, prelude::*};
 use polars::prelude::*;
 use std::cell::RefCell;
 
@@ -42,7 +42,7 @@ pub fn to_series(rs: RArray) -> RbResult<Vec<Series>> {
 }
 
 pub fn to_rbseries(s: Vec<Column>) -> RArray {
-    RArray::from_iter(
+    Ruby::get().unwrap().ary_from_iter(
         s.into_iter()
             .map(|c| c.take_materialized_series())
             .map(RbSeries::new),

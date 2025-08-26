@@ -1,5 +1,5 @@
 use crate::rb_modules;
-use magnus::{Error, exception};
+use magnus::{Error, Ruby};
 use std::borrow::Cow;
 
 macro_rules! create_exception {
@@ -17,9 +17,12 @@ macro_rules! create_exception {
     };
 }
 
-create_exception!(RbTypeError, exception::type_error());
-create_exception!(RbValueError, exception::arg_error());
-create_exception!(RbOverflowError, exception::range_error());
-create_exception!(RbIndexError, exception::index_error());
+create_exception!(RbTypeError, Ruby::get().unwrap().exception_type_error());
+create_exception!(RbValueError, Ruby::get().unwrap().exception_arg_error());
+create_exception!(
+    RbOverflowError,
+    Ruby::get().unwrap().exception_range_error()
+);
+create_exception!(RbIndexError, Ruby::get().unwrap().exception_index_error());
 create_exception!(ComputeError, rb_modules::compute_error());
 create_exception!(InvalidOperationError, rb_modules::invalid_operation_error());

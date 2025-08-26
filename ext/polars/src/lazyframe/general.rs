@@ -1,4 +1,4 @@
-use magnus::{IntoValue, RArray, RHash, TryConvert, Value, r_hash::ForEach, typed_data::Obj};
+use magnus::{IntoValue, RArray, RHash, Ruby, TryConvert, Value, r_hash::ForEach, typed_data::Obj};
 use polars::io::{HiveOptions, RowIndex};
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
@@ -931,18 +931,19 @@ impl RbLazyFrame {
     }
 
     pub fn collect_schema(&self) -> RbResult<RHash> {
+        let ruby = Ruby::get().unwrap();
         let schema = self
             .ldf
             .borrow_mut()
             .collect_schema()
             .map_err(RbPolarsErr::from)?;
 
-        let schema_dict = RHash::new();
+        let schema_dict = ruby.hash_new();
         schema.iter_fields().for_each(|fld| {
             schema_dict
                 .aset::<String, Value>(
                     fld.name().to_string(),
-                    Wrap(fld.dtype().clone()).into_value(),
+                    Wrap(fld.dtype().clone()).into_value_with(&ruby),
                 )
                 .unwrap();
         });

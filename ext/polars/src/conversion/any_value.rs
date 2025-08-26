@@ -1,6 +1,6 @@
-use magnus::encoding::{EncodingCapable, Index};
+use magnus::encoding::EncodingCapable;
 use magnus::{
-    IntoValue, RArray, RHash, RString, Ruby, TryConvert, Value, class, prelude::*, r_hash::ForEach,
+    IntoValue, RArray, RHash, RString, Ruby, TryConvert, Value, prelude::*, r_hash::ForEach,
 };
 use polars::prelude::*;
 use polars_core::utils::any_values_to_supertype_and_n_dtypes;
@@ -41,10 +41,10 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
         AnyValue::String(v) => ruby.into_value(v),
         AnyValue::StringOwned(v) => ruby.into_value(v.as_str()),
         AnyValue::Categorical(cat, map) | AnyValue::Enum(cat, map) => unsafe {
-            map.cat_to_str_unchecked(cat).into_value()
+            map.cat_to_str_unchecked(cat).into_value_with(ruby)
         },
         AnyValue::CategoricalOwned(cat, map) | AnyValue::EnumOwned(cat, map) => unsafe {
-            map.cat_to_str_unchecked(cat).into_value()
+            map.cat_to_str_unchecked(cat).into_value_with(ruby)
         },
         AnyValue::Date(v) => utils().funcall("_to_ruby_date", (v,)).unwrap(),
         AnyValue::Datetime(v, time_unit, time_zone) => {
@@ -60,7 +60,7 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
                 .unwrap()
         }
         AnyValue::Time(v) => utils().funcall("_to_ruby_time", (v,)).unwrap(),
-        AnyValue::Array(v, _) | AnyValue::List(v) => RbSeries::new(v).to_a().into_value(),
+        AnyValue::Array(v, _) | AnyValue::List(v) => RbSeries::new(v).to_a().into_value_with(ruby),
         ref av @ AnyValue::Struct(_, _, flds) => struct_dict(av._iter_struct_av(), flds),
         AnyValue::StructOwned(payload) => struct_dict(payload.0.into_iter(), &payload.1),
         AnyValue::Object(v) => {
@@ -71,8 +71,8 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
             let object = v.0.as_any().downcast_ref::<ObjectValue>().unwrap();
             object.to_value()
         }
-        AnyValue::Binary(v) => RString::from_slice(v).into_value(),
-        AnyValue::BinaryOwned(v) => RString::from_slice(&v).into_value(),
+        AnyValue::Binary(v) => ruby.str_from_slice(v).into_value_with(ruby),
+        AnyValue::BinaryOwned(v) => ruby.str_from_slice(&v).into_value_with(ruby),
         AnyValue::Decimal(v, scale) => utils()
             .funcall("_to_ruby_decimal", (v.to_string(), -(scale as i32)))
             .unwrap(),
@@ -117,8 +117,9 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
     }
 
     fn get_str(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
+        let ruby = Ruby::get_with(ob);
         let v = RString::from_value(ob).unwrap();
-        if v.enc_get() == Index::utf8() {
+        if v.enc_get() == ruby.utf8_encindex() {
             Ok(AnyValue::StringOwned(v.to_string()?.into()))
         } else {
             Ok(AnyValue::BinaryOwned(unsafe { v.as_slice() }.to_vec()))
@@ -237,24 +238,25 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
         Ok(AnyValue::Decimal(v, scale))
     }
 
+    let ruby = Ruby::get_with(ob);
     if ob.is_nil() {
         get_null(ob, strict)
-    } else if ob.is_kind_of(class::true_class()) || ob.is_kind_of(class::false_class()) {
+    } else if ob.is_kind_of(ruby.class_true_class()) || ob.is_kind_of(ruby.class_false_class()) {
         get_bool(ob, strict)
-    } else if ob.is_kind_of(class::integer()) {
+    } else if ob.is_kind_of(ruby.class_integer()) {
         get_int(ob, strict)
-    } else if ob.is_kind_of(class::float()) {
+    } else if ob.is_kind_of(ruby.class_float()) {
         get_float(ob, strict)
-    } else if ob.is_kind_of(class::string()) {
+    } else if ob.is_kind_of(ruby.class_string()) {
         get_str(ob, strict)
-    } else if ob.is_kind_of(class::array()) {
+    } else if ob.is_kind_of(ruby.class_array()) {
         get_list(ob, strict)
-    } else if ob.is_kind_of(class::hash()) {
+    } else if ob.is_kind_of(ruby.class_hash()) {
         get_struct(ob, strict)
     } else if ob.respond_to("_s", true)? {
         get_list_from_series(ob, strict)
     // call is_a? for ActiveSupport::TimeWithZone
-    } else if ob.funcall::<_, _, bool>("is_a?", (class::time(),))? {
+    } else if ob.funcall::<_, _, bool>("is_a?", (ruby.class_time(),))? {
         get_time(ob, strict)
     } else if ob.is_kind_of(crate::rb_modules::datetime()) {
         get_datetime(ob, strict)

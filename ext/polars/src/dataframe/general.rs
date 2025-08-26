@@ -1,7 +1,7 @@
 use std::hash::BuildHasher;
 
 use either::Either;
-use magnus::{IntoValue, RArray, Value, prelude::*, typed_data::Obj};
+use magnus::{IntoValue, RArray, Ruby, Value, prelude::*};
 use polars::prelude::pivot::{pivot, pivot_stable};
 use polars::prelude::*;
 
@@ -150,11 +150,12 @@ impl RbDataFrame {
     }
 
     pub fn dtypes(&self) -> RArray {
-        RArray::from_iter(
+        let ruby = Ruby::get().unwrap();
+        ruby.ary_from_iter(
             self.df
                 .borrow()
                 .iter()
-                .map(|s| Wrap(s.dtype().clone()).into_value()),
+                .map(|s| Wrap(s.dtype().clone()).into_value_with(&ruby)),
         )
     }
 
@@ -404,7 +405,9 @@ impl RbDataFrame {
             self.df.borrow().partition_by(by, include_key)
         }
         .map_err(RbPolarsErr::from)?;
-        Ok(RArray::from_iter(out.into_iter().map(RbDataFrame::new)))
+        Ok(Ruby::get()
+            .unwrap()
+            .ary_from_iter(out.into_iter().map(RbDataFrame::new)))
     }
 
     pub fn lazy(&self) -> RbLazyFrame {
@@ -445,6 +448,7 @@ impl RbDataFrame {
         output_type: Option<Wrap<DataType>>,
         inference_size: usize,
     ) -> RbResult<(Value, bool)> {
+        let ruby = Ruby::get().unwrap();
         let df = &self.df.borrow();
 
         let output_type = output_type.map(|dt| dt.0);
@@ -490,7 +494,7 @@ impl RbDataFrame {
             _ => return apply_lambda_unknown(df, lambda, inference_size),
         };
 
-        Ok((Obj::wrap(RbSeries::from(out)).as_value(), false))
+        Ok((ruby.obj_wrap(RbSeries::from(out)).as_value(), false))
     }
 
     pub fn shrink_to_fit(&self) {

@@ -1,4 +1,4 @@
-use magnus::{Error, IntoValue, RArray, Value, exception, value::ReprValue};
+use magnus::{Error, IntoValue, RArray, Ruby, Value, value::ReprValue};
 use polars::prelude::*;
 use polars::series::IsSorted;
 use polars_core::utils::flatten::flatten_series;
@@ -102,7 +102,7 @@ impl RbSeries {
                 let rbseries = RbSeries::new(s);
                 rb_modules::utils().funcall("wrap_s", (rbseries,))
             }
-            _ => Ok(Wrap(av).into_value()),
+            _ => Ok(Wrap(av).into_value_with(&Ruby::get().unwrap())),
         }
     }
 
@@ -150,7 +150,7 @@ impl RbSeries {
     }
 
     pub fn dtype(&self) -> Value {
-        Wrap(self.series.borrow().dtype().clone()).into_value()
+        Wrap(self.series.borrow().dtype().clone()).into_value_with(&Ruby::get().unwrap())
     }
 
     pub fn inner_dtype(&self) -> Option<Value> {
@@ -158,7 +158,7 @@ impl RbSeries {
             .borrow()
             .dtype()
             .inner_dtype()
-            .map(|dt| Wrap(dt.clone()).into_value())
+            .map(|dt| Wrap(dt.clone()).into_value_with(&Ruby::get().unwrap()))
     }
 
     pub fn set_sorted_flag(&self, descending: bool) -> Self {
@@ -179,7 +179,10 @@ impl RbSeries {
         let mut binding = self.series.borrow_mut();
         let res = binding.append(&other.series.borrow());
         if let Err(e) = res {
-            Err(Error::new(exception::runtime_error(), e.to_string()))
+            Err(Error::new(
+                Ruby::get().unwrap().exception_runtime_error(),
+                e.to_string(),
+            ))
         } else {
             Ok(())
         }
@@ -195,7 +198,10 @@ impl RbSeries {
 
     pub fn new_from_index(&self, index: usize, length: usize) -> RbResult<Self> {
         if index >= self.series.borrow().len() {
-            Err(Error::new(exception::arg_error(), "index is out of bounds"))
+            Err(Error::new(
+                Ruby::get().unwrap().exception_arg_error(),
+                "index is out of bounds",
+            ))
         } else {
             Ok(self.series.borrow().new_from_index(index, length).into())
         }
@@ -208,7 +214,7 @@ impl RbSeries {
             Ok(series.into())
         } else {
             Err(Error::new(
-                exception::runtime_error(),
+                Ruby::get().unwrap().exception_runtime_error(),
                 "Expected a boolean mask".to_string(),
             ))
         }
@@ -404,11 +410,12 @@ impl RbSeries {
         Ok(out.into())
     }
 
-    pub fn get_chunks(&self) -> RbResult<RArray> {
-        flatten_series(&self.series.borrow())
-            .into_iter()
-            .map(|s| rb_modules::utils().funcall::<_, _, Value>("wrap_s", (Self::new(s),)))
-            .collect()
+    pub fn get_chunks(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
+        ruby.ary_try_from_iter(
+            flatten_series(&rb_self.series.borrow())
+                .into_iter()
+                .map(|s| rb_modules::utils().funcall::<_, _, Value>("wrap_s", (Self::new(s),))),
+        )
     }
 
     pub fn is_sorted(&self, descending: bool, nulls_last: bool) -> RbResult<bool> {

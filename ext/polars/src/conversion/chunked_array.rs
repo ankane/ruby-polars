@@ -1,4 +1,4 @@
-use magnus::{IntoValue, RArray, RString, Ruby, TryConvert, Value, prelude::*};
+use magnus::{IntoValue, RString, Ruby, TryConvert, Value, prelude::*};
 use polars::prelude::*;
 
 use super::{Wrap, get_rbseq, struct_dict};
@@ -39,19 +39,19 @@ impl TryConvert for Wrap<BinaryChunked> {
 }
 
 impl IntoValue for Wrap<&StringChunked> {
-    fn into_value_with(self, _: &Ruby) -> Value {
+    fn into_value_with(self, ruby: &Ruby) -> Value {
         let iter = self.0.into_iter();
-        RArray::from_iter(iter).into_value()
+        ruby.ary_from_iter(iter).into_value_with(ruby)
     }
 }
 
 impl IntoValue for Wrap<&BinaryChunked> {
-    fn into_value_with(self, _: &Ruby) -> Value {
+    fn into_value_with(self, ruby: &Ruby) -> Value {
         let iter = self
             .0
             .into_iter()
-            .map(|opt_bytes| opt_bytes.map(RString::from_slice));
-        RArray::from_iter(iter).into_value()
+            .map(|opt_bytes| opt_bytes.map(|v| ruby.str_from_slice(v)));
+        ruby.ary_from_iter(iter).into_value_with(ruby)
     }
 }
 
@@ -67,14 +67,14 @@ impl IntoValue for Wrap<&StructChunked> {
             _ => unreachable!(),
         });
 
-        RArray::from_iter(iter).into_value()
+        ruby.ary_from_iter(iter).into_value_with(ruby)
     }
 }
 
 impl IntoValue for Wrap<&DurationChunked> {
-    fn into_value_with(self, _: &Ruby) -> Value {
+    fn into_value_with(self, ruby: &Ruby) -> Value {
         let utils = utils();
-        let time_unit = Wrap(self.0.time_unit()).into_value();
+        let time_unit = Wrap(self.0.time_unit()).into_value_with(ruby);
         let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| {
                 utils
@@ -82,15 +82,19 @@ impl IntoValue for Wrap<&DurationChunked> {
                     .unwrap()
             })
         });
-        RArray::from_iter(iter).into_value()
+        ruby.ary_from_iter(iter).into_value_with(ruby)
     }
 }
 
 impl IntoValue for Wrap<&DatetimeChunked> {
-    fn into_value_with(self, _: &Ruby) -> Value {
+    fn into_value_with(self, ruby: &Ruby) -> Value {
         let utils = utils();
-        let time_unit = Wrap(self.0.time_unit()).into_value();
-        let time_zone = self.0.time_zone().as_deref().map(|v| v.into_value());
+        let time_unit = Wrap(self.0.time_unit()).into_value_with(ruby);
+        let time_zone = self
+            .0
+            .time_zone()
+            .as_deref()
+            .map(|v| v.into_value_with(ruby));
         let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| {
                 utils
@@ -98,34 +102,34 @@ impl IntoValue for Wrap<&DatetimeChunked> {
                     .unwrap()
             })
         });
-        RArray::from_iter(iter).into_value()
+        ruby.ary_from_iter(iter).into_value_with(ruby)
     }
 }
 
 impl IntoValue for Wrap<&TimeChunked> {
-    fn into_value_with(self, _: &Ruby) -> Value {
+    fn into_value_with(self, ruby: &Ruby) -> Value {
         let utils = utils();
         let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_time", (v,)).unwrap())
         });
-        RArray::from_iter(iter).into_value()
+        ruby.ary_from_iter(iter).into_value_with(ruby)
     }
 }
 
 impl IntoValue for Wrap<&DateChunked> {
-    fn into_value_with(self, _: &Ruby) -> Value {
+    fn into_value_with(self, ruby: &Ruby) -> Value {
         let utils = utils();
         let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_date", (v,)).unwrap())
         });
-        RArray::from_iter(iter).into_value()
+        ruby.ary_from_iter(iter).into_value_with(ruby)
     }
 }
 
 impl IntoValue for Wrap<&DecimalChunked> {
-    fn into_value_with(self, _: &Ruby) -> Value {
+    fn into_value_with(self, ruby: &Ruby) -> Value {
         let utils = utils();
-        let rb_scale = (-(self.0.scale() as i32)).into_value();
+        let rb_scale = (-(self.0.scale() as i32)).into_value_with(ruby);
         let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| {
                 utils
@@ -133,6 +137,6 @@ impl IntoValue for Wrap<&DecimalChunked> {
                     .unwrap()
             })
         });
-        RArray::from_iter(iter).into_value()
+        ruby.ary_from_iter(iter).into_value_with(ruby)
     }
 }

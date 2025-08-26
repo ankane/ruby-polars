@@ -1,4 +1,4 @@
-use magnus::{IntoValue, Value};
+use magnus::{IntoValue, Ruby, Value};
 use polars_core;
 use polars_core::POOL;
 use polars_core::fmt::FloatFmt;
@@ -7,8 +7,8 @@ use polars_core::prelude::IDX_DTYPE;
 use crate::conversion::Wrap;
 use crate::{RbResult, RbValueError};
 
-pub fn get_index_type() -> Value {
-    Wrap(IDX_DTYPE).into_value()
+pub fn get_index_type(ruby: &Ruby) -> Value {
+    Wrap(IDX_DTYPE).into_value_with(ruby)
 }
 
 pub fn thread_pool_size() -> usize {

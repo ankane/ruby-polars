@@ -36,7 +36,7 @@ use functions::whenthen::{RbChainedThen, RbChainedWhen, RbThen, RbWhen};
 use interop::arrow::to_ruby::RbArrowArrayStream;
 use lazyframe::RbLazyFrame;
 use lazygroupby::RbLazyGroupBy;
-use magnus::{Ruby, define_module, function, method, prelude::*};
+use magnus::{Ruby, function, method, prelude::*};
 use series::RbSeries;
 use sql::RbSQLContext;
 
@@ -52,7 +52,7 @@ fn re_escape(pattern: String) -> String {
 fn init(ruby: &Ruby) -> RbResult<()> {
     crate::on_startup::register_startup_deps();
 
-    let module = define_module("Polars")?;
+    let module = ruby.define_module("Polars")?;
 
     let class = module.define_class("RbBatchedCsv", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbBatchedCsv::new, -1))?;

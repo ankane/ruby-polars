@@ -1,4 +1,4 @@
-use magnus::{IntoValue, TryConvert, Value, class, prelude::*, typed_data::Obj};
+use magnus::{IntoValue, Ruby, TryConvert, Value, prelude::*, typed_data::Obj};
 use polars::prelude::*;
 
 use super::*;
@@ -12,12 +12,13 @@ fn infer_and_finish<'a, A: ApplyLambda<'a>>(
     out: Value,
     null_count: usize,
 ) -> RbResult<RbSeries> {
-    if out.is_kind_of(class::true_class()) || out.is_kind_of(class::false_class()) {
+    let ruby = Ruby::get().unwrap();
+    if out.is_kind_of(ruby.class_true_class()) || out.is_kind_of(ruby.class_false_class()) {
         let first_value = bool::try_convert(out).unwrap();
         applyer
             .apply_lambda_with_bool_out_type(lambda, null_count, Some(first_value))
             .map(|ca| ca.into_series().into())
-    } else if out.is_kind_of(class::float()) {
+    } else if out.is_kind_of(ruby.class_float()) {
         let first_value = f64::try_convert(out).unwrap();
         applyer
             .apply_lambda_with_primitive_out_type::<Float64Type>(
@@ -26,7 +27,7 @@ fn infer_and_finish<'a, A: ApplyLambda<'a>>(
                 Some(first_value),
             )
             .map(|ca| ca.into_series().into())
-    } else if out.is_kind_of(class::string()) {
+    } else if out.is_kind_of(ruby.class_string()) {
         let first_value = String::try_convert(out).unwrap();
         applyer
             .apply_lambda_with_utf8_out_type(lambda, null_count, Some(first_value.as_str()))
@@ -38,9 +39,9 @@ fn infer_and_finish<'a, A: ApplyLambda<'a>>(
         applyer
             .apply_lambda_with_list_out_type(lambda, null_count, &series, dt)
             .map(|ca| ca.into_series().into())
-    } else if out.is_kind_of(class::array()) {
+    } else if out.is_kind_of(ruby.class_array()) {
         todo!()
-    } else if out.is_kind_of(class::hash()) {
+    } else if out.is_kind_of(ruby.class_hash()) {
         let first = Wrap::<AnyValue<'_>>::try_convert(out)?;
         applyer.apply_into_struct(lambda, null_count, first.0)
     }

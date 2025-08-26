@@ -9,8 +9,8 @@ use std::hash::{Hash, Hasher};
 
 pub use categorical::RbCategories;
 use magnus::{
-    IntoValue, Module, RArray, RHash, Ruby, Symbol, TryConvert, Value, class, exception,
-    prelude::*, r_hash::ForEach, try_convert::TryConvertOwned, value::Opaque,
+    IntoValue, Module, RArray, RHash, Ruby, Symbol, TryConvert, Value, prelude::*, r_hash::ForEach,
+    try_convert::TryConvertOwned, value::Opaque,
 };
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
@@ -122,15 +122,16 @@ impl TryConvert for Wrap<NullValues> {
 }
 
 fn struct_dict<'a>(vals: impl Iterator<Item = AnyValue<'a>>, flds: &[Field]) -> Value {
-    let dict = RHash::new();
+    let ruby = Ruby::get().unwrap();
+    let dict = ruby.hash_new();
     for (fld, val) in flds.iter().zip(vals) {
         dict.aset(fld.name().as_str(), Wrap(val)).unwrap()
     }
-    dict.into_value()
+    dict.into_value_with(&ruby)
 }
 
 impl IntoValue for Wrap<DataType> {
-    fn into_value_with(self, _: &Ruby) -> Value {
+    fn into_value_with(self, ruby: &Ruby) -> Value {
         let pl = crate::rb_modules::polars();
 
         match self.0 {
@@ -236,8 +237,10 @@ impl IntoValue for Wrap<DataType> {
                 let categories: Value = categories_class
                     .funcall("_from_rb_categories", (RbCategories::from(cats.clone()),))
                     .unwrap();
-                let kwargs = RHash::new();
-                kwargs.aset(Symbol::new("categories"), categories).unwrap();
+                let kwargs = ruby.hash_new();
+                kwargs
+                    .aset(ruby.to_symbol("categories"), categories)
+                    .unwrap();
                 categorical_class.funcall("new", (kwargs,)).unwrap()
             }
             DataType::Enum(_, mapping) => {
@@ -264,7 +267,7 @@ impl IntoValue for Wrap<DataType> {
                         .funcall::<_, _, Value>("new", (name, dtype))
                         .unwrap()
                 });
-                let fields = RArray::from_iter(iter);
+                let fields = ruby.ary_from_iter(iter);
                 let struct_class = pl.const_get::<_, Value>("Struct").unwrap();
                 struct_class
                     .funcall::<_, _, Value>("new", (fields,))
@@ -275,7 +278,7 @@ impl IntoValue for Wrap<DataType> {
                 class.funcall("new", ()).unwrap()
             }
             DataType::Unknown(UnknownKind::Int(v)) => {
-                Wrap(materialize_dyn_int(v).dtype()).into_value()
+                Wrap(materialize_dyn_int(v).dtype()).into_value_with(ruby)
             }
             DataType::Unknown(_) => {
                 let class = pl.const_get::<_, Value>("Unknown").unwrap();
@@ -293,19 +296,19 @@ enum CategoricalOrdering {
 }
 
 impl IntoValue for Wrap<CategoricalOrdering> {
-    fn into_value_with(self, _: &Ruby) -> Value {
-        "lexical".into_value()
+    fn into_value_with(self, ruby: &Ruby) -> Value {
+        "lexical".into_value_with(ruby)
     }
 }
 
 impl IntoValue for Wrap<TimeUnit> {
-    fn into_value_with(self, _: &Ruby) -> Value {
+    fn into_value_with(self, ruby: &Ruby) -> Value {
         let tu = match self.0 {
             TimeUnit::Nanoseconds => "ns",
             TimeUnit::Microseconds => "us",
             TimeUnit::Milliseconds => "ms",
         };
-        tu.into_value()
+        tu.into_value_with(ruby)
     }
 }
 
@@ -319,7 +322,7 @@ impl TryConvert for Wrap<Field> {
 
 impl TryConvert for Wrap<DataType> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let dtype = if ob.is_kind_of(class::class()) {
+        let dtype = if ob.is_kind_of(Ruby::get().unwrap().class_class()) {
             let name = ob.funcall::<_, _, String>("name", ())?;
             match name.as_str() {
                 "Polars::Int8" => DataType::Int8,
@@ -528,14 +531,15 @@ impl TryConvert for Wrap<Schema> {
 
 impl TryConvert for Wrap<ArrowSchema> {
     fn try_convert(ob: Value) -> RbResult<Self> {
+        let ruby = Ruby::get_with(ob);
         // TODO improve
         let ob = RHash::try_convert(ob)?;
-        let fields: RArray = ob.aref(Symbol::new("fields"))?;
+        let fields: RArray = ob.aref(ruby.to_symbol("fields"))?;
         let mut arrow_schema = ArrowSchema::with_capacity(fields.len());
         for f in fields {
             let f = RHash::try_convert(f)?;
-            let name: String = f.aref(Symbol::new("name"))?;
-            let rb_dtype: String = f.aref(Symbol::new("type"))?;
+            let name: String = f.aref(ruby.to_symbol("name"))?;
+            let rb_dtype: String = f.aref(ruby.to_symbol("type"))?;
             let dtype = match rb_dtype.as_str() {
                 "null" => ArrowDataType::Null,
                 "boolean" => ArrowDataType::Boolean,
@@ -561,8 +565,8 @@ impl TryConvert for Wrap<ArrowSchema> {
                 "unknown" => ArrowDataType::Unknown,
                 _ => todo!(),
             };
-            let is_nullable = f.aref(Symbol::new("nullable"))?;
-            let rb_metadata: RHash = f.aref(Symbol::new("metadata"))?;
+            let is_nullable = f.aref(ruby.to_symbol("nullable"))?;
+            let rb_metadata: RHash = f.aref(ruby.to_symbol("metadata"))?;
             let mut metadata = BTreeMap::new();
             rb_metadata.foreach(|k: String, v: String| {
                 metadata.insert(k.into(), v.into());
@@ -720,7 +724,7 @@ impl From<&dyn PolarsObjectSafe> for &ObjectValue {
 
 impl ObjectValue {
     pub fn to_value(&self) -> Value {
-        self.clone().into_value()
+        self.clone().into_value_with(&Ruby::get().unwrap())
     }
 }
 
@@ -1245,7 +1249,7 @@ pub fn parse_fill_null_strategy(
         "one" => FillNullStrategy::One,
         e => {
             return Err(magnus::Error::new(
-                exception::runtime_error(),
+                Ruby::get().unwrap().exception_runtime_error(),
                 format!(
                     "strategy must be one of {{'forward', 'backward', 'min', 'max', 'mean', 'zero', 'one'}}, got {e}",
                 ),

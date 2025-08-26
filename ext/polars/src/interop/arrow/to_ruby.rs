@@ -1,6 +1,6 @@
 use arrow::datatypes::ArrowDataType;
 use arrow::ffi;
-use magnus::{IntoValue, Value};
+use magnus::{IntoValue, Ruby, Value};
 use polars::datatypes::CompatLevel;
 use polars::frame::DataFrame;
 use polars::prelude::{ArrayRef, ArrowField, PlSmallStr, PolarsResult, SchemaExt};
@@ -21,10 +21,11 @@ impl RbArrowArrayStream {
 }
 
 pub(crate) fn dataframe_to_stream(df: &DataFrame) -> RbResult<Value> {
+    let ruby = Ruby::get().unwrap();
     let iter = Box::new(DataFrameStreamIterator::new(df));
     let field = iter.field();
     let stream = ffi::export_iterator(iter, field);
-    Ok(RbArrowArrayStream { stream }.into_value())
+    Ok(RbArrowArrayStream { stream }.into_value_with(&ruby))
 }
 
 pub struct DataFrameStreamIterator {

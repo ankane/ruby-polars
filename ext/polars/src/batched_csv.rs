@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
-use magnus::{RArray, Value, prelude::*};
+use magnus::{RArray, Ruby, Value, prelude::*};
 use polars::io::RowIndex;
 use polars::io::csv::read::OwnedBatchedCsvReader;
 use polars::io::mmap::MmapBytesReader;
@@ -133,6 +133,10 @@ impl RbBatchedCsv {
             .next_batches(n)
             .map_err(RbPolarsErr::from)?;
 
-        Ok(batches.map(|batches| RArray::from_iter(batches.into_iter().map(RbDataFrame::from))))
+        Ok(batches.map(|batches| {
+            Ruby::get()
+                .unwrap()
+                .ary_from_iter(batches.into_iter().map(RbDataFrame::from))
+        }))
     }
 }

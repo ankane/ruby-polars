@@ -1,4 +1,4 @@
-use magnus::{IntoValue, RArray, Value, value::qnil};
+use magnus::{IntoValue, Ruby, Value};
 use polars_core::prelude::*;
 
 use crate::RbSeries;
@@ -11,42 +11,67 @@ impl RbSeries {
         let series = &self.series.borrow();
 
         fn to_a_recursive(series: &Series) -> Value {
+            let ruby = Ruby::get().unwrap();
             let rblist = match series.dtype() {
-                DataType::Boolean => RArray::from_iter(series.bool().unwrap()).into_value(),
-                DataType::UInt8 => RArray::from_iter(series.u8().unwrap()).into_value(),
-                DataType::UInt16 => RArray::from_iter(series.u16().unwrap()).into_value(),
-                DataType::UInt32 => RArray::from_iter(series.u32().unwrap()).into_value(),
-                DataType::UInt64 => RArray::from_iter(series.u64().unwrap()).into_value(),
-                DataType::Int8 => RArray::from_iter(series.i8().unwrap()).into_value(),
-                DataType::Int16 => RArray::from_iter(series.i16().unwrap()).into_value(),
-                DataType::Int32 => RArray::from_iter(series.i32().unwrap()).into_value(),
-                DataType::Int64 => RArray::from_iter(series.i64().unwrap()).into_value(),
-                DataType::Int128 => RArray::from_iter(series.i128().unwrap()).into_value(),
-                DataType::Float32 => RArray::from_iter(series.f32().unwrap()).into_value(),
-                DataType::Float64 => RArray::from_iter(series.f64().unwrap()).into_value(),
+                DataType::Boolean => ruby
+                    .ary_from_iter(series.bool().unwrap())
+                    .into_value_with(&ruby),
+                DataType::UInt8 => ruby
+                    .ary_from_iter(series.u8().unwrap())
+                    .into_value_with(&ruby),
+                DataType::UInt16 => ruby
+                    .ary_from_iter(series.u16().unwrap())
+                    .into_value_with(&ruby),
+                DataType::UInt32 => ruby
+                    .ary_from_iter(series.u32().unwrap())
+                    .into_value_with(&ruby),
+                DataType::UInt64 => ruby
+                    .ary_from_iter(series.u64().unwrap())
+                    .into_value_with(&ruby),
+                DataType::Int8 => ruby
+                    .ary_from_iter(series.i8().unwrap())
+                    .into_value_with(&ruby),
+                DataType::Int16 => ruby
+                    .ary_from_iter(series.i16().unwrap())
+                    .into_value_with(&ruby),
+                DataType::Int32 => ruby
+                    .ary_from_iter(series.i32().unwrap())
+                    .into_value_with(&ruby),
+                DataType::Int64 => ruby
+                    .ary_from_iter(series.i64().unwrap())
+                    .into_value_with(&ruby),
+                DataType::Int128 => ruby
+                    .ary_from_iter(series.i128().unwrap())
+                    .into_value_with(&ruby),
+                DataType::Float32 => ruby
+                    .ary_from_iter(series.f32().unwrap())
+                    .into_value_with(&ruby),
+                DataType::Float64 => ruby
+                    .ary_from_iter(series.f64().unwrap())
+                    .into_value_with(&ruby),
                 DataType::Categorical(_, _) | DataType::Enum(_, _) => {
                     with_match_categorical_physical_type!(series.dtype().cat_physical().unwrap(), |$C| {
-                        RArray::from_iter(series.cat::<$C>().unwrap().iter_str()).into_value()
+                        ruby.ary_from_iter(series.cat::<$C>().unwrap().iter_str()).into_value_with(&ruby)
                     })
                 }
                 DataType::Object(_) => {
-                    let v = RArray::with_capacity(series.len());
+                    let v = ruby.ary_new_capa(series.len());
                     for i in 0..series.len() {
                         let obj: Option<&ObjectValue> = series.get_object(i).map(|any| any.into());
                         match obj {
                             Some(val) => v.push(val.to_value()).unwrap(),
-                            None => v.push(qnil()).unwrap(),
+                            None => v.push(ruby.qnil()).unwrap(),
                         };
                     }
-                    v.into_value()
+                    v.into_value_with(&ruby)
                 }
                 DataType::List(_) => {
-                    let v = RArray::new();
+                    let v = ruby.ary_new();
                     let ca = series.list().unwrap();
                     for opt_s in ca.amortized_iter() {
                         match opt_s {
                             None => {
-                                v.push(qnil()).unwrap();
+                                v.push(ruby.qnil()).unwrap();
                             }
                             Some(s) => {
                                 let rblst = to_a_recursive(s.as_ref());
@@ -54,15 +79,15 @@ impl RbSeries {
                             }
                         }
                     }
-                    v.into_value()
+                    v.into_value_with(&ruby)
                 }
                 DataType::Array(_, _) => {
-                    let v = RArray::new();
+                    let v = ruby.ary_new();
                     let ca = series.array().unwrap();
                     for opt_s in ca.amortized_iter() {
                         match opt_s {
                             None => {
-                                v.push(qnil()).unwrap();
+                                v.push(ruby.qnil()).unwrap();
                             }
                             Some(s) => {
                                 let rblst = to_a_recursive(s.as_ref());
@@ -70,39 +95,39 @@ impl RbSeries {
                             }
                         }
                     }
-                    v.into_value()
+                    v.into_value_with(&ruby)
                 }
                 DataType::Date => {
                     let ca = series.date().unwrap();
-                    return Wrap(ca).into_value();
+                    return Wrap(ca).into_value_with(&ruby);
                 }
                 DataType::Time => {
                     let ca = series.time().unwrap();
-                    return Wrap(ca).into_value();
+                    return Wrap(ca).into_value_with(&ruby);
                 }
                 DataType::Datetime(_, _) => {
                     let ca = series.datetime().unwrap();
-                    return Wrap(ca).into_value();
+                    return Wrap(ca).into_value_with(&ruby);
                 }
                 DataType::Decimal(_, _) => {
                     let ca = series.decimal().unwrap();
-                    return Wrap(ca).into_value();
+                    return Wrap(ca).into_value_with(&ruby);
                 }
                 DataType::String => {
                     let ca = series.str().unwrap();
-                    return Wrap(ca).into_value();
+                    return Wrap(ca).into_value_with(&ruby);
                 }
                 DataType::Struct(_) => {
                     let ca = series.struct_().unwrap();
-                    return Wrap(ca).into_value();
+                    return Wrap(ca).into_value_with(&ruby);
                 }
                 DataType::Duration(_) => {
                     let ca = series.duration().unwrap();
-                    return Wrap(ca).into_value();
+                    return Wrap(ca).into_value_with(&ruby);
                 }
                 DataType::Binary => {
                     let ca = series.binary().unwrap();
-                    return Wrap(ca).into_value();
+                    return Wrap(ca).into_value_with(&ruby);
                 }
                 DataType::Null => {
                     let null: Option<u8> = None;
@@ -125,7 +150,10 @@ impl RbSeries {
                     }
                     impl ExactSizeIterator for NullIter {}
 
-                    RArray::from_iter(NullIter { iter, n }).into_value()
+                    Ruby::get()
+                        .unwrap()
+                        .ary_from_iter(NullIter { iter, n })
+                        .into_value_with(&ruby)
                 }
                 DataType::Unknown(_) => {
                     panic!("to_a not implemented for unknown")
@@ -134,7 +162,7 @@ impl RbSeries {
                     unreachable!()
                 }
             };
-            rblist.into_value()
+            rblist.into_value_with(&ruby)
         }
 
         to_a_recursive(series)

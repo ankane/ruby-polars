@@ -1,4 +1,4 @@
-use magnus::{IntoValue, Value};
+use magnus::{IntoValue, Ruby, Value};
 use polars::prelude::{DataType, DataTypeExpr, Schema};
 
 use crate::prelude::Wrap;
@@ -32,6 +32,6 @@ impl RbDataTypeExpr {
             .inner
             .into_datatype(&schema.0)
             .map_err(RbPolarsErr::from)?;
-        Ok(Wrap(dtype).into_value())
+        Ok(Wrap(dtype).into_value_with(&Ruby::get().unwrap()))
     }
 }

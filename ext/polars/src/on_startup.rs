@@ -2,7 +2,7 @@ use std::any::Any;
 use std::sync::Arc;
 use std::sync::OnceLock;
 
-use magnus::IntoValue;
+use magnus::{IntoValue, Ruby};
 use polars::prelude::*;
 use polars_core::chunked_array::object::builder::ObjectChunkedBuilder;
 use polars_core::chunked_array::object::registry;
@@ -23,12 +23,12 @@ pub(crate) fn register_startup_deps() {
 
         let object_converter = Arc::new(|av: AnyValue| {
             let object = ObjectValue {
-                inner: Wrap(av).into_value().into(),
+                inner: Wrap(av).into_value_with(&Ruby::get().unwrap()).into(),
             };
             Box::new(object) as Box<dyn Any>
         });
         let rbobject_converter = Arc::new(|av: AnyValue| {
-            let object = Wrap(av).into_value();
+            let object = Wrap(av).into_value_with(&Ruby::get().unwrap());
             Box::new(object) as Box<dyn Any>
         });
 

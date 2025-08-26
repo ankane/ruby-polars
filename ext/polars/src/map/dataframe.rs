@@ -1,4 +1,4 @@
-use magnus::{IntoValue, RArray, TryConvert, Value, class, prelude::*, typed_data::Obj};
+use magnus::{IntoValue, RArray, Ruby, TryConvert, Value, prelude::*, typed_data::Obj};
 use polars::prelude::*;
 use polars_core::frame::row::{Row, rows_to_schema_first_non_null};
 use polars_core::series::SeriesIter;
@@ -25,32 +25,35 @@ pub fn apply_lambda_unknown<'a>(
     lambda: Value,
     inference_size: usize,
 ) -> RbResult<(Value, bool)> {
+    let ruby = Ruby::get().unwrap();
     let mut null_count = 0;
     let mut iters = get_iters(df);
 
     for _ in 0..df.height() {
         let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
-        let arg = (RArray::from_iter(iter),);
+        let arg = (ruby.ary_from_iter(iter),);
         let out: Value = lambda.funcall("call", arg)?;
 
         if out.is_nil() {
             null_count += 1;
             continue;
-        } else if out.is_kind_of(class::true_class()) || out.is_kind_of(class::false_class()) {
+        } else if out.is_kind_of(ruby.class_true_class())
+            || out.is_kind_of(ruby.class_false_class())
+        {
             let first_value = bool::try_convert(out).ok();
             return Ok((
-                Obj::wrap(RbSeries::new(
+                ruby.obj_wrap(RbSeries::new(
                     apply_lambda_with_bool_out_type(df, lambda, null_count, first_value)
                         .into_series(),
                 ))
                 .as_value(),
                 false,
             ));
-        } else if out.is_kind_of(class::float()) {
+        } else if out.is_kind_of(ruby.class_float()) {
             let first_value = f64::try_convert(out).ok();
 
             return Ok((
-                Obj::wrap(RbSeries::new(
+                ruby.obj_wrap(RbSeries::new(
                     apply_lambda_with_primitive_out_type::<Float64Type>(
                         df,
                         lambda,
@@ -62,10 +65,10 @@ pub fn apply_lambda_unknown<'a>(
                 .as_value(),
                 false,
             ));
-        } else if out.is_kind_of(class::integer()) {
+        } else if out.is_kind_of(ruby.class_integer()) {
             let first_value = i64::try_convert(out).ok();
             return Ok((
-                Obj::wrap(RbSeries::new(
+                ruby.obj_wrap(RbSeries::new(
                     apply_lambda_with_primitive_out_type::<Int64Type>(
                         df,
                         lambda,
@@ -77,7 +80,7 @@ pub fn apply_lambda_unknown<'a>(
                 .as_value(),
                 false,
             ));
-        // } else if out.is_kind_of(class::string()) {
+        // } else if out.is_kind_of(Ruby::get().unwrap().class_string()) {
         //     let first_value = String::try_convert(out).ok();
         //     return Ok((
         //         RbSeries::new(
@@ -92,7 +95,7 @@ pub fn apply_lambda_unknown<'a>(
             let series = rb_rbseries.series.borrow();
             let dt = series.dtype();
             return Ok((
-                Obj::wrap(RbSeries::new(
+                ruby.obj_wrap(RbSeries::new(
                     apply_lambda_with_list_out_type(df, lambda, null_count, Some(&series), dt)?
                         .into_series(),
                 ))
@@ -102,7 +105,7 @@ pub fn apply_lambda_unknown<'a>(
         } else if Wrap::<Row<'a>>::try_convert(out).is_ok() {
             let first_value = Wrap::<Row<'a>>::try_convert(out).unwrap().0;
             return Ok((
-                Obj::wrap(RbDataFrame::from(
+                ruby.obj_wrap(RbDataFrame::from(
                     apply_lambda_with_rows_output(
                         df,
                         lambda,
@@ -115,7 +118,7 @@ pub fn apply_lambda_unknown<'a>(
                 .as_value(),
                 true,
             ));
-        } else if out.is_kind_of(class::array()) {
+        } else if out.is_kind_of(ruby.class_array()) {
             return Err(RbPolarsErr::Other(
                 "A list output type is invalid. Do you mean to create polars List Series?\
 Then return a Series object."
@@ -141,7 +144,7 @@ where
     let mut iters = get_iters_skip(df, init_null_count + skip);
     ((init_null_count + skip)..df.height()).map(move |_| {
         let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
-        let tpl = (RArray::from_iter(iter),);
+        let tpl = (Ruby::get().unwrap().ary_from_iter(iter),);
         match lambda.funcall::<_, _, Value>("call", tpl) {
             Ok(val) => T::try_convert(val).ok(),
             Err(e) => panic!("ruby function failed {e}"),
@@ -237,7 +240,7 @@ pub fn apply_lambda_with_list_out_type(
         let mut iters = get_iters_skip(df, init_null_count + skip);
         let iter = ((init_null_count + skip)..df.height()).map(|_| {
             let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
-            let tpl = (RArray::from_iter(iter),);
+            let tpl = (Ruby::get().unwrap().ary_from_iter(iter),);
             match lambda.funcall::<_, _, Value>("call", tpl) {
                 Ok(val) => match val.funcall::<_, _, Value>("_s", ()) {
                     Ok(val) => Obj::<RbSeries>::try_convert(val)
@@ -281,7 +284,7 @@ pub fn apply_lambda_with_rows_output<'a>(
     let mut iters = get_iters_skip(df, init_null_count + skip);
     let mut row_iter = ((init_null_count + skip)..df.height()).map(|_| {
         let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
-        let tpl = (RArray::from_iter(iter),);
+        let tpl = (Ruby::get().unwrap().ary_from_iter(iter),);
         match lambda.funcall::<_, _, Value>("call", tpl) {
             Ok(val) => {
                 match RArray::try_convert(val).ok() {

@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use magnus::value::{Lazy, ReprValue};
-use magnus::{IntoValue, Module, RArray, RClass, RHash, RModule, Ruby, Value};
+use magnus::{IntoValue, Module, RClass, RHash, RModule, Ruby, Value};
 use polars::prelude::{PlHashMap, PlSmallStr, Schema};
 use polars_io::catalog::unity::client::{CatalogClient, CatalogClientBuilder};
 use polars_io::catalog::unity::models::{
@@ -85,14 +85,14 @@ impl RbCatalogClient {
         builder.build().map(RbCatalogClient).map_err(to_rb_err)
     }
 
-    pub fn list_catalogs(&self) -> RbResult<Value> {
+    pub fn list_catalogs(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
         let v = pl_async::get_runtime()
-            .block_in_place_on(self.client().list_catalogs())
+            .block_in_place_on(rb_self.client().list_catalogs())
             .map_err(to_rb_err)?;
 
         let mut opt_err = None;
 
-        let out = RArray::from_iter(v.into_iter().map(|x| {
+        let out = ruby.ary_from_iter(v.into_iter().map(|x| {
             let v = catalog_info_to_rbobject(x);
             if let Ok(v) = v {
                 Some(v)
@@ -104,17 +104,17 @@ impl RbCatalogClient {
 
         opt_err.transpose()?;
 
-        Ok(out.into_value())
+        Ok(out.into_value_with(ruby))
     }
 
-    pub fn list_namespaces(&self, catalog_name: String) -> RbResult<Value> {
+    pub fn list_namespaces(ruby: &Ruby, rb_self: &Self, catalog_name: String) -> RbResult<Value> {
         let v = pl_async::get_runtime()
-            .block_in_place_on(self.client().list_namespaces(&catalog_name))
+            .block_in_place_on(rb_self.client().list_namespaces(&catalog_name))
             .map_err(to_rb_err)?;
 
         let mut opt_err = None;
 
-        let out = RArray::from_iter(v.into_iter().map(|x| {
+        let out = ruby.ary_from_iter(v.into_iter().map(|x| {
             let v = namespace_info_to_rbobject(x);
             match v {
                 Ok(v) => Some(v),
@@ -127,27 +127,33 @@ impl RbCatalogClient {
 
         opt_err.transpose()?;
 
-        Ok(out.into_value())
+        Ok(out.into_value_with(ruby))
     }
 
-    pub fn list_tables(&self, catalog_name: String, namespace: String) -> RbResult<Value> {
+    pub fn list_tables(
+        ruby: &Ruby,
+        rb_self: &Self,
+        catalog_name: String,
+        namespace: String,
+    ) -> RbResult<Value> {
         let v = pl_async::get_runtime()
-            .block_in_place_on(self.client().list_tables(&catalog_name, &namespace))
+            .block_in_place_on(rb_self.client().list_tables(&catalog_name, &namespace))
             .map_err(to_rb_err)?;
 
         let mut opt_err = None;
 
-        let out = RArray::from_iter(v.into_iter().map(|table_info| {
-            let v = table_info_to_rbobject(table_info);
+        let out = ruby
+            .ary_from_iter(v.into_iter().map(|table_info| {
+                let v = table_info_to_rbobject(table_info);
 
-            if let Ok(v) = v {
-                Some(v)
-            } else {
-                opt_err.replace(v);
-                None
-            }
-        }))
-        .into_value();
+                if let Ok(v) = v {
+                    Some(v)
+                } else {
+                    opt_err.replace(v);
+                    None
+                }
+            }))
+            .into_value_with(ruby);
 
         opt_err.transpose()?;
 
@@ -278,8 +284,8 @@ impl RbCatalogClient {
             .map_err(to_rb_err)
     }
 
-    pub fn type_json_to_polars_type(type_json: String) -> RbResult<Value> {
-        Ok(Wrap(parse_type_json_str(&type_json).map_err(to_rb_err)?).into_value())
+    pub fn type_json_to_polars_type(ruby: &Ruby, type_json: String) -> RbResult<Value> {
+        Ok(Wrap(parse_type_json_str(&type_json).map_err(to_rb_err)?).into_value_with(ruby))
     }
 }
 
@@ -302,7 +308,9 @@ fn catalog_info_to_rbobject(
         updated_by,
     }: CatalogInfo,
 ) -> RbResult<Value> {
-    let dict = RHash::new();
+    let ruby = Ruby::get().unwrap();
+
+    let dict = ruby.hash_new();
 
     let properties = properties_to_rbobject(properties);
     let options = properties_to_rbobject(options);
@@ -319,10 +327,7 @@ fn catalog_info_to_rbobject(
         updated_by
     });
 
-    Ruby::get()
-        .unwrap()
-        .get_inner(&CATALOG_INFO_CLS)
-        .funcall("new", (dict,))
+    ruby.get_inner(&CATALOG_INFO_CLS).funcall("new", (dict,))
 }
 
 fn namespace_info_to_rbobject(
@@ -337,7 +342,9 @@ fn namespace_info_to_rbobject(
         updated_by,
     }: NamespaceInfo,
 ) -> RbResult<Value> {
-    let dict = RHash::new();
+    let ruby = Ruby::get().unwrap();
+
+    let dict = ruby.hash_new();
 
     let properties = properties_to_rbobject(properties);
 
@@ -352,13 +359,12 @@ fn namespace_info_to_rbobject(
         updated_by
     });
 
-    Ruby::get()
-        .unwrap()
-        .get_inner(&NAMESPACE_INFO_CLS)
-        .funcall("new", (dict,))
+    ruby.get_inner(&NAMESPACE_INFO_CLS).funcall("new", (dict,))
 }
 
 fn table_info_to_rbobject(table_info: TableInfo) -> RbResult<Value> {
+    let ruby = Ruby::get().unwrap();
+
     let TableInfo {
         name,
         table_id,
@@ -374,45 +380,43 @@ fn table_info_to_rbobject(table_info: TableInfo) -> RbResult<Value> {
         updated_by,
     } = table_info;
 
-    let column_info_cls = Ruby::get().unwrap().get_inner(&COLUMN_INFO_CLS);
+    let column_info_cls = ruby.get_inner(&COLUMN_INFO_CLS);
 
     let columns = columns
         .map(|columns| {
-            Ruby::get()
-                .unwrap()
-                .ary_try_from_iter(columns.into_iter().map(
-                    |ColumnInfo {
-                         name,
-                         type_name,
-                         type_text,
-                         type_json,
-                         position,
-                         comment,
-                         partition_index,
-                     }| {
-                        let dict = RHash::new();
+            ruby.ary_try_from_iter(columns.into_iter().map(
+                |ColumnInfo {
+                     name,
+                     type_name,
+                     type_text,
+                     type_json,
+                     position,
+                     comment,
+                     partition_index,
+                 }| {
+                    let dict = ruby.hash_new();
 
-                        let name = name.as_str();
-                        let type_name = type_name.as_str();
-                        let type_text = type_text.as_str();
+                    let name = name.as_str();
+                    let type_name = type_name.as_str();
+                    let type_text = type_text.as_str();
 
-                        rbdict_insert_keys!(dict, {
-                            name,
-                            type_name,
-                            type_text,
-                            type_json,
-                            position,
-                            comment,
-                            partition_index,
-                        });
+                    rbdict_insert_keys!(dict, {
+                        name,
+                        type_name,
+                        type_text,
+                        type_json,
+                        position,
+                        comment,
+                        partition_index,
+                    });
 
-                        column_info_cls.funcall::<_, _, Value>("new", (dict,))
-                    },
-                ))
+                    column_info_cls.funcall::<_, _, Value>("new", (dict,))
+                },
+            ))
         })
         .transpose()?;
 
-    let dict = RHash::new();
+    let dict = ruby.hash_new();
 
     let data_source_format = data_source_format.map(|x| x.to_string());
     let table_type = table_type.to_string();
@@ -433,14 +437,13 @@ fn table_info_to_rbobject(table_info: TableInfo) -> RbResult<Value> {
         updated_by,
     });
 
-    Ruby::get()
-        .unwrap()
-        .get_inner(&TABLE_INFO_CLS)
-        .funcall("new", (dict,))
+    ruby.get_inner(&TABLE_INFO_CLS).funcall("new", (dict,))
 }
 
 fn properties_to_rbobject(properties: PlHashMap<PlSmallStr, String>) -> RHash {
-    let dict = RHash::new();
+    let ruby = Ruby::get().unwrap();
+
+    let dict = ruby.hash_new();
 
     for (key, value) in properties.into_iter() {
         dict.aset(key.as_str(), value).unwrap();

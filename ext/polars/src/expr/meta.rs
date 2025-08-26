@@ -1,4 +1,4 @@
-use magnus::RArray;
+use magnus::{RArray, Ruby};
 use polars::prelude::Schema;
 
 use crate::{RbExpr, RbPolarsErr, RbResult, Wrap};
@@ -16,9 +16,9 @@ impl RbExpr {
             .meta()
             .pop(schema)
             .map_err(RbPolarsErr::from)?;
-        Ok(RArray::from_iter(
-            exprs.iter().map(|e| RbExpr::from(e.clone())),
-        ))
+        Ok(Ruby::get()
+            .unwrap()
+            .ary_from_iter(exprs.iter().map(|e| RbExpr::from(e.clone()))))
     }
 
     pub fn meta_root_names(&self) -> Vec<String> {

@@ -1,15 +1,16 @@
-use magnus::{RArray, Value, prelude::*};
+use magnus::{Ruby, Value, prelude::*};
 use polars::prelude::*;
 
 use crate::rb_modules::*;
 use crate::{RbExpr, RbSeries, Wrap};
 
 fn to_series(v: Value, name: &str) -> PolarsResult<Series> {
+    let ruby = Ruby::get_with(v);
     let rb_rbseries = match v.funcall("_s", ()) {
         Ok(s) => s,
         // the lambda did not return a series, we try to create a new Ruby Series
         _ => {
-            let data = RArray::new();
+            let data = ruby.ary_new();
             data.push(v).unwrap();
             let res = series().funcall::<_, _, Value>("new", (name.to_string(), data));
 

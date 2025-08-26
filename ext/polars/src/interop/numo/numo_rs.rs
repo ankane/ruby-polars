@@ -1,4 +1,4 @@
-use magnus::{IntoValue, Module, RArray, RClass, RModule, Value, class, prelude::*};
+use magnus::{IntoValue, Module, RClass, RModule, Ruby, Value, prelude::*};
 
 use crate::RbResult;
 
@@ -44,9 +44,11 @@ impl<T: Element> RbArray1<T> {
     where
         I: IntoIterator<Item = T>,
     {
-        class::object()
+        Ruby::get()
+            .unwrap()
+            .class_object()
             .const_get::<_, RModule>("Numo")?
             .const_get::<_, RClass>(T::class_name())?
-            .funcall("cast", (RArray::from_iter(values),))
+            .funcall("cast", (Ruby::get().unwrap().ary_from_iter(values),))
     }
 }

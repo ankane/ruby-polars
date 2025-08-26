@@ -1,5 +1,5 @@
 use crate::RbResult;
-use magnus::{RArray, Ruby, Value};
+use magnus::{Ruby, Value};
 
 pub fn enable_string_cache() {
     // The string cache no longer exists.
@@ -19,6 +19,7 @@ pub struct RbStringCacheHolder {}
 
 impl RbStringCacheHolder {
     pub fn hold() -> RbResult<Value> {
-        Ruby::get().unwrap().yield_splat(RArray::new())
+        let ruby = Ruby::get().unwrap();
+        ruby.yield_splat(ruby.ary_new())
     }
 }

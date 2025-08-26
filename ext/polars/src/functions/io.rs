@@ -1,6 +1,6 @@
 use std::io::BufReader;
 
-use magnus::{RHash, Value};
+use magnus::{RHash, Ruby, Value};
 use polars::prelude::ArrowSchema;
 
 use crate::conversion::Wrap;
@@ -16,7 +16,8 @@ pub fn read_ipc_schema(rb_f: Value) -> RbResult<RHash> {
         EitherRustRubyFile::Rb(mut r) => read_file_metadata(&mut r).map_err(RbPolarsErr::from)?,
     };
 
-    let dict = RHash::new();
+    let ruby = Ruby::get_with(rb_f);
+    let dict = ruby.hash_new();
     fields_to_rbdict(&metadata.schema, &dict)?;
     Ok(dict)
 }
@@ -33,7 +34,8 @@ pub fn read_parquet_metadata(rb_f: Value) -> RbResult<RHash> {
     };
 
     let key_value_metadata = read_custom_key_value_metadata(metadata.key_value_metadata());
-    let dict = RHash::new();
+    let ruby = Ruby::get_with(rb_f);
+    let dict = ruby.hash_new();
     for (key, value) in key_value_metadata.into_iter() {
         dict.aset(key.as_str(), value.as_str())?;
     }
@@ -51,7 +53,8 @@ pub fn read_parquet_schema(rb_f: Value) -> RbResult<RHash> {
     };
     let arrow_schema = infer_schema(&metadata).map_err(RbPolarsErr::from)?;
 
-    let dict = RHash::new();
+    let ruby = Ruby::get_with(rb_f);
+    let dict = ruby.hash_new();
     fields_to_rbdict(&arrow_schema, &dict)?;
     Ok(dict)
 }

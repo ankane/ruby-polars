@@ -3,7 +3,7 @@ use std::io;
 use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
 
-use magnus::{Error, RString, Ruby, Value, exception, prelude::*, value::Opaque};
+use magnus::{Error, RString, Ruby, Value, prelude::*, value::Opaque};
 use polars::io::cloud::CloudOptions;
 use polars::io::mmap::MmapBytesReader;
 use polars::prelude::PlPath;
@@ -69,21 +69,21 @@ impl RbFileLikeObject {
     pub fn with_requirements(object: Value, read: bool, write: bool, seek: bool) -> RbResult<Self> {
         if read && !object.respond_to("read", false)? {
             return Err(Error::new(
-                exception::type_error(),
+                Ruby::get().unwrap().exception_type_error(),
                 "Object does not have a .read() method.",
             ));
         }
 
         if seek && !object.respond_to("seek", false)? {
             return Err(Error::new(
-                exception::type_error(),
+                Ruby::get().unwrap().exception_type_error(),
                 "Object does not have a .seek() method.",
             ));
         }
 
         if write && !object.respond_to("write", false)? {
             return Err(Error::new(
-                exception::type_error(),
+                Ruby::get().unwrap().exception_type_error(),
                 "Object does not have a .write() method.",
             ));
         }
@@ -113,10 +113,10 @@ impl Read for RbFileLikeObject {
 
 impl Write for RbFileLikeObject {
     fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
-        let rbbytes = RString::from_slice(buf);
+        let ruby = Ruby::get().unwrap();
+        let rbbytes = ruby.str_from_slice(buf);
 
-        let number_bytes_written = Ruby::get()
-            .unwrap()
+        let number_bytes_written = ruby
             .get_inner(self.inner)
             .funcall::<_, _, usize>("write", (rbbytes,))
             .map_err(rberr_to_io_err)?;
@@ -265,8 +265,12 @@ pub fn get_mmap_bytes_reader_and_path<'a>(
         RbReadBytes::Bytes(v) => Ok((Box::new(Cursor::new(unsafe { v.as_slice() })), None)),
         RbReadBytes::Other(v) => {
             let path = PathBuf::try_convert(*v)?;
-            let f = File::open(&path)
-                .map_err(|e| Error::new(exception::runtime_error(), e.to_string()))?;
+            let f = File::open(&path).map_err(|e| {
+                Error::new(
+                    Ruby::get().unwrap().exception_runtime_error(),
+                    e.to_string(),
+                )
+            })?;
             Ok((Box::new(f), Some(path)))
         }
     }

@@ -1,6 +1,6 @@
-use magnus::encoding::{self, EncodingCapable};
+use magnus::encoding::EncodingCapable;
 use magnus::{
-    Float, Integer, RArray, RString, Ruby, Value, class, prelude::*, typed_data::Obj, value::Opaque,
+    Float, Integer, RArray, RString, Ruby, Value, prelude::*, typed_data::Obj, value::Opaque,
 };
 use polars::lazy::dsl;
 use polars::prelude::*;
@@ -101,7 +101,7 @@ pub fn col(name: String) -> RbExpr {
 pub fn collect_all(lfs: RArray) -> RbResult<RArray> {
     let lfs = lfs.typecheck::<Obj<RbLazyFrame>>()?;
 
-    Ok(RArray::from_iter(lfs.iter().map(|lf| {
+    Ok(Ruby::get().unwrap().ary_from_iter(lfs.iter().map(|lf| {
         let df = lf.ldf.borrow().clone().collect().unwrap();
         RbDataFrame::new(df)
     })))
@@ -283,7 +283,10 @@ pub fn fold(
 }
 
 pub fn lit(value: Value, allow_object: bool, is_scalar: bool) -> RbResult<RbExpr> {
-    if value.is_kind_of(class::true_class()) || value.is_kind_of(class::false_class()) {
+    let ruby = Ruby::get_with(value);
+    if value.is_kind_of(Ruby::get().unwrap().class_true_class())
+        || value.is_kind_of(Ruby::get().unwrap().class_false_class())
+    {
         Ok(dsl::lit(bool::try_convert(value)?).into())
     } else if let Some(v) = Integer::from_value(value) {
         match v.to_i64() {
@@ -302,7 +305,7 @@ pub fn lit(value: Value, allow_object: bool, is_scalar: bool) -> RbResult<RbExpr
     } else if let Some(v) = Float::from_value(value) {
         Ok(dsl::lit(v.to_f64()).into())
     } else if let Some(v) = RString::from_value(value) {
-        if v.enc_get() == encoding::Index::utf8() {
+        if v.enc_get() == ruby.utf8_encindex() {
             Ok(dsl::lit(v.to_string()?).into())
         } else {
             Ok(dsl::lit(unsafe { v.as_slice() }).into())
