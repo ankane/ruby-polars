@@ -4,7 +4,8 @@ use crate::{RbResult, RbSeries};
 use magnus::{IntoValue, Ruby, Value};
 
 fn scalar_to_rb(scalar: RbResult<Scalar>) -> RbResult<Value> {
-    Ok(Wrap(scalar?.as_any_value()).into_value_with(&Ruby::get().unwrap()))
+    let ruby = Ruby::get().unwrap();
+    Ok(Wrap(scalar?.as_any_value()).into_value_with(&ruby))
 }
 
 impl RbSeries {
@@ -36,42 +37,43 @@ impl RbSeries {
         self.series.borrow().arg_min()
     }
 
-    pub fn max(&self) -> RbResult<Value> {
+    pub fn max(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
         Ok(Wrap(
-            self.series
+            rb_self.series
                 .borrow()
                 .max_reduce()
                 .map_err(RbPolarsErr::from)?
                 .as_any_value(),
         )
-        .into_value_with(&Ruby::get().unwrap()))
+        .into_value_with(ruby))
     }
 
-    pub fn mean(&self) -> RbResult<Value> {
-        let ruby = Ruby::get().unwrap();
-        match self.series.borrow().dtype() {
+    pub fn mean(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
+        match rb_self.series.borrow().dtype() {
             DataType::Boolean => Ok(Wrap(
-                self.series
+                rb_self
+                    .series
                     .borrow()
                     .cast(&DataType::UInt8)
                     .unwrap()
                     .mean_reduce()
                     .as_any_value(),
             )
-            .into_value_with(&ruby)),
+            .into_value_with(ruby)),
             // For non-numeric output types we require mean_reduce.
-            dt if dt.is_temporal() => {
-                Ok(Wrap(self.series.borrow().mean_reduce().as_any_value()).into_value_with(&ruby))
-            }
-            _ => Ok(self.series.borrow().mean().into_value_with(&ruby)),
+            dt if dt.is_temporal() => Ok(Wrap(
+                rb_self.series.borrow().mean_reduce().as_any_value(),
+            )
+            .into_value_with(ruby)),
+            _ => Ok(rb_self.series.borrow().mean().into_value_with(ruby)),
         }
     }
 
-    pub fn median(&self) -> RbResult<Value> {
-        let ruby = Ruby::get().unwrap();
-        match self.series.borrow().dtype() {
+    pub fn median(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
+        match rb_self.series.borrow().dtype() {
             DataType::Boolean => Ok(Wrap(
-                self.series
+                rb_self
+                    .series
                     .borrow()
                     .cast(&DataType::UInt8)
                     .unwrap()
@@ -79,50 +81,58 @@ impl RbSeries {
                     .map_err(RbPolarsErr::from)?
                     .as_any_value(),
             )
-            .into_value_with(&ruby)),
+            .into_value_with(ruby)),
             // For non-numeric output types we require median_reduce.
             dt if dt.is_temporal() => Ok(Wrap(
-                self.series
+                rb_self
+                    .series
                     .borrow()
                     .median_reduce()
                     .map_err(RbPolarsErr::from)?
                     .as_any_value(),
             )
-            .into_value_with(&ruby)),
-            _ => Ok(self.series.borrow().median().into_value_with(&ruby)),
+            .into_value_with(ruby)),
+            _ => Ok(rb_self.series.borrow().median().into_value_with(ruby)),
         }
     }
 
-    pub fn min(&self) -> RbResult<Value> {
+    pub fn min(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
         Ok(Wrap(
-            self.series
+            rb_self
+                .series
                 .borrow()
                 .min_reduce()
                 .map_err(RbPolarsErr::from)?
                 .as_any_value(),
         )
-        .into_value_with(&Ruby::get().unwrap()))
+        .into_value_with(ruby))
     }
 
-    pub fn quantile(&self, quantile: f64, interpolation: Wrap<QuantileMethod>) -> RbResult<Value> {
-        let bind = self
+    pub fn quantile(
+        ruby: &Ruby,
+        rb_self: &Self,
+        quantile: f64,
+        interpolation: Wrap<QuantileMethod>,
+    ) -> RbResult<Value> {
+        let bind = rb_self
             .series
             .borrow()
             .quantile_reduce(quantile, interpolation.0);
         let sc = bind.map_err(RbPolarsErr::from)?;
 
-        Ok(Wrap(sc.as_any_value()).into_value_with(&Ruby::get().unwrap()))
+        Ok(Wrap(sc.as_any_value()).into_value_with(ruby))
     }
 
-    pub fn sum(&self) -> RbResult<Value> {
+    pub fn sum(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
         Ok(Wrap(
-            self.series
+            rb_self
+                .series
                 .borrow()
                 .sum_reduce()
                 .map_err(RbPolarsErr::from)?
                 .as_any_value(),
         )
-        .into_value_with(&Ruby::get().unwrap()))
+        .into_value_with(ruby))
     }
 
     pub fn first(&self) -> RbResult<Value> {
