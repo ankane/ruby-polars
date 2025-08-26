@@ -26,12 +26,12 @@ impl RbDataTypeExpr {
         DataTypeExpr::OfExpr(Box::new(expr.inner.clone())).into()
     }
 
-    pub fn collect_dtype(&self, schema: Wrap<Schema>) -> RbResult<Value> {
-        let dtype = self
+    pub fn collect_dtype(ruby: &Ruby, rb_self: &Self, schema: Wrap<Schema>) -> RbResult<Value> {
+        let dtype = rb_self
             .clone()
             .inner
             .into_datatype(&schema.0)
             .map_err(RbPolarsErr::from)?;
-        Ok(Wrap(dtype).into_value_with(&Ruby::get().unwrap()))
+        Ok(Wrap(dtype).into_value_with(ruby))
     }
 }

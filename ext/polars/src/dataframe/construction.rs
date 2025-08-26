@@ -125,7 +125,7 @@ where
 }
 
 fn dicts_to_rows<'a>(data: &Value, names: &'a [String], _strict: bool) -> RbResult<Vec<Row<'a>>> {
-    let ruby = Ruby::get().unwrap();
+    let ruby = Ruby::get_with(*data);
     let (data, len) = get_rbseq(*data)?;
     let mut rows = Vec::with_capacity(len);
     for d in data.into_iter() {
