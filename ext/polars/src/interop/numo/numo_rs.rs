@@ -44,11 +44,10 @@ impl<T: Element> RbArray1<T> {
     where
         I: IntoIterator<Item = T>,
     {
-        Ruby::get()
-            .unwrap()
-            .class_object()
+        let ruby = Ruby::get().unwrap();
+        ruby.class_object()
             .const_get::<_, RModule>("Numo")?
             .const_get::<_, RClass>(T::class_name())?
-            .funcall("cast", (Ruby::get().unwrap().ary_from_iter(values),))
+            .funcall("cast", (ruby.ary_from_iter(values),))
     }
 }

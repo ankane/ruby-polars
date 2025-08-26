@@ -98,10 +98,10 @@ pub fn col(name: String) -> RbExpr {
     dsl::col(&name).into()
 }
 
-pub fn collect_all(lfs: RArray) -> RbResult<RArray> {
+pub fn collect_all(ruby: &Ruby, lfs: RArray) -> RbResult<RArray> {
     let lfs = lfs.typecheck::<Obj<RbLazyFrame>>()?;
 
-    Ok(Ruby::get().unwrap().ary_from_iter(lfs.iter().map(|lf| {
+    Ok(ruby.ary_from_iter(lfs.iter().map(|lf| {
         let df = lf.ldf.borrow().clone().collect().unwrap();
         RbDataFrame::new(df)
     })))
@@ -284,9 +284,7 @@ pub fn fold(
 
 pub fn lit(value: Value, allow_object: bool, is_scalar: bool) -> RbResult<RbExpr> {
     let ruby = Ruby::get_with(value);
-    if value.is_kind_of(Ruby::get().unwrap().class_true_class())
-        || value.is_kind_of(Ruby::get().unwrap().class_false_class())
-    {
+    if value.is_kind_of(ruby.class_true_class()) || value.is_kind_of(ruby.class_false_class()) {
         Ok(dsl::lit(bool::try_convert(value)?).into())
     } else if let Some(v) = Integer::from_value(value) {
         match v.to_i64() {

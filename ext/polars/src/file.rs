@@ -67,23 +67,25 @@ impl RbFileLikeObject {
     /// ruby object has a `read`, `write`, and `seek` methods in respect to parameters.
     /// Will return a `TypeError` if object does not have `read`, `seek`, and `write` methods.
     pub fn with_requirements(object: Value, read: bool, write: bool, seek: bool) -> RbResult<Self> {
+        let ruby = Ruby::get_with(object);
+
         if read && !object.respond_to("read", false)? {
             return Err(Error::new(
-                Ruby::get().unwrap().exception_type_error(),
+                ruby.exception_type_error(),
                 "Object does not have a .read() method.",
             ));
         }
 
         if seek && !object.respond_to("seek", false)? {
             return Err(Error::new(
-                Ruby::get().unwrap().exception_type_error(),
+                ruby.exception_type_error(),
                 "Object does not have a .seek() method.",
             ));
         }
 
         if write && !object.respond_to("write", false)? {
             return Err(Error::new(
-                Ruby::get().unwrap().exception_type_error(),
+                ruby.exception_type_error(),
                 "Object does not have a .write() method.",
             ));
         }

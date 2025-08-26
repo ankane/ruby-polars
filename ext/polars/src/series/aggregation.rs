@@ -48,6 +48,7 @@ impl RbSeries {
     }
 
     pub fn mean(&self) -> RbResult<Value> {
+        let ruby = Ruby::get().unwrap();
         match self.series.borrow().dtype() {
             DataType::Boolean => Ok(Wrap(
                 self.series
@@ -57,19 +58,17 @@ impl RbSeries {
                     .mean_reduce()
                     .as_any_value(),
             )
-            .into_value_with(&Ruby::get().unwrap())),
+            .into_value_with(&ruby)),
             // For non-numeric output types we require mean_reduce.
-            dt if dt.is_temporal() => Ok(Wrap(self.series.borrow().mean_reduce().as_any_value())
-                .into_value_with(&Ruby::get().unwrap())),
-            _ => Ok(self
-                .series
-                .borrow()
-                .mean()
-                .into_value_with(&Ruby::get().unwrap())),
+            dt if dt.is_temporal() => {
+                Ok(Wrap(self.series.borrow().mean_reduce().as_any_value()).into_value_with(&ruby))
+            }
+            _ => Ok(self.series.borrow().mean().into_value_with(&ruby)),
         }
     }
 
     pub fn median(&self) -> RbResult<Value> {
+        let ruby = Ruby::get().unwrap();
         match self.series.borrow().dtype() {
             DataType::Boolean => Ok(Wrap(
                 self.series
@@ -80,7 +79,7 @@ impl RbSeries {
                     .map_err(RbPolarsErr::from)?
                     .as_any_value(),
             )
-            .into_value_with(&Ruby::get().unwrap())),
+            .into_value_with(&ruby)),
             // For non-numeric output types we require median_reduce.
             dt if dt.is_temporal() => Ok(Wrap(
                 self.series
@@ -89,12 +88,8 @@ impl RbSeries {
                     .map_err(RbPolarsErr::from)?
                     .as_any_value(),
             )
-            .into_value_with(&Ruby::get().unwrap())),
-            _ => Ok(self
-                .series
-                .borrow()
-                .median()
-                .into_value_with(&Ruby::get().unwrap())),
+            .into_value_with(&ruby)),
+            _ => Ok(self.series.borrow().median().into_value_with(&ruby)),
         }
     }
 

@@ -124,8 +124,8 @@ impl RbBatchedCsv {
         })
     }
 
-    pub fn next_batches(&self, n: usize) -> RbResult<Option<RArray>> {
-        let reader = &self.reader;
+    pub fn next_batches(ruby: &Ruby, rb_self: &Self, n: usize) -> RbResult<Option<RArray>> {
+        let reader = &rb_self.reader;
         let batches = reader
             .borrow()
             .lock()
@@ -133,10 +133,6 @@ impl RbBatchedCsv {
             .next_batches(n)
             .map_err(RbPolarsErr::from)?;
 
-        Ok(batches.map(|batches| {
-            Ruby::get()
-                .unwrap()
-                .ary_from_iter(batches.into_iter().map(RbDataFrame::from))
-        }))
+        Ok(batches.map(|batches| ruby.ary_from_iter(batches.into_iter().map(RbDataFrame::from))))
     }
 }

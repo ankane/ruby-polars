@@ -18,8 +18,7 @@ pub fn using_string_cache() -> bool {
 pub struct RbStringCacheHolder {}
 
 impl RbStringCacheHolder {
-    pub fn hold() -> RbResult<Value> {
-        let ruby = Ruby::get().unwrap();
+    pub fn hold(ruby: &Ruby) -> RbResult<Value> {
         ruby.yield_splat(ruby.ary_new())
     }
 }

@@ -930,9 +930,8 @@ impl RbLazyFrame {
         self.ldf.borrow().clone().into()
     }
 
-    pub fn collect_schema(&self) -> RbResult<RHash> {
-        let ruby = Ruby::get().unwrap();
-        let schema = self
+    pub fn collect_schema(ruby: &Ruby, rb_self: &Self) -> RbResult<RHash> {
+        let schema = rb_self
             .ldf
             .borrow_mut()
             .collect_schema()
@@ -943,7 +942,7 @@ impl RbLazyFrame {
             schema_dict
                 .aset::<String, Value>(
                     fld.name().to_string(),
-                    Wrap(fld.dtype().clone()).into_value_with(&ruby),
+                    Wrap(fld.dtype().clone()).into_value_with(ruby),
                 )
                 .unwrap();
         });

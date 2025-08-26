@@ -25,7 +25,7 @@ pub fn apply_lambda_unknown<'a>(
     lambda: Value,
     inference_size: usize,
 ) -> RbResult<(Value, bool)> {
-    let ruby = Ruby::get().unwrap();
+    let ruby = Ruby::get_with(lambda);
     let mut null_count = 0;
     let mut iters = get_iters(df);
 
@@ -80,7 +80,7 @@ pub fn apply_lambda_unknown<'a>(
                 .as_value(),
                 false,
             ));
-        // } else if out.is_kind_of(Ruby::get().unwrap().class_string()) {
+        // } else if out.is_kind_of(ruby.class_string()) {
         //     let first_value = String::try_convert(out).ok();
         //     return Ok((
         //         RbSeries::new(
@@ -144,7 +144,7 @@ where
     let mut iters = get_iters_skip(df, init_null_count + skip);
     ((init_null_count + skip)..df.height()).map(move |_| {
         let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
-        let tpl = (Ruby::get().unwrap().ary_from_iter(iter),);
+        let tpl = (Ruby::get_with(lambda).ary_from_iter(iter),);
         match lambda.funcall::<_, _, Value>("call", tpl) {
             Ok(val) => T::try_convert(val).ok(),
             Err(e) => panic!("ruby function failed {e}"),
@@ -240,7 +240,7 @@ pub fn apply_lambda_with_list_out_type(
         let mut iters = get_iters_skip(df, init_null_count + skip);
         let iter = ((init_null_count + skip)..df.height()).map(|_| {
             let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
-            let tpl = (Ruby::get().unwrap().ary_from_iter(iter),);
+            let tpl = (Ruby::get_with(lambda).ary_from_iter(iter),);
             match lambda.funcall::<_, _, Value>("call", tpl) {
                 Ok(val) => match val.funcall::<_, _, Value>("_s", ()) {
                     Ok(val) => Obj::<RbSeries>::try_convert(val)
@@ -284,7 +284,7 @@ pub fn apply_lambda_with_rows_output<'a>(
     let mut iters = get_iters_skip(df, init_null_count + skip);
     let mut row_iter = ((init_null_count + skip)..df.height()).map(|_| {
         let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
-        let tpl = (Ruby::get().unwrap().ary_from_iter(iter),);
+        let tpl = (Ruby::get_with(lambda).ary_from_iter(iter),);
         match lambda.funcall::<_, _, Value>("call", tpl) {
             Ok(val) => {
                 match RArray::try_convert(val).ok() {

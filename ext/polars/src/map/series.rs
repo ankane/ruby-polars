@@ -12,7 +12,7 @@ fn infer_and_finish<'a, A: ApplyLambda<'a>>(
     out: Value,
     null_count: usize,
 ) -> RbResult<RbSeries> {
-    let ruby = Ruby::get().unwrap();
+    let ruby = Ruby::get_with(lambda);
     if out.is_kind_of(ruby.class_true_class()) || out.is_kind_of(ruby.class_false_class()) {
         let first_value = bool::try_convert(out).unwrap();
         applyer
