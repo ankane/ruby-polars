@@ -121,8 +121,7 @@ impl TryConvert for Wrap<NullValues> {
     }
 }
 
-fn struct_dict<'a>(vals: impl Iterator<Item = AnyValue<'a>>, flds: &[Field]) -> Value {
-    let ruby = Ruby::get().unwrap();
+fn struct_dict<'a>(ruby: &Ruby, vals: impl Iterator<Item = AnyValue<'a>>, flds: &[Field]) -> Value {
     let dict = ruby.hash_new();
     for (fld, val) in flds.iter().zip(vals) {
         dict.aset(fld.name().as_str(), Wrap(val)).unwrap()

@@ -62,7 +62,7 @@ impl IntoValue for Wrap<&StructChunked> {
         // make series::iter() accept a chunk index.
         let s = s.rechunk();
         let iter = s.iter().map(|av| match av {
-            AnyValue::Struct(_, _, flds) => struct_dict(av._iter_struct_av(), flds),
+            AnyValue::Struct(_, _, flds) => struct_dict(ruby, av._iter_struct_av(), flds),
             AnyValue::Null => ruby.qnil().as_value(),
             _ => unreachable!(),
         });
