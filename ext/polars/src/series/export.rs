@@ -21,7 +21,7 @@ impl RbSeries {
                 DataType::Int16 => RArray::from_iter(series.i16().unwrap()).into_value(),
                 DataType::Int32 => RArray::from_iter(series.i32().unwrap()).into_value(),
                 DataType::Int64 => RArray::from_iter(series.i64().unwrap()).into_value(),
-                DataType::Int128 => todo!(),
+                DataType::Int128 => RArray::from_iter(series.i128().unwrap()).into_value(),
                 DataType::Float32 => RArray::from_iter(series.f32().unwrap()).into_value(),
                 DataType::Float64 => RArray::from_iter(series.f64().unwrap()).into_value(),
                 DataType::Categorical(_, _) | DataType::Enum(_, _) => {

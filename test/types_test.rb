@@ -38,7 +38,7 @@ class TypesTest < Minitest::Test
   end
 
   def test_series_dtype_int
-    [Polars::Int8, Polars::Int16, Polars::Int32, Polars::Int64].each do |dtype|
+    [Polars::Int8, Polars::Int16, Polars::Int32, Polars::Int64, Polars::Int128].each do |dtype|
       s = Polars::Series.new([1, nil, 3], dtype: dtype)
       assert_series [1, nil, 3], s, dtype: dtype
     end
