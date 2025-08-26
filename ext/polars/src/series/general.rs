@@ -87,8 +87,8 @@ impl RbSeries {
         }
     }
 
-    pub fn get_index(&self, index: usize) -> RbResult<Value> {
-        let binding = self.series.borrow();
+    pub fn get_index(ruby: &Ruby, rb_self: &Self, index: usize) -> RbResult<Value> {
+        let binding = rb_self.series.borrow();
         let av = match binding.get(index) {
             Ok(v) => v,
             Err(PolarsError::OutOfBounds(err)) => {
@@ -102,24 +102,24 @@ impl RbSeries {
                 let rbseries = RbSeries::new(s);
                 rb_modules::utils().funcall("wrap_s", (rbseries,))
             }
-            _ => Ok(Wrap(av).into_value_with(&Ruby::get().unwrap())),
+            _ => Ok(Wrap(av).into_value_with(ruby)),
         }
     }
 
-    pub fn get_index_signed(&self, index: isize) -> RbResult<Value> {
+    pub fn get_index_signed(ruby: &Ruby, rb_self: &Self, index: isize) -> RbResult<Value> {
         let index = if index < 0 {
-            match self.len().checked_sub(index.unsigned_abs()) {
+            match rb_self.len().checked_sub(index.unsigned_abs()) {
                 Some(v) => v,
                 None => {
                     return Err(RbIndexError::new_err(
-                        polars_err!(oob = index, self.len()).to_string(),
+                        polars_err!(oob = index, rb_self.len()).to_string(),
                     ));
                 }
             }
         } else {
             usize::try_from(index).unwrap()
         };
-        self.get_index(index)
+        Self::get_index(ruby, rb_self, index)
     }
 
     pub fn bitand(&self, other: &RbSeries) -> RbResult<Self> {
@@ -149,16 +149,17 @@ impl RbSeries {
         self.series.borrow_mut().rename(name.into());
     }
 
-    pub fn dtype(&self) -> Value {
-        Wrap(self.series.borrow().dtype().clone()).into_value_with(&Ruby::get().unwrap())
+    pub fn dtype(ruby: &Ruby, rb_self: &Self) -> Value {
+        Wrap(rb_self.series.borrow().dtype().clone()).into_value_with(ruby)
     }
 
-    pub fn inner_dtype(&self) -> Option<Value> {
-        self.series
+    pub fn inner_dtype(ruby: &Ruby, rb_self: &Self) -> Option<Value> {
+        rb_self
+            .series
             .borrow()
             .dtype()
             .inner_dtype()
-            .map(|dt| Wrap(dt.clone()).into_value_with(&Ruby::get().unwrap()))
+            .map(|dt| Wrap(dt.clone()).into_value_with(ruby))
     }
 
     pub fn set_sorted_flag(&self, descending: bool) -> Self {
@@ -175,14 +176,11 @@ impl RbSeries {
         self.series.borrow().n_chunks()
     }
 
-    pub fn append(&self, other: &RbSeries) -> RbResult<()> {
-        let mut binding = self.series.borrow_mut();
+    pub fn append(ruby: &Ruby, rb_self: &Self, other: &RbSeries) -> RbResult<()> {
+        let mut binding = rb_self.series.borrow_mut();
         let res = binding.append(&other.series.borrow());
         if let Err(e) = res {
-            Err(Error::new(
-                Ruby::get().unwrap().exception_runtime_error(),
-                e.to_string(),
-            ))
+            Err(Error::new(ruby.exception_runtime_error(), e.to_string()))
         } else {
             Ok(())
         }
@@ -196,25 +194,30 @@ impl RbSeries {
         Ok(())
     }
 
-    pub fn new_from_index(&self, index: usize, length: usize) -> RbResult<Self> {
-        if index >= self.series.borrow().len() {
+    pub fn new_from_index(
+        ruby: &Ruby,
+        rb_self: &Self,
+        index: usize,
+        length: usize,
+    ) -> RbResult<Self> {
+        if index >= rb_self.series.borrow().len() {
             Err(Error::new(
-                Ruby::get().unwrap().exception_arg_error(),
+                ruby.exception_arg_error(),
                 "index is out of bounds",
             ))
         } else {
-            Ok(self.series.borrow().new_from_index(index, length).into())
+            Ok(rb_self.series.borrow().new_from_index(index, length).into())
         }
     }
 
-    pub fn filter(&self, filter: &RbSeries) -> RbResult<Self> {
+    pub fn filter(ruby: &Ruby, rb_self: &Self, filter: &RbSeries) -> RbResult<Self> {
         let filter_series = &filter.series.borrow();
         if let Ok(ca) = filter_series.bool() {
-            let series = self.series.borrow().filter(ca).unwrap();
+            let series = rb_self.series.borrow().filter(ca).unwrap();
             Ok(series.into())
         } else {
             Err(Error::new(
-                Ruby::get().unwrap().exception_runtime_error(),
+                ruby.exception_runtime_error(),
                 "Expected a boolean mask".to_string(),
             ))
         }

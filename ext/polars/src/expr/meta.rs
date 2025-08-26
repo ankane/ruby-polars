@@ -8,17 +8,15 @@ impl RbExpr {
         self.inner == other.inner
     }
 
-    pub fn meta_pop(&self, schema: Option<Wrap<Schema>>) -> RbResult<RArray> {
+    pub fn meta_pop(ruby: &Ruby, rb_self: &Self, schema: Option<Wrap<Schema>>) -> RbResult<RArray> {
         let schema = schema.as_ref().map(|s| &s.0);
-        let exprs = self
+        let exprs = rb_self
             .inner
             .clone()
             .meta()
             .pop(schema)
             .map_err(RbPolarsErr::from)?;
-        Ok(Ruby::get()
-            .unwrap()
-            .ary_from_iter(exprs.iter().map(|e| RbExpr::from(e.clone()))))
+        Ok(ruby.ary_from_iter(exprs.iter().map(|e| RbExpr::from(e.clone()))))
     }
 
     pub fn meta_root_names(&self) -> Vec<String> {
