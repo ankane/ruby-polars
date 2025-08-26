@@ -93,7 +93,7 @@ impl RbCatalogClient {
         let mut opt_err = None;
 
         let out = ruby.ary_from_iter(v.into_iter().map(|x| {
-            let v = catalog_info_to_rbobject(x);
+            let v = catalog_info_to_rbobject(ruby, x);
             if let Ok(v) = v {
                 Some(v)
             } else {
@@ -115,7 +115,7 @@ impl RbCatalogClient {
         let mut opt_err = None;
 
         let out = ruby.ary_from_iter(v.into_iter().map(|x| {
-            let v = namespace_info_to_rbobject(x);
+            let v = namespace_info_to_rbobject(ruby, x);
             match v {
                 Ok(v) => Some(v),
                 Err(_) => {
@@ -144,7 +144,7 @@ impl RbCatalogClient {
 
         let out = ruby
             .ary_from_iter(v.into_iter().map(|table_info| {
-                let v = table_info_to_rbobject(table_info);
+                let v = table_info_to_rbobject(ruby, table_info);
 
                 if let Ok(v) = v {
                     Some(v)
@@ -161,36 +161,39 @@ impl RbCatalogClient {
     }
 
     pub fn get_table_info(
-        &self,
+        ruby: &Ruby,
+        rb_self: &Self,
         table_name: String,
         catalog_name: String,
         namespace: String,
     ) -> RbResult<Value> {
         let table_info = pl_async::get_runtime()
-            .block_in_place_on(
-                self.client()
-                    .get_table_info(&table_name, &catalog_name, &namespace),
-            )
+            .block_in_place_on(rb_self.client().get_table_info(
+                &table_name,
+                &catalog_name,
+                &namespace,
+            ))
             .map_err(to_rb_err)?;
 
-        table_info_to_rbobject(table_info)
+        table_info_to_rbobject(ruby, table_info)
     }
 
     pub fn create_catalog(
-        &self,
+        ruby: &Ruby,
+        rb_self: &Self,
         catalog_name: String,
         comment: Option<String>,
         storage_root: Option<String>,
     ) -> RbResult<Value> {
         let catalog_info = pl_async::get_runtime()
-            .block_in_place_on(self.client().create_catalog(
+            .block_in_place_on(rb_self.client().create_catalog(
                 &catalog_name,
                 comment.as_deref(),
                 storage_root.as_deref(),
             ))
             .map_err(to_rb_err)?;
 
-        catalog_info_to_rbobject(catalog_info)
+        catalog_info_to_rbobject(ruby, catalog_info)
     }
 
     pub fn delete_catalog(&self, catalog_name: String, force: bool) -> RbResult<()> {
@@ -200,14 +203,15 @@ impl RbCatalogClient {
     }
 
     pub fn create_namespace(
-        &self,
+        ruby: &Ruby,
+        rb_self: &Self,
         catalog_name: String,
         namespace: String,
         comment: Option<String>,
         storage_root: Option<String>,
     ) -> RbResult<Value> {
         let namespace_info = pl_async::get_runtime()
-            .block_in_place_on(self.client().create_namespace(
+            .block_in_place_on(rb_self.client().create_namespace(
                 &catalog_name,
                 &namespace,
                 comment.as_deref(),
@@ -215,7 +219,7 @@ impl RbCatalogClient {
             ))
             .map_err(to_rb_err)?;
 
-        namespace_info_to_rbobject(namespace_info)
+        namespace_info_to_rbobject(ruby, namespace_info)
     }
 
     pub fn delete_namespace(
@@ -234,7 +238,8 @@ impl RbCatalogClient {
 
     #[allow(clippy::too_many_arguments)]
     pub fn create_table(
-        &self,
+        ruby: &Ruby,
+        rb_self: &Self,
         catalog_name: String,
         namespace: String,
         table_name: String,
@@ -247,7 +252,7 @@ impl RbCatalogClient {
     ) -> RbResult<Value> {
         let table_info = pl_async::get_runtime()
             .block_in_place_on(
-                self.client().create_table(
+                rb_self.client().create_table(
                     &catalog_name,
                     &namespace,
                     &table_name,
@@ -267,7 +272,7 @@ impl RbCatalogClient {
             )
             .map_err(to_rb_err)?;
 
-        table_info_to_rbobject(table_info)
+        table_info_to_rbobject(ruby, table_info)
     }
 
     pub fn delete_table(
@@ -296,6 +301,7 @@ impl RbCatalogClient {
 }
 
 fn catalog_info_to_rbobject(
+    ruby: &Ruby,
     CatalogInfo {
         name,
         comment,
@@ -308,12 +314,10 @@ fn catalog_info_to_rbobject(
         updated_by,
     }: CatalogInfo,
 ) -> RbResult<Value> {
-    let ruby = Ruby::get().unwrap();
-
     let dict = ruby.hash_new();
 
-    let properties = properties_to_rbobject(properties);
-    let options = properties_to_rbobject(options);
+    let properties = properties_to_rbobject(ruby, properties);
+    let options = properties_to_rbobject(ruby, options);
 
     rbdict_insert_keys!(dict, {
         name,
@@ -331,6 +335,7 @@ fn catalog_info_to_rbobject(
 }
 
 fn namespace_info_to_rbobject(
+    ruby: &Ruby,
     NamespaceInfo {
         name,
         comment,
@@ -342,11 +347,9 @@ fn namespace_info_to_rbobject(
         updated_by,
     }: NamespaceInfo,
 ) -> RbResult<Value> {
-    let ruby = Ruby::get().unwrap();
-
     let dict = ruby.hash_new();
 
-    let properties = properties_to_rbobject(properties);
+    let properties = properties_to_rbobject(ruby, properties);
 
     rbdict_insert_keys!(dict, {
         name,
@@ -362,9 +365,7 @@ fn namespace_info_to_rbobject(
     ruby.get_inner(&NAMESPACE_INFO_CLS).funcall("new", (dict,))
 }
 
-fn table_info_to_rbobject(table_info: TableInfo) -> RbResult<Value> {
-    let ruby = Ruby::get().unwrap();
-
+fn table_info_to_rbobject(ruby: &Ruby, table_info: TableInfo) -> RbResult<Value> {
     let TableInfo {
         name,
         table_id,
@@ -420,7 +421,7 @@ fn table_info_to_rbobject(table_info: TableInfo) -> RbResult<Value> {
 
     let data_source_format = data_source_format.map(|x| x.to_string());
     let table_type = table_type.to_string();
-    let properties = properties_to_rbobject(properties);
+    let properties = properties_to_rbobject(ruby, properties);
 
     rbdict_insert_keys!(dict, {
         name,
@@ -440,9 +441,7 @@ fn table_info_to_rbobject(table_info: TableInfo) -> RbResult<Value> {
     ruby.get_inner(&TABLE_INFO_CLS).funcall("new", (dict,))
 }
 
-fn properties_to_rbobject(properties: PlHashMap<PlSmallStr, String>) -> RHash {
-    let ruby = Ruby::get().unwrap();
-
+fn properties_to_rbobject(ruby: &Ruby, properties: PlHashMap<PlSmallStr, String>) -> RHash {
     let dict = ruby.hash_new();
 
     for (key, value) in properties.into_iter() {

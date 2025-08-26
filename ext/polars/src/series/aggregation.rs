@@ -39,7 +39,8 @@ impl RbSeries {
 
     pub fn max(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
         Ok(Wrap(
-            rb_self.series
+            rb_self
+                .series
                 .borrow()
                 .max_reduce()
                 .map_err(RbPolarsErr::from)?
