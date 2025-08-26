@@ -322,7 +322,8 @@ impl TryConvert for Wrap<Field> {
 
 impl TryConvert for Wrap<DataType> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let dtype = if ob.is_kind_of(Ruby::get().unwrap().class_class()) {
+        let ruby = Ruby::get_with(ob);
+        let dtype = if ob.is_kind_of(ruby.class_class()) {
             let name = ob.funcall::<_, _, String>("name", ())?;
             match name.as_str() {
                 "Polars::Int8" => DataType::Int8,

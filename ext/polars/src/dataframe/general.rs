@@ -149,10 +149,10 @@ impl RbDataFrame {
         Ok(())
     }
 
-    pub fn dtypes(&self) -> RArray {
-        let ruby = Ruby::get().unwrap();
+    pub fn dtypes(ruby: &Ruby, rb_self: &Self) -> RArray {
         ruby.ary_from_iter(
-            self.df
+            rb_self
+                .df
                 .borrow()
                 .iter()
                 .map(|s| Wrap(s.dtype().clone()).into_value_with(&ruby)),
@@ -394,20 +394,19 @@ impl RbDataFrame {
     }
 
     pub fn partition_by(
-        &self,
+        ruby: &Ruby,
+        rb_self: &Self,
         by: Vec<String>,
         maintain_order: bool,
         include_key: bool,
     ) -> RbResult<RArray> {
         let out = if maintain_order {
-            self.df.borrow().partition_by_stable(by, include_key)
+            rb_self.df.borrow().partition_by_stable(by, include_key)
         } else {
-            self.df.borrow().partition_by(by, include_key)
+            rb_self.df.borrow().partition_by(by, include_key)
         }
         .map_err(RbPolarsErr::from)?;
-        Ok(Ruby::get()
-            .unwrap()
-            .ary_from_iter(out.into_iter().map(RbDataFrame::new)))
+        Ok(ruby.ary_from_iter(out.into_iter().map(RbDataFrame::new)))
     }
 
     pub fn lazy(&self) -> RbLazyFrame {
@@ -443,13 +442,13 @@ impl RbDataFrame {
     }
 
     pub fn map_rows(
-        &self,
+        ruby: &Ruby,
+        rb_self: &Self,
         lambda: Value,
         output_type: Option<Wrap<DataType>>,
         inference_size: usize,
     ) -> RbResult<(Value, bool)> {
-        let ruby = Ruby::get().unwrap();
-        let df = &self.df.borrow();
+        let df = &rb_self.df.borrow();
 
         let output_type = output_type.map(|dt| dt.0);
         let out = match output_type {
