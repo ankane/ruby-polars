@@ -1,6 +1,7 @@
 ## 0.21.2 (unreleased)
 
 - Added experimental support for Iceberg
+- Added experimental `cast_options` option to `scan_parquet` method
 
 ## 0.21.1 (2025-08-18)
 

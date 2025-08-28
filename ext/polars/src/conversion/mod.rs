@@ -1231,7 +1231,108 @@ impl TryConvert for Wrap<CastColumnsPolicy> {
             let out = Wrap(CastColumnsPolicy::ERROR_ON_MISMATCH);
             return Ok(out);
         }
-        todo!();
+
+        let integer_upcast = match &*ob.funcall::<_, _, String>("integer_cast", ())? {
+            "upcast" => true,
+            "forbid" => false,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "unknown option for integer_cast: {v}"
+                )));
+            }
+        };
+
+        let mut float_upcast = false;
+        let mut float_downcast = false;
+
+        let float_cast_object: Value = ob.funcall("float_cast", ())?;
+
+        parse_multiple_options("float_cast", float_cast_object, |v| {
+            match v {
+                "forbid" => {}
+                "upcast" => float_upcast = true,
+                "downcast" => float_downcast = true,
+                v => {
+                    return Err(RbValueError::new_err(format!(
+                        "unknown option for float_cast: {v}"
+                    )));
+                }
+            }
+
+            Ok(())
+        })?;
+
+        let mut datetime_nanoseconds_downcast = false;
+        let mut datetime_convert_timezone = false;
+
+        let datetime_cast_object: Value = ob.funcall("datetime_cast", ())?;
+
+        parse_multiple_options("datetime_cast", datetime_cast_object, |v| {
+            match v {
+                "forbid" => {}
+                "nanosecond-downcast" => datetime_nanoseconds_downcast = true,
+                "convert-timezone" => datetime_convert_timezone = true,
+                v => {
+                    return Err(RbValueError::new_err(format!(
+                        "unknown option for datetime_cast: {v}"
+                    )));
+                }
+            };
+
+            Ok(())
+        })?;
+
+        let missing_struct_fields =
+            match &*ob.funcall::<_, _, String>("missing_struct_fields", ())? {
+                "insert" => MissingColumnsPolicy::Insert,
+                "raise" => MissingColumnsPolicy::Raise,
+                v => {
+                    return Err(RbValueError::new_err(format!(
+                        "unknown option for missing_struct_fields: {v}"
+                    )));
+                }
+            };
+
+        let extra_struct_fields = match &*ob.funcall::<_, _, String>("extra_struct_fields", ())? {
+            "ignore" => ExtraColumnsPolicy::Ignore,
+            "raise" => ExtraColumnsPolicy::Raise,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "unknown option for extra_struct_fields: {v}"
+                )));
+            }
+        };
+
+        return Ok(Wrap(CastColumnsPolicy {
+            integer_upcast,
+            float_upcast,
+            float_downcast,
+            datetime_nanoseconds_downcast,
+            datetime_microseconds_downcast: false,
+            datetime_convert_timezone,
+            missing_struct_fields,
+            extra_struct_fields,
+        }));
+
+        fn parse_multiple_options(
+            parameter_name: &'static str,
+            rb_object: Value,
+            mut parser_func: impl FnMut(&str) -> RbResult<()>,
+        ) -> RbResult<()> {
+            if let Ok(v) = String::try_convert(rb_object) {
+                parser_func(&v)?;
+            } else if let Ok(v) = RArray::try_convert(rb_object) {
+                for v in v {
+                    parser_func(&String::try_convert(v)?)?;
+                }
+            } else {
+                return Err(RbValueError::new_err(format!(
+                    "unknown type for {parameter_name}: {rb_object}"
+                )));
+            }
+
+            Ok(())
+        }
     }
 }
 

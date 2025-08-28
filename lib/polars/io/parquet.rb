@@ -207,6 +207,9 @@ module Polars
     #   defined schema are encountered in the data:
     #     * `ignore`: Silently ignores.
     #     * `raise`: Raises an error.
+    # @param cast_options [Object]
+    #   Configuration for column type-casting during scans. Useful for datasets
+    #   containing files that have differing schemas.
     #
     # @return [LazyFrame]
     def scan_parquet(
@@ -230,6 +233,7 @@ module Polars
       include_file_paths: nil,
       allow_missing_columns: false,
       extra_columns: "raise",
+      cast_options: nil,
       _column_mapping: nil,
       _deletion_files: nil
     )
@@ -268,7 +272,7 @@ module Polars
           ScanOptions.new(
             row_index: !row_index_name.nil? ? [row_index_name, row_index_offset] : nil,
             pre_slice: !n_rows.nil? ? [0, n_rows] : nil,
-            # cast_options: cast_options,
+            cast_options: cast_options,
             extra_columns: extra_columns,
             missing_columns: missing_columns,
             include_file_paths: include_file_paths,

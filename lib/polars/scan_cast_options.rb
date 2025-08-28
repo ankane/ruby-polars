@@ -1,6 +1,8 @@
 module Polars
   # Options for scanning files.
   class ScanCastOptions
+    attr_reader :integer_cast, :float_cast, :datetime_cast, :missing_struct_fields, :extra_struct_fields
+
     # Common configuration for scanning files.
     #
     # @note
