@@ -18,7 +18,7 @@ if ENV["TEST_DELTA"]
 end
 
 if ENV["TEST_ICEBERG"]
-  gem "iceberg", ">= 0.10.0", github: "ankane/iceberg-ruby"
+  gem "iceberg", ">= 0.10.1"
 end
 
 # https://github.com/lsegal/yard/issues/1321
