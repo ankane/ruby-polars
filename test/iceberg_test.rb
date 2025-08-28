@@ -4,7 +4,7 @@ class IcebergTest < Minitest::Test
   def setup
     skip unless ENV["TEST_ICEBERG"]
     super
-    catalog.create_namespace("polars_ruby_test") if !catalog.namespace_exists?("polars_ruby_test")
+    catalog.create_namespace("polars_ruby_test", if_not_exists: true)
     catalog.drop_table("polars_ruby_test.events", if_exists: true)
   end
 
