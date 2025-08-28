@@ -1148,6 +1148,40 @@ module Polars
       end
     end
 
+    # Write DataFrame to an Iceberg table.
+    #
+    # @note
+    #   This functionality is currently considered **unstable**. It may be
+    #   changed at any point without it being considered a breaking change.
+    #
+    # @param target [Object]
+    #   Name of the table or the Table object representing an Iceberg table.
+    # @param mode ['append', 'overwrite']
+    #   How to handle existing data.
+    #
+    #   - If 'append', will add new data.
+    #   - If 'overwrite', will replace table with new data.
+    #
+    # @return [nil]
+    def write_iceberg(target, mode:)
+      require "iceberg"
+
+      table =
+        if target.is_a?(Iceberg::Table)
+          target
+        else
+          raise Todo
+        end
+
+      data = self
+
+      if mode == "append"
+        table.append(data)
+      else
+        raise Todo
+      end
+    end
+
     # Write DataFrame as delta table.
     #
     # @param target [Object]

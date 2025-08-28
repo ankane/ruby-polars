@@ -1,3 +1,7 @@
+## 0.21.2 (unreleased)
+
+- Added experimental support for Iceberg
+
 ## 0.21.1 (2025-08-18)
 
 - Added `read_parquet_metadata` method to `Polars`

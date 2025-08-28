@@ -88,6 +88,12 @@ From Avro
 Polars.read_avro("file.avro")
 ```
 
+From Iceberg (requires [iceberg](https://github.com/ankane/iceberg-ruby)) [unreleased, experimental]
+
+```ruby
+Polars.scan_iceberg(table)
+```
+
 From Delta Lake (requires [deltalake-rb](https://github.com/ankane/delta-ruby)) [experimental]
 
 ```ruby
@@ -363,6 +369,12 @@ Avro
 
 ```ruby
 df.write_avro("file.avro")
+```
+
+Iceberg [unreleased, experimental]
+
+```ruby
+df.write_iceberg(table, mode: "append")
 ```
 
 Delta Lake [experimental]
