@@ -34,10 +34,10 @@ jobs:
           cargo 3pl --target ${{ matrix.target }} --require-files --source 3pl-source > LICENSE-THIRD-PARTY.txt
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.3
+          ruby-version: 3.4
       - run: gem install rb_sys
       - run: rb-sys-dock --ruby-versions 3.4,3.3,3.2 --platform ${{ matrix.platform }} --build
       - uses: actions/upload-artifact@v4
         with:
           name: cross-gem-${{ matrix.platform }}
-          path: ${{ steps.cross-gem.outputs.gem-path }}
+          path: pkg/*.gem
