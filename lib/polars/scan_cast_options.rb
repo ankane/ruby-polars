@@ -52,6 +52,10 @@ module Polars
       extra_struct_fields: "raise",
       _internal_call: false
     )
+      if !_internal_call
+        warn "ScanCastOptions is considered unstable."
+      end
+
       @integer_cast = integer_cast
       @float_cast = float_cast
       @datetime_cast = datetime_cast
@@ -59,8 +63,21 @@ module Polars
       @extra_struct_fields = extra_struct_fields
     end
 
-    def self.default
+    def self._default
       new(_internal_call: true)
+    end
+
+    def self._default_iceberg
+      @_default_cast_options_iceberg ||= begin
+        ScanCastOptions.new(
+          integer_cast: "upcast",
+          float_cast: ["upcast", "downcast"],
+          datetime_cast: ["nanosecond-downcast", "convert-timezone"],
+          missing_struct_fields: "insert",
+          extra_struct_fields: "ignore",
+          _internal_call: true
+        )
+      end
     end
   end
 end
