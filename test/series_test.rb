@@ -98,7 +98,7 @@ class SeriesTest < Minitest::Test
     # error = assert_raises(TypeError) do
     #   Polars::Series.new([1, 2, 3.5])
     # end
-    # assert_equals "", error.message
+    # assert_equal "", error.message
 
     s = Polars::Series.new([1, 2, 3.5], strict: false)
     assert_series [1, 2, 3.5], s, dtype: Polars::Float64
