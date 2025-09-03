@@ -562,8 +562,6 @@ module Polars
 
     # Convert every row to a hash.
     #
-    # Note that this is slow.
-    #
     # @return [Array]
     #
     # @example
@@ -572,12 +570,7 @@ module Polars
     #   # =>
     #   # [{"foo"=>1, "bar"=>4}, {"foo"=>2, "bar"=>5}, {"foo"=>3, "bar"=>6}]
     def to_hashes
-      rbdf = _df
-      names = columns
-
-      height.times.map do |i|
-        names.zip(rbdf.row_tuple(i)).to_h
-      end
+      rows(named: true)
     end
 
     # Convert DataFrame to a 2D Numo array.
