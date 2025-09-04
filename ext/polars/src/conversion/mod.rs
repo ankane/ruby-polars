@@ -1,6 +1,7 @@
 pub(crate) mod any_value;
 mod categorical;
 mod chunked_array;
+mod datetime;
 
 use std::collections::BTreeMap;
 use std::fmt::{Debug, Display, Formatter};

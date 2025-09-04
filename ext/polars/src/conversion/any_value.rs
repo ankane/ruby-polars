@@ -5,6 +5,7 @@ use magnus::{
 use polars::prelude::*;
 use polars_core::utils::any_values_to_supertype_and_n_dtypes;
 
+use super::datetime::datetime_to_rb_object;
 use super::{ObjectValue, Wrap, struct_dict};
 
 use crate::exceptions::RbOverflowError;
@@ -77,13 +78,6 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
             .funcall("_to_ruby_decimal", (v.to_string(), -(scale as i32)))
             .unwrap(),
     }
-}
-
-fn datetime_to_rb_object(v: i64, tu: TimeUnit, tz: Option<&TimeZone>) -> Value {
-    let tu = tu.to_ascii();
-    utils()
-        .funcall("_to_ruby_datetime", (v, tu, tz.map(|v| v.to_string())))
-        .unwrap()
 }
 
 pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<AnyValue<'s>> {
