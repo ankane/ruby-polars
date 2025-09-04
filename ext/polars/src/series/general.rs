@@ -16,7 +16,6 @@ impl RbSeries {
         Ok(df.into())
     }
 
-    // TODO add to Ruby
     pub fn struct_fields(&self) -> RbResult<Vec<String>> {
         let binding = self.series.borrow();
         let ca = binding.struct_().map_err(RbPolarsErr::from)?;
