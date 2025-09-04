@@ -1,4 +1,4 @@
-use magnus::{RArray, RHash, Ruby, Symbol, Value, prelude::*, r_hash::ForEach};
+use magnus::{RArray, RHash, RString, Ruby, Symbol, Value, prelude::*, r_hash::ForEach};
 use polars::frame::row::{Row, rows_to_schema_supertypes, rows_to_supertypes};
 use polars::prelude::*;
 
@@ -128,13 +128,19 @@ fn dicts_to_rows<'a>(data: &Value, names: &'a [String], _strict: bool) -> RbResu
     let ruby = Ruby::get_with(*data);
     let (data, len) = get_rbseq(*data)?;
     let mut rows = Vec::with_capacity(len);
+
+    // pre-convert keys/names so we don't repeatedly create them in the loop
+    let rb_keys: Vec<(RString, Symbol)> = names
+        .iter()
+        .map(|k| (ruby.str_new(k), ruby.to_symbol(k)))
+        .collect();
+
     for d in data.into_iter() {
         let d = RHash::try_convert(d)?;
 
         let mut row = Vec::with_capacity(names.len());
-        for k in names.iter() {
-            // TODO improve performance
-            let val = match d.get(k.clone()).or_else(|| d.get(ruby.to_symbol(k))) {
+        for (k, k2) in &rb_keys {
+            let val = match d.get(*k).or_else(|| d.get(*k2)) {
                 None => AnyValue::Null,
                 Some(val) => Wrap::<AnyValue>::try_convert(val)?.0,
             };
