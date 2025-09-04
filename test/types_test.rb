@@ -221,6 +221,9 @@ class TypesTest < Minitest::Test
     assert_raises(Polars::ComputeError) do
       df.write_ipc(io)
     end
+    assert_raises(Polars::ComputeError) do
+      df.serialize
+    end
     assert df.inspect
     assert df.to_a
   end
