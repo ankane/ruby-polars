@@ -439,14 +439,12 @@ class SeriesTest < Minitest::Test
 
   def test_nan_max
     assert_predicate Polars::Series.new([1.0, Float::NAN, 3.0]).nan_max, :nan?
-    # TODO debug on CI
-    # assert_in_delta 3.0, Polars::Series.new([1.0, 2.0, 3.0]).nan_max
+    assert_in_delta 3.0, Polars::Series.new([1.0, 2.0, 3.0]).nan_max
   end
 
   def test_nan_min
     assert_predicate Polars::Series.new([1.0, Float::NAN, 3.0]).nan_min, :nan?
-    # TODO debug on CI
-    # assert_in_delta 1.0, Polars::Series.new([1.0, 2.0, 3.0]).nan_min
+    assert_in_delta 1.0, Polars::Series.new([1.0, 2.0, 3.0]).nan_min
   end
 
   def test_std
