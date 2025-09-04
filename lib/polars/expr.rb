@@ -377,8 +377,6 @@ module Polars
       wrap_expr(_rbexpr._alias(name))
     end
 
-    # TODO support symbols for exclude
-
     # Exclude certain columns from a wildcard/regex selection.
     #
     # You may also use regexes in the exclude list. They must start with `^` and end
