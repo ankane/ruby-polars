@@ -192,7 +192,7 @@ module Polars
       nil
     end
 
-    # Serialize the logical plan of this LazyFrame to a file or string in JSON format.
+    # Serialize the logical plan of this LazyFrame to a file or string.
     #
     # @param file [Object]
     #   File path to which the result should be written. If set to `nil`
