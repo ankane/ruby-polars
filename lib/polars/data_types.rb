@@ -317,11 +317,9 @@ module Polars
   class Categories
     attr_accessor :_categories
 
-    def initialize
-      # TODO fix
-      name = nil
+    def initialize(name = nil)
       if name.nil? || name == ""
-        @_categories = RbCategories.global_categories
+        self._categories = RbCategories.global_categories
         return
       end
 
