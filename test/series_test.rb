@@ -475,10 +475,10 @@ class SeriesTest < Minitest::Test
     assert_equal "quantile should be between 0.0 and 1.0", error.message
   end
 
-  # TODO improve
   def test_to_dummies
     s = Polars::Series.new(["a", "b", "b"])
-    assert_equal [3, 2], s.to_dummies.shape
+    expected = Polars::DataFrame.new({"_a" => [1, 0, 0], "_b" => [0, 1, 1]}).cast(Polars::UInt8)
+    assert_frame expected, s.to_dummies
   end
 
   def test_value_counts
