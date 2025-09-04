@@ -248,6 +248,29 @@ module Polars
       Selector._from_rbselector(_rbexpr.into_selector)
     end
 
+    # Serialize this expression to a file or string.
+    #
+    # @param file [Object]
+    #   File path to which the result should be written. If set to `nil`
+    #   (default), the output is returned as a string instead.
+    #
+    # @return [Object]
+    #
+    # @note
+    #   Serialization is not stable across Polars versions: a LazyFrame serialized
+    #   in one Polars version may not be deserializable in another Polars version.
+    #
+    # @example Serialize the expression into a binary representation.
+    #   expr = Polars.col("foo").sum.over("bar")
+    #   bytes = expr.meta.serialize
+    #   Polars::Expr.deserialize(StringIO.new(bytes))
+    #   # => col("foo").sum().over([col("bar")])
+    def serialize(file = nil)
+      serializer = _rbexpr.method(:serialize_binary)
+
+      Utils.serialize_polars_object(serializer, file)
+    end
+
     # Format the expression as a tree.
     #
     # @param return_as_string [Boolean]

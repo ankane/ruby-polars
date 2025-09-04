@@ -10,6 +10,7 @@ mod meta;
 mod name;
 mod rolling;
 pub mod selector;
+mod serde;
 mod string;
 mod r#struct;
 

@@ -578,6 +578,11 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("hist", method!(RbExpr::hist, 4))?;
     class.define_method("into_selector", method!(RbExpr::into_selector, 0))?;
     class.define_singleton_method("new_selector", function!(RbExpr::new_selector, 1))?;
+    class.define_method("serialize_binary", method!(RbExpr::serialize_binary, 1))?;
+    class.define_singleton_method(
+        "deserialize_binary",
+        function!(RbExpr::deserialize_binary, 1),
+    )?;
 
     // bitwise
     class.define_method("bitwise_count_ones", method!(RbExpr::bitwise_count_ones, 0))?;

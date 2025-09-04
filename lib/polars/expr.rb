@@ -146,6 +146,38 @@ module Polars
       wrap_expr(_rbexpr.neg)
     end
 
+    # Read a serialized expression from a file.
+    #
+    # @param source [Object]
+    #   Path to a file or a file-like object (by file-like object, we refer to
+    #   objects that have a `read` method, such as a file handler or `StringIO`).
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   This function uses  marshaling if the logical plan contains Ruby UDFs,
+    #   and as such inherits the security implications. Deserializing can execute
+    #   arbitrary code, so it should only be attempted on trusted data.
+    #
+    # @note
+    #   Serialization is not stable across Polars versions: a LazyFrame serialized
+    #   in one Polars version may not be deserializable in another Polars version.
+    #
+    # @example
+    #   expr = Polars.col("foo").sum.over("bar")
+    #   bytes = expr.meta.serialize
+    #   Polars::Expr.deserialize(StringIO.new(bytes))
+    #   # => col("foo").sum().over([col("bar")])
+    def self.deserialize(source)
+      if Utils.pathlike?(source)
+        source = Utils.normalize_filepath(source)
+      end
+
+      deserializer = RbExpr.method(:deserialize_binary)
+
+      _from_rbexpr(deserializer.(source))
+    end
+
     # Cast to physical representation of the logical dtype.
     #
     # - `:date` -> `:i32`
