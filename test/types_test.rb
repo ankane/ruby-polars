@@ -195,6 +195,11 @@ class TypesTest < Minitest::Test
     GC.start
     assert df.inspect
     assert df.to_a
+
+    df = Polars::DataFrame.new({a: [Object.new, Object.new]})
+    GC.start
+    assert df.inspect
+    assert df.to_a
   end
 
   def test_bigdecimal
