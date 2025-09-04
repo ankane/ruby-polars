@@ -810,7 +810,18 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("re_escape", function!(re_escape, 1))?;
 
     let class = module.define_class("RbLazyFrame", ruby.class_object())?;
-    class.define_singleton_method("read_json", function!(RbLazyFrame::read_json, 1))?;
+    class.define_method(
+        "serialize_binary",
+        method!(RbLazyFrame::serialize_binary, 1),
+    )?;
+    class.define_singleton_method(
+        "deserialize_binary",
+        function!(RbLazyFrame::deserialize_binary, 1),
+    )?;
+    class.define_singleton_method(
+        "deserialize_json",
+        function!(RbLazyFrame::deserialize_json, 1),
+    )?;
     class.define_singleton_method(
         "new_from_ndjson",
         function!(RbLazyFrame::new_from_ndjson, 8),

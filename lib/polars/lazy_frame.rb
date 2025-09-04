@@ -41,7 +41,48 @@ module Polars
         file = Utils.normalize_filepath(file)
       end
 
-      Utils.wrap_ldf(RbLazyFrame.read_json(file))
+      Utils.wrap_ldf(RbLazyFrame.deserialize_json(file))
+    end
+
+    # Read a logical plan from a file to construct a LazyFrame.
+    #
+    # @param source [Object]
+    #   Path to a file or a file-like object (by file-like object, we refer to
+    #   objects that have a `read` method, such as a file handler (e.g.
+    #   via builtin `open` function) or `StringIO`).
+    #
+    # @return [LazyFrame]
+    #
+    # @note
+    #   This function uses marshaling if the logical plan contains Ruby UDFs,
+    #   and as such inherits the security implications. Deserializing can execute
+    #   arbitrary code, so it should only be attempted on trusted data.
+    #
+    # @note
+    #   Serialization is not stable across Polars versions: a LazyFrame serialized
+    #   in one Polars version may not be deserializable in another Polars version.
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new({"a" => [1, 2, 3]}).sum
+    #   bytes = lf.serialize
+    #   Polars::LazyFrame.deserialize(StringIO.new(bytes)).collect
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 6   │
+    #   # └─────┘
+    def self.deserialize(source)
+      if Utils.pathlike?(source)
+        source = Utils.normalize_filepath(source)
+      end
+
+      deserializer = RbLazyFrame.method(:deserialize_binary)
+
+      _from_rbldf(deserializer.(source))
     end
 
     # Get or set column names.
@@ -149,6 +190,36 @@ module Polars
       end
       _ldf.write_json(file)
       nil
+    end
+
+    # Serialize the logical plan of this LazyFrame to a file or string in JSON format.
+    #
+    # @param file [Object]
+    #   File path to which the result should be written. If set to `nil`
+    #   (default), the output is returned as a string instead.
+    #
+    # @return [Object]
+    #
+    # @note
+    #   Serialization is not stable across Polars versions: a LazyFrame serialized
+    #   in one Polars version may not be deserializable in another Polars version.
+    #
+    # @example Serialize the logical plan into a binary representation.
+    #   lf = Polars::LazyFrame.new({"a" => [1, 2, 3]}).sum
+    #   bytes = lf.serialize
+    #   Polars::LazyFrame.deserialize(StringIO.new(bytes)).collect
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 6   │
+    #   # └─────┘
+    def serialize(file = nil)
+      serializer = _ldf.method(:serialize_binary)
+      Utils.serialize_polars_object(serializer, file)
     end
 
     # Offers a structured way to apply a sequence of user-defined functions (UDFs).

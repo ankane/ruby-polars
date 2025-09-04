@@ -1,14 +1,33 @@
+use std::io::{BufReader, BufWriter, Read};
+
 use magnus::Value;
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
-use std::io::Read;
 
 use crate::file::get_file_like;
+use crate::utils::to_rb_err;
 use crate::{RbLazyFrame, RbResult, RbValueError};
 
 impl RbLazyFrame {
-    // TODO change to serialize_json
-    pub fn read_json(rb_f: Value) -> RbResult<Self> {
+    pub fn serialize_binary(&self, rb_f: Value) -> RbResult<()> {
+        let file = get_file_like(rb_f, true)?;
+        let writer = BufWriter::new(file);
+        self.ldf
+            .borrow()
+            .logical_plan
+            .serialize_versioned(writer, Default::default())
+            .map_err(to_rb_err)
+    }
+
+    pub fn deserialize_binary(rb_f: Value) -> RbResult<Self> {
+        let file = get_file_like(rb_f, false)?;
+        let reader = BufReader::new(file);
+
+        let lp: DslPlan = DslPlan::deserialize_versioned(reader).map_err(to_rb_err)?;
+        Ok(LazyFrame::from(lp).into())
+    }
+
+    pub fn deserialize_json(rb_f: Value) -> RbResult<Self> {
         // it is faster to first read to memory and then parse: https://github.com/serde-rs/json/issues/160
         // so don't bother with files.
         let mut json = String::new();
