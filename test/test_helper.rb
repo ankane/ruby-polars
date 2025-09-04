@@ -21,11 +21,11 @@ class Minitest::Test
     GC.stress = false if stress?
   end
 
-  def no_stress
-    GC.stress = false if stress?
+  def with_stress(value = true)
+    GC.stress = value if stress?
     yield
   ensure
-    GC.stress = true if stress?
+    GC.stress = !value if stress?
   end
 
   def stress?

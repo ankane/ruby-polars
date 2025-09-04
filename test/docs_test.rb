@@ -1,6 +1,10 @@
 require_relative "test_helper"
 
 class DocsTest < Minitest::Test
+  def setup
+    super unless stress?
+  end
+
   def test_array_expr
     assert_docs Polars::ArrayExpr
   end
@@ -198,6 +202,8 @@ class DocsTest < Minitest::Test
       warn "Missing examples (#{method})"
     end
 
+    puts "#{cls}##{method.name}" if stress?
+
     code = ""
     method.tags(:example).each do |example|
       # use variables from previous examples
@@ -205,10 +211,12 @@ class DocsTest < Minitest::Test
       begin
         # just final output
         output =
-          if cls == Polars::Config
-            capture_io { instance_eval(code) }[0].chomp
-          else
-            instance_eval(code).inspect
+          with_stress do
+            if cls == Polars::Config
+              capture_io { instance_eval(code) }[0].chomp
+            else
+              instance_eval(code).inspect
+            end
           end
 
         # print output

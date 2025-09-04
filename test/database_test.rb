@@ -242,7 +242,7 @@ class DatabaseTest < Minitest::Test
   end
 
   def create_users
-    no_stress { _create_users }
+    with_stress(false) { _create_users }
   end
 
   def _create_users
