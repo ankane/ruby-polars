@@ -50,19 +50,16 @@ pub fn to_rbseries(s: Vec<Column>) -> RArray {
     )
 }
 
-pub fn mark_series(marker: &gc::Marker, series: &Series) {
-    if let DataType::Object(_) = series.dtype() {
-        for i in 0..series.len() {
-            let obj: Option<&ObjectValue> = series.get_object(i).map(|any| any.into());
-            if let Some(o) = obj {
-                marker.mark(o.inner);
-            }
-        }
-    }
-}
-
 impl DataTypeFunctions for RbSeries {
     fn mark(&self, marker: &gc::Marker) {
-        mark_series(marker, &self.series.borrow());
+        let series = self.series.borrow();
+        if let DataType::Object(_) = series.dtype() {
+            for i in 0..series.len() {
+                let obj: Option<&ObjectValue> = series.get_object(i).map(|any| any.into());
+                if let Some(o) = obj {
+                    marker.mark(o.inner);
+                }
+            }
+        }
     }
 }
