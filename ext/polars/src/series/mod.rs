@@ -63,6 +63,13 @@ pub fn mark_series(marker: &gc::Marker, series: &Series) {
 
 impl DataTypeFunctions for RbSeries {
     fn mark(&self, marker: &gc::Marker) {
-        mark_series(marker, &self.series.borrow());
+        // this is not ideal, as objects will not be marked if unable to borrow
+        // this should never happen, but log for now to avoid panic,
+        // as most series will not use Object datatype
+        if let Ok(s) = &self.series.try_borrow() {
+            mark_series(marker, s);
+        } else {
+            eprintln!("[polars] Could not borrow!");
+        }
     }
 }
