@@ -193,8 +193,7 @@ class TypesTest < Minitest::Test
 
     df = Polars::DataFrame.new({a: [Object.new]})
     GC.start
-    # TODO fix
-    # assert df.inspect
+    assert df.inspect
     assert df.to_a
   end
 
