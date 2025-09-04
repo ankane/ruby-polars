@@ -51,6 +51,24 @@ end
 class Minitest::Test
   include Polars::Testing
 
+  def setup
+    if stress?
+      # load before GC.stress
+      @@once ||= ActiveSupport::TimeZone["Eastern Time (US & Canada)"]
+
+      puts "#{self.class.name}##{name}"
+      GC.stress = true
+    end
+  end
+
+  def teardown
+    GC.stress = false if stress?
+  end
+
+  def stress?
+    ENV["STRESS"]
+  end
+
   def assert_series(exp, act, dtype: nil, **options)
     assert_kind_of Polars::Series, act
     if exp.is_a?(Polars::Series)
