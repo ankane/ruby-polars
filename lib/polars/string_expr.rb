@@ -774,7 +774,7 @@ module Polars
 
     # Return the bytes offset of the first substring matching a pattern.
     #
-    # If the pattern is not found, returns None.
+    # If the pattern is not found, returns nil.
     #
     # @param pattern [String]
     #   A valid regular expression pattern, compatible with the [regex crate](https://docs.rs/regex/latest/regex/).

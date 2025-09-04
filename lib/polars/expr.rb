@@ -1817,7 +1817,7 @@ module Polars
       wrap_expr(_rbexpr.arg_min)
     end
 
-    # Get the index of the first occurrence of a value, or ``None`` if it's not found.
+    # Get the index of the first occurrence of a value, or `nil` if it's not found.
     #
     # @param element [Object]
     #   Value to find.

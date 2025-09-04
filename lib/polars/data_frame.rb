@@ -668,7 +668,7 @@ module Polars
     #
     # @param file [Object]
     #   File path or writable file-like object to which the result will be written.
-    #   If set to `None` (default), the output is returned as a string instead.
+    #   If set to `nil` (default), the output is returned as a string instead.
     #
     # @return [Object]
     #

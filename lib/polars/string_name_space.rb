@@ -450,7 +450,7 @@ module Polars
     # Throws an error if invalid JSON strings are encountered.
     #
     # @param dtype [Object]
-    #   The dtype to cast the extracted value to. If None, the dtype will be
+    #   The dtype to cast the extracted value to. If nil, the dtype will be
     #   inferred from the JSON value.
     # @param infer_schema_length [Integer]
     #   The maximum number of rows to scan for schema inference.

@@ -38,7 +38,7 @@ module Polars
     # @param offset [Integer]
     #   Start index. Negative indexing is supported.
     # @param length [Integer]
-    #   Length of the slice. If set to `None` (default), the slice is taken to the
+    #   Length of the slice. If set to `nil` (default), the slice is taken to the
     #   end of the list.
     # @param as_array [Boolean]
     #   Return result as a fixed-length `Array`, otherwise as a `List`.
