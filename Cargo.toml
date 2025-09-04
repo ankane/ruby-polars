@@ -4,3 +4,6 @@ resolver = "2"
 
 [profile.release]
 strip = true
+
+[profile.dev]
+strip = true
