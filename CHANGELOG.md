@@ -4,7 +4,7 @@
 - Added `storage_options` and `retries` options to `sink_ipc` method
 - Added experimental support for Iceberg
 - Added experimental `cast_options` option to `scan_parquet` method
-- Fixed `Object` type for `Series`
+- Fixed `Object` type
 
 ## 0.21.1 (2025-08-18)
 

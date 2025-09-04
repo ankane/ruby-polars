@@ -193,14 +193,35 @@ class TypesTest < Minitest::Test
 
     df = Polars::DataFrame.new({a: [Object.new]})
     GC.start
-    # TODO fix
-    # assert df.inspect
+    assert df.inspect
     assert df.to_a
 
     df = Polars::DataFrame.new({a: [Object.new, Object.new]})
     GC.start
-    # TODO fix
-    # assert df.inspect
+    assert df.inspect
+    assert df.to_a
+  end
+
+  # only fully tested in stress mode
+  def test_object_stress
+    df = Polars::DataFrame.new({a: [Object.new]})
+    io = StringIO.new
+    assert_raises(Polars::ComputeError) do
+      df.write_csv(io)
+    end
+    assert_raises(Polars::ComputeError) do
+      df.write_parquet(io)
+    end
+    assert_raises(Polars::ComputeError) do
+      df.write_json(io)
+    end
+    assert_raises(Polars::ComputeError) do
+      df.write_ndjson(io)
+    end
+    assert_raises(Polars::ComputeError) do
+      df.write_ipc(io)
+    end
+    assert df.inspect
     assert df.to_a
   end
 
