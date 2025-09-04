@@ -27,9 +27,6 @@ module Polars
       ldf
     end
 
-    # def self.from_json
-    # end
-
     # Read a logical plan from a JSON file to construct a LazyFrame.
     #
     # @param file [String]
