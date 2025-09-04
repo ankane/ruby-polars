@@ -133,7 +133,7 @@ fn dicts_to_rows<'a>(data: &Value, names: &'a [String], _strict: bool) -> RbResu
 
         let mut row = Vec::with_capacity(names.len());
         for k in names.iter() {
-            // TODO improve performance
+            // TODO improve performance (must work with GC)
             let val = match d.get(k.clone()).or_else(|| d.get(ruby.to_symbol(k))) {
                 None => AnyValue::Null,
                 Some(val) => Wrap::<AnyValue>::try_convert(val)?.0,
