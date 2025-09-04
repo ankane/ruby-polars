@@ -1,7 +1,6 @@
 ## 0.21.2 (unreleased)
 
-- Added `serialize` and `deserialize` methods to `LazyFrame`
-- Added `serialize` and `deserialize` methods to `Expr`
+- Added `serialize` and `deserialize` methods to `DataFrame`, `LazyFrame`, and `Expr`
 - Added `storage_options` and `retries` options to `sink_ipc` method
 - Added experimental support for Iceberg
 - Added experimental `cast_options` option to `scan_parquet` method

@@ -72,6 +72,43 @@ module Polars
       end
     end
 
+    # Read a serialized DataFrame from a file.
+    #
+    # @param source [Object]
+    #     Path to a file or a file-like object (by file-like object, we refer to
+    #     objects that have a `read` method, such as a file handler or `StringIO`).
+    #
+    # @return [DataFrame]
+    #
+    # @note
+    #   Serialization is not stable across Polars versions: a LazyFrame serialized
+    #   in one Polars version may not be deserializable in another Polars version.
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4.0, 5.0, 6.0]})
+    #   bytes = df.serialize
+    #   Polars::DataFrame.deserialize(StringIO.new(bytes))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 4.0 │
+    #   # │ 2   ┆ 5.0 │
+    #   # │ 3   ┆ 6.0 │
+    #   # └─────┴─────┘
+    def self.deserialize(source)
+      if Utils.pathlike?(source)
+        source = Utils.normalize_filepath(source)
+      end
+
+      deserializer = RbDataFrame.method(:deserialize_binary)
+
+      _from_rbdf(deserializer.(source))
+    end
+
     # @private
     def self._from_rbdf(rb_df)
       df = DataFrame.allocate
@@ -625,6 +662,44 @@ module Polars
         index = columns.length + index
       end
       Utils.wrap_s(_df.select_at_idx(index))
+    end
+
+    # Serialize this DataFrame to a file or string.
+    #
+    # @param file [Object]
+    #   File path or writable file-like object to which the result will be written.
+    #   If set to `None` (default), the output is returned as a string instead.
+    #
+    # @return [Object]
+    #
+    # @note
+    #   Serialization is not stable across Polars versions: a LazyFrame serialized
+    #   in one Polars version may not be deserializable in another Polars version.
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => [1, 2, 3],
+    #       "bar" => [6, 7, 8]
+    #     }
+    #   )
+    #   bytes = df.serialize
+    #   Polars::DataFrame.deserialize(StringIO.new(bytes))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ foo ┆ bar │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 6   │
+    #   # │ 2   ┆ 7   │
+    #   # │ 3   ┆ 8   │
+    #   # └─────┴─────┘
+    def serialize(file = nil)
+      serializer = _df.method(:serialize_binary)
+
+      Utils.serialize_polars_object(serializer, file)
     end
 
     # Serialize to JSON representation.

@@ -158,7 +158,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("to_struct", method!(RbDataFrame::to_struct, 1))?;
     class.define_method("unnest", method!(RbDataFrame::unnest, 1))?;
     class.define_method("clear", method!(RbDataFrame::clear, 0))?;
-    class.define_method("serialize_json", method!(RbDataFrame::serialize_json, 1))?;
+    class.define_method(
+        "serialize_binary",
+        method!(RbDataFrame::serialize_binary, 1),
+    )?;
+    class.define_singleton_method(
+        "deserialize_binary",
+        function!(RbDataFrame::deserialize_binary, 1),
+    )?;
 
     let class = module.define_class("RbExpr", ruby.class_object())?;
     class.define_method("+", method!(RbExpr::add, 1))?;
