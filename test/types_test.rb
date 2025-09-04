@@ -188,8 +188,7 @@ class TypesTest < Minitest::Test
   def test_object
     s = Polars::Series.new([Object.new])
     GC.start
-    # TODO fix
-    # assert s.inspect
+    assert s.inspect
     assert s.to_a
 
     df = Polars::DataFrame.new({a: [Object.new]})

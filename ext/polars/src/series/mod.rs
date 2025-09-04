@@ -8,13 +8,14 @@ mod import;
 mod map;
 mod scatter;
 
-use magnus::{RArray, Ruby, prelude::*};
+use magnus::{DataTypeFunctions, RArray, Ruby, TypedData, gc, prelude::*};
 use polars::prelude::*;
 use std::cell::RefCell;
 
-use crate::RbResult;
+use crate::{ObjectValue, RbResult};
 
-#[magnus::wrap(class = "Polars::RbSeries")]
+#[derive(TypedData)]
+#[magnus(class = "Polars::RbSeries", mark)]
 pub struct RbSeries {
     pub series: RefCell<Series>,
 }
@@ -47,4 +48,18 @@ pub fn to_rbseries(s: Vec<Column>) -> RArray {
             .map(|c| c.take_materialized_series())
             .map(RbSeries::new),
     )
+}
+
+impl DataTypeFunctions for RbSeries {
+    fn mark(&self, marker: &gc::Marker) {
+        let series = self.series.borrow();
+        if let DataType::Object(_) = series.dtype() {
+            for i in 0..series.len() {
+                let obj: Option<&ObjectValue> = series.get_object(i).map(|any| any.into());
+                if let Some(o) = obj {
+                    marker.mark(o.inner);
+                }
+            }
+        }
+    }
 }

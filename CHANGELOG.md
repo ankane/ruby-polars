@@ -2,6 +2,7 @@
 
 - Added experimental support for Iceberg
 - Added experimental `cast_options` option to `scan_parquet` method
+- Fixed `Object` type for `Series`
 
 ## 0.21.1 (2025-08-18)
 
