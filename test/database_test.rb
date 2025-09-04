@@ -2,11 +2,11 @@ require_relative "test_helper"
 
 class DatabaseTest < Minitest::Test
   def setup
-    super
     User.delete_all
     ActiveRecord::Base.connection_pool.with_connection do |connection|
       connection.drop_table("items") if connection.table_exists?("items")
     end
+    super
   end
 
   def test_read_database_relation
@@ -176,6 +176,8 @@ class DatabaseTest < Minitest::Test
   end
 
   def test_write_database_many_rows
+    skip if stress?
+
     df = Polars::DataFrame.new({"a" => 1..100_000})
     df.write_database("items")
   end
@@ -240,6 +242,10 @@ class DatabaseTest < Minitest::Test
   end
 
   def create_users
+    no_stress { _create_users }
+  end
+
+  def _create_users
     # round time since Postgres only stores microseconds
     now = postgresql? ? Time.now.round(6) : Time.now
     # TODO fix nil

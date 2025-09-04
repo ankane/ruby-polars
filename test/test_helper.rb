@@ -21,6 +21,13 @@ class Minitest::Test
     GC.stress = false if stress?
   end
 
+  def no_stress
+    GC.stress = false if stress?
+    yield
+  ensure
+    GC.stress = true if stress?
+  end
+
   def stress?
     ENV["STRESS"]
   end
