@@ -774,6 +774,21 @@ module Polars
     # @param maintain_order [Boolean]
     #   Maintain the order in which data is processed.
     #   Setting this to `false` will  be slightly faster.
+    # @param storage_options [String]
+    #   Options that indicate how to connect to a cloud provider.
+    #
+    #   The cloud providers currently supported are AWS, GCP, and Azure.
+    #   See supported keys here:
+    #
+    #   * [aws](https://docs.rs/object_store/latest/object_store/aws/enum.AmazonS3ConfigKey.html)
+    #   * [gcp](https://docs.rs/object_store/latest/object_store/gcp/enum.GoogleConfigKey.html)
+    #   * [azure](https://docs.rs/object_store/latest/object_store/azure/enum.AzureConfigKey.html)
+    #   * Hugging Face (`hf://`): Accepts an API key under the `token` parameter: `{'token': '...'}`, or by setting the `HF_TOKEN` environment variable.
+    #
+    #   If `storage_options` is not provided, Polars will try to infer the
+    #   information from environment variables.
+    # @param retries [Integer]
+    #   Number of retries if accessing a cloud instance fails.
     # @param type_coercion [Boolean]
     #   Do type coercion optimization.
     # @param predicate_pushdown [Boolean]
@@ -806,6 +821,8 @@ module Polars
       path,
       compression: "zstd",
       maintain_order: true,
+      storage_options: nil,
+      retries: 2,
       type_coercion: true,
       predicate_pushdown: true,
       projection_pushdown: true,
@@ -816,10 +833,6 @@ module Polars
       mkdir: false,
       lazy: false
     )
-      # TODO support storage options in Rust
-      storage_options = nil
-      retries = 2
-
       lf = _set_sink_optimizations(
         type_coercion: type_coercion,
         predicate_pushdown: predicate_pushdown,
