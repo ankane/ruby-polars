@@ -266,6 +266,8 @@ module Polars
     #   Polars::Expr.deserialize(StringIO.new(bytes))
     #   # => col("foo").sum().over([col("bar")])
     def serialize(file = nil)
+      raise Todo unless _rbexpr.respond_to?(:serialize_binary)
+
       serializer = _rbexpr.method(:serialize_binary)
 
       Utils.serialize_polars_object(serializer, file)

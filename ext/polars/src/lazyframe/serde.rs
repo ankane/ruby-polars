@@ -1,14 +1,18 @@
-use std::io::{BufReader, BufWriter, Read};
+use std::io::Read;
+#[cfg(feature = "serialize_binary")]
+use std::io::{BufReader, BufWriter};
 
 use magnus::Value;
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
 
 use crate::file::get_file_like;
+#[cfg(feature = "serialize_binary")]
 use crate::utils::to_rb_err;
 use crate::{RbLazyFrame, RbResult, RbValueError};
 
 impl RbLazyFrame {
+    #[cfg(feature = "serialize_binary")]
     pub fn serialize_binary(&self, rb_f: Value) -> RbResult<()> {
         let file = get_file_like(rb_f, true)?;
         let writer = BufWriter::new(file);
@@ -19,6 +23,7 @@ impl RbLazyFrame {
             .map_err(to_rb_err)
     }
 
+    #[cfg(feature = "serialize_binary")]
     pub fn deserialize_binary(rb_f: Value) -> RbResult<Self> {
         let file = get_file_like(rb_f, false)?;
         let reader = BufReader::new(file);

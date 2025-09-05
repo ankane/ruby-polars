@@ -72,6 +72,8 @@ module Polars
     #   # │ 6   │
     #   # └─────┘
     def self.deserialize(source)
+      raise Todo unless RbLazyFrame.respond_to?(:deserialize_binary)
+
       if Utils.pathlike?(source)
         source = Utils.normalize_filepath(source)
       end
@@ -214,6 +216,8 @@ module Polars
     #   # │ 6   │
     #   # └─────┘
     def serialize(file = nil)
+      raise Todo unless _ldf.respond_to?(:serialize_binary)
+
       serializer = _ldf.method(:serialize_binary)
       Utils.serialize_polars_object(serializer, file)
     end

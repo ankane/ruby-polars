@@ -585,7 +585,9 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("hist", method!(RbExpr::hist, 4))?;
     class.define_method("into_selector", method!(RbExpr::into_selector, 0))?;
     class.define_singleton_method("new_selector", function!(RbExpr::new_selector, 1))?;
+    #[cfg(feature = "serialize_binary")]
     class.define_method("serialize_binary", method!(RbExpr::serialize_binary, 1))?;
+    #[cfg(feature = "serialize_binary")]
     class.define_singleton_method(
         "deserialize_binary",
         function!(RbExpr::deserialize_binary, 1),
@@ -822,10 +824,12 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("re_escape", function!(re_escape, 1))?;
 
     let class = module.define_class("RbLazyFrame", ruby.class_object())?;
+    #[cfg(feature = "serialize_binary")]
     class.define_method(
         "serialize_binary",
         method!(RbLazyFrame::serialize_binary, 1),
     )?;
+    #[cfg(feature = "serialize_binary")]
     class.define_singleton_method(
         "deserialize_binary",
         function!(RbLazyFrame::deserialize_binary, 1),

@@ -169,6 +169,8 @@ module Polars
     #   Polars::Expr.deserialize(StringIO.new(bytes))
     #   # => col("foo").sum().over([col("bar")])
     def self.deserialize(source)
+      raise Todo unless RbExpr.respond_to?(:deserialize_binary)
+
       if Utils.pathlike?(source)
         source = Utils.normalize_filepath(source)
       end

@@ -10,6 +10,7 @@ mod meta;
 mod name;
 mod rolling;
 pub mod selector;
+#[cfg(feature = "serialize_binary")]
 mod serde;
 mod string;
 mod r#struct;

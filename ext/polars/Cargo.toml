@@ -141,3 +141,7 @@ jemallocator = { version = "0.5", features = ["disable_initial_exec_tls"] }
 
 [target.'cfg(not(any(target_os = "linux", target_os = "windows")))'.dependencies]
 mimalloc = { version = "0.1", default-features = false }
+
+[features]
+default = []
+serialize_binary = []
