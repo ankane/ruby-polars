@@ -2,7 +2,6 @@ use polars::lazy::dsl;
 
 use crate::RbExpr;
 
-// TODO add to Ruby
 pub fn business_day_count(
     start: &RbExpr,
     end: &RbExpr,

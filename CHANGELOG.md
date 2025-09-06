@@ -2,6 +2,7 @@
 
 - Added `serialize` and `deserialize` methods to `DataFrame`
 - Added `storage_options` and `retries` options to `sink_ipc` method
+- Added `business_day_count` method to `Polars`
 - Added experimental support for Iceberg
 - Added experimental `cast_options` option to `scan_parquet` method
 - Fixed `Object` type
