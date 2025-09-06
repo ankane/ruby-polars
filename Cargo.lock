@@ -1302,7 +1302,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a793df0d7afeac54f95b471d3af7f0d4fb975699f972341a4b76988d49cdf0c"
 dependencies = [
  "cfg-if",
- "windows-targets 0.52.6",
+ "windows-targets 0.53.0",
 ]
 
 [[package]]
@@ -1391,9 +1391,9 @@ dependencies = [
 
 [[package]]
 name = "magnus"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f14d3cc31b2dc4fce6cd447a83c7a7ca2ab8a9f1e535dcb2f796ff972b0e68b"
+checksum = "bd2ac6e71886be00ac34db92aa732c793c5107c95191805b9a1c7e70e6d342e0"
 dependencies = [
  "chrono",
  "magnus-macros",
