@@ -1670,6 +1670,7 @@ dependencies = [
  "polars-arrow",
  "polars-core",
  "polars-dtype",
+ "polars-error",
  "polars-io",
  "polars-lazy",
  "polars-parquet",

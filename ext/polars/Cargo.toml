@@ -20,6 +20,7 @@ magnus = { version = "0.8", features = ["chrono"] }
 num-traits = "0.2"
 polars-core = "=0.51.0"
 polars-dtype = "=0.51.0"
+polars-error = "=0.51.0"
 polars-io = "=0.51.0"
 polars-lazy = { version = "=0.51.0", features = ["catalog"] }
 polars-plan = "=0.51.0"

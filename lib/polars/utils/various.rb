@@ -75,6 +75,10 @@ module Polars
       end
     end
 
+    def self._polars_warn(msg)
+      warn msg
+    end
+
     def self.extend_bool(value, n_match, value_name, match_name)
       values = bool?(value) ? [value] * n_match : value
       if n_match != values.length

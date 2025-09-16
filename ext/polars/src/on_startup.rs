@@ -2,15 +2,23 @@ use std::any::Any;
 use std::sync::Arc;
 use std::sync::OnceLock;
 
-use magnus::{IntoValue, Ruby};
+use magnus::{IntoValue, Ruby, Value, prelude::*};
 use polars::prelude::*;
 use polars_core::chunked_array::object::builder::ObjectChunkedBuilder;
 use polars_core::chunked_array::object::registry;
 use polars_core::chunked_array::object::registry::AnonymousObjectBuilder;
 use polars_core::prelude::AnyValue;
+use polars_error::PolarsWarning;
 
 use crate::Wrap;
 use crate::prelude::ObjectValue;
+use crate::rb_modules::utils;
+
+fn warning_function(msg: &str, _warning: PolarsWarning) {
+    if let Err(e) = utils().funcall::<_, _, Value>("_polars_warn", (msg.to_string(),)) {
+        eprintln!("{e}")
+    }
+}
 
 static POLARS_REGISTRY_INIT_LOCK: OnceLock<()> = OnceLock::new();
 
@@ -40,8 +48,7 @@ pub(crate) fn register_startup_deps() {
             rbobject_converter,
             physical_dtype,
         );
-        // TODO
         // Register warning function for `polars_warn!`.
-        // polars_error::set_warning_function(warning_function);
+        polars_error::set_warning_function(warning_function);
     });
 }
