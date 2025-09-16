@@ -110,10 +110,21 @@ module Polars
       DataTypeExpr._from_rbdatatype_expr(RbDataTypeExpr.from_dtype(self))
     end
 
-    [:numeric?, :decimal?, :integer?, :signed_integer?, :unsigned_integer?, :float?, :temporal?, :nested?, :to_dtype_expr].each do |v|
+    [:numeric?, :decimal?, :integer?, :signed_integer?, :unsigned_integer?, :float?, :temporal?, :nested?].each do |v|
       define_method(v) do
         self.class.public_send(v)
       end
+    end
+
+    # Return a `DataTypeExpr` with a static `DataType`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   Polars::Int16.new.to_dtype_expr.collect_dtype({})
+    #   # => Polars::Int16
+    def to_dtype_expr
+      DataTypeExpr._from_rbdatatype_expr(RbDataTypeExpr.from_dtype(self))
     end
 
     # Returns a string representing the data type.

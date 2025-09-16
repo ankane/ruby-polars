@@ -925,7 +925,7 @@ module Polars
     # Convert the series of type `List` to a series of type `Struct`.
     #
     # @param n_field_strategy ["first_non_null", "max_width"]
-    #   Strategy to determine the number of fields of the struct.
+    #   Deprecated and ignored.
     # @param fields pArray
     #   If the name and number of the desired fields is known in advance
     #   a list of field names can be given, which will be assigned by index.
@@ -945,20 +945,28 @@ module Polars
     # @return [Expr]
     #
     # @example
-    #   df = Polars::DataFrame.new({"a" => [[1, 2, 3], [1, 2]]})
-    #   df.select([Polars.col("a").list.to_struct])
+    #   df = Polars::DataFrame.new({"n" => [[0, 1], [0, 1, 2]]})
+    #   df.with_columns(struct: Polars.col("n").list.to_struct(upper_bound: 2))
     #   # =>
-    #   # shape: (2, 1)
-    #   # ┌────────────┐
-    #   # │ a          │
-    #   # │ ---        │
-    #   # │ struct[3]  │
-    #   # ╞════════════╡
-    #   # │ {1,2,3}    │
-    #   # │ {1,2,null} │
-    #   # └────────────┘
+    #   # shape: (2, 2)
+    #   # ┌───────────┬───────────┐
+    #   # │ n         ┆ struct    │
+    #   # │ ---       ┆ ---       │
+    #   # │ list[i64] ┆ struct[2] │
+    #   # ╞═══════════╪═══════════╡
+    #   # │ [0, 1]    ┆ {0,1}     │
+    #   # │ [0, 1, 2] ┆ {0,1}     │
+    #   # └───────────┴───────────┘
     def to_struct(n_field_strategy: "first_non_null", fields: nil, upper_bound: nil)
-      Utils.wrap_expr(_rbexpr.list_to_struct(n_field_strategy, fields, nil))
+      if !fields.is_a?(::Array)
+        if fields.nil?
+          fields = upper_bound.times.map { |i| "field_#{i}" }
+        else
+          fields = upper_bound.times.map { |i| fields.(i) }
+        end
+      end
+
+      Utils.wrap_expr(_rbexpr.list_to_struct(fields))
     end
 
     # Run any polars expression against the lists' elements.

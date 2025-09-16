@@ -755,27 +755,39 @@ module Polars
     #
     # @param n_field_strategy ["first_non_null", "max_width"]
     #   Strategy to determine the number of fields of the struct.
-    # @param name_generator [Object]
-    #   A custom function that can be used to generate the field names.
-    #   Default field names are `field_0, field_1 .. field_n`
+    # @param fields [Object]
+    #   If the name and number of the desired fields is known in advance
+    #   a list of field names can be given, which will be assigned by index.
+    #   Otherwise, to dynamically assign field names, a custom function can be
+    #   used; if neither are set, fields will be `field_0, field_1 .. field_n`.
     #
     # @return [Series]
     #
-    # @example
-    #   df = Polars::DataFrame.new({"a" => [[1, 2, 3], [1, 2]]})
-    #   df.select([Polars.col("a").list.to_struct])
+    # @example Convert list to struct with field name assignment by index from a list of names:
+    #   s1 = Polars::Series.new("n", [[0, 1, 2], [0, 1]])
+    #   s1.list.to_struct(fields: ["one", "two", "three"]).struct.unnest
     #   # =>
-    #   # shape: (2, 1)
-    #   # ┌────────────┐
-    #   # │ a          │
-    #   # │ ---        │
-    #   # │ struct[3]  │
-    #   # ╞════════════╡
-    #   # │ {1,2,3}    │
-    #   # │ {1,2,null} │
-    #   # └────────────┘
-    def to_struct(n_field_strategy: "first_non_null", name_generator: nil)
-      super
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬───────┐
+    #   # │ one ┆ two ┆ three │
+    #   # │ --- ┆ --- ┆ ---   │
+    #   # │ i64 ┆ i64 ┆ i64   │
+    #   # ╞═════╪═════╪═══════╡
+    #   # │ 0   ┆ 1   ┆ 2     │
+    #   # │ 0   ┆ 1   ┆ null  │
+    #   # └─────┴─────┴───────┘
+    def to_struct(n_field_strategy: "first_non_null", fields: nil)
+      if fields.is_a?(::Array)
+        s = Utils.wrap_s(_s)
+        return (
+          s.to_frame
+          .select_seq(F.col(s.name).list.to_struct(fields: fields))
+          .to_series
+        )
+      end
+
+      raise Todo
+      # Utils.wrap_s(_s.list_to_struct(n_field_strategy, fields))
     end
 
     # Run any polars expression against the lists' elements.

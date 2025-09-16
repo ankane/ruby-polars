@@ -222,10 +222,8 @@ module Polars
 
     # Convert a String column into a Decimal column.
     #
-    # This method infers the needed parameters `precision` and `scale`.
-    #
-    # @param inference_length [Integer]
-    #   Number of elements to parse to determine the `precision` and `scale`.
+    # @param scale [Integer]
+    #   Number of digits after the comma to use for the decimals.
     #
     # @return [Expr]
     #
@@ -243,7 +241,7 @@ module Polars
     #       ]
     #     }
     #   )
-    #   df.with_columns(numbers_decimal: Polars.col("numbers").str.to_decimal)
+    #   df.with_columns(numbers_decimal: Polars.col("numbers").str.to_decimal(scale: 2))
     #   # =>
     #   # shape: (7, 2)
     #   # ┌───────────┬─────────────────┐
@@ -259,8 +257,8 @@ module Polars
     #   # │ 143.09    ┆ 143.09          │
     #   # │ 143.9     ┆ 143.90          │
     #   # └───────────┴─────────────────┘
-    def to_decimal(inference_length = 100)
-      Utils.wrap_expr(_rbexpr.str_to_decimal(inference_length))
+    def to_decimal(scale:)
+      Utils.wrap_expr(_rbexpr.str_to_decimal(scale))
     end
 
     # Get length of the strings as `:u32` (as number of bytes).
@@ -919,11 +917,9 @@ module Polars
     # Throw errors if encounter invalid JSON strings.
     #
     # @param dtype [Object]
-    #   The dtype to cast the extracted value to. If nil, the dtype will be
-    #   inferred from the JSON value.
+    #   The dtype to cast the extracted value to.
     # @param infer_schema_length [Integer]
-    #   The maximum number of rows to scan for schema inference.
-    #   If set to `nil`, the full data may be scanned *(this is slow)*.
+    #   Deprecated and ignored.
     #
     # @return [Expr]
     #
@@ -932,23 +928,26 @@ module Polars
     #     {"json" => ['{"a":1, "b": true}', nil, '{"a":2, "b": false}']}
     #   )
     #   dtype = Polars::Struct.new([Polars::Field.new("a", Polars::Int64), Polars::Field.new("b", Polars::Boolean)])
-    #   df.select(Polars.col("json").str.json_decode(dtype))
+    #   df.with_columns(decoded: Polars.col("json").str.json_decode(dtype))
     #   # =>
-    #   # shape: (3, 1)
-    #   # ┌───────────┐
-    #   # │ json      │
-    #   # │ ---       │
-    #   # │ struct[2] │
-    #   # ╞═══════════╡
-    #   # │ {1,true}  │
-    #   # │ null      │
-    #   # │ {2,false} │
-    #   # └───────────┘
-    def json_decode(dtype = nil, infer_schema_length: 100)
-      if !dtype.nil?
-        dtype = Utils.rb_type_to_dtype(dtype)
+    #   # shape: (3, 2)
+    #   # ┌─────────────────────┬───────────┐
+    #   # │ json                ┆ decoded   │
+    #   # │ ---                 ┆ ---       │
+    #   # │ str                 ┆ struct[2] │
+    #   # ╞═════════════════════╪═══════════╡
+    #   # │ {"a":1, "b": true}  ┆ {1,true}  │
+    #   # │ null                ┆ null      │
+    #   # │ {"a":2, "b": false} ┆ {2,false} │
+    #   # └─────────────────────┴───────────┘
+    def json_decode(dtype, infer_schema_length: nil)
+      if dtype.nil?
+        msg = "`Expr.str.json_decode` needs an explicitly given `dtype` otherwise Polars is not able to determine the output type. If you want to eagerly infer datatype you can use `Series.str.json_decode`."
+        raise TypeError, msg
       end
-      Utils.wrap_expr(_rbexpr.str_json_decode(dtype, infer_schema_length))
+
+      dtype_expr = Utils.parse_into_datatype_expr(dtype)._rbdatatype_expr
+      Utils.wrap_expr(_rbexpr.str_json_decode(dtype_expr))
     end
     alias_method :json_extract, :json_decode
 

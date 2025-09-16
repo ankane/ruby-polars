@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use magnus::{TryConvert, Value, value::ReprValue};
+use polars::prelude::default_values::DefaultFieldValues;
 use polars::prelude::deletion::DeletionFilesList;
 use polars::prelude::{
     CastColumnsPolicy, ColumnMapping, ExtraColumnsPolicy, MissingColumnsPolicy, PlSmallStr, Schema,
@@ -48,6 +49,8 @@ impl RbScanOptions {
         let deletion_files: Option<Wrap<DeletionFilesList>> =
             self.0.funcall("deletion_files", ())?;
         let column_mapping: Option<Wrap<ColumnMapping>> = self.0.funcall("column_mapping", ())?;
+        let default_values: Option<Wrap<DefaultFieldValues>> =
+            self.0.funcall("default_values", ())?;
 
         let cloud_options = storage_options;
 
@@ -95,6 +98,9 @@ impl RbScanOptions {
             include_file_paths: include_file_paths.map(|x| x.0),
             deletion_files: DeletionFilesList::filter_empty(deletion_files.map(|x| x.0)),
             column_mapping: column_mapping.map(|x| x.0),
+            default_values: default_values
+                .map(|x| x.0)
+                .filter(|DefaultFieldValues::Iceberg(v)| !v.is_empty()),
         };
 
         Ok(unified_scan_args)

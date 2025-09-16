@@ -26,20 +26,6 @@ impl RbExpr {
         self.inner.clone().dt().offset_by(by.inner.clone()).into()
     }
 
-    pub fn dt_epoch_seconds(&self) -> Self {
-        self.inner
-            .clone()
-            .map(
-                |s| {
-                    s.take_materialized_series()
-                        .timestamp(TimeUnit::Milliseconds)
-                        .map(|ca| Some((ca / 1000).into_column()))
-                },
-                GetOutput::from_type(DataType::Int64),
-            )
-            .into()
-    }
-
     pub fn dt_with_time_unit(&self, tu: Wrap<TimeUnit>) -> Self {
         self.inner.clone().dt().with_time_unit(tu.0).into()
     }

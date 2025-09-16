@@ -210,8 +210,12 @@ module Polars
     #   #         143.09
     #   #         143.90
     #   # ]
-    def to_decimal(inference_length = 100)
-      super
+    def to_decimal(inference_length = 100, scale: nil)
+      if !scale.nil?
+        raise Todo
+      end
+
+      Utils.wrap_s(_s.str_to_decimal_infer(inference_length))
     end
 
     # Return the length of each string as the number of bytes.
@@ -470,7 +474,16 @@ module Polars
     #   #         {2,false}
     #   # ]
     def json_decode(dtype = nil, infer_schema_length: 100)
-      super
+      if !dtype.nil?
+        s = Utils.wrap_s(_s)
+        return (
+          s.to_frame
+          .select_seq(F.col(s.name).str.json_decode(dtype))
+          .to_series
+        )
+      end
+
+      Utils.wrap_s(_s.str_json_decode(infer_schema_length))
     end
 
     # Extract the first match of json string with provided JSONPath expression.

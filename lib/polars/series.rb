@@ -5307,7 +5307,7 @@ module Polars
     #   #         6
     #   # ]
     def shrink_dtype
-      super
+      Utils.wrap_s(_s.shrink_dtype)
     end
 
     # Get the chunks of this Series as a list of Series.

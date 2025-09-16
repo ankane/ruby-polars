@@ -1,5 +1,6 @@
-## 0.21.2 (unreleased)
+## 0.22.0 (unreleased)
 
+- Updated Polars to 0.51.0
 - Added `serialize` and `deserialize` methods to `DataFrame`
 - Added `storage_options` and `retries` options to `sink_ipc` method
 - Added `business_day_count` method to `Polars`

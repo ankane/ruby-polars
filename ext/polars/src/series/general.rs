@@ -6,7 +6,7 @@ use polars_core::utils::flatten::flatten_series;
 use crate::conversion::*;
 use crate::exceptions::RbIndexError;
 use crate::rb_modules;
-use crate::{RbDataFrame, RbPolarsErr, RbResult, RbSeries};
+use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
 
 impl RbSeries {
     pub fn struct_unnest(&self) -> RbResult<RbDataFrame> {
@@ -325,6 +325,36 @@ impl RbSeries {
         let binding = self.series.borrow();
         let bool = binding.bool().map_err(RbPolarsErr::from)?;
         Ok((!bool).into_series().into())
+    }
+
+    pub fn shrink_dtype(&self) -> RbResult<Self> {
+        self.series
+            .borrow()
+            .shrink_type()
+            .map(Into::into)
+            .map_err(RbPolarsErr::from)
+            .map_err(RbErr::from)
+    }
+
+    pub fn str_to_decimal_infer(&self, inference_length: usize) -> RbResult<Self> {
+        let s = self.series.borrow();
+        let ca = s.str().map_err(RbPolarsErr::from)?;
+        ca.to_decimal_infer(inference_length)
+            .map(Series::from)
+            .map(Into::into)
+            .map_err(RbPolarsErr::from)
+            .map_err(RbErr::from)
+    }
+
+    pub fn str_json_decode(&self, infer_schema_length: Option<usize>) -> RbResult<Self> {
+        let lock = self.series.borrow();
+        lock.str()
+            .map_err(RbPolarsErr::from)?
+            .json_decode(None, infer_schema_length)
+            .map(|s| s.with_name(lock.name().clone()))
+            .map(Into::into)
+            .map_err(RbPolarsErr::from)
+            .map_err(RbErr::from)
     }
 
     pub fn to_s(&self) -> String {

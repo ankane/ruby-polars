@@ -7603,7 +7603,8 @@ module Polars
     #   # │ 1.584963 │
     #   # └──────────┘
     def log(base = Math::E)
-      wrap_expr(_rbexpr.log(base))
+      base_rbexpr = Utils.parse_into_expression(base)
+      wrap_expr(_rbexpr.log(base_rbexpr))
     end
 
     # Compute the natural logarithm of each element plus one.
@@ -7775,33 +7776,9 @@ module Polars
     # This can be used to reduce memory pressure.
     #
     # @return [Expr]
-    #
-    # @example
-    #   Polars::DataFrame.new(
-    #     {
-    #       "a" => [1, 2, 3],
-    #       "b" => [1, 2, 2 << 32],
-    #       "c" => [-1, 2, 1 << 30],
-    #       "d" => [-112, 2, 112],
-    #       "e" => [-112, 2, 129],
-    #       "f" => ["a", "b", "c"],
-    #       "g" => [0.1, 1.32, 0.12],
-    #       "h" => [true, nil, false]
-    #     }
-    #   ).select(Polars.all.shrink_dtype)
-    #   # =>
-    #   # shape: (3, 8)
-    #   # ┌─────┬────────────┬────────────┬──────┬──────┬─────┬──────┬───────┐
-    #   # │ a   ┆ b          ┆ c          ┆ d    ┆ e    ┆ f   ┆ g    ┆ h     │
-    #   # │ --- ┆ ---        ┆ ---        ┆ ---  ┆ ---  ┆ --- ┆ ---  ┆ ---   │
-    #   # │ i8  ┆ i64        ┆ i32        ┆ i8   ┆ i16  ┆ str ┆ f32  ┆ bool  │
-    #   # ╞═════╪════════════╪════════════╪══════╪══════╪═════╪══════╪═══════╡
-    #   # │ 1   ┆ 1          ┆ -1         ┆ -112 ┆ -112 ┆ a   ┆ 0.1  ┆ true  │
-    #   # │ 2   ┆ 2          ┆ 2          ┆ 2    ┆ 2    ┆ b   ┆ 1.32 ┆ null  │
-    #   # │ 3   ┆ 8589934592 ┆ 1073741824 ┆ 112  ┆ 129  ┆ c   ┆ 0.12 ┆ false │
-    #   # └─────┴────────────┴────────────┴──────┴──────┴─────┴──────┴───────┘
     def shrink_dtype
-      wrap_expr(_rbexpr.shrink_dtype)
+      warn "`Expr.shrink_dtype` is deprecated and is a no-op; use `Series.shrink_dtype` instead."
+      self
     end
 
     # Bin values into buckets and count their occurrences.

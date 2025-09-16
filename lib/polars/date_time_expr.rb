@@ -1188,7 +1188,7 @@ module Polars
       if Utils::DTYPE_TEMPORAL_UNITS.include?(time_unit)
         timestamp(time_unit)
       elsif time_unit == "s"
-        Utils.wrap_expr(_rbexpr.dt_epoch_seconds)
+        timestamp("ms").floordiv(F.lit(1000, dtype: Int64))
       elsif time_unit == "d"
         Utils.wrap_expr(_rbexpr).cast(:date).cast(:i32)
       else

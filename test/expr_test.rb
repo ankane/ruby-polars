@@ -15,9 +15,9 @@ class ExprTest < Minitest::Test
     assert_lit "[]", Polars.lit([])
     assert_lit "[1, 2, 3]", Polars.lit([1, 2, 3])
     assert_lit "[1, 2, 3]", Polars.lit(Numo::NArray.cast([1, 2, 3]))
-    assert_lit "dyn int: 1640995200000000000.strict_cast(Datetime(Nanoseconds, None)).strict_cast(Date)", Polars.lit(Date.new(2022, 1, 1))
-    assert_lit "dyn int: 1640995200000000000.strict_cast(Datetime(Nanoseconds, None))", Polars.lit(Time.utc(2022, 1, 1))
-    assert_lit "dyn int: 1640995200000000000.strict_cast(Datetime(Nanoseconds, None))", Polars.lit(DateTime.new(2022, 1, 1))
+    assert_lit "dyn int: 1640995200000000000.strict_cast(Datetime('ns')).strict_cast(Date)", Polars.lit(Date.new(2022, 1, 1))
+    assert_lit "dyn int: 1640995200000000000.strict_cast(Datetime('ns'))", Polars.lit(Time.utc(2022, 1, 1))
+    assert_lit "dyn int: 1640995200000000000.strict_cast(Datetime('ns'))", Polars.lit(DateTime.new(2022, 1, 1))
 
     error = assert_raises(ArgumentError) do
       Polars.lit(Object.new)

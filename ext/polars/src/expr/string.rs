@@ -1,7 +1,7 @@
 use polars::prelude::*;
 
 use crate::conversion::Wrap;
-use crate::{RbExpr, RbPolarsErr, RbResult};
+use crate::{RbDataTypeExpr, RbExpr, RbPolarsErr, RbResult};
 
 impl RbExpr {
     pub fn str_join(&self, delimiter: String, ignore_nulls: bool) -> Self {
@@ -265,16 +265,11 @@ impl RbExpr {
             .into()
     }
 
-    pub fn str_json_decode(
-        &self,
-        dtype: Option<Wrap<DataType>>,
-        infer_schema_len: Option<usize>,
-    ) -> Self {
-        let dtype = dtype.map(|wrap| wrap.0);
+    pub fn str_json_decode(&self, dtype: &RbDataTypeExpr) -> Self {
         self.inner
             .clone()
             .str()
-            .json_decode(dtype, infer_schema_len)
+            .json_decode(dtype.inner.clone())
             .into()
     }
 
@@ -352,8 +347,8 @@ impl RbExpr {
         self.inner.clone().str().splitn(by.inner.clone(), n).into()
     }
 
-    pub fn str_to_decimal(&self, infer_len: usize) -> Self {
-        self.inner.clone().str().to_decimal(infer_len).into()
+    pub fn str_to_decimal(&self, scale: usize) -> Self {
+        self.inner.clone().str().to_decimal(scale).into()
     }
 
     pub fn str_contains_any(&self, patterns: &RbExpr, ascii_case_insensitive: bool) -> Self {

@@ -298,7 +298,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("cum_min", method!(RbExpr::cum_min, 1))?;
     class.define_method("cum_prod", method!(RbExpr::cum_prod, 1))?;
     class.define_method("product", method!(RbExpr::product, 0))?;
-    class.define_method("shrink_dtype", method!(RbExpr::shrink_dtype, 0))?;
     class.define_method("str_to_date", method!(RbExpr::str_to_date, 4))?;
     class.define_method("str_to_datetime", method!(RbExpr::str_to_datetime, 7))?;
     class.define_method("str_to_time", method!(RbExpr::str_to_time, 3))?;
@@ -366,7 +365,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("str_base64_encode", method!(RbExpr::str_base64_encode, 0))?;
     class.define_method("str_base64_decode", method!(RbExpr::str_base64_decode, 1))?;
     class.define_method("str_to_integer", method!(RbExpr::str_to_integer, 3))?;
-    class.define_method("str_json_decode", method!(RbExpr::str_json_decode, 2))?;
+    class.define_method("str_json_decode", method!(RbExpr::str_json_decode, 1))?;
     class.define_method("binary_hex_encode", method!(RbExpr::bin_hex_encode, 0))?;
     class.define_method("binary_hex_decode", method!(RbExpr::bin_hex_decode, 1))?;
     class.define_method(
@@ -452,7 +451,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("dt_timestamp", method!(RbExpr::dt_timestamp, 1))?;
     class.define_method("dt_to_string", method!(RbExpr::dt_to_string, 1))?;
     class.define_method("dt_offset_by", method!(RbExpr::dt_offset_by, 1))?;
-    class.define_method("dt_epoch_seconds", method!(RbExpr::dt_epoch_seconds, 0))?;
     class.define_method("dt_with_time_unit", method!(RbExpr::dt_with_time_unit, 1))?;
     class.define_method(
         "dt_convert_time_zone",
@@ -534,7 +532,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("list_eval", method!(RbExpr::list_eval, 1))?;
     class.define_method("list_filter", method!(RbExpr::list_filter, 1))?;
     class.define_method("cumulative_eval", method!(RbExpr::cumulative_eval, 2))?;
-    class.define_method("list_to_struct", method!(RbExpr::list_to_struct, 3))?;
+    class.define_method("list_to_struct", method!(RbExpr::list_to_struct, 1))?;
     class.define_method("rank", method!(RbExpr::rank, 3))?;
     class.define_method("diff", method!(RbExpr::diff, 2))?;
     class.define_method("pct_change", method!(RbExpr::pct_change, 1))?;
@@ -1030,6 +1028,12 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("lt", method!(RbSeries::lt, 1))?;
     class.define_method("lt_eq", method!(RbSeries::lt_eq, 1))?;
     class.define_method("not_", method!(RbSeries::not_, 0))?;
+    class.define_method("shrink_dtype", method!(RbSeries::shrink_dtype, 0))?;
+    class.define_method(
+        "str_to_decimal_infer",
+        method!(RbSeries::str_to_decimal_infer, 1),
+    )?;
+    class.define_method("str_json_decode", method!(RbSeries::str_json_decode, 1))?;
     class.define_method("to_s", method!(RbSeries::to_s, 0))?;
     class.define_method("len", method!(RbSeries::len, 0))?;
     class.define_method("to_a", method!(RbSeries::to_a, 0))?;

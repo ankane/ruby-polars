@@ -1,4 +1,4 @@
-use magnus::{Ruby, Value, prelude::*, value::Opaque};
+use magnus::{RArray, prelude::*};
 use polars::lazy::dsl::lit;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
@@ -195,33 +195,17 @@ impl RbExpr {
         self.inner.clone().list().to_array(width).into()
     }
 
-    pub fn list_to_struct(
-        &self,
-        width_strat: Wrap<ListToStructWidthStrategy>,
-        name_gen: Option<Value>,
-        upper_bound: Option<usize>,
-    ) -> RbResult<Self> {
-        let name_gen = name_gen.map(|lambda| {
-            let lambda = Opaque::from(lambda);
-            Arc::new(move |idx: usize| {
-                let lambda = Ruby::get().unwrap().get_inner(lambda);
-                let out: String = lambda.funcall("call", (idx,)).unwrap();
-                PlSmallStr::from_string(out)
-            });
-
-            // non-Ruby thread
-            todo!();
-        });
-
+    pub fn list_to_struct(&self, names: RArray) -> RbResult<Self> {
         Ok(self
             .inner
             .clone()
             .list()
-            .to_struct(ListToStruct::InferWidth {
-                infer_field_strategy: width_strat.0,
-                get_index_name: name_gen,
-                max_fields: upper_bound,
-            })
+            .to_struct(
+                names
+                    .into_iter()
+                    .map(|x| Ok(Wrap::<PlSmallStr>::try_convert(x)?.0))
+                    .collect::<RbResult<Arc<[_]>>>()?,
+            )
             .into())
     }
 

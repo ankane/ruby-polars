@@ -19,6 +19,9 @@ use polars::datatypes::AnyValue;
 use polars::frame::row::Row;
 use polars::io::avro::AvroCompression;
 use polars::io::cloud::CloudOptions;
+use polars::prelude::default_values::{
+    DefaultFieldValues, IcebergIdentityTransformedPartitionFields,
+};
 use polars::prelude::deletion::DeletionFilesList;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
@@ -1311,6 +1314,7 @@ impl TryConvert for Wrap<CastColumnsPolicy> {
             datetime_nanoseconds_downcast,
             datetime_microseconds_downcast: false,
             datetime_convert_timezone,
+            null_upcast: true,
             missing_struct_fields,
             extra_struct_fields,
         }));
@@ -1545,6 +1549,43 @@ impl TryConvert for Wrap<DeletionFilesList> {
                 })?;
 
                 DeletionFilesList::IcebergPositionDelete(Arc::new(out))
+            }
+
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "unknown deletion file type: {v}"
+                )));
+            }
+        }))
+    }
+}
+
+impl TryConvert for Wrap<DefaultFieldValues> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let (default_values_type, ob) = <(String, Value)>::try_convert(ob)?;
+
+        Ok(Wrap(match &*default_values_type {
+            "iceberg" => {
+                let dict = RHash::try_convert(ob)?;
+
+                let mut out = PlIndexMap::new();
+
+                dict.foreach(|k: u32, v: Value| {
+                    let v: Result<Column, String> = if let Ok(s) = get_series(v) {
+                        Ok(s.into_column())
+                    } else {
+                        let err_msg = String::try_convert(v)?;
+                        Err(err_msg)
+                    };
+
+                    out.insert(k, v);
+
+                    Ok(ForEach::Continue)
+                })?;
+
+                DefaultFieldValues::Iceberg(Arc::new(IcebergIdentityTransformedPartitionFields(
+                    out,
+                )))
             }
 
             v => {

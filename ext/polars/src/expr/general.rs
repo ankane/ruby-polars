@@ -483,10 +483,7 @@ impl RbExpr {
     }
 
     pub fn rechunk(&self) -> Self {
-        self.inner
-            .clone()
-            .map(|s| Ok(Some(s.rechunk())), GetOutput::same_type())
-            .into()
+        self.inner.clone().rechunk().into()
     }
 
     pub fn round(&self, decimals: u32, mode: Wrap<RoundMode>) -> Self {
@@ -663,10 +660,6 @@ impl RbExpr {
 
     pub fn product(&self) -> Self {
         self.inner.clone().product().into()
-    }
-
-    pub fn shrink_dtype(&self) -> Self {
-        self.inner.clone().shrink_dtype().into()
     }
 
     pub fn map_batches(
@@ -868,8 +861,8 @@ impl RbExpr {
         self.inner.clone().all(drop_nulls).into()
     }
 
-    pub fn log(&self, base: f64) -> Self {
-        self.inner.clone().log(base).into()
+    pub fn log(&self, base: &RbExpr) -> Self {
+        self.inner.clone().log(base.inner.clone()).into()
     }
 
     pub fn log1p(&self) -> Self {

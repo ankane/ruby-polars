@@ -3,7 +3,8 @@ module Polars
     class ScanOptions
       attr_reader :row_index, :pre_slice, :cast_options, :extra_columns, :missing_columns,
         :include_file_paths, :glob, :hive_partitioning, :hive_schema, :try_parse_hive_dates,
-        :rechunk, :cache, :storage_options, :credential_provider, :retries, :column_mapping, :deletion_files
+        :rechunk, :cache, :storage_options, :credential_provider, :retries, :column_mapping,
+        :default_values, :deletion_files
 
       def initialize(
         row_index: nil,
@@ -22,6 +23,7 @@ module Polars
         credential_provider: nil,
         retries: 2,
         column_mapping: nil,
+        default_values: nil,
         deletion_files: nil
       )
         @row_index = row_index
@@ -40,6 +42,7 @@ module Polars
         @credential_provider = credential_provider
         @retries = retries
         @column_mapping = column_mapping
+        @default_values = default_values
         @deletion_files = deletion_files
       end
     end
