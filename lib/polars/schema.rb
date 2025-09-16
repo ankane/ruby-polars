@@ -30,7 +30,7 @@ module Polars
     #
     # @return [Object]
     def []=(name, dtype)
-      # TODO check dtype
+      _check_dtype(dtype)
       @schema[name] = dtype
     end
 
