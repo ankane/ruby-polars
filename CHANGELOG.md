@@ -6,6 +6,7 @@
 - Added `business_day_count` method to `Polars`
 - Added experimental support for Iceberg
 - Added experimental `cast_options` option to `scan_parquet` method
+- Changed `read_parquet_schema` method to return `Schema`
 - Fixed `Object` type
 
 ## 0.21.1 (2025-08-18)

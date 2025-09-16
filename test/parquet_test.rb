@@ -80,7 +80,8 @@ class ParquetTest < Minitest::Test
 
   def test_read_parquet_schema
     schema = Polars.read_parquet_schema("test/support/data.parquet")
-    assert_equal ({"a" => Polars::Int64, "b" => Polars::String}), schema
+    assert_kind_of Polars::Schema, schema
+    assert_equal ({"a" => Polars::Int64, "b" => Polars::String}), schema.to_h
   end
 
   def test_read_parquet_metadata

@@ -117,14 +117,13 @@ module Polars
     # @param source [Object]
     #   Path to a file or a file-like object.
     #
-    # @return [Hash]
+    # @return [Schema]
     def read_parquet_schema(source)
       if Utils.pathlike?(source)
         source = Utils.normalize_filepath(source)
       end
 
-      # TODO return Schema
-      scan_parquet(source).collect_schema.to_h
+      scan_parquet(source).collect_schema
     end
 
     # Get file-level custom metadata of a Parquet file without reading data.
