@@ -12,10 +12,10 @@ use polars_error::PolarsWarning;
 
 use crate::Wrap;
 use crate::prelude::ObjectValue;
-use crate::rb_modules::utils;
+use crate::rb_modules::pl_utils;
 
 fn warning_function(msg: &str, _warning: PolarsWarning) {
-    if let Err(e) = utils().funcall::<_, _, Value>("_polars_warn", (msg.to_string(),)) {
+    if let Err(e) = pl_utils().funcall::<_, _, Value>("_polars_warn", (msg.to_string(),)) {
         eprintln!("{e}")
     }
 }

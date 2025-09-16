@@ -4,7 +4,7 @@ use polars::prelude::*;
 use super::{Wrap, get_rbseq, struct_dict};
 
 use crate::RbResult;
-use crate::rb_modules::utils;
+use crate::rb_modules::pl_utils;
 
 impl TryConvert for Wrap<StringChunked> {
     fn try_convert(obj: Value) -> RbResult<Self> {
@@ -73,7 +73,7 @@ impl IntoValue for Wrap<&StructChunked> {
 
 impl IntoValue for Wrap<&DurationChunked> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
-        let utils = utils();
+        let utils = pl_utils();
         let time_unit = Wrap(self.0.time_unit()).into_value_with(ruby);
         let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| {
@@ -88,7 +88,7 @@ impl IntoValue for Wrap<&DurationChunked> {
 
 impl IntoValue for Wrap<&DatetimeChunked> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
-        let utils = utils();
+        let utils = pl_utils();
         let time_unit = Wrap(self.0.time_unit()).into_value_with(ruby);
         let time_zone = self
             .0
@@ -108,7 +108,7 @@ impl IntoValue for Wrap<&DatetimeChunked> {
 
 impl IntoValue for Wrap<&TimeChunked> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
-        let utils = utils();
+        let utils = pl_utils();
         let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_time", (v,)).unwrap())
         });
@@ -118,7 +118,7 @@ impl IntoValue for Wrap<&TimeChunked> {
 
 impl IntoValue for Wrap<&DateChunked> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
-        let utils = utils();
+        let utils = pl_utils();
         let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_date", (v,)).unwrap())
         });
@@ -128,7 +128,7 @@ impl IntoValue for Wrap<&DateChunked> {
 
 impl IntoValue for Wrap<&DecimalChunked> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
-        let utils = utils();
+        let utils = pl_utils();
         let rb_scale = (-(self.0.scale() as i32)).into_value_with(ruby);
         let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| {

@@ -34,7 +34,7 @@ use polars_utils::total_ord::{TotalEq, TotalHash};
 
 use crate::file::{RubyScanSourceInput, get_ruby_scan_source_input};
 use crate::object::OBJECT_NAME;
-use crate::rb_modules::series;
+use crate::rb_modules::pl_series;
 use crate::utils::to_rb_err;
 use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
 
@@ -90,7 +90,7 @@ pub(crate) fn get_series(obj: Value) -> RbResult<Series> {
 }
 
 pub(crate) fn to_series(s: RbSeries) -> Value {
-    let series = series();
+    let series = pl_series();
     series
         .funcall::<_, _, Value>("_from_rbseries", (s,))
         .unwrap()

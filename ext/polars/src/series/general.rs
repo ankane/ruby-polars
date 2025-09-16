@@ -99,7 +99,7 @@ impl RbSeries {
         match av {
             AnyValue::List(s) | AnyValue::Array(s, _) => {
                 let rbseries = RbSeries::new(s);
-                rb_modules::utils().funcall("wrap_s", (rbseries,))
+                rb_modules::pl_utils().funcall("wrap_s", (rbseries,))
             }
             _ => Ok(Wrap(av).into_value_with(ruby)),
         }
@@ -446,7 +446,7 @@ impl RbSeries {
         ruby.ary_try_from_iter(
             flatten_series(&rb_self.series.borrow())
                 .into_iter()
-                .map(|s| rb_modules::utils().funcall::<_, _, Value>("wrap_s", (Self::new(s),))),
+                .map(|s| rb_modules::pl_utils().funcall::<_, _, Value>("wrap_s", (Self::new(s),))),
         )
     }
 
