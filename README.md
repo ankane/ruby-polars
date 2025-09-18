@@ -88,7 +88,7 @@ From Avro
 Polars.read_avro("file.avro")
 ```
 
-From Iceberg (requires [iceberg](https://github.com/ankane/iceberg-ruby)) [unreleased, experimental]
+From Iceberg (requires [iceberg](https://github.com/ankane/iceberg-ruby)) [experimental]
 
 ```ruby
 Polars.scan_iceberg(table)
@@ -371,7 +371,7 @@ Avro
 df.write_avro("file.avro")
 ```
 
-Iceberg [unreleased, experimental]
+Iceberg [experimental]
 
 ```ruby
 df.write_iceberg(table, mode: "append")

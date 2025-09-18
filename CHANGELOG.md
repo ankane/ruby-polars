@@ -1,4 +1,4 @@
-## 0.22.0 (unreleased)
+## 0.22.0 (2025-09-17)
 
 - Updated Polars to 0.51.0
 - Added `serialize` and `deserialize` methods to `DataFrame`
