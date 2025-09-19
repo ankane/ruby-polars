@@ -21,7 +21,14 @@ module Polars
         raise Todo
       end
 
-      source.to_polars(snapshot_id:, storage_options:)
+      dataset =
+        IcebergDataset.new(
+          source,
+          snapshot_id:,
+          storage_options:
+        )
+
+      dataset.to_lazyframe
     end
   end
 end
