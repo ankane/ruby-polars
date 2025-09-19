@@ -340,7 +340,6 @@ impl RbSeries {
         let s = self.series.borrow();
         let ca = s.str().map_err(RbPolarsErr::from)?;
         ca.to_decimal_infer(inference_length)
-            .map(Series::from)
             .map(Into::into)
             .map_err(RbPolarsErr::from)
             .map_err(RbErr::from)
