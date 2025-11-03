@@ -25,6 +25,7 @@ use polars::prelude::default_values::{
 use polars::prelude::deletion::DeletionFilesList;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
+use polars_compute::decimal::dec128_verify_prec_scale;
 use polars_core::schema::iceberg::IcebergSchema;
 use polars_core::utils::arrow::array::Array;
 use polars_core::utils::materialize_dyn_int;
@@ -172,6 +173,10 @@ impl IntoValue for Wrap<DataType> {
             }
             DataType::UInt64 => {
                 let class = pl.const_get::<_, Value>("UInt64").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
+            DataType::UInt128 => {
+                let class = pl.const_get::<_, Value>("UInt128").unwrap();
                 class.funcall("new", ()).unwrap()
             }
             DataType::Float32 => {
@@ -350,7 +355,11 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Time" => DataType::Time,
                 "Polars::Datetime" => DataType::Datetime(TimeUnit::Microseconds, None),
                 "Polars::Duration" => DataType::Duration(TimeUnit::Microseconds),
-                "Polars::Decimal" => DataType::Decimal(None, None),
+                "Polars::Decimal" => {
+                    return Err(RbTypeError::new_err(
+                        "Decimal without precision/scale set is not a valid Polars datatype",
+                    ));
+                }
                 "Polars::List" => DataType::List(Box::new(DataType::Null)),
                 "Polars::Array" => DataType::Array(Box::new(DataType::Null), 0),
                 "Polars::Struct" => DataType::Struct(vec![]),
@@ -415,7 +424,8 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Decimal" => {
                     let precision = ob.funcall("precision", ())?;
                     let scale = ob.funcall("scale", ())?;
-                    DataType::Decimal(precision, Some(scale))
+                    dec128_verify_prec_scale(precision, scale).map_err(to_rb_err)?;
+                    DataType::Decimal(precision, scale)
                 }
                 "Polars::List" => {
                     let inner: Value = ob.funcall("inner", ()).unwrap();
@@ -882,7 +892,7 @@ impl TryConvert for Wrap<Option<IpcCompression>> {
         let parsed = match String::try_convert(ob)?.as_str() {
             "uncompressed" => None,
             "lz4" => Some(IpcCompression::LZ4),
-            "zstd" => Some(IpcCompression::ZSTD),
+            "zstd" => Some(IpcCompression::ZSTD(Default::default())),
             v => {
                 return Err(RbValueError::new_err(format!(
                     "compression must be one of {{'uncompressed', 'lz4', 'zstd'}}, got {v}"
@@ -1091,21 +1101,6 @@ impl TryConvert for Wrap<UniqueKeepStrategy> {
     }
 }
 
-impl TryConvert for Wrap<IpcCompression> {
-    fn try_convert(ob: Value) -> RbResult<Self> {
-        let parsed = match String::try_convert(ob)?.as_str() {
-            "lz4" => IpcCompression::LZ4,
-            "zstd" => IpcCompression::ZSTD,
-            v => {
-                return Err(RbValueError::new_err(format!(
-                    "compression must be one of {{'lz4', 'zstd'}}, got {v}"
-                )));
-            }
-        };
-        Ok(Wrap(parsed))
-    }
-}
-
 impl TryConvert for Wrap<SearchSortedSide> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match String::try_convert(ob)?.as_str() {
@@ -1208,7 +1203,8 @@ impl TryConvert for Wrap<QuoteStyle> {
 }
 
 pub(crate) fn parse_cloud_options(uri: &str, kv: Vec<(String, String)>) -> RbResult<CloudOptions> {
-    let out = CloudOptions::from_untyped_config(uri, kv).map_err(RbPolarsErr::from)?;
+    let out = CloudOptions::from_untyped_config(CloudScheme::from_uri(uri).as_ref(), kv)
+        .map_err(RbPolarsErr::from)?;
     Ok(out)
 }
 
@@ -1307,6 +1303,17 @@ impl TryConvert for Wrap<CastColumnsPolicy> {
             }
         };
 
+        let categorical_to_string =
+            match &*ob.funcall::<_, _, String>("categorical_to_string", ())? {
+                "allow" => true,
+                "forbid" => false,
+                v => {
+                    return Err(RbValueError::new_err(format!(
+                        "unknown option for categorical_to_string: {v}"
+                    )));
+                }
+            };
+
         return Ok(Wrap(CastColumnsPolicy {
             integer_upcast,
             float_upcast,
@@ -1315,6 +1322,7 @@ impl TryConvert for Wrap<CastColumnsPolicy> {
             datetime_microseconds_downcast: false,
             datetime_convert_timezone,
             null_upcast: true,
+            categorical_to_string,
             missing_struct_fields,
             extra_struct_fields,
         }));

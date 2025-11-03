@@ -2,9 +2,9 @@ module Polars
   module IO
     class ScanOptions
       attr_reader :row_index, :pre_slice, :cast_options, :extra_columns, :missing_columns,
-        :include_file_paths, :glob, :hive_partitioning, :hive_schema, :try_parse_hive_dates,
+        :include_file_paths, :glob, :hidden_file_prefix, :hive_partitioning, :hive_schema, :try_parse_hive_dates,
         :rechunk, :cache, :storage_options, :credential_provider, :retries, :column_mapping,
-        :default_values, :deletion_files
+        :default_values, :deletion_files, :table_statistics, :row_count
 
       def initialize(
         row_index: nil,
@@ -14,6 +14,7 @@ module Polars
         missing_columns: "raise",
         include_file_paths: nil,
         glob: true,
+        hidden_file_prefix: nil,
         hive_partitioning: nil,
         hive_schema: nil,
         try_parse_hive_dates: true,
@@ -24,7 +25,9 @@ module Polars
         retries: 2,
         column_mapping: nil,
         default_values: nil,
-        deletion_files: nil
+        deletion_files: nil,
+        table_statistics: nil,
+        row_count: nil
       )
         @row_index = row_index
         @pre_slice = pre_slice
@@ -33,6 +36,7 @@ module Polars
         @missing_columns = missing_columns
         @include_file_paths = include_file_paths
         @glob = glob
+        @hidden_file_prefix = hidden_file_prefix
         @hive_partitioning = hive_partitioning
         @hive_schema = hive_schema
         @try_parse_hive_dates = try_parse_hive_dates
@@ -44,6 +48,8 @@ module Polars
         @column_mapping = column_mapping
         @default_values = default_values
         @deletion_files = deletion_files
+        @table_statistics = table_statistics
+        @row_count = row_count
       end
     end
   end

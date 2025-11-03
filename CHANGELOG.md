@@ -1,3 +1,7 @@
+## 0.23.0 (unreleased)
+
+- Updated Polars to 0.52.0
+
 ## 0.22.0 (2025-09-17)
 
 - Updated Polars to 0.51.0

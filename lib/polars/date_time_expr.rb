@@ -1435,6 +1435,9 @@ module Polars
 
     # Extract the days from a Duration type.
     #
+    # @param fractional [Boolean]
+    #   Whether to include the fractional component of the second.
+    #
     # @return [Expr]
     #
     # @example
@@ -1462,12 +1465,15 @@ module Polars
     #   # │ 2020-04-01 00:00:00 ┆ 31        │
     #   # │ 2020-05-01 00:00:00 ┆ 30        │
     #   # └─────────────────────┴───────────┘
-    def total_days
-      Utils.wrap_expr(_rbexpr.dt_total_days)
+    def total_days(fractional: false)
+      Utils.wrap_expr(_rbexpr.dt_total_days(fractional))
     end
     alias_method :days, :total_days
 
     # Extract the hours from a Duration type.
+    #
+    # @param fractional [Boolean]
+    #   Whether to include the fractional component of the second.
     #
     # @return [Expr]
     #
@@ -1497,12 +1503,15 @@ module Polars
     #   # │ 2020-01-03 00:00:00 ┆ 24         │
     #   # │ 2020-01-04 00:00:00 ┆ 24         │
     #   # └─────────────────────┴────────────┘
-    def total_hours
-      Utils.wrap_expr(_rbexpr.dt_total_hours)
+    def total_hours(fractional: false)
+      Utils.wrap_expr(_rbexpr.dt_total_hours(fractional))
     end
     alias_method :hours, :total_hours
 
     # Extract the minutes from a Duration type.
+    #
+    # @param fractional [Boolean]
+    #   Whether to include the fractional component of the second.
     #
     # @return [Expr]
     #
@@ -1532,12 +1541,15 @@ module Polars
     #   # │ 2020-01-03 00:00:00 ┆ 1440         │
     #   # │ 2020-01-04 00:00:00 ┆ 1440         │
     #   # └─────────────────────┴──────────────┘
-    def total_minutes
-      Utils.wrap_expr(_rbexpr.dt_total_minutes)
+    def total_minutes(fractional: false)
+      Utils.wrap_expr(_rbexpr.dt_total_minutes(fractional))
     end
     alias_method :minutes, :total_minutes
 
     # Extract the seconds from a Duration type.
+    #
+    # @param fractional [Boolean]
+    #   Whether to include the fractional component of the second.
     #
     # @return [Expr]
     #
@@ -1568,12 +1580,15 @@ module Polars
     #   # │ 2020-01-01 00:03:00 ┆ 60           │
     #   # │ 2020-01-01 00:04:00 ┆ 60           │
     #   # └─────────────────────┴──────────────┘
-    def total_seconds
-      Utils.wrap_expr(_rbexpr.dt_total_seconds)
+    def total_seconds(fractional: false)
+      Utils.wrap_expr(_rbexpr.dt_total_seconds(fractional))
     end
     alias_method :seconds, :total_seconds
 
     # Extract the milliseconds from a Duration type.
+    #
+    # @param fractional [Boolean]
+    #   Whether to include the fractional component of the second.
     #
     # @return [Expr]
     #
@@ -1610,12 +1625,15 @@ module Polars
     #   # │ 2020-01-01 00:00:00.999 ┆ 1                 │
     #   # │ 2020-01-01 00:00:01     ┆ 1                 │
     #   # └─────────────────────────┴───────────────────┘
-    def total_milliseconds
-      Utils.wrap_expr(_rbexpr.dt_total_milliseconds)
+    def total_milliseconds(fractional: false)
+      Utils.wrap_expr(_rbexpr.dt_total_milliseconds(fractional))
     end
     alias_method :milliseconds, :total_milliseconds
 
     # Extract the microseconds from a Duration type.
+    #
+    # @param fractional [Boolean]
+    #   Whether to include the fractional component of the second.
     #
     # @return [Expr]
     #
@@ -1652,12 +1670,15 @@ module Polars
     #   # │ 2020-01-01 00:00:00.999 ┆ 1000              │
     #   # │ 2020-01-01 00:00:01     ┆ 1000              │
     #   # └─────────────────────────┴───────────────────┘
-    def total_microseconds
-      Utils.wrap_expr(_rbexpr.dt_total_microseconds)
+    def total_microseconds(fractional: false)
+      Utils.wrap_expr(_rbexpr.dt_total_microseconds(fractional))
     end
     alias_method :microseconds, :total_microseconds
 
     # Extract the nanoseconds from a Duration type.
+    #
+    # @param fractional [Boolean]
+    #   Whether to include the fractional component of the second.
     #
     # @return [Expr]
     #
@@ -1694,8 +1715,8 @@ module Polars
     #   # │ 2020-01-01 00:00:00.999 ┆ 1000000          │
     #   # │ 2020-01-01 00:00:01     ┆ 1000000          │
     #   # └─────────────────────────┴──────────────────┘
-    def total_nanoseconds
-      Utils.wrap_expr(_rbexpr.dt_total_nanoseconds)
+    def total_nanoseconds(fractional: false)
+      Utils.wrap_expr(_rbexpr.dt_total_nanoseconds(fractional))
     end
     alias_method :nanoseconds, :total_nanoseconds
 

@@ -3,6 +3,7 @@ use magnus::{
     IntoValue, RArray, RHash, RString, Ruby, TryConvert, Value, prelude::*, r_hash::ForEach,
 };
 use polars::prelude::*;
+use polars_compute::decimal::DEC128_MAX_PREC;
 use polars_core::utils::any_values_to_supertype_and_n_dtypes;
 
 use super::datetime::datetime_to_rb_object;
@@ -30,6 +31,7 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
         AnyValue::UInt16(v) => ruby.into_value(v),
         AnyValue::UInt32(v) => ruby.into_value(v),
         AnyValue::UInt64(v) => ruby.into_value(v),
+        AnyValue::UInt128(v) => ruby.into_value(v),
         AnyValue::Int8(v) => ruby.into_value(v),
         AnyValue::Int16(v) => ruby.into_value(v),
         AnyValue::Int32(v) => ruby.into_value(v),
@@ -74,7 +76,8 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
         }
         AnyValue::Binary(v) => ruby.str_from_slice(v).as_value(),
         AnyValue::BinaryOwned(v) => ruby.str_from_slice(&v).as_value(),
-        AnyValue::Decimal(v, scale) => pl_utils()
+        // TODO fix
+        AnyValue::Decimal(v, _prec, scale) => pl_utils()
             .funcall("_to_ruby_decimal", (v.to_string(), -(scale as i32)))
             .unwrap(),
     }
@@ -229,7 +232,7 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
             // TODO better error
             v = v.checked_neg().unwrap();
         }
-        Ok(AnyValue::Decimal(v, scale))
+        Ok(AnyValue::Decimal(v, DEC128_MAX_PREC, scale))
     }
 
     let ruby = Ruby::get_with(ob);

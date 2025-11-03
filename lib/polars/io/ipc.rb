@@ -187,8 +187,16 @@ module Polars
     #   DataFrame.
     # @param row_count_offset [Integer]
     #   Offset to start the row_count column (only use if the name is set).
+    # @param glob [Boolean]
+    #   Expand path given via globbing rules.
     # @param storage_options [Hash]
     #   Extra options that make sense for a particular storage connection.
+    # @param retries [Integer]
+    #   Number of retries if accessing a cloud instance fails.
+    # @param file_cache_ttl [Integer]
+    #   Amount of time to keep downloaded cloud files since their last access time,
+    #   in seconds. Uses the `POLARS_FILE_CACHE_TTL` environment variable
+    #   (which defaults to 1 hour) if not given.
     # @param hive_partitioning [Boolean]
     #   Infer statistics and schema from Hive partitioned URL and use them
     #   to prune reads. This is unset by default (i.e. `nil`), meaning it is
@@ -210,66 +218,37 @@ module Polars
       rechunk: true,
       row_count_name: nil,
       row_count_offset: 0,
+      glob: true,
       storage_options: nil,
+      retries: 2,
+      file_cache_ttl: nil,
       hive_partitioning: nil,
       hive_schema: nil,
       try_parse_hive_dates: true,
       include_file_paths: nil
     )
-      _scan_ipc_impl(
-        source,
-        n_rows: n_rows,
-        cache: cache,
-        rechunk: rechunk,
-        row_count_name: row_count_name,
-        row_count_offset: row_count_offset,
-        storage_options: storage_options,
-        hive_partitioning: hive_partitioning,
-        hive_schema: hive_schema,
-        try_parse_hive_dates: try_parse_hive_dates,
-        include_file_paths: include_file_paths
-      )
-    end
+      row_index_name = row_count_name
+      row_index_offset = row_count_offset
 
-    # @private
-    def _scan_ipc_impl(
-      source,
-      n_rows: nil,
-      cache: true,
-      rechunk: true,
-      row_count_name: nil,
-      row_count_offset: 0,
-      storage_options: nil,
-      hive_partitioning: nil,
-      hive_schema: nil,
-      try_parse_hive_dates: true,
-      include_file_paths: nil
-    )
-      sources = []
-      if Utils.pathlike?(source)
-        source = Utils.normalize_filepath(source)
-      elsif source.is_a?(::Array)
-        if Utils.is_path_or_str_sequence(source)
-          sources = source.map { |s| Utils.normalize_filepath(s) }
-        else
-          sources = source
-        end
-
-        source = nil
-      end
+      sources = get_sources(source)
 
       rblf =
         RbLazyFrame.new_from_ipc(
-          source,
           sources,
-          n_rows,
-          cache,
-          rechunk,
-          Utils.parse_row_index_args(row_count_name, row_count_offset),
-          hive_partitioning,
-          hive_schema,
-          try_parse_hive_dates,
-          include_file_paths
+          ScanOptions.new(
+            row_index: !row_index_name.nil? ? [row_index_name, row_index_offset] : nil,
+            pre_slice: !n_rows.nil? ? [0, n_rows] : nil,
+            include_file_paths: include_file_paths,
+            glob: glob,
+            hive_partitioning: hive_partitioning,
+            hive_schema: hive_schema,
+            try_parse_hive_dates: try_parse_hive_dates,
+            rechunk: rechunk,
+            cache: cache,
+            storage_options: !storage_options.nil? ? storage_options.to_a : nil,
+            retries: retries
+          ),
+          file_cache_ttl
         )
       Utils.wrap_ldf(rblf)
     end

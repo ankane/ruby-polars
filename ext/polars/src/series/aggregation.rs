@@ -1,5 +1,6 @@
 use crate::error::RbPolarsErr;
 use crate::prelude::*;
+use crate::utils::to_rb_err;
 use crate::{RbResult, RbSeries};
 use magnus::{IntoValue, Ruby, Value};
 
@@ -58,12 +59,18 @@ impl RbSeries {
                     .cast(&DataType::UInt8)
                     .unwrap()
                     .mean_reduce()
+                    .map_err(to_rb_err)?
                     .as_any_value(),
             )
             .into_value_with(ruby)),
             // For non-numeric output types we require mean_reduce.
             dt if dt.is_temporal() => Ok(Wrap(
-                rb_self.series.borrow().mean_reduce().as_any_value(),
+                rb_self
+                    .series
+                    .borrow()
+                    .mean_reduce()
+                    .map_err(to_rb_err)?
+                    .as_any_value(),
             )
             .into_value_with(ruby)),
             _ => Ok(rb_self.series.borrow().mean().into_value_with(ruby)),

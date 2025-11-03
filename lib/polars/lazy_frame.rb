@@ -4143,6 +4143,9 @@ module Polars
     #   Names of the struct columns that will be decomposed by its fields
     # @param more_columns [Array]
     #   Additional columns to unnest, specified as positional arguments.
+    # @param separator [String]
+    #   Rename output column names as combination of the struct column name,
+    #   name separator and field name.
     #
     # @return [LazyFrame]
     #
@@ -4187,11 +4190,11 @@ module Polars
     #   # │ foo    ┆ 1   ┆ a   ┆ true ┆ [1, 2]    ┆ baz   │
     #   # │ bar    ┆ 2   ┆ b   ┆ null ┆ [3]       ┆ womp  │
     #   # └────────┴─────┴─────┴──────┴───────────┴───────┘
-    def unnest(columns, *more_columns)
+    def unnest(columns, *more_columns, separator: nil)
       subset = Utils.parse_list_into_selector(columns) | Utils.parse_list_into_selector(
         more_columns
       )
-      _from_rbldf(_ldf.unnest(subset._rbselector))
+      _from_rbldf(_ldf.unnest(subset._rbselector, separator))
     end
 
     # Take two sorted DataFrames and merge them by the sorted key.

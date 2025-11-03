@@ -75,8 +75,8 @@ module Polars
     # Read a serialized DataFrame from a file.
     #
     # @param source [Object]
-    #     Path to a file or a file-like object (by file-like object, we refer to
-    #     objects that have a `read` method, such as a file handler or `StringIO`).
+    #   Path to a file or a file-like object (by file-like object, we refer to
+    #   objects that have a `read` method, such as a file handler or `StringIO`).
     #
     # @return [DataFrame]
     #
@@ -6059,8 +6059,13 @@ module Polars
     # The fields will be inserted into the `DataFrame` on the location of the
     # `struct` type.
     #
-    # @param names [Object]
-    #  Names of the struct columns that will be decomposed by its fields
+    # @param columns [Object]
+    #   Name of the struct column(s) that should be unnested.
+    # @param more_columns [Array]
+    #   Additional columns to unnest, specified as positional arguments.
+    # @param separator [String]
+    #   Rename output column names as combination of the struct column name,
+    #   name separator and field name.
     #
     # @return [DataFrame]
     #
@@ -6086,11 +6091,8 @@ module Polars
     #   # │ foo    ┆ 1   ┆ a   ┆ true ┆ [1, 2]    ┆ baz   │
     #   # │ bar    ┆ 2   ┆ b   ┆ null ┆ [3]       ┆ womp  │
     #   # └────────┴─────┴─────┴──────┴───────────┴───────┘
-    def unnest(names)
-      if names.is_a?(::String)
-        names = [names]
-      end
-      _from_rbdf(_df.unnest(names))
+    def unnest(columns, *more_columns, separator: nil)
+      lazy.unnest(columns, *more_columns, separator: separator).collect(_eager: true)
     end
 
     # Requires NumPy

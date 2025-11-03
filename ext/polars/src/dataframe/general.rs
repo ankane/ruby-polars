@@ -552,11 +552,6 @@ impl RbDataFrame {
         s.into_series().into()
     }
 
-    pub fn unnest(&self, names: Vec<String>) -> RbResult<Self> {
-        let df = self.df.borrow().unnest(names).map_err(RbPolarsErr::from)?;
-        Ok(df.into())
-    }
-
     pub fn clear(&self) -> Self {
         self.df.borrow().clear().into()
     }

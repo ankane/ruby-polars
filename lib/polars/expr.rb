@@ -6612,8 +6612,8 @@ module Polars
     #   # │ 10   ┆ null       │
     #   # │ 11   ┆ 0.1        │
     #   # │ 12   ┆ 0.090909   │
-    #   # │ null ┆ 0.0        │
-    #   # │ 12   ┆ 0.0        │
+    #   # │ null ┆ null       │
+    #   # │ 12   ┆ null       │
     #   # └──────┴────────────┘
     def pct_change(n: 1)
       n = Utils.parse_into_expression(n)

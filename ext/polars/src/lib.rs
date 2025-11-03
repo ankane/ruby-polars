@@ -156,7 +156,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("transpose", method!(RbDataFrame::transpose, 2))?;
     class.define_method("upsample", method!(RbDataFrame::upsample, 4))?;
     class.define_method("to_struct", method!(RbDataFrame::to_struct, 1))?;
-    class.define_method("unnest", method!(RbDataFrame::unnest, 1))?;
     class.define_method("clear", method!(RbDataFrame::clear, 0))?;
     class.define_method(
         "serialize_binary",
@@ -432,21 +431,21 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("dt_millisecond", method!(RbExpr::dt_millisecond, 0))?;
     class.define_method("dt_microsecond", method!(RbExpr::dt_microsecond, 0))?;
     class.define_method("dt_nanosecond", method!(RbExpr::dt_nanosecond, 0))?;
-    class.define_method("dt_total_days", method!(RbExpr::dt_total_days, 0))?;
-    class.define_method("dt_total_hours", method!(RbExpr::dt_total_hours, 0))?;
-    class.define_method("dt_total_minutes", method!(RbExpr::dt_total_minutes, 0))?;
-    class.define_method("dt_total_seconds", method!(RbExpr::dt_total_seconds, 0))?;
+    class.define_method("dt_total_days", method!(RbExpr::dt_total_days, 1))?;
+    class.define_method("dt_total_hours", method!(RbExpr::dt_total_hours, 1))?;
+    class.define_method("dt_total_minutes", method!(RbExpr::dt_total_minutes, 1))?;
+    class.define_method("dt_total_seconds", method!(RbExpr::dt_total_seconds, 1))?;
     class.define_method(
         "dt_total_nanoseconds",
-        method!(RbExpr::dt_total_nanoseconds, 0),
+        method!(RbExpr::dt_total_nanoseconds, 1),
     )?;
     class.define_method(
         "dt_total_microseconds",
-        method!(RbExpr::dt_total_microseconds, 0),
+        method!(RbExpr::dt_total_microseconds, 1),
     )?;
     class.define_method(
         "dt_total_milliseconds",
-        method!(RbExpr::dt_total_milliseconds, 0),
+        method!(RbExpr::dt_total_milliseconds, 1),
     )?;
     class.define_method("dt_timestamp", method!(RbExpr::dt_timestamp, 1))?;
     class.define_method("dt_to_string", method!(RbExpr::dt_to_string, 1))?;
@@ -845,7 +844,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "new_from_parquet",
         function!(RbLazyFrame::new_from_parquet, 6),
     )?;
-    class.define_singleton_method("new_from_ipc", function!(RbLazyFrame::new_from_ipc, 10))?;
+    class.define_singleton_method("new_from_ipc", function!(RbLazyFrame::new_from_ipc, 3))?;
     class.define_method("write_json", method!(RbLazyFrame::write_json, 1))?;
     class.define_method("describe_plan", method!(RbLazyFrame::describe_plan, 0))?;
     class.define_method(
@@ -912,7 +911,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("cast_all", method!(RbLazyFrame::cast_all, 2))?;
     class.define_method("_clone", method!(RbLazyFrame::clone, 0))?;
     class.define_method("collect_schema", method!(RbLazyFrame::collect_schema, 0))?;
-    class.define_method("unnest", method!(RbLazyFrame::unnest, 1))?;
+    class.define_method("unnest", method!(RbLazyFrame::unnest, 2))?;
     class.define_method("count", method!(RbLazyFrame::count, 0))?;
     class.define_method("merge_sorted", method!(RbLazyFrame::merge_sorted, 2))?;
 
@@ -1401,14 +1400,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method(
         "set_comm_subexpr_elim",
         method!(RbOptFlags::set_comm_subexpr_elim, 1),
-    )?;
-    class.define_method(
-        "get_collapse_joins",
-        method!(RbOptFlags::get_collapse_joins, 0),
-    )?;
-    class.define_method(
-        "set_collapse_joins",
-        method!(RbOptFlags::set_collapse_joins, 1),
     )?;
     class.define_method(
         "get_check_order_observe",

@@ -5,7 +5,7 @@ use polars::prelude::default_values::DefaultFieldValues;
 use polars::prelude::deletion::DeletionFilesList;
 use polars::prelude::{
     CastColumnsPolicy, ColumnMapping, ExtraColumnsPolicy, MissingColumnsPolicy, PlSmallStr, Schema,
-    UnifiedScanArgs,
+    TableStatistics, UnifiedScanArgs,
 };
 use polars_io::{HiveOptions, RowIndex};
 use polars_utils::IdxSize;
@@ -24,6 +24,12 @@ impl TryConvert for RbScanOptions {
     }
 }
 
+impl TryConvert for Wrap<TableStatistics> {
+    fn try_convert(_ob: Value) -> RbResult<Self> {
+        todo!();
+    }
+}
+
 impl RbScanOptions {
     pub fn extract_unified_scan_args(
         &self,
@@ -38,6 +44,10 @@ impl RbScanOptions {
         let include_file_paths: Option<Wrap<PlSmallStr>> =
             self.0.funcall("include_file_paths", ())?;
         let glob: bool = self.0.funcall("glob", ())?;
+        let hidden_file_prefix: Option<Vec<String>> = self.0.funcall("hidden_file_prefix", ())?;
+        let column_mapping: Option<Wrap<ColumnMapping>> = self.0.funcall("column_mapping", ())?;
+        let default_values: Option<Wrap<DefaultFieldValues>> =
+            self.0.funcall("default_values", ())?;
         let hive_partitioning: Option<bool> = self.0.funcall("hive_partitioning", ())?;
         let hive_schema: Option<Wrap<Schema>> = self.0.funcall("hive_schema", ())?;
         let try_parse_hive_dates: bool = self.0.funcall("try_parse_hive_dates", ())?;
@@ -48,9 +58,9 @@ impl RbScanOptions {
         let retries: usize = self.0.funcall("retries", ())?;
         let deletion_files: Option<Wrap<DeletionFilesList>> =
             self.0.funcall("deletion_files", ())?;
-        let column_mapping: Option<Wrap<ColumnMapping>> = self.0.funcall("column_mapping", ())?;
-        let default_values: Option<Wrap<DefaultFieldValues>> =
-            self.0.funcall("default_values", ())?;
+        let table_statistics: Option<Wrap<TableStatistics>> =
+            self.0.funcall("table_statistics", ())?;
+        let row_count: Option<(u64, u64)> = self.0.funcall("row_count", ())?;
 
         let cloud_options = storage_options;
 
@@ -89,7 +99,13 @@ impl RbScanOptions {
             rechunk,
             cache,
             glob,
+            hidden_file_prefix: hidden_file_prefix
+                .map(|x| x.into_iter().map(|x| (*x).into()).collect()),
             projection: None,
+            column_mapping: column_mapping.map(|x| x.0),
+            default_values: default_values
+                .map(|x| x.0)
+                .filter(|DefaultFieldValues::Iceberg(v)| !v.is_empty()),
             row_index,
             pre_slice: pre_slice.map(Slice::from),
             cast_columns_policy: cast_options.0,
@@ -97,10 +113,8 @@ impl RbScanOptions {
             extra_columns_policy: extra_columns.0,
             include_file_paths: include_file_paths.map(|x| x.0),
             deletion_files: DeletionFilesList::filter_empty(deletion_files.map(|x| x.0)),
-            column_mapping: column_mapping.map(|x| x.0),
-            default_values: default_values
-                .map(|x| x.0)
-                .filter(|DefaultFieldValues::Iceberg(v)| !v.is_empty()),
+            table_statistics: table_statistics.map(|x| x.0),
+            row_count,
         };
 
         Ok(unified_scan_args)

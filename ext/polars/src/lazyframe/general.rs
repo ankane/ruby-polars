@@ -1,5 +1,5 @@
 use magnus::{IntoValue, RArray, RHash, Ruby, TryConvert, Value, r_hash::ForEach, typed_data::Obj};
-use polars::io::{HiveOptions, RowIndex};
+use polars::io::RowIndex;
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
 use polars_plan::dsl::ScanSources;
@@ -18,7 +18,10 @@ use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbLazyGroupBy, RbPolarsErr, RbResu
 fn rbobject_to_first_path_and_scan_sources(obj: Value) -> RbResult<(Option<PlPath>, ScanSources)> {
     use crate::file::{RubyScanSourceInput, get_ruby_scan_source_input};
     Ok(match get_ruby_scan_source_input(obj, false)? {
-        RubyScanSourceInput::Path(path) => (Some(path.clone()), ScanSources::Paths([path].into())),
+        RubyScanSourceInput::Path(path) => (
+            Some(path.clone()),
+            ScanSources::Paths(FromIterator::from_iter([path])),
+        ),
         RubyScanSourceInput::File(file) => (None, ScanSources::Files([file].into())),
         RubyScanSourceInput::Buffer(buff) => (None, ScanSources::Buffers([buff].into())),
     })
@@ -180,48 +183,28 @@ impl RbLazyFrame {
         Ok(lf.into())
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn new_from_ipc(
-        source: Option<Value>,
         sources: Wrap<ScanSources>,
-        n_rows: Option<usize>,
-        cache: bool,
-        rechunk: bool,
-        row_index: Option<(String, IdxSize)>,
-        hive_partitioning: Option<bool>,
-        hive_schema: Option<Wrap<Schema>>,
-        try_parse_hive_dates: bool,
-        include_file_paths: Option<String>,
+        scan_options: RbScanOptions,
+        file_cache_ttl: Option<u64>,
     ) -> RbResult<Self> {
-        let row_index = row_index.map(|(name, offset)| RowIndex {
-            name: name.into(),
-            offset,
-        });
-
-        let hive_options = HiveOptions {
-            enabled: hive_partitioning,
-            hive_start_idx: 0,
-            schema: hive_schema.map(|x| Arc::new(x.0)),
-            try_parse_dates: try_parse_hive_dates,
-        };
-
-        let args = ScanArgsIpc {
-            n_rows,
-            cache,
-            rechunk,
-            row_index,
-            cloud_options: None,
-            hive_options,
-            include_file_paths: include_file_paths.map(|x| x.into()),
-        };
+        let options = IpcScanOptions;
 
         let sources = sources.0;
-        let (_first_path, sources) = match source {
-            None => (sources.first_path().map(|p| p.into_owned()), sources),
-            Some(source) => rbobject_to_first_path_and_scan_sources(source)?,
-        };
+        let first_path = sources.first_path().map(|p| p.into_owned());
 
-        let lf = LazyFrame::scan_ipc_sources(sources, args).map_err(RbPolarsErr::from)?;
+        let mut unified_scan_args =
+            scan_options.extract_unified_scan_args(first_path.as_ref().map(|p| p.as_ref()))?;
+
+        if let Some(file_cache_ttl) = file_cache_ttl {
+            unified_scan_args
+                .cloud_options
+                .get_or_insert_default()
+                .file_cache_ttl = file_cache_ttl;
+        }
+
+        let lf = LazyFrame::scan_ipc_sources(sources, options, unified_scan_args)
+            .map_err(RbPolarsErr::from)?;
         Ok(lf.into())
     }
 
@@ -406,13 +389,13 @@ impl RbLazyFrame {
     pub fn sink_ipc(
         &self,
         target: SinkTarget,
-        compression: Option<Wrap<IpcCompression>>,
+        compression: Wrap<Option<IpcCompression>>,
         cloud_options: Option<Vec<(String, String)>>,
         retries: usize,
         sink_options: Wrap<SinkOptions>,
     ) -> RbResult<RbLazyFrame> {
         let options = IpcWriterOptions {
-            compression: compression.map(|c| c.0),
+            compression: compression.0,
             ..Default::default()
         };
 
@@ -949,11 +932,14 @@ impl RbLazyFrame {
         Ok(schema_dict)
     }
 
-    pub fn unnest(&self, columns: &RbSelector) -> Self {
+    pub fn unnest(&self, columns: &RbSelector, separator: Option<String>) -> Self {
         self.ldf
             .borrow()
             .clone()
-            .unnest(columns.inner.clone())
+            .unnest(
+                columns.inner.clone(),
+                separator.as_deref().map(PlSmallStr::from_str),
+            )
             .into()
     }
 

@@ -18,6 +18,7 @@ impl RbSeries {
                 DataType::UInt16 => ruby.ary_from_iter(series.u16().unwrap()).as_value(),
                 DataType::UInt32 => ruby.ary_from_iter(series.u32().unwrap()).as_value(),
                 DataType::UInt64 => ruby.ary_from_iter(series.u64().unwrap()).as_value(),
+                DataType::UInt128 => ruby.ary_from_iter(series.u128().unwrap()).as_value(),
                 DataType::Int8 => ruby.ary_from_iter(series.i8().unwrap()).as_value(),
                 DataType::Int16 => ruby.ary_from_iter(series.i16().unwrap()).as_value(),
                 DataType::Int32 => ruby.ary_from_iter(series.i32().unwrap()).as_value(),
