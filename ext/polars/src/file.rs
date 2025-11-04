@@ -145,13 +145,13 @@ impl Seek for RbFileLikeObject {
             SeekFrom::End(i) => (2, i),
         };
 
-        let new_position = Ruby::get()
-            .unwrap()
-            .get_inner(self.inner)
-            .funcall("seek", (offset, whence))
+        let inner = Ruby::get().unwrap().get_inner(self.inner);
+
+        inner
+            .funcall::<_, _, Value>("seek", (offset, whence))
             .map_err(rberr_to_io_err)?;
 
-        Ok(new_position)
+        inner.funcall("tell", ()).map_err(rberr_to_io_err)
     }
 }
 
