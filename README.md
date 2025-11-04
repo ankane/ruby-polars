@@ -404,10 +404,10 @@ Supported types are:
 - float - `Float32`, `Float64`
 - integer - `Int8`, `Int16`, `Int32`, `Int64`, `Int128`
 - unsigned integer - `UInt8`, `UInt16`, `UInt32`, `UInt64`, `UInt128`
-- string - `String`, `Categorical`
+- string - `String`, `Categorical`, `Enum`
 - temporal - `Date`, `Datetime`, `Duration`, `Time`
 - nested - `Array`, `List`, `Struct`
-- other - `Binary`, `Object`, `Null`
+- other - `Binary`, `Object`, `Null`, `Unknown`
 
 Get column types
 
