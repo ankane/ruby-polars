@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     name: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: |
           cargo install --locked --git https://github.com/ankane/cargo-3pl
           git clone https://github.com/ankane/3pl-source.git
