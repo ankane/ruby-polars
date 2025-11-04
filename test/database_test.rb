@@ -43,7 +43,7 @@ class DatabaseTest < Minitest::Test
   def test_read_database_null
     User.create!
     df = Polars.read_database("SELECT * FROM users ORDER BY id")
-    if postgresql?
+    if postgresql? || (sqlite? && ar_version >= 8.1)
       assert_schema df
     else
       df.dtypes[1..].each do |dtype|
@@ -195,7 +195,7 @@ class DatabaseTest < Minitest::Test
     assert_series users.map(&:txt), df["txt"]
     assert_series users.map(&:joined_time), df["joined_time"]
 
-    if postgresql?
+    if postgresql? || (sqlite? && ar_version >= 8.1)
       assert_series users.map(&:active), df["active"]
       assert_series users.map(&:joined_on), df["joined_on"]
     elsif mysql?
@@ -219,7 +219,7 @@ class DatabaseTest < Minitest::Test
     assert_equal Polars::Binary, schema["bin"]
     assert_equal Polars::String, schema["txt"]
 
-    if postgresql?
+    if postgresql? || (sqlite? && ar_version >= 8.1)
       assert_equal Polars::Boolean, schema["active"]
       assert_equal Polars::Datetime, schema["joined_at"]
       assert_equal Polars::Decimal, schema["dec"]
@@ -269,11 +269,23 @@ class DatabaseTest < Minitest::Test
     User.order(:id).to_a
   end
 
+  def ar_version
+    ActiveRecord::VERSION::STRING.to_f
+  end
+
   def postgresql?
-    ENV["ADAPTER"] == "postgresql"
+    adapter == "postgresql"
   end
 
   def mysql?
-    ["mysql", "trilogy"].include?(ENV["ADAPTER"])
+    ["mysql", "trilogy"].include?(adapter)
+  end
+
+  def sqlite?
+    adapter == "sqlite"
+  end
+
+  def adapter
+    ENV["ADAPTER"] || "sqlite"
   end
 end
