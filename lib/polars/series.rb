@@ -5876,6 +5876,7 @@ module Polars
       UInt16 => RbSeries.method(:new_opt_u16),
       UInt32 => RbSeries.method(:new_opt_u32),
       UInt64 => RbSeries.method(:new_opt_u64),
+      UInt128 => RbSeries.method(:new_opt_u128),
       Decimal => RbSeries.method(:new_decimal),
       Date => RbSeries.method(:new_from_any_values),
       Datetime => RbSeries.method(:new_from_any_values),
@@ -5902,6 +5903,7 @@ module Polars
       u16: RbSeries.method(:new_opt_u16),
       u32: RbSeries.method(:new_opt_u32),
       u64: RbSeries.method(:new_opt_u64),
+      u128: RbSeries.method(:new_opt_u128),
       bool: RbSeries.method(:new_opt_bool),
       str: RbSeries.method(:new_str)
     }
