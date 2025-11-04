@@ -3,7 +3,7 @@ use magnus::{
     IntoValue, RArray, RHash, RString, Ruby, TryConvert, Value, prelude::*, r_hash::ForEach,
 };
 use polars::prelude::*;
-use polars_compute::decimal::{DEC128_MAX_PREC, DecimalFmtBuffer};
+use polars_compute::decimal::{DEC128_MAX_PREC, DecimalFmtBuffer, dec128_fits};
 use polars_core::utils::any_values_to_supertype_and_n_dtypes;
 
 use super::datetime::datetime_to_rb_object;
@@ -210,14 +210,12 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
             match digits.parse::<i128>() {
                 Ok(mut v) => {
                     let scale = if exp > 0 {
-                        v = 10_i128
-                            .checked_pow(exp as u32)
-                            .and_then(|factor| v.checked_mul(factor))?;
+                        v = 10_i128.checked_pow(exp as u32)?.checked_mul(v)?;
                         0
                     } else {
                         (-exp) as usize
                     };
-                    Some((v, scale))
+                    dec128_fits(v, DEC128_MAX_PREC).then_some((v, scale))
                 }
                 Err(_) => None,
             }
