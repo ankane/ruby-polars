@@ -227,7 +227,11 @@ module Polars
   class Decimal < NumericType
     attr_reader :precision, :scale
 
-    def initialize(precision, scale)
+    def initialize(precision = nil, scale = 0)
+      if precision.nil?
+        precision = 38
+      end
+
       @precision = precision
       @scale = scale
     end

@@ -64,6 +64,11 @@ class TypesTest < Minitest::Test
     assert_equal BigDecimal("12.3456"), s[0]
   end
 
+  def test_series_dtype_decimal_precision_scale
+    s = Polars::Series.new([1.5, nil, 3.5], dtype: Polars::Decimal)
+    assert_series [BigDecimal("1.5"), nil, BigDecimal("3.5")], s, dtype: Polars::Decimal.new(2, 1)
+  end
+
   def test_series_dtype_boolean
     s = Polars::Series.new([true, nil, false], dtype: Polars::Boolean)
     assert_series [true, nil, false], s, dtype: Polars::Boolean

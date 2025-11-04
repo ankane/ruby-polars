@@ -5747,11 +5747,31 @@ module Polars
           end
 
         base_type = dtype.is_a?(DataType) ? dtype.class : dtype
-        if [Date, Datetime, Duration, Time, Categorical, Boolean, Enum, Decimal].include?(base_type)
+        if [Date, Datetime, Duration, Time, Categorical, Boolean, Enum].include?(base_type) || dtype.is_a?(Decimal)
           if rbseries.dtype != dtype
             rbseries = rbseries.cast(dtype, true)
           end
         end
+
+        # Uninstanced Decimal is a bit special and has various inference paths
+        if dtype == Decimal
+          if rbseries.dtype == String
+            rbseries = rbseries.str_to_decimal_infer(0)
+          elsif rbseries.dtype.float?
+            # Go through string so we infer an appropriate scale.
+            rbseries = rbseries.cast(
+              String, strict: strict, wrap_numerical: false
+            ).str_to_decimal_infer(0)
+          elsif rbseries.dtype.integer? || rbseries.dtype == Null
+            rbseries = rbseries.cast(
+              Decimal.new(nil, 0), strict: strict, wrap_numerical: false
+            )
+          elsif !rbseries.dtype.is_a?(Decimal)
+            msg = "can't convert #{rbseries.dtype} to Decimal"
+            raise TypeError, msg
+          end
+        end
+
         rbseries
       elsif dtype == Struct
         struct_schema = dtype.is_a?(Struct) ? dtype.to_schema : nil
