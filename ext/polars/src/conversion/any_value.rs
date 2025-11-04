@@ -98,8 +98,12 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
     fn get_int(ob: Value, strict: bool) -> RbResult<AnyValue<'static>> {
         if let Ok(v) = i64::try_convert(ob) {
             Ok(AnyValue::Int64(v))
+        } else if let Ok(v) = i128::try_convert(ob) {
+            Ok(AnyValue::Int128(v))
         } else if let Ok(v) = u64::try_convert(ob) {
             Ok(AnyValue::UInt64(v))
+        } else if let Ok(v) = u128::try_convert(ob) {
+            Ok(AnyValue::UInt128(v))
         } else if !strict {
             let f = f64::try_convert(ob)?;
             Ok(AnyValue::Float64(f))
