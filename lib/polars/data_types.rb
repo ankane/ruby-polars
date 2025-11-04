@@ -209,6 +209,10 @@ module Polars
   class UInt64 < UnsignedIntegerType
   end
 
+  # 128-bit unsigned integer type.
+  class UInt128 < UnsignedIntegerType
+  end
+
   # 32-bit floating point type.
   class Float32 < FloatType
   end
