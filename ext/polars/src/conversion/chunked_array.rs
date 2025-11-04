@@ -1,5 +1,6 @@
 use magnus::{IntoValue, RString, Ruby, TryConvert, Value, prelude::*};
 use polars::prelude::*;
+use polars_compute::decimal::DecimalFmtBuffer;
 
 use super::{Wrap, get_rbseq, struct_dict};
 
@@ -129,11 +130,13 @@ impl IntoValue for Wrap<&DateChunked> {
 impl IntoValue for Wrap<&DecimalChunked> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
         let utils = pl_utils();
-        let rb_scale = (-(self.0.scale() as i32)).into_value_with(ruby);
+        let rb_precision = self.0.precision().into_value_with(ruby);
+        let mut buf = DecimalFmtBuffer::new();
         let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| {
+                let s = buf.format_dec128(v, self.0.scale(), false, false);
                 utils
-                    .funcall::<_, _, Value>("_to_ruby_decimal", (v.to_string(), rb_scale))
+                    .funcall::<_, _, Value>("_to_ruby_decimal", (rb_precision, s))
                     .unwrap()
             })
         });

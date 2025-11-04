@@ -90,8 +90,8 @@ module Polars
       end
     end
 
-    def self._to_ruby_decimal(digits, scale)
-      BigDecimal("#{digits}e#{scale}")
+    def self._to_ruby_decimal(prec, value)
+      BigDecimal(value, prec)
     end
   end
 end

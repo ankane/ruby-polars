@@ -3,7 +3,7 @@ use magnus::{
     IntoValue, RArray, RHash, RString, Ruby, TryConvert, Value, prelude::*, r_hash::ForEach,
 };
 use polars::prelude::*;
-use polars_compute::decimal::DEC128_MAX_PREC;
+use polars_compute::decimal::{DEC128_MAX_PREC, DecimalFmtBuffer};
 use polars_core::utils::any_values_to_supertype_and_n_dtypes;
 
 use super::datetime::datetime_to_rb_object;
@@ -76,10 +76,11 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
         }
         AnyValue::Binary(v) => ruby.str_from_slice(v).as_value(),
         AnyValue::BinaryOwned(v) => ruby.str_from_slice(&v).as_value(),
-        // TODO fix
-        AnyValue::Decimal(v, _prec, scale) => pl_utils()
-            .funcall("_to_ruby_decimal", (v.to_string(), -(scale as i32)))
-            .unwrap(),
+        AnyValue::Decimal(v, prec, scale) => {
+            let mut buf = DecimalFmtBuffer::new();
+            let s = buf.format_dec128(v, scale, false, false);
+            pl_utils().funcall("_to_ruby_decimal", (prec, s)).unwrap()
+        }
     }
 }
 
