@@ -400,13 +400,14 @@ Polars::DataFrame.new(data, schema: {"a" => Polars::Int32, "b" => Polars::Float3
 Supported types are:
 
 - boolean - `Boolean`
-- float - `Float64`, `Float32`
-- integer - `Int64`, `Int32`, `Int16`, `Int8`
-- unsigned integer - `UInt64`, `UInt32`, `UInt16`, `UInt8`
-- string - `String`, `Binary`, `Categorical`
-- temporal - `Date`, `Datetime`, `Time`, `Duration`
-- nested -  `List`, `Struct`, `Array`
-- other - `Object`, `Null`
+- decimal - `Decimal`
+- float - `Float32`, `Float64`
+- integer - `Int8`, `Int16`, `Int32`, `Int64`, `Int128`
+- unsigned integer - `UInt8`, `UInt16`, `UInt32`, `UInt64`, `UInt128`
+- string - `String`, `Categorical`
+- temporal - `Date`, `Datetime`, `Duration`, `Time`
+- nested - `Array`, `List`, `Struct`
+- other - `Binary`, `Object`, `Null`
 
 Get column types
 
