@@ -165,11 +165,13 @@ class DatabaseTest < Minitest::Test
     df.write_database("items")
 
     result = Polars.read_database("SELECT * FROM items")
+    assert_equal time, result["datetime"][0]
     if postgresql? || mysql?
-      assert_equal time, result["datetime"][0]
       assert_equal "123456789.01234567890123456789", result["decimal"][0].to_s
+    elsif ar_version >= 8.1
+      # TODO fix or raise error
+      assert_equal "123456789.0123456", result["decimal"][0].to_s
     else
-      assert_equal time, result["datetime"][0]
       # TODO fix or raise error
       assert_equal "123456789.01234567", result["decimal"][0].to_s
     end
