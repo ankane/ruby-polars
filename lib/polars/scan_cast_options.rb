@@ -1,7 +1,7 @@
 module Polars
   # Options for scanning files.
   class ScanCastOptions
-    attr_reader :integer_cast, :float_cast, :datetime_cast, :missing_struct_fields, :extra_struct_fields
+    attr_reader :integer_cast, :float_cast, :datetime_cast, :missing_struct_fields, :extra_struct_fields, :categorical_to_string
 
     # Common configuration for scanning files.
     #
@@ -50,6 +50,7 @@ module Polars
       datetime_cast: "forbid",
       missing_struct_fields: "raise",
       extra_struct_fields: "raise",
+      categorical_to_string: "forbid",
       _internal_call: false
     )
       if !_internal_call
@@ -61,6 +62,7 @@ module Polars
       @datetime_cast = datetime_cast
       @missing_struct_fields = missing_struct_fields
       @extra_struct_fields = extra_struct_fields
+      @categorical_to_string = categorical_to_string
     end
 
     def self._default
@@ -75,6 +77,7 @@ module Polars
           datetime_cast: ["nanosecond-downcast", "convert-timezone"],
           missing_struct_fields: "insert",
           extra_struct_fields: "ignore",
+          categorical_to_string: "allow",
           _internal_call: true
         )
       end
