@@ -50,7 +50,7 @@ module Polars
     #   Try to keep reading lines if some lines yield errors.
     #   First try `infer_schema_length: 0` to read all columns as
     #   `:str` to check which values might cause an issue.
-    # @param parse_dates [Boolean]
+    # @param try_parse_dates [Boolean]
     #   Try to automatically parse dates. If this does not succeed,
     #   the column remains of data type `:str`.
     # @param n_threads [Integer]
@@ -82,10 +82,10 @@ module Polars
     #   particular storage connection.
     # @param skip_rows_after_header [Integer]
     #   Skip this number of rows when the header is parsed.
-    # @param row_count_name [String]
+    # @param row_index_name [String]
     #   If not nil, this will insert a row count column with the given name into
     #   the DataFrame.
-    # @param row_count_offset [Integer]
+    # @param row_index_offset [Integer]
     #   Offset to start the row_count column (only used if the name is set).
     # @param eol_char [String]
     #   Single byte end of line character.
@@ -124,7 +124,8 @@ module Polars
       null_values: nil,
       missing_utf8_is_empty_string: false,
       ignore_errors: false,
-      parse_dates: false,
+      try_parse_dates: nil,
+      parse_dates: false, # TODO remove
       n_threads: nil,
       infer_schema_length: N_INFER_DEFAULT,
       batch_size: 8192,
@@ -134,8 +135,10 @@ module Polars
       rechunk: true,
       storage_options: nil,
       skip_rows_after_header: 0,
-      row_count_name: nil,
-      row_count_offset: 0,
+      row_index_name: nil,
+      row_count_name: nil, # TODO remove
+      row_index_offset: nil,
+      row_count_offset: 0, # TODO remove
       eol_char: "\n",
       raise_if_empty: false,
       truncate_ragged_lines: false,
@@ -144,7 +147,10 @@ module Polars
     )
       sep = separator if !separator.nil?
       comment_char = comment_prefix if !comment_prefix.nil?
-      dtypes ||= schema_overrides
+      dtypes = schema_overrides if !schema_overrides.nil?
+      parse_dates = try_parse_dates if !try_parse_dates.nil?
+      row_count_name = row_index_name if !row_index_name.nil?
+      row_count_offset = row_index_offset if !row_index_offset.nil?
 
       Utils._check_arg_is_1byte("sep", sep, false)
       Utils._check_arg_is_1byte("comment_char", comment_char, false)
