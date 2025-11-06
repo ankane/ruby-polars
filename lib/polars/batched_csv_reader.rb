@@ -7,16 +7,16 @@ module Polars
       file,
       has_header: true,
       columns: nil,
-      sep: ",",
-      comment_char: nil,
+      separator: ",",
+      comment_prefix: nil,
       quote_char: '"',
       skip_rows: 0,
       skip_lines: 0,
-      dtypes: nil,
+      schema_overrides: nil,
       null_values: nil,
       missing_utf8_is_empty_string: false,
       ignore_errors: false,
-      parse_dates: false,
+      try_parse_dates: false,
       n_threads: nil,
       infer_schema_length: 100,
       batch_size: 50_000,
@@ -25,8 +25,8 @@ module Polars
       low_memory: false,
       rechunk: true,
       skip_rows_after_header: 0,
-      row_count_name: nil,
-      row_count_offset: 0,
+      row_index_name: nil,
+      row_index_offset: 0,
       eol_char: "\n",
       new_columns: nil,
       raise_if_empty: true,
@@ -39,15 +39,16 @@ module Polars
 
       dtype_list = nil
       dtype_slice = nil
-      if !dtypes.nil?
-        if dtypes.is_a?(Hash)
+      if !schema_overrides.nil?
+        if schema_overrides.is_a?(Hash)
           dtype_list = []
-          dtypes.each do |k, v|
+          schema_overrides.each do |k, v|
             dtype_list << [k, Utils.rb_type_to_dtype(v)]
           end
-        elsif dtypes.is_a?(::Array)
-          dtype_slice = dtypes
+        elsif schema_overrides.is_a?(::Array)
+          dtype_slice = schema_overrides
         else
+          # TODO improve type and message
           raise ArgumentError, "dtype arg should be list or dict"
         end
       end
@@ -64,7 +65,7 @@ module Polars
         skip_rows,
         skip_lines,
         projection,
-        sep,
+        separator,
         rechunk,
         columns,
         encoding,
@@ -73,13 +74,13 @@ module Polars
         dtype_list,
         dtype_slice,
         low_memory,
-        comment_char,
+        comment_prefix,
         quote_char,
         processed_null_values,
         missing_utf8_is_empty_string,
-        parse_dates,
+        try_parse_dates,
         skip_rows_after_header,
-        Utils.parse_row_index_args(row_count_name, row_count_offset),
+        Utils.parse_row_index_args(row_index_name, row_index_offset),
         eol_char,
         raise_if_empty,
         truncate_ragged_lines,
