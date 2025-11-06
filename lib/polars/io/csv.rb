@@ -16,11 +16,11 @@ module Polars
     #   Rename columns right after parsing the CSV file. If the given
     #   list is shorter than the width of the DataFrame the remaining
     #   columns will have their original name.
-    # @param sep [String]
-    #   Single byte character to use as delimiter in the file.
-    # @param comment_char [String]
-    #   Single byte character that indicates the start of a comment line,
-    #   for instance `#`.
+    # @param separator [String]
+    #   Single byte character to use as separator in the file.
+    # @param comment_prefix [String]
+    #   A string used to indicate the start of a comment line. Comment lines are skipped
+    #   during parsing. Common examples of comment prefixes are `#` and `//`.
     # @param quote_char [String]
     #   Single byte character used for csv quoting.
     #   Set to nil to turn off special handling and escaping of quotes.
@@ -43,6 +43,9 @@ module Polars
     #   - `String`: All values equal to this string will be null.
     #   - `Array`: All values equal to any string in this array will be null.
     #   - `Hash`: A hash that maps column name to a null value string.
+    # @param missing_utf8_is_empty_string [Boolean]
+    #   By default a missing value is considered to be null; if you would prefer missing
+    #   utf8 values to be treated as the empty string you can set this param true.
     # @param ignore_errors [Boolean]
     #   Try to keep reading lines if some lines yield errors.
     #   First try `infer_schema_length: 0` to read all columns as
@@ -101,15 +104,18 @@ module Polars
       has_header: true,
       columns: nil,
       new_columns: nil,
-      sep: ",",
-      comment_char: nil,
+      separator: nil,
+      sep: ",", # TODO remove
+      comment_prefix: nil,
+      comment_char: nil, # TODO remove
       quote_char: '"',
       skip_rows: 0,
       skip_lines: 0,
       schema: nil,
       schema_overrides: nil,
-      dtypes: nil,
+      dtypes: nil, # TODO remove
       null_values: nil,
+      missing_utf8_is_empty_string: false,
       ignore_errors: false,
       parse_dates: false,
       n_threads: nil,
@@ -126,6 +132,8 @@ module Polars
       eol_char: "\n",
       truncate_ragged_lines: false
     )
+      sep = separator if !separator.nil?
+      comment_char = comment_prefix if !comment_prefix.nil?
       dtypes ||= schema_overrides
 
       Utils._check_arg_is_1byte("sep", sep, false)
@@ -159,6 +167,7 @@ module Polars
           schema_overrides: dtypes,
           schema: schema,
           null_values: null_values,
+          missing_utf8_is_empty_string: missing_utf8_is_empty_string,
           ignore_errors: ignore_errors,
           try_parse_dates: parse_dates,
           n_threads: n_threads,
