@@ -155,7 +155,6 @@ module Polars
 
       # TODO update names
       Utils._check_arg_is_1byte("sep", sep, false)
-      Utils._check_arg_is_1byte("comment_char", comment_char, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, true)
       Utils._check_arg_is_1byte("eol_char", eol_char, false)
 
@@ -683,7 +682,6 @@ module Polars
 
       # TODO update names
       Utils._check_arg_is_1byte("sep", sep, false)
-      Utils._check_arg_is_1byte("comment_char", comment_char, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, true)
 
       if Utils.pathlike?(source)
