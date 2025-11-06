@@ -73,27 +73,38 @@ impl RbLazyFrame {
         // start arguments
         // this pattern is needed for more than 16
         let source = Option::<Value>::try_convert(arguments[0])?;
-        let sources = Wrap::<ScanSources>::try_convert(arguments[21])?;
-        let separator = String::try_convert(arguments[1])?;
-        let has_header = bool::try_convert(arguments[2])?;
-        let ignore_errors = bool::try_convert(arguments[3])?;
-        let skip_rows = usize::try_convert(arguments[4])?;
-        let n_rows = Option::<usize>::try_convert(arguments[5])?;
-        let cache = bool::try_convert(arguments[6])?;
-        let overwrite_dtype = Option::<Vec<(String, Wrap<DataType>)>>::try_convert(arguments[7])?;
-        let low_memory = bool::try_convert(arguments[8])?;
-        let comment_prefix = Option::<String>::try_convert(arguments[9])?;
-        let quote_char = Option::<String>::try_convert(arguments[10])?;
-        let null_values = Option::<Wrap<NullValues>>::try_convert(arguments[11])?;
-        let infer_schema_length = Option::<usize>::try_convert(arguments[12])?;
-        let with_schema_modify = Option::<Value>::try_convert(arguments[13])?;
-        let rechunk = bool::try_convert(arguments[14])?;
-        let skip_rows_after_header = usize::try_convert(arguments[15])?;
-        let encoding = Wrap::<CsvEncoding>::try_convert(arguments[16])?;
-        let row_index = Option::<(String, IdxSize)>::try_convert(arguments[17])?;
-        let try_parse_dates = bool::try_convert(arguments[18])?;
-        let eol_char = String::try_convert(arguments[19])?;
-        let truncate_ragged_lines = bool::try_convert(arguments[20])?;
+        let sources = Wrap::<ScanSources>::try_convert(arguments[1])?;
+        let separator = String::try_convert(arguments[2])?;
+        let has_header = bool::try_convert(arguments[3])?;
+        let ignore_errors = bool::try_convert(arguments[4])?;
+        let skip_rows = usize::try_convert(arguments[5])?;
+        let skip_lines = usize::try_convert(arguments[6])?;
+        let n_rows = Option::<usize>::try_convert(arguments[7])?;
+        let cache = bool::try_convert(arguments[8])?;
+        let overwrite_dtype = Option::<Vec<(String, Wrap<DataType>)>>::try_convert(arguments[9])?;
+        let low_memory = bool::try_convert(arguments[10])?;
+        let comment_prefix = Option::<String>::try_convert(arguments[11])?;
+        let quote_char = Option::<String>::try_convert(arguments[12])?;
+        let null_values = Option::<Wrap<NullValues>>::try_convert(arguments[13])?;
+        let missing_utf8_is_empty_string = bool::try_convert(arguments[14])?;
+        let infer_schema_length = Option::<usize>::try_convert(arguments[15])?;
+        let with_schema_modify = Option::<Value>::try_convert(arguments[16])?;
+        let rechunk = bool::try_convert(arguments[17])?;
+        let skip_rows_after_header = usize::try_convert(arguments[18])?;
+        let encoding = Wrap::<CsvEncoding>::try_convert(arguments[19])?;
+        let row_index = Option::<(String, IdxSize)>::try_convert(arguments[20])?;
+        let try_parse_dates = bool::try_convert(arguments[21])?;
+        let eol_char = String::try_convert(arguments[22])?;
+        let raise_if_empty = bool::try_convert(arguments[23])?;
+        let truncate_ragged_lines = bool::try_convert(arguments[24])?;
+        let decimal_comma = bool::try_convert(arguments[25])?;
+        let glob = bool::try_convert(arguments[26])?;
+        let schema = Option::<Wrap<Schema>>::try_convert(arguments[27])?;
+        let cloud_options = Option::<Vec<(String, String)>>::try_convert(arguments[28])?;
+        let _credential_provider = Option::<Value>::try_convert(arguments[29])?;
+        let retries = usize::try_convert(arguments[30])?;
+        let file_cache_ttl = Option::<u64>::try_convert(arguments[31])?;
+        let include_file_paths = Option::<String>::try_convert(arguments[32])?;
         // end arguments
 
         let null_values = null_values.map(|w| w.0);
@@ -113,12 +124,24 @@ impl RbLazyFrame {
         });
 
         let sources = sources.0;
-        let (_first_path, sources) = match source {
+        let (first_path, sources) = match source {
             None => (sources.first_path().map(|p| p.into_owned()), sources),
             Some(source) => rbobject_to_first_path_and_scan_sources(source)?,
         };
 
-        let r = LazyCsvReader::new_with_sources(sources);
+        let mut r = LazyCsvReader::new_with_sources(sources);
+
+        if let Some(first_path) = first_path {
+            let first_path_url = first_path.to_str();
+
+            let mut cloud_options =
+                parse_cloud_options(first_path_url, cloud_options.unwrap_or_default())?;
+            if let Some(file_cache_ttl) = file_cache_ttl {
+                cloud_options.file_cache_ttl = file_cache_ttl;
+            }
+            cloud_options = cloud_options.with_max_retries(retries);
+            r = r.with_cloud_options(Some(cloud_options));
+        }
 
         let r = r
             .with_infer_schema_length(infer_schema_length)
@@ -126,10 +149,11 @@ impl RbLazyFrame {
             .with_has_header(has_header)
             .with_ignore_errors(ignore_errors)
             .with_skip_rows(skip_rows)
+            .with_skip_lines(skip_lines)
             .with_n_rows(n_rows)
             .with_cache(cache)
             .with_dtype_overwrite(overwrite_dtype.map(Arc::new))
-            // TODO add with_schema
+            .with_schema(schema.map(|schema| Arc::new(schema.0)))
             .with_low_memory(low_memory)
             .with_comment_prefix(comment_prefix.map(|x| x.into()))
             .with_quote_char(quote_char)
@@ -140,8 +164,12 @@ impl RbLazyFrame {
             .with_row_index(row_index)
             .with_try_parse_dates(try_parse_dates)
             .with_null_values(null_values)
-            // TODO add with_missing_is_null
-            .with_truncate_ragged_lines(truncate_ragged_lines);
+            .with_missing_is_null(!missing_utf8_is_empty_string)
+            .with_truncate_ragged_lines(truncate_ragged_lines)
+            .with_decimal_comma(decimal_comma)
+            .with_glob(glob)
+            .with_raise_if_empty(raise_if_empty)
+            .with_include_file_paths(include_file_paths.map(|x| x.into()));
 
         if let Some(_lambda) = with_schema_modify {
             todo!();

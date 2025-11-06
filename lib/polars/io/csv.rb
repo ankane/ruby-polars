@@ -26,6 +26,15 @@ module Polars
     #   Set to nil to turn off special handling and escaping of quotes.
     # @param skip_rows [Integer]
     #   Start reading after `skip_rows` lines.
+    # @param skip_lines [Integer]
+    #   Start reading after `skip_lines` lines. The header will be parsed at this
+    #   offset. Note that CSV escaping will not be respected when skipping lines.
+    #   If you want to skip valid CSV rows, use `skip_rows`.
+    # @param schema [Object]
+    #   Provide the schema. This means that polars doesn't do schema inference.
+    #   This argument expects the complete schema, whereas `schema_overrides` can be
+    #   used to partially overwrite a schema. Note that the order of the columns in
+    #   the provided `schema` must match the order of the columns in the CSV being read.
     # @param schema_overrides [Object]
     #   Overwrite dtypes for specific or all columns during schema inference.
     # @param null_values [Object]
@@ -96,6 +105,8 @@ module Polars
       comment_char: nil,
       quote_char: '"',
       skip_rows: 0,
+      skip_lines: 0,
+      schema: nil,
       schema_overrides: nil,
       dtypes: nil,
       null_values: nil,
@@ -144,7 +155,9 @@ module Polars
           comment_char: comment_char,
           quote_char: quote_char,
           skip_rows: skip_rows,
+          skip_lines: skip_lines,
           dtypes: dtypes,
+          schema: schema,
           null_values: null_values,
           ignore_errors: ignore_errors,
           parse_dates: parse_dates,
@@ -179,6 +192,7 @@ module Polars
       comment_char: nil,
       quote_char: '"',
       skip_rows: 0,
+      skip_lines: 0,
       dtypes: nil,
       schema: nil,
       null_values: nil,
@@ -245,6 +259,8 @@ module Polars
           comment_char: comment_char,
           quote_char: quote_char,
           skip_rows: skip_rows,
+          skip_lines: skip_lines,
+          schema: schema,
           dtypes: dtypes_dict,
           null_values: null_values,
           missing_utf8_is_empty_string: missing_utf8_is_empty_string,
@@ -281,6 +297,7 @@ module Polars
           ignore_errors,
           n_rows,
           skip_rows,
+          skip_lines,
           projection,
           sep,
           rechunk,
@@ -502,6 +519,15 @@ module Polars
     # @param skip_rows [Integer]
     #   Start reading after `skip_rows` lines. The header will be parsed at this
     #   offset.
+    # @param skip_lines [Integer]
+    #   Start reading after `skip_lines` lines. The header will be parsed at this
+    #   offset. Note that CSV escaping will not be respected when skipping lines.
+    #   If you want to skip valid CSV rows, use `skip_rows`.
+    # @param schema [Object]
+    #   Provide the schema. This means that polars doesn't do schema inference.
+    #   This argument expects the complete schema, whereas `schema_overrides` can be
+    #   used to partially overwrite a schema. Note that the order of the columns in
+    #   the provided `schema` must match the order of the columns in the CSV being read.
     # @param dtypes [Object]
     #   Overwrite dtypes during inference.
     # @param null_values [Object]
@@ -566,6 +592,8 @@ module Polars
       comment_char: nil,
       quote_char: '"',
       skip_rows: 0,
+      skip_lines: 0,
+      schema: nil,
       dtypes: nil,
       null_values: nil,
       missing_utf8_is_empty_string: false,
@@ -602,7 +630,9 @@ module Polars
         comment_char: comment_char,
         quote_char: quote_char,
         skip_rows: skip_rows,
+        skip_lines: skip_lines,
         dtypes: dtypes,
+        schema: schema,
         null_values: null_values,
         ignore_errors: ignore_errors,
         cache: cache,
@@ -629,8 +659,11 @@ module Polars
       comment_char: nil,
       quote_char: '"',
       skip_rows: 0,
+      skip_lines: 0,
       dtypes: nil,
+      schema: nil,
       null_values: nil,
+      missing_utf8_is_empty_string: false,
       ignore_errors: false,
       cache: true,
       with_column_names: nil,
@@ -644,7 +677,15 @@ module Polars
       row_count_offset: 0,
       parse_dates: false,
       eol_char: "\n",
-      truncate_ragged_lines: true
+      raise_if_empty: true,
+      truncate_ragged_lines: true,
+      decimal_comma: false,
+      glob: true,
+      storage_options: nil,
+      credential_provider: nil,
+      retries: 2,
+      file_cache_ttl: nil,
+      include_file_paths: nil
     )
       dtype_list = nil
       if !dtypes.nil?
@@ -665,10 +706,12 @@ module Polars
       rblf =
         RbLazyFrame.new_from_csv(
           source,
+          sources,
           sep,
           has_header,
           ignore_errors,
           skip_rows,
+          skip_lines,
           n_rows,
           cache,
           dtype_list,
@@ -676,6 +719,7 @@ module Polars
           comment_char,
           quote_char,
           processed_null_values,
+          missing_utf8_is_empty_string,
           infer_schema_length,
           with_column_names,
           rechunk,
@@ -684,8 +728,16 @@ module Polars
           Utils.parse_row_index_args(row_count_name, row_count_offset),
           parse_dates,
           eol_char,
+          raise_if_empty,
           truncate_ragged_lines,
-          sources
+          decimal_comma,
+          glob,
+          schema,
+          storage_options,
+          credential_provider,
+          retries,
+          file_cache_ttl,
+          include_file_paths
         )
       Utils.wrap_ldf(rblf)
     end

@@ -23,28 +23,29 @@ impl RbDataFrame {
         let ignore_errors = bool::try_convert(arguments[4])?;
         let n_rows = Option::<usize>::try_convert(arguments[5])?;
         let skip_rows = usize::try_convert(arguments[6])?;
-        let projection = Option::<Vec<usize>>::try_convert(arguments[7])?;
-        let separator = String::try_convert(arguments[8])?;
-        let rechunk = bool::try_convert(arguments[9])?;
-        let columns = Option::<Vec<String>>::try_convert(arguments[10])?;
-        let encoding = Wrap::<CsvEncoding>::try_convert(arguments[11])?;
-        let n_threads = Option::<usize>::try_convert(arguments[12])?;
-        let path = Option::<String>::try_convert(arguments[13])?;
-        let overwrite_dtype = Option::<Vec<(String, Wrap<DataType>)>>::try_convert(arguments[14])?;
-        let overwrite_dtype_slice = Option::<Vec<Wrap<DataType>>>::try_convert(arguments[15])?;
-        let low_memory = bool::try_convert(arguments[16])?;
-        let comment_prefix = Option::<String>::try_convert(arguments[17])?;
-        let quote_char = Option::<String>::try_convert(arguments[18])?;
-        let null_values = Option::<Wrap<NullValues>>::try_convert(arguments[19])?;
-        let missing_utf8_is_empty_string = bool::try_convert(arguments[20])?;
-        let try_parse_dates = bool::try_convert(arguments[21])?;
-        let skip_rows_after_header = usize::try_convert(arguments[22])?;
-        let row_index = Option::<(String, IdxSize)>::try_convert(arguments[23])?;
-        let eol_char = String::try_convert(arguments[24])?;
-        let raise_if_empty = bool::try_convert(arguments[25])?;
-        let truncate_ragged_lines = bool::try_convert(arguments[26])?;
-        let decimal_comma = bool::try_convert(arguments[27])?;
-        let schema = Option::<Wrap<Schema>>::try_convert(arguments[28])?;
+        let skip_lines = usize::try_convert(arguments[7])?;
+        let projection = Option::<Vec<usize>>::try_convert(arguments[8])?;
+        let separator = String::try_convert(arguments[9])?;
+        let rechunk = bool::try_convert(arguments[10])?;
+        let columns = Option::<Vec<String>>::try_convert(arguments[11])?;
+        let encoding = Wrap::<CsvEncoding>::try_convert(arguments[12])?;
+        let n_threads = Option::<usize>::try_convert(arguments[13])?;
+        let path = Option::<String>::try_convert(arguments[14])?;
+        let overwrite_dtype = Option::<Vec<(String, Wrap<DataType>)>>::try_convert(arguments[15])?;
+        let overwrite_dtype_slice = Option::<Vec<Wrap<DataType>>>::try_convert(arguments[16])?;
+        let low_memory = bool::try_convert(arguments[17])?;
+        let comment_prefix = Option::<String>::try_convert(arguments[18])?;
+        let quote_char = Option::<String>::try_convert(arguments[19])?;
+        let null_values = Option::<Wrap<NullValues>>::try_convert(arguments[20])?;
+        let missing_utf8_is_empty_string = bool::try_convert(arguments[21])?;
+        let try_parse_dates = bool::try_convert(arguments[22])?;
+        let skip_rows_after_header = usize::try_convert(arguments[23])?;
+        let row_index = Option::<(String, IdxSize)>::try_convert(arguments[24])?;
+        let eol_char = String::try_convert(arguments[25])?;
+        let raise_if_empty = bool::try_convert(arguments[26])?;
+        let truncate_ragged_lines = bool::try_convert(arguments[27])?;
+        let decimal_comma = bool::try_convert(arguments[28])?;
+        let schema = Option::<Wrap<Schema>>::try_convert(arguments[29])?;
         // end arguments
 
         let null_values = null_values.map(|w| w.0);
@@ -88,6 +89,7 @@ impl RbDataFrame {
             .with_has_header(has_header)
             .with_n_rows(n_rows)
             .with_skip_rows(skip_rows)
+            .with_skip_lines(skip_lines)
             .with_ignore_errors(ignore_errors)
             .with_projection(projection.map(Arc::new))
             .with_rechunk(rechunk)
