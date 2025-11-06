@@ -1,6 +1,6 @@
 ## 0.23.1 (unreleased)
 
-- Added support for `columns` option to `read_csv` method
+- Added support for `columns` and `new_columns` options to `read_csv` method
 
 ## 0.23.0 (2025-11-04)
 

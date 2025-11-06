@@ -73,6 +73,18 @@ class CsvTest < Minitest::Test
     assert_frame expected, df
   end
 
+  def test_read_csv_new_columns
+    df = Polars.read_csv("test/support/data.csv", new_columns: ["c", "d"])
+    expected = Polars::DataFrame.new({"c" => [1, 2, 3], "d" => ["one", "two", "three"]})
+    assert_frame expected, df
+  end
+
+  def test_read_csv_new_columns_partial
+    df = Polars.read_csv("test/support/data.csv", new_columns: ["c"])
+    expected = Polars::DataFrame.new({"c" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_frame expected, df
+  end
+
   def test_read_csv_batched
     reader = Polars.read_csv_batched("test/support/data.csv")
     batch = reader.next_batches(5)

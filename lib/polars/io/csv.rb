@@ -134,10 +134,6 @@ module Polars
         end
       end
 
-      if new_columns
-        raise Todo
-      end
-
       df = nil
       _prepare_file_arg(source) do |data|
         df = _read_csv_impl(
@@ -168,7 +164,7 @@ module Polars
       end
 
       if new_columns
-        Utils._update_columns(df, new_columns)
+        _update_columns(df, new_columns)
       else
         df
       end
@@ -710,6 +706,18 @@ module Polars
       end
 
       yield file
+    end
+
+    def _update_columns(df, new_columns)
+      if df.width > new_columns.length
+        cols = df.columns
+        new_columns.each_with_index do |name, i|
+          cols[i] = name
+        end
+        new_columns = cols
+      end
+      df.columns = new_columns.to_a
+      df
     end
   end
 end
