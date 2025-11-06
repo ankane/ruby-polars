@@ -626,12 +626,12 @@ module Polars
       _scan_csv_impl(
         source,
         has_header: has_header,
-        sep: sep,
-        comment_char: comment_char,
+        separator: sep,
+        comment_prefix: comment_char,
         quote_char: quote_char,
         skip_rows: skip_rows,
         skip_lines: skip_lines,
-        dtypes: dtypes,
+        schema_overrides: dtypes,
         schema: schema,
         null_values: null_values,
         ignore_errors: ignore_errors,
@@ -643,9 +643,9 @@ module Polars
         rechunk: rechunk,
         skip_rows_after_header: skip_rows_after_header,
         encoding: encoding,
-        row_count_name: row_count_name,
-        row_count_offset: row_count_offset,
-        parse_dates: parse_dates,
+        row_index_name: row_count_name,
+        row_index_offset: row_count_offset,
+        try_parse_dates: parse_dates,
         eol_char: eol_char,
         truncate_ragged_lines: truncate_ragged_lines
       )
@@ -655,13 +655,13 @@ module Polars
     def _scan_csv_impl(
       source,
       has_header: true,
-      sep: ",",
-      comment_char: nil,
+      separator: ",",
+      comment_prefix: nil,
       quote_char: '"',
       skip_rows: 0,
       skip_lines: 0,
-      dtypes: nil,
       schema: nil,
+      schema_overrides: nil,
       null_values: nil,
       missing_utf8_is_empty_string: false,
       ignore_errors: false,
@@ -671,11 +671,11 @@ module Polars
       n_rows: nil,
       encoding: "utf8",
       low_memory: false,
-      rechunk: true,
+      rechunk: false,
       skip_rows_after_header: 0,
-      row_count_name: nil,
-      row_count_offset: 0,
-      parse_dates: false,
+      row_index_name: nil,
+      row_index_offset: 0,
+      try_parse_dates: false,
       eol_char: "\n",
       raise_if_empty: true,
       truncate_ragged_lines: true,
@@ -688,9 +688,9 @@ module Polars
       include_file_paths: nil
     )
       dtype_list = nil
-      if !dtypes.nil?
+      if !schema_overrides.nil?
         dtype_list = []
-        dtypes.each do |k, v|
+        schema_overrides.each do |k, v|
           dtype_list << [k, Utils.rb_type_to_dtype(v)]
         end
       end
@@ -707,7 +707,7 @@ module Polars
         RbLazyFrame.new_from_csv(
           source,
           sources,
-          sep,
+          separator,
           has_header,
           ignore_errors,
           skip_rows,
@@ -716,7 +716,7 @@ module Polars
           cache,
           dtype_list,
           low_memory,
-          comment_char,
+          comment_prefix,
           quote_char,
           processed_null_values,
           missing_utf8_is_empty_string,
@@ -725,8 +725,8 @@ module Polars
           rechunk,
           skip_rows_after_header,
           encoding,
-          Utils.parse_row_index_args(row_count_name, row_count_offset),
-          parse_dates,
+          Utils.parse_row_index_args(row_index_name, row_index_offset),
+          try_parse_dates,
           eol_char,
           raise_if_empty,
           truncate_ragged_lines,
