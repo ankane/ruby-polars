@@ -151,16 +151,16 @@ module Polars
           data,
           has_header: has_header,
           columns: columns || projection,
-          sep: sep,
-          comment_char: comment_char,
+          separator: sep,
+          comment_prefix: comment_char,
           quote_char: quote_char,
           skip_rows: skip_rows,
           skip_lines: skip_lines,
-          dtypes: dtypes,
+          schema_overrides: dtypes,
           schema: schema,
           null_values: null_values,
           ignore_errors: ignore_errors,
-          parse_dates: parse_dates,
+          try_parse_dates: parse_dates,
           n_threads: n_threads,
           infer_schema_length: infer_schema_length,
           batch_size: batch_size,
@@ -169,8 +169,8 @@ module Polars
           low_memory: low_memory,
           rechunk: rechunk,
           skip_rows_after_header: skip_rows_after_header,
-          row_count_name: row_count_name,
-          row_count_offset: row_count_offset,
+          row_index_name: row_count_name,
+          row_index_offset: row_count_offset,
           eol_char: eol_char,
           truncate_ragged_lines: truncate_ragged_lines
         )
@@ -188,27 +188,27 @@ module Polars
       file,
       has_header: true,
       columns: nil,
-      sep: ",",
-      comment_char: nil,
+      separator: ",",
+      comment_prefix: nil,
       quote_char: '"',
       skip_rows: 0,
       skip_lines: 0,
-      dtypes: nil,
       schema: nil,
+      schema_overrides: nil,
       null_values: nil,
       missing_utf8_is_empty_string: false,
       ignore_errors: false,
-      parse_dates: false,
+      try_parse_dates: false,
       n_threads: nil,
       infer_schema_length: N_INFER_DEFAULT,
       batch_size: 8192,
       n_rows: nil,
       encoding: "utf8",
       low_memory: false,
-      rechunk: true,
+      rechunk: false,
       skip_rows_after_header: 0,
-      row_count_name: nil,
-      row_count_offset: 0,
+      row_index_name: nil,
+      row_index_offset: 0,
       eol_char: "\n",
       raise_if_empty: true,
       truncate_ragged_lines: false,
@@ -226,15 +226,16 @@ module Polars
 
       dtype_list = nil
       dtype_slice = nil
-      if !dtypes.nil?
-        if dtypes.is_a?(Hash)
+      if !schema_overrides.nil?
+        if schema_overrides.is_a?(Hash)
           dtype_list = []
-          dtypes.each do |k, v|
+          schema_overrides.each do |k, v|
             dtype_list << [k, Utils.rb_type_to_dtype(v)]
           end
-        elsif dtypes.is_a?(::Array)
-          dtype_slice = dtypes
+        elsif schema_overrides.is_a?(::Array)
+          dtype_slice = schema_overrides
         else
+          # TODO improve type and message
           raise ArgumentError, "dtype arg should be list or dict"
         end
       end
@@ -255,8 +256,8 @@ module Polars
         scan = scan_csv(
           file,
           has_header: has_header,
-          sep: sep,
-          comment_char: comment_char,
+          sep: separator,
+          comment_char: comment_prefix,
           quote_char: quote_char,
           skip_rows: skip_rows,
           skip_lines: skip_lines,
@@ -270,8 +271,8 @@ module Polars
           low_memory: low_memory,
           rechunk: rechunk,
           skip_rows_after_header: skip_rows_after_header,
-          row_count_name: row_count_name,
-          row_count_offset: row_count_offset,
+          row_count_name: row_index_name,
+          row_count_offset: row_index_offset,
           eol_char: eol_char,
           truncate_ragged_lines: truncate_ragged_lines,
           decimal_comma: decimal_comma,
@@ -299,7 +300,7 @@ module Polars
           skip_rows,
           skip_lines,
           projection,
-          sep,
+          separator,
           rechunk,
           columns,
           encoding,
@@ -308,13 +309,13 @@ module Polars
           dtype_list,
           dtype_slice,
           low_memory,
-          comment_char,
+          comment_prefix,
           quote_char,
           processed_null_values,
           missing_utf8_is_empty_string,
-          parse_dates,
+          try_parse_dates,
           skip_rows_after_header,
-          Utils.parse_row_index_args(row_count_name, row_count_offset),
+          Utils.parse_row_index_args(row_index_name, row_index_offset),
           eol_char,
           raise_if_empty,
           truncate_ragged_lines,
