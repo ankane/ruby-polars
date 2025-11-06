@@ -131,7 +131,7 @@ module Polars
         end
       end
 
-      if projection || new_columns
+      if new_columns
         raise Todo
       end
 

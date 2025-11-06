@@ -61,6 +61,18 @@ class CsvTest < Minitest::Test
     assert_match "schema lengths differ", error.message
   end
 
+  def test_read_csv_columns_string
+    df = Polars.read_csv("test/support/data.csv", columns: ["b"])
+    expected = Polars::DataFrame.new({"b" => ["one", "two", "three"]})
+    assert_frame expected, df
+  end
+
+  def test_read_csv_columns_integer
+    df = Polars.read_csv("test/support/data.csv", columns: [1])
+    expected = Polars::DataFrame.new({"b" => ["one", "two", "three"]})
+    assert_frame expected, df
+  end
+
   def test_read_csv_batched
     reader = Polars.read_csv_batched("test/support/data.csv")
     batch = reader.next_batches(5)

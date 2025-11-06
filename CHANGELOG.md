@@ -1,3 +1,7 @@
+## 0.23.1 (unreleased)
+
+- Added support for `columns` option to `read_csv` method
+
 ## 0.23.0 (2025-11-04)
 
 - Updated Polars to 0.52.0

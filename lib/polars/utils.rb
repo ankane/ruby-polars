@@ -64,15 +64,14 @@ module Polars
     def self.handle_projection_columns(columns)
       projection = nil
       if columns
-        raise Todo
-        # if columns.is_a?(::String) || columns.is_a?(Symbol)
-        #   columns = [columns]
-        # elsif is_int_sequence(columns)
-        #   projection = columns.to_a
-        #   columns = nil
-        # elsif !is_str_sequence(columns)
-        #   raise ArgumentError, "columns arg should contain a list of all integers or all strings values."
-        # end
+        if columns.is_a?(::String)
+          columns = [columns]
+        elsif is_int_sequence(columns)
+          projection = columns.to_a
+          columns = nil
+        elsif !is_str_sequence(columns)
+          raise ArgumentError, "columns arg should contain a list of all integers or all strings values."
+        end
       end
       [projection, columns]
     end
