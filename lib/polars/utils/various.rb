@@ -97,5 +97,17 @@ module Polars
         raise TypeError, msg
       end
     end
+
+    def self._update_columns(df, new_columns)
+      if df.width > new_columns.length
+        cols = df.columns
+        new_columns.each_with_index do |name, i|
+          cols[i] = name
+        end
+        new_columns = cols
+      end
+      df.columns = new_columns.to_a
+      df
+    end
   end
 end
