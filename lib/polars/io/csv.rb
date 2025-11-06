@@ -304,6 +304,7 @@ module Polars
           row_count_name: row_index_name,
           row_count_offset: row_index_offset,
           eol_char: eol_char,
+          raise_if_empty: raise_if_empty,
           truncate_ragged_lines: truncate_ragged_lines,
           decimal_comma: decimal_comma,
           glob: glob
