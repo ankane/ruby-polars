@@ -1,7 +1,6 @@
 ## 0.23.1 (unreleased)
 
-- Added support for `columns` and `new_columns` options to `read_csv` method
-- Added `schema` and `skip_lines` options to `read_csv` and `scan_csv` methods
+- Added more options to `read_csv` and `scan_csv` methods
 
 ## 0.23.0 (2025-11-04)
 

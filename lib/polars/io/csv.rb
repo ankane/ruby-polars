@@ -89,8 +89,15 @@ module Polars
     #   Offset to start the row_count column (only used if the name is set).
     # @param eol_char [String]
     #   Single byte end of line character.
+    # @param raise_if_empty [Boolean]
+    #   When there is no data in the source, `NoDataError` is raised. If this parameter
+    #   is set to false, an empty DataFrame (with no columns) is returned instead.
     # @param truncate_ragged_lines [Boolean]
     #   Truncate lines that are longer than the schema.
+    # @param decimal_comma [Boolean]
+    #   Parse floats using a comma as the decimal separator instead of a period.
+    # @param glob [Boolean]
+    #   Expand path given via globbing rules.
     #
     # @return [DataFrame]
     #
@@ -130,7 +137,10 @@ module Polars
       row_count_name: nil,
       row_count_offset: 0,
       eol_char: "\n",
-      truncate_ragged_lines: false
+      raise_if_empty: false,
+      truncate_ragged_lines: false,
+      decimal_comma: false,
+      glob: true
     )
       sep = separator if !separator.nil?
       comment_char = comment_prefix if !comment_prefix.nil?
@@ -181,7 +191,10 @@ module Polars
           row_index_name: row_count_name,
           row_index_offset: row_count_offset,
           eol_char: eol_char,
-          truncate_ragged_lines: truncate_ragged_lines
+          raise_if_empty: raise_if_empty,
+          truncate_ragged_lines: truncate_ragged_lines,
+          decimal_comma: decimal_comma,
+          glob: glob
         )
       end
 
