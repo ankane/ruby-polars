@@ -145,6 +145,7 @@ module Polars
       decimal_comma: false,
       glob: true
     )
+      # TODO remove
       sep = separator if !separator.nil?
       comment_char = comment_prefix if !comment_prefix.nil?
       dtypes = schema_overrides if !schema_overrides.nil?
@@ -152,6 +153,7 @@ module Polars
       row_count_name = row_index_name if !row_index_name.nil?
       row_count_offset = row_index_offset if !row_index_offset.nil?
 
+      # TODO update names
       Utils._check_arg_is_1byte("sep", sep, false)
       Utils._check_arg_is_1byte("comment_char", comment_char, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, true)
