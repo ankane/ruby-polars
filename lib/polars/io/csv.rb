@@ -26,8 +26,8 @@ module Polars
     #   Set to nil to turn off special handling and escaping of quotes.
     # @param skip_rows [Integer]
     #   Start reading after `skip_rows` lines.
-    # @param dtypes [Object]
-    #   Overwrite dtypes during inference.
+    # @param schema_overrides [Object]
+    #   Overwrite dtypes for specific or all columns during schema inference.
     # @param null_values [Object]
     #   Values to interpret as null values. You can provide a:
     #
@@ -96,6 +96,7 @@ module Polars
       comment_char: nil,
       quote_char: '"',
       skip_rows: 0,
+      schema_overrides: nil,
       dtypes: nil,
       null_values: nil,
       ignore_errors: false,
@@ -114,6 +115,8 @@ module Polars
       eol_char: "\n",
       truncate_ragged_lines: false
     )
+      dtypes ||= schema_overrides
+
       Utils._check_arg_is_1byte("sep", sep, false)
       Utils._check_arg_is_1byte("comment_char", comment_char, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, true)
