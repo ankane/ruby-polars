@@ -723,8 +723,8 @@ module Polars
     #   #         [2.0, 1.0]
     #   # ]
     def eval(expr, as_list: false)
-      # TODO fix
-      super
+      s = Utils.wrap_s(_s)
+      s.to_frame.select(F.col(s.name).arr.eval(expr, as_list: as_list)).to_series
     end
 
     # Run any polars aggregation expression against the arrays' elements.
@@ -736,7 +736,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new(
-    #     "a", [[1, nil], [42, 13], [nil, nil]], Polars::Array.new(Polars::Int64, 2)
+    #     "a", [[1, nil], [42, 13], [nil, nil]], dtype: Polars::Array.new(Polars::Int64, 2)
     #   )
     #   s.arr.agg(Polars.element.null_count)
     #   # =>
