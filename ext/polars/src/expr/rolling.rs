@@ -1,7 +1,7 @@
 use polars::prelude::*;
 
-use crate::RbExpr;
 use crate::conversion::Wrap;
+use crate::{RbExpr, RbPolarsErr, RbResult};
 
 impl RbExpr {
     pub fn rolling_sum(
@@ -317,6 +317,55 @@ impl RbExpr {
             .clone()
             .rolling_quantile_by(by.inner.clone(), interpolation.0, quantile, options)
             .into()
+    }
+
+    pub fn rolling_rank(
+        &self,
+        window_size: usize,
+        method: Wrap<RollingRankMethod>,
+        seed: Option<u64>,
+        min_samples: Option<usize>,
+        center: bool,
+    ) -> Self {
+        let min_samples = min_samples.unwrap_or(window_size);
+        let options = RollingOptionsFixedWindow {
+            window_size,
+            min_periods: min_samples,
+            weights: None,
+            center,
+            fn_params: Some(RollingFnParams::Rank {
+                method: method.0,
+                seed,
+            }),
+        };
+
+        self.inner.clone().rolling_rank(options).into()
+    }
+
+    pub fn rolling_rank_by(
+        &self,
+        by: &RbExpr,
+        window_size: String,
+        method: Wrap<RollingRankMethod>,
+        seed: Option<u64>,
+        min_samples: usize,
+        closed: Wrap<ClosedWindow>,
+    ) -> RbResult<Self> {
+        let options = RollingOptionsDynamicWindow {
+            window_size: Duration::try_parse(&window_size).map_err(RbPolarsErr::from)?,
+            min_periods: min_samples,
+            closed_window: closed.0,
+            fn_params: Some(RollingFnParams::Rank {
+                method: method.0,
+                seed,
+            }),
+        };
+
+        Ok(self
+            .inner
+            .clone()
+            .rolling_rank_by(by.inner.clone(), options)
+            .into())
     }
 
     pub fn rolling_skew(

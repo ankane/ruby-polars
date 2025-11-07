@@ -1052,6 +1052,24 @@ impl TryConvert for Wrap<RankMethod> {
     }
 }
 
+impl TryConvert for Wrap<RollingRankMethod> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "min" => RollingRankMethod::Min,
+            "max" => RollingRankMethod::Max,
+            "average" => RollingRankMethod::Average,
+            "dense" => RollingRankMethod::Dense,
+            "random" => RollingRankMethod::Random,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "rank `method` must be one of {{'min', 'max', 'average', 'dense', 'random'}}, got {v}",
+                )));
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<Roll> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match String::try_convert(ob)?.as_str() {

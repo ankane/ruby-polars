@@ -1,6 +1,7 @@
 ## 0.23.1 (unreleased)
 
 - Added `concat_arr` method to `Polars`
+- Added `rolling_rank` method to `Expr`
 - Added `days_in_month` method to `DateTimeExpr` and `DateTimeNameSpace`
 - Added `agg` and `item` methods to `ListExpr` and `ListNameSpace`
 - Added `agg` and `eval` methods to `ArrayExpr` and `ArrayNameSpace`

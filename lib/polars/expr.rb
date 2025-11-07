@@ -6374,6 +6374,79 @@ module Polars
       )
     end
 
+    # Compute a rolling rank.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # A window of length `window_size` will traverse the array. The values
+    # that fill this window will be ranked according to the `method`
+    # parameter. The resulting values will be the rank of the value that is
+    # at the end of the sliding window.
+    #
+    # @param window_size [Integer]
+    #   Integer size of the rolling window.
+    # @param method ['average', 'min', 'max', 'dense', 'random']
+    #   The method used to assign ranks to tied elements.
+    #   The following methods are available (default is 'average'):
+    #
+    #   - 'average' : The average of the ranks that would have been assigned to
+    #     all the tied values is assigned to each value.
+    #   - 'min' : The minimum of the ranks that would have been assigned to all
+    #     the tied values is assigned to each value. (This is also referred to
+    #     as "competition" ranking.)
+    #   - 'max' : The maximum of the ranks that would have been assigned to all
+    #     the tied values is assigned to each value.
+    #   - 'dense' : Like 'min', but the rank of the next highest element is
+    #     assigned the rank immediately after those assigned to the tied
+    #     elements.
+    #   - 'random' : Choose a random rank for each value in a tie.
+    # @param seed [Integer]
+    #   Random seed used when `method: 'random'`. If set to nil (default), a
+    #   random seed is generated for each rolling rank operation.
+    # @param min_samples [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If set to `nil` (default), it will be set equal to `window_size`.
+    # @param center [Boolean]
+    #   Set the labels at the center of the window.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 4, 4, 1, 9]})
+    #   df.select(Polars.col("a").rolling_rank(3, method: "average"))
+    #   # =>
+    #   # shape: (5, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ f64  │
+    #   # ╞══════╡
+    #   # │ null │
+    #   # │ null │
+    #   # │ 2.5  │
+    #   # │ 1.0  │
+    #   # │ 3.0  │
+    #   # └──────┘
+    def rolling_rank(
+      window_size,
+      method: "average",
+      seed: nil,
+      min_samples: nil,
+      center: false
+    )
+      Utils.wrap_expr(
+        _rbexpr.rolling_rank(
+          window_size,
+          method,
+          seed,
+          min_samples,
+          center
+        )
+      )
+    end
+
     # Apply a custom rolling window function.
     #
     # Prefer the specific rolling window functions over this one, as they are faster.

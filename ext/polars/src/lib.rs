@@ -497,6 +497,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "rolling_quantile_by",
         method!(RbExpr::rolling_quantile_by, 6),
     )?;
+    class.define_method("rolling_rank", method!(RbExpr::rolling_rank, 5))?;
+    class.define_method("rolling_rank_by", method!(RbExpr::rolling_rank_by, 6))?;
     class.define_method("rolling_skew", method!(RbExpr::rolling_skew, 4))?;
     class.define_method("rolling_kurtosis", method!(RbExpr::rolling_kurtosis, 5))?;
     class.define_method("lower_bound", method!(RbExpr::lower_bound, 0))?;
