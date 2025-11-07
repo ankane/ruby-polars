@@ -4187,6 +4187,143 @@ module Polars
       super
     end
 
+    # Compute a rolling rank based on another column.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # Given a `by` column `<t_0, t_1, ..., t_n>`, then `closed="right"`
+    # (the default) means the windows will be:
+    #
+    #   - (t_0 - window_size, t_0]
+    #   - (t_1 - window_size, t_1]
+    #   - ...
+    #   - (t_n - window_size, t_n]
+    #
+    # @param by [Expr]
+    #   Should be `DateTime`, `Date`, `UInt64`, `UInt32`, `Int64`,
+    #   or `Int32` data type (note that the integral ones require using `'i'`
+    #   in `window size`).
+    # @param window_size [String]
+    #   The length of the window. Can be a dynamic
+    #   temporal size indicated by a timedelta or the following string language:
+    #
+    #   - 1ns   (1 nanosecond)
+    #   - 1us   (1 microsecond)
+    #   - 1ms   (1 millisecond)
+    #   - 1s    (1 second)
+    #   - 1m    (1 minute)
+    #   - 1h    (1 hour)
+    #   - 1d    (1 calendar day)
+    #   - 1w    (1 calendar week)
+    #   - 1mo   (1 calendar month)
+    #   - 1q    (1 calendar quarter)
+    #   - 1y    (1 calendar year)
+    #   - 1i    (1 index count)
+    #
+    #   By "calendar day", we mean the corresponding time on the next day
+    #   (which may not be 24 hours, due to daylight savings). Similarly for
+    #   "calendar week", "calendar month", "calendar quarter", and
+    #   "calendar year".
+    # @param method ['average', 'min', 'max', 'dense', 'random']
+    #   The method used to assign ranks to tied elements.
+    #   The following methods are available (default is 'average'):
+    #
+    #   - 'average' : The average of the ranks that would have been assigned to
+    #     all the tied values is assigned to each value.
+    #   - 'min' : The minimum of the ranks that would have been assigned to all
+    #     the tied values is assigned to each value. (This is also referred to
+    #     as "competition" ranking.)
+    #   - 'max' : The maximum of the ranks that would have been assigned to all
+    #     the tied values is assigned to each value.
+    #   - 'dense' : Like 'min', but the rank of the next highest element is
+    #     assigned the rank immediately after those assigned to the tied
+    #     elements.
+    #   - 'random' : Choose a random rank for each value in a tie.
+    # @param seed [Integer]
+    #   Random seed used when `method: 'random'`. If set to nil (default), a
+    #   random seed is generated for each rolling rank operation.
+    # @param min_samples [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result.
+    # @param closed ['left', 'right', 'both', 'none']
+    #   Define which sides of the temporal interval are closed (inclusive),
+    #   defaults to `'right'`.
+    #
+    # @return [Series]
+    def rolling_rank_by(
+      by,
+      window_size,
+      method: "average",
+      seed: nil,
+      min_samples: 1,
+      closed: "right"
+    )
+      super
+    end
+
+    # Compute a rolling rank.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # A window of length `window_size` will traverse the array. The values
+    # that fill this window will be ranked according to the `method`
+    # parameter. The resulting values will be the rank of the value that is
+    # at the end of the sliding window.
+    #
+    # @param window_size [Integer]
+    #   Integer size of the rolling window.
+    # @param method ['average', 'min', 'max', 'dense', 'random']
+    #   The method used to assign ranks to tied elements.
+    #   The following methods are available (default is 'average'):
+    #
+    #   - 'average' : The average of the ranks that would have been assigned to
+    #     all the tied values is assigned to each value.
+    #   - 'min' : The minimum of the ranks that would have been assigned to all
+    #     the tied values is assigned to each value. (This is also referred to
+    #     as "competition" ranking.)
+    #   - 'max' : The maximum of the ranks that would have been assigned to all
+    #     the tied values is assigned to each value.
+    #   - 'dense' : Like 'min', but the rank of the next highest element is
+    #     assigned the rank immediately after those assigned to the tied
+    #     elements.
+    #   - 'random' : Choose a random rank for each value in a tie.
+    # @param seed [Integer]
+    #   Random seed used when `method: 'random'`. If set to None (default), a
+    #   random seed is generated for each rolling rank operation.
+    # @param min_samples [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If set to `nil` (default), it will be set equal to `window_size`.
+    # @param center [Boolean]
+    #   Set the labels at the center of the window.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   Polars::Series.new([1, 4, 4, 1, 9]).rolling_rank(3, method: "average")
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         null
+    #   #         null
+    #   #         2.5
+    #   #         1.0
+    #   #         3.0
+    #   # ]
+    def rolling_rank(
+      window_size,
+      method: "average",
+      seed: nil,
+      min_samples: nil,
+      center: false
+    )
+      super
+    end
+
     # Compute a rolling skew.
     #
     # @param window_size [Integer]
