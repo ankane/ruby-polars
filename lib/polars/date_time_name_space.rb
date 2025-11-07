@@ -429,6 +429,32 @@ module Polars
       super
     end
 
+    # Extract the number of days in the month from the underlying date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the number of days in the month.
+    # The return value ranges from 28 to 31.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     "date", [Date.new(2001, 1, 1), Date.new(2001, 2, 1), Date.new(2000, 2, 1)]
+    #   )
+    #   s.dt.days_in_month
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'date' [i8]
+    #   # [
+    #   #         31
+    #   #         28
+    #   #         29
+    #   # ]
+    def days_in_month
+      super
+    end
+
     # Extract the week from the underlying date representation.
     #
     # Applies to Date and Datetime columns.

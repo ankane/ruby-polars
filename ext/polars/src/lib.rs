@@ -418,6 +418,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("dt_iso_year", method!(RbExpr::dt_iso_year, 0))?;
     class.define_method("dt_quarter", method!(RbExpr::dt_quarter, 0))?;
     class.define_method("dt_month", method!(RbExpr::dt_month, 0))?;
+    class.define_method("dt_days_in_month", method!(RbExpr::dt_days_in_month, 0))?;
     class.define_method("dt_week", method!(RbExpr::dt_week, 0))?;
     class.define_method("dt_weekday", method!(RbExpr::dt_weekday, 0))?;
     class.define_method("dt_day", method!(RbExpr::dt_day, 0))?;

@@ -162,6 +162,10 @@ impl RbExpr {
         self.clone().inner.dt().month().into()
     }
 
+    pub fn dt_days_in_month(&self) -> Self {
+        self.inner.clone().dt().days_in_month().into()
+    }
+
     pub fn dt_week(&self) -> Self {
         self.clone().inner.dt().week().into()
     }

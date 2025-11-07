@@ -717,6 +717,35 @@ module Polars
       Utils.wrap_expr(_rbexpr.dt_month)
     end
 
+    # Extract the number of days in the month from the underlying Date representation.
+    #
+    # Applies to Date and Datetime columns.
+    #
+    # Returns the number of days in the month.
+    # The return value ranges from 28 to 31.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"date" => [Date.new(2001, 1, 1), Date.new(2001, 2, 1), Date.new(2000, 2, 1)]}
+    #   )
+    #   df.with_columns(Polars.col("date").dt.days_in_month.alias("days_in_month"))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌────────────┬───────────────┐
+    #   # │ date       ┆ days_in_month │
+    #   # │ ---        ┆ ---           │
+    #   # │ date       ┆ i8            │
+    #   # ╞════════════╪═══════════════╡
+    #   # │ 2001-01-01 ┆ 31            │
+    #   # │ 2001-02-01 ┆ 28            │
+    #   # │ 2000-02-01 ┆ 29            │
+    #   # └────────────┴───────────────┘
+    def days_in_month
+      Utils.wrap_expr(_rbexpr.dt_days_in_month)
+    end
+
     # Extract the week from the underlying Date representation.
     #
     # Applies to Date and Datetime columns.
