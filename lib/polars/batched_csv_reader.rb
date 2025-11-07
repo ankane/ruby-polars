@@ -4,7 +4,7 @@ module Polars
     attr_accessor :_reader, :new_columns
 
     def initialize(
-      file,
+      source,
       has_header: true,
       columns: nil,
       separator: ",",
@@ -33,9 +33,7 @@ module Polars
       truncate_ragged_lines: false,
       decimal_comma: false
     )
-      if Utils.pathlike?(file)
-        path = Utils.normalize_filepath(file)
-      end
+      path = Utils.normalize_filepath(source)
 
       dtype_list = nil
       dtype_slice = nil
