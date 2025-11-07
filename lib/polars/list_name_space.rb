@@ -820,23 +820,19 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   df = Polars::DataFrame.new({"a" => [1, 8, 3], "b" => [4, 5, 2]})
-    #   df.with_column(
-    #     Polars.concat_list(["a", "b"]).list.eval(Polars.element.rank).alias("rank")
-    #   )
+    #   s = Polars::Series.new("a", [[1, 4], [8, 5], [3, 2]])
+    #   s.list.eval(Polars.element.rank)
     #   # =>
-    #   # shape: (3, 3)
-    #   # ┌─────┬─────┬────────────┐
-    #   # │ a   ┆ b   ┆ rank       │
-    #   # │ --- ┆ --- ┆ ---        │
-    #   # │ i64 ┆ i64 ┆ list[f64]  │
-    #   # ╞═════╪═════╪════════════╡
-    #   # │ 1   ┆ 4   ┆ [1.0, 2.0] │
-    #   # │ 8   ┆ 5   ┆ [2.0, 1.0] │
-    #   # │ 3   ┆ 2   ┆ [2.0, 1.0] │
-    #   # └─────┴─────┴────────────┘
+    #   # shape: (3,)
+    #   # Series: 'a' [list[f64]]
+    #   # [
+    #   #         [1.0, 2.0]
+    #   #         [2.0, 1.0]
+    #   #         [2.0, 1.0]
+    #   # ]
     def eval(expr)
-      super
+      s = Utils.wrap_s(_s)
+      s.to_frame.select(F.col(s.name).list.eval(expr)).to_series
     end
 
     # Run any polars aggregation expression against the list' elements.
