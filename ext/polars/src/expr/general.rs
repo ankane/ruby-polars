@@ -585,9 +585,32 @@ impl RbExpr {
         self.inner.clone().is_duplicated().into()
     }
 
-    pub fn over(&self, partition_by: RArray) -> RbResult<Self> {
-        let partition_by = rb_exprs_to_exprs(partition_by)?;
-        Ok(self.inner.clone().over(partition_by).into())
+    pub fn over(
+        &self,
+        partition_by: Option<RArray>,
+        order_by: Option<RArray>,
+        order_by_descending: bool,
+        order_by_nulls_last: bool,
+        mapping_strategy: Wrap<WindowMapping>
+    ) -> RbResult<Self> {
+        let partition_by = partition_by.map(rb_exprs_to_exprs).transpose()?;
+
+        let order_by = order_by.map(rb_exprs_to_exprs).transpose()?.map(|order_by|
+            (
+                order_by,
+                SortOptions {
+                    descending: order_by_descending,
+                    nulls_last: order_by_nulls_last,
+                    ..Default::default()
+                }
+            )
+        );
+
+        Ok(self.inner
+            .clone()
+            .over_with_options(partition_by, order_by, mapping_strategy.0)
+            .map_err(RbPolarsErr::from)?
+            .into())
     }
 
     pub fn rolling(
