@@ -2710,11 +2710,11 @@ module Polars
     # This is similar to a group by + aggregation + self join.
     # Or similar to [window functions in Postgres](https://www.postgresql.org/docs/current/tutorial-window.html).
     #
-    # @param more_exprs [Object]
-    #   Additional columns to group by, specified as positional arguments.
     # @param partition_by [Object]
     #   Column(s) to group by. Accepts expression input. Strings are parsed as
     #   column names.
+    # @param more_exprs [Array]
+    #   Additional columns to group by, specified as positional arguments.
     # @param order_by [Object]
     #   Order the window functions/aggregations with the partitioned groups by
     #   the result of the expression passed to `order_by`.
@@ -2806,7 +2806,7 @@ module Polars
     #     }
     #   )
     #   df.with_columns(
-    #     cumulative_sales: Polars.col("sales").cum_sum().over(partition_by: "store_id", order_by: "date")
+    #     cumulative_sales: Polars.col("sales").cum_sum.over("store_id", order_by: "date")
     #   )
     #   # =>
     #   # shape: (4, 4)
@@ -2820,13 +2820,17 @@ module Polars
     #   # │ b        ┆ 2024-09-18 ┆ 8     ┆ 18               │
     #   # │ b        ┆ 2024-09-16 ┆ 10    ┆ 10               │
     #   # └──────────┴────────────┴───────┴──────────────────┘
-    def over(*more_exprs, partition_by: [], order_by: [], descending: false, nulls_last: false, mapping_strategy: "group_to_rows")
-      partition_by = Array(partition_by) + more_exprs
-      partition_by = partition_by.blank? ? nil : Utils.parse_into_list_of_expressions(partition_by)
+    def over(partition_by = nil, *more_exprs, order_by: nil, descending: false, nulls_last: false, mapping_strategy: "group_to_rows")
+      partition_by_rbexprs =
+        if !partition_by.nil?
+          Utils.parse_into_list_of_expressions(partition_by, *more_exprs)
+        else
+          nil
+        end
 
-      order_by = order_by.blank? ? nil : Utils.parse_into_list_of_expressions(order_by)
+      order_by_rbexprs = !order_by.nil? ? Utils.parse_into_list_of_expressions(order_by) : nil
 
-      wrap_expr(_rbexpr.over(partition_by, order_by, descending, nulls_last, mapping_strategy))
+      wrap_expr(_rbexpr.over(partition_by_rbexprs, order_by_rbexprs, descending, nulls_last, mapping_strategy))
     end
 
     # Create rolling groups based on a temporal or integer column.
