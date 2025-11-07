@@ -914,5 +914,74 @@ module Polars
       n = Utils.parse_into_expression(n)
       Utils.wrap_expr(_rbexpr.arr_shift(n))
     end
+
+    # Run any polars expression against the arrays' elements.
+    #
+    # @param expr [Expr]
+    #   Expression to run. Note that you can select an element with `Polars.element`
+    # @param as_list [Boolean]
+    #   Collect the resulting data as a list. This allows for expressions which
+    #   output a variable amount of data.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 8, 3], "b" => [4, 5, 2]})
+    #   df.with_columns(rank: Polars.concat_arr("a", "b").arr.eval(Polars.element.rank))
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬───────────────┐
+    #   # │ a   ┆ b   ┆ rank          │
+    #   # │ --- ┆ --- ┆ ---           │
+    #   # │ i64 ┆ i64 ┆ array[f64, 2] │
+    #   # ╞═════╪═════╪═══════════════╡
+    #   # │ 1   ┆ 4   ┆ [1.0, 2.0]    │
+    #   # │ 8   ┆ 5   ┆ [2.0, 1.0]    │
+    #   # │ 3   ┆ 2   ┆ [2.0, 1.0]    │
+    #   # └─────┴─────┴───────────────┘
+    def eval(expr, as_list: false)
+      Utils.wrap_expr(_rbexpr.arr_eval(expr._rbexpr, as_list))
+    end
+
+    # Run any polars aggregation expression against the arrays' elements.
+    #
+    # @param expr [Expr]
+    #   Expression to run. Note that you can select an element with `Polars.element`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::Series.new(
+    #     "a", [[1, nil], [42, 13], [nil, nil]], dtype: Polars::Array.new(Polars::Int64, 2)
+    #   ).to_frame
+    #   df.with_columns(null_count: Polars.col("a").arr.agg(Polars.element.null_count))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌───────────────┬────────────┐
+    #   # │ a             ┆ null_count │
+    #   # │ ---           ┆ ---        │
+    #   # │ array[i64, 2] ┆ u32        │
+    #   # ╞═══════════════╪════════════╡
+    #   # │ [1, null]     ┆ 1          │
+    #   # │ [42, 13]      ┆ 0          │
+    #   # │ [null, null]  ┆ 2          │
+    #   # └───────────────┴────────────┘
+    #
+    # @example
+    #   df.with_columns(no_nulls: Polars.col("a").arr.agg(Polars.element.drop_nulls))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌───────────────┬───────────┐
+    #   # │ a             ┆ no_nulls  │
+    #   # │ ---           ┆ ---       │
+    #   # │ array[i64, 2] ┆ list[i64] │
+    #   # ╞═══════════════╪═══════════╡
+    #   # │ [1, null]     ┆ [1]       │
+    #   # │ [42, 13]      ┆ [42, 13]  │
+    #   # │ [null, null]  ┆ []        │
+    #   # └───────────────┴───────────┘
+    def agg(expr)
+      Utils.wrap_expr(_rbexpr.arr_agg(expr._rbexpr))
+    end
   end
 end

@@ -141,6 +141,12 @@ pub fn concat_list(s: RArray) -> RbResult<RbExpr> {
     Ok(expr.into())
 }
 
+pub fn concat_arr(s: RArray) -> RbResult<RbExpr> {
+    let s = rb_exprs_to_exprs(s)?;
+    let expr = dsl::concat_arr(s).map_err(RbPolarsErr::from)?;
+    Ok(expr.into())
+}
+
 pub fn concat_str(s: RArray, separator: String, ignore_nulls: bool) -> RbResult<RbExpr> {
     let s = rb_exprs_to_exprs(s)?;
     Ok(dsl::concat_str(s, &separator, ignore_nulls).into())

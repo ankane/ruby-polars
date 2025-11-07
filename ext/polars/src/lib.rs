@@ -357,6 +357,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arr_tail", method!(RbExpr::arr_tail, 2))?;
     class.define_method("arr_shift", method!(RbExpr::arr_shift, 1))?;
     class.define_method("arr_explode", method!(RbExpr::arr_explode, 0))?;
+    class.define_method("arr_eval", method!(RbExpr::arr_eval, 2))?;
+    class.define_method("arr_agg", method!(RbExpr::arr_agg, 1))?;
     class.define_method("binary_contains", method!(RbExpr::bin_contains, 1))?;
     class.define_method("binary_ends_with", method!(RbExpr::bin_ends_with, 1))?;
     class.define_method("binary_starts_with", method!(RbExpr::bin_starts_with, 1))?;
@@ -676,6 +678,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("when", function!(functions::whenthen::when, 1))?;
     class.define_singleton_method("concat_str", function!(functions::lazy::concat_str, 3))?;
     class.define_singleton_method("concat_list", function!(functions::lazy::concat_list, 1))?;
+    class.define_singleton_method("concat_arr", function!(functions::lazy::concat_arr, 1))?;
     class.define_singleton_method(
         "business_day_count",
         function!(functions::business::business_day_count, 4),

@@ -140,6 +140,29 @@ module Polars
       Utils.wrap_expr(Plr.concat_list(exprs))
     end
 
+    # Horizontally concatenate columns into a single array column.
+    #
+    # Non-array columns are reshaped to a unit-width array. All columns must have
+    # a dtype of either `Polars::Array.new(<DataType>, width)` or `Polars::<DataType>`.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param exprs [Object]
+    #   Columns to concatenate into a single array column. Accepts expression input.
+    #   Strings are parsed as column names, other non-expression inputs are parsed as
+    #   literals.
+    # @param more_exprs [Array]
+    #   Additional columns to concatenate into a single array column, specified as
+    #   positional arguments.
+    #
+    # @return [Expr]
+    def concat_arr(exprs, *more_exprs)
+      exprs = Utils.parse_into_list_of_expressions(exprs, *more_exprs)
+      Utils.wrap_expr(Plr.concat_arr(exprs))
+    end
+
     # Collect several columns into a Series of dtype Struct.
     #
     # @param exprs [Array]
