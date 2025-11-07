@@ -2710,8 +2710,40 @@ module Polars
     # This is similar to a group by + aggregation + self join.
     # Or similar to [window functions in Postgres](https://www.postgresql.org/docs/current/tutorial-window.html).
     #
-    # @param expr [Object]
-    #   Column(s) to group by.
+    # @param more_exprs [Object]
+    #   Additional columns to group by, specified as positional arguments.
+    # @param partition_by [Object]
+    #   Column(s) to group by. Accepts expression input. Strings are parsed as
+    #   column names.
+    # @param order_by [Object]
+    #   Order the window functions/aggregations with the partitioned groups by
+    #   the result of the expression passed to `order_by`.
+    # @param descending [Boolean]
+    #   In case 'order_by' is given, indicate whether to order in ascending or
+    #   descending order.
+    # @param nulls_last [Boolean]
+    #   In case 'order_by' is given, indicate whether to order
+    #   the nulls in last position.
+    # @param mapping_strategy ['group_to_rows', 'join', 'explode']
+    #   - group_to_rows
+    #       If the aggregation results in multiple values per group, map them back
+    #       to their row position in the DataFrame. This can only be done if each
+    #       group yields the same elements before aggregation as after. If the
+    #       aggregation results in one scalar value per group, this value will be
+    #       mapped to every row.
+    #   - join
+    #       If the aggregation may result in multiple values per group, join the
+    #       values as 'List<group_dtype>' to each row position. Warning: this can be
+    #       memory intensive. If the aggregation always results in one scalar value
+    #       per group, join this value as '<group_dtype>' to each row position.
+    #   - explode
+    #       If the aggregation may result in multiple values per group, map each
+    #       value to a new row, similar to the results of `group_by` + `agg` +
+    #       `explode`. If the aggregation always results in one scalar value per
+    #       group, map this value to one row position. Sorting of the given groups
+    #       is required if the groups are not part of the window operation for the
+    #       operation, otherwise the result would not make sense. This operation
+    #       changes the number of rows.
     #
     # @return [Expr]
     #
@@ -2764,9 +2796,37 @@ module Polars
     #   # │ 6      │
     #   # │ 4      │
     #   # └────────┘
-    def over(expr)
-      rbexprs = Utils.parse_into_list_of_expressions(expr)
-      wrap_expr(_rbexpr.over(rbexprs))
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "store_id" => ["a", "a", "b", "b"],
+    #       "date" => [Date.new(2024, 9, 18), Date.new(2024, 9, 17), Date.new(2024, 9, 18), Date.new(2024, 9, 16)],
+    #       "sales" => [7, 9, 8, 10]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     cumulative_sales: Polars.col("sales").cum_sum().over(partition_by: "store_id", order_by: "date")
+    #   )
+    #   # =>
+    #   # shape: (4, 4)
+    #   # ┌──────────┬────────────┬───────┬──────────────────┐
+    #   # │ store_id ┆ date       ┆ sales ┆ cumulative_sales │
+    #   # │ ---      ┆ ---        ┆ ---   ┆ ---              │
+    #   # │ str      ┆ date       ┆ i64   ┆ i64              │
+    #   # ╞══════════╪════════════╪═══════╪══════════════════╡
+    #   # │ a        ┆ 2024-09-18 ┆ 7     ┆ 16               │
+    #   # │ a        ┆ 2024-09-17 ┆ 9     ┆ 9                │
+    #   # │ b        ┆ 2024-09-18 ┆ 8     ┆ 18               │
+    #   # │ b        ┆ 2024-09-16 ┆ 10    ┆ 10               │
+    #   # └──────────┴────────────┴───────┴──────────────────┘
+    def over(*more_exprs, partition_by: [], order_by: [], descending: false, nulls_last: false, mapping_strategy: "group_to_rows")
+      partition_by = Array(partition_by) + more_exprs
+      partition_by = partition_by.blank? ? nil : Utils.parse_into_list_of_expressions(partition_by)
+
+      order_by = order_by.blank? ? nil : Utils.parse_into_list_of_expressions(order_by)
+
+      wrap_expr(_rbexpr.over(partition_by, order_by, descending, nulls_last, mapping_strategy))
     end
 
     # Create rolling groups based on a temporal or integer column.
