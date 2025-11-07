@@ -622,6 +622,48 @@ module Polars
       get(-1)
     end
 
+    # Get the single value of the sublists.
+    #
+    # This errors if the sublist length is not exactly one.
+    #
+    # @param allow_empty [Boolean]
+    #   Allow having no values to return `null`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [[3], [1], [2]]})
+    #   df.with_columns(item: Polars.col("a").list.item)
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌───────────┬──────┐
+    #   # │ a         ┆ item │
+    #   # │ ---       ┆ ---  │
+    #   # │ list[i64] ┆ i64  │
+    #   # ╞═══════════╪══════╡
+    #   # │ [3]       ┆ 3    │
+    #   # │ [1]       ┆ 1    │
+    #   # │ [2]       ┆ 2    │
+    #   # └───────────┴──────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [[], [1], [2]]})
+    #   df.select(Polars.col("a").list.item(allow_empty: true))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ i64  │
+    #   # ╞══════╡
+    #   # │ null │
+    #   # │ 1    │
+    #   # │ 2    │
+    #   # └──────┘
+    def item(allow_empty: false)
+      agg(F.element.item(allow_empty: allow_empty))
+    end
+
     # Check if sublists contain the given item.
     #
     # @param item [Object]

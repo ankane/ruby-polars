@@ -204,6 +204,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("unique_stable", method!(RbExpr::unique_stable, 0))?;
     class.define_method("first", method!(RbExpr::first, 0))?;
     class.define_method("last", method!(RbExpr::last, 0))?;
+    class.define_method("item", method!(RbExpr::item, 1))?;
     class.define_method("implode", method!(RbExpr::implode, 0))?;
     class.define_method("quantile", method!(RbExpr::quantile, 2))?;
     class.define_method("cut", method!(RbExpr::cut, 4))?;

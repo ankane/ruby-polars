@@ -516,6 +516,27 @@ module Polars
       super
     end
 
+    # Get the single value of the sublists.
+    #
+    # This errors if the sublist length is not exactly one.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1], [4], [6]])
+    #   s.list.item
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         4
+    #   #         6
+    #   # ]
+    def item
+      super
+    end
+
     # Check if sublists contain the given item.
     #
     # @param item [Object]

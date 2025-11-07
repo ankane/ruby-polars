@@ -161,6 +161,10 @@ impl RbExpr {
         self.inner.clone().last().into()
     }
 
+    pub fn item(&self, allow_empty: bool) -> Self {
+        self.inner.clone().item(allow_empty).into()
+    }
+
     pub fn implode(&self) -> Self {
         self.inner.clone().implode().into()
     }

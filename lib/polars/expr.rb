@@ -2705,6 +2705,43 @@ module Polars
       wrap_expr(_rbexpr.last)
     end
 
+    # Get the single value.
+    #
+    # This raises an error if there is not exactly one value.
+    #
+    # @param allow_empty [Boolean]
+    #   Allow having no values to return `null`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1]})
+    #   df.select(Polars.col("a").item)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # └─────┘
+    #
+    # @example
+    #   df.head(0).select(Polars.col("a").item(allow_empty: true))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ i64  │
+    #   # ╞══════╡
+    #   # │ null │
+    #   # └──────┘
+    def item(allow_empty: false)
+      Utils.wrap_expr(_rbexpr.item(allow_empty))
+    end
+
     # Apply window function over a subgroup.
     #
     # This is similar to a group by + aggregation + self join.
