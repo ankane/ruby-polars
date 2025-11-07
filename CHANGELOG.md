@@ -1,6 +1,7 @@
 ## 0.23.1 (unreleased)
 
 - Added more options to `read_csv` and `scan_csv` methods
+- Added more options to `over` method
 
 ## 0.23.0 (2025-11-04)
 
