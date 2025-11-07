@@ -606,11 +606,11 @@ impl RbExpr {
             )
         );
 
-        Ok(self.inner.clone()
+        Ok(self.inner
+            .clone()
             .over_with_options(partition_by, order_by, mapping_strategy.0)
-            .expect("At least one of `partition_by` and `order_by` must be specified in `over`")
-            .into()
-        )
+            .map_err(RbPolarsErr::from)?
+            .into())
     }
 
     pub fn rolling(
