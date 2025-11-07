@@ -700,5 +700,66 @@ module Polars
     def shift(n = 1)
       super
     end
+
+    # Run any polars expression against the arrays' elements.
+    #
+    # @param expr [Expr]
+    #   Expression to run. Note that you can select an element with `pl.element()`
+    # @param as_list [Boolean]
+    #   Collect the resulting data as a list. This allows for expressions which
+    #   output a variable amount of data.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1, 4], [8, 5], [3, 2]], dtype: Polars::Array.new(Polars::Int64, 2))
+    #   s.arr.eval(Polars.element.rank)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [array[f64, 2]]
+    #   # [
+    #   #         [1.0, 2.0]
+    #   #         [2.0, 1.0]
+    #   #         [2.0, 1.0]
+    #   # ]
+    def eval(expr, as_list: false)
+      # TODO fix
+      super
+    end
+
+    # Run any polars aggregation expression against the arrays' elements.
+    #
+    # @param expr [Expr]
+    #   Expression to run. Note that you can select an element with `Polars.element`.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     "a", [[1, nil], [42, 13], [nil, nil]], Polars::Array.new(Polars::Int64, 2)
+    #   )
+    #   s.arr.agg(Polars.element.null_count)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [u32]
+    #   # [
+    #   #         1
+    #   #         0
+    #   #         2
+    #   # ]
+    #
+    # @example
+    #   s.arr.agg(Polars.element.drop_nulls)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [list[i64]]
+    #   # [
+    #   #         [1]
+    #   #         [42, 13]
+    #   #         []
+    #   # ]
+    def agg(expr)
+      super
+    end
   end
 end

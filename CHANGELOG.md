@@ -3,7 +3,7 @@
 - Added `concat_arr` method to `Polars`
 - Added `days_in_month` method to `DateTimeExpr` ane `DateTimeNameSpace`
 - Added `agg` and `item` methods to `ListExpr` and `ListNameSpace`
-- Added `agg` and `eval` methods to `ArrayExpr`
+- Added `agg` and `eval` methods to `ArrayExpr` and `ArrayNameSpace`
 - Added more options to `read_csv` and `scan_csv` methods
 - Added more options to `over` method
 
