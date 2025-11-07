@@ -997,6 +997,45 @@ module Polars
       Utils.wrap_expr(_rbexpr.list_eval(expr._rbexpr))
     end
 
+    # Run any polars aggregation expression against the lists' elements.
+    #
+    # @param expr [Expr]
+    #   Expression to run. Note that you can select an element with `Polars.element`.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [[1, nil], [42, 13], [nil, nil]]})
+    #   df.with_columns(null_count: Polars.col("a").list.agg(Polars.element.null_count))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌──────────────┬────────────┐
+    #   # │ a            ┆ null_count │
+    #   # │ ---          ┆ ---        │
+    #   # │ list[i64]    ┆ u32        │
+    #   # ╞══════════════╪════════════╡
+    #   # │ [1, null]    ┆ 1          │
+    #   # │ [42, 13]     ┆ 0          │
+    #   # │ [null, null] ┆ 2          │
+    #   # └──────────────┴────────────┘
+    #
+    # @example
+    #   df.with_columns(no_nulls: Polars.col("a").list.agg(Polars.element.drop_nulls))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌──────────────┬───────────┐
+    #   # │ a            ┆ no_nulls  │
+    #   # │ ---          ┆ ---       │
+    #   # │ list[i64]    ┆ list[i64] │
+    #   # ╞══════════════╪═══════════╡
+    #   # │ [1, null]    ┆ [1]       │
+    #   # │ [42, 13]     ┆ [42, 13]  │
+    #   # │ [null, null] ┆ []        │
+    #   # └──────────────┴───────────┘
+    def agg(expr)
+      Utils.wrap_expr(_rbexpr.list_agg(expr._rbexpr))
+    end
+
     # Filter elements in each list by a boolean expression.
     #
     # @param predicate [Object]

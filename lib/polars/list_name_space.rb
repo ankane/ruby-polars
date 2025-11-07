@@ -818,6 +818,39 @@ module Polars
       super
     end
 
+    # Run any polars aggregation expression against the list' elements.
+    #
+    # @param expr [Expr]
+    #   Expression to run. Note that you can select an element with `Polars.element`.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1, nil], [42, 13], [nil, nil]])
+    #   s.list.agg(Polars.element.null_count)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [u32]
+    #   # [
+    #   #         1
+    #   #         0
+    #   #         2
+    #   # ]
+    #
+    # @example
+    #   s.list.agg(Polars.element.drop_nulls)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [list[i64]]
+    #   # [
+    #   #         [1]
+    #   #         [42, 13]
+    #   #         []
+    #   # ]
+    def agg(expr)
+      super
+    end
+
     # Filter elements in each list by a boolean expression, returning a new Series of lists.
     #
     # @param predicate [Object]

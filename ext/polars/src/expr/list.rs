@@ -47,6 +47,10 @@ impl RbExpr {
         self.inner.clone().list().eval(expr.inner.clone()).into()
     }
 
+    pub fn list_agg(&self, expr: &RbExpr) -> Self {
+        self.inner.clone().list().agg(expr.inner.clone()).into()
+    }
+
     pub fn list_filter(&self, predicate: &RbExpr) -> Self {
         self.inner
             .clone()

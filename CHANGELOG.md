@@ -1,6 +1,7 @@
 ## 0.23.1 (unreleased)
 
 - Added `days_in_month` method to `DateTimeExpr` ane `DateTimeNameSpace`
+- Added `agg` method to `ListExpr` and `ListNameSpace`
 - Added more options to `read_csv` and `scan_csv` methods
 - Added more options to `over` method
 
