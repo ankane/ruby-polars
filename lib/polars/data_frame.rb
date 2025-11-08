@@ -6423,11 +6423,6 @@ module Polars
     end
 
     # @private
-    def self.include_unknowns(schema, cols)
-      cols.to_h { |col| [col, schema.fetch(col, Unknown)] }
-    end
-
-    # @private
     def self._unpack_schema(schema, schema_overrides: nil, n_expected: nil, lookup_names: nil, include_overrides_in_columns: false)
       if schema.is_a?(Hash)
         schema = schema.to_a
@@ -6546,7 +6541,7 @@ module Polars
         end
       elsif data[0].is_a?(Hash)
         column_names, dtypes = _unpack_schema(columns)
-        schema_overrides = dtypes ? include_unknowns(dtypes, column_names) : nil
+        schema_overrides = dtypes ? _include_unknowns(dtypes, column_names) : nil
         rbdf = RbDataFrame.from_hashes(data, schema, schema_overrides, strict, infer_schema_length)
         if column_names
           rbdf = _post_apply_columns(rbdf, column_names)
