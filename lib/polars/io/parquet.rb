@@ -248,7 +248,7 @@ module Polars
       retries: 2,
       include_file_paths: nil,
       missing_columns: "raise",
-      allow_missing_columns: nil, # TODO remove
+      allow_missing_columns: nil,
       extra_columns: "raise",
       cast_options: nil,
       _column_mapping: nil,
