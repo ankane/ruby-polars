@@ -266,6 +266,9 @@ module Polars
     #   A valid regex pattern.
     # @param literal [Boolean]
     #   Treat pattern as a literal string.
+    # @param strict [Boolean]
+    #   Raise an error if the underlying pattern is not a valid regex,
+    #   otherwise mask out with a null value.
     #
     # @return [Series]
     #
@@ -293,7 +296,7 @@ module Polars
     #   #         true
     #   #         null
     #   # ]
-    def contains(pattern, literal: false)
+    def contains(pattern, literal: false, strict: true)
       super
     end
 
