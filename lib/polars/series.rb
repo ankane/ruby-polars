@@ -3342,8 +3342,12 @@ module Polars
 
     # Round underlying floating point data by `decimals` digits.
     #
+    # The default rounding mode is "half to even" (also known as "bankers' rounding").
+    #
     # @param decimals [Integer]
-    #   number of decimals to round by.
+    #   Number of decimals to round by.
+    # @param mode ['half_to_even', 'half_away_from_zero']
+    #   Rounding mode.
     #
     # @return [Series]
     #
@@ -3358,7 +3362,7 @@ module Polars
     #   #         2.57
     #   #         3.9
     #   # ]
-    def round(decimals = 0)
+    def round(decimals = 0, mode: "half_to_even")
       super
     end
 
