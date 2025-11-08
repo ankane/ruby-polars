@@ -1343,6 +1343,9 @@ module Polars
     # @param strict [Boolean]
     #   Throw an error if a cast could not be done.
     #   For instance, due to an overflow.
+    # @param wrap_numerical [Boolean]
+    #   If true numeric casts wrap overflowing values instead of
+    #   marking the cast as invalid.
     #
     # @return [Expr]
     #
@@ -1370,9 +1373,9 @@ module Polars
     #   # │ 2.0 ┆ 5   │
     #   # │ 3.0 ┆ 6   │
     #   # └─────┴─────┘
-    def cast(dtype, strict: true)
+    def cast(dtype, strict: true, wrap_numerical: false)
       dtype = Utils.rb_type_to_dtype(dtype)
-      wrap_expr(_rbexpr.cast(dtype, strict))
+      wrap_expr(_rbexpr.cast(dtype, strict, wrap_numerical))
     end
 
     # Sort this column. In projection/ selection context the whole column is sorted.
@@ -2192,9 +2195,9 @@ module Polars
     #   # │ null ┆ zero │
     #   # │ zero ┆ 6.0  │
     #   # └──────┴──────┘
-    def fill_nan(fill_value)
-      fill_value = Utils.parse_into_expression(fill_value, str_as_lit: true)
-      wrap_expr(_rbexpr.fill_nan(fill_value))
+    def fill_nan(value)
+      fill_value_rbexpr = Utils.parse_into_expression(value, str_as_lit: true)
+      wrap_expr(_rbexpr.fill_nan(fill_value_rbexpr))
     end
 
     # Fill missing values with the latest seen values.
@@ -7429,7 +7432,7 @@ module Polars
 
     # Reshape this Expr to a flat Series or a Series of Lists.
     #
-    # @param dims [Array]
+    # @param dimensions [Array]
     #   Tuple of the dimension sizes. If a -1 is used in any of the dimensions, that
     #   dimension is inferred.
     #
@@ -7469,8 +7472,8 @@ module Polars
     #   # │ 8   │
     #   # │ 9   │
     #   # └─────┘
-    def reshape(dims)
-      wrap_expr(_rbexpr.reshape(dims))
+    def reshape(dimensions)
+      wrap_expr(_rbexpr.reshape(dimensions))
     end
 
     # Shuffle the contents of this expr.

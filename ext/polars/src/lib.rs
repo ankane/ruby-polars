@@ -218,7 +218,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("value_counts", method!(RbExpr::value_counts, 4))?;
     class.define_method("unique_counts", method!(RbExpr::unique_counts, 0))?;
     class.define_method("null_count", method!(RbExpr::null_count, 0))?;
-    class.define_method("cast", method!(RbExpr::cast, 2))?;
+    class.define_method("cast", method!(RbExpr::cast, 3))?;
     class.define_method("sort_with", method!(RbExpr::sort_with, 2))?;
     class.define_method("arg_sort", method!(RbExpr::arg_sort, 2))?;
     class.define_method("top_k", method!(RbExpr::top_k, 1))?;

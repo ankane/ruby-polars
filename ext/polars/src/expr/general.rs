@@ -4,6 +4,7 @@ use magnus::{RArray, Value};
 use polars::lazy::dsl;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
+use polars_core::chunked_array::cast::CastOptions;
 use polars_core::series::IsSorted;
 
 use super::selector::RbSelector;
@@ -258,14 +259,17 @@ impl RbExpr {
         self.inner.clone().null_count().into()
     }
 
-    pub fn cast(&self, data_type: Wrap<DataType>, strict: bool) -> RbResult<Self> {
-        let dt = data_type.0;
-        let expr = if strict {
-            self.inner.clone().strict_cast(dt)
+    pub fn cast(&self, dtype: Wrap<DataType>, strict: bool, wrap_numerical: bool) -> Self {
+        let options = if wrap_numerical {
+            CastOptions::Overflowing
+        } else if strict {
+            CastOptions::Strict
         } else {
-            self.inner.clone().cast(dt)
+            CastOptions::NonStrict
         };
-        Ok(expr.into())
+
+        let expr = self.inner.clone().cast_with_options(dtype.0, options);
+        expr.into()
     }
 
     pub fn sort_with(&self, descending: bool, nulls_last: bool) -> Self {
