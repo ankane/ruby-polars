@@ -3096,9 +3096,9 @@ module Polars
 
     # Set values at the index locations.
     #
-    # @param indices [Object]
+    # @param idx [Object]
     #   Integers representing the index locations.
-    # @param values [Object]
+    # @param value [Object]
     #   Replacement values.
     #
     # @return [Series]
@@ -3114,24 +3114,26 @@ module Polars
     #   #         10
     #   #         3
     #   # ]
-    def scatter(indices, values)
-      if indices.is_a?(Integer)
-        indices = [indices]
+    def scatter(idx, value)
+      if idx.is_a?(Integer)
+        idx = [idx]
       end
-      if indices.length == 0
+      if idx.length == 0
         return self
       end
 
-      indices = Series.new("", indices)
+      idx = Series.new("", idx)
+      if value.is_a?(Integer) || value.is_a?(Float) || Utils.bool?(value) || value.is_a?(::String) || value.nil?
+        value = Series.new("", [value])
 
-      if !values.is_a?(Series)
-        if !values.is_a?(::Array) || values.is_a?(::String)
-          values = [values]
+        # if we need to set more than a single value, we extend it
+        if idx.length > 0
+          value = value.extend_constant(value[0], idx.length - 1)
         end
-        values = Series.new(values)
+      elsif !value.is_a?(Series)
+        value = Series.new("", value)
       end
-
-      _s.scatter(indices._s, values._s)
+      _s.scatter(idx._s, value._s)
       self
     end
     alias_method :set_at_idx, :scatter
