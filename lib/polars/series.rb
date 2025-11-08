@@ -3201,7 +3201,7 @@ module Polars
 
     # Fill floating point NaN value with a fill value.
     #
-    # @param fill_value [Object]
+    # @param value [Object]
     #   Value used to fill nan values.
     #
     # @return [Series]
@@ -3218,7 +3218,7 @@ module Polars
     #   #         3.0
     #   #         0.0
     #   # ]
-    def fill_nan(fill_value)
+    def fill_nan(value)
       super
     end
 
@@ -3749,8 +3749,11 @@ module Polars
 
     # Shift the values by a given period.
     #
-    # @param periods [Integer]
+    # @param n [Integer]
     #   Number of places to shift (may be negative).
+    # @param fill_value [Object]
+    #   Fill the resulting null values with this value. Accepts scalar expression
+    #   input. Non-expression inputs are parsed as literals.
     #
     # @return [Series]
     #
@@ -3776,7 +3779,7 @@ module Polars
     #   #         3
     #   #         null
     #   # ]
-    def shift(periods = 1)
+    def shift(n = 1, fill_value: nil)
       super
     end
 
@@ -5534,17 +5537,16 @@ module Polars
       _s.kurtosis(fisher, bias)
     end
 
-    # Clip (limit) the values in an array to a `min` and `max` boundary.
+    # Set values outside the given boundaries to the boundary value.
     #
-    # Only works for numerical types.
-    #
-    # If you want to clip other dtypes, consider writing a "when, then, otherwise"
-    # expression. See {#when} for more information.
-    #
-    # @param min_val [Numeric]
-    #   Minimum value.
-    # @param max_val [Numeric]
-    #   Maximum value.
+    # @param lower_bound [Numeric]
+    #   Lower bound. Accepts expression input.
+    #   Non-expression inputs are parsed as literals.
+    #   If set to `nil` (default), no lower bound is applied.
+    # @param upper_bound [Numeric]
+    #   Upper bound. Accepts expression input.
+    #   Non-expression inputs are parsed as literals.
+    #   If set to `nil` (default), no upper bound is applied.
     #
     # @return [Series]
     #
@@ -5560,7 +5562,7 @@ module Polars
     #   #         null
     #   #         10
     #   # ]
-    def clip(min_val = nil, max_val = nil)
+    def clip(lower_bound = nil, upper_bound = nil)
       super
     end
 
@@ -5836,7 +5838,7 @@ module Polars
 
     # Reshape this Series to a flat Series or a Series of Lists.
     #
-    # @param dims [Array]
+    # @param dimensions [Array]
     #   Tuple of the dimension sizes. If a -1 is used in any of the dimensions, that
     #   dimension is inferred.
     #
@@ -5870,7 +5872,7 @@ module Polars
     #   #         8
     #   #         9
     #   # ]
-    def reshape(dims)
+    def reshape(dimensions)
       super
     end
 
