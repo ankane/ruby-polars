@@ -832,6 +832,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(functions::random::set_random_seed, 1),
     )?;
     class.define_singleton_method("re_escape", function!(re_escape, 1))?;
+    class.define_singleton_method(
+        "get_engine_affinity",
+        function!(functions::utils::rb_get_engine_affinity, 0),
+    )?;
 
     let class = module.define_class("RbLazyFrame", ruby.class_object())?;
     #[cfg(feature = "serialize_binary")]
