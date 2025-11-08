@@ -1777,7 +1777,7 @@ module Polars
     #
     # @param index [Integer]
     #   Column index.
-    # @param series [Series]
+    # @param column [Series]
     #   Series that will replace the column.
     #
     # @return [DataFrame]
@@ -1803,11 +1803,11 @@ module Polars
     #   # │ 20    ┆ 7   ┆ b   │
     #   # │ 30    ┆ 8   ┆ c   │
     #   # └───────┴─────┴─────┘
-    def replace_column(index, series)
+    def replace_column(index, column)
       if index < 0
-        index = columns.length + index
+        index = width + index
       end
-      _df.replace_column(index, series._s)
+      _df.replace_column(index, column._s)
       self
     end
     alias_method :replace_at_idx, :replace_column
