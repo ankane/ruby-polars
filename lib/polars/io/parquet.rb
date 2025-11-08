@@ -290,29 +290,15 @@ module Polars
         missing_columns = allow_missing_columns ? "insert" : "raise"
       end
 
-      if Utils.pathlike?(source)
-        source = Utils.normalize_filepath(source, check_not_directory: false)
-      elsif Utils.is_path_or_str_sequence(source)
-        source = source.map { |s| Utils.normalize_filepath(s, check_not_directory: false) }
-      end
+      sources = get_sources(source)
 
-      if credential_provider
-        raise Todo
-      end
-      credential_provider_builder = nil
-
-      if source.is_a?(::Array)
-        sources = source
-        source = nil
-      else
-        sources = [source]
-      end
-
-      if storage_options
-        storage_options = storage_options.map { |k, v| [k.to_s, v.to_s] }
-      else
-        storage_options = nil
-      end
+      credential_provider_builder =
+        _init_credential_provider_builder(
+          credential_provider,
+          sources,
+          storage_options,
+          "scan_parquet"
+        )
 
       rblf =
         RbLazyFrame.new_from_parquet(
@@ -332,7 +318,7 @@ module Polars
             try_parse_hive_dates: try_parse_hive_dates,
             rechunk: rechunk,
             cache: cache,
-            storage_options: storage_options,
+            storage_options: storage_options ? storage_options.map { |k, v| [k.to_s, v.to_s] } : nil,
             credential_provider: credential_provider_builder,
             retries: retries,
             column_mapping: _column_mapping,
