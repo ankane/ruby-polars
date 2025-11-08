@@ -477,6 +477,10 @@ module Polars
     #
     # @param index [Integer]
     #   Index to return per sublist
+    # @param null_on_oob [Boolean]
+    #   Behavior if an index is out of bounds:
+    #   true -> set as null
+    #   false -> raise an error
     #
     # @return [Series]
     #
@@ -493,7 +497,7 @@ module Polars
     #   #         5
     #   #         null
     #   # ]
-    def get(index)
+    def get(index, null_on_oob: false)
       super
     end
 
@@ -593,6 +597,8 @@ module Polars
     #
     # @param item [Object]
     #   Item that will be checked for membership
+    # @param nulls_equal [Boolean]
+    #   If true, treat null as a distinct value. Null values will not propagate.
     #
     # @return [Series]
     #
@@ -609,7 +615,7 @@ module Polars
     #   #         true
     #   #         false
     #   # ]
-    def contains(item)
+    def contains(item, nulls_equal: true)
       super
     end
 
