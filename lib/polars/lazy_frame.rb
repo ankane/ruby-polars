@@ -3479,6 +3479,11 @@ module Polars
 
     # Take every nth row in the LazyFrame and return as a new LazyFrame.
     #
+    # @param n [Integer]
+    #   Gather every *n*-th row.
+    # @param offset [Integer]
+    #   Starting index.
+    #
     # @return [LazyFrame]
     #
     # @example
@@ -3494,8 +3499,8 @@ module Polars
     #   # │ 1   ┆ 5   │
     #   # │ 3   ┆ 7   │
     #   # └─────┴─────┘
-    def gather_every(n)
-      select(F.col("*").gather_every(n))
+    def gather_every(n, offset: 0)
+      select(F.col("*").gather_every(n, offset))
     end
     alias_method :take_every, :gather_every
 
@@ -3574,7 +3579,7 @@ module Polars
 
     # Fill floating point NaN values.
     #
-    # @param fill_value [Object]
+    # @param value [Object]
     #   Value to fill the NaN values with.
     #
     # @return [LazyFrame]
@@ -3603,11 +3608,11 @@ module Polars
     #   # │ 99.0 ┆ 99.0 │
     #   # │ 4.0  ┆ 13.0 │
     #   # └──────┴──────┘
-    def fill_nan(fill_value)
-      if !fill_value.is_a?(Expr)
-        fill_value = F.lit(fill_value)
+    def fill_nan(value)
+      if !value.is_a?(Expr)
+        value = F.lit(value)
       end
-      _from_rbldf(_ldf.fill_nan(fill_value._rbexpr))
+      _from_rbldf(_ldf.fill_nan(value._rbexpr))
     end
 
     # Aggregate the columns in the DataFrame to their standard deviation value.
