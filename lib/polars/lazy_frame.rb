@@ -224,7 +224,7 @@ module Polars
 
     # Offers a structured way to apply a sequence of user-defined functions (UDFs).
     #
-    # @param func [Object]
+    # @param function [Object]
     #   Callable; will receive the frame as the first parameter,
     #   followed by any given args/kwargs.
     # @param args [Object]
@@ -253,8 +253,8 @@ module Polars
     #   # │ 3   ┆ 30  │
     #   # │ 4   ┆ 40  │
     #   # └─────┴─────┘
-    def pipe(func, *args, **kwargs, &block)
-      func.call(self, *args, **kwargs, &block)
+    def pipe(function, *args, **kwargs, &block)
+      function.call(self, *args, **kwargs, &block)
     end
 
     # Create a string representation of the unoptimized query plan.

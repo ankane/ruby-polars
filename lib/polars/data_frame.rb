@@ -3510,7 +3510,7 @@ module Polars
 
     # Grow this DataFrame vertically by stacking a DataFrame to it.
     #
-    # @param df [DataFrame]
+    # @param other [DataFrame]
     #   DataFrame to stack.
     # @param in_place [Boolean]
     #   Modify in place
@@ -3545,12 +3545,12 @@ module Polars
     #   # │ 3   ┆ 8   ┆ c   │
     #   # │ 4   ┆ 9   ┆ d   │
     #   # └─────┴─────┴─────┘
-    def vstack(df, in_place: false)
+    def vstack(other, in_place: false)
       if in_place
-        _df.vstack_mut(df._df)
+        _df.vstack_mut(other._df)
         self
       else
-        _from_rbdf(_df.vstack(df._df))
+        _from_rbdf(_df.vstack(other._df))
       end
     end
 
@@ -3992,7 +3992,7 @@ module Polars
 
     # Fill floating point NaN values by an Expression evaluation.
     #
-    # @param fill_value [Object]
+    # @param value [Object]
     #   Value to fill NaN with.
     #
     # @return [DataFrame]
@@ -4021,8 +4021,8 @@ module Polars
     #   # │ 99.0 ┆ 99.0 │
     #   # │ 4.0  ┆ 13.0 │
     #   # └──────┴──────┘
-    def fill_nan(fill_value)
-      lazy.fill_nan(fill_value).collect(no_optimization: true)
+    def fill_nan(value)
+      lazy.fill_nan(value).collect(no_optimization: true)
     end
 
     # Explode `DataFrame` to long format by exploding a column with Lists.
