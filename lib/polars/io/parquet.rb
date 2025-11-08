@@ -195,6 +195,12 @@ module Polars
     #   Number of retries if accessing a cloud instance fails.
     # @param include_file_paths [String]
     #   Include the path of the source file(s) as a column with this name.
+    # @param missing_columns ['ignore', 'raise']
+    #   Configuration for behavior when columns defined in the schema
+    #   are missing from the data:
+    #
+    #   * `insert`: Inserts the missing columns using NULLs as the row values.
+    #   * `raise`: Raises an error.
     # @param allow_missing_columns [Boolean]
     #   When reading a list of parquet files, if a column existing in the first
     #   file cannot be found in subsequent files, the default behavior is to
@@ -230,13 +236,16 @@ module Polars
       credential_provider: nil,
       retries: 2,
       include_file_paths: nil,
-      allow_missing_columns: false,
+      missing_columns: "raise",
+      allow_missing_columns: nil, # TODO remove
       extra_columns: "raise",
       cast_options: nil,
       _column_mapping: nil,
       _deletion_files: nil
     )
-      missing_columns = allow_missing_columns ? "insert" : "raise"
+      if !allow_missing_columns.nil?
+        missing_columns = allow_missing_columns ? "insert" : "raise"
+      end
 
       if Utils.pathlike?(source)
         source = Utils.normalize_filepath(source, check_not_directory: false)
