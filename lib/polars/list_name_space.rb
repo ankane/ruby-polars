@@ -305,6 +305,9 @@ module Polars
 
     # Get the unique/distinct values in the list.
     #
+    # @param maintain_order [Boolean]
+    #   Maintain order of data. This requires more work.
+    #
     # @return [Series]
     #
     # @example
@@ -317,7 +320,7 @@ module Polars
     #   #         [1, 2]
     #   #         [2, 3]
     #   # ]
-    def unique
+    def unique(maintain_order: false)
       super
     end
 
@@ -461,6 +464,11 @@ module Polars
     #
     # @param separator [String]
     #   string to separate the items with
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default).
+    #
+    #   If set to `false`, null values will be propagated.
+    #   If the sub-list contains any null values, the output is `nil`.
     #
     # @return [Series]
     #
@@ -474,7 +482,7 @@ module Polars
     #   #         "foo-bar"
     #   #         "hello-world"
     #   # ]
-    def join(separator)
+    def join(separator, ignore_nulls: true)
       super
     end
 
@@ -541,6 +549,8 @@ module Polars
     #
     # @param item [Object]
     #   Item that will be checked for membership.
+    # @param nulls_equal [Boolean]
+    #   If true, treat null as a distinct value. Null values will not propagate.
     #
     # @return [Series]
     #
@@ -555,7 +565,7 @@ module Polars
     #   #         false
     #   #         true
     #   # ]
-    def contains(item)
+    def contains(item, nulls_equal: true)
       super
     end
 
@@ -620,7 +630,7 @@ module Polars
 
     # Shift values by the given period.
     #
-    # @param periods [Integer]
+    # @param n [Integer]
     #   Number of places to shift (may be negative).
     #
     # @return [Series]
@@ -635,7 +645,7 @@ module Polars
     #   #         [null, 1, … 3]
     #   #         [null, 10, 2]
     #   # ]
-    def shift(periods = 1)
+    def shift(n = 1)
       super
     end
 
