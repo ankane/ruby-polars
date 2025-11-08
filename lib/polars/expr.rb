@@ -4783,8 +4783,6 @@ module Polars
     # @param closed ['left', 'right', 'both', 'none']
     #   Define which sides of the temporal interval are closed (inclusive),
     #   defaults to `'right'`.
-    # @param warn_if_unsorted [Boolean]
-    #   Warn if data is not known to be sorted by `by` column.
     #
     # @return [Expr]
     #
@@ -4846,8 +4844,7 @@ module Polars
       by,
       window_size,
       min_samples: 1,
-      closed: "right",
-      warn_if_unsorted: nil
+      closed: "right"
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
@@ -4886,8 +4883,6 @@ module Polars
     # @param closed ['left', 'right', 'both', 'none']
     #   Define which sides of the temporal interval are closed (inclusive),
     #   defaults to `'right'`.
-    # @param warn_if_unsorted [Boolean]
-    #   Warn if data is not known to be sorted by `by` column.
     #
     # @return [Expr]
     #
@@ -4975,8 +4970,7 @@ module Polars
       by,
       window_size,
       min_samples: 1,
-      closed: "right",
-      warn_if_unsorted: nil
+      closed: "right"
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
@@ -5015,8 +5009,6 @@ module Polars
     # @param closed ['left', 'right', 'both', 'none']
     #   Define which sides of the temporal interval are closed (inclusive),
     #   defaults to `'right'`.
-    # @param warn_if_unsorted [Boolean]
-    #   Warn if data is not known to be sorted by `by` column.
     #
     # @return [Expr]
     #
@@ -5106,8 +5098,7 @@ module Polars
       by,
       window_size,
       min_samples: 1,
-      closed: "right",
-      warn_if_unsorted: nil
+      closed: "right"
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
@@ -5151,8 +5142,6 @@ module Polars
     # @param closed ['left', 'right', 'both', 'none']
     #   Define which sides of the temporal interval are closed (inclusive),
     #   defaults to `'right'`.
-    # @param warn_if_unsorted [Boolean]
-    #   Warn if data is not known to be sorted by `by` column.
     #
     # @return [Expr]
     #
@@ -5240,8 +5229,7 @@ module Polars
       by,
       window_size,
       min_samples: 1,
-      closed: "right",
-      warn_if_unsorted: nil
+      closed: "right"
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
@@ -5282,8 +5270,6 @@ module Polars
     #   defaults to `'right'`.
     # @param ddof [Integer]
     #   "Delta Degrees of Freedom": The divisor for a length N window is N - ddof
-    # @param warn_if_unsorted [Boolean]
-    #   Warn if data is not known to be sorted by `by` column.
     #
     # @return [Expr]
     #
@@ -5372,8 +5358,7 @@ module Polars
       window_size,
       min_samples: 1,
       closed: "right",
-      ddof: 1,
-      warn_if_unsorted: nil
+      ddof: 1
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
@@ -5420,8 +5405,6 @@ module Polars
     #   defaults to `'right'`.
     # @param ddof [Integer]
     #   "Delta Degrees of Freedom": The divisor for a length N window is N - ddof
-    # @param warn_if_unsorted [Boolean]
-    #   Warn if data is not known to be sorted by `by` column.
     #
     # @return [Expr]
     #
@@ -5510,8 +5493,7 @@ module Polars
       window_size,
       min_samples: 1,
       closed: "right",
-      ddof: 1,
-      warn_if_unsorted: nil
+      ddof: 1
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
@@ -5556,8 +5538,6 @@ module Polars
     # @param closed ['left', 'right', 'both', 'none']
     #   Define which sides of the temporal interval are closed (inclusive),
     #   defaults to `'right'`.
-    # @param warn_if_unsorted [Boolean]
-    #   Warn if data is not known to be sorted by `by` column.
     #
     # @return [Expr]
     #
@@ -5621,8 +5601,7 @@ module Polars
       by,
       window_size,
       min_samples: 1,
-      closed: "right",
-      warn_if_unsorted: nil
+      closed: "right"
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
@@ -5665,8 +5644,6 @@ module Polars
     # @param closed ['left', 'right', 'both', 'none']
     #   Define which sides of the temporal interval are closed (inclusive),
     #   defaults to `'right'`.
-    # @param warn_if_unsorted [Boolean]
-    #   Warn if data is not known to be sorted by `by` column.
     #
     # @return [Expr]
     #
@@ -5732,8 +5709,7 @@ module Polars
       quantile:,
       interpolation: "nearest",
       min_samples: 1,
-      closed: "right",
-      warn_if_unsorted: nil
+      closed: "right"
     )
       window_size = _prepare_rolling_by_window_args(window_size)
       by = Utils.parse_into_expression(by)
