@@ -5,6 +5,7 @@
 - Added `days_in_month` method to `DateTimeExpr` and `DateTimeNameSpace`
 - Added `agg` and `item` methods to `ListExpr` and `ListNameSpace`
 - Added `agg` and `eval` methods to `ArrayExpr` and `ArrayNameSpace`
+- Added `replace` method to `NameExpr`
 - Added more options to `read_csv` and `scan_csv` methods
 - Added more options to `over` method
 

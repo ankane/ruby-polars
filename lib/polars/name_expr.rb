@@ -213,6 +213,40 @@ module Polars
       Utils.wrap_expr(_rbexpr.name_prefix_fields(prefix))
     end
 
+    # Replace matching regex/literal substring in the name with a new value.
+    #
+    # @param pattern [String]
+    #   A valid regular expression pattern, compatible with the [regex crate](https://docs.rs/regex/latest/regex/).
+    # @param value [String]
+    #   String that will replace the matched substring.
+    # @param literal [Boolean]
+    #   Treat `pattern` as a literal string, not a regex.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "n_foo" => [1, 2, 3],
+    #       "n_bar" => ["x", "y", "z"]
+    #     }
+    #   )
+    #   df.select(Polars.all.name.replace("^n_", "col_"))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────────┬─────────┐
+    #   # │ col_foo ┆ col_bar │
+    #   # │ ---     ┆ ---     │
+    #   # │ i64     ┆ str     │
+    #   # ╞═════════╪═════════╡
+    #   # │ 1       ┆ x       │
+    #   # │ 2       ┆ y       │
+    #   # │ 3       ┆ z       │
+    #   # └─────────┴─────────┘
+    def replace(pattern, value, literal: false)
+      Utils.wrap_expr(_rbexpr.name_replace(pattern, value, literal))
+    end
+
     # Add a suffix to all field names of a struct.
     #
     # @note

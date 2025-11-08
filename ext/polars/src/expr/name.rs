@@ -40,6 +40,14 @@ impl RbExpr {
         self.inner.clone().name().to_uppercase().into()
     }
 
+    pub fn name_replace(&self, pattern: String, value: String, literal: bool) -> Self {
+        self.inner
+            .clone()
+            .name()
+            .replace(&pattern, &value, literal)
+            .into()
+    }
+
     pub fn name_prefix_fields(&self, prefix: String) -> Self {
         self.inner.clone().name().prefix_fields(&prefix).into()
     }
