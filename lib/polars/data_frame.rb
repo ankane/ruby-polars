@@ -4032,6 +4032,8 @@ module Polars
     #
     # @param columns [Object]
     #   Column of LargeList type.
+    # @param more_columns [Array]
+    #   Additional names of columns to explode, specified as positional arguments.
     #
     # @return [DataFrame]
     #
@@ -4059,8 +4061,8 @@ module Polars
     #   # │ c       ┆ 7       │
     #   # │ c       ┆ 8       │
     #   # └─────────┴─────────┘
-    def explode(columns)
-      lazy.explode(columns).collect(no_optimization: true)
+    def explode(columns, *more_columns)
+      lazy.explode(columns, *more_columns).collect(no_optimization: true)
     end
 
     # Create a spreadsheet-style pivot table as a DataFrame.
