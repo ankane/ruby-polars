@@ -252,8 +252,14 @@ module Polars
       extra_columns: "raise",
       cast_options: nil,
       _column_mapping: nil,
-      _deletion_files: nil
+      _default_values: nil,
+      _deletion_files: nil,
+      _table_statistics: nil,
+      _row_count: nil
     )
+      row_index_name = row_count_name
+      row_index_offset = row_count_offset
+
       if !schema.nil?
         msg = "the `schema` parameter of `scan_parquet` is considered unstable."
         Utils.issue_unstable_warning(msg)
@@ -293,6 +299,7 @@ module Polars
       if credential_provider
         raise Todo
       end
+      credential_provider_builder = nil
 
       if source.is_a?(::Array)
         sources = source
@@ -306,9 +313,6 @@ module Polars
       else
         storage_options = nil
       end
-
-      row_index_name = row_count_name
-      row_index_offset = row_count_offset
 
       rblf =
         RbLazyFrame.new_from_parquet(
@@ -329,10 +333,13 @@ module Polars
             rechunk: rechunk,
             cache: cache,
             storage_options: storage_options,
-            # credential_provider: credential_provider_builder,
+            credential_provider: credential_provider_builder,
             retries: retries,
+            column_mapping: _column_mapping,
+            default_values: _default_values,
             deletion_files: _deletion_files,
-            column_mapping: _column_mapping
+            table_statistics: _table_statistics,
+            row_count: _row_count
           ),
           parallel,
           low_memory,
