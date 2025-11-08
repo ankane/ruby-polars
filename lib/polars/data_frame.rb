@@ -2414,8 +2414,8 @@ module Polars
     #   # │ 3   ┆ 30  │
     #   # │ 4   ┆ 40  │
     #   # └─────┴─────┘
-    def pipe(func, *args, **kwargs, &block)
-      func.call(self, *args, **kwargs, &block)
+    def pipe(function, *args, **kwargs, &block)
+      function.call(self, *args, **kwargs, &block)
     end
 
     # Add a column at index 0 that counts the rows.
@@ -3410,8 +3410,8 @@ module Polars
     #   # │ 9   │
     #   # │ 14  │
     #   # └─────┘
-    def map_rows(return_dtype: nil, inference_size: 256, &f)
-      out, is_df = _df.map_rows(f, return_dtype, inference_size)
+    def map_rows(return_dtype: nil, inference_size: 256, &function)
+      out, is_df = _df.map_rows(function, return_dtype, inference_size)
       if is_df
         _from_rbdf(out)
       else
