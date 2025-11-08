@@ -180,8 +180,13 @@ module Polars
     #   # => "foo"
     #   Polars.len.meta.output_name
     #   # => "len"
-    def output_name
+    def output_name(raise_if_undetermined: true)
       _rbexpr.meta_output_name
+    rescue Polars::ComputeError
+      if !raise_if_undetermined
+        return nil
+      end
+      raise
     end
 
     # Pop the latest expression and return the input(s) of the popped expression.
