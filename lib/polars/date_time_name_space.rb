@@ -1101,6 +1101,9 @@ module Polars
 
     # Extract the days from a Duration type.
     #
+    # @param fractional [Boolean]
+    #   Whether to include the fractional component of the day.
+    #
     # @return [Series]
     #
     # @example
@@ -1116,12 +1119,15 @@ module Polars
     #   #         31
     #   #         30
     #   # ]
-    def total_days
+    def total_days(fractional: false)
       super
     end
     alias_method :days, :total_days
 
     # Extract the hours from a Duration type.
+    #
+    # @param fractional [Boolean]
+    #   Whether to include the fractional component of the hour.
     #
     # @return [Series]
     #
@@ -1148,12 +1154,15 @@ module Polars
     #   #         24
     #   #         24
     #   # ]
-    def total_hours
+    def total_hours(fractional: false)
       super
     end
     alias_method :hours, :total_hours
 
     # Extract the minutes from a Duration type.
+    #
+    # @param fractional [Boolean]
+    #   Whether to include the fractional component of the minute.
     #
     # @return [Series]
     #
@@ -1180,12 +1189,15 @@ module Polars
     #   #         1440
     #   #         1440
     #   # ]
-    def total_minutes
+    def total_minutes(fractional: false)
       super
     end
     alias_method :minutes, :total_minutes
 
     # Extract the seconds from a Duration type.
+    #
+    # @param fractional [Boolean]
+    #   Whether to include the fractional component of the second.
     #
     # @return [Series]
     #
@@ -1216,12 +1228,15 @@ module Polars
     #   #         60
     #   #         60
     #   # ]
-    def total_seconds
+    def total_seconds(fractional: false)
       super
     end
     alias_method :seconds, :total_seconds
 
     # Extract the milliseconds from a Duration type.
+    #
+    # @param fractional [Boolean]
+    #   Whether to include the fractional component of the millisecond.
     #
     # @return [Series]
     #
@@ -1248,12 +1263,15 @@ module Polars
     #   #         1
     #   #         1
     #   # ]
-    def total_milliseconds
+    def total_milliseconds(fractional: false)
       super
     end
     alias_method :milliseconds, :total_milliseconds
 
     # Extract the microseconds from a Duration type.
+    #
+    # @param fractional [Boolean]
+    #   Whether to include the fractional component of the microsecond.
     #
     # @return [Series]
     #
@@ -1280,12 +1298,17 @@ module Polars
     #   #         1000
     #   #         1000
     #   # ]
-    def total_microseconds
+    def total_microseconds(fractional: false)
       super
     end
     alias_method :microseconds, :total_microseconds
 
     # Extract the nanoseconds from a Duration type.
+    #
+    # @param fractional [Boolean]
+    #   Whether to include return the result as a `Float64`.
+    #   Because the smallest `TimeUnit` is `'ns'`, the
+    #   fractional component will always be zero.
     #
     # @return [Series]
     #
@@ -1312,7 +1335,7 @@ module Polars
     #   #         1000000
     #   #         1000000
     #   # ]
-    def total_nanoseconds
+    def total_nanoseconds(fractional: false)
       super
     end
     alias_method :nanoseconds, :total_nanoseconds
