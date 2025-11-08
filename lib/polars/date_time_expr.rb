@@ -402,9 +402,14 @@ module Polars
       Utils.wrap_expr(_rbexpr.dt_to_string(format))
     end
 
-    # Format Date/datetime with a formatting rule.
+    # Convert a Date/Time/Datetime column into a String column with the given format.
     #
-    # See [chrono strftime/strptime](https://docs.rs/chrono/latest/chrono/format/strftime/index.html).
+    # Similar to `cast(Polars::String)`, but this method allows you to customize the
+    # formatting of the resulting string.
+    #
+    # @param format [String]
+    #   Format to use, refer to the [chrono strftime documentation](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    #   for specification. Example: `"%y-%m-%d"`.
     #
     # @return [Expr]
     #
@@ -451,8 +456,8 @@ module Polars
     #   # │ 2020-04-01 00:00:00 ┆ Wednesday ┆ April      │
     #   # │ 2020-05-01 00:00:00 ┆ Friday    ┆ May        │
     #   # └─────────────────────┴───────────┴────────────┘
-    def strftime(fmt)
-      Utils.wrap_expr(_rbexpr.strftime(fmt))
+    def strftime(format)
+      Utils.wrap_expr(_rbexpr.strftime(format))
     end
 
     # Extract the millennium from underlying representation.

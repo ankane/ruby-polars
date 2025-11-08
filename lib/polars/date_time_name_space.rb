@@ -177,9 +177,14 @@ module Polars
       super
     end
 
-    # Format Date/datetime with a formatting rule.
+    # Convert a Date/Time/Datetime column into a String column with the given format.
     #
-    # See [chrono strftime/strptime](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html).
+    # Similar to `cast(Polars::String)`, but this method allows you to customize the
+    # formatting of the resulting string.
+    #
+    # @param format [String]
+    #   Format to use, refer to the [chrono strftime documentation](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    #   for specification. Example: `"%y-%m-%d"`.
     #
     # @return [Series]
     #
@@ -197,7 +202,7 @@ module Polars
     #   #         "2020/04/01"
     #   #         "2020/05/01"
     #   # ]
-    def strftime(fmt)
+    def strftime(format)
       super
     end
 
