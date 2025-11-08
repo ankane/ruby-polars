@@ -2380,7 +2380,7 @@ module Polars
 
     # Offers a structured way to apply a sequence of user-defined functions (UDFs).
     #
-    # @param func [Object]
+    # @param function [Object]
     #   Callable; will receive the frame as the first parameter,
     #   followed by any given args/kwargs.
     # @param args [Object]
@@ -3603,6 +3603,9 @@ module Polars
     #
     # @param columns [Object]
     #   Column(s) to drop.
+    # @param strict [Boolean]
+    #   Validate that all column names exist in the current schema,
+    #   and throw an exception if any do not.
     #
     # @return [DataFrame]
     #
@@ -3654,8 +3657,8 @@ module Polars
     #   # │ 7.0 │
     #   # │ 8.0 │
     #   # └─────┘
-    def drop(*columns)
-      lazy.drop(*columns).collect(_eager: true)
+    def drop(*columns, strict: true)
+      lazy.drop(*columns, strict: strict).collect(_eager: true)
     end
 
     # Drop in place.
