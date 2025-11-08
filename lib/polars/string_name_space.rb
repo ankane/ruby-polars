@@ -358,7 +358,7 @@ module Polars
 
     # Check if string values end with a substring.
     #
-    # @param sub [String]
+    # @param suffix [String]
     #   Suffix substring.
     #
     # @return [Series]
@@ -374,13 +374,13 @@ module Polars
     #   #         true
     #   #         null
     #   # ]
-    def ends_with(sub)
+    def ends_with(suffix)
       super
     end
 
     # Check if string values start with a substring.
     #
-    # @param sub [String]
+    # @param prefix [String]
     #   Prefix substring.
     #
     # @return [Series]
@@ -396,7 +396,7 @@ module Polars
     #   #         false
     #   #         null
     #   # ]
-    def starts_with(sub)
+    def starts_with(prefix)
       super
     end
 
@@ -746,6 +746,8 @@ module Polars
     #   Substring to replace.
     # @param literal [Boolean]
     #   Treat pattern as a literal string.
+    # @param n [Integer]
+    #   Number of matches to replace.
     #
     # @return [Series]
     #
@@ -759,7 +761,7 @@ module Polars
     #   #         "123ABC"
     #   #         "abc456"
     #   # ]
-    def replace(pattern, value, literal: false)
+    def replace(pattern, value, literal: false, n: 1)
       super
     end
 
@@ -790,8 +792,10 @@ module Polars
 
     # Remove leading and trailing whitespace.
     #
-    # @param matches [String, nil]
-    #   An optional single character that should be trimmed
+    # @param characters [String]
+    #   The set of characters to be removed. All combinations of this set of
+    #   characters will be stripped from the start and end of the string. If set to
+    #   nil (default), all leading and trailing whitespace is removed instead.
     #
     # @return [Series]
     #
@@ -805,14 +809,16 @@ module Polars
     #   #         "hello"
     #   #         "world"
     #   # ]
-    def strip_chars(matches = nil)
+    def strip_chars(characters = nil)
       super
     end
 
     # Remove leading whitespace.
     #
-    # @param matches [String, nil]
-    #   An optional single character that should be trimmed
+    # @param characters [String]
+    #   The set of characters to be removed. All combinations of this set of
+    #   characters will be stripped from the start of the string. If set to
+    #   nil (default), all leading and trailing whitespace is removed instead.
     #
     # @return [Series]
     #
@@ -826,15 +832,17 @@ module Polars
     #   #         "hello "
     #   #         "world"
     #   # ]
-    def strip_chars_start(matches = nil)
+    def strip_chars_start(characters = nil)
       super
     end
     alias_method :lstrip, :strip_chars_start
 
     # Remove trailing whitespace.
     #
-    # @param matches [String, nil]
-    #   An optional single character that should be trimmed
+    # @param characters [String]
+    #   The set of characters to be removed. All combinations of this set of
+    #   characters will be stripped from the end of the string. If set to
+    #   nil (default), all leading and trailing whitespace is removed instead.
     #
     # @return [Series]
     #
@@ -848,7 +856,7 @@ module Polars
     #   #         " hello"
     #   #         "world"
     #   # ]
-    def strip_chars_end(matches = nil)
+    def strip_chars_end(characters = nil)
       super
     end
     alias_method :rstrip, :strip_chars_end
