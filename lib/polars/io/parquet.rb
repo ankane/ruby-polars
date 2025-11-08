@@ -49,6 +49,12 @@ module Polars
     #   Number of retries if accessing a cloud instance fails.
     # @param include_file_paths [String]
     #   Include the path of the source file(s) as a column with this name.
+    # @param missing_columns ['insert', 'raise']
+    #   Configuration for behavior when columns defined in the schema
+    #   are missing from the data:
+    #
+    #   * `insert`: Inserts the missing columns using NULLs as the row values.
+    #   * `raise`: Raises an error.
     # @param allow_missing_columns [Boolean]
     #   When reading a list of parquet files, if a column existing in the first
     #   file cannot be found in subsequent files, the default behavior is to
@@ -76,7 +82,8 @@ module Polars
       credential_provider: nil,
       retries: 2,
       include_file_paths: nil,
-      allow_missing_columns: false
+      missing_columns: "raise",
+      allow_missing_columns: nil
     )
       lf =
         scan_parquet(
@@ -98,6 +105,7 @@ module Polars
           retries: retries,
           glob: glob,
           include_file_paths: include_file_paths,
+          missing_columns: missing_columns,
           allow_missing_columns: allow_missing_columns
         )
 
@@ -169,6 +177,8 @@ module Polars
     #   to prune reads.
     # @param glob [Boolean]
     #   Expand path given via globbing rules.
+    # @param hidden_file_prefix [Boolean]
+    #   Skip reading files whose names begin with the specified prefixes.
     # @param schema [Object]
     #   Specify the datatypes of the columns. The datatypes must match the
     #   datatypes in the file(s). If there are extra columns that are not in the
@@ -195,7 +205,7 @@ module Polars
     #   Number of retries if accessing a cloud instance fails.
     # @param include_file_paths [String]
     #   Include the path of the source file(s) as a column with this name.
-    # @param missing_columns ['ignore', 'raise']
+    # @param missing_columns ['insert', 'raise']
     #   Configuration for behavior when columns defined in the schema
     #   are missing from the data:
     #
@@ -226,6 +236,7 @@ module Polars
       use_statistics: true,
       hive_partitioning: nil,
       glob: true,
+      hidden_file_prefix: nil,
       schema: nil,
       hive_schema: nil,
       try_parse_hive_dates: true,
@@ -243,7 +254,33 @@ module Polars
       _column_mapping: nil,
       _deletion_files: nil
     )
+      if !schema.nil?
+        msg = "the `schema` parameter of `scan_parquet` is considered unstable."
+        Utils.issue_unstable_warning(msg)
+      end
+
+      if !hive_schema.nil?
+        msg = "the `hive_schema` parameter of `scan_parquet` is considered unstable."
+        Utils.issue_unstable_warning(msg)
+      end
+
+      if !cast_options.nil?
+        msg = "The `cast_options` parameter of `scan_parquet` is considered unstable."
+        Utils.issue_unstable_warning(msg)
+      end
+
+      if !hidden_file_prefix.nil?
+        msg = "The `hidden_file_prefix` parameter of `scan_parquet` is considered unstable."
+        Utils.issue_unstable_warning(msg)
+      end
+
       if !allow_missing_columns.nil?
+        Utils.issue_deprecation_warning(
+          "the parameter `allow_missing_columns` for `scan_parquet` is deprecated. " +
+          "Use the parameter `missing_columns` instead and pass one of " +
+          "`('insert', 'raise')`."
+        )
+
         missing_columns = allow_missing_columns ? "insert" : "raise"
       end
 
@@ -285,6 +322,7 @@ module Polars
             missing_columns: missing_columns,
             include_file_paths: include_file_paths,
             glob: glob,
+            hidden_file_prefix: hidden_file_prefix.is_a?(::String) ? [hidden_file_prefix] : hidden_file_prefix,
             hive_partitioning: hive_partitioning,
             hive_schema: hive_schema,
             try_parse_hive_dates: try_parse_hive_dates,
