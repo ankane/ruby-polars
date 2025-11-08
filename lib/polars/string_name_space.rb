@@ -607,6 +607,8 @@ module Polars
     #
     # @param pattern [String]
     #   A valid regex pattern
+    # @param literal [Boolean]
+    #   Treat `pattern` as a literal string, not as a regular expression.
     #
     # @return [Series]
     #
@@ -620,7 +622,7 @@ module Polars
     #   #         5
     #   #         6
     #   # ]
-    def count_matches(pattern)
+    def count_matches(pattern, literal: false)
       super
     end
     alias_method :count_match, :count_matches

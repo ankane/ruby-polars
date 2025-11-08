@@ -834,7 +834,7 @@ module Polars
 
     # Check if string values end with a substring.
     #
-    # @param sub [String]
+    # @param suffix [String]
     #   Suffix substring.
     #
     # @return [Expr]
@@ -867,14 +867,14 @@ module Polars
     #   # ╞════════╡
     #   # │ mango  │
     #   # └────────┘
-    def ends_with(sub)
-      sub = Utils.parse_into_expression(sub, str_as_lit: true)
-      Utils.wrap_expr(_rbexpr.str_ends_with(sub))
+    def ends_with(suffix)
+      suffix_rbexpr = Utils.parse_into_expression(suffix, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.str_ends_with(suffix_rbexpr))
     end
 
     # Check if string values start with a substring.
     #
-    # @param sub [String]
+    # @param prefix [String]
     #   Prefix substring.
     #
     # @return [Expr]
@@ -907,9 +907,9 @@ module Polars
     #   # ╞════════╡
     #   # │ apple  │
     #   # └────────┘
-    def starts_with(sub)
-      sub = Utils.parse_into_expression(sub, str_as_lit: true)
-      Utils.wrap_expr(_rbexpr.str_starts_with(sub))
+    def starts_with(prefix)
+      prefix_rbexpr = Utils.parse_into_expression(prefix, str_as_lit: true)
+      Utils.wrap_expr(_rbexpr.str_starts_with(prefix_rbexpr))
     end
 
     # Parse string values as JSON.
