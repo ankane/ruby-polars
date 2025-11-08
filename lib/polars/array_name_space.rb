@@ -497,7 +497,7 @@ module Polars
     #   #         5
     #   #         null
     #   # ]
-    def get(index, null_on_oob: false)
+    def get(index, null_on_oob: true)
       super
     end
 
