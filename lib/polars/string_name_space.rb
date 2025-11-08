@@ -126,9 +126,9 @@ module Polars
 
     # Parse a Series of dtype Utf8 to a Date/Datetime Series.
     #
-    # @param datatype [Symbol]
+    # @param dtype [Symbol]
     #   `:date`, `:datetime`, or `:time`.
-    # @param fmt [String]
+    # @param format [String]
     #   Format to use, refer to the
     #   [chrono strftime documentation](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
     #   for specification. Example: `"%y-%m-%d"`.
@@ -180,7 +180,7 @@ module Polars
     #   #         2022-01-31
     #   #         2001-07-08
     #   # ]
-    def strptime(datatype, fmt = nil, strict: true, exact: true, cache: true)
+    def strptime(dtype, format = nil, strict: true, exact: true, cache: true)
       super
     end
 
