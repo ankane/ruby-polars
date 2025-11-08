@@ -1062,12 +1062,11 @@ module Polars
     # Exclude certain columns from a wildcard/regex selection.
     #
     # @param columns [Object]
-    #   Column(s) to exclude from selection
-    #   This can be:
-    #
-    #   - a column name, or multiple column names
-    #   - a regular expression starting with `^` and ending with `$`
-    #   - a dtype or multiple dtypes
+    #   The name or datatype of the column(s) to exclude. Accepts regular expression
+    #   input. Regular expressions should start with `^` and end with `$`.
+    # @param more_columns [Array]
+    #   Additional names or datatypes of columns to exclude, specified as positional
+    #   arguments.
     #
     # @return [Object]
     #
@@ -1118,8 +1117,8 @@ module Polars
     #   # │ 2.5  │
     #   # │ 1.5  │
     #   # └──────┘
-    def exclude(columns)
-      col("*").exclude(columns)
+    def exclude(columns, *more_columns)
+      col("*").exclude(columns, *more_columns)
     end
 
     # Syntactic sugar for `Polars.col("foo").agg_groups`.
