@@ -1498,7 +1498,7 @@ module Polars
     #
     # @param expr [Expr]
     #   Expression to evaluate
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   Number of valid values there should be in the window before the expression
     #   is evaluated. valid values = `length - null_count`
     #
@@ -1525,7 +1525,7 @@ module Polars
     #   #         -15
     #   #         -24
     #   # ]
-    def cumulative_eval(expr, min_periods: 1)
+    def cumulative_eval(expr, min_samples: 1)
       super
     end
 
@@ -3883,7 +3883,7 @@ module Polars
     #   (which may not be 24 hours, due to daylight savings). Similarly for
     #   "calendar week", "calendar month", "calendar quarter", and
     #   "calendar year".
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result.
     # @param closed ['left', 'right', 'both', 'none']
@@ -3922,7 +3922,7 @@ module Polars
     def rolling_min_by(
       by,
       window_size,
-      min_periods: 1,
+      min_samples: 1,
       closed: "right"
     )
       super
@@ -3939,7 +3939,7 @@ module Polars
     # @param weights [Array]
     #   An optional slice with the same length as the window that will be multiplied
     #   elementwise with the values in the window.
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
@@ -3963,7 +3963,7 @@ module Polars
     def rolling_min(
       window_size,
       weights: nil,
-      min_periods: nil,
+      min_samples: nil,
       center: false
     )
       super
@@ -4008,7 +4008,7 @@ module Polars
     #   (which may not be 24 hours, due to daylight savings). Similarly for
     #   "calendar week", "calendar month", "calendar quarter", and
     #   "calendar year".
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result.
     # @param closed ['left', 'right', 'both', 'none']
@@ -4047,7 +4047,7 @@ module Polars
     def rolling_max_by(
       by,
       window_size,
-      min_periods: 1,
+      min_samples: 1,
       closed: "right"
     )
       super
@@ -4064,7 +4064,7 @@ module Polars
     # @param weights [Array]
     #   An optional slice with the same length as the window that will be multiplied
     #   elementwise with the values in the window.
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
@@ -4088,7 +4088,7 @@ module Polars
     def rolling_max(
       window_size,
       weights: nil,
-      min_periods: nil,
+      min_samples: nil,
       center: false
     )
       super
@@ -4133,7 +4133,7 @@ module Polars
     #   (which may not be 24 hours, due to daylight savings). Similarly for
     #   "calendar week", "calendar month", "calendar quarter", and
     #   "calendar year".
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result.
     # @param closed ['left', 'right', 'both', 'none']
@@ -4172,7 +4172,7 @@ module Polars
     def rolling_mean_by(
       by,
       window_size,
-      min_periods: 1,
+      min_samples: 1,
       closed: "right"
     )
       super
@@ -4189,7 +4189,7 @@ module Polars
     # @param weights [Array]
     #   An optional slice with the same length as the window that will be multiplied
     #   elementwise with the values in the window.
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
@@ -4213,7 +4213,7 @@ module Polars
     def rolling_mean(
       window_size,
       weights: nil,
-      min_periods: nil,
+      min_samples: nil,
       center: false
     )
       super
@@ -4258,7 +4258,7 @@ module Polars
     #   (which may not be 24 hours, due to daylight savings). Similarly for
     #   "calendar week", "calendar month", "calendar quarter", and
     #   "calendar year".
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result.
     # @param closed ['left', 'right', 'both', 'none']
@@ -4297,7 +4297,7 @@ module Polars
     def rolling_sum_by(
       by,
       window_size,
-      min_periods: 1,
+      min_samples: 1,
       closed: "right"
     )
       super
@@ -4314,7 +4314,7 @@ module Polars
     # @param weights [Array]
     #   An optional slice with the same length as the window that will be multiplied
     #   elementwise with the values in the window.
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
@@ -4338,7 +4338,7 @@ module Polars
     def rolling_sum(
       window_size,
       weights: nil,
-      min_periods: nil,
+      min_samples: nil,
       center: false
     )
       super
@@ -4383,7 +4383,7 @@ module Polars
     #   (which may not be 24 hours, due to daylight savings). Similarly for
     #   "calendar week", "calendar month", "calendar quarter", and
     #   "calendar year".
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result.
     # @param closed ['left', 'right', 'both', 'none']
@@ -4424,7 +4424,7 @@ module Polars
     def rolling_std_by(
       by,
       window_size,
-      min_periods: 1,
+      min_samples: 1,
       closed: "right",
       ddof: 1
     )
@@ -4442,7 +4442,7 @@ module Polars
     # @param weights [Array]
     #   An optional slice with the same length as the window that will be multiplied
     #   elementwise with the values in the window.
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
@@ -4469,7 +4469,7 @@ module Polars
     def rolling_std(
       window_size,
       weights: nil,
-      min_periods: nil,
+      min_samples: nil,
       center: false,
       ddof: 1
     )
@@ -4515,7 +4515,7 @@ module Polars
     #   (which may not be 24 hours, due to daylight savings). Similarly for
     #   "calendar week", "calendar month", "calendar quarter", and
     #   "calendar year".
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result.
     # @param closed ['left', 'right', 'both', 'none']
@@ -4556,7 +4556,7 @@ module Polars
     def rolling_var_by(
       by,
       window_size,
-      min_periods: 1,
+      min_samples: 1,
       closed: "right",
       ddof: 1
     )
@@ -4574,7 +4574,7 @@ module Polars
     # @param weights [Array]
     #   An optional slice with the same length as the window that will be multiplied
     #   elementwise with the values in the window.
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
@@ -4601,7 +4601,7 @@ module Polars
     def rolling_var(
       window_size,
       weights: nil,
-      min_periods: nil,
+      min_samples: nil,
       center: false,
       ddof: 1
     )
@@ -4650,7 +4650,7 @@ module Polars
     #   (which may not be 24 hours, due to daylight savings). Similarly for
     #   "calendar week", "calendar month", "calendar quarter", and
     #   "calendar year".
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result.
     # @param closed ['left', 'right', 'both', 'none']
@@ -4689,7 +4689,7 @@ module Polars
     def rolling_median_by(
       by,
       window_size,
-      min_periods: 1,
+      min_samples: 1,
       closed: "right"
     )
       super
@@ -4702,7 +4702,7 @@ module Polars
     # @param weights [Array]
     #   An optional slice with the same length as the window that will be multiplied
     #   elementwise with the values in the window.
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
@@ -4727,7 +4727,7 @@ module Polars
     def rolling_median(
       window_size,
       weights: nil,
-      min_periods: nil,
+      min_samples: nil,
       center: false
     )
       super
@@ -4776,7 +4776,7 @@ module Polars
     #   Quantile between 0.0 and 1.0.
     # @param interpolation ['nearest', 'higher', 'lower', 'midpoint', 'linear', 'equiprobable']
     #   Interpolation method.
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result.
     # @param closed ['left', 'right', 'both', 'none']
@@ -4817,7 +4817,7 @@ module Polars
       window_size,
       quantile:,
       interpolation: "nearest",
-      min_periods: 1,
+      min_samples: 1,
       closed: "right"
     )
       super
@@ -4834,7 +4834,7 @@ module Polars
     # @param weights [Array]
     #   An optional slice with the same length as the window that will be multiplied
     #   elementwise with the values in the window.
-    # @param min_periods [Integer]
+    # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
@@ -4875,7 +4875,7 @@ module Polars
       interpolation: "nearest",
       window_size: 2,
       weights: nil,
-      min_periods: nil,
+      min_samples: nil,
       center: false
     )
       super
@@ -5924,7 +5924,7 @@ module Polars
       half_life: nil,
       alpha: nil,
       adjust: true,
-      min_periods: 1,
+      min_samples: 1,
       ignore_nulls: true
     )
       super
@@ -6014,7 +6014,7 @@ module Polars
       alpha: nil,
       adjust: true,
       bias: false,
-      min_periods: 1,
+      min_samples: 1,
       ignore_nulls: true
     )
       super
@@ -6042,7 +6042,7 @@ module Polars
       alpha: nil,
       adjust: true,
       bias: false,
-      min_periods: 1,
+      min_samples: 1,
       ignore_nulls: true
     )
       super

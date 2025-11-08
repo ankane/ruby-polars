@@ -1,4 +1,4 @@
-## 0.23.1 (unreleased)
+## 0.24.0 (unreleased)
 
 - Added `concat_arr` and `escape_regex` methods to `Polars`
 - Added `rolling_rank` and `rolling_rank_by` methods to `Series` and `Expr`
@@ -8,6 +8,7 @@
 - Added `replace` method to `NameExpr`
 - Added more options to `read_csv` and `scan_csv` methods
 - Added more options to `over` method
+- Changed `min_periods` option to `min_samples`
 
 ## 0.23.0 (2025-11-04)
 
