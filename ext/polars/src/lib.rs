@@ -569,6 +569,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbExpr::struct_field_by_name, 1),
     )?;
     class.define_method(
+        "struct_multiple_fields",
+        method!(RbExpr::struct_multiple_fields, 1),
+    )?;
+    class.define_method(
         "struct_field_by_index",
         method!(RbExpr::struct_field_by_index, 1),
     )?;

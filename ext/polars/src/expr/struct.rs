@@ -11,6 +11,10 @@ impl RbExpr {
         self.inner.clone().struct_().field_by_name(&name).into()
     }
 
+    pub fn struct_multiple_fields(&self, names: Vec<String>) -> Self {
+        self.inner.clone().struct_().field_by_names(&names).into()
+    }
+
     pub fn struct_rename_fields(&self, names: Vec<String>) -> Self {
         self.inner.clone().struct_().rename_fields(names).into()
     }

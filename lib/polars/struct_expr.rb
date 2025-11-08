@@ -26,34 +26,52 @@ module Polars
     #
     # @param name [String]
     #   Name of the field
+    # @param more_names [Array]
+    #   Additional struct field names.
     #
     # @return [Expr]
     #
     # @example
-    #   df = (
-    #     Polars::DataFrame.new(
-    #       {
-    #         "int" => [1, 2],
-    #         "str" => ["a", "b"],
-    #         "bool" => [true, nil],
-    #         "list" => [[1, 2], [3]]
-    #       }
-    #     )
-    #     .to_struct("my_struct")
-    #     .to_frame
-    #   )
-    #   df.select(Polars.col("my_struct").struct.field("str"))
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "aaa" => [1, 2],
+    #       "bbb" => ["ab", "cd"],
+    #       "ccc" => [true, nil],
+    #       "ddd" => [[1, 2], [3]]
+    #     }
+    #   ).select(Polars.struct("aaa", "bbb", "ccc", "ddd").alias("struct_col"))
+    #   df.select(Polars.col("struct_col").struct.field("bbb"))
     #   # =>
     #   # shape: (2, 1)
     #   # ┌─────┐
-    #   # │ str │
+    #   # │ bbb │
     #   # │ --- │
     #   # │ str │
     #   # ╞═════╡
-    #   # │ a   │
-    #   # │ b   │
+    #   # │ ab  │
+    #   # │ cd  │
     #   # └─────┘
-    def field(name)
+    #
+    # @example
+    #   df.select(Polars.col("struct_col").struct.field("aaa", "bbb"))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ aaa ┆ bbb │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ str │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ ab  │
+    #   # │ 2   ┆ cd  │
+    #   # └─────┴─────┘
+    def field(name, *more_names)
+      if more_names.any?
+        name = (name.is_a?(::String) ? [name] : name) + more_names
+      end
+      if name.is_a?(::Array)
+        return Utils.wrap_expr(_rbexpr.struct_multiple_fields(name))
+      end
+
       Utils.wrap_expr(_rbexpr.struct_field_by_name(name))
     end
 
