@@ -2738,6 +2738,9 @@ module Polars
     #   DataType to cast to
     # @param strict [Boolean]
     #   Throw an error if a cast could not be done for instance due to an overflow
+    # @param wrap_numerical [Boolean]
+    #   If true numeric casts wrap overflowing values instead of
+    #   marking the cast as invalid.
     #
     # @return [Series]
     #
@@ -2752,7 +2755,7 @@ module Polars
     #   #         0
     #   #         1
     #   # ]
-    def cast(dtype, strict: true)
+    def cast(dtype, strict: true, wrap_numerical: false)
       super
     end
 
