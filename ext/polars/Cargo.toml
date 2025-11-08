@@ -24,6 +24,7 @@ polars-dtype = "=0.52.0"
 polars-error = "=0.52.0"
 polars-io = "=0.52.0"
 polars-lazy = { version = "=0.52.0", features = ["catalog"] }
+polars-ops = "=0.52.0"
 polars-plan = "=0.52.0"
 polars-parquet = "=0.52.0"
 polars-utils = "=0.52.0"

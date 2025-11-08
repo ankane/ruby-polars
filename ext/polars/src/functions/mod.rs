@@ -8,5 +8,6 @@ pub mod misc;
 pub mod random;
 pub mod range;
 pub mod string_cache;
+pub mod strings;
 pub mod utils;
 pub mod whenthen;

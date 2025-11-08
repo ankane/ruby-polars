@@ -833,6 +833,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_singleton_method("re_escape", function!(re_escape, 1))?;
     class.define_singleton_method(
+        "escape_regex",
+        function!(functions::strings::escape_regex, 1),
+    )?;
+    class.define_singleton_method(
         "get_engine_affinity",
         function!(functions::utils::rb_get_engine_affinity, 0),
     )?;
