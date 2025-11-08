@@ -3739,13 +3739,13 @@ module Polars
     #   #         12
     #   #         13
     #   # ]
-    def map_elements(return_dtype: nil, skip_nulls: true, &func)
+    def map_elements(return_dtype: nil, skip_nulls: true, &function)
       if return_dtype.nil?
         pl_return_dtype = nil
       else
         pl_return_dtype = Utils.rb_type_to_dtype(return_dtype)
       end
-      Utils.wrap_s(_s.map_elements(func, pl_return_dtype, skip_nulls))
+      Utils.wrap_s(_s.map_elements(function, pl_return_dtype, skip_nulls))
     end
     alias_method :map, :map_elements
     alias_method :apply, :map_elements

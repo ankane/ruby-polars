@@ -1471,7 +1471,7 @@ module Polars
     #
     # @param index [Integer]
     #   Column to insert the new `Series` column.
-    # @param series [Series]
+    # @param column [Series]
     #   `Series` to insert.
     #
     # @return [DataFrame]
@@ -1514,11 +1514,11 @@ module Polars
     #   # │ 3   ┆ 10.0 ┆ false ┆ 20.5 │
     #   # │ 4   ┆ 13.0 ┆ true  ┆ 0.0  │
     #   # └─────┴──────┴───────┴──────┘
-    def insert_column(index, series)
+    def insert_column(index, column)
       if index < 0
-        index = columns.length + index
+        index = width + index
       end
-      _df.insert_column(index, series._s)
+      _df.insert_column(index, column._s)
       self
     end
     alias_method :insert_at_idx, :insert_column

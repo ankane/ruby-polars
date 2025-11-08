@@ -77,8 +77,8 @@ module Polars
     #   # │ 2         ┆ y         ┆ 2   ┆ y   │
     #   # │ 1         ┆ x         ┆ 3   ┆ z   │
     #   # └───────────┴───────────┴─────┴─────┘
-    def map(&f)
-      Utils.wrap_expr(_rbexpr.name_map(f))
+    def map(&function)
+      Utils.wrap_expr(_rbexpr.name_map(function))
     end
 
     # Add a prefix to the root column name of the expression.
