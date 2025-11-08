@@ -3834,6 +3834,90 @@ module Polars
       Utils.wrap_s(_s.zip_with(mask._s, other._s))
     end
 
+    # Compute a rolling min based on another series.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # Given a `by` column `<t_0, t_1, ..., t_n>`, then `closed: "right"`
+    # (the default) means the windows will be:
+    #
+    #   - (t_0 - window_size, t_0]
+    #   - (t_1 - window_size, t_1]
+    #   - ...
+    #   - (t_n - window_size, t_n]
+    #
+    # @param by [Object]
+    #   Should be `DateTime`, `Date`, `UInt64`, `UInt32`, `Int64`,
+    #   or `Int32` data type (note that the integral ones require using `'i'`
+    #   in `window size`).
+    # @param window_size [String]
+    #   The length of the window. Can be a dynamic temporal
+    #   size indicated by a timedelta or the following string language:
+    #
+    #   - 1ns   (1 nanosecond)
+    #   - 1us   (1 microsecond)
+    #   - 1ms   (1 millisecond)
+    #   - 1s    (1 second)
+    #   - 1m    (1 minute)
+    #   - 1h    (1 hour)
+    #   - 1d    (1 calendar day)
+    #   - 1w    (1 calendar week)
+    #   - 1mo   (1 calendar month)
+    #   - 1q    (1 calendar quarter)
+    #   - 1y    (1 calendar year)
+    #   - 1i    (1 index count)
+    #
+    #   By "calendar day", we mean the corresponding time on the next day
+    #   (which may not be 24 hours, due to daylight savings). Similarly for
+    #   "calendar week", "calendar month", "calendar quarter", and
+    #   "calendar year".
+    # @param min_periods [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result.
+    # @param closed ['left', 'right', 'both', 'none']
+    #   Define which sides of the temporal interval are closed (inclusive),
+    #   defaults to `'right'`.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   If you want to compute multiple aggregation statistics over the same dynamic
+    #   window, consider using `rolling` - this method can cache the window size
+    #   computation.
+    #
+    # @example
+    #   start = DateTime.new(2001, 1, 1)
+    #   stop = DateTime.new(2001, 1, 2)
+    #   s = Polars::Series.new("index", 25.times.to_a)
+    #   d = Polars::Series.new("date", Polars.datetime_range(start, stop, "1h", eager: true))
+    #   s.rolling_min_by(d, "3h")
+    #   # =>
+    #   # shape: (25,)
+    #   # Series: 'index' [i64]
+    #   # [
+    #   #         0
+    #   #         0
+    #   #         0
+    #   #         1
+    #   #         2
+    #   #         …
+    #   #         18
+    #   #         19
+    #   #         20
+    #   #         21
+    #   #         22
+    #   # ]
+    def rolling_min_by(
+      by,
+      window_size,
+      min_periods: 1,
+      closed: "right"
+    )
+      super
+    end
+
     # Apply a rolling min (moving min) over the values in this array.
     #
     # A window of length `window_size` will traverse the array. The values that fill
