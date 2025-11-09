@@ -113,7 +113,6 @@ module Polars
       new_columns: nil,
       separator: ",",
       comment_prefix: nil,
-      comment_char: nil, # TODO remove
       quote_char: '"',
       skip_rows: 0,
       skip_lines: 0,
@@ -143,7 +142,6 @@ module Polars
       glob: true
     )
       # TODO remove
-      comment_char = comment_prefix if !comment_prefix.nil?
       dtypes = schema_overrides if !schema_overrides.nil?
       parse_dates = try_parse_dates if !try_parse_dates.nil?
 
@@ -171,7 +169,7 @@ module Polars
           has_header: has_header,
           columns: columns || projection,
           separator: separator,
-          comment_prefix: comment_char,
+          comment_prefix: comment_prefix,
           quote_char: quote_char,
           skip_rows: skip_rows,
           skip_lines: skip_lines,
@@ -457,7 +455,6 @@ module Polars
       new_columns: nil,
       separator: ",",
       comment_prefix: nil,
-      comment_char: nil, # TODO remove
       quote_char: '"',
       skip_rows: 0,
       skip_lines: 0,
@@ -484,7 +481,6 @@ module Polars
       decimal_comma: false
     )
       # TODO remove
-      comment_char = comment_prefix if !comment_prefix.nil?
       dtypes = schema_overrides if !schema_overrides.nil?
       parse_dates = try_parse_dates if !try_parse_dates.nil?
 
@@ -503,7 +499,7 @@ module Polars
         has_header: has_header,
         columns: columns || projection,
         separator: separator,
-        comment_prefix: comment_char,
+        comment_prefix: comment_prefix,
         quote_char: quote_char,
         skip_rows: skip_rows,
         skip_lines: skip_lines,
@@ -625,7 +621,6 @@ module Polars
       has_header: true,
       separator: ",",
       comment_prefix: nil,
-      comment_char: nil, # TODO remove
       quote_char: '"',
       skip_rows: 0,
       skip_lines: 0,
@@ -654,7 +649,6 @@ module Polars
       glob: true
     )
       # TODO remove
-      comment_char = comment_prefix if !comment_prefix.nil?
       dtypes = schema_overrides if !schema_overrides.nil?
       parse_dates = try_parse_dates if !try_parse_dates.nil?
 
@@ -669,7 +663,7 @@ module Polars
         source,
         has_header: has_header,
         separator: separator,
-        comment_prefix: comment_char,
+        comment_prefix: comment_prefix,
         quote_char: quote_char,
         skip_rows: skip_rows,
         skip_lines: skip_lines,
