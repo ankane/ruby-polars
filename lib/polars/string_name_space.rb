@@ -139,6 +139,13 @@ module Polars
     #   - If false, allow the format to match anywhere in the target string.
     # @param cache [Boolean]
     #   Use a cache of unique, converted dates to apply the datetime conversion.
+    # @param ambiguous ['raise', 'earliest', 'latest', 'null']
+    #   Determine how to deal with ambiguous datetimes:
+    #
+    #   - `'raise'` (default): raise
+    #   - `'earliest'`: use the earliest datetime
+    #   - `'latest'`: use the latest datetime
+    #   - `'null'`: set to null
     #
     # @return [Series]
     #
@@ -180,7 +187,7 @@ module Polars
     #   #         2022-01-31
     #   #         2001-07-08
     #   # ]
-    def strptime(dtype, format = nil, strict: true, exact: true, cache: true)
+    def strptime(dtype, format = nil, strict: true, exact: true, cache: true, ambiguous: "raise")
       super
     end
 

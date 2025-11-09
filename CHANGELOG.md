@@ -10,6 +10,7 @@
 - Added more options to `read_ndjson` and `scan_ndjson` methods
 - Added more options to `sort` method
 - Added more options to `over` method
+- Added `ambiguous` option to `strptime` method
 - Changed `reverse` option to `descending`
 - Changed `sep` option to `separator`
 - Changed `row_count_name` option to `row_index_name`

@@ -154,6 +154,13 @@ module Polars
     #   - If false, allow the format to match anywhere in the target string.
     # @param cache [Boolean]
     #   Use a cache of unique, converted dates to apply the datetime conversion.
+    # @param ambiguous ['raise', 'earliest', 'latest', 'null']
+    #   Determine how to deal with ambiguous datetimes:
+    #
+    #   - `'raise'` (default): raise
+    #   - `'earliest'`: use the earliest datetime
+    #   - `'latest'`: use the latest datetime
+    #   - `'null'`: set to null
     #
     # @return [Expr]
     #
@@ -200,7 +207,14 @@ module Polars
     #   #         2022-01-31
     #   #         2001-07-08
     #   # ]
-    def strptime(dtype, format = nil, strict: true, exact: true, cache: true)
+    def strptime(
+      dtype,
+      format = nil,
+      strict: true,
+      exact: true,
+      cache: true,
+      ambiguous: "raise"
+    )
       _validate_format_argument(format)
 
       if dtype == Date
@@ -209,7 +223,15 @@ module Polars
         dtype = Datetime.new if dtype == Datetime
         time_unit = dtype.time_unit
         time_zone = dtype.time_zone
-        to_datetime(format, time_unit: time_unit, time_zone: time_zone, strict: strict, exact: exact, cache: cache)
+        to_datetime(
+          format,
+          time_unit: time_unit,
+          time_zone: time_zone,
+          strict: strict,
+          exact: exact,
+          cache: cache,
+          ambiguous: ambiguous
+        )
       elsif dtype == Time
         to_time(format, strict: strict, cache: cache)
       else
