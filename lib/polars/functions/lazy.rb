@@ -694,6 +694,10 @@ module Polars
     #   If `true` any `NaN` encountered will lead to `NaN` in the output.
     #   Defaults to `False` where `NaN` are regarded as larger than any finite number
     #   and thus lead to the highest rank.
+    # @param eager [Boolean]
+    #   Evaluate immediately and return a `Series`; this requires that at least one
+    #   of the given arguments is a `Series`. If set to `false` (default), return
+    #   an expression instead.
     #
     # @return [Expr]
     #
@@ -734,27 +738,63 @@ module Polars
     #   # ╞═════╡
     #   # │ 0.5 │
     #   # └─────┘
+    #
+    # @example Eager evaluation:
+    #   s1 = Polars::Series.new("a", [1, 8, 3])
+    #   s2 = Polars::Series.new("b", [4, 5, 2])
+    #   Polars.corr(s1, s2, eager: true)
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         0.544705
+    #   # ]
+    #
+    # @example
+    #   Polars.corr(s1, s2, method: "spearman", eager: true)
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         0.5
+    #   # ]
     def corr(
       a,
       b,
       method: "pearson",
       ddof: nil,
-      propagate_nans: false
+      propagate_nans: false,
+      eager: false
     )
       if !ddof.nil?
-        warn "The `ddof` parameter has no effect. Do not use it."
+        Utils.issue_deprecation_warning(
+          "The `ddof` parameter has no effect. Do not use it."
+        )
       end
 
-      a = Utils.parse_into_expression(a)
-      b = Utils.parse_into_expression(b)
+      if eager
+        if !(a.is_a?(Series) || b.is_a?(Series))
+          msg = "expected at least one Series in 'corr' inputs if 'eager: true'"
+          raise ArgumentError, msg
+        end
 
-      if method == "pearson"
-        Utils.wrap_expr(Plr.pearson_corr(a, b))
-      elsif method == "spearman"
-        Utils.wrap_expr(Plr.spearman_rank_corr(a, b, propagate_nans))
+        frame = Polars::DataFrame.new([a, b].filter_map { |e| e if e.is_a?(Series) })
+        exprs = [a, b].map { |e| e.is_a?(Series) ? e.name : e }
+        frame.select(
+          corr(*exprs, eager: false, method: method, propagate_nans: propagate_nans)
+        ).to_series
       else
-        msg = "method must be one of {{'pearson', 'spearman'}}, got #{method}"
-        raise ArgumentError, msg
+        a = Utils.parse_into_expression(a)
+        b = Utils.parse_into_expression(b)
+
+        if method == "pearson"
+          Utils.wrap_expr(Plr.pearson_corr(a, b))
+        elsif method == "spearman"
+          Utils.wrap_expr(Plr.spearman_rank_corr(a, b, propagate_nans))
+        else
+          msg = "method must be one of {{'pearson', 'spearman'}}, got #{method}"
+          raise ArgumentError, msg
+        end
       end
     end
 
