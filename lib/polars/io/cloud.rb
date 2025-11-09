@@ -8,7 +8,7 @@ module Polars
       storage_options,
       caller_name
     )
-      if credential_provider
+      if credential_provider && credential_provider != "auto"
         raise Todo
       end
 

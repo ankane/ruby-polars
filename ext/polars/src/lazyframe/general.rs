@@ -29,28 +29,52 @@ fn rbobject_to_first_path_and_scan_sources(obj: Value) -> RbResult<(Option<PlPat
 
 impl RbLazyFrame {
     #[allow(clippy::too_many_arguments)]
-    pub fn new_from_ndjson(
-        source: Option<Value>,
-        sources: Wrap<ScanSources>,
-        infer_schema_length: Option<usize>,
-        batch_size: Option<NonZeroUsize>,
-        n_rows: Option<usize>,
-        low_memory: bool,
-        rechunk: bool,
-        row_index: Option<(String, IdxSize)>,
-    ) -> RbResult<Self> {
+    pub fn new_from_ndjson(arguments: &[Value]) -> RbResult<Self> {
+        let source = Option::<Value>::try_convert(arguments[0])?;
+        let sources = Wrap::<ScanSources>::try_convert(arguments[1])?;
+        let infer_schema_length = Option::<usize>::try_convert(arguments[2])?;
+        let schema = Option::<Wrap<Schema>>::try_convert(arguments[3])?;
+        let schema_overrides = Option::<Wrap<Schema>>::try_convert(arguments[4])?;
+        let batch_size = Option::<NonZeroUsize>::try_convert(arguments[5])?;
+        let n_rows = Option::<usize>::try_convert(arguments[6])?;
+        let low_memory = bool::try_convert(arguments[7])?;
+        let rechunk = bool::try_convert(arguments[8])?;
+        let row_index = Option::<(String, IdxSize)>::try_convert(arguments[9])?;
+        let ignore_errors = bool::try_convert(arguments[10])?;
+        let include_file_paths = Option::<String>::try_convert(arguments[11])?;
+        let cloud_options = Option::<Vec<(String, String)>>::try_convert(arguments[12])?;
+        let credential_provider = Option::<Value>::try_convert(arguments[13])?;
+        let retries = usize::try_convert(arguments[14])?;
+        let file_cache_ttl = Option::<u64>::try_convert(arguments[15])?;
+
         let row_index = row_index.map(|(name, offset)| RowIndex {
             name: name.into(),
             offset,
         });
 
         let sources = sources.0;
-        let (_first_path, sources) = match source {
+        let (first_path, sources) = match source {
             None => (sources.first_path().map(|p| p.into_owned()), sources),
             Some(source) => rbobject_to_first_path_and_scan_sources(source)?,
         };
 
-        let r = LazyJsonLineReader::new_with_sources(sources);
+        let mut r = LazyJsonLineReader::new_with_sources(sources);
+
+        if let Some(first_path) = first_path {
+            let first_path_url = first_path.to_str();
+
+            let mut cloud_options =
+                parse_cloud_options(first_path_url, cloud_options.unwrap_or_default())?;
+            cloud_options = cloud_options
+                .with_max_retries(retries)
+                .with_credential_provider(credential_provider.map(|_| todo!()));
+
+            if let Some(file_cache_ttl) = file_cache_ttl {
+                cloud_options.file_cache_ttl = file_cache_ttl;
+            }
+
+            r = r.with_cloud_options(Some(cloud_options));
+        };
 
         let lf = r
             .with_infer_schema_length(infer_schema_length.and_then(NonZeroUsize::new))
@@ -58,11 +82,11 @@ impl RbLazyFrame {
             .with_n_rows(n_rows)
             .low_memory(low_memory)
             .with_rechunk(rechunk)
-            // .with_schema(schema.map(|schema| Arc::new(schema.0)))
-            // .with_schema_overwrite(schema_overrides.map(|x| Arc::new(x.0)))
+            .with_schema(schema.map(|schema| Arc::new(schema.0)))
+            .with_schema_overwrite(schema_overrides.map(|x| Arc::new(x.0)))
             .with_row_index(row_index)
-            // .with_ignore_errors(ignore_errors)
-            // .with_include_file_paths(include_file_paths.map(|x| x.into()))
+            .with_ignore_errors(ignore_errors)
+            .with_include_file_paths(include_file_paths.map(|x| x.into()))
             .finish()
             .map_err(RbPolarsErr::from)?;
 
