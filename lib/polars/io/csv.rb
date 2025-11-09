@@ -136,9 +136,7 @@ module Polars
       storage_options: nil,
       skip_rows_after_header: 0,
       row_index_name: nil,
-      row_count_name: nil, # TODO remove
-      row_index_offset: nil,
-      row_count_offset: 0, # TODO remove
+      row_index_offset: 0,
       eol_char: "\n",
       raise_if_empty: false,
       truncate_ragged_lines: false,
@@ -150,8 +148,6 @@ module Polars
       comment_char = comment_prefix if !comment_prefix.nil?
       dtypes = schema_overrides if !schema_overrides.nil?
       parse_dates = try_parse_dates if !try_parse_dates.nil?
-      row_count_name = row_index_name if !row_index_name.nil?
-      row_count_offset = row_index_offset if !row_index_offset.nil?
 
       # TODO update names
       Utils._check_arg_is_1byte("sep", sep, false)
@@ -195,8 +191,8 @@ module Polars
           low_memory: low_memory,
           rechunk: rechunk,
           skip_rows_after_header: skip_rows_after_header,
-          row_index_name: row_count_name,
-          row_index_offset: row_count_offset,
+          row_index_name: row_index_name,
+          row_index_offset: row_index_offset,
           eol_char: eol_char,
           raise_if_empty: raise_if_empty,
           truncate_ragged_lines: truncate_ragged_lines,
@@ -484,9 +480,7 @@ module Polars
       rechunk: true,
       skip_rows_after_header: 0,
       row_index_name: nil,
-      row_count_name: nil, # TODO remove
-      row_index_offset: nil,
-      row_count_offset: 0, # TODO remove
+      row_index_offset: 0,
       eol_char: "\n",
       raise_if_empty: true,
       truncate_ragged_lines: false,
@@ -497,8 +491,6 @@ module Polars
       comment_char = comment_prefix if !comment_prefix.nil?
       dtypes = schema_overrides if !schema_overrides.nil?
       parse_dates = try_parse_dates if !try_parse_dates.nil?
-      row_count_name = row_index_name if !row_index_name.nil?
-      row_count_offset = row_index_offset if !row_index_offset.nil?
 
       projection, columns = Utils.handle_projection_columns(columns)
 
@@ -532,8 +524,8 @@ module Polars
         low_memory: low_memory,
         rechunk: rechunk,
         skip_rows_after_header: skip_rows_after_header,
-        row_index_name: row_count_name,
-        row_index_offset: row_count_offset,
+        row_index_name: row_index_name,
+        row_index_offset: row_index_offset,
         eol_char: eol_char,
         new_columns: new_columns,
         raise_if_empty: raise_if_empty,
@@ -657,9 +649,7 @@ module Polars
       rechunk: true,
       skip_rows_after_header: 0,
       row_index_name: nil,
-      row_count_name: nil, # TODO remove
-      row_index_offset: nil,
-      row_count_offset: 0, # TODO remove
+      row_index_offset: 0,
       try_parse_dates: nil,
       parse_dates: false, # TODO remove
       eol_char: "\n",
@@ -673,8 +663,6 @@ module Polars
       comment_char = comment_prefix if !comment_prefix.nil?
       dtypes = schema_overrides if !schema_overrides.nil?
       parse_dates = try_parse_dates if !try_parse_dates.nil?
-      row_count_name = row_index_name if !row_index_name.nil?
-      row_count_offset = row_index_offset if !row_index_offset.nil?
 
       # TODO update names
       Utils._check_arg_is_1byte("sep", sep, false)
@@ -704,8 +692,8 @@ module Polars
         rechunk: rechunk,
         skip_rows_after_header: skip_rows_after_header,
         encoding: encoding,
-        row_index_name: row_count_name,
-        row_index_offset: row_count_offset,
+        row_index_name: row_index_name,
+        row_index_offset: row_index_offset,
         try_parse_dates: parse_dates,
         eol_char: eol_char,
         truncate_ragged_lines: truncate_ragged_lines

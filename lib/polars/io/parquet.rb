@@ -9,10 +9,10 @@ module Polars
     #   of column names.
     # @param n_rows [Integer]
     #   Stop reading from parquet file after reading `n_rows`.
-    # @param row_count_name [String]
+    # @param row_index_name [String]
     #   If not nil, this will insert a row count column with give name into the
     #   DataFrame.
-    # @param row_count_offset [Integer]
+    # @param row_index_offset [Integer]
     #   Offset to start the row_count column (only use if the name is set).
     # @param parallel ["auto", "columns", "row_groups", "none"]
     #   This determines the direction of parallelism. 'auto' will try to determine the
@@ -67,8 +67,8 @@ module Polars
       source,
       columns: nil,
       n_rows: nil,
-      row_count_name: nil,
-      row_count_offset: 0,
+      row_index_name: nil,
+      row_index_offset: 0,
       parallel: "auto",
       use_statistics: true,
       hive_partitioning: nil,
@@ -89,8 +89,8 @@ module Polars
         scan_parquet(
           source,
           n_rows: n_rows,
-          row_count_name: row_count_name,
-          row_count_offset: row_count_offset,
+          row_index_name: row_index_name,
+          row_index_offset: row_index_offset,
           parallel: parallel,
           use_statistics: use_statistics,
           hive_partitioning: hive_partitioning,
@@ -161,10 +161,10 @@ module Polars
     #   Path to a file or a file-like object.
     # @param n_rows [Integer]
     #   Stop reading from parquet file after reading `n_rows`.
-    # @param row_count_name [String]
+    # @param row_index_name [String]
     #   If not nil, this will insert a row count column with give name into the
     #   DataFrame.
-    # @param row_count_offset [Integer]
+    # @param row_index_offset [Integer]
     #   Offset to start the row_count column (only use if the name is set).
     # @param parallel ["auto", "columns", "row_groups", "none"]
     #   This determines the direction of parallelism. 'auto' will try to determine the
@@ -230,8 +230,8 @@ module Polars
     def scan_parquet(
       source,
       n_rows: nil,
-      row_count_name: nil,
-      row_count_offset: 0,
+      row_index_name: nil,
+      row_index_offset: 0,
       parallel: "auto",
       use_statistics: true,
       hive_partitioning: nil,
@@ -257,9 +257,6 @@ module Polars
       _table_statistics: nil,
       _row_count: nil
     )
-      row_index_name = row_count_name
-      row_index_offset = row_count_offset
-
       if !schema.nil?
         msg = "the `schema` parameter of `scan_parquet` is considered unstable."
         Utils.issue_unstable_warning(msg)

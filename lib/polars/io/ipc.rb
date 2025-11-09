@@ -15,10 +15,10 @@ module Polars
     #   Only uncompressed IPC files can be memory mapped.
     # @param storage_options [Hash]
     #   Extra options that make sense for a particular storage connection.
-    # @param row_count_name [String]
+    # @param row_index_name [String]
     #   If not nil, this will insert a row count column with give name into the
     #   DataFrame.
-    # @param row_count_offset [Integer]
+    # @param row_index_offset [Integer]
     #   Offset to start the row_count column (only use if the name is set).
     # @param rechunk [Boolean]
     #   Make sure that all data is contiguous.
@@ -30,8 +30,8 @@ module Polars
       n_rows: nil,
       memory_map: true,
       storage_options: nil,
-      row_count_name: nil,
-      row_count_offset: 0,
+      row_index_name: nil,
+      row_index_offset: 0,
       rechunk: true
     )
       storage_options ||= {}
@@ -40,8 +40,8 @@ module Polars
           data,
           columns: columns,
           n_rows: n_rows,
-          row_count_name: row_count_name,
-          row_count_offset: row_count_offset,
+          row_index_name: row_index_name,
+          row_index_offset: row_index_offset,
           rechunk: rechunk,
           memory_map: memory_map
         )
@@ -53,8 +53,8 @@ module Polars
       file,
       columns: nil,
       n_rows: nil,
-      row_count_name: nil,
-      row_count_offset: 0,
+      row_index_name: nil,
+      row_index_offset: 0,
       rechunk: true,
       memory_map: true
     )
@@ -76,7 +76,7 @@ module Polars
           columns,
           projection,
           n_rows,
-          Utils.parse_row_index_args(row_count_name, row_count_offset),
+          Utils.parse_row_index_args(row_index_name, row_index_offset),
           memory_map
         )
       Utils.wrap_df(rbdf)
@@ -182,10 +182,10 @@ module Polars
     #   Cache the result after reading.
     # @param rechunk [Boolean]
     #   Reallocate to contiguous memory when all chunks/ files are parsed.
-    # @param row_count_name [String]
+    # @param row_index_name [String]
     #   If not nil, this will insert a row count column with give name into the
     #   DataFrame.
-    # @param row_count_offset [Integer]
+    # @param row_index_offset [Integer]
     #   Offset to start the row_count column (only use if the name is set).
     # @param glob [Boolean]
     #   Expand path given via globbing rules.
@@ -216,8 +216,8 @@ module Polars
       n_rows: nil,
       cache: true,
       rechunk: true,
-      row_count_name: nil,
-      row_count_offset: 0,
+      row_index_name: nil,
+      row_index_offset: 0,
       glob: true,
       storage_options: nil,
       retries: 2,
@@ -227,9 +227,6 @@ module Polars
       try_parse_hive_dates: true,
       include_file_paths: nil
     )
-      row_index_name = row_count_name
-      row_index_offset = row_count_offset
-
       sources = get_sources(source)
 
       rblf =

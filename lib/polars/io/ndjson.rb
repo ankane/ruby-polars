@@ -56,10 +56,10 @@ module Polars
     #   Reduce memory pressure at the expense of performance.
     # @param rechunk [Boolean]
     #   Reallocate to contiguous memory when all chunks/ files are parsed.
-    # @param row_count_name [String]
+    # @param row_index_name [String]
     #   If not nil, this will insert a row count column with give name into the
     #   DataFrame.
-    # @param row_count_offset [Integer]
+    # @param row_index_offset [Integer]
     #   Offset to start the row_count column (only use if the name is set).
     #
     # @return [LazyFrame]
@@ -70,8 +70,8 @@ module Polars
       n_rows: nil,
       low_memory: false,
       rechunk: true,
-      row_count_name: nil,
-      row_count_offset: 0
+      row_index_name: nil,
+      row_index_offset: 0
     )
       sources = []
       if Utils.pathlike?(source)
@@ -95,7 +95,7 @@ module Polars
           n_rows,
           low_memory,
           rechunk,
-          Utils.parse_row_index_args(row_count_name, row_count_offset)
+          Utils.parse_row_index_args(row_index_name, row_index_offset)
         )
       Utils.wrap_ldf(rblf)
     end
