@@ -217,37 +217,6 @@ impl RbDataFrame {
         Ok(RbDataFrame::new(df))
     }
 
-    #[allow(clippy::too_many_arguments)]
-    pub fn write_csv(
-        &self,
-        rb_f: Value,
-        include_header: bool,
-        separator: u8,
-        quote_char: u8,
-        batch_size: NonZeroUsize,
-        datetime_format: Option<String>,
-        date_format: Option<String>,
-        time_format: Option<String>,
-        float_precision: Option<usize>,
-        null_value: Option<String>,
-    ) -> RbResult<()> {
-        let null = null_value.unwrap_or_default();
-        let mut buf = get_file_like(rb_f, true)?;
-        CsvWriter::new(&mut buf)
-            .include_header(include_header)
-            .with_separator(separator)
-            .with_quote_char(quote_char)
-            .with_batch_size(batch_size)
-            .with_datetime_format(datetime_format)
-            .with_date_format(date_format)
-            .with_time_format(time_format)
-            .with_float_precision(float_precision)
-            .with_null_value(null)
-            .finish(&mut self.df.borrow_mut())
-            .map_err(RbPolarsErr::from)?;
-        Ok(())
-    }
-
     pub fn write_parquet(
         &self,
         rb_f: Value,

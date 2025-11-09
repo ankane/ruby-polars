@@ -75,7 +75,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("write_avro", method!(RbDataFrame::write_avro, 3))?;
     class.define_method("write_json", method!(RbDataFrame::write_json, 1))?;
     class.define_method("write_ndjson", method!(RbDataFrame::write_ndjson, 1))?;
-    class.define_method("write_csv", method!(RbDataFrame::write_csv, 10))?;
     class.define_method("write_ipc", method!(RbDataFrame::write_ipc, 5))?;
     class.define_method(
         "write_ipc_stream",

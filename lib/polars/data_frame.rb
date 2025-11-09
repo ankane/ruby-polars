@@ -826,15 +826,23 @@ module Polars
     #   df.write_csv("file.csv")
     def write_csv(
       file = nil,
+      include_bom: false,
       include_header: true,
       separator: ",",
+      line_terminator: "\n",
       quote_char: '"',
       batch_size: 1024,
       datetime_format: nil,
       date_format: nil,
       time_format: nil,
+      float_scientific: nil,
       float_precision: nil,
-      null_value: nil
+      decimal_comma: false,
+      null_value: nil,
+      quote_style: nil,
+      storage_options: nil,
+      credential_provider: "auto",
+      retries: 2
     )
       Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, true)
@@ -845,17 +853,25 @@ module Polars
       if file.nil?
         buffer = StringIO.new
         buffer.set_encoding(Encoding::BINARY)
-        _df.write_csv(
+        lazy.sink_csv(
           buffer,
-          include_header,
-          separator.ord,
-          quote_char.ord,
-          batch_size,
-          datetime_format,
-          date_format,
-          time_format,
-          float_precision,
-          null_value
+          include_bom: include_bom,
+          include_header: include_header,
+          separator: separator,
+          line_terminator: line_terminator,
+          quote_char: quote_char,
+          batch_size: batch_size,
+          datetime_format: datetime_format,
+          date_format: date_format,
+          time_format: time_format,
+          float_scientific: float_scientific,
+          float_precision: float_precision,
+          decimal_comma: decimal_comma,
+          null_value: null_value,
+          quote_style: quote_style,
+          storage_options: storage_options,
+          credential_provider: credential_provider,
+          retries: retries
         )
         return buffer.string.force_encoding(Encoding::UTF_8)
       end
@@ -864,17 +880,25 @@ module Polars
         file = Utils.normalize_filepath(file)
       end
 
-      _df.write_csv(
+      lazy.sink_csv(
         file,
-        include_header,
-        separator.ord,
-        quote_char.ord,
-        batch_size,
-        datetime_format,
-        date_format,
-        time_format,
-        float_precision,
-        null_value,
+        include_bom: include_bom,
+        include_header: include_header,
+        separator: separator,
+        line_terminator: line_terminator,
+        quote_char: quote_char,
+        batch_size: batch_size,
+        datetime_format: datetime_format,
+        date_format: date_format,
+        time_format: time_format,
+        float_scientific: float_scientific,
+        float_precision: float_precision,
+        decimal_comma: decimal_comma,
+        null_value: null_value,
+        quote_style: quote_style,
+        storage_options: storage_options,
+        credential_provider: credential_provider,
+        retries: retries
       )
       nil
     end

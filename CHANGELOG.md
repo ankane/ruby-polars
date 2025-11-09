@@ -8,6 +8,7 @@
 - Added `replace` method to `NameExpr`
 - Added more options to `read_csv` and `scan_csv` methods
 - Added more options to `read_ndjson` and `scan_ndjson` methods
+- Added more options to `write_csv` method
 - Added more options to `sort` method
 - Added more options to `over` method
 - Added `ambiguous` option to `strptime` method

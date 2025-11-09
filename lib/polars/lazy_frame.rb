@@ -1060,6 +1060,7 @@ module Polars
       slice_pushdown: true,
       no_optimization: false,
       storage_options: nil,
+      credential_provider: "auto",
       retries: 2,
       sync_on_close: nil,
       mkdir: false,
@@ -1076,6 +1077,10 @@ module Polars
         slice_pushdown: slice_pushdown,
         no_optimization: no_optimization
       )
+
+      if credential_provider != "auto"
+        raise Todo
+      end
 
       if storage_options&.any?
         storage_options = storage_options.to_a
