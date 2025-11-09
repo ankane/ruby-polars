@@ -46,7 +46,7 @@ module Polars
         return col("*")
       end
 
-      col(*names).all(drop_nulls: ignore_nulls)
+      col(*names).all(ignore_nulls: ignore_nulls)
     end
 
     # Evaluate a bitwise OR operation.
@@ -78,7 +78,7 @@ module Polars
     #   # │ true │
     #   # └──────┘
     def any(*names, ignore_nulls: true)
-      col(*names).any(drop_nulls: ignore_nulls)
+      col(*names).any(ignore_nulls: ignore_nulls)
     end
 
     # Get the maximum value.
