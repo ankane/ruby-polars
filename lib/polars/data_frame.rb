@@ -2543,7 +2543,7 @@ module Polars
     #   Offset of the window. Default is -period.
     # @param closed ["right", "left", "both", "none"]
     #   Define whether the temporal window interval is closed or not.
-    # @param by [Object]
+    # @param group_by [Object]
     #   Also group by this column/these columns.
     #
     # @return [RollingGroupBy]
@@ -2586,9 +2586,9 @@ module Polars
       period:,
       offset: nil,
       closed: "right",
-      by: nil
+      group_by: nil
     )
-      RollingGroupBy.new(self, index_column, period, offset, closed, by)
+      RollingGroupBy.new(self, index_column, period, offset, closed, group_by)
     end
     alias_method :groupby_rolling, :rolling
     alias_method :group_by_rolling, :rolling
@@ -2651,7 +2651,7 @@ module Polars
     #   parallelize
     # @param closed ["right", "left", "both", "none"]
     #   Define whether the temporal window interval is closed or not.
-    # @param by
+    # @param group_by
     #   Also group by this column/these columns
     # @param start_by ['window', 'datapoint', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
     #   The strategy to determine the start of the first window by.
@@ -2793,7 +2793,7 @@ module Polars
     #     "time",
     #     every: "1h",
     #     closed: "both",
-    #     by: "groups",
+    #     group_by: "groups",
     #     include_boundaries: true
     #   ).agg([Polars.col("time").count.alias("time_count")])
     #   # =>
@@ -2845,7 +2845,7 @@ module Polars
       offset: nil,
       include_boundaries: false,
       closed: "left",
-      by: nil,
+      group_by: nil,
       start_by: "window"
     )
       DynamicGroupBy.new(
@@ -2856,7 +2856,7 @@ module Polars
         offset,
         include_boundaries,
         closed,
-        by,
+        group_by,
         start_by
       )
     end
@@ -2869,7 +2869,7 @@ module Polars
     #   Note that this column has to be sorted for the output to make sense.
     # @param every [String]
     #   interval will start 'every' duration
-    # @param by [Object]
+    # @param group_by [Object]
     #   First group by these columns and then upsample for every group
     # @param maintain_order [Boolean]
     #   Keep the ordering predictable. This is slower.
@@ -2908,7 +2908,7 @@ module Polars
     #     }
     #   ).set_sorted("time")
     #   df.upsample(
-    #     time_column: "time", every: "1mo", by: "groups", maintain_order: true
+    #     time_column: "time", every: "1mo", group_by: "groups", maintain_order: true
     #   ).select(Polars.all.forward_fill)
     #   # =>
     #   # shape: (7, 3)
@@ -2928,20 +2928,20 @@ module Polars
     def upsample(
       time_column:,
       every:,
-      by: nil,
+      group_by: nil,
       maintain_order: false
     )
-      if by.nil?
-        by = []
+      if group_by.nil?
+        group_by = []
       end
-      if by.is_a?(::String)
-        by = [by]
+      if group_by.is_a?(::String)
+        group_by = [group_by]
       end
 
       every = Utils.parse_as_duration_string(every)
 
       _from_rbdf(
-        _df.upsample(by, time_column, every, maintain_order)
+        _df.upsample(group_by, time_column, every, maintain_order)
       )
     end
 

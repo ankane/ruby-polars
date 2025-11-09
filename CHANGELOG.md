@@ -13,6 +13,7 @@
 - Changed `row_count_name` option to `row_index_name`
 - Changed `row_count_offset` option to `row_index_offset`
 - Changed `min_periods` option to `min_samples`
+- Changed `by` option to `group_by` for `group_by_dynamic`, `rolling`, and `upsample` methods
 - Changed `frac` option to `fraction` for `sample` methods
 - Changed `drop_nulls` option to `ignore_nulls` for `all` and `any` methods
 - Changed `join_nulls` option to `nulls_equal` for `join` method

@@ -12,7 +12,7 @@ module Polars
       offset,
       include_boundaries,
       closed,
-      by,
+      group_by,
       start_by
     )
       period = Utils.parse_as_duration_string(period)
@@ -26,7 +26,7 @@ module Polars
       @offset = offset
       @include_boundaries = include_boundaries
       @closed = closed
-      @by = by
+      @group_by = group_by
       @start_by = start_by
     end
 
@@ -39,7 +39,7 @@ module Polars
           offset: @offset,
           include_boundaries: @include_boundaries,
           closed: @closed,
-          by: @by,
+          group_by: @group_by,
           start_by: @start_by
         )
         .agg(*aggs, **named_aggs)

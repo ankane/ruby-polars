@@ -1888,7 +1888,7 @@ module Polars
     #   Offset of the window. Default is -period.
     # @param closed ["right", "left", "both", "none"]
     #   Define whether the temporal window interval is closed or not.
-    # @param by [Object]
+    # @param group_by [Object]
     #   Also group by this column/these columns.
     #
     # @return [LazyFrame]
@@ -1931,7 +1931,7 @@ module Polars
       period:,
       offset: nil,
       closed: "right",
-      by: nil
+      group_by: nil
     )
       index_column = Utils.parse_into_expression(index_column)
       if offset.nil?
@@ -1939,7 +1939,7 @@ module Polars
       end
 
       rbexprs_by = (
-        !by.nil? ? Utils.parse_into_list_of_expressions(by) : []
+        !group_by.nil? ? Utils.parse_into_list_of_expressions(group_by) : []
       )
       period = Utils.parse_as_duration_string(period)
       offset = Utils.parse_as_duration_string(offset)
@@ -2016,7 +2016,7 @@ module Polars
     #   - 'datapoint': the first value of the index column in the given window.
     #     If you don't need the label to be at one of the boundaries, choose this
     #     option for maximum performance
-    # @param by [Object]
+    # @param group_by [Object]
     #   Also group by this column/these columns
     # @param start_by ['window', 'datapoint', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
     #   The strategy to determine the start of the first window by.
@@ -2158,7 +2158,7 @@ module Polars
     #     "time",
     #     every: "1h",
     #     closed: "both",
-    #     by: "groups",
+    #     group_by: "groups",
     #     include_boundaries: true
     #   ).agg([Polars.col("time").count.alias("time_count")])
     #   # =>
@@ -2211,7 +2211,7 @@ module Polars
       include_boundaries: false,
       closed: "left",
       label: "left",
-      by: nil,
+      group_by: nil,
       start_by: "window"
     )
       index_column = Utils.parse_into_expression(index_column, str_as_lit: false)
@@ -2227,7 +2227,7 @@ module Polars
       offset = Utils.parse_as_duration_string(offset)
       every = Utils.parse_as_duration_string(every)
 
-      rbexprs_by = by.nil? ? [] : Utils.parse_into_list_of_expressions(by)
+      rbexprs_by = group_by.nil? ? [] : Utils.parse_into_list_of_expressions(group_by)
       lgb = _ldf.group_by_dynamic(
         index_column,
         every,
