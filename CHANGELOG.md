@@ -7,7 +7,7 @@
 - Added `agg` and `eval` methods to `ArrayExpr` and `ArrayNameSpace`
 - Added `replace` method to `NameExpr`
 - Added more options to `read_csv` and `scan_csv` methods
-- Added more options to `scan_ndjson` method
+- Added more options to `read_ndjson` and `scan_ndjson` methods
 - Added more options to `over` method
 - Changed `reverse` option to `descending`
 - Changed `sep` option to `separator`

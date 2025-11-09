@@ -70,7 +70,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("from_rows", function!(RbDataFrame::from_rows, 3))?;
     class.define_singleton_method("from_hashes", function!(RbDataFrame::from_hashes, 5))?;
     class.define_singleton_method("read_json", function!(RbDataFrame::read_json, 4))?;
-    class.define_singleton_method("read_ndjson", function!(RbDataFrame::read_ndjson, 4))?;
     class.define_method("estimated_size", method!(RbDataFrame::estimated_size, 0))?;
     class.define_method("dtype_strings", method!(RbDataFrame::dtype_strings, 0))?;
     class.define_method("write_avro", method!(RbDataFrame::write_avro, 3))?;

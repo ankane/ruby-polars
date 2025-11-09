@@ -147,33 +147,6 @@ impl RbDataFrame {
         Ok(out.into())
     }
 
-    pub fn read_ndjson(
-        rb_f: Value,
-        ignore_errors: bool,
-        schema: Option<Wrap<Schema>>,
-        schema_overrides: Option<Wrap<Schema>>,
-    ) -> RbResult<Self> {
-        let rb_f = read_if_bytesio(rb_f);
-        let mmap_bytes_r = get_mmap_bytes_reader(&rb_f)?;
-
-        let mut builder = JsonReader::new(mmap_bytes_r)
-            .with_json_format(JsonFormat::JsonLines)
-            .with_ignore_errors(ignore_errors);
-
-        if let Some(schema) = schema {
-            builder = builder.with_schema(Arc::new(schema.0));
-        }
-
-        if let Some(schema) = schema_overrides.as_ref() {
-            builder = builder.with_schema_overwrite(&schema.0);
-        }
-
-        let out = builder
-            .finish()
-            .map_err(|e| RbPolarsErr::Other(format!("{e}")))?;
-        Ok(out.into())
-    }
-
     pub fn read_ipc(
         rb_f: Value,
         columns: Option<Vec<String>>,
