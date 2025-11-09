@@ -5410,9 +5410,9 @@ module Polars
     # Sample from this DataFrame.
     #
     # @param n [Integer]
-    #   Number of items to return. Cannot be used with `frac`. Defaults to 1 if
-    #   `frac` is nil.
-    # @param frac [Float]
+    #   Number of items to return. Cannot be used with `fraction`. Defaults to 1 if
+    #   `fraction` is nil.
+    # @param fraction [Float]
     #   Fraction of items to return. Cannot be used with `n`.
     # @param with_replacement [Boolean]
     #   Allow values to be sampled more than once.
@@ -5445,20 +5445,20 @@ module Polars
     #   # └─────┴─────┴─────┘
     def sample(
       n: nil,
-      frac: nil,
+      fraction: nil,
       with_replacement: false,
       shuffle: false,
       seed: nil
     )
-      if !n.nil? && !frac.nil?
-        raise ArgumentError, "cannot specify both `n` and `frac`"
+      if !n.nil? && !fraction.nil?
+        raise ArgumentError, "cannot specify both `n` and `fraction`"
       end
 
-      if n.nil? && !frac.nil?
-        frac = Series.new("frac", [frac]) unless frac.is_a?(Series)
+      if n.nil? && !fraction.nil?
+        fraction = Series.new("fraction", [fraction]) unless fraction.is_a?(Series)
 
         return _from_rbdf(
-          _df.sample_frac(frac._s, with_replacement, shuffle, seed)
+          _df.sample_frac(fraction._s, with_replacement, shuffle, seed)
         )
       end
 

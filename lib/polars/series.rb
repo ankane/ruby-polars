@@ -5095,9 +5095,9 @@ module Polars
     # Sample from this Series.
     #
     # @param n [Integer]
-    #   Number of items to return. Cannot be used with `frac`. Defaults to 1 if
-    #   `frac` is nil.
-    # @param frac [Float]
+    #   Number of items to return. Cannot be used with `fraction`. Defaults to 1 if
+    #   `fraction` is nil.
+    # @param fraction [Float]
     #   Fraction of items to return. Cannot be used with `n`.
     # @param with_replacement [Boolean]
     #   Allow values to be sampled more than once.
@@ -5121,17 +5121,17 @@ module Polars
     #   # ]
     def sample(
       n: nil,
-      frac: nil,
+      fraction: nil,
       with_replacement: false,
       shuffle: false,
       seed: nil
     )
-      if !n.nil? && !frac.nil?
-        raise ArgumentError, "cannot specify both `n` and `frac`"
+      if !n.nil? && !fraction.nil?
+        raise ArgumentError, "cannot specify both `n` and `fraction`"
       end
 
-      if n.nil? && !frac.nil?
-        return Utils.wrap_s(_s.sample_frac(frac, with_replacement, shuffle, seed))
+      if n.nil? && !fraction.nil?
+        return Utils.wrap_s(_s.sample_frac(fraction, with_replacement, shuffle, seed))
       end
 
       if n.nil?

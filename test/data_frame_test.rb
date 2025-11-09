@@ -593,6 +593,6 @@ class DataFrameTest < Minitest::Test
 
   def test_sample
     df = Polars::DataFrame.new({a: [1, 2, 3, 4]})
-    assert_equal 2, df.sample(frac: 0.5).height
+    assert_equal 2, df.sample(fraction: 0.5).height
   end
 end

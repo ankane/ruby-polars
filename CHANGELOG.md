@@ -9,6 +9,7 @@
 - Added more options to `read_csv` and `scan_csv` methods
 - Added more options to `over` method
 - Changed `min_periods` option to `min_samples`
+- Changed `frac` option to `fraction`
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods
 
 ## 0.23.0 (2025-11-04)

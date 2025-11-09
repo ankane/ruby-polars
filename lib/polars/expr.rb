@@ -7483,7 +7483,7 @@ module Polars
 
     # Sample from this expression.
     #
-    # @param frac [Float]
+    # @param fraction [Float]
     #   Fraction of items to return. Cannot be used with `n`.
     # @param with_replacement [Boolean]
     #   Allow values to be sampled more than once.
@@ -7493,13 +7493,13 @@ module Polars
     #   Seed for the random number generator. If set to nil (default), a random
     #   seed is used.
     # @param n [Integer]
-    #   Number of items to return. Cannot be used with `frac`.
+    #   Number of items to return. Cannot be used with `fraction`.
     #
     # @return [Expr]
     #
     # @example
     #   df = Polars::DataFrame.new({"a" => [1, 2, 3]})
-    #   df.select(Polars.col("a").sample(frac: 1.0, with_replacement: true, seed: 1))
+    #   df.select(Polars.col("a").sample(fraction: 1.0, with_replacement: true, seed: 1))
     #   # =>
     #   # shape: (3, 1)
     #   # ┌─────┐
@@ -7512,27 +7512,27 @@ module Polars
     #   # │ 1   │
     #   # └─────┘
     def sample(
-      frac: nil,
+      fraction: nil,
       with_replacement: true,
       shuffle: false,
       seed: nil,
       n: nil
     )
-      if !n.nil? && !frac.nil?
-        raise ArgumentError, "cannot specify both `n` and `frac`"
+      if !n.nil? && !fraction.nil?
+        raise ArgumentError, "cannot specify both `n` and `fraction`"
       end
 
-      if !n.nil? && frac.nil?
+      if !n.nil? && fraction.nil?
         n = Utils.parse_into_expression(n)
         return wrap_expr(_rbexpr.sample_n(n, with_replacement, shuffle, seed))
       end
 
-      if frac.nil?
-        frac = 1.0
+      if fraction.nil?
+        fraction = 1.0
       end
-      frac = Utils.parse_into_expression(frac)
+      fraction = Utils.parse_into_expression(fraction)
       wrap_expr(
-        _rbexpr.sample_frac(frac, with_replacement, shuffle, seed)
+        _rbexpr.sample_frac(fraction, with_replacement, shuffle, seed)
       )
     end
 
