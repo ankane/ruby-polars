@@ -567,6 +567,11 @@ module Polars
     #   Apply a function over the column names.
     #   This can be used to update a schema just in time, thus before
     #   scanning.
+    # @param infer_schema [Boolean]
+    #   When `true`, the schema is inferred from the data using the first
+    #   `infer_schema_length` rows.
+    #   When `false`, the schema is not inferred and will be `Polars::String` if not
+    #   specified in `schema` or `schema_overrides`.
     # @param infer_schema_length [Integer]
     #   Maximum number of lines to read to infer schema.
     #   If set to 0, all columns will be read as `:str`.
@@ -592,6 +597,10 @@ module Polars
     #   the column remains of data type `:str`.
     # @param eol_char [String]
     #   Single byte end of line character.
+    # @param new_columns [Array]
+    #   Provide an explicit list of string column names to use (for example, when
+    #   scanning a headerless CSV file). If the given list is shorter than the width of
+    #   the DataFrame the remaining columns will have their original name.
     # @param raise_if_empty [Boolean]
     #   When there is no data in the source, `NoDataError` is raised. If this parameter
     #   is set to false, an empty LazyFrame (with no columns) is returned instead.
@@ -601,6 +610,32 @@ module Polars
     #   Parse floats using a comma as the decimal separator instead of a period.
     # @param glob [Boolean]
     #   Expand path given via globbing rules.
+    # @param storage_options [Hash]
+    #   Options that indicate how to connect to a cloud provider.
+    #
+    #   The cloud providers currently supported are AWS, GCP, and Azure.
+    #   See supported keys here:
+    #
+    #   * [aws](https://docs.rs/object_store/latest/object_store/aws/enum.AmazonS3ConfigKey.html)
+    #   * [gcp](https://docs.rs/object_store/latest/object_store/gcp/enum.GoogleConfigKey.html)
+    #   * [azure](https://docs.rs/object_store/latest/object_store/azure/enum.AzureConfigKey.html)
+    #   * Hugging Face (`hf://`): Accepts an API key under the `token` parameter: \
+    #     `{'token': '...'}`, or by setting the `HF_TOKEN` environment variable.
+    #
+    #   If `storage_options` is not provided, Polars will try to infer the information
+    #   from environment variables.
+    # @param credential_provider [Object]
+    #   Provide a function that can be called to provide cloud storage
+    #   credentials. The function is expected to return a dictionary of
+    #   credential keys along with an optional credential expiry time.
+    # @param retries [Integer]
+    #   Number of retries if accessing a cloud instance fails.
+    # @param file_cache_ttl [Integer]
+    #   Amount of time to keep downloaded cloud files since their last access time,
+    #   in seconds. Uses the `POLARS_FILE_CACHE_TTL` environment variable
+    #   (which defaults to 1 hour) if not given.
+    # @param include_file_paths [String]
+    #   Include the path of the source file(s) as a column with this name.
     #
     # @return [LazyFrame]
     def scan_csv(
@@ -618,27 +653,46 @@ module Polars
       ignore_errors: false,
       cache: true,
       with_column_names: nil,
+      infer_schema: true,
       infer_schema_length: N_INFER_DEFAULT,
       n_rows: nil,
       encoding: "utf8",
       low_memory: false,
-      rechunk: true,
+      rechunk: false,
       skip_rows_after_header: 0,
       row_index_name: nil,
       row_index_offset: 0,
       try_parse_dates: false,
       eol_char: "\n",
+      new_columns: nil,
       raise_if_empty: true,
       truncate_ragged_lines: false,
       decimal_comma: false,
-      glob: true
+      glob: true,
+      storage_options: nil,
+      credential_provider: "auto",
+      retries: 2,
+      file_cache_ttl: nil,
+      include_file_paths: nil
     )
+      if new_columns
+        raise Todo
+      end
+
       Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, true)
 
       if Utils.pathlike?(source)
         source = Utils.normalize_filepath(source)
       end
+
+      if !infer_schema
+        infer_schema_length = 0
+      end
+
+      credential_provider_builder = _init_credential_provider_builder(
+        credential_provider, source, storage_options, "scan_csv"
+      )
 
       _scan_csv_impl(
         source,
@@ -664,7 +718,15 @@ module Polars
         row_index_offset: row_index_offset,
         try_parse_dates: try_parse_dates,
         eol_char: eol_char,
-        truncate_ragged_lines: truncate_ragged_lines
+        raise_if_empty: raise_if_empty,
+        truncate_ragged_lines: truncate_ragged_lines,
+        decimal_comma: decimal_comma,
+        glob: glob,
+        retries: retries,
+        storage_options: storage_options,
+        credential_provider: credential_provider_builder,
+        file_cache_ttl: file_cache_ttl,
+        include_file_paths: include_file_paths
       )
     end
 
