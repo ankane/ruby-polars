@@ -121,8 +121,7 @@ module Polars
       null_values: nil,
       missing_utf8_is_empty_string: false,
       ignore_errors: false,
-      try_parse_dates: nil,
-      parse_dates: false, # TODO remove
+      try_parse_dates: false,
       n_threads: nil,
       infer_schema_length: N_INFER_DEFAULT,
       batch_size: 8192,
@@ -140,10 +139,6 @@ module Polars
       decimal_comma: false,
       glob: true
     )
-      # TODO remove
-      parse_dates = try_parse_dates if !try_parse_dates.nil?
-
-      # TODO update names
       Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, true)
       Utils._check_arg_is_1byte("eol_char", eol_char, false)
@@ -176,7 +171,7 @@ module Polars
           null_values: null_values,
           missing_utf8_is_empty_string: missing_utf8_is_empty_string,
           ignore_errors: ignore_errors,
-          try_parse_dates: parse_dates,
+          try_parse_dates: try_parse_dates,
           n_threads: n_threads,
           infer_schema_length: infer_schema_length,
           batch_size: batch_size,
@@ -443,7 +438,7 @@ module Polars
     #
     # @example
     #   reader = Polars.read_csv_batched(
-    #     "./tpch/tables_scale_100/lineitem.tbl", separator: "|", parse_dates: true
+    #     "./tpch/tables_scale_100/lineitem.tbl", separator: "|", try_parse_dates: true
     #   )
     #   reader.next_batches(5)
     def read_csv_batched(
@@ -461,7 +456,6 @@ module Polars
       missing_utf8_is_empty_string: false,
       ignore_errors: false,
       try_parse_dates: nil,
-      parse_dates: false, # TODO remove
       n_threads: nil,
       infer_schema_length: N_INFER_DEFAULT,
       batch_size: 50_000,
@@ -477,9 +471,6 @@ module Polars
       truncate_ragged_lines: false,
       decimal_comma: false
     )
-      # TODO remove
-      parse_dates = try_parse_dates if !try_parse_dates.nil?
-
       projection, columns = Utils.handle_projection_columns(columns)
 
       if columns && !has_header
@@ -503,7 +494,7 @@ module Polars
         null_values: null_values,
         missing_utf8_is_empty_string: missing_utf8_is_empty_string,
         ignore_errors: ignore_errors,
-        try_parse_dates: parse_dates,
+        try_parse_dates: try_parse_dates,
         n_threads: n_threads,
         infer_schema_length: infer_schema_length,
         batch_size: batch_size,
@@ -635,17 +626,13 @@ module Polars
       skip_rows_after_header: 0,
       row_index_name: nil,
       row_index_offset: 0,
-      try_parse_dates: nil,
-      parse_dates: false, # TODO remove
+      try_parse_dates: false,
       eol_char: "\n",
       raise_if_empty: true,
       truncate_ragged_lines: false,
       decimal_comma: false,
       glob: true
     )
-      # TODO remove
-      parse_dates = try_parse_dates if !try_parse_dates.nil?
-
       Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, true)
 
@@ -675,7 +662,7 @@ module Polars
         encoding: encoding,
         row_index_name: row_index_name,
         row_index_offset: row_index_offset,
-        try_parse_dates: parse_dates,
+        try_parse_dates: try_parse_dates,
         eol_char: eol_char,
         truncate_ragged_lines: truncate_ragged_lines
       )

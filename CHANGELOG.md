@@ -14,6 +14,7 @@
 - Changed `row_count_offset` option to `row_index_offset`
 - Changed `comment_char` option to `comment_prefix` for `read_csv`, `read_csv_batched`, and `scan_csv` methods
 - Changed `dtypes` option to `schema_overrides` for `read_csv`, `read_csv_batched`, and `scan_csv` methods
+- Changed `parse_dates` option to `try_parse_dates` for `read_csv`, `read_csv_batched`, and `scan_csv` methods
 - Changed `min_periods` option to `min_samples`
 - Changed `by` option to `group_by` for `group_by_dynamic`, `rolling`, and `upsample` methods
 - Changed `frac` option to `fraction` for `sample` methods
