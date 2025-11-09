@@ -11,6 +11,7 @@
 - Changed `min_periods` option to `min_samples`
 - Changed `frac` option to `fraction`
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods
+- Removed `in_place` option from `rename` method
 
 ## 0.23.0 (2025-11-04)
 

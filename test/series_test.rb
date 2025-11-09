@@ -502,8 +502,6 @@ class SeriesTest < Minitest::Test
     s = Polars::Series.new("a", [1, 2, 3])
     assert_equal "b", s.rename("b").name
     assert_equal "a", s.name
-    s.rename("c", in_place: true)
-    assert_equal "c", s.name
   end
 
   def test_chunk_lengths

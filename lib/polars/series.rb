@@ -63,7 +63,7 @@ module Polars
             eager: true,
             dtype: dtype
           )
-          .rename(name, in_place: true)
+          .rename(name)
           ._s
       elsif values.is_a?(::Array)
         self._s = sequence_to_rbseries(name, values, dtype: dtype, strict: strict, dtype_if_empty: dtype_if_empty)
@@ -1549,21 +1549,14 @@ module Polars
     #
     # @param name [String]
     #   New name.
-    # @param in_place [Boolean]
-    #   Modify the Series in-place.
     #
     # @return [Series]
     #
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3])
     #   s.rename("b")
-    def rename(name, in_place: false)
-      if in_place
-        _s.rename(name)
-        self
-      else
-        self.alias(name)
-      end
+    def rename(name)
+      self.alias(name)
     end
 
     # Get the length of each individual chunk.
@@ -6488,9 +6481,7 @@ module Polars
     }
 
     def series_to_rbseries(name, values)
-      # should not be in-place?
-      values.rename(name, in_place: true)
-      values._s
+      values.rename(name)._s
     end
 
     def numo_to_rbseries(name, values, strict: true, nan_to_null: false)
