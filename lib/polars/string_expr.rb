@@ -154,9 +154,6 @@ module Polars
     #   - If false, allow the format to match anywhere in the target string.
     # @param cache [Boolean]
     #   Use a cache of unique, converted dates to apply the datetime conversion.
-    # @param utc [Boolean]
-    #   Parse timezone aware datetimes as UTC. This may be useful if you have data
-    #   with mixed offsets.
     #
     # @return [Expr]
     #
@@ -203,7 +200,7 @@ module Polars
     #   #         2022-01-31
     #   #         2001-07-08
     #   # ]
-    def strptime(dtype, format = nil, strict: true, exact: true, cache: true, utc: false)
+    def strptime(dtype, format = nil, strict: true, exact: true, cache: true)
       _validate_format_argument(format)
 
       if dtype == Date

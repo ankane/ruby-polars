@@ -14,6 +14,7 @@
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods
 - Removed `in_place` option from `rename` method
 - Removed `append_chunks` option from `append` method
+- Removed `utc` option from `strptime` method
 
 ## 0.23.0 (2025-11-04)
 
