@@ -1443,6 +1443,10 @@ module Polars
     #   names, other non-expression inputs are parsed as literals.
     # @param more_exprs [Hash]
     #   Additional columns to coalesce, specified as positional arguments.
+    # @param eager [Boolean]
+    #   Evaluate immediately and return a `Series`; this requires that at least one
+    #   of the given arguments is a `Series`. If set to `false` (default), return
+    #   an expression instead.
     #
     # @return [Expr]
     #
@@ -1482,9 +1486,34 @@ module Polars
     #   # │ null ┆ null ┆ 3    ┆ 3.0  │
     #   # │ null ┆ null ┆ null ┆ 10.0 │
     #   # └──────┴──────┴──────┴──────┘
-    def coalesce(exprs, *more_exprs)
-      exprs = Utils.parse_into_list_of_expressions(exprs, *more_exprs)
-      Utils.wrap_expr(Plr.coalesce(exprs))
+    #
+    # @example
+    #   s1 = Polars::Series.new("a", [nil, 2, nil])
+    #   s2 = Polars::Series.new("b", [1, nil, 3])
+    #   Polars.coalesce(s1, s2, eager: true)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ]
+    def coalesce(exprs, *more_exprs, eager: false)
+      if eager
+        exprs = [exprs] + more_exprs
+        series = exprs.filter_map { |e| e if e.is_a?(Series) }
+        if !series.any?
+          msg = "expected at least one Series in 'coalesce' if 'eager: true'"
+          raise ArgumentError, msg
+        end
+
+        exprs = exprs.map { |e| e.is_a?(Series) ? e.name : e }
+        Polars::DataFrame.new(series).select(coalesce(exprs, eager: false)).to_series
+      else
+        exprs = Utils.parse_into_list_of_expressions(exprs, *more_exprs)
+        Utils.wrap_expr(Plr.coalesce(exprs))
+      end
     end
 
     # Utility function that parses an epoch timestamp (or Unix time) to Polars Date(time).
