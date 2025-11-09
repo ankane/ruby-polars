@@ -1419,28 +1419,33 @@ module Polars
     #
     # @param predicates [Array]
     #   Expression(s) that evaluate to a boolean Series.
+    # @param constraints [Hash]
+    #   Column filters; use `name = value` to filter columns using the supplied
+    #   value. Each constraint behaves the same as `Polars.col(name).eq(value)`,
+    #   and is implicitly joined with the other filter conditions using `&`.
     #
     # @return [LazyFrame]
     #
     # @example Filter on one condition:
-    #   lf = Polars::DataFrame.new(
+    #   lf = Polars::LazyFrame.new(
     #     {
-    #       "foo" => [1, 2, 3],
-    #       "bar" => [6, 7, 8],
-    #       "ham" => ["a", "b", "c"]
+    #       "foo" => [1, 2, 3, nil, 4, nil, 0],
+    #       "bar" => [6, 7, 8, nil, nil, 9, 0],
+    #       "ham" => ["a", "b", "c", nil, "d", "e", "f"]
     #     }
-    #   ).lazy
-    #   lf.filter(Polars.col("foo") < 3).collect
+    #   )
+    #   lf.filter(Polars.col("foo") > 1).collect
     #   # =>
-    #   # shape: (2, 3)
-    #   # ┌─────┬─────┬─────┐
-    #   # │ foo ┆ bar ┆ ham │
-    #   # │ --- ┆ --- ┆ --- │
-    #   # │ i64 ┆ i64 ┆ str │
-    #   # ╞═════╪═════╪═════╡
-    #   # │ 1   ┆ 6   ┆ a   │
-    #   # │ 2   ┆ 7   ┆ b   │
-    #   # └─────┴─────┴─────┘
+    #   # shape: (3, 3)
+    #   # ┌─────┬──────┬─────┐
+    #   # │ foo ┆ bar  ┆ ham │
+    #   # │ --- ┆ ---  ┆ --- │
+    #   # │ i64 ┆ i64  ┆ str │
+    #   # ╞═════╪══════╪═════╡
+    #   # │ 2   ┆ 7    ┆ b   │
+    #   # │ 3   ┆ 8    ┆ c   │
+    #   # │ 4   ┆ null ┆ d   │
+    #   # └─────┴──────┴─────┘
     #
     # @example Filter on multiple conditions:
     #   lf.filter((Polars.col("foo") < 3) & (Polars.col("ham") == "a")).collect
@@ -1468,30 +1473,79 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ 1   ┆ 6   ┆ a   │
     #   # └─────┴─────┴─────┘
-    def filter(*predicates)
-      all_predicates = []
-
-      predicates.each do |p|
-        all_predicates.concat(Utils.parse_into_list_of_expressions(p).map { |x| Utils.wrap_expr(x) })
-      end
-
-      # if multiple predicates, combine as 'horizontal' expression
-      combined_predicate =
-        if all_predicates.any?
-          if all_predicates.length > 1
-            F.all_horizontal(*all_predicates)
-          else
-            all_predicates[0]
-          end
-        else
-          nil
+    #
+    # @example Provide multiple filters using `**kwargs` syntax:
+    #   lf.filter(foo: 1, ham: "a").collect
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6   ┆ a   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example Filter on an OR condition:
+    #   lf.filter(
+    #     (Polars.col("foo") == 1) | (Polars.col("ham") == "c")
+    #   ).collect
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6   ┆ a   │
+    #   # │ 3   ┆ 8   ┆ c   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example Filter by comparing two columns against each other
+    #   lf.filter(
+    #     Polars.col("foo") == Polars.col("bar")
+    #   ).collect
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 0   ┆ 0   ┆ f   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example
+    #   lf.filter(
+    #     Polars.col("foo") != Polars.col("bar")
+    #   ).collect
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6   ┆ a   │
+    #   # │ 2   ┆ 7   ┆ b   │
+    #   # │ 3   ┆ 8   ┆ c   │
+    #   # └─────┴─────┴─────┘
+    def filter(*predicates, **constraints)
+      if constraints.empty?
+        # early-exit conditions (exclude/include all rows)
+        if predicates.empty? || (predicates.length == 1 && predicates[0].is_a?(TrueClass))
+          return dup
         end
-
-      if combined_predicate.nil?
-        return _from_rbldf(_ldf)
+        if predicates.length == 1 && predicates[0].is_a?(FalseClass)
+          return clear
+        end
       end
 
-      _from_rbldf(_ldf.filter(combined_predicate._rbexpr))
+      _filter(
+        predicates: predicates,
+        constraints: constraints,
+        invert: false
+      )
     end
 
     # Remove rows, dropping those that match the given predicate expression(s).
@@ -4612,11 +4666,29 @@ module Polars
       end
 
       # if multiple predicates, combine as 'horizontal' expression
-      combined_predicate = all_predicates ? (all_predicates.length > 1 ? F.all_horizontal(*all_predicates) : all_predicates[0]) : nil
+      combined_predicate =
+        if all_predicates.any?
+          if all_predicates.length > 1
+            F.all_horizontal(*all_predicates)
+          else
+            all_predicates[0]
+          end
+        else
+          nil
+        end
 
       # apply reduced boolean mask first, if applicable, then predicates
       if boolean_masks.any?
-        raise Todo
+        if boolean_masks.length > 1
+          raise Todo
+        end
+        mask_expr = F.lit(boolean_masks[0])
+        combined_predicate =
+          if combined_predicate.nil?
+            mask_expr
+          else
+            mask_expr & combined_predicate
+          end
       end
 
       if combined_predicate.nil?

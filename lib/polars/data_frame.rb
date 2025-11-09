@@ -1525,6 +1525,10 @@ module Polars
     #
     # @param predicates [Array]
     #   Expression(s) that evaluate to a boolean Series.
+    # @param constraints [Hash]
+    #   Column filters; use `name = value` to filter columns by the supplied value.
+    #   Each constraint will behave the same as `Polars.col(name).eq(value)`, and
+    #   be implicitly joined with the other filter conditions using `&`.
     #
     # @return [DataFrame]
     #
@@ -1559,8 +1563,8 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ 1   ┆ 6   ┆ a   │
     #   # └─────┴─────┴─────┘
-    def filter(*predicates)
-      lazy.filter(*predicates).collect
+    def filter(*predicates, **constraints)
+      lazy.filter(*predicates, **constraints).collect(_eager: true)
     end
 
     # Remove rows, dropping those that match the given predicate expression(s).
