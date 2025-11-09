@@ -2651,7 +2651,7 @@ module Polars
     #
     # @param other [Series]
     #   Series to compare with.
-    # @param strict [Boolean]
+    # @param check_dtypes [Boolean]
     #   Require data types to match.
     # @param check_names [Boolean]
     #   Require names to match.
@@ -2667,8 +2667,8 @@ module Polars
     #   # => true
     #   s.equals(s2)
     #   # => false
-    def equals(other, strict: false, check_names: false, null_equal: false)
-      _s.equals(other._s, strict, check_names, null_equal)
+    def equals(other, check_dtypes: false, check_names: false, null_equal: false)
+      _s.equals(other._s, check_dtypes, check_names, null_equal)
     end
     alias_method :series_equal, :equals
 
