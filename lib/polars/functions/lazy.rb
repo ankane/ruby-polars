@@ -1420,15 +1420,15 @@ module Polars
     # Utility function that parses an epoch timestamp (or Unix time) to Polars Date(time).
     #
     # Depending on the `unit` provided, this function will return a different dtype:
-    # - unit: "d" returns pl.Date
-    # - unit: "s" returns pl.Datetime["us"] (pl.Datetime's default)
-    # - unit: "ms" returns pl.Datetime["ms"]
-    # - unit: "us" returns pl.Datetime["us"]
-    # - unit: "ns" returns pl.Datetime["ns"]
+    # - time_unit: "d" returns pl.Date
+    # - time_unit: "s" returns pl.Datetime["us"] (pl.Datetime's default)
+    # - time_unit: "ms" returns pl.Datetime["ms"]
+    # - time_unit: "us" returns pl.Datetime["us"]
+    # - time_unit: "ns" returns pl.Datetime["ns"]
     #
     # @param column [Object]
     #     Series or expression to parse integers to pl.Datetime.
-    # @param unit [String]
+    # @param time_unit [String]
     #     The unit of the timesteps since epoch time.
     # @param eager [Boolean]
     #     If eager evaluation is `true`, a Series is returned instead of an Expr.
@@ -1437,7 +1437,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"timestamp" => [1666683077, 1666683099]}).lazy
-    #   df.select(Polars.from_epoch(Polars.col("timestamp"), unit: "s")).collect
+    #   df.select(Polars.from_epoch(Polars.col("timestamp"), time_unit: "s")).collect
     #   # =>
     #   # shape: (2, 1)
     #   # ┌─────────────────────┐
@@ -1448,21 +1448,21 @@ module Polars
     #   # │ 2022-10-25 07:31:17 │
     #   # │ 2022-10-25 07:31:39 │
     #   # └─────────────────────┘
-    def from_epoch(column, unit: "s", eager: false)
+    def from_epoch(column, time_unit: "s", eager: false)
       if Utils.strlike?(column)
         column = col(column)
       elsif !column.is_a?(Series) && !column.is_a?(Expr)
         column = Series.new(column)
       end
 
-      if unit == "d"
+      if time_unit == "d"
         expr = column.cast(Date)
-      elsif unit == "s"
+      elsif time_unit == "s"
         expr = (column.cast(Int64) * 1_000_000).cast(Datetime.new("us"))
-      elsif Utils::DTYPE_TEMPORAL_UNITS.include?(unit)
-        expr = column.cast(Datetime.new(unit))
+      elsif Utils::DTYPE_TEMPORAL_UNITS.include?(time_unit)
+        expr = column.cast(Datetime.new(time_unit))
       else
-        raise ArgumentError, "'unit' must be one of {{'ns', 'us', 'ms', 's', 'd'}}, got '#{unit}'."
+        raise ArgumentError, "'time_unit' must be one of {{'ns', 'us', 'ms', 's', 'd'}}, got '#{time_unit}'."
       end
 
       if eager
