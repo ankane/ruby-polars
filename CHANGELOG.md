@@ -12,6 +12,7 @@
 - Changed `frac` option to `fraction`
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods
 - Removed `in_place` option from `rename` method
+- Removed `append_chunks` option from `append` method
 
 ## 0.23.0 (2025-11-04)
 

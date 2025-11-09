@@ -1748,29 +1748,6 @@ module Polars
     #
     # @param other [Series]
     #   Series to append.
-    # @param append_chunks [Boolean]
-    #   If set to `true` the append operation will add the chunks from `other` to
-    #   self. This is super cheap.
-    #
-    #   If set to `false` the append operation will do the same as
-    #   {DataFrame#extend} which extends the memory backed by this Series with
-    #   the values from `other`.
-    #
-    #   Different from `append_chunks`, `extend` appends the data from `other` to
-    #   the underlying memory locations and thus may cause a reallocation (which is
-    #   expensive).
-    #
-    #   If this does not cause a reallocation, the resulting data structure will not
-    #   have any extra chunks and thus will yield faster queries.
-    #
-    #   Prefer `extend` over `append_chunks` when you want to do a query after a
-    #   single append. For instance during online operations where you add `n` rows
-    #   and rerun a query.
-    #
-    #   Prefer `append_chunks` over `extend` when you want to append many times
-    #   before doing a query. For instance, when you read in multiple files and when
-    #   to store them in a single Series. In the latter case, finish the sequence
-    #   of `append_chunks` operations with a `rechunk`.
     #
     # @return [Series]
     #
@@ -1789,16 +1766,12 @@ module Polars
     #   #         5
     #   #         6
     #   # ]
-    def append(other, append_chunks: true)
+    def append(other)
       begin
-        if append_chunks
-          _s.append(other._s)
-        else
-          _s.extend(other._s)
-        end
+        _s.append(other._s)
       rescue => e
         if e.message == "Already mutably borrowed"
-          append(other.clone, append_chunks)
+          append(other.clone)
         else
           raise e
         end
