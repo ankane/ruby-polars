@@ -233,8 +233,8 @@ module Polars
     #   # ╞══════╪═══════╡
     #   # │ true ┆ false │
     #   # └──────┴───────┘
-    def any(drop_nulls: true)
-      wrap_expr(_rbexpr.any(drop_nulls))
+    def any(ignore_nulls: true)
+      wrap_expr(_rbexpr.any(ignore_nulls))
     end
 
     # Check if all boolean values in a Boolean column are `true`.
@@ -258,8 +258,8 @@ module Polars
     #   # ╞══════╪═══════╪═══════╡
     #   # │ true ┆ false ┆ false │
     #   # └──────┴───────┴───────┘
-    def all(drop_nulls: true)
-      wrap_expr(_rbexpr.all(drop_nulls))
+    def all(ignore_nulls: true)
+      wrap_expr(_rbexpr.all(ignore_nulls))
     end
 
     # Return indices where expression evaluates `true`.

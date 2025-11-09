@@ -10,6 +10,7 @@
 - Added more options to `over` method
 - Changed `min_periods` option to `min_samples`
 - Changed `frac` option to `fraction`
+- Changed `drop_nulls` option to `ignore_nulls` for `all` and `any` methods
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods
 - Removed `in_place` option from `rename` method
 - Removed `append_chunks` option from `append` method
