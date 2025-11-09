@@ -3400,8 +3400,12 @@ module Polars
     # Mostly useful in an aggregation context. If you want to filter on a DataFrame
     # level, use `LazyFrame#filter`.
     #
-    # @param predicate [Expr]
-    #   Boolean expression.
+    # @param predicates [Array]
+    #   Expression(s) that evaluates to a boolean Series.
+    # @param constraints [Hash]
+    #   Column filters; use `name = value` to filter columns by the supplied value.
+    #   Each constraint will behave the same as `Polars.col(name).eq(value)`, and
+    #   be implicitly joined with the other filter conditions using `&`.
     #
     # @return [Expr]
     #
@@ -3430,8 +3434,11 @@ module Polars
     #   # │ g1        ┆ 1   ┆ 2   │
     #   # │ g2        ┆ 0   ┆ 3   │
     #   # └───────────┴─────┴─────┘
-    def filter(predicate)
-      wrap_expr(_rbexpr.filter(predicate._rbexpr))
+    def filter(*predicates, **constraints)
+      predicate = Utils.parse_predicates_constraints_into_expression(
+        *predicates, **constraints
+      )
+      wrap_expr(_rbexpr.filter(predicate))
     end
 
     # Filter a single column.
