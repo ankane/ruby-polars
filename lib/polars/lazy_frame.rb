@@ -2002,8 +2002,6 @@ module Polars
     # @param offset [Object]
     #   Offset of the window if nil and period is nil it will be equal to negative
     #   `every`.
-    # @param truncate [Boolean]
-    #   Truncate the time value to the window lower bound.
     # @param include_boundaries [Boolean]
     #   Add the lower and upper bound of the window to the "_lower_bound" and
     #   "_upper_bound" columns. This will impact performance because it's harder to
@@ -2210,17 +2208,12 @@ module Polars
       every:,
       period: nil,
       offset: nil,
-      truncate: nil,
       include_boundaries: false,
       closed: "left",
       label: "left",
       by: nil,
       start_by: "window"
     )
-      if !truncate.nil?
-        label = truncate ? "left" : "datapoint"
-      end
-
       index_column = Utils.parse_into_expression(index_column, str_as_lit: false)
       if offset.nil?
         offset = period.nil? ? "-#{every}" : "0ns"

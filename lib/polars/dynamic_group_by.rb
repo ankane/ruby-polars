@@ -10,7 +10,6 @@ module Polars
       every,
       period,
       offset,
-      truncate,
       include_boundaries,
       closed,
       by,
@@ -25,7 +24,6 @@ module Polars
       @every = every
       @period = period
       @offset = offset
-      @truncate = truncate
       @include_boundaries = include_boundaries
       @closed = closed
       @by = by
@@ -39,7 +37,6 @@ module Polars
           every: @every,
           period: @period,
           offset: @offset,
-          truncate: @truncate,
           include_boundaries: @include_boundaries,
           closed: @closed,
           by: @by,

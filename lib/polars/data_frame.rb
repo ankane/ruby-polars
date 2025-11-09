@@ -2645,8 +2645,6 @@ module Polars
     # @param offset
     #   Offset of the window if nil and period is nil it will be equal to negative
     #   `every`.
-    # @param truncate
-    #   Truncate the time value to the window lower bound.
     # @param include_boundaries
     #   Add the lower and upper bound of the window to the "_lower_bound" and
     #   "_upper_bound" columns. This will impact performance because it's harder to
@@ -2845,7 +2843,6 @@ module Polars
       every:,
       period: nil,
       offset: nil,
-      truncate: true,
       include_boundaries: false,
       closed: "left",
       by: nil,
@@ -2857,7 +2854,6 @@ module Polars
         every,
         period,
         offset,
-        truncate,
         include_boundaries,
         closed,
         by,
