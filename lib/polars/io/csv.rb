@@ -118,7 +118,6 @@ module Polars
       skip_lines: 0,
       schema: nil,
       schema_overrides: nil,
-      dtypes: nil, # TODO remove
       null_values: nil,
       missing_utf8_is_empty_string: false,
       ignore_errors: false,
@@ -142,7 +141,6 @@ module Polars
       glob: true
     )
       # TODO remove
-      dtypes = schema_overrides if !schema_overrides.nil?
       parse_dates = try_parse_dates if !try_parse_dates.nil?
 
       # TODO update names
@@ -173,7 +171,7 @@ module Polars
           quote_char: quote_char,
           skip_rows: skip_rows,
           skip_lines: skip_lines,
-          schema_overrides: dtypes,
+          schema_overrides: schema_overrides,
           schema: schema,
           null_values: null_values,
           missing_utf8_is_empty_string: missing_utf8_is_empty_string,
@@ -459,7 +457,6 @@ module Polars
       skip_rows: 0,
       skip_lines: 0,
       schema_overrides: nil,
-      dtypes: nil, # TODO remove
       null_values: nil,
       missing_utf8_is_empty_string: false,
       ignore_errors: false,
@@ -481,7 +478,6 @@ module Polars
       decimal_comma: false
     )
       # TODO remove
-      dtypes = schema_overrides if !schema_overrides.nil?
       parse_dates = try_parse_dates if !try_parse_dates.nil?
 
       projection, columns = Utils.handle_projection_columns(columns)
@@ -503,7 +499,7 @@ module Polars
         quote_char: quote_char,
         skip_rows: skip_rows,
         skip_lines: skip_lines,
-        schema_overrides: dtypes,
+        schema_overrides: schema_overrides,
         null_values: null_values,
         missing_utf8_is_empty_string: missing_utf8_is_empty_string,
         ignore_errors: ignore_errors,
@@ -626,7 +622,6 @@ module Polars
       skip_lines: 0,
       schema: nil,
       schema_overrides: nil,
-      dtypes: nil, # TODO remove
       null_values: nil,
       missing_utf8_is_empty_string: false,
       ignore_errors: false,
@@ -649,7 +644,6 @@ module Polars
       glob: true
     )
       # TODO remove
-      dtypes = schema_overrides if !schema_overrides.nil?
       parse_dates = try_parse_dates if !try_parse_dates.nil?
 
       Utils._check_arg_is_1byte("separator", separator, false)
@@ -667,7 +661,7 @@ module Polars
         quote_char: quote_char,
         skip_rows: skip_rows,
         skip_lines: skip_lines,
-        schema_overrides: dtypes,
+        schema_overrides: schema_overrides,
         schema: schema,
         null_values: null_values,
         ignore_errors: ignore_errors,
