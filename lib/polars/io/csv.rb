@@ -111,8 +111,7 @@ module Polars
       has_header: true,
       columns: nil,
       new_columns: nil,
-      separator: nil,
-      sep: ",", # TODO remove
+      separator: ",",
       comment_prefix: nil,
       comment_char: nil, # TODO remove
       quote_char: '"',
@@ -144,13 +143,12 @@ module Polars
       glob: true
     )
       # TODO remove
-      sep = separator if !separator.nil?
       comment_char = comment_prefix if !comment_prefix.nil?
       dtypes = schema_overrides if !schema_overrides.nil?
       parse_dates = try_parse_dates if !try_parse_dates.nil?
 
       # TODO update names
-      Utils._check_arg_is_1byte("sep", sep, false)
+      Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, true)
       Utils._check_arg_is_1byte("eol_char", eol_char, false)
 
@@ -172,7 +170,7 @@ module Polars
           data,
           has_header: has_header,
           columns: columns || projection,
-          separator: sep,
+          separator: separator,
           comment_prefix: comment_char,
           quote_char: quote_char,
           skip_rows: skip_rows,
@@ -449,7 +447,7 @@ module Polars
     #
     # @example
     #   reader = Polars.read_csv_batched(
-    #     "./tpch/tables_scale_100/lineitem.tbl", sep: "|", parse_dates: true
+    #     "./tpch/tables_scale_100/lineitem.tbl", separator: "|", parse_dates: true
     #   )
     #   reader.next_batches(5)
     def read_csv_batched(
@@ -457,8 +455,7 @@ module Polars
       has_header: true,
       columns: nil,
       new_columns: nil,
-      separator: nil,
-      sep: ",", # TODO remove
+      separator: ",",
       comment_prefix: nil,
       comment_char: nil, # TODO remove
       quote_char: '"',
@@ -487,7 +484,6 @@ module Polars
       decimal_comma: false
     )
       # TODO remove
-      sep = separator if !separator.nil?
       comment_char = comment_prefix if !comment_prefix.nil?
       dtypes = schema_overrides if !schema_overrides.nil?
       parse_dates = try_parse_dates if !try_parse_dates.nil?
@@ -506,7 +502,7 @@ module Polars
         source,
         has_header: has_header,
         columns: columns || projection,
-        separator: sep,
+        separator: separator,
         comment_prefix: comment_char,
         quote_char: quote_char,
         skip_rows: skip_rows,
@@ -627,8 +623,7 @@ module Polars
     def scan_csv(
       source,
       has_header: true,
-      separator: nil,
-      sep: ",", # TODO remove
+      separator: ",",
       comment_prefix: nil,
       comment_char: nil, # TODO remove
       quote_char: '"',
@@ -659,13 +654,11 @@ module Polars
       glob: true
     )
       # TODO remove
-      sep = separator if !separator.nil?
       comment_char = comment_prefix if !comment_prefix.nil?
       dtypes = schema_overrides if !schema_overrides.nil?
       parse_dates = try_parse_dates if !try_parse_dates.nil?
 
-      # TODO update names
-      Utils._check_arg_is_1byte("sep", sep, false)
+      Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, true)
 
       if Utils.pathlike?(source)
@@ -675,7 +668,7 @@ module Polars
       _scan_csv_impl(
         source,
         has_header: has_header,
-        separator: sep,
+        separator: separator,
         comment_prefix: comment_char,
         quote_char: quote_char,
         skip_rows: skip_rows,

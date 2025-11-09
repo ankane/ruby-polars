@@ -244,7 +244,7 @@ module Polars
     #
     # @param exprs [Object]
     #   Columns to concat into a Utf8 Series.
-    # @param sep [String]
+    # @param separator [String]
     #   String value that will be used to separate the values.
     # @param ignore_nulls [Boolean]
     #   Ignore null values (default).
@@ -267,7 +267,7 @@ module Polars
     #           Polars.col("b"),
     #           Polars.col("c")
     #         ],
-    #         sep: " "
+    #         separator: " "
     #       ).alias("full_sentence")
     #     ]
     #   )
@@ -282,9 +282,9 @@ module Polars
     #   # │ 2   ┆ cats ┆ swim ┆ 4 cats swim   │
     #   # │ 3   ┆ null ┆ walk ┆ null          │
     #   # └─────┴──────┴──────┴───────────────┘
-    def concat_str(exprs, sep: "", ignore_nulls: false)
+    def concat_str(exprs, separator: "", ignore_nulls: false)
       exprs = Utils.parse_into_list_of_expressions(exprs)
-      Utils.wrap_expr(Plr.concat_str(exprs, sep, ignore_nulls))
+      Utils.wrap_expr(Plr.concat_str(exprs, separator, ignore_nulls))
     end
 
     # Format expressions as a string.
@@ -337,7 +337,7 @@ module Polars
         end
       end
 
-      concat_str(exprs, sep: "")
+      concat_str(exprs, separator: "")
     end
   end
 end

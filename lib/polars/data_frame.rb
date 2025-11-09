@@ -787,7 +787,7 @@ module Polars
     #   (default), the output is returned as a string instead.
     # @param include_header [Boolean]
     #   Whether to include header in the CSV output.
-    # @param sep [String]
+    # @param separator [String]
     #   Separate CSV fields with this symbol.
     # @param quote [String]
     #   Byte to use as quoting character.
@@ -827,7 +827,7 @@ module Polars
     def write_csv(
       file = nil,
       include_header: true,
-      sep: ",",
+      separator: ",",
       quote: '"',
       batch_size: 1024,
       datetime_format: nil,
@@ -836,11 +836,9 @@ module Polars
       float_precision: nil,
       null_value: nil
     )
-      if sep.length > 1
-        raise ArgumentError, "only single byte separator is allowed"
-      elsif quote.length > 1
-        raise ArgumentError, "only single byte quote char is allowed"
-      elsif null_value == ""
+      Utils._check_arg_is_1byte("separator", separator, false)
+      Utils._check_arg_is_1byte("quote_char", quote, true)
+      if null_value == ""
         null_value = nil
       end
 
@@ -850,7 +848,7 @@ module Polars
         _df.write_csv(
           buffer,
           include_header,
-          sep.ord,
+          separator.ord,
           quote.ord,
           batch_size,
           datetime_format,
@@ -869,7 +867,7 @@ module Polars
       _df.write_csv(
         file,
         include_header,
-        sep.ord,
+        separator.ord,
         quote.ord,
         batch_size,
         datetime_format,

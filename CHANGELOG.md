@@ -9,6 +9,7 @@
 - Added more options to `read_csv` and `scan_csv` methods
 - Added more options to `over` method
 - Changed `reverse` option to `descending`
+- Changed `sep` option to `separator`
 - Changed `row_count_name` option to `row_index_name`
 - Changed `row_count_offset` option to `row_index_offset`
 - Changed `min_periods` option to `min_samples`
