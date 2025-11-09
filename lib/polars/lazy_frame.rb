@@ -1417,8 +1417,8 @@ module Polars
 
     # Filter the rows in the DataFrame based on a predicate expression.
     #
-    # @param predicate [Object]
-    #   Expression that evaluates to a boolean Series.
+    # @param predicates [Array]
+    #   Expression(s) that evaluate to a boolean Series.
     #
     # @return [LazyFrame]
     #
@@ -1453,12 +1453,45 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ 1   ┆ 6   ┆ a   │
     #   # └─────┴─────┴─────┘
-    def filter(predicate)
-      _from_rbldf(
-        _ldf.filter(
-          Utils.parse_into_expression(predicate, str_as_lit: false)
-        )
-      )
+    #
+    # @example Provide multiple filters using `*args` syntax:
+    #   lf.filter(
+    #     Polars.col("foo") == 1,
+    #     Polars.col("ham") == "a"
+    #   ).collect
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ foo ┆ bar ┆ ham │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ str │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 6   ┆ a   │
+    #   # └─────┴─────┴─────┘
+    def filter(*predicates)
+      all_predicates = []
+
+      predicates.each do |p|
+        all_predicates.concat(Utils.parse_into_list_of_expressions(p).map { |x| Utils.wrap_expr(x) })
+      end
+
+      # if multiple predicates, combine as 'horizontal' expression
+      combined_predicate =
+        if all_predicates.any?
+          if all_predicates.length > 1
+            F.all_horizontal(*all_predicates)
+          else
+            all_predicates[0]
+          end
+        else
+          nil
+        end
+
+      if combined_predicate.nil?
+        return _from_rbldf(_ldf)
+      end
+
+      _from_rbldf(_ldf.filter(combined_predicate._rbexpr))
     end
 
     # Remove rows, dropping those that match the given predicate expression(s).

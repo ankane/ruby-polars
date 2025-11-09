@@ -1523,8 +1523,8 @@ module Polars
 
     # Filter the rows in the DataFrame based on a predicate expression.
     #
-    # @param predicate [Expr]
-    #   Expression that evaluates to a boolean Series.
+    # @param predicates [Array]
+    #   Expression(s) that evaluate to a boolean Series.
     #
     # @return [DataFrame]
     #
@@ -1559,8 +1559,8 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ 1   ┆ 6   ┆ a   │
     #   # └─────┴─────┴─────┘
-    def filter(predicate)
-      lazy.filter(predicate).collect
+    def filter(*predicates)
+      lazy.filter(*predicates).collect
     end
 
     # Remove rows, dropping those that match the given predicate expression(s).
