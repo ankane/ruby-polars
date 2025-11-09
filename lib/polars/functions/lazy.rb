@@ -1306,6 +1306,9 @@ module Polars
     #   Column(s) to select, specified as positional arguments.
     #   Accepts expression input. Strings are parsed as column names,
     #   other non-expression inputs are parsed as literals.
+    # @param eager [Boolean]
+    #   Evaluate immediately and return a `DataFrame` (default); if set to `false`,
+    #   return a `LazyFrame` instead.
     # @param named_exprs [Hash]
     #   Additional columns to select, specified as keyword arguments.
     #   The columns will be renamed to the keyword used.
@@ -1327,8 +1330,9 @@ module Polars
     #   # │ 2   │
     #   # │ 1   │
     #   # └─────┘
-    def select(*exprs, **named_exprs)
-      DataFrame.new([]).select(*exprs, **named_exprs)
+    def select(*exprs, eager: true, **named_exprs)
+      empty_frame = eager ? Polars::DataFrame.new : Polars::LazyFrame.new
+      empty_frame.select(*exprs, **named_exprs)
     end
 
     # Return indices where `condition` evaluates `true`.
