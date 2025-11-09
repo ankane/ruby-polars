@@ -4343,7 +4343,7 @@ module Polars
 
     # Split into multiple DataFrames partitioned by groups.
     #
-    # @param groups [Object]
+    # @param by [Object]
     #   Groups to partition by.
     # @param maintain_order [Boolean]
     #   Keep predictable output order. This is slower as it requires an extra sort
@@ -4418,29 +4418,29 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ C   ┆ 2   ┆ l   │
     #   # └─────┴─────┴─────┘}
-    def partition_by(groups, maintain_order: true, include_key: true, as_dict: false)
-      if groups.is_a?(::String)
-        groups = [groups]
-      elsif !groups.is_a?(::Array)
-        groups = Array(groups)
+    def partition_by(by, maintain_order: true, include_key: true, as_dict: false)
+      if by.is_a?(::String)
+        by = [by]
+      elsif !by.is_a?(::Array)
+        by = Array(by)
       end
 
       if as_dict
         out = {}
-        if groups.length == 1
-          _df.partition_by(groups, maintain_order, include_key).each do |df|
+        if by.length == 1
+          _df.partition_by(by, maintain_order, include_key).each do |df|
             df = _from_rbdf(df)
-            out[df[groups][0, 0]] = df
+            out[df[by][0, 0]] = df
           end
         else
-          _df.partition_by(groups, maintain_order, include_key).each do |df|
+          _df.partition_by(by, maintain_order, include_key).each do |df|
             df = _from_rbdf(df)
-            out[df[groups].row(0)] = df
+            out[df[by].row(0)] = df
           end
         end
         out
       else
-        _df.partition_by(groups, maintain_order, include_key).map { |df| _from_rbdf(df) }
+        _df.partition_by(by, maintain_order, include_key).map { |df| _from_rbdf(df) }
       end
     end
 
