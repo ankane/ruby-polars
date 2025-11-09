@@ -2496,6 +2496,9 @@ module Polars
     #   Make sure that the order of the groups remain consistent. This is more
     #   expensive than a default group by. Note that this only works in expression
     #   aggregations.
+    # @param named_by [Hash]
+    #   Additional columns to group by, specified as keyword arguments.
+    #   The columns will be renamed to the keyword used.
     #
     # @return [GroupBy]
     #
@@ -2519,13 +2522,17 @@ module Polars
     #   # │ b   ┆ 11  │
     #   # │ c   ┆ 6   │
     #   # └─────┴─────┘
-    def group_by(by, maintain_order: false)
-      if !Utils.bool?(maintain_order)
-        raise TypeError, "invalid input for group_by arg `maintain_order`: #{maintain_order}."
+    def group_by(by, maintain_order: false, **named_by)
+      named_by.each do |_, value|
+        if !(value.is_a?(::String) || value.is_a?(Expr) || value.is_a?(Series))
+          msg = "Expected Polars expression or object convertible to one, got #{value.class.name}."
+          raise TypeError, msg
+        end
       end
       GroupBy.new(
         self,
         by,
+        **named_by,
         maintain_order: maintain_order
       )
     end

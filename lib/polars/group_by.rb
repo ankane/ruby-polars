@@ -2,9 +2,10 @@ module Polars
   # Starts a new GroupBy operation.
   class GroupBy
     # @private
-    def initialize(df, by, maintain_order: false)
+    def initialize(df, by, maintain_order: false, **named_by)
       @df = df
       @by = by
+      @named_by = named_by
       @maintain_order = maintain_order
     end
 
@@ -39,7 +40,7 @@ module Polars
       groups_df =
         @df.lazy
           .with_row_index(name: temp_col)
-          .group_by(@by, maintain_order: @maintain_order)
+          .group_by(@by, **@named_by, maintain_order: @maintain_order)
           .agg(Polars.col(temp_col))
           .collect(no_optimization: true)
 
@@ -202,7 +203,7 @@ module Polars
     #   # └─────┴───────┴────────────────┘
     def agg(*aggs, **named_aggs)
       @df.lazy
-        .group_by(@by, maintain_order: @maintain_order)
+        .group_by(@by, **@named_by, maintain_order: @maintain_order)
         .agg(*aggs, **named_aggs)
         .collect(no_optimization: true)
     end
@@ -253,7 +254,7 @@ module Polars
     #   # └─────────┴─────┘
     def head(n = 5)
       @df.lazy
-        .group_by(@by, maintain_order: @maintain_order)
+        .group_by(@by, **@named_by, maintain_order: @maintain_order)
         .head(n)
         .collect(no_optimization: true)
     end
@@ -304,7 +305,7 @@ module Polars
     #   # └─────────┴─────┘
     def tail(n = 5)
       @df.lazy
-        .group_by(@by, maintain_order: @maintain_order)
+        .group_by(@by, **@named_by, maintain_order: @maintain_order)
         .tail(n)
         .collect(no_optimization: true)
     end
