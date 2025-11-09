@@ -789,7 +789,7 @@ module Polars
     #   Whether to include header in the CSV output.
     # @param separator [String]
     #   Separate CSV fields with this symbol.
-    # @param quote [String]
+    # @param quote_char [String]
     #   Byte to use as quoting character.
     # @param batch_size [Integer]
     #   Number of rows that will be processed per thread.
@@ -828,7 +828,7 @@ module Polars
       file = nil,
       include_header: true,
       separator: ",",
-      quote: '"',
+      quote_char: '"',
       batch_size: 1024,
       datetime_format: nil,
       date_format: nil,
@@ -837,7 +837,7 @@ module Polars
       null_value: nil
     )
       Utils._check_arg_is_1byte("separator", separator, false)
-      Utils._check_arg_is_1byte("quote_char", quote, true)
+      Utils._check_arg_is_1byte("quote_char", quote_char, true)
       if null_value == ""
         null_value = nil
       end
@@ -849,7 +849,7 @@ module Polars
           buffer,
           include_header,
           separator.ord,
-          quote.ord,
+          quote_char.ord,
           batch_size,
           datetime_format,
           date_format,
@@ -868,7 +868,7 @@ module Polars
         file,
         include_header,
         separator.ord,
-        quote.ord,
+        quote_char.ord,
         batch_size,
         datetime_format,
         date_format,

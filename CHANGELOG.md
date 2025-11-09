@@ -17,6 +17,7 @@
 - Changed `drop_nulls` option to `ignore_nulls` for `all` and `any` methods
 - Changed `join_nulls` option to `nulls_equal` for `join` method
 - Changed `strict` option to `check_dtypes` for `equals` method
+- Changed `quote` option to `quote_char` for `write_csv` method
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods
 - Removed `in_place` option from `rename` method
 - Removed `append_chunks` option from `append` method
