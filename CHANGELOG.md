@@ -8,6 +8,7 @@
 - Added `replace` method to `NameExpr`
 - Added more options to `read_csv` and `scan_csv` methods
 - Added more options to `over` method
+- Changed `reverse` option to `descending`
 - Changed `min_periods` option to `min_samples`
 - Changed `frac` option to `fraction` for `sample` methods
 - Changed `drop_nulls` option to `ignore_nulls` for `all` and `any` methods

@@ -1382,7 +1382,7 @@ module Polars
     #
     # If used in a group by context, the groups are sorted.
     #
-    # @param reverse [Boolean]
+    # @param descending [Boolean]
     #   false -> order from small to large.
     #   true -> order from large to small.
     # @param nulls_last [Boolean]
@@ -1449,8 +1449,8 @@ module Polars
     #   # │ two   ┆ [3, 4, 99] │
     #   # │ one   ┆ [1, 2, 98] │
     #   # └───────┴────────────┘
-    def sort(reverse: false, nulls_last: false)
-      wrap_expr(_rbexpr.sort_with(reverse, nulls_last))
+    def sort(descending: false, nulls_last: false)
+      wrap_expr(_rbexpr.sort_with(descending, nulls_last))
     end
 
     # Return the `k` largest elements.
@@ -1745,7 +1745,7 @@ module Polars
 
     # Get the index values that would sort this column.
     #
-    # @param reverse [Boolean]
+    # @param descending [Boolean]
     #   Sort in reverse (descending) order.
     # @param nulls_last [Boolean]
     #   Place null values last instead of first.
@@ -1770,8 +1770,8 @@ module Polars
     #   # │ 0   │
     #   # │ 2   │
     #   # └─────┘
-    def arg_sort(reverse: false, nulls_last: false)
-      wrap_expr(_rbexpr.arg_sort(reverse, nulls_last))
+    def arg_sort(descending: false, nulls_last: false)
+      wrap_expr(_rbexpr.arg_sort(descending, nulls_last))
     end
 
     # Get the index of the maximal value.
@@ -1902,7 +1902,7 @@ module Polars
     #   The column(s) used for sorting.
     # @param more_by [Array]
     #   Additional columns to sort by, specified as positional arguments.
-    # @param reverse [Boolean]
+    # @param descending [Boolean]
     #   false -> order from small to large.
     #   true -> order from large to small.
     # @param nulls_last [Boolean]
@@ -1944,13 +1944,13 @@ module Polars
     #   # │ one   │
     #   # │ two   │
     #   # └───────┘
-    def sort_by(by, *more_by, reverse: false, nulls_last: false, multithreaded: true, maintain_order: false)
+    def sort_by(by, *more_by, descending: false, nulls_last: false, multithreaded: true, maintain_order: false)
       by = Utils.parse_into_list_of_expressions(by, *more_by)
-      reverse = Utils.extend_bool(reverse, by.length, "reverse", "by")
+      descending = Utils.extend_bool(descending, by.length, "descending", "by")
       nulls_last = Utils.extend_bool(nulls_last, by.length, "nulls_last", "by")
       wrap_expr(
         _rbexpr.sort_by(
-          by, reverse, nulls_last, multithreaded, maintain_order
+          by, descending, nulls_last, multithreaded, maintain_order
         )
       )
     end
@@ -6724,7 +6724,7 @@ module Polars
     #   # │ 2   │
     #   # └─────┘
     def argsort(reverse: false, nulls_last: false)
-      arg_sort(reverse: reverse, nulls_last: nulls_last)
+      arg_sort(descending: reverse, nulls_last: nulls_last)
     end
 
     # Assign ranks to data, dealing with ties appropriately.
@@ -6747,7 +6747,7 @@ module Polars
     #     the order that the values occur in the Series.
     #   - 'random' : Like 'ordinal', but the rank for ties is not dependent
     #     on the order that the values occur in the Series.
-    # @param reverse [Boolean]
+    # @param descending [Boolean]
     #   Reverse the operation.
     # @param seed [Integer]
     #   If `method: "random"`, use this as seed.
@@ -6787,8 +6787,8 @@ module Polars
     #   # │ 2   │
     #   # │ 5   │
     #   # └─────┘
-    def rank(method: "average", reverse: false, seed: nil)
-      wrap_expr(_rbexpr.rank(method, reverse, seed))
+    def rank(method: "average", descending: false, seed: nil)
+      wrap_expr(_rbexpr.rank(method, descending, seed))
     end
 
     # Calculate the n-th discrete difference.

@@ -307,7 +307,7 @@ module Polars
     #   Column (expressions) to sort by.
     # @param more_by [Array]
     #   Additional columns to sort by, specified as positional arguments.
-    # @param reverse [Boolean]
+    # @param descending [Boolean]
     #   Sort in descending order.
     # @param nulls_last [Boolean]
     #   Place null values last. Can only be used if sorted by a single column.
@@ -328,7 +328,7 @@ module Polars
     #       "ham" => ["a", "b", "c"]
     #     }
     #   ).lazy
-    #   df.sort("foo", reverse: true).collect
+    #   df.sort("foo", descending: true).collect
     #   # =>
     #   # shape: (3, 3)
     #   # ┌─────┬─────┬─────┐
@@ -340,21 +340,21 @@ module Polars
     #   # │ 2   ┆ 7.0 ┆ b   │
     #   # │ 1   ┆ 6.0 ┆ a   │
     #   # └─────┴─────┴─────┘
-    def sort(by, *more_by, reverse: false, nulls_last: false, maintain_order: false, multithreaded: true)
+    def sort(by, *more_by, descending: false, nulls_last: false, maintain_order: false, multithreaded: true)
       if by.is_a?(::String) && more_by.empty?
         return _from_rbldf(
           _ldf.sort(
-            by, reverse, nulls_last, maintain_order, multithreaded
+            by, descending, nulls_last, maintain_order, multithreaded
           )
         )
       end
 
       by = Utils.parse_into_list_of_expressions(by, *more_by)
-      reverse = Utils.extend_bool(reverse, by.length, "reverse", "by")
+      descending = Utils.extend_bool(descending, by.length, "descending", "by")
       nulls_last = Utils.extend_bool(nulls_last, by.length, "nulls_last", "by")
       _from_rbldf(
         _ldf.sort_by_exprs(
-          by, reverse, nulls_last, maintain_order, multithreaded
+          by, descending, nulls_last, maintain_order, multithreaded
         )
       )
     end

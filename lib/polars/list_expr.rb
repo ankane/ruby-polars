@@ -318,7 +318,7 @@ module Polars
 
     # Sort the arrays in the list.
     #
-    # @param reverse [Boolean]
+    # @param descending [Boolean]
     #   Sort in descending order.
     # @param nulls_last [Boolean]
     #   Place null values last.
@@ -342,8 +342,8 @@ module Polars
     #   # │ [1, 2, 3] │
     #   # │ [1, 2, 9] │
     #   # └───────────┘
-    def sort(reverse: false, nulls_last: false)
-      Utils.wrap_expr(_rbexpr.list_sort(reverse, nulls_last))
+    def sort(descending: false, nulls_last: false)
+      Utils.wrap_expr(_rbexpr.list_sort(descending, nulls_last))
     end
 
     # Reverse the arrays in the list.

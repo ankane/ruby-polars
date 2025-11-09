@@ -259,7 +259,7 @@ module Polars
 
     # Sort the arrays in the list.
     #
-    # @param reverse [Boolean]
+    # @param descending [Boolean]
     #   Sort in descending order.
     # @param nulls_last [Boolean]
     #   Place null values last.
@@ -278,7 +278,7 @@ module Polars
     #   # ]
     #
     # @example
-    #   s.list.sort(reverse: true)
+    #   s.list.sort(descending: true)
     #   # =>
     #   # shape: (2,)
     #   # Series: 'a' [list[i64]]
@@ -286,7 +286,7 @@ module Polars
     #   #         [3, 2, 1]
     #   #         [9, 2, 1]
     #   # ]
-    def sort(reverse: false, nulls_last: false)
+    def sort(descending: false, nulls_last: false)
       super
     end
 

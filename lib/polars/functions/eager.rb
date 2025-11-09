@@ -225,7 +225,7 @@ module Polars
     # @param select [Object]
     #   Optional post-alignment column select to constrain and/or order
     #   the columns returned from the newly aligned frames.
-    # @param reverse [Object]
+    # @param descending [Object]
     #   Sort the alignment column values in descending order; can be a single
     #   boolean or a list of booleans associated with each column in `on`.
     #
@@ -272,7 +272,7 @@ module Polars
       *frames,
       on:,
       select: nil,
-      reverse: false
+      descending: false
     )
       if frames.empty?
         return []
@@ -285,7 +285,7 @@ module Polars
       alignment_frame = (
         concat(frames.map { |df| df.lazy.select(on) })
           .unique(maintain_order: false)
-          .sort(on, reverse: reverse)
+          .sort(on, descending: descending)
       )
       alignment_frame = (
         eager ? alignment_frame.collect.lazy : alignment_frame.cache

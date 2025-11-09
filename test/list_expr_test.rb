@@ -86,7 +86,7 @@ class ListExprTest < Minitest::Test
   end
 
   def test_eval
-    rank_pct = Polars.element.rank(reverse: true) / Polars.col("").count
+    rank_pct = Polars.element.rank(descending: true) / Polars.col("").count
     assert_expr list_expr.eval(rank_pct)
   end
 

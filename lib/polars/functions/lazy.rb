@@ -1152,7 +1152,7 @@ module Polars
     #   Columns use to determine the ordering.
     # @param more_exprs [Array]
     #   Additional columns to arg sort by, specified as positional arguments.
-    # @param reverse [Boolean]
+    # @param descending [Boolean]
     #   Default is ascending.
     # @param nulls_last [Boolean]
     #   Place null values last.
@@ -1186,7 +1186,7 @@ module Polars
     #   # └─────┘
     #
     # @example Compute the arg sort by multiple columns by either passing a list of columns, or by specifying each column as a positional argument.
-    #   df.select(Polars.arg_sort_by(["a", "b"], reverse: true))
+    #   df.select(Polars.arg_sort_by(["a", "b"], descending: true))
     #   # =>
     #   # shape: (4, 1)
     #   # ┌─────┐
@@ -1217,15 +1217,15 @@ module Polars
     def arg_sort_by(
       exprs,
       *more_exprs,
-      reverse: false,
+      descending: false,
       nulls_last: false,
       multithreaded: true,
       maintain_order: false
     )
       exprs = Utils.parse_into_list_of_expressions(exprs, *more_exprs)
-      reverse = Utils.extend_bool(reverse, exprs.length, "reverse", "exprs")
+      descending = Utils.extend_bool(descending, exprs.length, "descending", "exprs")
       nulls_last = Utils.extend_bool(nulls_last, exprs.length, "nulls_last", "exprs")
-      Utils.wrap_expr(Plr.arg_sort_by(exprs, reverse, nulls_last, multithreaded, maintain_order))
+      Utils.wrap_expr(Plr.arg_sort_by(exprs, descending, nulls_last, multithreaded, maintain_order))
     end
     alias_method :argsort_by, :arg_sort_by
 

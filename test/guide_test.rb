@@ -119,7 +119,7 @@ class GuideTest < Minitest::Test
 
     output grades.select([Polars.concat_list(Polars.all.exclude("student")).alias("all_grades")])
 
-    rank_pct = Polars.element.rank(reverse: true) / Polars.col("").count
+    rank_pct = Polars.element.rank(descending: true) / Polars.col("").count
     output grades.with_column(
         Polars.concat_list(Polars.all.exclude("student")).alias("all_grades")
       ).select([

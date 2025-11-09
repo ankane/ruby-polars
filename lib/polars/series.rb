@@ -1905,7 +1905,7 @@ module Polars
 
     # Sort this Series.
     #
-    # @param reverse [Boolean]
+    # @param descending [Boolean]
     #   Reverse sort.
     # @param nulls_last [Boolean]
     #   Place null values last instead of first.
@@ -1928,7 +1928,7 @@ module Polars
     #   #         3
     #   #         4
     #   # ]
-    #   s.sort(reverse: true)
+    #   s.sort(descending: true)
     #   # =>
     #   # shape: (4,)
     #   # Series: 'a' [i64]
@@ -1938,12 +1938,12 @@ module Polars
     #   #         2
     #   #         1
     #   # ]
-    def sort(reverse: false, nulls_last: false, multithreaded: true, in_place: false)
+    def sort(descending: false, nulls_last: false, multithreaded: true, in_place: false)
       if in_place
-        self._s = _s.sort(reverse, nulls_last, multithreaded)
+        self._s = _s.sort(descending, nulls_last, multithreaded)
         self
       else
-        Utils.wrap_s(_s.sort(reverse, nulls_last, multithreaded))
+        Utils.wrap_s(_s.sort(descending, nulls_last, multithreaded))
       end
     end
 
@@ -2069,7 +2069,7 @@ module Polars
 
     # Get the index values that would sort this Series.
     #
-    # @param reverse [Boolean]
+    # @param descending [Boolean]
     #   Sort in reverse (descending) order.
     # @param nulls_last [Boolean]
     #   Place null values last instead of first.
@@ -2089,7 +2089,7 @@ module Polars
     #   #         2
     #   #         0
     #   # ]
-    def arg_sort(reverse: false, nulls_last: false)
+    def arg_sort(descending: false, nulls_last: false)
       super
     end
     alias_method :argsort, :arg_sort
@@ -5316,7 +5316,7 @@ module Polars
     #     the order that the values occur in the Series.
     #   - 'random' : Like 'ordinal', but the rank for ties is not dependent
     #     on the order that the values occur in the Series.
-    # @param reverse [Boolean]
+    # @param descending [Boolean]
     #   Reverse the operation.
     # @param seed [Integer]
     #   If `method: "random"`, use this as seed.
@@ -5350,7 +5350,7 @@ module Polars
     #   #         2
     #   #         5
     #   # ]
-    def rank(method: "average", reverse: false, seed: nil)
+    def rank(method: "average", descending: false, seed: nil)
       super
     end
 
@@ -6045,7 +6045,7 @@ module Polars
     #
     # Enables downstream code to user fast paths for sorted arrays.
     #
-    # @param reverse [Boolean]
+    # @param descending [Boolean]
     #   If the Series order is reversed, e.g. descending.
     #
     # @return [Series]
@@ -6058,8 +6058,8 @@ module Polars
     #   s = Polars::Series.new("a", [1, 2, 3])
     #   s.set_sorted.max
     #   # => 3
-    def set_sorted(reverse: false)
-      Utils.wrap_s(_s.set_sorted(reverse))
+    def set_sorted(descending: false)
+      Utils.wrap_s(_s.set_sorted(descending))
     end
 
     # Create a new Series filled with values from the given index.

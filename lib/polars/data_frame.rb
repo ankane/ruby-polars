@@ -1816,7 +1816,7 @@ module Polars
     #
     # @param by [String]
     #   By which column to sort.
-    # @param reverse [Boolean]
+    # @param descending [Boolean]
     #   Reverse/descending sort.
     # @param nulls_last [Boolean]
     #   Place null values last. Can only be used if sorted by a single column.
@@ -1831,7 +1831,7 @@ module Polars
     #       "ham" => ["a", "b", "c"]
     #     }
     #   )
-    #   df.sort("foo", reverse: true)
+    #   df.sort("foo", descending: true)
     #   # =>
     #   # shape: (3, 3)
     #   # ┌─────┬─────┬─────┐
@@ -1847,7 +1847,7 @@ module Polars
     # @example Sort by multiple columns.
     #   df.sort(
     #     [Polars.col("foo"), Polars.col("bar")**2],
-    #     reverse: [true, false]
+    #     descending: [true, false]
     #   )
     #   # =>
     #   # shape: (3, 3)
@@ -1860,9 +1860,9 @@ module Polars
     #   # │ 2   ┆ 7.0 ┆ b   │
     #   # │ 1   ┆ 6.0 ┆ a   │
     #   # └─────┴─────┴─────┘
-    def sort(by, reverse: false, nulls_last: false)
+    def sort(by, descending: false, nulls_last: false)
       lazy
-        .sort(by, reverse: reverse, nulls_last: nulls_last)
+        .sort(by, descending: descending, nulls_last: nulls_last)
         .collect(no_optimization: true)
     end
 
@@ -1870,14 +1870,14 @@ module Polars
     #
     # @param by [String]
     #   By which column to sort.
-    # @param reverse [Boolean]
+    # @param descending [Boolean]
     #   Reverse/descending sort.
     # @param nulls_last [Boolean]
     #   Place null values last. Can only be used if sorted by a single column.
     #
     # @return [DataFrame]
-    def sort!(by, reverse: false, nulls_last: false)
-      self._df = sort(by, reverse: reverse, nulls_last: nulls_last)._df
+    def sort!(by, descending: false, nulls_last: false)
+      self._df = sort(by, descending: descending, nulls_last: nulls_last)._df
     end
 
     # Execute a SQL query against the DataFrame.

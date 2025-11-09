@@ -204,7 +204,7 @@ class SeriesTest < Minitest::Test
     s.sort(in_place: true)
     assert s.flags["SORTED_ASC"]
     refute s.flags["SORTED_DESC"]
-    s.sort(reverse: true, in_place: true)
+    s.sort(descending: true, in_place: true)
     refute s.flags["SORTED_ASC"]
     assert s.flags["SORTED_DESC"]
   end
@@ -579,7 +579,7 @@ class SeriesTest < Minitest::Test
   def test_sort
     s = Polars::Series.new([2, 3, 1])
     assert_series [1, 2, 3], s.sort
-    assert_series [3, 2, 1], s.sort(reverse: true)
+    assert_series [3, 2, 1], s.sort(descending: true)
     assert_series [2, 3, 1], s
   end
 
