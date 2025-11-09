@@ -12,8 +12,6 @@ module Polars
     #   Int64 is required to fit the given value. Defaults to Float64 for float values.
     # @param eager [Boolean]
     #   Run eagerly and collect into a `Series`.
-    # @param name [String]
-    #   Only used in `eager` mode. As expression, use `alias`.
     #
     # @return [Object]
     #
@@ -38,20 +36,13 @@ module Polars
     #   #         3
     #   #         3
     #   # ]
-    def repeat(value, n, dtype: nil, eager: false, name: nil)
-      if !name.nil?
-        warn "the `name` argument is deprecated. Use the `alias` method instead."
-      end
-
+    def repeat(value, n, dtype: nil, eager: false)
       if n.is_a?(Integer)
         n = lit(n)
       end
 
       value = Utils.parse_into_expression(value, str_as_lit: true)
       expr = Utils.wrap_expr(Plr.repeat(value, n._rbexpr, dtype))
-      if !name.nil?
-        expr = expr.alias(name)
-      end
       if eager
         return select(expr).to_series
       end
