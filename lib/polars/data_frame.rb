@@ -1081,24 +1081,6 @@ module Polars
         file = Utils.normalize_filepath(file)
       end
 
-      if statistics == true
-        statistics = {
-          min: true,
-          max: true,
-          distinct_count: false,
-          null_count: true
-        }
-      elsif statistics == false
-        statistics = {}
-      elsif statistics == "full"
-        statistics = {
-          min: true,
-          max: true,
-          distinct_count: true,
-          null_count: true
-        }
-      end
-
       target = file
 
       lazy.sink_parquet(
