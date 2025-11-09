@@ -1814,14 +1814,23 @@ module Polars
     end
     alias_method :replace_at_idx, :replace_column
 
-    # Sort the DataFrame by column.
+    # Sort the dataframe by the given columns.
     #
-    # @param by [String]
-    #   By which column to sort.
+    # @param by [Object]
+    #   Column(s) to sort by. Accepts expression input, including selectors. Strings
+    #   are parsed as column names.
+    # @param more_by [Array]
+    #   Additional columns to sort by, specified as positional arguments.
     # @param descending [Boolean]
-    #   Reverse/descending sort.
+    #   Sort in descending order. When sorting by multiple columns, can be specified
+    #   per column by passing a sequence of booleans.
     # @param nulls_last [Boolean]
-    #   Place null values last. Can only be used if sorted by a single column.
+    #   Place null values last; can specify a single boolean applying to all columns
+    #   or a sequence of booleans for per-column control.
+    # @param multithreaded [Boolean]
+    #   Sort using multiple threads.
+    # @param maintain_order [Boolean]
+    #   Whether the order should be maintained if elements are equal.
     #
     # @return [DataFrame]
     #
@@ -1862,9 +1871,23 @@ module Polars
     #   # │ 2   ┆ 7.0 ┆ b   │
     #   # │ 1   ┆ 6.0 ┆ a   │
     #   # └─────┴─────┴─────┘
-    def sort(by, descending: false, nulls_last: false)
+    def sort(
+      by,
+      *more_by,
+      descending: false,
+      nulls_last: false,
+      multithreaded: true,
+      maintain_order: false
+    )
       lazy
-        .sort(by, descending: descending, nulls_last: nulls_last)
+        .sort(
+          by,
+          *more_by,
+          descending: descending,
+          nulls_last: nulls_last,
+          multithreaded: multithreaded,
+          maintain_order: maintain_order
+        )
         .collect(no_optimization: true)
     end
 
