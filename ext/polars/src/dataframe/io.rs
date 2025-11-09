@@ -217,69 +217,11 @@ impl RbDataFrame {
         Ok(RbDataFrame::new(df))
     }
 
-    pub fn write_parquet(
-        &self,
-        rb_f: Value,
-        compression: String,
-        compression_level: Option<i32>,
-        statistics: Wrap<StatisticsOptions>,
-        row_group_size: Option<usize>,
-        data_page_size: Option<usize>,
-    ) -> RbResult<()> {
-        let compression = parse_parquet_compression(&compression, compression_level)?;
-
-        let buf = get_file_like(rb_f, true)?;
-        ParquetWriter::new(buf)
-            .with_compression(compression)
-            .with_statistics(statistics.0)
-            .with_row_group_size(row_group_size)
-            .with_data_page_size(data_page_size)
-            .finish(&mut self.df.borrow_mut())
-            .map_err(RbPolarsErr::from)?;
-        Ok(())
-    }
-
     pub fn write_json(&self, rb_f: Value) -> RbResult<()> {
         let file = BufWriter::new(get_file_like(rb_f, true)?);
 
         JsonWriter::new(file)
             .with_json_format(JsonFormat::Json)
-            .finish(&mut self.df.borrow_mut())
-            .map_err(RbPolarsErr::from)?;
-        Ok(())
-    }
-
-    pub fn write_ndjson(&self, rb_f: Value) -> RbResult<()> {
-        let file = BufWriter::new(get_file_like(rb_f, true)?);
-
-        JsonWriter::new(file)
-            .with_json_format(JsonFormat::JsonLines)
-            .finish(&mut self.df.borrow_mut())
-            .map_err(RbPolarsErr::from)?;
-
-        Ok(())
-    }
-
-    pub fn write_ipc(
-        &self,
-        rb_f: Value,
-        compression: Wrap<Option<IpcCompression>>,
-        compat_level: RbCompatLevel,
-        cloud_options: Option<Vec<(String, String)>>,
-        retries: usize,
-    ) -> RbResult<()> {
-        let cloud_options = if let Ok(path) = String::try_convert(rb_f) {
-            let cloud_options = parse_cloud_options(&path, cloud_options.unwrap_or_default())?;
-            Some(cloud_options.with_max_retries(retries))
-        } else {
-            None
-        };
-
-        let f = crate::file::try_get_writeable(rb_f, cloud_options.as_ref())?;
-
-        IpcWriter::new(f)
-            .with_compression(compression.0)
-            .with_compat_level(compat_level.0)
             .finish(&mut self.df.borrow_mut())
             .map_err(RbPolarsErr::from)?;
         Ok(())

@@ -74,8 +74,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("dtype_strings", method!(RbDataFrame::dtype_strings, 0))?;
     class.define_method("write_avro", method!(RbDataFrame::write_avro, 3))?;
     class.define_method("write_json", method!(RbDataFrame::write_json, 1))?;
-    class.define_method("write_ndjson", method!(RbDataFrame::write_ndjson, 1))?;
-    class.define_method("write_ipc", method!(RbDataFrame::write_ipc, 5))?;
     class.define_method(
         "write_ipc_stream",
         method!(RbDataFrame::write_ipc_stream, 3),
@@ -87,7 +85,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbDataFrame::__arrow_c_stream__, 0),
     )?;
     class.define_method("to_numo", method!(RbDataFrame::to_numo, 0))?;
-    class.define_method("write_parquet", method!(RbDataFrame::write_parquet, 6))?;
     class.define_method("add", method!(RbDataFrame::add, 1))?;
     class.define_method("sub", method!(RbDataFrame::sub, 1))?;
     class.define_method("div", method!(RbDataFrame::div, 1))?;
@@ -881,7 +878,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("cache", method!(RbLazyFrame::cache, 0))?;
     class.define_method("collect", method!(RbLazyFrame::collect, 0))?;
     class.define_method("sink_parquet", method!(RbLazyFrame::sink_parquet, 9))?;
-    class.define_method("sink_ipc", method!(RbLazyFrame::sink_ipc, 5))?;
+    class.define_method("sink_ipc", method!(RbLazyFrame::sink_ipc, 6))?;
     class.define_method("sink_csv", method!(RbLazyFrame::sink_csv, -1))?;
     class.define_method("sink_json", method!(RbLazyFrame::sink_json, 4))?;
     class.define_method("filter", method!(RbLazyFrame::filter, 1))?;

@@ -4,7 +4,6 @@ use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
 
 use magnus::{Error, RString, Ruby, Value, prelude::*, value::Opaque};
-use polars::io::cloud::CloudOptions;
 use polars::io::mmap::MmapBytesReader;
 use polars::prelude::PlPath;
 use polars::prelude::file::DynWriteable;
@@ -180,13 +179,6 @@ impl EitherRustRubyFile {
             Self::Rust(f) => Box::new(f),
         }
     }
-
-    pub fn into_dyn_writeable(self) -> Box<dyn Write> {
-        match self {
-            EitherRustRubyFile::Rb(f) => Box::new(f),
-            EitherRustRubyFile::Rust(f) => Box::new(f),
-        }
-    }
 }
 
 pub enum RubyScanSourceInput {
@@ -276,11 +268,4 @@ pub fn get_mmap_bytes_reader_and_path<'a>(
             Ok((Box::new(f), Some(path)))
         }
     }
-}
-
-pub fn try_get_writeable(
-    rb_f: Value,
-    _cloud_options: Option<&CloudOptions>,
-) -> RbResult<Box<dyn Write>> {
-    Ok(get_either_file(rb_f, true)?.into_dyn_writeable())
 }

@@ -758,25 +758,26 @@ module Polars
     #   df.write_ndjson
     #   # => "{\"foo\":1,\"bar\":6}\n{\"foo\":2,\"bar\":7}\n{\"foo\":3,\"bar\":8}\n"
     def write_ndjson(file = nil)
-      if Utils.pathlike?(file)
-        file = Utils.normalize_filepath(file)
-      end
-      to_string_io = !file.nil? && file.is_a?(StringIO)
-      if file.nil? || to_string_io
-        buf = StringIO.new
-        buf.set_encoding(Encoding::BINARY)
-        _df.write_ndjson(buf)
-        json_bytes = buf.string
-
-        json_str = json_bytes.force_encoding(Encoding::UTF_8)
-        if to_string_io
-          file.write(json_str)
-        else
-          return json_str
-        end
+      should_return_buffer = false
+      target = nil
+      if file.nil?
+        target = StringIO.new
+        target.set_encoding(Encoding::BINARY)
+        should_return_buffer = true
+      elsif Utils.pathlike?(file)
+        target = Utils.normalize_filepath(file)
       else
-        _df.write_ndjson(file)
+        target = file
       end
+
+      lazy.sink_ndjson(
+        target
+      )
+
+      if should_return_buffer
+        return target.string.force_encoding(Encoding::UTF_8)
+      end
+
       nil
     end
 
@@ -956,6 +957,10 @@ module Polars
     #
     #   If `storage_options` is not provided, Polars will try to infer the
     #   information from environment variables.
+    # @param credential_provider [Object]
+    #   Provide a function that can be called to provide cloud storage
+    #   credentials. The function is expected to return a dictionary of
+    #   credential keys along with an optional credential expiry time.
     # @param retries [Integer]
     #   Number of retries if accessing a cloud instance fails.
     #
@@ -965,33 +970,27 @@ module Polars
       compression: "uncompressed",
       compat_level: nil,
       storage_options: nil,
+      credential_provider: "auto",
       retries: 2
     )
       return_bytes = file.nil?
-      if return_bytes
-        file = StringIO.new
-        file.set_encoding(Encoding::BINARY)
-      end
-      if Utils.pathlike?(file)
-        file = Utils.normalize_filepath(file)
-      end
-
-      if compat_level.nil?
-        compat_level = true
-      end
-
-      if compression.nil?
-        compression = "uncompressed"
-      end
-
-      if storage_options&.any?
-        storage_options = storage_options.to_a
+      target = nil
+      if file.nil?
+        target = StringIO.new
+        target.set_encoding(Encoding::BINARY)
       else
-        storage_options = nil
+        target = file
       end
 
-      _df.write_ipc(file, compression, compat_level, storage_options, retries)
-      return_bytes ? file.string : nil
+      lazy.sink_ipc(
+        target,
+        compression: compression,
+        compat_level: compat_level,
+        storage_options: storage_options,
+        credential_provider: credential_provider,
+        retries: retries
+      )
+      return_bytes ? target.string : nil
     end
 
     # Write to Arrow IPC record batch stream.
@@ -1100,8 +1099,15 @@ module Polars
         }
       end
 
-      _df.write_parquet(
-        file, compression, compression_level, statistics, row_group_size, data_page_size
+      target = file
+
+      lazy.sink_parquet(
+        target,
+        compression: compression,
+        compression_level: compression_level,
+        statistics: statistics,
+        row_group_size: row_group_size,
+        data_pagesize_limit: data_page_size
       )
     end
 

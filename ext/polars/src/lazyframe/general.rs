@@ -442,12 +442,14 @@ impl RbLazyFrame {
         &self,
         target: SinkTarget,
         compression: Wrap<Option<IpcCompression>>,
+        compat_level: RbCompatLevel,
         cloud_options: Option<Vec<(String, String)>>,
         retries: usize,
         sink_options: Wrap<SinkOptions>,
     ) -> RbResult<RbLazyFrame> {
         let options = IpcWriterOptions {
             compression: compression.0,
+            compat_level: compat_level.0,
             ..Default::default()
         };
 

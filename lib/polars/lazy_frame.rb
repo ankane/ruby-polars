@@ -891,8 +891,10 @@ module Polars
     def sink_ipc(
       path,
       compression: "zstd",
+      compat_level: nil,
       maintain_order: true,
       storage_options: nil,
+      credential_provider: "auto",
       retries: 2,
       type_coercion: true,
       predicate_pushdown: true,
@@ -904,6 +906,10 @@ module Polars
       mkdir: false,
       lazy: false
     )
+      if credential_provider != "auto"
+        raise Todo
+      end
+
       lf = _set_sink_optimizations(
         type_coercion: type_coercion,
         predicate_pushdown: predicate_pushdown,
@@ -925,9 +931,21 @@ module Polars
         "mkdir" => mkdir
       }
 
+      compat_level_rb = nil
+      if compat_level.nil?
+        compat_level_rb = true
+      else
+        raise Todo
+      end
+
+      if compression.nil?
+        compression = "uncompressed"
+      end
+
       lf = lf.sink_ipc(
         path,
         compression,
+        compat_level_rb,
         storage_options,
         retries,
         sink_options
