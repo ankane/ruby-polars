@@ -431,7 +431,7 @@ class DataFrameTest < Minitest::Test
     df2 = Polars::DataFrame.new({"a" => [nil, 2, 3], "c" => [5, 5, 5]})
     df3 = df1.join(df2, on: "a", how: "inner")
     assert_frame Polars::DataFrame.new({"a" => [2], "b" => [4], "c" => [5]}), df3
-    df4 = df1.join(df2, on: "a", how: "inner", join_nulls: true)
+    df4 = df1.join(df2, on: "a", how: "inner", nulls_equal: true)
     assert_frame Polars::DataFrame.new({"a" => [nil, 2], "b" => [4, 4], "c" => [5, 5]}), df4
   end
 

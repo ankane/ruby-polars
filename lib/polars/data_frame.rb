@@ -3119,7 +3119,7 @@ module Polars
     #     * *one_to_one* - “1:1”: check if join keys are unique in both left and right datasets
     #     * *one_to_many* - “1:m”: check if join keys are unique in left dataset
     #     * *many_to_one* - “m:1”: check if join keys are unique in right dataset
-    # @param join_nulls [Boolean]
+    # @param nulls_equal [Boolean]
     #   Join on null values. By default null values will never produce matches.
     # @param coalesce [Boolean]
     #   Coalescing behavior (merging of join columns).
@@ -3235,7 +3235,7 @@ module Polars
       how: "inner",
       suffix: "_right",
       validate: "m:m",
-      join_nulls: false,
+      nulls_equal: false,
       coalesce: nil,
       maintain_order: nil
     )
@@ -3248,7 +3248,7 @@ module Polars
           how: how,
           suffix: suffix,
           validate: validate,
-          join_nulls: join_nulls,
+          nulls_equal: nulls_equal,
           coalesce: coalesce,
           maintain_order: maintain_order
         )

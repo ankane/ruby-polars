@@ -12,6 +12,7 @@
 - Changed `min_periods` option to `min_samples`
 - Changed `frac` option to `fraction` for `sample` methods
 - Changed `drop_nulls` option to `ignore_nulls` for `all` and `any` methods
+- Changed `join_nulls` option to `nulls_equal` for `join` method
 - Changed `strict` option to `check_dtypes` for `equals` method
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods
 - Removed `in_place` option from `rename` method

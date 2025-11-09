@@ -2521,7 +2521,7 @@ module Polars
     #     * *one_to_one* - “1:1”: check if join keys are unique in both left and right datasets
     #     * *one_to_many* - “1:m”: check if join keys are unique in left dataset
     #     * *many_to_one* - “m:1”: check if join keys are unique in right dataset
-    # @param join_nulls [Boolean]
+    # @param nulls_equal [Boolean]
     #   Join on null values. By default null values will never produce matches.
     # @param allow_parallel [Boolean]
     #   Allow the physical plan to optionally evaluate the computation of both
@@ -2643,7 +2643,7 @@ module Polars
       how: "inner",
       suffix: "_right",
       validate: "m:m",
-      join_nulls: false,
+      nulls_equal: false,
       allow_parallel: true,
       force_parallel: false,
       coalesce: nil,
@@ -2666,7 +2666,7 @@ module Polars
             [],
             [],
             allow_parallel,
-            join_nulls,
+            nulls_equal,
             force_parallel,
             how,
             suffix,
@@ -2695,7 +2695,7 @@ module Polars
           rbexprs_right,
           allow_parallel,
           force_parallel,
-          join_nulls,
+          nulls_equal,
           how,
           suffix,
           validate,
