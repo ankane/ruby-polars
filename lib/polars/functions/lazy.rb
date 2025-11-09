@@ -808,6 +808,10 @@ module Polars
     #   "Delta Degrees of Freedom": the divisor used in the calculation is N - ddof,
     #   where N represents the number of elements.
     #   By default ddof is 1.
+    # @param eager [Boolean]
+    #   Evaluate immediately and return a `Series`; this requires that at least one
+    #   of the given arguments is a `Series`. If set to `false` (default), return
+    #   an expression instead.
     #
     # @return [Expr]
     #
@@ -829,10 +833,32 @@ module Polars
     #   # ╞═════╡
     #   # │ 3.0 │
     #   # └─────┘
-    def cov(a, b, ddof: 1)
-      a = Utils.parse_into_expression(a)
-      b = Utils.parse_into_expression(b)
-      Utils.wrap_expr(Plr.cov(a, b, ddof))
+    #
+    # @example Eager evaluation:
+    #   s1 = Polars::Series.new("a", [1, 8, 3])
+    #   s2 = Polars::Series.new("b", [4, 5, 2])
+    #   Polars.cov(s1, s2, eager: true)
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         3.0
+    #   # ]
+    def cov(a, b, ddof: 1, eager: false)
+      if eager
+        if !(a.is_a?(Series) || b.is_a?(Series))
+          msg = "expected at least one Series in 'cov' inputs if 'eager: true'"
+          raise ArgumentError, msg
+        end
+
+        frame = Polars::DataFrame.new([a, b].filter_map { |e| e if e.is_a?(Series) })
+        exprs = [a, b].map { |e| e.is_a?(Series) ? e.name : e }
+        frame.select(cov(*exprs, eager: false, ddof: ddof)).to_series
+      else
+        a_rbexpr = Utils.parse_into_expression(a)
+        b_rbexpr = Utils.parse_into_expression(b)
+        Utils.wrap_expr(Plr.cov(a_rbexpr, b_rbexpr, ddof))
+      end
     end
 
     # def map
