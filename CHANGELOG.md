@@ -26,6 +26,7 @@
 - Removed `name` option from `repeat` method
 - Removed `utc` option from `strptime` method
 - Removed `truncate` option from `group_by_dynamic` methods
+- Removed `eager` option from `from_epoch` method
 
 ## 0.23.0 (2025-11-04)
 

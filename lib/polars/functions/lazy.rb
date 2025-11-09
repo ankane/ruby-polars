@@ -1430,8 +1430,6 @@ module Polars
     #     Series or expression to parse integers to pl.Datetime.
     # @param time_unit [String]
     #     The unit of the timesteps since epoch time.
-    # @param eager [Boolean]
-    #     If eager evaluation is `true`, a Series is returned instead of an Expr.
     #
     # @return [Object]
     #
@@ -1448,31 +1446,21 @@ module Polars
     #   # │ 2022-10-25 07:31:17 │
     #   # │ 2022-10-25 07:31:39 │
     #   # └─────────────────────┘
-    def from_epoch(column, time_unit: "s", eager: false)
+    def from_epoch(column, time_unit: "s")
       if Utils.strlike?(column)
-        column = col(column)
+        column = F.col(column)
       elsif !column.is_a?(Series) && !column.is_a?(Expr)
         column = Series.new(column)
       end
 
       if time_unit == "d"
-        expr = column.cast(Date)
+        column.cast(Date)
       elsif time_unit == "s"
-        expr = (column.cast(Int64) * 1_000_000).cast(Datetime.new("us"))
+        (column.cast(Int64) * 1_000_000).cast(Datetime.new("us"))
       elsif Utils::DTYPE_TEMPORAL_UNITS.include?(time_unit)
-        expr = column.cast(Datetime.new(time_unit))
+        column.cast(Datetime.new(time_unit))
       else
-        raise ArgumentError, "'time_unit' must be one of {{'ns', 'us', 'ms', 's', 'd'}}, got '#{time_unit}'."
-      end
-
-      if eager
-        if !column.is_a?(Series)
-          raise ArgumentError, "expected Series or Array if eager: true, got #{column.class.name}"
-        else
-          column.to_frame.select(expr).to_series
-        end
-      else
-        expr
+        raise ArgumentError, "`time_unit` must be one of {{'ns', 'us', 'ms', 's', 'd'}}, got #{time_unit.inspect}."
       end
     end
 
