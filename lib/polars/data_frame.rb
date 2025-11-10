@@ -6310,7 +6310,7 @@ module Polars
     end
 
     # @private
-    def self.expand_hash_scalars(data, schema_overrides: nil, strict: true, order: nil, nan_to_null: false)
+    def self._expand_hash_values(data, schema_overrides: nil, strict: true, order: nil, nan_to_null: false)
       updated_data = {}
       unless data.empty?
         dtypes = schema_overrides || {}
@@ -6362,7 +6362,7 @@ module Polars
       if data.empty? && !schema_overrides.empty?
         data_series = column_names.map { |name| Series.new(name, [], dtype: schema_overrides[name], strict: strict, nan_to_null: nan_to_null)._s }
       else
-        data_series = expand_hash_scalars(data, schema_overrides: schema_overrides, strict: strict, nan_to_null: nan_to_null).values.map(&:_s)
+        data_series = _expand_hash_values(data, schema_overrides: schema_overrides, strict: strict, nan_to_null: nan_to_null).values.map(&:_s)
       end
 
       data_series = _handle_columns_arg(data_series, columns: column_names, from_hash: true)
