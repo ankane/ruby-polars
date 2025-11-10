@@ -29,6 +29,7 @@
 - Changed `quote` option to `quote_char` for `write_csv` method
 - Changed `data_pagesize_limit` option to `data_page_size` for `sink_parquet` method
 - Changed `unit` option to `time_unit` for `from_epoch` method
+- Removed support for string and symbol data types
 - Removed `take` and `take_every` methods (use `gather` and `gather_every` instead)
 - Removed `clip_min` and `clip_max` methods (use `clip` instead)
 - Removed `argsort` and `argsort_by` methods (use `arg_sort` and `arg_sort_by` instead)

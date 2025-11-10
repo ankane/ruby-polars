@@ -1357,7 +1357,7 @@ module Polars
     #       "y" => 1_000_000.times.map { |v| v / 1000.0 },
     #       "z" => 1_000_000.times.map(&:to_s)
     #     },
-    #     schema: {"x" => :u32, "y" => :f64, "z" => :str}
+    #     schema: {"x" => Polars::UInt32, "y" => Polars::Float64, "z" => Polars::String}
     #   )
     #   df.estimated_size
     #   # => 25888898
@@ -1748,11 +1748,11 @@ module Polars
         columns = []
         self.columns.each_with_index do |s, i|
           if self[s].dtype.numeric? || self[s].dtype == Boolean
-            columns << stat[0.., i].cast(:f64)
+            columns << stat[0.., i].cast(Float64)
           else
             # for dates, strings, etc, we cast to string so that all
             # statistics can be shown
-            columns << stat[0.., i].cast(:str)
+            columns << stat[0.., i].cast(String)
           end
         end
         self.class.new(columns)
@@ -2416,7 +2416,7 @@ module Polars
     #
     # @example
     #   cast_str_to_int = lambda do |data, col_name:|
-    #     data.with_columns(Polars.col(col_name).cast(:i64))
+    #     data.with_columns(Polars.col(col_name).cast(Polars::Int64))
     #   end
     #
     #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => ["10", "20", "30", "40"]})

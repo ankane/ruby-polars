@@ -179,21 +179,14 @@ module Polars
 
     # Cast to physical representation of the logical dtype.
     #
-    # - `:date` -> `:i32`
-    # - `:datetime` -> `:i64`
-    # - `:time` -> `:i64`
-    # - `:duration` -> `:i64`
-    # - `:cat` -> `:u32`
-    # - Other data types will be left unchanged.
-    #
     # @return [Expr]
     #
     # @example
     #   Polars::DataFrame.new({"vals" => ["a", "x", nil, "a"]}).with_columns(
     #     [
-    #       Polars.col("vals").cast(:cat),
+    #       Polars.col("vals").cast(Polars::Categorical),
     #       Polars.col("vals")
-    #         .cast(:cat)
+    #         .cast(Polars::Categorical)
     #         .to_physical
     #         .alias("vals_physical")
     #     ]
@@ -1227,7 +1220,7 @@ module Polars
 
     # Cast between data types.
     #
-    # @param dtype [Symbol]
+    # @param dtype [Object]
     #   DataType to cast to.
     # @param strict [Boolean]
     #   Throw an error if a cast could not be done.
@@ -1247,8 +1240,8 @@ module Polars
     #   )
     #   df.with_columns(
     #     [
-    #       Polars.col("a").cast(:f64),
-    #       Polars.col("b").cast(:i32)
+    #       Polars.col("a").cast(Polars::Float64),
+    #       Polars.col("b").cast(Polars::Int32)
     #     ]
     #   )
     #   # =>

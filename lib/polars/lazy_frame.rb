@@ -236,7 +236,7 @@ module Polars
     #
     # @example
     #   cast_str_to_int = lambda do |data, col_name:|
-    #     data.with_columns(Polars.col(col_name).cast(:i64))
+    #     data.with_columns(Polars.col(col_name).cast(Polars::Int64))
     #   end
     #
     #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => ["10", "20", "30", "40"]}).lazy

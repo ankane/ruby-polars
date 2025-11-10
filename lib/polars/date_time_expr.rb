@@ -1224,7 +1224,7 @@ module Polars
       elsif time_unit == "s"
         timestamp("ms").floordiv(F.lit(1000, dtype: Int64))
       elsif time_unit == "d"
-        Utils.wrap_expr(_rbexpr).cast(:date).cast(:i32)
+        Utils.wrap_expr(_rbexpr).cast(Date).cast(Int32)
       else
         raise ArgumentError, "time_unit must be one of {'ns', 'us', 'ms', 's', 'd'}, got #{time_unit.inspect}"
       end

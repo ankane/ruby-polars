@@ -367,12 +367,12 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Object" => DataType::Object(OBJECT_NAME),
                 "Polars::Unknown" => DataType::Unknown(Default::default()),
                 dt => {
-                    return Err(RbValueError::new_err(format!(
-                        "{dt} is not a correct polars DataType.",
+                    return Err(RbTypeError::new_err(format!(
+                        "'{dt}' is not a Polars data type",
                     )));
                 }
             }
-        } else if String::try_convert(ob).is_err() {
+        } else {
             let cls = ob.class();
             let name = unsafe { cls.name() }.into_owned();
             match name.as_str() {
@@ -448,42 +448,11 @@ impl TryConvert for Wrap<DataType> {
                     DataType::Struct(fields)
                 }
                 "Polars::Null" => DataType::Null,
-                "Object" => DataType::Object(OBJECT_NAME),
+                "Polars::Object" => DataType::Object(OBJECT_NAME),
                 "Polars::Unknown" => DataType::Unknown(Default::default()),
                 dt => {
                     return Err(RbTypeError::new_err(format!(
-                        "A {dt} object is not a correct polars DataType. \
-                        Hint: use the class without instantiating it.",
-                    )));
-                }
-            }
-        } else {
-            match String::try_convert(ob)?.as_str() {
-                "u8" => DataType::UInt8,
-                "u16" => DataType::UInt16,
-                "u32" => DataType::UInt32,
-                "u64" => DataType::UInt64,
-                "i8" => DataType::Int8,
-                "i16" => DataType::Int16,
-                "i32" => DataType::Int32,
-                "i64" => DataType::Int64,
-                "str" => DataType::String,
-                "bin" => DataType::Binary,
-                "bool" => DataType::Boolean,
-                "cat" => DataType::from_categories(Categories::global()),
-                "date" => DataType::Date,
-                "datetime" => DataType::Datetime(TimeUnit::Microseconds, None),
-                "f32" => DataType::Float32,
-                "time" => DataType::Time,
-                "dur" => DataType::Duration(TimeUnit::Microseconds),
-                "f64" => DataType::Float64,
-                "obj" => DataType::Object(OBJECT_NAME),
-                "list" => DataType::List(Box::new(DataType::Boolean)),
-                "null" => DataType::Null,
-                "unk" => DataType::Unknown(Default::default()),
-                _ => {
-                    return Err(RbValueError::new_err(format!(
-                        "{ob} is not a supported DataType."
+                        "'{dt}' is not a Polars data type",
                     )));
                 }
             }

@@ -548,7 +548,7 @@ module Polars
     # @return [Numeric]
     #
     # @example
-    #   s = Polars::Series.new("values", 1..1_000_000, dtype: :u32)
+    #   s = Polars::Series.new("values", 1..1_000_000, dtype: Polars::UInt32)
     #   s.estimated_size
     #   # => 4000000
     #   s.estimated_size("mb")
@@ -865,7 +865,7 @@ module Polars
       if len == 0
         raise ArgumentError, "Series must contain at least one value"
       elsif dtype.numeric?
-        s = cast(:f64)
+        s = cast(Float64)
         stats = {
           "min" => s.min,
           "max" => s.max,
@@ -2694,7 +2694,7 @@ module Polars
 
     # Cast between data types.
     #
-    # @param dtype [Symbol]
+    # @param dtype [Object]
     #   DataType to cast to
     # @param strict [Boolean]
     #   Throw an error if a cast could not be done for instance due to an overflow
@@ -2706,7 +2706,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [true, false, true])
-    #   s.cast(:u32)
+    #   s.cast(Polars::UInt32)
     #   # =>
     #   # shape: (3,)
     #   # Series: 'a' [u32]
@@ -2721,18 +2721,11 @@ module Polars
 
     # Cast to physical representation of the logical dtype.
     #
-    # - `:date` -> `:i32`
-    # - `:datetime` -> `:i64`
-    # - `:time` -> `:i64`
-    # - `:duration` -> `:i64`
-    # - `:cat` -> `:u32`
-    # - other data types will be left unchanged.
-    #
     # @return [Series]
     #
     # @example
     #   s = Polars::Series.new("values", ["a", nil, "x", "a"])
-    #   s.cast(:cat).to_physical
+    #   s.cast(Polars::Categorical).to_physical
     #   # =>
     #   # shape: (4,)
     #   # Series: 'values' [u32]
