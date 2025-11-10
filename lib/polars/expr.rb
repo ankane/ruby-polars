@@ -6699,39 +6699,6 @@ module Polars
       wrap_expr(_rbexpr.abs)
     end
 
-    # Get the index values that would sort this column.
-    #
-    # Alias for {#arg_sort}.
-    #
-    # @param reverse [Boolean]
-    #   Sort in reverse (descending) order.
-    # @param nulls_last [Boolean]
-    #   Place null values last instead of first.
-    #
-    # @return [expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "a" => [20, 10, 30]
-    #     }
-    #   )
-    #   df.select(Polars.col("a").argsort)
-    #   # =>
-    #   # shape: (3, 1)
-    #   # ┌─────┐
-    #   # │ a   │
-    #   # │ --- │
-    #   # │ u32 │
-    #   # ╞═════╡
-    #   # │ 1   │
-    #   # │ 0   │
-    #   # │ 2   │
-    #   # └─────┘
-    def argsort(reverse: false, nulls_last: false)
-      arg_sort(descending: reverse, nulls_last: nulls_last)
-    end
-
     # Assign ranks to data, dealing with ties appropriately.
     #
     # @param method ["average", "min", "max", "dense", "ordinal", "random"]

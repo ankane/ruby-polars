@@ -2091,7 +2091,6 @@ module Polars
     def arg_sort(descending: false, nulls_last: false)
       super
     end
-    alias_method :argsort, :arg_sort
 
     # Get unique index as Series.
     #

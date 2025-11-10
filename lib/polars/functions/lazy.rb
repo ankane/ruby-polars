@@ -1293,7 +1293,6 @@ module Polars
       nulls_last = Utils.extend_bool(nulls_last, exprs.length, "nulls_last", "exprs")
       Utils.wrap_expr(Plr.arg_sort_by(exprs, descending, nulls_last, multithreaded, maintain_order))
     end
-    alias_method :argsort_by, :arg_sort_by
 
     # Collect multiple LazyFrames at the same time.
     #
