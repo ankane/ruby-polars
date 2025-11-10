@@ -3,7 +3,7 @@ use polars_core::datatypes::{TimeUnit, TimeZone};
 
 use crate::conversion::Wrap;
 use crate::prelude::*;
-use crate::{RbExpr, RbPolarsErr, RbResult};
+use crate::{RbDataTypeExpr, RbExpr, RbPolarsErr, RbResult};
 
 pub fn int_range(start: &RbExpr, end: &RbExpr, step: i64, dtype: Wrap<DataType>) -> RbExpr {
     let start = start.inner.clone();
@@ -16,9 +16,9 @@ pub fn int_ranges(
     start: &RbExpr,
     end: &RbExpr,
     step: &RbExpr,
-    dtype: Wrap<DataType>,
+    dtype: &RbDataTypeExpr,
 ) -> RbResult<RbExpr> {
-    let dtype = dtype.0;
+    let dtype = dtype.inner.clone();
     Ok(dsl::int_ranges(
         start.inner.clone(),
         end.inner.clone(),

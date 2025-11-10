@@ -1,6 +1,6 @@
 ## 0.24.0 (unreleased)
 
-- Added `concat_arr`, `escape_regex`, and `linear_spaces` methods to `Polars`
+- Added `concat_arr`, `escape_regex`, `int_ranges`, and `linear_spaces` methods to `Polars`
 - Added `rolling_rank` and `rolling_rank_by` methods to `Series` and `Expr`
 - Added `days_in_month` method to `DateTimeExpr` and `DateTimeNameSpace`
 - Added `agg` and `item` methods to `ListExpr` and `ListNameSpace`

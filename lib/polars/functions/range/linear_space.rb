@@ -18,7 +18,7 @@ module Polars
     #   Evaluate immediately and return a `Series`.
     #   If set to `false` (default), return an expression instead.
     #
-    # @return [Object]
+    # @return [Expr, Series]
     #
     # @note
     #   This functionality is experimental. It may be changed at any point without it
