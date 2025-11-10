@@ -1901,7 +1901,6 @@ module Polars
     def gather_every(n, offset = 0)
       super
     end
-    alias_method :take_every, :gather_every
 
     # Sort this Series.
     #
@@ -2247,7 +2246,6 @@ module Polars
     def gather(indices)
       super
     end
-    alias_method :take, :gather
 
     # Count the null values in this Series.
     #

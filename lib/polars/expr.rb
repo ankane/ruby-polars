@@ -1995,7 +1995,6 @@ module Polars
       end
       wrap_expr(_rbexpr.gather(indices_lit))
     end
-    alias_method :take, :gather
 
     # Return a single value by index.
     #
@@ -3702,7 +3701,6 @@ module Polars
     def gather_every(n, offset = 0)
       wrap_expr(_rbexpr.gather_every(n, offset))
     end
-    alias_method :take_every, :gather_every
 
     # Get the first `n` rows.
     #

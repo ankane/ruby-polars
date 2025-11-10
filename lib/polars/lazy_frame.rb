@@ -3616,7 +3616,6 @@ module Polars
     def gather_every(n, offset: 0)
       select(F.col("*").gather_every(n, offset))
     end
-    alias_method :take_every, :gather_every
 
     # Fill null values using the specified value or strategy.
     #

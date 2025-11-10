@@ -534,7 +534,6 @@ module Polars
       indices = Utils.parse_into_expression(indices)
       Utils.wrap_expr(_rbexpr.list_gather(indices, null_on_oob))
     end
-    alias_method :take, :gather
 
     # Take every n-th value start from offset in sublists.
     #
