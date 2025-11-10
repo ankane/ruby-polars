@@ -1546,7 +1546,6 @@ module Polars
       _df.insert_column(index, column._s)
       self
     end
-    alias_method :insert_at_idx, :insert_column
 
     # Filter the rows in the DataFrame based on a predicate expression.
     #
@@ -1839,7 +1838,6 @@ module Polars
       _df.replace_column(index, column._s)
       self
     end
-    alias_method :replace_at_idx, :replace_column
 
     # Sort the dataframe by the given columns.
     #
