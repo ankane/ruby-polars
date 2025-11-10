@@ -706,18 +706,6 @@ module Polars
     # @param maintain_order [Boolean]
     #   Maintain the order in which data is processed.
     #   Setting this to `false` will  be slightly faster.
-    # @param type_coercion [Boolean]
-    #   Do type coercion optimization.
-    # @param predicate_pushdown [Boolean]
-    #   Do predicate pushdown optimization.
-    # @param projection_pushdown [Boolean]
-    #   Do projection pushdown optimization.
-    # @param simplify_expression [Boolean]
-    #   Run simplify expressions optimization.
-    # @param no_optimization [Boolean]
-    #   Turn off (certain) optimizations.
-    # @param slice_pushdown [Boolean]
-    #   Slice pushdown optimization.
     # @param storage_options [String]
     #   Options that indicate how to connect to a cloud provider.
     #
@@ -764,23 +752,8 @@ module Polars
       metadata: nil,
       mkdir: false,
       lazy: false,
-      field_overwrites: nil,
-      type_coercion: true,
-      predicate_pushdown: true,
-      projection_pushdown: true,
-      simplify_expression: true,
-      no_optimization: false,
-      slice_pushdown: true
+      field_overwrites: nil
     )
-      lf = _set_sink_optimizations(
-        type_coercion: type_coercion,
-        predicate_pushdown: predicate_pushdown,
-        projection_pushdown: projection_pushdown,
-        simplify_expression: simplify_expression,
-        slice_pushdown: slice_pushdown,
-        no_optimization: no_optimization
-      )
-
       if statistics == true
         statistics = {
           min: true,
@@ -799,7 +772,9 @@ module Polars
         }
       end
 
-      credential_provider_builder = Polars.send(:_init_credential_provider_builder,
+      _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
+
+      credential_provider_builder = _init_credential_provider_builder.(
         credential_provider, path, storage_options, "sink_parquet"
       )
 
@@ -820,7 +795,7 @@ module Polars
         raise Todo
       end
 
-      lf = lf.sink_parquet(
+      ldf_rb = _ldf.sink_parquet(
         path,
         compression,
         compression_level,
@@ -834,13 +809,14 @@ module Polars
         metadata,
         field_overwrites_dicts
       )
-      lf = LazyFrame._from_rbldf(lf)
 
       if !lazy
-        lf.collect
+        # TODO optimizations
+        ldf = LazyFrame._from_rbldf(ldf_rb)
+        ldf.collect
         return nil
       end
-      lf
+      LazyFrame._from_rbldf(ldf_rb)
     end
 
     # Evaluate the query in streaming mode and write to an IPC file.
