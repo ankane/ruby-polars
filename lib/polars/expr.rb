@@ -2410,7 +2410,6 @@ module Polars
     def approx_n_unique
       wrap_expr(_rbexpr.approx_n_unique)
     end
-    alias_method :approx_unique, :approx_n_unique
 
     # Count null values.
     #
