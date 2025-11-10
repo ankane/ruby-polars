@@ -2996,7 +2996,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3])
-    #   s.set_at_idx(1, 10)
+    #   s.scatter(1, 10)
     #   # =>
     #   # shape: (3,)
     #   # Series: 'a' [i64]
@@ -3027,7 +3027,6 @@ module Polars
       _s.scatter(indices._s, values._s)
       self
     end
-    alias_method :set_at_idx, :scatter
 
     # Get the index of the first occurrence of a value, or `nil` if it's not found.
     #
