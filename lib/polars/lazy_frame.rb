@@ -1032,18 +1032,6 @@ module Polars
     # @param maintain_order [Boolean]
     #   Maintain the order in which data is processed.
     #   Setting this to `false` will  be slightly faster.
-    # @param type_coercion [Boolean]
-    #   Do type coercion optimization.
-    # @param predicate_pushdown [Boolean]
-    #   Do predicate pushdown optimization.
-    # @param projection_pushdown [Boolean]
-    #   Do projection pushdown optimization.
-    # @param simplify_expression [Boolean]
-    #   Run simplify expressions optimization.
-    # @param slice_pushdown [Boolean]
-    #   Slice pushdown optimization.
-    # @param no_optimization [Boolean]
-    #   Turn off (certain) optimizations.
     # @param storage_options [Object]
     #   Options that indicate how to connect to a cloud provider.
     # @param retries [Integer]
@@ -1081,12 +1069,6 @@ module Polars
       null_value: nil,
       quote_style: nil,
       maintain_order: true,
-      type_coercion: true,
-      predicate_pushdown: true,
-      projection_pushdown: true,
-      simplify_expression: true,
-      slice_pushdown: true,
-      no_optimization: false,
       storage_options: nil,
       credential_provider: "auto",
       retries: 2,
@@ -1096,15 +1078,6 @@ module Polars
     )
       Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, false)
-
-      lf = _set_sink_optimizations(
-        type_coercion: type_coercion,
-        predicate_pushdown: predicate_pushdown,
-        projection_pushdown: projection_pushdown,
-        simplify_expression: simplify_expression,
-        slice_pushdown: slice_pushdown,
-        no_optimization: no_optimization
-      )
 
       if credential_provider != "auto"
         raise Todo
@@ -1122,7 +1095,7 @@ module Polars
         "mkdir" => mkdir
       }
 
-      lf = lf.sink_csv(
+      lf_rb = _ldf.sink_csv(
         path,
         include_bom,
         include_header,
@@ -1142,13 +1115,14 @@ module Polars
         retries,
         sink_options
       )
-      lf = LazyFrame._from_rbldf(lf)
 
       if !lazy
+        # TODO optimizations
+        lf = LazyFrame._from_rbldf(lf_rb)
         lf.collect
         return nil
       end
-      lf
+      LazyFrame._from_rbldf(lf_rb)
     end
 
     # Evaluate the query in streaming mode and write to an NDJSON file.
