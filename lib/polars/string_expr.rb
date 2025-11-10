@@ -962,7 +962,6 @@ module Polars
       dtype_expr = Utils.parse_into_datatype_expr(dtype)._rbdatatype_expr
       Utils.wrap_expr(_rbexpr.str_json_decode(dtype_expr))
     end
-    alias_method :json_extract, :json_decode
 
     # Extract the first match of json string with provided JSONPath expression.
     #

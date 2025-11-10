@@ -42,6 +42,7 @@
 - Removed `strip` method (use `strip_chars` instead)
 - Removed `n_chars` method (use `len_chars` instead)
 - Removed `parse_int` method (use `to_integer` instead)
+- Removed `json_extract` method (use `json_decode` instead)
 - Removed `cleared` methods (use `clear` instead)
 - Removed `count_match` methods (use `count_matches` instead)
 - Removed `avg` method (use `mean` instead)
