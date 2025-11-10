@@ -1722,8 +1722,8 @@ module Polars
     #   # │ Tell me what you want, what yo… ┆ Tell you what me want, what me… │
     #   # │ Can you feel the love tonight   ┆ Can me feel the love tonight    │
     #   # └─────────────────────────────────┴─────────────────────────────────┘
-    def replace_many(patterns, replace_with = Expr::NO_DEFAULT, ascii_case_insensitive: false)
-      if replace_with == Expr::NO_DEFAULT
+    def replace_many(patterns, replace_with = NO_DEFAULT, ascii_case_insensitive: false)
+      if replace_with == NO_DEFAULT
         if !patterns.is_a?(Hash)
           msg = "`replace_with` argument is required if `patterns` argument is not a Hash type"
           raise TypeError, msg

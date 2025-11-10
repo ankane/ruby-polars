@@ -2,9 +2,6 @@ module Polars
   # Expressions that can be used in various contexts.
   class Expr
     # @private
-    NO_DEFAULT = Object.new
-
-    # @private
     attr_accessor :_rbexpr
 
     # @private

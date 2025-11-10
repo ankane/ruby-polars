@@ -111,6 +111,9 @@ module Polars
   F = self
 
   # @private
+  NO_DEFAULT = Object.new
+
+  # @private
   N_INFER_DEFAULT = 100
 
   # @private

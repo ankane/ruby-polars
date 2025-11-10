@@ -5569,7 +5569,7 @@ module Polars
     #   #         "2"
     #   #         "3"
     #   # ]
-    def replace(old, new = Expr::NO_DEFAULT, default: Expr::NO_DEFAULT, return_dtype: nil)
+    def replace(old, new = NO_DEFAULT, default: NO_DEFAULT, return_dtype: nil)
       super
     end
 
@@ -5680,8 +5680,8 @@ module Polars
     #   # ]
     def replace_strict(
       old,
-      new = Expr::NO_DEFAULT,
-      default: Expr::NO_DEFAULT,
+      new = NO_DEFAULT,
+      default: NO_DEFAULT,
       return_dtype: nil
     )
       super

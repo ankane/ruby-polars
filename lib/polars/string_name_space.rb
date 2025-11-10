@@ -1338,7 +1338,7 @@ module Polars
     #   # ]
     def replace_many(
       patterns,
-      replace_with = Expr::NO_DEFAULT,
+      replace_with = NO_DEFAULT,
       ascii_case_insensitive: false
     )
       super
