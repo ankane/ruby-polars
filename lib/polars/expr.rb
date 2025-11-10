@@ -1976,7 +1976,7 @@ module Polars
     #       "value" => [1, 98, 2, 3, 99, 4]
     #     }
     #   )
-    #   df.group_by("group", maintain_order: true).agg(Polars.col("value").take([2, 1]))
+    #   df.group_by("group", maintain_order: true).agg(Polars.col("value").gather([2, 1]))
     #   # =>
     #   # shape: (2, 2)
     #   # ┌───────┬───────────┐

@@ -3528,7 +3528,7 @@ module Polars
     def with_column(column)
       lazy
         .with_column(column)
-        .collect(no_optimization: true, string_cache: false)
+        .collect(no_optimization: true)
     end
 
     # Return a new DataFrame grown horizontally by stacking multiple Series to it.

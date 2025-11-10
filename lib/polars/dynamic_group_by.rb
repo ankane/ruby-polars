@@ -46,7 +46,7 @@ module Polars
           start_by: @start_by
         )
         .agg(*aggs, **named_aggs)
-        .collect(no_optimization: true, string_cache: false)
+        .collect(no_optimization: true)
     end
   end
 end

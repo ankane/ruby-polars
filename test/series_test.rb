@@ -598,9 +598,9 @@ class SeriesTest < Minitest::Test
     assert_equal 2, s.search_sorted(3)
   end
 
-  def test_take
+  def test_gather
     s = Polars::Series.new("a", [1, 2, 3, 4])
-    assert_series [2, 4], s.take([1, 3])
+    assert_series [2, 4], s.gather([1, 3])
   end
 
   def test_null_count

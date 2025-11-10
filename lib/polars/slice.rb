@@ -12,7 +12,7 @@ module Polars
 
       # check for fast-paths / single-operation calls
       if @slice_length == 0
-        @obj.cleared
+        @obj.clear
       elsif @is_unbounded && [-1, 1].include?(@stride)
         @stride < 0 ? @obj.reverse : @obj.clone
       elsif @start >= 0 && @stop >= 0 && @stride == 1
