@@ -1980,7 +1980,6 @@ module Polars
       lgb = _ldf.rolling(index_column, period, offset, closed, rbexprs_by)
       LazyGroupBy.new(lgb)
     end
-    alias_method :group_by_rolling, :rolling
     alias_method :groupby_rolling, :rolling
 
     # Group based on a time value (or index value of type `:i32`, `:i64`).

@@ -5828,7 +5828,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `group_by_rolling` this method can cache the window size
+    #   window, consider using `rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]
@@ -5906,7 +5906,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `group_by_rolling` this method can cache the window size
+    #   window, consider using `rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]
@@ -5984,7 +5984,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `group_by_rolling` this method can cache the window size
+    #   window, consider using `rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]
@@ -6062,7 +6062,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `group_by_rolling` this method can cache the window size
+    #   window, consider using `rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]
@@ -6142,7 +6142,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `group_by_rolling` this method can cache the window size
+    #   window, consider using `rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]
@@ -6223,7 +6223,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `group_by_rolling` this method can cache the window size
+    #   window, consider using `rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]
@@ -6298,7 +6298,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `group_by_rolling` this method can cache the window size
+    #   window, consider using `rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]
@@ -6376,7 +6376,7 @@ module Polars
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
-    #   window, consider using `group_by_rolling` this method can cache the window size
+    #   window, consider using `rolling` this method can cache the window size
     #   computation.
     #
     # @return [Expr]

@@ -2648,7 +2648,6 @@ module Polars
       RollingGroupBy.new(self, index_column, period, offset, closed, group_by)
     end
     alias_method :groupby_rolling, :rolling
-    alias_method :group_by_rolling, :rolling
 
     # Group based on a time value (or index value of type `:i32`, `:i64`).
     #

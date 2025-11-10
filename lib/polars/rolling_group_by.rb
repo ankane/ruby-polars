@@ -25,7 +25,7 @@ module Polars
 
     def agg(*aggs, **named_aggs)
       @df.lazy
-        .group_by_rolling(
+        .rolling(
           index_column: @time_column, period: @period, offset: @offset, closed: @closed, group_by: @group_by
         )
         .agg(*aggs, **named_aggs)

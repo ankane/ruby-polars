@@ -32,6 +32,7 @@
 - Removed `clip_min` and `clip_max` methods (use `clip` instead)
 - Removed `argsort` and `argsort_by` methods (use `arg_sort` and `arg_sort_by` instead)
 - Removed `shift_and_fill` methods (use `shift(fill_value:)` instead)
+- Removed `group_by_rolling` methods (use `rolling` instead)
 - Removed `cleared` methods (use `clear` instead)
 - Removed `read_sql` method (use `read_database` instead)
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods
