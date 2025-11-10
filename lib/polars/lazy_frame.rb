@@ -1183,44 +1183,6 @@ module Polars
       LazyFrame._from_rbldf(ldf_rb)
     end
 
-    # Collect a small number of rows for debugging purposes.
-    #
-    # Fetch is like a {#collect} operation, but it overwrites the number of rows
-    # read by every scan operation. This is a utility that helps debug a query on a
-    # smaller number of rows.
-    #
-    # Note that the fetch does not guarantee the final number of rows in the
-    # DataFrame. Filter, join operations and a lower number of rows available in the
-    # scanned file influence the final number of rows.
-    #
-    # @param n_rows [Integer]
-    #   Collect n_rows from the data sources.
-    #
-    # @return [DataFrame]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "a" => ["a", "b", "a", "b", "b", "c"],
-    #       "b" => [1, 2, 3, 4, 5, 6],
-    #       "c" => [6, 5, 4, 3, 2, 1]
-    #     }
-    #   ).lazy
-    #   df.group_by("a", maintain_order: true).agg(Polars.all.sum).fetch(2)
-    #   # =>
-    #   # shape: (2, 3)
-    #   # ┌─────┬─────┬─────┐
-    #   # │ a   ┆ b   ┆ c   │
-    #   # │ --- ┆ --- ┆ --- │
-    #   # │ str ┆ i64 ┆ i64 │
-    #   # ╞═════╪═════╪═════╡
-    #   # │ a   ┆ 4   ┆ 10  │
-    #   # │ b   ┆ 11  ┆ 10  │
-    #   # └─────┴─────┴─────┘
-    def fetch(n_rows = 500, **kwargs)
-      head(n_rows).collect(**kwargs)
-    end
-
     # Return lazy representation, i.e. itself.
     #
     # Useful for writing code that expects either a `DataFrame` or
