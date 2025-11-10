@@ -1289,7 +1289,7 @@ module Polars
     #       "c" => [true, true, false, nil],
     #     }
     #   ).lazy
-    #   lf.clear.fetch
+    #   lf.clear.collect
     #   # =>
     #   # shape: (0, 3)
     #   # ┌─────┬─────┬──────┐
@@ -1300,7 +1300,7 @@ module Polars
     #   # └─────┴─────┴──────┘
     #
     # @example
-    #   lf.clear(2).fetch
+    #   lf.clear(2).collect
     #   # =>
     #   # shape: (2, 3)
     #   # ┌──────┬──────┬──────┐
@@ -4017,7 +4017,7 @@ module Polars
     #       ["before", Polars.struct(Polars.col("^t_.$")).alias("t_struct"), "after"]
     #     )
     #   )
-    #   df.fetch
+    #   df.collect
     #   # =>
     #   # shape: (2, 3)
     #   # ┌────────┬─────────────────────┬───────┐
@@ -4030,7 +4030,7 @@ module Polars
     #   # └────────┴─────────────────────┴───────┘
     #
     # @example
-    #   df.unnest("t_struct").fetch
+    #   df.unnest("t_struct").collect
     #   # =>
     #   # shape: (2, 6)
     #   # ┌────────┬─────┬─────┬──────┬───────────┬───────┐

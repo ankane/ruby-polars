@@ -36,8 +36,8 @@ class LazyFrameTest < Minitest::Test
         ["before", Polars.struct(Polars.col("^t_.$")).alias("t_struct"), "after"]
       )
     )
-    df.fetch
-    df.unnest("t_struct").fetch
+    df.collect
+    df.unnest("t_struct").collect
   end
 
   def test_write_json

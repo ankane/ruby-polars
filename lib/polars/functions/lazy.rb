@@ -1046,28 +1046,26 @@ module Polars
     # @return [Expr]
     #
     # @example
-    #   twoRootTwo = Math.sqrt(2) / 2
+    #   c = Math.sqrt(2) / 2
     #   df = Polars::DataFrame.new(
     #     {
-    #       "y" => [twoRootTwo, -twoRootTwo, twoRootTwo, -twoRootTwo],
-    #       "x" => [twoRootTwo, twoRootTwo, -twoRootTwo, -twoRootTwo]
+    #       "y" => [c, -c, c, -c],
+    #       "x" => [c, c, -c, -c]
     #     }
     #   )
-    #   df.select(
-    #     Polars.arctan2d("y", "x").alias("atan2d"), Polars.arctan2("y", "x").alias("atan2")
-    #   )
+    #   df.with_columns(Polars.arctan2("y", "x").alias("atan2"))
     #   # =>
-    #   # shape: (4, 2)
-    #   # ┌────────┬───────────┐
-    #   # │ atan2d ┆ atan2     │
-    #   # │ ---    ┆ ---       │
-    #   # │ f64    ┆ f64       │
-    #   # ╞════════╪═══════════╡
-    #   # │ 45.0   ┆ 0.785398  │
-    #   # │ -45.0  ┆ -0.785398 │
-    #   # │ 135.0  ┆ 2.356194  │
-    #   # │ -135.0 ┆ -2.356194 │
-    #   # └────────┴───────────┘
+    #   # shape: (4, 3)
+    #   # ┌───────────┬───────────┬───────────┐
+    #   # │ y         ┆ x         ┆ atan2     │
+    #   # │ ---       ┆ ---       ┆ ---       │
+    #   # │ f64       ┆ f64       ┆ f64       │
+    #   # ╞═══════════╪═══════════╪═══════════╡
+    #   # │ 0.707107  ┆ 0.707107  ┆ 0.785398  │
+    #   # │ -0.707107 ┆ 0.707107  ┆ -0.785398 │
+    #   # │ 0.707107  ┆ -0.707107 ┆ 2.356194  │
+    #   # │ -0.707107 ┆ -0.707107 ┆ -2.356194 │
+    #   # └───────────┴───────────┴───────────┘
     def arctan2(y, x)
       if Utils.strlike?(y)
         y = col(y)
