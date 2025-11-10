@@ -25,12 +25,12 @@ class StringExprTest < Minitest::Test
     assert_expr str_expr.strip
   end
 
-  def test_lstrip
-    assert_expr str_expr.lstrip
+  def test_strip_chars_start
+    assert_expr str_expr.strip_chars_start
   end
 
-  def test_rstrip
-    assert_expr str_expr.rstrip
+  def test_strip_chars_end
+    assert_expr str_expr.strip_chars_end
   end
 
   def test_zfill

@@ -551,7 +551,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [" lead", "trail ", " both "]})
-    #   df.select(Polars.col("foo").str.lstrip)
+    #   df.select(Polars.col("foo").str.strip_chars_start)
     #   # =>
     #   # shape: (3, 1)
     #   # ┌────────┐
@@ -567,7 +567,6 @@ module Polars
       characters = Utils.parse_into_expression(characters, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_strip_chars_start(characters))
     end
-    alias_method :lstrip, :strip_chars_start
 
     # Remove trailing whitespace.
     #
@@ -578,7 +577,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [" lead", "trail ", " both "]})
-    #   df.select(Polars.col("foo").str.rstrip)
+    #   df.select(Polars.col("foo").str.strip_chars_end)
     #   # =>
     #   # shape: (3, 1)
     #   # ┌───────┐
@@ -594,7 +593,6 @@ module Polars
       characters = Utils.parse_into_expression(characters, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_strip_chars_end(characters))
     end
-    alias_method :rstrip, :strip_chars_end
 
     # Remove prefix.
     #

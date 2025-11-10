@@ -846,7 +846,6 @@ module Polars
     def strip_chars_start(characters = nil)
       super
     end
-    alias_method :lstrip, :strip_chars_start
 
     # Remove trailing whitespace.
     #
@@ -870,7 +869,6 @@ module Polars
     def strip_chars_end(characters = nil)
       super
     end
-    alias_method :rstrip, :strip_chars_end
 
     # Remove prefix.
     #
