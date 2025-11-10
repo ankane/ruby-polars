@@ -2708,6 +2708,14 @@ module Polars
     #   parallelize
     # @param closed ["right", "left", "both", "none"]
     #   Define whether the temporal window interval is closed or not.
+    # @param label ['left', 'right', 'datapoint']
+    #   Define which label to use for the window:
+    #
+    #   - 'left': lower boundary of the window
+    #   - 'right': upper boundary of the window
+    #   - 'datapoint': the first value of the index column in the given window.
+    #     If you don't need the label to be at one of the boundaries, choose this
+    #     option for maximum performance
     # @param group_by
     #   Also group by this column/these columns
     # @param start_by ['window', 'datapoint', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
@@ -2902,6 +2910,7 @@ module Polars
       offset: nil,
       include_boundaries: false,
       closed: "left",
+      label: "left",
       group_by: nil,
       start_by: "window"
     )
@@ -2913,6 +2922,7 @@ module Polars
         offset,
         include_boundaries,
         closed,
+        label,
         group_by,
         start_by
       )

@@ -12,6 +12,7 @@ module Polars
       offset,
       include_boundaries,
       closed,
+      label,
       group_by,
       start_by
     )
@@ -26,6 +27,7 @@ module Polars
       @offset = offset
       @include_boundaries = include_boundaries
       @closed = closed
+      @label = label
       @group_by = group_by
       @start_by = start_by
     end
@@ -39,6 +41,7 @@ module Polars
           offset: @offset,
           include_boundaries: @include_boundaries,
           closed: @closed,
+          label: @label,
           group_by: @group_by,
           start_by: @start_by
         )
