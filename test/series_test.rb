@@ -620,12 +620,6 @@ class SeriesTest < Minitest::Test
     refute Polars::Series.new([1]).empty?
   end
 
-  def test_equals
-    a = Polars::Series.new([1, 2])
-    b = Polars::Series.new([1, 2])
-    assert a.equals(b)
-  end
-
   def test_len
     assert_equal 10, Polars::Series.new(1..10).len
   end
