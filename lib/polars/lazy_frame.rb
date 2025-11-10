@@ -1447,7 +1447,6 @@ module Polars
     def clear(n = 0)
       DataFrame.new(schema: schema).clear(n).lazy
     end
-    alias_method :cleared, :clear
 
     # Filter the rows in the DataFrame based on a predicate expression.
     #

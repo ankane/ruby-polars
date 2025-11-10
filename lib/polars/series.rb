@@ -3164,7 +3164,6 @@ module Polars
       s = len > 0 ? self.class.new(name, [], dtype: dtype) : clone
       n > 0 ? s.extend_constant(nil, n) : s
     end
-    alias_method :cleared, :clear
 
     # clone handled by initialize_copy
 

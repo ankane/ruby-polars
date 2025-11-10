@@ -3886,7 +3886,6 @@ module Polars
         clone
       end
     end
-    alias_method :cleared, :clear
 
     # clone handled by initialize_copy
 
