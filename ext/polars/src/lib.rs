@@ -745,7 +745,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "parquet_schema",
         function!(functions::io::read_parquet_schema, 1),
     )?;
-    class.define_singleton_method("collect_all", function!(functions::lazy::collect_all, 1))?;
+    class.define_singleton_method("collect_all", function!(functions::lazy::collect_all, 3))?;
     class.define_singleton_method("date_range", function!(functions::range::date_range, 4))?;
     class.define_singleton_method("date_ranges", function!(functions::range::date_ranges, 4))?;
     class.define_singleton_method(

@@ -1299,59 +1299,31 @@ module Polars
     #
     # @param lazy_frames [Boolean]
     #   A list of LazyFrames to collect.
-    # @param type_coercion [Boolean]
-    #   Do type coercion optimization.
-    # @param predicate_pushdown [Boolean]
-    #   Do predicate pushdown optimization.
-    # @param projection_pushdown [Boolean]
-    #   Do projection pushdown optimization.
-    # @param simplify_expression [Boolean]
-    #   Run simplify expressions optimization.
-    # @param no_optimization [Boolean]
-    #   Turn off optimizations.
-    # @param slice_pushdown [Boolean]
-    #   Slice pushdown optimization.
-    # @param common_subplan_elimination [Boolean]
-    #   Will try to cache branching subplans that occur on self-joins or unions.
-    # @param allow_streaming [Boolean]
-    #   Run parts of the query in a streaming fashion (this is in an alpha state)
+    # @param optimizations
+    #   The optimization passes done during query optimization.
+    #
+    #   This has no effect if `lazy` is set to `true`.
+    # @param engine
+    #   Select the engine used to process the query, optional.
+    #   At the moment, if set to `"auto"` (default), the query is run
+    #   using the polars streaming engine. Polars will also
+    #   attempt to use the engine set by the `POLARS_ENGINE_AFFINITY`
+    #   environment variable. If it cannot run the query using the
+    #   selected engine, the query is run using the polars streaming
+    #   engine.
     #
     # @return [Array]
     def collect_all(
       lazy_frames,
-      type_coercion: true,
-      predicate_pushdown: true,
-      projection_pushdown: true,
-      simplify_expression: true,
-      no_optimization: false,
-      slice_pushdown: true,
-      common_subplan_elimination: true,
-      allow_streaming: false
+      optimizations: DEFAULT_QUERY_OPT_FLAGS,
+      engine: "auto"
     )
-      if no_optimization
-        predicate_pushdown = false
-        projection_pushdown = false
-        slice_pushdown = false
-        common_subplan_elimination = false
+      if engine == "streaming"
+        Utils.issue_unstable_warning("streaming mode is considered unstable.")
       end
 
-      prepared = []
-
-      lazy_frames.each do |lf|
-        ldf = lf._ldf.optimization_toggle(
-          type_coercion,
-          predicate_pushdown,
-          projection_pushdown,
-          simplify_expression,
-          slice_pushdown,
-          common_subplan_elimination,
-          allow_streaming,
-          false
-        )
-        prepared << ldf
-      end
-
-      out = Plr.collect_all(prepared)
+      lfs = lazy_frames.map { |lf| lf._ldf }
+      out = Plr.collect_all(lfs, engine, optimizations._rboptflags)
 
       # wrap the rbdataframes into dataframe
       result = out.map { |rbdf| Utils.wrap_df(rbdf) }

@@ -25,6 +25,11 @@ class FunctionsTest < Minitest::Test
     assert_match "could not convert value", error.message
   end
 
+  def test_collect_all
+    lf = Polars::LazyFrame.new({"a" => [1, 2, 3]})
+    assert_frame ({"a" => [1, 2, 3]}), Polars.collect_all([lf])[0]
+  end
+
   def test_min
     df = Polars::DataFrame.new({"a" => [1, 5, 3], "b" => [4, 2, 6]})
     assert_frame ({"a" => [1]}), df.select(Polars.min("a"))
