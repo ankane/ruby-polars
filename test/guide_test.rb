@@ -120,7 +120,7 @@ class GuideTest < Minitest::Test
     output grades.select([Polars.concat_list(Polars.all.exclude("student")).alias("all_grades")])
 
     rank_pct = Polars.element.rank(descending: true) / Polars.col("").count
-    output grades.with_column(
+    output grades.with_columns(
         Polars.concat_list(Polars.all.exclude("student")).alias("all_grades")
       ).select([
         Polars.all.exclude("all_grades"),
@@ -304,7 +304,7 @@ class GuideTest < Minitest::Test
   # https://pola-rs.github.io/polars-book/user-guide/howcani/data/strings.html
   def test_data_strings
     df = Polars::DataFrame.new({"shakespeare" => "All that glitters is not gold".split(" ")})
-    output df.with_column(Polars.col("shakespeare").str.lengths.alias("letter_count"))
+    output df.with_columns(Polars.col("shakespeare").str.lengths.alias("letter_count"))
 
     df = Polars::DataFrame.new({"a" => "The man that ate a whole cake".split(" ")})
     output df.filter(Polars.col("a").str.contains("(?i)^the$|^a$").is_not)
@@ -327,26 +327,26 @@ class GuideTest < Minitest::Test
     })
     output df
 
-    output df.with_column(
+    output df.with_columns(
       Polars.col("col2").fill_null(Polars.lit(2))
     )
 
-    output df.with_column(
+    output df.with_columns(
       Polars.col("col2").fill_null(strategy: "forward")
     )
 
-    output df.with_column(
+    output df.with_columns(
       Polars.col("col2").fill_null(Polars.median("col2"))
     )
 
-    output df.with_column(
+    output df.with_columns(
       Polars.col("col2").interpolate
     )
 
     nan_df = Polars::DataFrame.new({"value" => [1.0, Float::NAN, Float::NAN, 3.0]})
     output nan_df
 
-    output nan_df.with_column(
+    output nan_df.with_columns(
       Polars.col("value").fill_nan(nil).alias("value")
     ).mean
   end

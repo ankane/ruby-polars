@@ -125,7 +125,7 @@ module Polars
     #     .to_struct("my_struct")
     #     .to_frame
     #   )
-    #   df = df.with_column(
+    #   df = df.with_columns(
     #     Polars.col("my_struct").struct.rename_fields(["INT", "STR", "BOOL", "LIST"])
     #   )
     #   df.select(Polars.col("my_struct").struct.field("INT"))

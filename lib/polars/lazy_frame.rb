@@ -236,7 +236,7 @@ module Polars
     #
     # @example
     #   cast_str_to_int = lambda do |data, col_name:|
-    #     data.with_column(Polars.col(col_name).cast(:i64))
+    #     data.with_columns(Polars.col(col_name).cast(:i64))
     #   end
     #
     #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => ["10", "20", "30", "40"]}).lazy
@@ -1934,7 +1934,7 @@ module Polars
     #     "2020-01-03 19:45:32",
     #     "2020-01-08 23:16:43"
     #   ]
-    #   df = Polars::LazyFrame.new({"dt" => dates, "a" => [3, 7, 5, 9, 2, 1]}).with_column(
+    #   df = Polars::LazyFrame.new({"dt" => dates, "a" => [3, 7, 5, 9, 2, 1]}).with_columns(
     #     Polars.col("dt").str.strptime(Polars::Datetime).set_sorted
     #   )
     #   df.rolling(index_column: "dt", period: "2d").agg(
@@ -3019,50 +3019,6 @@ module Polars
       end
 
       _from_rbldf(_ldf.with_context(other.map(&:_ldf)))
-    end
-
-    # Add or overwrite column in a DataFrame.
-    #
-    # @param column [Object]
-    #   Expression that evaluates to column or a Series to use.
-    #
-    # @return [LazyFrame]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "a" => [1, 3, 5],
-    #       "b" => [2, 4, 6]
-    #     }
-    #   ).lazy
-    #   df.with_column((Polars.col("b") ** 2).alias("b_squared")).collect
-    #   # =>
-    #   # shape: (3, 3)
-    #   # ┌─────┬─────┬───────────┐
-    #   # │ a   ┆ b   ┆ b_squared │
-    #   # │ --- ┆ --- ┆ ---       │
-    #   # │ i64 ┆ i64 ┆ i64       │
-    #   # ╞═════╪═════╪═══════════╡
-    #   # │ 1   ┆ 2   ┆ 4         │
-    #   # │ 3   ┆ 4   ┆ 16        │
-    #   # │ 5   ┆ 6   ┆ 36        │
-    #   # └─────┴─────┴───────────┘
-    #
-    # @example
-    #   df.with_column(Polars.col("a") ** 2).collect
-    #   # =>
-    #   # shape: (3, 2)
-    #   # ┌─────┬─────┐
-    #   # │ a   ┆ b   │
-    #   # │ --- ┆ --- │
-    #   # │ i64 ┆ i64 │
-    #   # ╞═════╪═════╡
-    #   # │ 1   ┆ 2   │
-    #   # │ 9   ┆ 4   │
-    #   # │ 25  ┆ 6   │
-    #   # └─────┴─────┘
-    def with_column(column)
-      with_columns([column])
     end
 
     # Remove one or multiple columns from a DataFrame.

@@ -1020,7 +1020,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"a" => [1, 8, 3], "b" => [4, 5, 2]})
-    #   df.with_column(
+    #   df.with_columns(
     #     Polars.concat_list(["a", "b"]).list.eval(Polars.element.rank).alias("rank")
     #   )
     #   # =>

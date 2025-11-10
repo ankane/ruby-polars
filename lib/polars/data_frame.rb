@@ -498,7 +498,7 @@ module Polars
         elsif !value.is_a?(Series)
           value = Polars.lit(value)
         end
-        self._df = with_column(value.alias(key.to_s))._df
+        self._df = with_columns(value.alias(key.to_s))._df
       elsif key.is_a?(::Array)
         row_selection, col_selection = key
 
@@ -2449,7 +2449,7 @@ module Polars
     #
     # @example
     #   cast_str_to_int = lambda do |data, col_name:|
-    #     data.with_column(Polars.col(col_name).cast(:i64))
+    #     data.with_columns(Polars.col(col_name).cast(:i64))
     #   end
     #
     #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => ["10", "20", "30", "40"]})
@@ -2613,7 +2613,7 @@ module Polars
     #     "2020-01-03 19:45:32",
     #     "2020-01-08 23:16:43"
     #   ]
-    #   df = Polars::DataFrame.new({"dt" => dates, "a" => [3, 7, 5, 9, 2, 1]}).with_column(
+    #   df = Polars::DataFrame.new({"dt" => dates, "a" => [3, 7, 5, 9, 2, 1]}).with_columns(
     #     Polars.col("dt").str.strptime(Polars::Datetime).set_sorted
     #   )
     #   df.rolling(index_column: "dt", period: "2d").agg(
@@ -3481,52 +3481,6 @@ module Polars
     end
     alias_method :apply, :map_rows
 
-    # Return a new DataFrame with the column added or replaced.
-    #
-    # @param column [Object]
-    #   Series, where the name of the Series refers to the column in the DataFrame.
-    #
-    # @return [DataFrame]
-    #
-    # @example Added
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "a" => [1, 3, 5],
-    #       "b" => [2, 4, 6]
-    #     }
-    #   )
-    #   df.with_column((Polars.col("b") ** 2).alias("b_squared"))
-    #   # =>
-    #   # shape: (3, 3)
-    #   # ┌─────┬─────┬───────────┐
-    #   # │ a   ┆ b   ┆ b_squared │
-    #   # │ --- ┆ --- ┆ ---       │
-    #   # │ i64 ┆ i64 ┆ i64       │
-    #   # ╞═════╪═════╪═══════════╡
-    #   # │ 1   ┆ 2   ┆ 4         │
-    #   # │ 3   ┆ 4   ┆ 16        │
-    #   # │ 5   ┆ 6   ┆ 36        │
-    #   # └─────┴─────┴───────────┘
-    #
-    # @example Replaced
-    #   df.with_column(Polars.col("a") ** 2)
-    #   # =>
-    #   # shape: (3, 2)
-    #   # ┌─────┬─────┐
-    #   # │ a   ┆ b   │
-    #   # │ --- ┆ --- │
-    #   # │ i64 ┆ i64 │
-    #   # ╞═════╪═════╡
-    #   # │ 1   ┆ 2   │
-    #   # │ 9   ┆ 4   │
-    #   # │ 25  ┆ 6   │
-    #   # └─────┴─────┘
-    def with_column(column)
-      lazy
-        .with_column(column)
-        .collect(no_optimization: true)
-    end
-
     # Return a new DataFrame grown horizontally by stacking multiple Series to it.
     #
     # @param columns [Object]
@@ -4378,7 +4332,7 @@ module Polars
 
       if how == "horizontal"
         df = (
-          df.with_column(
+          df.with_columns(
             (Polars.arange(0, n_cols * n_rows, eager: true) % n_cols).alias(
               "__sort_order"
             )

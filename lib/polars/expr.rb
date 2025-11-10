@@ -609,7 +609,7 @@ module Polars
     #       "b" => [1.0, 2.0, Float::NAN, 1.0, 5.0]
     #     }
     #   )
-    #   df.with_column(Polars.all.is_null.suffix("_isnull"))
+    #   df.with_columns(Polars.all.is_null.suffix("_isnull"))
     #   # =>
     #   # shape: (5, 4)
     #   # ┌──────┬─────┬──────────┬──────────┐
@@ -638,7 +638,7 @@ module Polars
     #       "b" => [1.0, 2.0, Float::NAN, 1.0, 5.0]
     #     }
     #   )
-    #   df.with_column(Polars.all.is_not_null.suffix("_not_null"))
+    #   df.with_columns(Polars.all.is_not_null.suffix("_not_null"))
     #   # =>
     #   # shape: (5, 4)
     #   # ┌──────┬─────┬────────────┬────────────┐
@@ -723,7 +723,7 @@ module Polars
     #       "b" => [1.0, 2.0, Float::NAN, 1.0, 5.0]
     #     }
     #   )
-    #   df.with_column(Polars.col(Polars::Float64).is_nan.suffix("_isnan"))
+    #   df.with_columns(Polars.col(Polars::Float64).is_nan.suffix("_isnan"))
     #   # =>
     #   # shape: (5, 3)
     #   # ┌──────┬─────┬─────────┐
@@ -756,7 +756,7 @@ module Polars
     #       "b" => [1.0, 2.0, Float::NAN, 1.0, 5.0]
     #     }
     #   )
-    #   df.with_column(Polars.col(Polars::Float64).is_not_nan.suffix("_is_not_nan"))
+    #   df.with_columns(Polars.col(Polars::Float64).is_not_nan.suffix("_is_not_nan"))
     #   # =>
     #   # shape: (5, 3)
     #   # ┌──────┬─────┬──────────────┐
@@ -2765,7 +2765,7 @@ module Polars
     #       "values" => [1, 2, 3]
     #     }
     #   )
-    #   df.with_column(
+    #   df.with_columns(
     #     Polars.col("values").max.over("groups").alias("max_by_group")
     #   )
     #   # =>
@@ -2979,7 +2979,7 @@ module Polars
     #       "num" => [1, 2, 3, 1, 5]
     #     }
     #   )
-    #   df.with_column(Polars.col("num").is_first.alias("is_first"))
+    #   df.with_columns(Polars.col("num").is_first.alias("is_first"))
     #   # =>
     #   # shape: (5, 2)
     #   # ┌─────┬──────────┐
@@ -3542,7 +3542,7 @@ module Polars
     #   )
     #
     # @example In a selection context, the function is applied by row.
-    #   df.with_column(
+    #   df.with_columns(
     #     Polars.col("a").map_elements { |x| x * 2 }.alias("a_times_2")
     #   )
     #   # =>
@@ -4582,7 +4582,7 @@ module Polars
     #       "b" => ["x", nil, "z"]
     #     }
     #   )
-    #   df.with_column(Polars.all._hash(10, 20, 30, 40))
+    #   df.with_columns(Polars.all._hash(10, 20, 30, 40))
     #   # =>
     #   # shape: (3, 2)
     #   # ┌──────────────────────┬──────────────────────┐
@@ -6785,7 +6785,7 @@ module Polars
     #       "a" => [10, 11, 12, nil, 12]
     #     }
     #   )
-    #   df.with_column(Polars.col("a").pct_change.alias("pct_change"))
+    #   df.with_columns(Polars.col("a").pct_change.alias("pct_change"))
     #   # =>
     #   # shape: (5, 2)
     #   # ┌──────┬────────────┐
@@ -6879,7 +6879,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [-50, 5, nil, 50]})
-    #   df.with_column(Polars.col("foo").clip(1, 10).alias("foo_clipped"))
+    #   df.with_columns(Polars.col("foo").clip(1, 10).alias("foo_clipped"))
     #   # =>
     #   # shape: (4, 2)
     #   # ┌──────┬─────────────┐

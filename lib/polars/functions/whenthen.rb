@@ -6,7 +6,7 @@ module Polars
     #
     # @example Below we add a column with the value 1, where column "foo" > 2 and the value -1 where it isn't.
     #   df = Polars::DataFrame.new({"foo" => [1, 3, 4], "bar" => [3, 4, 0]})
-    #   df.with_column(Polars.when(Polars.col("foo") > 2).then(Polars.lit(1)).otherwise(Polars.lit(-1)))
+    #   df.with_columns(Polars.when(Polars.col("foo") > 2).then(Polars.lit(1)).otherwise(Polars.lit(-1)))
     #   # =>
     #   # shape: (3, 3)
     #   # ┌─────┬─────┬─────────┐

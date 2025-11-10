@@ -860,7 +860,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"fruits" => ["apple", "mango", nil]})
-    #   df.with_column(
+    #   df.with_columns(
     #     Polars.col("fruits").str.ends_with("go").alias("has_suffix")
     #   )
     #   # =>
@@ -900,7 +900,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"fruits" => ["apple", "mango", nil]})
-    #   df.with_column(
+    #   df.with_columns(
     #     Polars.col("fruits").str.starts_with("app").alias("has_prefix")
     #   )
     #   # =>
@@ -1348,7 +1348,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"id" => [1, 2], "text" => ["123abc", "abc456"]})
-    #   df.with_column(
+    #   df.with_columns(
     #     Polars.col("text").str.replace('abc\b', "ABC")
     #   )
     #   # =>
@@ -1380,7 +1380,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"id" => [1, 2], "text" => ["abcabc", "123a123"]})
-    #   df.with_column(Polars.col("text").str.replace_all("a", "-"))
+    #   df.with_columns(Polars.col("text").str.replace_all("a", "-"))
     #   # =>
     #   # shape: (2, 2)
     #   # ┌─────┬─────────┐
@@ -1431,7 +1431,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"s" => ["pear", nil, "papaya", "dragonfruit"]})
-    #   df.with_column(
+    #   df.with_columns(
     #     Polars.col("s").str.slice(-3).alias("s_sliced")
     #   )
     #   # =>
