@@ -61,6 +61,7 @@
 - Removed `avg` method (use `mean` instead)
 - Removed `read_sql` method (use `read_database` instead)
 - Removed `with_row_count` methods (use `with_row_index` instead)
+- Removed `has_validity` method (use `has_nulls` instead)
 - Removed `replace` method from `DataFrame` (use `[]=` instead)
 - Removed `concat` method from `StringExpr` and `StringNameSpace` (use `join` instead)
 - Removed `describe_plan` and `describe_optimized_plan` methods (use `explain` instead)

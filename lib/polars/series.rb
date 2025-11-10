@@ -2272,7 +2272,6 @@ module Polars
     def has_nulls
       _s.has_nulls
     end
-    alias_method :has_validity, :has_nulls
 
     # Check if the Series is empty.
     #
