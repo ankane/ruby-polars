@@ -739,7 +739,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("ipc_schema", function!(functions::io::read_ipc_schema, 1))?;
     class.define_singleton_method(
         "read_parquet_metadata",
-        function!(functions::io::read_parquet_metadata, 1),
+        function!(functions::io::read_parquet_metadata, 4),
     )?;
     class.define_singleton_method(
         "parquet_schema",

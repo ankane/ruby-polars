@@ -142,14 +142,40 @@ module Polars
     #
     # @param source [Object]
     #   Path to a file or a file-like object.
+    # @param storage_options [Hash]
+    #   Extra options that make sense for a particular storage connection.
+    # @param credential_provider [Object]
+    #   Provide a function that can be called to provide cloud storage
+    #   credentials. The function is expected to return a dictionary of
+    #   credential keys along with an optional credential expiry time.
+    # @param retries [Integer]
+    #   Number of retries if accessing a cloud instance fails.
     #
     # @return [Hash]
-    def read_parquet_metadata(source)
+    def read_parquet_metadata(
+      source,
+      storage_options: nil,
+      credential_provider: "auto",
+      retries: 2
+    )
+      if storage_options
+        raise Todo
+      end
+
       if Utils.pathlike?(source)
         source = Utils.normalize_filepath(source, check_not_directory: false)
       end
 
-      Plr.read_parquet_metadata(source)
+      credential_provider_builder = _init_credential_provider_builder(
+        credential_provider, source, storage_options, "scan_parquet"
+      )
+
+      Plr.read_parquet_metadata(
+        source,
+        storage_options&.any? ? storage_options.map { |k, v| [k.to_s, v.to_s] } : nil,
+        credential_provider_builder,
+        retries
+      )
     end
 
     # Lazily read from a parquet file or multiple files via glob patterns.

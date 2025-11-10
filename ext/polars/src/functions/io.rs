@@ -22,7 +22,12 @@ pub fn read_ipc_schema(rb_f: Value) -> RbResult<RHash> {
     Ok(dict)
 }
 
-pub fn read_parquet_metadata(rb_f: Value) -> RbResult<RHash> {
+pub fn read_parquet_metadata(
+    rb_f: Value,
+    _storage_options: Option<Vec<(String, String)>>,
+    _credential_provider: Option<Value>,
+    _retries: usize,
+) -> RbResult<RHash> {
     use polars_parquet::read::read_metadata;
     use polars_parquet::read::schema::read_custom_key_value_metadata;
 
