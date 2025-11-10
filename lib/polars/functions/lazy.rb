@@ -1114,13 +1114,7 @@ module Polars
     #   # │ -135.0 ┆ -2.356194 │
     #   # └────────┴───────────┘
     def arctan2d(y, x)
-      if Utils.strlike?(y)
-        y = col(y)
-      end
-      if Utils.strlike?(x)
-        x = col(x)
-      end
-      Utils.wrap_expr(Plr.arctan2d(y._rbexpr, x._rbexpr))
+      arctan2(y, x).degrees
     end
 
     # Exclude certain columns from a wildcard/regex selection.

@@ -673,7 +673,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("sql_expr", function!(functions::lazy::sql_expr, 1))?;
     class.define_singleton_method("cov", function!(functions::lazy::cov, 3))?;
     class.define_singleton_method("arctan2", function!(functions::lazy::arctan2, 2))?;
-    class.define_singleton_method("arctan2d", function!(functions::lazy::arctan2d, 2))?;
     class.define_singleton_method("rolling_corr", function!(functions::lazy::rolling_corr, 5))?;
     class.define_singleton_method("rolling_cov", function!(functions::lazy::rolling_cov, 5))?;
     class.define_singleton_method("arg_sort_by", function!(functions::lazy::arg_sort_by, 5))?;

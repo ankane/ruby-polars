@@ -178,10 +178,6 @@ pub fn arctan2(y: &RbExpr, x: &RbExpr) -> RbExpr {
     y.inner.clone().arctan2(x.inner.clone()).into()
 }
 
-pub fn arctan2d(y: &RbExpr, x: &RbExpr) -> RbExpr {
-    y.inner.clone().arctan2(x.inner.clone()).degrees().into()
-}
-
 pub fn cum_fold(
     acc: &RbExpr,
     lambda: Value,
