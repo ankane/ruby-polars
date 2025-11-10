@@ -539,10 +539,10 @@ module Polars
     # def profile
     # end
 
-    # Collect into a DataFrame.
+    # Materialize this LazyFrame into a DataFrame.
     #
-    # Note: use {#fetch} if you want to run your query on the first `n` rows
-    # only. This can be a huge time saver in debugging queries.
+    # By default, all query optimizations are enabled. Individual optimizations may
+    # be disabled by setting the corresponding parameter to `false`.
     #
     # @param engine
     #   Select the engine used to process the query, optional.
@@ -3101,11 +3101,6 @@ module Polars
     #
     # @return [LazyFrame]
     #
-    # @note
-    #   Consider using the {#fetch} operation if you only want to test your
-    #   query. The {#fetch} operation will load the first `n` rows at the scan
-    #   level, whereas the {#head}/{#limit} are applied at the end.
-    #
     # @example
     #   lf = Polars::LazyFrame.new(
     #     {
@@ -3150,11 +3145,6 @@ module Polars
     #   Number of rows to return.
     #
     # @return [LazyFrame]
-    #
-    # @note
-    #   Consider using the {#fetch} operation if you only want to test your
-    #   query. The {#fetch} operation will load the first `n` rows at the scan
-    #   level, whereas the {#head}/{#limit} are applied at the end.
     #
     # @example
     #   lf = Polars::LazyFrame.new(
