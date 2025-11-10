@@ -1029,7 +1029,6 @@ module Polars
         )._alias("cum_fold")
       )
     end
-    alias_method :cumfold, :cum_fold
 
     # def cum_reduce
     # end

@@ -917,7 +917,6 @@ module Polars
     def cum_sum(reverse: false)
       wrap_expr(_rbexpr.cum_sum(reverse))
     end
-    alias_method :cumsum, :cum_sum
 
     # Get an array with the cumulative product computed at every element.
     #
@@ -953,7 +952,6 @@ module Polars
     def cum_prod(reverse: false)
       wrap_expr(_rbexpr.cum_prod(reverse))
     end
-    alias_method :cumprod, :cum_prod
 
     # Get an array with the cumulative min computed at every element.
     #
@@ -985,7 +983,6 @@ module Polars
     def cum_min(reverse: false)
       wrap_expr(_rbexpr.cum_min(reverse))
     end
-    alias_method :cummin, :cum_min
 
     # Get an array with the cumulative max computed at every element.
     #
@@ -1017,7 +1014,6 @@ module Polars
     def cum_max(reverse: false)
       wrap_expr(_rbexpr.cum_max(reverse))
     end
-    alias_method :cummax, :cum_max
 
     # Get an array with the cumulative count computed at every element.
     #
@@ -1051,7 +1047,6 @@ module Polars
     def cum_count(reverse: false)
       wrap_expr(_rbexpr.cum_count(reverse))
     end
-    alias_method :cumcount, :cum_count
 
     # Rounds down to the nearest integer value.
     #

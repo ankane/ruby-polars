@@ -37,6 +37,7 @@
 - Removed `groupby`, `groupby_dynamic`, and `groupby_rolling` methods (use `group_by*` instead)
 - Removed `group_by_rolling` methods (use `rolling` instead)
 - Removed `days`, `hours`, `minutes`, `seconds`, `milliseconds`, `microseconds`, and `nanoseconds` methods (use `total_*` instead)
+- Removed `cumsum`, `cumsum_horizontal`, `cumprod`, `cummin`, `cummax`, `cumcount`, and `cumfold` methods (use `cum_*` instead)
 - Removed `with_column` methods (use `with_columns` instead)
 - Removed `series_equal` and `frame_equal` methods (use `equals` instead)
 - Removed `apply` methods (use `map_elements` or `map_rows` instead)

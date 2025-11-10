@@ -247,6 +247,5 @@ module Polars
         "cum_sum"
       )
     end
-    alias_method :cumsum_horizontal, :cum_sum_horizontal
   end
 end

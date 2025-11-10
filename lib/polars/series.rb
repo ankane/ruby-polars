@@ -1622,7 +1622,6 @@ module Polars
     def cum_sum(reverse: false)
       super
     end
-    alias_method :cumsum, :cum_sum
 
     # Return the cumulative count of the non-null values in the column.
     #
@@ -1668,7 +1667,6 @@ module Polars
     def cum_min(reverse: false)
       super
     end
-    alias_method :cummin, :cum_min
 
     # Get an array with the cumulative max computed at every element.
     #
@@ -1691,7 +1689,6 @@ module Polars
     def cum_max(reverse: false)
       super
     end
-    alias_method :cummax, :cum_max
 
     # Get an array with the cumulative product computed at every element.
     #
@@ -1718,7 +1715,6 @@ module Polars
     def cum_prod(reverse: false)
       super
     end
-    alias_method :cumprod, :cum_prod
 
     # Get a slice of this Series.
     #

@@ -277,6 +277,5 @@ module Polars
     def cum_sum(*names)
       col(*names).cum_sum
     end
-    alias_method :cumsum, :cum_sum
   end
 end
