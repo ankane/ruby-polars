@@ -86,6 +86,26 @@ module Polars
 
       self
     end
+
+    def no_optimizations
+      _rboptflags.no_optimizations
+    end
+
+    def projection_pushdown
+      _rboptflags.get_projection_pushdown
+    end
+
+    def projection_pushdown=(value)
+      _rboptflags.set_projection_pushdown(value)
+    end
+
+    def predicate_pushdown
+      _rboptflags.get_predicate_pushdown
+    end
+
+    def predicate_pushdown=(value)
+      _rboptflags.set_predicate_pushdown(value)
+    end
   end
 
   DEFAULT_QUERY_OPT_FLAGS = QueryOptFlags.new
