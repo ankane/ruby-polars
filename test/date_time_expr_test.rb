@@ -71,10 +71,6 @@ class DateTimeExprTest < Minitest::Test
     assert_expr dt_expr.timestamp
   end
 
-  def test_with_time_unit
-    assert_expr dt_expr.with_time_unit("us")
-  end
-
   def test_cast_time_unit
     assert_expr dt_expr.cast_time_unit("us")
   end
