@@ -191,6 +191,10 @@ module Polars
     #   Expand path given via globbing rules.
     # @param storage_options [Hash]
     #   Extra options that make sense for a particular storage connection.
+    # @param credential_provider [Object]
+    #   Provide a function that can be called to provide cloud storage
+    #   credentials. The function is expected to return a dictionary of
+    #   credential keys along with an optional credential expiry time.
     # @param retries [Integer]
     #   Number of retries if accessing a cloud instance fails.
     # @param file_cache_ttl [Integer]
@@ -220,6 +224,7 @@ module Polars
       row_index_offset: 0,
       glob: true,
       storage_options: nil,
+      credential_provider: nil,
       retries: 2,
       file_cache_ttl: nil,
       hive_partitioning: nil,
@@ -228,6 +233,10 @@ module Polars
       include_file_paths: nil
     )
       sources = get_sources(source)
+
+      credential_provider_builder = _init_credential_provider_builder(
+        credential_provider, sources, storage_options, "scan_parquet"
+      )
 
       rblf =
         RbLazyFrame.new_from_ipc(
@@ -243,6 +252,7 @@ module Polars
             rechunk: rechunk,
             cache: cache,
             storage_options: !storage_options.nil? ? storage_options.to_a : nil,
+            credential_provider: credential_provider_builder,
             retries: retries
           ),
           file_cache_ttl
