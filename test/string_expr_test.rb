@@ -9,8 +9,8 @@ class StringExprTest < Minitest::Test
     assert_expr str_expr.len_chars
   end
 
-  def test_concat
-    assert_expr str_expr.concat
+  def test_join
+    assert_expr str_expr.join
   end
 
   def test_to_uppercase
