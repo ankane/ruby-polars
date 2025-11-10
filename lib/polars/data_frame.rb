@@ -2180,7 +2180,6 @@ module Polars
     def equals(other, null_equal: true)
       _df.equals(other._df, null_equal)
     end
-    alias_method :frame_equal, :equals
 
     # Replace a column by a new Series.
     #

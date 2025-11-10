@@ -2665,7 +2665,6 @@ module Polars
     def equals(other, check_dtypes: false, check_names: false, null_equal: false)
       _s.equals(other._s, check_dtypes, check_names, null_equal)
     end
-    alias_method :series_equal, :equals
 
     # Return the number of elements in the Series.
     #
