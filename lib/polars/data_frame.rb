@@ -2178,35 +2178,6 @@ module Polars
       _df.equals(other._df, null_equal)
     end
 
-    # Replace a column by a new Series.
-    #
-    # @param column [String]
-    #   Column to replace.
-    # @param new_col [Series]
-    #   New column to insert.
-    #
-    # @return [DataFrame]
-    #
-    # @example
-    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3], "bar" => [4, 5, 6]})
-    #   s = Polars::Series.new([10, 20, 30])
-    #   df.replace("foo", s)
-    #   # =>
-    #   # shape: (3, 2)
-    #   # ┌─────┬─────┐
-    #   # │ foo ┆ bar │
-    #   # │ --- ┆ --- │
-    #   # │ i64 ┆ i64 │
-    #   # ╞═════╪═════╡
-    #   # │ 10  ┆ 4   │
-    #   # │ 20  ┆ 5   │
-    #   # │ 30  ┆ 6   │
-    #   # └─────┴─────┘
-    def replace(column, new_col)
-      _df.replace(column.to_s, new_col._s)
-      self
-    end
-
     # Get a slice of this DataFrame.
     #
     # @param offset [Integer]
