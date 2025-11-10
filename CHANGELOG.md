@@ -65,6 +65,7 @@
 - Removed `shrink_dtype` method from `Expr` (use `Series#shrink_dtype` instead)
 - Removed `replace` method from `DataFrame` (use `[]=` instead)
 - Removed `datetime` method from `DateTimeExpr` (use `replace_time_zone` instead)
+- Removed `mean` and `median` methods from `DateTimeNameSpace` (use `Series#mean` and `Series#median` instead)
 - Removed `concat` method from `StringExpr` and `StringNameSpace` (use `join` instead)
 - Removed `describe_plan` and `describe_optimized_plan` methods (use `explain` instead)
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods

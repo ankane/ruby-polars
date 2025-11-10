@@ -104,49 +104,6 @@ module Polars
       Utils.wrap_s(_s).max
     end
 
-    # Return median as Ruby object.
-    #
-    # @return [Object]
-    #
-    # @example
-    #   date = Polars.datetime_range(
-    #     DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 3), "1d", eager: true
-    #   ).alias("datetime")
-    #   # =>
-    #   # shape: (3,)
-    #   # Series: 'datetime' [datetime[ns]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-02 00:00:00
-    #   #         2001-01-03 00:00:00
-    #   # ]
-    #
-    # @example
-    #   date.dt.median
-    #   # => 2001-01-02 00:00:00 UTC
-    def median
-      _s.median
-    end
-
-    # Return mean as Ruby object.
-    #
-    # @return [Object]
-    #
-    # @example
-    #   s = Polars::Series.new([Date.new(2001, 1, 1), Date.new(2001, 1, 2)])
-    #   s.dt.mean
-    #   # => 2001-01-01 12:00:00 UTC
-    #
-    # @example
-    #   s = Polars::Series.new(
-    #     [DateTime.new(2001, 1, 1), DateTime.new(2001, 1, 2), DateTime.new(2001, 1, 3)]
-    #   )
-    #   s.dt.mean
-    #   # => 2001-01-02 00:00:00 UTC
-    def mean
-      _s.mean
-    end
-
     # Convert a Date/Time/Datetime column into a String column with the given format.
     #
     # Similar to `cast(Polars::String)`, but this method allows you to customize the
