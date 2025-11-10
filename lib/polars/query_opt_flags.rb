@@ -172,6 +172,13 @@ module Polars
     def fast_projection=(value)
       _rboptflags.fast_projection = value
     end
+
+    private
+
+    def initialize_copy(other)
+      super
+      self._rboptflags = _rboptflags.copy
+    end
   end
 
   DEFAULT_QUERY_OPT_FLAGS = QueryOptFlags.new
