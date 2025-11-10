@@ -36,6 +36,7 @@
 - Removed `group_by_rolling` methods (use `rolling` instead)
 - Removed `with_column` methods (use `with_columns` instead)
 - Removed `cleared` methods (use `clear` instead)
+- Removed `count_match` methods (use `count_matches` instead)
 - Removed `avg` method (use `mean` instead)
 - Removed `read_sql` method (use `read_database` instead)
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods

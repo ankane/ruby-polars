@@ -65,8 +65,8 @@ class StringExprTest < Minitest::Test
     assert_expr str_expr.extract_all("pattern")
   end
 
-  def test_count_match
-    assert_expr str_expr.count_match("pattern")
+  def test_count_matches
+    assert_expr str_expr.count_matches("pattern")
   end
 
   def test_split

@@ -917,7 +917,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"listcol" => [[0], [1], [1, 2, 3, 2], [1, 2, 1], [4, 4]]})
-    #   df.select(Polars.col("listcol").list.count_match(2).alias("number_of_twos"))
+    #   df.select(Polars.col("listcol").list.count_matches(2).alias("number_of_twos"))
     #   # =>
     #   # shape: (5, 1)
     #   # ┌────────────────┐
@@ -934,7 +934,6 @@ module Polars
     def count_matches(element)
       Utils.wrap_expr(_rbexpr.list_count_matches(Utils.parse_into_expression(element)))
     end
-    alias_method :count_match, :count_matches
 
     # Convert a List column into an Array column with the same inner data type.
     #

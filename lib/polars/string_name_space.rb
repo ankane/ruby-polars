@@ -635,7 +635,6 @@ module Polars
     def count_matches(pattern, literal: false)
       super
     end
-    alias_method :count_match, :count_matches
 
     # Split the string by a substring.
     #

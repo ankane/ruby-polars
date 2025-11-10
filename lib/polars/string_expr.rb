@@ -1207,7 +1207,7 @@ module Polars
     #   df = Polars::DataFrame.new({"foo" => ["123 bla 45 asd", "xyz 678 910t"]})
     #   df.select(
     #     [
-    #       Polars.col("foo").str.count_match('\d').alias("count_digits")
+    #       Polars.col("foo").str.count_matches('\d').alias("count_digits")
     #     ]
     #   )
     #   # =>
@@ -1224,7 +1224,6 @@ module Polars
       pattern = Utils.parse_into_expression(pattern, str_as_lit: true)
       Utils.wrap_expr(_rbexpr.str_count_matches(pattern, literal))
     end
-    alias_method :count_match, :count_matches
 
     # Split the string by a substring.
     #
