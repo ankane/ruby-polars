@@ -1002,62 +1002,6 @@ module Polars
       super
     end
 
-    # Return the string left justified in a string of length `width`.
-    #
-    # Padding is done using the specified `fillchar`. The original string is
-    # returned if `width` is less than or equal to `s.length`.
-    #
-    # @param width [Integer]
-    #   Justify left to this length.
-    # @param fillchar [String]
-    #   Fill with this ASCII character.
-    #
-    # @return [Series]
-    #
-    # @example
-    #   s = Polars::Series.new("a", ["cow", "monkey", nil, "hippopotamus"])
-    #   s.str.ljust(8, "*")
-    #   # =>
-    #   # shape: (4,)
-    #   # Series: 'a' [str]
-    #   # [
-    #   #         "cow*****"
-    #   #         "monkey**"
-    #   #         null
-    #   #         "hippopotamus"
-    #   # ]
-    def ljust(width, fillchar = " ")
-      super
-    end
-
-    # Return the string right justified in a string of length `width`.
-    #
-    # Padding is done using the specified `fillchar`. The original string is
-    # returned if `width` is less than or equal to `s.length`.
-    #
-    # @param width [Integer]
-    #   Justify right to this length.
-    # @param fillchar [String]
-    #   Fill with this ASCII character.
-    #
-    # @return [Series]
-    #
-    # @example
-    #   s = Polars::Series.new("a", ["cow", "monkey", nil, "hippopotamus"])
-    #   s.str.rjust(8, "*")
-    #   # =>
-    #   # shape: (4,)
-    #   # Series: 'a' [str]
-    #   # [
-    #   #         "*****cow"
-    #   #         "**monkey"
-    #   #         null
-    #   #         "hippopotamus"
-    #   # ]
-    def rjust(width, fillchar = " ")
-      super
-    end
-
     # Modify the strings to their lowercase equivalent.
     #
     # @return [Series]

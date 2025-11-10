@@ -682,7 +682,6 @@ module Polars
       length = Utils.parse_into_expression(length)
       Utils.wrap_expr(_rbexpr.str_pad_start(length, fill_char))
     end
-    alias_method :rjust, :pad_start
 
     # Pad the end of the string until it reaches the given length.
     #
@@ -713,7 +712,6 @@ module Polars
       length = Utils.parse_into_expression(length)
       Utils.wrap_expr(_rbexpr.str_pad_end(length, fill_char))
     end
-    alias_method :ljust, :pad_end
 
     # Fills the string with zeroes.
     #

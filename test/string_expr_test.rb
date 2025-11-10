@@ -37,12 +37,12 @@ class StringExprTest < Minitest::Test
     assert_expr str_expr.zfill(1)
   end
 
-  def test_ljust
-    assert_expr str_expr.ljust(1)
+  def test_pad_start
+    assert_expr str_expr.pad_start(1)
   end
 
-  def test_rjust
-    assert_expr str_expr.rjust(1)
+  def test_pad_end
+    assert_expr str_expr.pad_end(1)
   end
 
   def test_contains
