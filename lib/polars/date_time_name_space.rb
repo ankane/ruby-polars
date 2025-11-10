@@ -1091,19 +1091,6 @@ module Polars
       super
     end
 
-    # Localize tz-naive Datetime Series to tz-aware Datetime Series.
-    #
-    # This method takes a naive Datetime Series and makes this time zone aware.
-    # It does not move the time to another time zone.
-    #
-    # @param tz [String]
-    #   Time zone for the `Datetime` Series.
-    #
-    # @return [Series]
-    def tz_localize(tz)
-      super
-    end
-
     # Extract the days from a Duration type.
     #
     # @param fractional [Boolean]
