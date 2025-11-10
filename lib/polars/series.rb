@@ -2576,8 +2576,6 @@ module Polars
     def is_first_distinct
       super
     end
-    alias_method :is_first, :is_first_distinct
-
 
     # Return a boolean mask indicating the last occurrence of each distinct value.
     #

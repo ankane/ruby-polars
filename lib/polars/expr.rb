@@ -2871,7 +2871,7 @@ module Polars
     #       "num" => [1, 2, 3, 1, 5]
     #     }
     #   )
-    #   df.with_columns(Polars.col("num").is_first.alias("is_first"))
+    #   df.with_columns(Polars.col("num").is_first_distinct.alias("is_first"))
     #   # =>
     #   # shape: (5, 2)
     #   # ┌─────┬──────────┐
@@ -2888,7 +2888,6 @@ module Polars
     def is_first_distinct
       wrap_expr(_rbexpr.is_first_distinct)
     end
-    alias_method :is_first, :is_first_distinct
 
     # Return a boolean mask indicating the last occurrence of each distinct value.
     #
