@@ -613,7 +613,7 @@ module Polars
     #   # => false
     def any?(ignore_nulls: true, &block)
       if block_given?
-        apply(return_dtype: Boolean, skip_nulls: ignore_nulls, &block).any?
+        map_elements(return_dtype: Boolean, skip_nulls: ignore_nulls, &block).any?
       else
         _s.any(ignore_nulls)
       end
@@ -637,7 +637,7 @@ module Polars
     #   # => true
     def all?(ignore_nulls: true, &block)
       if block_given?
-        apply(return_dtype: Boolean, skip_nulls: ignore_nulls, &block).all?
+        map_elements(return_dtype: Boolean, skip_nulls: ignore_nulls, &block).all?
       else
         _s.all(ignore_nulls)
       end
@@ -661,7 +661,7 @@ module Polars
     #   # => true
     def none?(&block)
       if block_given?
-        apply(return_dtype: Boolean, &block).none?
+        map_elements(return_dtype: Boolean, &block).none?
       else
         to_frame.select(Polars.col(name).is_not.all).to_series[0]
       end
@@ -3639,7 +3639,6 @@ module Polars
       Utils.wrap_s(_s.map_elements(function, pl_return_dtype, skip_nulls))
     end
     alias_method :map, :map_elements
-    alias_method :apply, :map_elements
 
     # Shift the values by a given period.
     #

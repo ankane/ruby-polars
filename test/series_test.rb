@@ -779,9 +779,9 @@ class SeriesTest < Minitest::Test
     assert_series [1, 2, 3], s.shrink_dtype, dtype: Polars::Int8
   end
 
-  def test_apply
+  def test_map_elements
     s = Polars::Series.new([1, 2, 3])
-    assert_series [1, 4, 9], s.apply(return_dtype: Polars::Int64) { |v| v**2 }, dtype: Polars::Int64
+    assert_series [1, 4, 9], s.map_elements(return_dtype: Polars::Int64) { |v| v**2 }, dtype: Polars::Int64
     assert_series [1, 2, 3], s.map(return_dtype: Polars::Float64, &:to_f), dtype: Polars::Float64
     assert_series [false, true, false], s.map(return_dtype: Polars::Boolean, &:even?), dtype: Polars::Boolean
   end

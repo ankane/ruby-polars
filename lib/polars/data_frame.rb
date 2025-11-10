@@ -3446,7 +3446,6 @@ module Polars
         _from_rbdf(Utils.wrap_s(out).to_frame._df)
       end
     end
-    alias_method :apply, :map_rows
 
     # Return a new DataFrame grown horizontally by stacking multiple Series to it.
     #

@@ -37,6 +37,7 @@
 - Removed `days`, `hours`, `minutes`, `seconds`, `milliseconds`, `microseconds`, and `nanoseconds` methods (use `total_*` instead)
 - Removed `with_column` methods (use `with_columns` instead)
 - Removed `series_equal` and `frame_equal` methods (use `equals` instead)
+- Removed `apply` methods (use `map_elements` or `map_rows` instead)
 - Removed `lengths` methods (use `len` or `len_bytes` instead)
 - Removed `keep_name`, `prefix`, `suffix`, and `map_alias` methods (use `name` methods instead)
 - Removed `ljust` and `rjust` methods (use `pad_end` and `pad_start` instead)
