@@ -1748,7 +1748,7 @@ module Polars
       describe_cast = lambda do |stat|
         columns = []
         self.columns.each_with_index do |s, i|
-          if self[s].is_numeric || self[s].is_boolean
+          if self[s].dtype.numeric? || self[s].dtype == Boolean
             columns << stat[0.., i].cast(:f64)
           else
             # for dates, strings, etc, we cast to string so that all

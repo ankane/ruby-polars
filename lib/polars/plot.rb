@@ -10,11 +10,11 @@ module Polars
       x ||= columns[0]
       y ||= columns[1]
       type ||= begin
-        if self[x].numeric? && self[y].numeric?
+        if self[x].dtype.numeric? && self[y].dtype.numeric?
           "scatter"
-        elsif self[x].utf8? && self[y].numeric?
+        elsif self[x].dtype == String && self[y].dtype.numeric?
           "column"
-        elsif (self[x].dtype == Date || self[x].dtype.is_a?(Datetime)) && self[y].numeric?
+        elsif (self[x].dtype == Date || self[x].dtype == Datetime) && self[y].dtype.numeric?
           "line"
         else
           raise "Cannot determine type. Use the type option."
@@ -26,9 +26,9 @@ module Polars
       case type
       when "line", "area"
         x_type =
-          if df[x].numeric?
+          if df[x].dtype.numeric?
             "quantitative"
-          elsif df[x].datelike?
+          elsif df[x].dtype.temporal?
             "temporal"
           else
             "nominal"

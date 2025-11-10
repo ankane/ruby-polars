@@ -358,7 +358,7 @@ module Polars
     #
     # @return [Series]
     def *(other)
-      if is_temporal
+      if dtype.temporal?
         raise ArgumentError, "first cast to integer before multiplying datelike dtypes"
       elsif other.is_a?(DataFrame)
         other * self
@@ -371,11 +371,11 @@ module Polars
     #
     # @return [Series]
     def /(other)
-      if is_temporal
+      if dtype.temporal?
         raise ArgumentError, "first cast to integer before dividing datelike dtypes"
       end
 
-      if is_float
+      if dtype.float?
         return _arithmetic(other, :div)
       end
 
@@ -386,7 +386,7 @@ module Polars
     #
     # @return [Series]
     def %(other)
-      if is_datelike
+      if dtype.temporal?
         raise ArgumentError, "first cast to integer before applying modulo on datelike dtypes"
       end
       _arithmetic(other, :rem)
@@ -396,7 +396,7 @@ module Polars
     #
     # @return [Series]
     def **(power)
-      if is_datelike
+      if dtype.temporal?
         raise ArgumentError, "first cast to integer before raising datelike dtypes to a power"
       end
       to_frame.select(Polars.col(name).pow(power)).to_series
@@ -466,7 +466,7 @@ module Polars
     # @return [Object]
     def []=(key, value)
       if value.is_a?(::Array)
-        if is_numeric || is_datelike
+        if dtype.numeric? || dtype.temporal?
           scatter(key, value)
           return
         end
@@ -864,7 +864,7 @@ module Polars
     def describe
       if len == 0
         raise ArgumentError, "Series must contain at least one value"
-      elsif is_numeric
+      elsif dtype.numeric?
         s = cast(:f64)
         stats = {
           "min" => s.min,
@@ -874,19 +874,19 @@ module Polars
           "std" => s.std,
           "count" => s.len
         }
-      elsif is_boolean
+      elsif dtype == Boolean
         stats = {
           "sum" => sum,
           "null_count" => null_count,
           "count" => len
         }
-      elsif is_utf8
+      elsif dtype == String
         stats = {
           "unique" => unique.length,
           "null_count" => null_count,
           "count" => len
         }
-      elsif is_datelike
+      elsif dtype.temporal?
         # we coerce all to string, because a polars column
         # only has a single dtype and dates: datetime and count: int don't match
         stats = {
@@ -1053,7 +1053,7 @@ module Polars
     #   s.std
     #   # => 1.0
     def std(ddof: 1)
-      if !is_numeric
+      if !dtype.numeric?
         nil
       else
         to_frame.select(Polars.col(name).std(ddof: ddof)).to_series[0]
@@ -1073,7 +1073,7 @@ module Polars
     #   s.var
     #   # => 1.0
     def var(ddof: 1)
-      if !is_numeric
+      if !dtype.numeric?
         nil
       else
         to_frame.select(Polars.col(name).var(ddof: ddof)).to_series[0]
@@ -2938,75 +2938,6 @@ module Polars
       ).to_series
     end
 
-    # Check if this Series datatype is numeric.
-    #
-    # @return [Boolean]
-    #
-    # @example
-    #   s = Polars::Series.new("a", [1, 2, 3])
-    #   s.is_numeric
-    #   # => true
-    def is_numeric
-      [Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64, Float32, Float64].include?(dtype)
-    end
-    alias_method :numeric?, :is_numeric
-
-    # Check if this Series datatype is datelike.
-    #
-    # @return [Boolean]
-    #
-    # @example
-    #   s = Polars::Series.new([Date.new(2021, 1, 1), Date.new(2021, 1, 2), Date.new(2021, 1, 3)])
-    #   s.is_datelike
-    #   # => true
-    def is_datelike
-      [Date, Time].include?(dtype) || dtype.is_a?(Datetime) || dtype.is_a?(Duration)
-    end
-    alias_method :datelike?, :is_datelike
-    alias_method :is_temporal, :is_datelike
-    alias_method :temporal?, :is_datelike
-
-    # Check if this Series has floating point numbers.
-    #
-    # @return [Boolean]
-    #
-    # @example
-    #   s = Polars::Series.new("a", [1.0, 2.0, 3.0])
-    #   s.is_float
-    #   # => true
-    def is_float
-      [Float32, Float64].include?(dtype)
-    end
-    alias_method :float?, :is_float
-
-    # Check if this Series is a Boolean.
-    #
-    # @return [Boolean]
-    #
-    # @example
-    #   s = Polars::Series.new("a", [true, false, true])
-    #   s.is_boolean
-    #   # => true
-    def is_boolean
-      dtype == Boolean
-    end
-    alias_method :boolean?, :is_boolean
-    alias_method :is_bool, :is_boolean
-    alias_method :bool?, :is_boolean
-
-    # Check if this Series datatype is a Utf8.
-    #
-    # @return [Boolean]
-    #
-    # @example
-    #   s = Polars::Series.new("x", ["a", "b", "c"])
-    #   s.is_utf8
-    #   # => true
-    def is_utf8
-      dtype == String
-    end
-    alias_method :utf8?, :is_utf8
-
     # def view
     # end
 
@@ -3021,7 +2952,7 @@ module Polars
     #   # Numo::Int64#shape=[3]
     #   # [1, 2, 3]
     def to_numo
-      if is_datelike
+      if dtype.temporal?
         Numo::RObject.cast(to_a)
       else
         _s.to_numo
@@ -6371,7 +6302,7 @@ module Polars
         return Utils.wrap_s(_s.send(op, other._s))
       end
 
-      if (other.is_a?(Float) || other.is_a?(::Date) || other.is_a?(::DateTime) || other.is_a?(::Time) || other.is_a?(::String)) && !is_float
+      if (other.is_a?(Float) || other.is_a?(::Date) || other.is_a?(::DateTime) || other.is_a?(::Time) || other.is_a?(::String)) && !dtype.float?
         _s2 = sequence_to_rbseries(name, [other])
         return Utils.wrap_s(_s.send(op, _s2))
       end

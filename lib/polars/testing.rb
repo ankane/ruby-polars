@@ -480,7 +480,7 @@ module Polars
     end
 
     def _comparing_floats(left, right)
-      left.is_float && right.is_float
+      left.dtype.float? && right.dtype.float?
     end
 
     def _comparing_lists(left, right)

@@ -45,6 +45,7 @@
 - Removed `json_extract` method (use `json_decode` instead)
 - Removed `cleared` methods (use `clear` instead)
 - Removed `count_match` methods (use `count_matches` instead)
+- Removed `is_numeric`, `is_datelike`, `is_temporal`, `is_float`, `is_bool`, `is_boolean`, and `is_utf8` methods from `Series` (use `dtype` methods instead)
 - Removed `avg` method (use `mean` instead)
 - Removed `read_sql` method (use `read_database` instead)
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods

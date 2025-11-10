@@ -646,33 +646,20 @@ class SeriesTest < Minitest::Test
   end
 
   def test_is_numeric
-    assert Polars::Series.new([1]).is_numeric
-    assert Polars::Series.new([1.0]).is_numeric
-    refute Polars::Series.new(["one"]).is_numeric
-    assert Polars::Series.new([1]).numeric?
-    assert Polars::Series.new([1.0]).numeric?
-    refute Polars::Series.new(["one"]).numeric?
+    assert Polars::Series.new([1]).dtype.numeric?
+    assert Polars::Series.new([1.0]).dtype.numeric?
+    refute Polars::Series.new(["one"]).dtype.numeric?
   end
 
-  def test_is_datelike
-    assert Polars::Series.new([Date.today]).is_datelike
-    assert Polars.datetime_range(DateTime.new(2020), DateTime.new(2023), "1y", eager: true).is_datelike
-    refute Polars::Series.new([1]).is_datelike
+  def test_is_temporal
+    assert Polars::Series.new([Date.today]).dtype.temporal?
+    assert Polars.datetime_range(DateTime.new(2020), DateTime.new(2023), "1y", eager: true).dtype.temporal?
+    refute Polars::Series.new([1]).dtype.temporal?
   end
 
   def test_is_float
-    assert Polars::Series.new([1.5]).is_float
-    refute Polars::Series.new([1]).is_float
-  end
-
-  def test_is_bool
-    assert Polars::Series.new([true]).is_bool
-    refute Polars::Series.new([1]).is_bool
-  end
-
-  def test_is_utf8
-    assert Polars::Series.new(["one"]).is_utf8
-    refute Polars::Series.new([1]).is_utf8
+    assert Polars::Series.new([1.5]).dtype.float?
+    refute Polars::Series.new([1]).dtype.float?
   end
 
   def test_fill_nan
