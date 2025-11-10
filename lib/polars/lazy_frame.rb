@@ -3399,7 +3399,6 @@ module Polars
     def with_row_index(name: "index", offset: 0)
       _from_rbldf(_ldf.with_row_index(name, offset))
     end
-    alias_method :with_row_count, :with_row_index
 
     # Take every nth row in the LazyFrame and return as a new LazyFrame.
     #
