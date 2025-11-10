@@ -3,7 +3,7 @@ use polars_core::datatypes::{TimeUnit, TimeZone};
 
 use crate::conversion::Wrap;
 use crate::prelude::*;
-use crate::{RbExpr, RbResult};
+use crate::{RbExpr, RbPolarsErr, RbResult};
 
 pub fn int_range(start: &RbExpr, end: &RbExpr, step: i64, dtype: Wrap<DataType>) -> RbExpr {
     let start = start.inner.clone();
@@ -112,4 +112,20 @@ pub fn time_ranges(
     let every = Duration::parse(&every);
     let closed = closed.0;
     dsl::time_ranges(start, end, every, closed).into()
+}
+
+pub fn linear_spaces(
+    start: &RbExpr,
+    end: &RbExpr,
+    num_samples: &RbExpr,
+    closed: Wrap<ClosedInterval>,
+    as_array: bool,
+) -> RbResult<RbExpr> {
+    let start = start.inner.clone();
+    let end = end.inner.clone();
+    let num_samples = num_samples.inner.clone();
+    let closed = closed.0;
+    let out =
+        dsl::linear_spaces(start, end, num_samples, closed, as_array).map_err(RbPolarsErr::from)?;
+    Ok(out.into())
 }

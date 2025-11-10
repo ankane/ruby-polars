@@ -759,6 +759,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("time_range", function!(functions::range::time_range, 4))?;
     class.define_singleton_method("time_ranges", function!(functions::range::time_ranges, 4))?;
     class.define_singleton_method(
+        "linear_spaces",
+        function!(functions::range::linear_spaces, 5),
+    )?;
+    class.define_singleton_method(
         "dtype_str_repr",
         function!(functions::misc::dtype_str_repr, 1),
     )?;
