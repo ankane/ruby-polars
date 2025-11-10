@@ -871,10 +871,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "describe_optimized_plan",
         method!(RbLazyFrame::describe_optimized_plan, 0),
     )?;
-    class.define_method(
-        "optimization_toggle",
-        method!(RbLazyFrame::optimization_toggle, 9),
-    )?;
     class.define_method("sort", method!(RbLazyFrame::sort, 5))?;
     class.define_method("sort_by_exprs", method!(RbLazyFrame::sort_by_exprs, 5))?;
     class.define_method("top_k", method!(RbLazyFrame::top_k, 3))?;

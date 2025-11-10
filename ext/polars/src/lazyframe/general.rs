@@ -287,35 +287,6 @@ impl RbLazyFrame {
         Ok(result)
     }
 
-    #[allow(clippy::too_many_arguments)]
-    pub fn optimization_toggle(
-        &self,
-        type_coercion: bool,
-        predicate_pushdown: bool,
-        projection_pushdown: bool,
-        simplify_expr: bool,
-        slice_pushdown: bool,
-        comm_subplan_elim: bool,
-        comm_subexpr_elim: bool,
-        allow_streaming: bool,
-        _eager: bool,
-    ) -> RbLazyFrame {
-        let ldf = self.ldf.borrow().clone();
-        let mut ldf = ldf
-            .with_type_coercion(type_coercion)
-            .with_predicate_pushdown(predicate_pushdown)
-            .with_simplify_expr(simplify_expr)
-            .with_slice_pushdown(slice_pushdown)
-            .with_new_streaming(allow_streaming)
-            ._with_eager(_eager)
-            .with_projection_pushdown(projection_pushdown);
-
-        ldf = ldf.with_comm_subplan_elim(comm_subplan_elim);
-        ldf = ldf.with_comm_subexpr_elim(comm_subexpr_elim);
-
-        ldf.into()
-    }
-
     pub fn sort(
         &self,
         by_column: String,
