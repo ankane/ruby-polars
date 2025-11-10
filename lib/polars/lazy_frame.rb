@@ -1872,7 +1872,6 @@ module Polars
       lgb = _ldf.group_by(exprs, maintain_order)
       LazyGroupBy.new(lgb)
     end
-    alias_method :groupby, :group_by
     alias_method :group, :group_by
 
     # Create rolling groups based on a time column.
@@ -1980,7 +1979,6 @@ module Polars
       lgb = _ldf.rolling(index_column, period, offset, closed, rbexprs_by)
       LazyGroupBy.new(lgb)
     end
-    alias_method :groupby_rolling, :rolling
 
     # Group based on a time value (or index value of type `:i32`, `:i64`).
     #
@@ -2273,7 +2271,6 @@ module Polars
       )
       LazyGroupBy.new(lgb)
     end
-    alias_method :groupby_dynamic, :group_by_dynamic
 
     # Perform an asof join.
     #

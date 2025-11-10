@@ -2551,7 +2551,6 @@ module Polars
         maintain_order: maintain_order
       )
     end
-    alias_method :groupby, :group_by
     alias_method :group, :group_by
 
     # Create rolling groups based on a time column.
@@ -2647,7 +2646,6 @@ module Polars
     )
       RollingGroupBy.new(self, index_column, period, offset, closed, group_by)
     end
-    alias_method :groupby_rolling, :rolling
 
     # Group based on a time value (or index value of type `:i32`, `:i64`).
     #
@@ -2926,7 +2924,6 @@ module Polars
         start_by
       )
     end
-    alias_method :groupby_dynamic, :group_by_dynamic
 
     # Upsample a DataFrame at a regular frequency.
     #
