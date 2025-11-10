@@ -1108,18 +1108,6 @@ module Polars
     # @param maintain_order [Boolean]
     #   Maintain the order in which data is processed.
     #   Setting this to `false` will be slightly faster.
-    # @param type_coercion [Boolean]
-    #   Do type coercion optimization.
-    # @param predicate_pushdown [Boolean]
-    #   Do predicate pushdown optimization.
-    # @param projection_pushdown [Boolean]
-    #   Do projection pushdown optimization.
-    # @param simplify_expression [Boolean]
-    #   Run simplify expressions optimization.
-    # @param slice_pushdown [Boolean]
-    #   Slice pushdown optimization.
-    # @param no_optimization [Boolean]
-    #   Turn off (certain) optimizations.
     # @param storage_options [String]
     #   Options that indicate how to connect to a cloud provider.
     #
@@ -1154,27 +1142,12 @@ module Polars
     def sink_ndjson(
       path,
       maintain_order: true,
-      type_coercion: true,
-      predicate_pushdown: true,
-      projection_pushdown: true,
-      simplify_expression: true,
-      slice_pushdown: true,
-      no_optimization: false,
       storage_options: nil,
       retries: 2,
       sync_on_close: nil,
       mkdir: false,
       lazy: false
     )
-      lf = _set_sink_optimizations(
-        type_coercion: type_coercion,
-        predicate_pushdown: predicate_pushdown,
-        projection_pushdown: projection_pushdown,
-        simplify_expression: simplify_expression,
-        slice_pushdown: slice_pushdown,
-        no_optimization: no_optimization
-      )
-
       if storage_options&.any?
         storage_options = storage_options.to_a
       else
@@ -1187,14 +1160,15 @@ module Polars
         "mkdir" => mkdir
       }
 
-      lf = lf.sink_json(path, storage_options, retries, sink_options)
-      lf = LazyFrame._from_rbldf(lf)
+      ldf_rb = _ldf.sink_json(path, storage_options, retries, sink_options)
 
       if !lazy
-        lf.collect
+        # TODO optimizations
+        ldf = LazyFrame._from_rbldf(ldf_rb)
+        ldf.collect
         return nil
       end
-      lf
+      LazyFrame._from_rbldf(ldf_rb)
     end
 
     # @private
