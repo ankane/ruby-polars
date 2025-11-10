@@ -4028,7 +4028,6 @@ module Polars
         )
       )
     end
-    alias_method :melt, :unpivot
 
     # def map
     # end

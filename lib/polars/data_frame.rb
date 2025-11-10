@@ -4210,7 +4210,6 @@ module Polars
 
       _from_rbdf(_df.unpivot(on, index, value_name, variable_name))
     end
-    alias_method :melt, :unpivot
 
     # Unstack a long table to a wide form without doing an aggregation.
     #

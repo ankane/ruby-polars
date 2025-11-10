@@ -48,6 +48,7 @@
 - Removed `parse_int` method (use `to_integer` instead)
 - Removed `json_extract` method (use `json_decode` instead)
 - Removed `cleared` methods (use `clear` instead)
+- Removed `melt` method (use `unpivot` instead)
 - Removed `count_match` methods (use `count_matches` instead)
 - Removed `is_numeric`, `is_datelike`, `is_temporal`, `is_float`, `is_bool`, `is_boolean`, and `is_utf8` methods from `Series` (use `dtype` methods instead)
 - Removed `is_first` method (use `is_first_distinct` instead)
