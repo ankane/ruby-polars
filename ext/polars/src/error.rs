@@ -3,7 +3,7 @@ use std::fmt::{Debug, Formatter};
 use magnus::Error;
 use polars::prelude::PolarsError;
 
-use crate::exceptions::{ComputeError, InvalidOperationError};
+use crate::exceptions::{ColumnNotFoundError, ComputeError, InvalidOperationError};
 use crate::rb_modules;
 
 pub enum RbPolarsErr {
@@ -27,6 +27,7 @@ impl From<RbPolarsErr> for Error {
     fn from(err: RbPolarsErr) -> Self {
         match err {
             RbPolarsErr::Polars(err) => match err {
+                PolarsError::ColumnNotFound(name) => ColumnNotFoundError::new_err(name.to_string()),
                 PolarsError::ComputeError(err) => ComputeError::new_err(err.to_string()),
                 PolarsError::InvalidOperation(err) => {
                     InvalidOperationError::new_err(err.to_string())

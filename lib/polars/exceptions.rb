@@ -4,6 +4,10 @@ module Polars
   class Error < StandardError; end
 
   # @private
+  # Exception raised when a specified column is not found.
+  class ColumnNotFoundError < Error; end
+
+  # @private
   # Exception raised when an operation is not allowed (or possible) against a given object or data structure.
   class InvalidOperationError < Error; end
 

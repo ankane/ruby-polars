@@ -3863,10 +3863,13 @@ module Polars
       _df.get_columns.map { |s| Utils.wrap_s(s) }
     end
 
-    # Get a single column as Series by name.
+    # Get a single column by name.
     #
     # @param name [String]
     #   Name of the column to retrieve.
+    # @param default [Object]
+    #   Value to return if the column does not exist; if not explicitly set and
+    #   the column is not present a `ColumnNotFoundError` exception is raised.
     #
     # @return [Series]
     #
@@ -3881,8 +3884,22 @@ module Polars
     #   #         2
     #   #         3
     #   # ]
-    def get_column(name)
-      self[name]
+    #
+    # @example
+    #   df.get_column("baz", default: Polars::Series.new("baz", ["?", "?", "?"]))
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'baz' [str]
+    #   # [
+    #   #         "?"
+    #   #         "?"
+    #   #         "?"
+    #   # ]
+    def get_column(name, default: NO_DEFAULT)
+      Utils.wrap_s(_df.get_column(name))
+    rescue ColumnNotFoundError
+      raise if default.eql?(NO_DEFAULT)
+      default
     end
 
     # Fill null values using the specified value or strategy.
