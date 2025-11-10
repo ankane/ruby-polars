@@ -1485,6 +1485,17 @@ impl TryConvert for Wrap<UnicodeForm> {
     }
 }
 
+impl TryConvert for Wrap<Option<KeyValueMetadata>> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        if ob.is_nil() {
+            return Ok(Wrap(None));
+        }
+        todo!();
+    }
+}
+
+unsafe impl TryConvertOwned for Wrap<Option<KeyValueMetadata>> {}
+
 impl TryConvert for Wrap<Option<TimeZone>> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let tz = Option::<Wrap<PlSmallStr>>::try_convert(ob)?;

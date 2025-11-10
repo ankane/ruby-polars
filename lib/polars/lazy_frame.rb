@@ -705,7 +705,7 @@ module Polars
     #   If `nil` (default), the chunks of the `DataFrame` are
     #   used. Writing in smaller chunks may reduce memory pressure and improve
     #   writing speeds.
-    # @param data_pagesize_limit [Integer]
+    # @param data_page_size [Integer]
     #   Size limit of individual data pages.
     #   If not set defaults to 1024 * 1024 bytes
     # @param maintain_order [Boolean]
@@ -760,19 +760,22 @@ module Polars
       compression_level: nil,
       statistics: true,
       row_group_size: nil,
-      data_pagesize_limit: nil,
+      data_page_size: nil,
       maintain_order: true,
+      storage_options: nil,
+      credential_provider: "auto",
+      retries: 2,
+      sync_on_close: nil,
+      metadata: nil,
+      mkdir: false,
+      lazy: false,
+      field_overwrites: nil,
       type_coercion: true,
       predicate_pushdown: true,
       projection_pushdown: true,
       simplify_expression: true,
       no_optimization: false,
-      slice_pushdown: true,
-      storage_options: nil,
-      retries: 2,
-      sync_on_close: nil,
-      mkdir: false,
-      lazy: false
+      slice_pushdown: true
     )
       lf = _set_sink_optimizations(
         type_coercion: type_coercion,
@@ -801,6 +804,10 @@ module Polars
         }
       end
 
+      credential_provider_builder = Polars.send(:_init_credential_provider_builder,
+        credential_provider, path, storage_options, "sink_parquet"
+      )
+
       if storage_options&.any?
         storage_options = storage_options.to_a
       else
@@ -813,16 +820,24 @@ module Polars
         "mkdir" => mkdir
       }
 
+      field_overwrites_dicts = []
+      if !field_overwrites.nil?
+        raise Todo
+      end
+
       lf = lf.sink_parquet(
         path,
         compression,
         compression_level,
         statistics,
         row_group_size,
-        data_pagesize_limit,
+        data_page_size,
         storage_options,
+        credential_provider_builder,
         retries,
-        sink_options
+        sink_options,
+        metadata,
+        field_overwrites_dicts
       )
       lf = LazyFrame._from_rbldf(lf)
 

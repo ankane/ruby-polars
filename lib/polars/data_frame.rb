@@ -1072,7 +1072,14 @@ module Polars
       compression_level: nil,
       statistics: false,
       row_group_size: nil,
-      data_page_size: nil
+      data_page_size: nil,
+      partition_by: nil,
+      partition_chunk_size_bytes: 4_294_967_296,
+      storage_options: nil,
+      credential_provider: "auto",
+      retries: 2,
+      metadata: nil,
+      mkdir: false
     )
       if compression.nil?
         compression = "uncompressed"
@@ -1082,6 +1089,9 @@ module Polars
       end
 
       target = file
+      if !partition_by.nil?
+        raise Todo
+      end
 
       lazy.sink_parquet(
         target,
@@ -1089,7 +1099,12 @@ module Polars
         compression_level: compression_level,
         statistics: statistics,
         row_group_size: row_group_size,
-        data_pagesize_limit: data_page_size
+        data_page_size: data_page_size,
+        storage_options: storage_options,
+        credential_provider: credential_provider,
+        retries: retries,
+        metadata: metadata,
+        mkdir: mkdir
       )
     end
 

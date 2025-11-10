@@ -1,4 +1,7 @@
-use magnus::{IntoValue, RArray, RHash, Ruby, TryConvert, Value, r_hash::ForEach, typed_data::Obj};
+use magnus::{
+    IntoValue, RArray, RHash, Ruby, TryConvert, Value, r_hash::ForEach,
+    try_convert::TryConvertOwned, typed_data::Obj,
+};
 use polars::io::RowIndex;
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
@@ -404,8 +407,11 @@ impl RbLazyFrame {
         row_group_size: Option<usize>,
         data_page_size: Option<usize>,
         cloud_options: Option<Vec<(String, String)>>,
+        credential_provider: Option<Value>,
         retries: usize,
         sink_options: Wrap<SinkOptions>,
+        metadata: Wrap<Option<KeyValueMetadata>>,
+        field_overwrites: Vec<Wrap<ParquetFieldOverwrites>>,
     ) -> RbResult<RbLazyFrame> {
         let compression = parse_parquet_compression(&compression, compression_level)?;
 
@@ -414,8 +420,8 @@ impl RbLazyFrame {
             statistics: statistics.0,
             row_group_size,
             data_page_size,
-            key_value_metadata: None,
-            field_overwrites: Vec::new(),
+            key_value_metadata: metadata.0,
+            field_overwrites: field_overwrites.into_iter().map(|f| f.0).collect(),
         };
 
         let cloud_options = match target.base_path() {
@@ -423,7 +429,11 @@ impl RbLazyFrame {
             Some(base_path) => {
                 let cloud_options =
                     parse_cloud_options(base_path.to_str(), cloud_options.unwrap_or_default())?;
-                Some(cloud_options.with_max_retries(retries))
+                Some(
+                    cloud_options
+                        .with_max_retries(retries)
+                        .with_credential_provider(credential_provider.map(|_| todo!())),
+                )
             }
         };
 
@@ -1012,3 +1022,11 @@ impl RbLazyFrame {
         Ok(out.into())
     }
 }
+
+impl TryConvert for Wrap<polars_io::parquet::write::ParquetFieldOverwrites> {
+    fn try_convert(_ob: Value) -> RbResult<Self> {
+        todo!();
+    }
+}
+
+unsafe impl TryConvertOwned for Wrap<polars_io::parquet::write::ParquetFieldOverwrites> {}

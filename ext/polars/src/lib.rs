@@ -877,7 +877,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("bottom_k", method!(RbLazyFrame::bottom_k, 3))?;
     class.define_method("cache", method!(RbLazyFrame::cache, 0))?;
     class.define_method("collect", method!(RbLazyFrame::collect, 0))?;
-    class.define_method("sink_parquet", method!(RbLazyFrame::sink_parquet, 9))?;
+    class.define_method("sink_parquet", method!(RbLazyFrame::sink_parquet, 12))?;
     class.define_method("sink_ipc", method!(RbLazyFrame::sink_ipc, 6))?;
     class.define_method("sink_csv", method!(RbLazyFrame::sink_csv, -1))?;
     class.define_method("sink_json", method!(RbLazyFrame::sink_json, 4))?;
