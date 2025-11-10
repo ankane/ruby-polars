@@ -1485,7 +1485,7 @@ module Polars
     #   df.select(
     #     [
     #       Polars.col("date"),
-    #       Polars.col("date").diff.dt.days.alias("days_diff")
+    #       Polars.col("date").diff.dt.total_days.alias("days_diff")
     #     ]
     #   )
     #   # =>
@@ -1502,7 +1502,6 @@ module Polars
     def total_days(fractional: false)
       Utils.wrap_expr(_rbexpr.dt_total_days(fractional))
     end
-    alias_method :days, :total_days
 
     # Extract the hours from a Duration type.
     #
@@ -1522,7 +1521,7 @@ module Polars
     #   df.select(
     #     [
     #       Polars.col("date"),
-    #       Polars.col("date").diff.dt.hours.alias("hours_diff")
+    #       Polars.col("date").diff.dt.total_hours.alias("hours_diff")
     #     ]
     #   )
     #   # =>
@@ -1540,7 +1539,6 @@ module Polars
     def total_hours(fractional: false)
       Utils.wrap_expr(_rbexpr.dt_total_hours(fractional))
     end
-    alias_method :hours, :total_hours
 
     # Extract the minutes from a Duration type.
     #
@@ -1560,7 +1558,7 @@ module Polars
     #   df.select(
     #     [
     #       Polars.col("date"),
-    #       Polars.col("date").diff.dt.minutes.alias("minutes_diff")
+    #       Polars.col("date").diff.dt.total_minutes.alias("minutes_diff")
     #     ]
     #   )
     #   # =>
@@ -1578,7 +1576,6 @@ module Polars
     def total_minutes(fractional: false)
       Utils.wrap_expr(_rbexpr.dt_total_minutes(fractional))
     end
-    alias_method :minutes, :total_minutes
 
     # Extract the seconds from a Duration type.
     #
@@ -1598,7 +1595,7 @@ module Polars
     #   df.select(
     #     [
     #       Polars.col("date"),
-    #       Polars.col("date").diff.dt.seconds.alias("seconds_diff")
+    #       Polars.col("date").diff.dt.total_seconds.alias("seconds_diff")
     #     ]
     #   )
     #   # =>
@@ -1617,7 +1614,6 @@ module Polars
     def total_seconds(fractional: false)
       Utils.wrap_expr(_rbexpr.dt_total_seconds(fractional))
     end
-    alias_method :seconds, :total_seconds
 
     # Extract the milliseconds from a Duration type.
     #
@@ -1637,7 +1633,7 @@ module Polars
     #   df.select(
     #     [
     #       Polars.col("date"),
-    #       Polars.col("date").diff.dt.milliseconds.alias("milliseconds_diff")
+    #       Polars.col("date").diff.dt.total_milliseconds.alias("milliseconds_diff")
     #     ]
     #   )
     #   # =>
@@ -1662,7 +1658,6 @@ module Polars
     def total_milliseconds(fractional: false)
       Utils.wrap_expr(_rbexpr.dt_total_milliseconds(fractional))
     end
-    alias_method :milliseconds, :total_milliseconds
 
     # Extract the microseconds from a Duration type.
     #
@@ -1682,7 +1677,7 @@ module Polars
     #   df.select(
     #     [
     #       Polars.col("date"),
-    #       Polars.col("date").diff.dt.microseconds.alias("microseconds_diff")
+    #       Polars.col("date").diff.dt.total_microseconds.alias("microseconds_diff")
     #     ]
     #   )
     #   # =>
@@ -1707,7 +1702,6 @@ module Polars
     def total_microseconds(fractional: false)
       Utils.wrap_expr(_rbexpr.dt_total_microseconds(fractional))
     end
-    alias_method :microseconds, :total_microseconds
 
     # Extract the nanoseconds from a Duration type.
     #
@@ -1727,7 +1721,7 @@ module Polars
     #   df.select(
     #     [
     #       Polars.col("date"),
-    #       Polars.col("date").diff.dt.nanoseconds.alias("nanoseconds_diff")
+    #       Polars.col("date").diff.dt.total_nanoseconds.alias("nanoseconds_diff")
     #     ]
     #   )
     #   # =>
@@ -1752,7 +1746,6 @@ module Polars
     def total_nanoseconds(fractional: false)
       Utils.wrap_expr(_rbexpr.dt_total_nanoseconds(fractional))
     end
-    alias_method :nanoseconds, :total_nanoseconds
 
     # Offset this date by a relative time offset.
     #

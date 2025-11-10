@@ -34,6 +34,7 @@
 - Removed `shift_and_fill` methods (use `shift(fill_value:)` instead)
 - Removed `groupby`, `groupby_dynamic`, and `groupby_rolling` methods (use `group_by*` instead)
 - Removed `group_by_rolling` methods (use `rolling` instead)
+- Removed `days`, `hours`, `minutes`, `seconds`, `milliseconds`, `microseconds`, and `nanoseconds` methods (use `total_*` instead)
 - Removed `with_column` methods (use `with_columns` instead)
 - Removed `cleared` methods (use `clear` instead)
 - Removed `count_match` methods (use `count_matches` instead)

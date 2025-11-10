@@ -87,32 +87,32 @@ class DateTimeExprTest < Minitest::Test
     assert_expr dt_expr.replace_time_zone("Etc/UTC")
   end
 
-  def test_days
-    assert_expr dt_expr.days
+  def test_total_days
+    assert_expr dt_expr.total_days
   end
 
-  def test_hours
-    assert_expr dt_expr.hours
+  def test_total_hours
+    assert_expr dt_expr.total_hours
   end
 
-  def test_minutes
-    assert_expr dt_expr.minutes
+  def test_total_minutes
+    assert_expr dt_expr.total_minutes
   end
 
-  def test_seconds
-    assert_expr dt_expr.seconds
+  def test_total_seconds
+    assert_expr dt_expr.total_seconds
   end
 
-  def test_milliseconds
-    assert_expr dt_expr.milliseconds
+  def test_total_milliseconds
+    assert_expr dt_expr.total_milliseconds
   end
 
-  def test_microseconds
-    assert_expr dt_expr.microseconds
+  def test_total_microseconds
+    assert_expr dt_expr.total_microseconds
   end
 
-  def test_nanoseconds
-    assert_expr dt_expr.nanoseconds
+  def test_total_nanoseconds
+    assert_expr dt_expr.total_nanoseconds
   end
 
   def test_offset_by

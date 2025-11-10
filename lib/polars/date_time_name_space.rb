@@ -1114,7 +1114,6 @@ module Polars
     def total_days(fractional: false)
       super
     end
-    alias_method :days, :total_days
 
     # Extract the hours from a Duration type.
     #
@@ -1149,7 +1148,6 @@ module Polars
     def total_hours(fractional: false)
       super
     end
-    alias_method :hours, :total_hours
 
     # Extract the minutes from a Duration type.
     #
@@ -1184,7 +1182,6 @@ module Polars
     def total_minutes(fractional: false)
       super
     end
-    alias_method :minutes, :total_minutes
 
     # Extract the seconds from a Duration type.
     #
@@ -1223,7 +1220,6 @@ module Polars
     def total_seconds(fractional: false)
       super
     end
-    alias_method :seconds, :total_seconds
 
     # Extract the milliseconds from a Duration type.
     #
@@ -1258,7 +1254,6 @@ module Polars
     def total_milliseconds(fractional: false)
       super
     end
-    alias_method :milliseconds, :total_milliseconds
 
     # Extract the microseconds from a Duration type.
     #
@@ -1293,7 +1288,6 @@ module Polars
     def total_microseconds(fractional: false)
       super
     end
-    alias_method :microseconds, :total_microseconds
 
     # Extract the nanoseconds from a Duration type.
     #
@@ -1330,7 +1324,6 @@ module Polars
     def total_nanoseconds(fractional: false)
       super
     end
-    alias_method :nanoseconds, :total_nanoseconds
 
     # Offset this date by a relative time offset.
     #

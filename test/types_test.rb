@@ -114,13 +114,13 @@ class TypesTest < Minitest::Test
   def test_series_dtype_duration
     s = Polars::Series.new([1e6, 2e6, 3e6], dtype: Polars::Duration)
     assert_series [1, 2, 3], s, dtype: Polars::Duration.new("us")
-    assert_series [1e6, 2e6, 3e6], s.dt.microseconds
+    assert_series [1e6, 2e6, 3e6], s.dt.total_microseconds
   end
 
   def test_series_dtype_duration_time_unit
     s = Polars::Series.new([1e3, 2e3, 3e3], dtype: Polars::Duration.new("ms"))
     assert_series [1, 2, 3], s, dtype: Polars::Duration.new("ms")
-    assert_series [1e3, 2e3, 3e3], s.dt.milliseconds
+    assert_series [1e3, 2e3, 3e3], s.dt.total_milliseconds
   end
 
   def test_series_dtype_time
