@@ -1617,38 +1617,6 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_to_integer(base, dtype, strict))
     end
 
-    # Parse integers with base radix from strings.
-    #
-    # By default base 2. ParseError/Overflows become Nulls.
-    #
-    # @param radix [Integer]
-    #   Positive integer which is the base of the string we are parsing.
-    #   Default: 2.
-    # @param strict [Boolean]
-    #   Bool, Default=true will raise any ParseError or overflow as ComputeError.
-    #   False silently convert to Null.
-    #
-    # @return [Expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new({"bin" => ["110", "101", "010", "invalid"]})
-    #   df.select(Polars.col("bin").str.parse_int(2, strict: false))
-    #   # =>
-    #   # shape: (4, 1)
-    #   # ┌──────┐
-    #   # │ bin  │
-    #   # │ ---  │
-    #   # │ i32  │
-    #   # ╞══════╡
-    #   # │ 6    │
-    #   # │ 5    │
-    #   # │ 2    │
-    #   # │ null │
-    #   # └──────┘
-    def parse_int(radix = 2, strict: true)
-      to_integer(base: 2, strict: strict).cast(Int32, strict: strict)
-    end
-
     # Use the aho-corasick algorithm to find matches.
     #
     # This version determines if any of the patterns find a match.
