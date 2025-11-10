@@ -265,7 +265,6 @@ module Polars
     def len_chars
       super
     end
-    alias_method :n_chars, :len_chars
 
     # Check if strings in Series contain a substring that matches a regex.
     #

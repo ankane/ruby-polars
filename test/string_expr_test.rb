@@ -5,8 +5,8 @@ class StringExprTest < Minitest::Test
     assert_expr str_expr.lengths
   end
 
-  def test_n_chars
-    assert_expr str_expr.n_chars
+  def test_len_chars
+    assert_expr str_expr.len_chars
   end
 
   def test_concat

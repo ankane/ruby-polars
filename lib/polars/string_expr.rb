@@ -344,7 +344,6 @@ module Polars
     def len_chars
       Utils.wrap_expr(_rbexpr.str_len_chars)
     end
-    alias_method :n_chars, :len_chars
 
     # Vertically concat the values in the Series to a single string value.
     #

@@ -39,6 +39,7 @@
 - Removed `keep_name`, `prefix`, `suffix`, and `map_alias` methods (use `name` methods instead)
 - Removed `ljust` and `rjust` methods (use `pad_end` and `pad_start` instead)
 - Removed `lstrip` and `rstrip` methods (use `strip_chars_start` and `strip_chars_end` instead)
+- Removed `n_chars` method (use `len_chars` instead)
 - Removed `cleared` methods (use `clear` instead)
 - Removed `count_match` methods (use `count_matches` instead)
 - Removed `avg` method (use `mean` instead)
