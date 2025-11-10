@@ -59,6 +59,7 @@
 - Removed `avg` method (use `mean` instead)
 - Removed `read_sql` method (use `read_database` instead)
 - Removed `replace` method from `DataFrame` (use `[]=` instead)
+- Removed `concat` method from `StringExpr` and `StringNameSpace` (use `join` instead)
 - Removed `describe_plan` and `describe_optimized_plan` methods (use `explain` instead)
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods
 - Removed `in_place` option from `rename` method

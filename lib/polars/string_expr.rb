@@ -379,9 +379,9 @@ module Polars
     #   # │ null │
     #   # └──────┘
     def join(delimiter = "-", ignore_nulls: true)
+      # TODO make "" default delimiter
       Utils.wrap_expr(_rbexpr.str_join(delimiter, ignore_nulls))
     end
-    alias_method :concat, :join
 
     # Returns string values with all regular expression meta characters escaped.
     #

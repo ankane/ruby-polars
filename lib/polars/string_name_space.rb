@@ -1478,9 +1478,9 @@ module Polars
     #   #         null
     #   # ]
     def join(delimiter = "-", ignore_nulls: true)
+      # TODO make "" default delimiter
       super
     end
-    alias_method :concat, :join
 
     # Returns string values with all regular expression meta characters escaped.
     #
