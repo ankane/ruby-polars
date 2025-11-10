@@ -4611,7 +4611,7 @@ module Polars
     end
 
     def _select_engine(engine, path = nil)
-      engine = engine == "auto" ? Plr.get_engine_affinity : engine
+      engine = Plr.get_engine_affinity if engine == "auto"
       engine == "auto" && !path.is_a?(::String) ? "in-memory" : engine
     end
   end
