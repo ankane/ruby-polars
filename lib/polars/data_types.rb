@@ -278,7 +278,6 @@ module Polars
   # Calendar date and time type.
   class Datetime < TemporalType
     attr_reader :time_unit, :time_zone
-    alias_method :tu, :time_unit
 
     def initialize(time_unit = "us", time_zone = nil)
       @time_unit = time_unit || "us"
@@ -303,7 +302,6 @@ module Polars
   # Time duration/delta type.
   class Duration < TemporalType
     attr_reader :time_unit
-    alias_method :tu, :time_unit
 
     def initialize(time_unit = "us")
       @time_unit = time_unit
