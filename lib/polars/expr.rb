@@ -7767,17 +7767,6 @@ module Polars
       wrap_expr(_rbexpr.implode)
     end
 
-    # Shrink numeric columns to the minimal required datatype.
-    #
-    # Shrink to the dtype needed to fit the extrema of this `Series`.
-    # This can be used to reduce memory pressure.
-    #
-    # @return [Expr]
-    def shrink_dtype
-      warn "`Expr.shrink_dtype` is deprecated and is a no-op; use `Series.shrink_dtype` instead."
-      self
-    end
-
     # Bin values into buckets and count their occurrences.
     #
     # @note
