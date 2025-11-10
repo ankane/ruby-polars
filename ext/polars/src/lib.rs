@@ -449,7 +449,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("dt_timestamp", method!(RbExpr::dt_timestamp, 1))?;
     class.define_method("dt_to_string", method!(RbExpr::dt_to_string, 1))?;
     class.define_method("dt_offset_by", method!(RbExpr::dt_offset_by, 1))?;
-    class.define_method("dt_with_time_unit", method!(RbExpr::dt_with_time_unit, 1))?;
     class.define_method(
         "dt_convert_time_zone",
         method!(RbExpr::dt_convert_time_zone, 1),

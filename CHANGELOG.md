@@ -67,6 +67,7 @@
 - Removed `replace` method from `DataFrame` (use `[]=` instead)
 - Removed `fetch` method from `LazyFrame` (use `head` + `collect` instead)
 - Removed `with_context` method from `LazyFrame` (use `Polars.concat(how: "horizontal")` instead)
+- Removed `with_time_unit` method from `DateTimeExpr` and `DateTimeNameSpace` (use `cast(Polars::Int64).cast(Polars::Datetime.new(...))` instead)
 - Removed `datetime` method from `DateTimeExpr` (use `replace_time_zone` instead)
 - Removed `mean` and `median` methods from `DateTimeNameSpace` (use `Series#mean` and `Series#median` instead)
 - Removed `concat` method from `StringExpr` and `StringNameSpace` (use `join` instead)

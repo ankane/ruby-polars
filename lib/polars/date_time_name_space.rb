@@ -847,43 +847,6 @@ module Polars
       super
     end
 
-    # Set time unit a Series of dtype Datetime or Duration.
-    #
-    # This does not modify underlying data, and should be used to fix an incorrect
-    # time unit.
-    #
-    # @param time_unit ["ns", "us", "ms"]
-    #   Time unit for the `Datetime` Series.
-    #
-    # @return [Series]
-    #
-    # @example
-    #   start = DateTime.new(2001, 1, 1)
-    #   stop = DateTime.new(2001, 1, 3)
-    #   date = Polars.datetime_range(start, stop, "1d", time_unit: "ns", eager: true).alias("datetime")
-    #   # =>
-    #   # shape: (3,)
-    #   # Series: 'datetime' [datetime[ns]]
-    #   # [
-    #   #         2001-01-01 00:00:00
-    #   #         2001-01-02 00:00:00
-    #   #         2001-01-03 00:00:00
-    #   # ]
-    #
-    # @example
-    #   date.dt.with_time_unit("us").alias("tu_us")
-    #   # =>
-    #   # shape: (3,)
-    #   # Series: 'tu_us' [datetime[μs]]
-    #   # [
-    #   #         +32971-04-28 00:00:00
-    #   #         +32974-01-22 00:00:00
-    #   #         +32976-10-18 00:00:00
-    #   # ]
-    def with_time_unit(time_unit)
-      super
-    end
-
     # Cast the underlying data to another time unit. This may lose precision.
     #
     # @param time_unit ["ns", "us", "ms"]

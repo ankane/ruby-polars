@@ -26,10 +26,6 @@ impl RbExpr {
         self.inner.clone().dt().offset_by(by.inner.clone()).into()
     }
 
-    pub fn dt_with_time_unit(&self, tu: Wrap<TimeUnit>) -> Self {
-        self.inner.clone().dt().with_time_unit(tu.0).into()
-    }
-
     pub fn dt_convert_time_zone(&self, time_zone: String) -> RbResult<Self> {
         Ok(self
             .inner

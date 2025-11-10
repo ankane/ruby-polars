@@ -1255,47 +1255,6 @@ module Polars
       Utils.wrap_expr(_rbexpr.dt_timestamp(time_unit))
     end
 
-    # Set time unit of a Series of dtype Datetime or Duration.
-    #
-    # This does not modify underlying data, and should be used to fix an incorrect
-    # time unit.
-    #
-    # @param time_unit ["ns", "us", "ms"]
-    #   Time unit for the `Datetime` Series.
-    #
-    # @return [Expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "date" => Polars.datetime_range(
-    #         Time.utc(2001, 1, 1),
-    #         Time.utc(2001, 1, 3),
-    #         "1d",
-    #         time_unit: "ns",
-    #         eager: true
-    #       )
-    #     }
-    #   )
-    #   df.select(
-    #     Polars.col("date"),
-    #     Polars.col("date").dt.with_time_unit("us").alias("time_unit_us")
-    #   )
-    #   # =>
-    #   # shape: (3, 2)
-    #   # ┌─────────────────────┬───────────────────────┐
-    #   # │ date                ┆ time_unit_us          │
-    #   # │ ---                 ┆ ---                   │
-    #   # │ datetime[ns]        ┆ datetime[μs]          │
-    #   # ╞═════════════════════╪═══════════════════════╡
-    #   # │ 2001-01-01 00:00:00 ┆ +32971-04-28 00:00:00 │
-    #   # │ 2001-01-02 00:00:00 ┆ +32974-01-22 00:00:00 │
-    #   # │ 2001-01-03 00:00:00 ┆ +32976-10-18 00:00:00 │
-    #   # └─────────────────────┴───────────────────────┘
-    def with_time_unit(time_unit)
-      Utils.wrap_expr(_rbexpr.dt_with_time_unit(time_unit))
-    end
-
     # Cast the underlying data to another time unit. This may lose precision.
     #
     # @param time_unit ["ns", "us", "ms"]
