@@ -87,6 +87,15 @@ module Polars
       self
     end
 
+    # Create new empty set off optimizations.
+    def self._eager
+      optflags = QueryOptFlags.new
+      optflags.no_optimizations
+      optflags._rboptflags.eager = true
+      optflags.simplify_expression = true
+      optflags
+    end
+
     # Remove selected optimizations.
     def no_optimizations
       _rboptflags.no_optimizations

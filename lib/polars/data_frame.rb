@@ -3985,7 +3985,7 @@ module Polars
       _from_rbdf(
         lazy
           .fill_null(value, strategy: strategy, limit: limit, matches_supertype: matches_supertype)
-          .collect(no_optimization: true)
+          .collect(optimizations: QueryOptFlags._eager)
           ._df
       )
     end

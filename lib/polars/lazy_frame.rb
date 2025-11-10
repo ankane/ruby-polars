@@ -579,6 +579,18 @@ module Polars
     #   Common subexpressions will be cached and reused.
     # @param allow_streaming [Boolean]
     #   Run parts of the query in a streaming fashion (this is in an alpha state)
+    # @param engine
+    #   Select the engine used to process the query, optional.
+    #   At the moment, if set to `"auto"` (default), the query is run
+    #   using the polars streaming engine. Polars will also
+    #   attempt to use the engine set by the `POLARS_ENGINE_AFFINITY`
+    #   environment variable. If it cannot run the query using the
+    #   selected engine, the query is run using the polars streaming
+    #   engine.
+    # @param optimizations
+    #   The optimization passes done during query optimization.
+    #
+    #   This has no effect if `lazy` is set to `true`.
     #
     # @return [DataFrame]
     #
@@ -613,31 +625,43 @@ module Polars
       comm_subexpr_elim: true,
       allow_streaming: false,
       engine: "auto",
+      optimizations: nil,
       _eager: false
     )
-      if no_optimization
-        predicate_pushdown = false
-        projection_pushdown = false
-        slice_pushdown = false
-        common_subplan_elimination = false
-        comm_subexpr_elim = false
+      engine = _select_engine(engine)
+
+      if engine == "streaming"
+        Utils.issue_unstable_warning("streaming mode is considered unstable.")
       end
 
-      if allow_streaming
-        common_subplan_elimination = false
+      if optimizations.nil?
+        if no_optimization
+          predicate_pushdown = false
+          projection_pushdown = false
+          slice_pushdown = false
+          common_subplan_elimination = false
+          comm_subexpr_elim = false
+        end
+
+        if allow_streaming
+          common_subplan_elimination = false
+        end
+
+        ldf = _ldf.optimization_toggle(
+          type_coercion,
+          predicate_pushdown,
+          projection_pushdown,
+          simplify_expression,
+          slice_pushdown,
+          common_subplan_elimination,
+          comm_subexpr_elim,
+          allow_streaming,
+          _eager
+        )
+      else
+        ldf = _ldf.with_optimizations(optimizations._rboptflags)
       end
 
-      ldf = _ldf.optimization_toggle(
-        type_coercion,
-        predicate_pushdown,
-        projection_pushdown,
-        simplify_expression,
-        slice_pushdown,
-        common_subplan_elimination,
-        comm_subexpr_elim,
-        allow_streaming,
-        _eager
-      )
       Utils.wrap_df(ldf.collect(engine))
     end
 
