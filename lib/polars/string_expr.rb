@@ -311,7 +311,6 @@ module Polars
     def len_bytes
       Utils.wrap_expr(_rbexpr.str_len_bytes)
     end
-    alias_method :lengths, :len_bytes
 
     # Get length of the strings as `:u32` (as number of chars).
     #

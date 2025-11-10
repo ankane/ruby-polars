@@ -304,7 +304,7 @@ class GuideTest < Minitest::Test
   # https://pola-rs.github.io/polars-book/user-guide/howcani/data/strings.html
   def test_data_strings
     df = Polars::DataFrame.new({"shakespeare" => "All that glitters is not gold".split(" ")})
-    output df.with_columns(Polars.col("shakespeare").str.lengths.alias("letter_count"))
+    output df.with_columns(Polars.col("shakespeare").str.len_chars.alias("letter_count"))
 
     df = Polars::DataFrame.new({"a" => "The man that ate a whole cake".split(" ")})
     output df.filter(Polars.col("a").str.contains("(?i)^the$|^a$").is_not)

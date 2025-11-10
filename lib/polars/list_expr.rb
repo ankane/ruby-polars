@@ -69,7 +69,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [1, 2], "bar" => [["a", "b"], ["c"]]})
-    #   df.select(Polars.col("bar").list.lengths)
+    #   df.select(Polars.col("bar").list.len)
     #   # =>
     #   # shape: (2, 1)
     #   # ┌─────┐
@@ -83,7 +83,6 @@ module Polars
     def len
       Utils.wrap_expr(_rbexpr.list_len)
     end
-    alias_method :lengths, :len
 
     # Drop all null values in the list.
     #

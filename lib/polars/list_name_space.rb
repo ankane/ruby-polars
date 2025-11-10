@@ -77,7 +77,6 @@ module Polars
     def len
       super
     end
-    alias_method :lengths, :len
 
     # Drop all null values in the list.
     #

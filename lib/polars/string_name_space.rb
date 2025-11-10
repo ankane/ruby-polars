@@ -244,7 +244,6 @@ module Polars
     def len_bytes
       super
     end
-    alias_method :lengths, :len_bytes
 
     # Return the length of each string as the number of characters.
     #

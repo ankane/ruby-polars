@@ -1,8 +1,8 @@
 require_relative "test_helper"
 
 class ListExprTest < Minitest::Test
-  def test_lengths
-    assert_expr list_expr.lengths
+  def test_len
+    assert_expr list_expr.len
   end
 
   def test_sum

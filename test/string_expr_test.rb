@@ -1,8 +1,8 @@
 require_relative "test_helper"
 
 class StringExprTest < Minitest::Test
-  def test_lengths
-    assert_expr str_expr.lengths
+  def test_len_bytes
+    assert_expr str_expr.len_bytes
   end
 
   def test_len_chars
