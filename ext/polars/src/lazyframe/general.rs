@@ -464,6 +464,7 @@ impl RbLazyFrame {
         compression: Wrap<Option<IpcCompression>>,
         compat_level: RbCompatLevel,
         cloud_options: Option<Vec<(String, String)>>,
+        credential_provider: Option<Value>,
         retries: usize,
         sink_options: Wrap<SinkOptions>,
     ) -> RbResult<RbLazyFrame> {
@@ -478,7 +479,11 @@ impl RbLazyFrame {
             Some(base_path) => {
                 let cloud_options =
                     parse_cloud_options(base_path.to_str(), cloud_options.unwrap_or_default())?;
-                Some(cloud_options.with_max_retries(retries))
+                Some(
+                    cloud_options
+                        .with_max_retries(retries)
+                        .with_credential_provider(credential_provider.map(|_| todo!())),
+                )
             }
         };
 
@@ -510,8 +515,9 @@ impl RbLazyFrame {
         let null_value = Option::<String>::try_convert(arguments[13])?;
         let quote_style = Option::<Wrap<QuoteStyle>>::try_convert(arguments[14])?;
         let cloud_options = Option::<Vec<(String, String)>>::try_convert(arguments[15])?;
-        let retries = usize::try_convert(arguments[16])?;
-        let sink_options = Wrap::<SinkOptions>::try_convert(arguments[17])?;
+        let credential_provider = Option::<Value>::try_convert(arguments[16])?;
+        let retries = usize::try_convert(arguments[17])?;
+        let sink_options = Wrap::<SinkOptions>::try_convert(arguments[18])?;
 
         let quote_style = quote_style.map_or(QuoteStyle::default(), |wrap| wrap.0);
         let null_value = null_value.unwrap_or(SerializeOptions::default().null);
@@ -542,7 +548,11 @@ impl RbLazyFrame {
             Some(base_path) => {
                 let cloud_options =
                     parse_cloud_options(base_path.to_str(), cloud_options.unwrap_or_default())?;
-                Some(cloud_options.with_max_retries(retries))
+                Some(
+                    cloud_options
+                        .with_max_retries(retries)
+                        .with_credential_provider(credential_provider.map(|_| todo!())),
+                )
             }
         };
 
@@ -561,6 +571,7 @@ impl RbLazyFrame {
         &self,
         target: SinkTarget,
         cloud_options: Option<Vec<(String, String)>>,
+        credential_provider: Option<Value>,
         retries: usize,
         sink_options: Wrap<SinkOptions>,
     ) -> RbResult<RbLazyFrame> {
@@ -571,7 +582,11 @@ impl RbLazyFrame {
             Some(base_path) => {
                 let cloud_options =
                     parse_cloud_options(base_path.to_str(), cloud_options.unwrap_or_default())?;
-                Some(cloud_options.with_max_retries(retries))
+                Some(
+                    cloud_options
+                        .with_max_retries(retries)
+                        .with_credential_provider(credential_provider.map(|_| todo!())),
+                )
             }
         };
 

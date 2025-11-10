@@ -908,9 +908,11 @@ module Polars
     )
       engine = _select_engine(engine)
 
-      if credential_provider != "auto"
-        raise Todo
-      end
+      _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
+
+      credential_provider_builder = _init_credential_provider_builder.(
+        credential_provider, path, storage_options, "sink_ipc"
+      )
 
       if storage_options&.any?
         storage_options = storage_options.to_a
@@ -940,6 +942,7 @@ module Polars
         compression,
         compat_level_rb,
         storage_options,
+        credential_provider_builder,
         retries,
         sink_options
       )
@@ -1078,9 +1081,11 @@ module Polars
       Utils._check_arg_is_1byte("quote_char", quote_char, false)
       engine = _select_engine(engine)
 
-      if credential_provider != "auto"
-        raise Todo
-      end
+      _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
+
+      credential_provider_builder = _init_credential_provider_builder.(
+        credential_provider, path, storage_options, "sink_csv"
+      )
 
       if storage_options&.any?
         storage_options = storage_options.to_a
@@ -1111,6 +1116,7 @@ module Polars
         null_value,
         quote_style,
         storage_options,
+        credential_provider_builder,
         retries,
         sink_options
       )
@@ -1180,6 +1186,7 @@ module Polars
       path,
       maintain_order: true,
       storage_options: nil,
+      credential_provider: "auto",
       retries: 2,
       sync_on_close: nil,
       mkdir: false,
@@ -1187,6 +1194,12 @@ module Polars
       engine: "auto",
       optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
+      _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
+
+      credential_provider_builder = _init_credential_provider_builder.(
+        credential_provider, path, storage_options, "sink_ndjson"
+      )
+
       if storage_options&.any?
         storage_options = storage_options.to_a
       else
@@ -1199,7 +1212,13 @@ module Polars
         "mkdir" => mkdir
       }
 
-      ldf_rb = _ldf.sink_json(path, storage_options, retries, sink_options)
+      ldf_rb = _ldf.sink_json(
+        path,
+        storage_options,
+        credential_provider_builder,
+        retries,
+        sink_options
+      )
 
       if !lazy
         ldf_rb = ldf_rb.with_optimizations(optimizations._rboptflags)
