@@ -21,8 +21,8 @@ class StringExprTest < Minitest::Test
     assert_expr str_expr.to_lowercase
   end
 
-  def test_strip
-    assert_expr str_expr.strip
+  def test_strip_chars
+    assert_expr str_expr.strip_chars
   end
 
   def test_strip_chars_start
