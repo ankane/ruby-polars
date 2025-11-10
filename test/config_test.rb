@@ -26,4 +26,8 @@ class ConfigTest < Minitest::Test
   def test_thread_pool_size
     assert_kind_of Integer, Polars.thread_pool_size
   end
+
+  def test_get_index_type
+    assert_equal Polars::UInt32, Polars.get_index_type
+  end
 end

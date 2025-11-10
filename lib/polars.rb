@@ -126,4 +126,15 @@ module Polars
   def self.thread_pool_size
     Plr.thread_pool_size
   end
+
+  # Return the data type used for Polars indexing.
+  #
+  # @return [Object]
+  #
+  # @example
+  #   Polars.get_index_type
+  #   # => Polars::UInt32
+  def self.get_index_type
+    Plr.get_index_type
+  end
 end
