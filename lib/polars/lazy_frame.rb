@@ -615,9 +615,6 @@ module Polars
       engine: "auto",
       _eager: false
     )
-      # TODO fix
-      engine = nil if engine == "auto"
-
       if no_optimization
         predicate_pushdown = false
         projection_pushdown = false
@@ -772,6 +769,8 @@ module Polars
       engine: "auto",
       optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
+      engine = _select_engine(engine, path)
+
       if statistics == true
         statistics = {
           min: true,
@@ -906,7 +905,7 @@ module Polars
       engine: "auto",
       optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
-      engine = _select_engine(engine)
+      engine = _select_engine(engine, path)
 
       _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
 
@@ -1079,7 +1078,7 @@ module Polars
     )
       Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, false)
-      engine = _select_engine(engine)
+      engine = _select_engine(engine, path)
 
       _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
 
@@ -1194,6 +1193,8 @@ module Polars
       engine: "auto",
       optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
+      engine = _select_engine(engine, path)
+
       _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
 
       credential_provider_builder = _init_credential_provider_builder.(
@@ -4609,8 +4610,9 @@ module Polars
       _from_rbldf(filter_method.(combined_predicate._rbexpr))
     end
 
-    def _select_engine(engine)
-      engine == "auto" ? Plr.get_engine_affinity : engine
+    def _select_engine(engine, path = nil)
+      engine = engine == "auto" ? Plr.get_engine_affinity : engine
+      engine == "auto" && !path.is_a?(::String) ? "in-memory" : engine
     end
   end
 end
