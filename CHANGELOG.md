@@ -55,7 +55,7 @@
 - Removed `find_idx_by_name` method (use `get_column_index` instead)
 - Removed `avg` method (use `mean` instead)
 - Removed `read_sql` method (use `read_database` instead)
-- Removed `replace` method from `DataFrame`
+- Removed `replace` method from `DataFrame` (use `[]=` instead)
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods
 - Removed `in_place` option from `rename` method
 - Removed `append_chunks` option from `append` method

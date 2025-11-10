@@ -515,7 +515,7 @@ module Polars
         if col_selection.is_a?(Integer)
           replace_column(col_selection, s)
         elsif Utils.strlike?(col_selection)
-          replace(col_selection, s)
+          _replace(col_selection.to_s, s)
         end
       else
         raise Todo
@@ -6586,6 +6586,11 @@ module Polars
 
     def _from_rbdf(rb_df)
       self.class._from_rbdf(rb_df)
+    end
+
+    def _replace(column, new_column)
+      self._df.replace(column, new_column._s)
+      self
     end
 
     def _comp(other, op)
