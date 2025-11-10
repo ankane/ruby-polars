@@ -608,9 +608,9 @@ class SeriesTest < Minitest::Test
     assert_equal 3, s.null_count
   end
 
-  def test_has_validity
-    refute Polars::Series.new([1, 2]).has_validity
-    assert Polars::Series.new([1, nil]).has_validity
+  def test_has_nulls
+    refute Polars::Series.new([1, 2]).has_nulls
+    assert Polars::Series.new([1, nil]).has_nulls
   end
 
   def test_is_empty
