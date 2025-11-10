@@ -285,7 +285,6 @@ module Polars
     def mean(*columns)
       col(*columns).mean
     end
-    alias_method :avg, :mean
 
     # Get the median value.
     #
