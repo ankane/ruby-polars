@@ -52,6 +52,7 @@
 - Removed `approx_unique` method (use `approx_n_unique` instead)
 - Removed `set_at_idx` method (use `scatter` instead)
 - Removed `insert_at_idx` and `replace_at_idx` methods (use `insert_column` and `replace_column` instead)
+- Removed `find_idx_by_name` method (use `get_column_index` instead)
 - Removed `avg` method (use `mean` instead)
 - Removed `read_sql` method (use `read_database` instead)
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods

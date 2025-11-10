@@ -1799,7 +1799,6 @@ module Polars
     def get_column_index(name)
       _df.get_column_index(name)
     end
-    alias_method :find_idx_by_name, :get_column_index
 
     # Replace a column at an index location.
     #
