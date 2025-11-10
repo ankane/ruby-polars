@@ -752,12 +752,12 @@ class SeriesTest < Minitest::Test
     assert_series [1, 5, nil, 10], s.clip(1, 10)
   end
 
-  def test_clip_min
+  def test_clip_lower_bound
     s = Polars::Series.new("foo", [-50, 5, nil, 50])
     assert_series [1, 5, nil, 50], s.clip(1)
   end
 
-  def test_clip_max
+  def test_clip_upper_bound
     s = Polars::Series.new("foo", [-50, 5, nil, 50])
     assert_series [-50, 5, nil, 10], s.clip(nil, 10)
   end
