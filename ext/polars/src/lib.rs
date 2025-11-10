@@ -1360,92 +1360,83 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("default", function!(RbOptFlags::default, 0))?;
     class.define_method("no_optimizations", method!(RbOptFlags::no_optimizations, 0))?;
     class.define_method("copy", method!(RbOptFlags::copy, 0))?;
+    class.define_method("type_coercion", method!(RbOptFlags::get_type_coercion, 0))?;
+    class.define_method("type_coercion=", method!(RbOptFlags::set_type_coercion, 1))?;
+    class.define_method("type_check", method!(RbOptFlags::get_type_check, 0))?;
+    class.define_method("type_check=", method!(RbOptFlags::set_type_check, 1))?;
     class.define_method(
-        "get_type_coercion",
-        method!(RbOptFlags::get_type_coercion, 0),
-    )?;
-    class.define_method(
-        "set_type_coercion",
-        method!(RbOptFlags::set_type_coercion, 1),
-    )?;
-    class.define_method("get_type_check", method!(RbOptFlags::get_type_check, 0))?;
-    class.define_method("set_type_check", method!(RbOptFlags::set_type_check, 1))?;
-    class.define_method(
-        "get_projection_pushdown",
+        "projection_pushdown",
         method!(RbOptFlags::get_projection_pushdown, 0),
     )?;
     class.define_method(
-        "set_projection_pushdown",
+        "projection_pushdown=",
         method!(RbOptFlags::set_projection_pushdown, 1),
     )?;
     class.define_method(
-        "get_predicate_pushdown",
+        "predicate_pushdown",
         method!(RbOptFlags::get_predicate_pushdown, 0),
     )?;
     class.define_method(
-        "set_predicate_pushdown",
+        "predicate_pushdown=",
         method!(RbOptFlags::set_predicate_pushdown, 1),
     )?;
     class.define_method(
-        "get_cluster_with_columns",
+        "cluster_with_columns",
         method!(RbOptFlags::get_cluster_with_columns, 0),
     )?;
     class.define_method(
-        "set_cluster_with_columns",
+        "cluster_with_columns=",
         method!(RbOptFlags::set_cluster_with_columns, 1),
     )?;
     class.define_method(
-        "get_simplify_expression",
+        "simplify_expression",
         method!(RbOptFlags::get_simplify_expression, 0),
     )?;
     class.define_method(
-        "set_simplify_expression",
+        "simplify_expression=",
         method!(RbOptFlags::set_simplify_expression, 1),
     )?;
+    class.define_method("slice_pushdown", method!(RbOptFlags::get_slice_pushdown, 0))?;
     class.define_method(
-        "get_slice_pushdown",
-        method!(RbOptFlags::get_slice_pushdown, 0),
-    )?;
-    class.define_method(
-        "set_slice_pushdown",
+        "slice_pushdown=",
         method!(RbOptFlags::set_slice_pushdown, 1),
     )?;
     class.define_method(
-        "get_comm_subplan_elim",
+        "comm_subplan_elim",
         method!(RbOptFlags::get_comm_subplan_elim, 0),
     )?;
     class.define_method(
-        "set_comm_subplan_elim",
+        "comm_subplan_elim=",
         method!(RbOptFlags::set_comm_subplan_elim, 1),
     )?;
     class.define_method(
-        "get_comm_subexpr_elim",
+        "comm_subexpr_elim",
         method!(RbOptFlags::get_comm_subexpr_elim, 0),
     )?;
     class.define_method(
-        "set_comm_subexpr_elim",
+        "comm_subexpr_elim=",
         method!(RbOptFlags::set_comm_subexpr_elim, 1),
     )?;
     class.define_method(
-        "get_check_order_observe",
+        "check_order_observe",
         method!(RbOptFlags::get_check_order_observe, 0),
     )?;
     class.define_method(
-        "set_check_order_observe",
+        "check_order_observe=",
         method!(RbOptFlags::set_check_order_observe, 1),
     )?;
     class.define_method(
-        "get_fast_projection",
+        "fast_projection",
         method!(RbOptFlags::get_fast_projection, 0),
     )?;
     class.define_method(
-        "set_fast_projection",
+        "fast_projection=",
         method!(RbOptFlags::set_fast_projection, 1),
     )?;
-    class.define_method("get_eager", method!(RbOptFlags::get_eager, 0))?;
-    class.define_method("set_eager", method!(RbOptFlags::set_eager, 1))?;
-    class.define_method("get_streaming", method!(RbOptFlags::get_streaming, 0))?;
-    class.define_method("set_streaming", method!(RbOptFlags::set_streaming, 1))?;
+    class.define_method("eager", method!(RbOptFlags::get_eager, 0))?;
+    class.define_method("eager=", method!(RbOptFlags::set_eager, 1))?;
+    class.define_method("streaming", method!(RbOptFlags::get_streaming, 0))?;
+    class.define_method("streaming=", method!(RbOptFlags::set_streaming, 1))?;
 
     Ok(())
 }
