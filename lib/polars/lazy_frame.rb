@@ -860,6 +860,18 @@ module Polars
     #     Recursively create all the directories in the path.
     # @param lazy [Boolean]
     #     Wait to start execution until `collect` is called.
+    # @param engine
+    #   Select the engine used to process the query, optional.
+    #   At the moment, if set to `"auto"` (default), the query is run
+    #   using the polars streaming engine. Polars will also
+    #   attempt to use the engine set by the `POLARS_ENGINE_AFFINITY`
+    #   environment variable. If it cannot run the query using the
+    #   selected engine, the query is run using the polars streaming
+    #   engine.
+    # @param optimizations
+    #   The optimization passes done during query optimization.
+    #
+    #   This has no effect if `lazy` is set to `true`.
     #
     # @return [DataFrame]
     #
@@ -876,8 +888,12 @@ module Polars
       retries: 2,
       sync_on_close: nil,
       mkdir: false,
-      lazy: false
+      lazy: false,
+      engine: "auto",
+      optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
+      engine = _select_engine(engine)
+
       if credential_provider != "auto"
         raise Todo
       end
@@ -915,9 +931,9 @@ module Polars
       )
 
       if !lazy
-        # TODO optimizations
+        ldf_rb = ldf_rb.with_optimizations(optimizations._rboptflags)
         ldf = LazyFrame._from_rbldf(ldf_rb)
-        ldf.collect
+        ldf.collect(engine: engine)
         return nil
       end
       LazyFrame._from_rbldf(ldf_rb)
