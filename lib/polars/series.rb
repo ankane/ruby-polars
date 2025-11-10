@@ -5534,36 +5534,6 @@ module Polars
       super
     end
 
-    # Clip (limit) the values in an array to a `min` boundary.
-    #
-    # Only works for numerical types.
-    #
-    # If you want to clip other dtypes, consider writing a "when, then, otherwise"
-    # expression. See {#when} for more information.
-    #
-    # @param min_val [Numeric]
-    #   Minimum value.
-    #
-    # @return [Series]
-    def clip_min(min_val)
-      super
-    end
-
-    # Clip (limit) the values in an array to a `max` boundary.
-    #
-    # Only works for numerical types.
-    #
-    # If you want to clip other dtypes, consider writing a "when, then, otherwise"
-    # expression. See {#when} for more information.
-    #
-    # @param max_val [Numeric]
-    #   Maximum value.
-    #
-    # @return [Series]
-    def clip_max(max_val)
-      super
-    end
-
     # Return the lower bound of this Series' dtype as a unit Series.
     #
     # @return [Series]

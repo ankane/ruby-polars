@@ -6963,68 +6963,6 @@ module Polars
       wrap_expr(_rbexpr.clip(lower_bound, upper_bound))
     end
 
-    # Clip (limit) the values in an array to a `min` boundary.
-    #
-    # Only works for numerical types.
-    #
-    # If you want to clip other dtypes, consider writing a "when, then, otherwise"
-    # expression. See `when` for more information.
-    #
-    # @param lower_bound [Numeric]
-    #   Minimum value.
-    #
-    # @return [Expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new({"foo" => [-50, 5, nil, 50]})
-    #   df.with_column(Polars.col("foo").clip_min(0).alias("foo_clipped"))
-    #   # =>
-    #   # shape: (4, 2)
-    #   # ┌──────┬─────────────┐
-    #   # │ foo  ┆ foo_clipped │
-    #   # │ ---  ┆ ---         │
-    #   # │ i64  ┆ i64         │
-    #   # ╞══════╪═════════════╡
-    #   # │ -50  ┆ 0           │
-    #   # │ 5    ┆ 5           │
-    #   # │ null ┆ null        │
-    #   # │ 50   ┆ 50          │
-    #   # └──────┴─────────────┘
-    def clip_min(lower_bound)
-      clip(lower_bound, nil)
-    end
-
-    # Clip (limit) the values in an array to a `max` boundary.
-    #
-    # Only works for numerical types.
-    #
-    # If you want to clip other dtypes, consider writing a "when, then, otherwise"
-    # expression. See `when` for more information.
-    #
-    # @param upper_bound [Numeric]
-    #   Maximum value.
-    #
-    # @return [Expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new({"foo" => [-50, 5, nil, 50]})
-    #   df.with_column(Polars.col("foo").clip_max(0).alias("foo_clipped"))
-    #   # =>
-    #   # shape: (4, 2)
-    #   # ┌──────┬─────────────┐
-    #   # │ foo  ┆ foo_clipped │
-    #   # │ ---  ┆ ---         │
-    #   # │ i64  ┆ i64         │
-    #   # ╞══════╪═════════════╡
-    #   # │ -50  ┆ -50         │
-    #   # │ 5    ┆ 0           │
-    #   # │ null ┆ null        │
-    #   # │ 50   ┆ 0           │
-    #   # └──────┴─────────────┘
-    def clip_max(upper_bound)
-      clip(nil, upper_bound)
-    end
-
     # Calculate the lower bound.
     #
     # Returns a unit Series with the lowest value possible for the dtype of this

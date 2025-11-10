@@ -754,12 +754,12 @@ class SeriesTest < Minitest::Test
 
   def test_clip_min
     s = Polars::Series.new("foo", [-50, 5, nil, 50])
-    assert_series [1, 5, nil, 50], s.clip_min(1)
+    assert_series [1, 5, nil, 50], s.clip(1)
   end
 
   def test_clip_max
     s = Polars::Series.new("foo", [-50, 5, nil, 50])
-    assert_series [-50, 5, nil, 10], s.clip_max(10)
+    assert_series [-50, 5, nil, 10], s.clip(nil, 10)
   end
 
   def test_reshape
