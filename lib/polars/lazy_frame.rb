@@ -870,18 +870,6 @@ module Polars
     #   information from environment variables.
     # @param retries [Integer]
     #   Number of retries if accessing a cloud instance fails.
-    # @param type_coercion [Boolean]
-    #   Do type coercion optimization.
-    # @param predicate_pushdown [Boolean]
-    #   Do predicate pushdown optimization.
-    # @param projection_pushdown [Boolean]
-    #   Do projection pushdown optimization.
-    # @param simplify_expression [Boolean]
-    #   Run simplify expressions optimization.
-    # @param slice_pushdown [Boolean]
-    #   Slice pushdown optimization.
-    # @param no_optimization [Boolean]
-    #   Turn off (certain) optimizations.
     # @param sync_on_close ['data', 'all']
     #     Sync to disk when before closing a file.
     #
@@ -906,12 +894,6 @@ module Polars
       storage_options: nil,
       credential_provider: "auto",
       retries: 2,
-      type_coercion: true,
-      predicate_pushdown: true,
-      projection_pushdown: true,
-      simplify_expression: true,
-      slice_pushdown: true,
-      no_optimization: false,
       sync_on_close: nil,
       mkdir: false,
       lazy: false
@@ -919,15 +901,6 @@ module Polars
       if credential_provider != "auto"
         raise Todo
       end
-
-      lf = _set_sink_optimizations(
-        type_coercion: type_coercion,
-        predicate_pushdown: predicate_pushdown,
-        projection_pushdown: projection_pushdown,
-        simplify_expression: simplify_expression,
-        slice_pushdown: slice_pushdown,
-        no_optimization: no_optimization
-      )
 
       if storage_options&.any?
         storage_options = storage_options.to_a
@@ -952,7 +925,7 @@ module Polars
         compression = "uncompressed"
       end
 
-      lf = lf.sink_ipc(
+      ldf_rb = _ldf.sink_ipc(
         path,
         compression,
         compat_level_rb,
@@ -960,13 +933,14 @@ module Polars
         retries,
         sink_options
       )
-      lf = LazyFrame._from_rbldf(lf)
 
       if !lazy
-        lf.collect
+        # TODO optimizations
+        ldf = LazyFrame._from_rbldf(ldf_rb)
+        ldf.collect
         return nil
       end
-      lf
+      LazyFrame._from_rbldf(ldf_rb)
     end
 
     # Evaluate the query in streaming mode and write to a CSV file.
@@ -1095,7 +1069,7 @@ module Polars
         "mkdir" => mkdir
       }
 
-      lf_rb = _ldf.sink_csv(
+      ldf_rb = _ldf.sink_csv(
         path,
         include_bom,
         include_header,
@@ -1118,11 +1092,11 @@ module Polars
 
       if !lazy
         # TODO optimizations
-        lf = LazyFrame._from_rbldf(lf_rb)
-        lf.collect
+        ldf = LazyFrame._from_rbldf(ldf_rb)
+        ldf.collect
         return nil
       end
-      LazyFrame._from_rbldf(lf_rb)
+      LazyFrame._from_rbldf(ldf_rb)
     end
 
     # Evaluate the query in streaming mode and write to an NDJSON file.
