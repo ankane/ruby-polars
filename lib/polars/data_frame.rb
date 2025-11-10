@@ -4339,6 +4339,8 @@ module Polars
     #
     # @param by [Object]
     #   Groups to partition by.
+    # @param more_by [Array]
+    #   Additional names of columns to group by, specified as positional arguments.
     # @param maintain_order [Boolean]
     #   Keep predictable output order. This is slower as it requires an extra sort
     #   operation.
@@ -4412,30 +4414,28 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ C   ┆ 2   ┆ l   │
     #   # └─────┴─────┴─────┘}
-    def partition_by(by, maintain_order: true, include_key: true, as_dict: false)
-      if by.is_a?(::String)
-        by = [by]
-      elsif !by.is_a?(::Array)
-        by = Array(by)
-      end
+    def partition_by(by, *more_by, maintain_order: true, include_key: true, as_dict: false)
+      by_parsed = Utils._expand_selectors(self, by, *more_by)
+
+      partitions = _df.partition_by(by_parsed, maintain_order, include_key).map { |df| _from_rbdf(df) }
 
       if as_dict
-        out = {}
-        if by.length == 1
-          _df.partition_by(by, maintain_order, include_key).each do |df|
-            df = _from_rbdf(df)
-            out[df[by][0, 0]] = df
-          end
+        if include_key
+          names = partitions.map { |p| p.select(by_parsed).row(0) }
+          # TODO remove
+          names.map!(&:first) if names.first&.size == 1
         else
-          _df.partition_by(by, maintain_order, include_key).each do |df|
-            df = _from_rbdf(df)
-            out[df[by].row(0)] = df
+          if !maintain_order
+            msg = "cannot use `partition_by` with `maintain_order: false, include_key: false, as_dict: true`"
+            raise ArgumentError, msg
           end
+          names = select(by_parsed).unique(maintain_order: true).rows
         end
-        out
-      else
-        _df.partition_by(by, maintain_order, include_key).map { |df| _from_rbdf(df) }
+
+        return names.zip(partitions).to_h
       end
+
+      partitions
     end
 
     # Shift values by the given period.
