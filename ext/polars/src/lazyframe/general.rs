@@ -456,6 +456,7 @@ impl RbLazyFrame {
         .map_err(Into::into)
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn sink_ipc(
         &self,
         target: SinkTarget,
