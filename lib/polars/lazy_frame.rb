@@ -264,27 +264,10 @@ module Polars
     # @return [String]
     def explain(
       optimized: true,
-      type_coercion: true,
-      predicate_pushdown: true,
-      projection_pushdown: true,
-      simplify_expression: true,
-      slice_pushdown: true,
-      common_subplan_elimination: true,
-      comm_subexpr_elim: true,
-      allow_streaming: false
+      optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
       if optimized
-        ldf = _ldf.optimization_toggle(
-          type_coercion,
-          predicate_pushdown,
-          projection_pushdown,
-          simplify_expression,
-          slice_pushdown,
-          common_subplan_elimination,
-          comm_subexpr_elim,
-          allow_streaming,
-          false
-        )
+        ldf = _ldf.with_optimizations(optimizations._rboptflags)
         ldf.describe_optimized_plan
       else
         _ldf.describe_plan
