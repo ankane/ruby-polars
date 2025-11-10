@@ -46,7 +46,7 @@ module Polars
           start_by: @start_by
         )
         .agg(*aggs, **named_aggs)
-        .collect(no_optimization: true)
+        .collect(optimizations: QueryOptFlags.none)
     end
   end
 end

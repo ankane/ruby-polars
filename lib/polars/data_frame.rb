@@ -1489,7 +1489,7 @@ module Polars
     #   # │ 3     ┆ 8   ┆ c   │
     #   # └───────┴─────┴─────┘
     def rename(mapping, strict: true)
-      lazy.rename(mapping, strict: strict).collect(no_optimization: true)
+      lazy.rename(mapping, strict: strict).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Insert a Series at a certain column index. This operation is in place.
@@ -1912,7 +1912,7 @@ module Polars
           multithreaded: multithreaded,
           maintain_order: maintain_order
         )
-        .collect(no_optimization: true)
+        .collect(optimizations: QueryOptFlags._eager)
     end
 
     # Sort the DataFrame by column in-place.
@@ -3124,7 +3124,7 @@ module Polars
           allow_exact_matches: allow_exact_matches,
           check_sortedness: check_sortedness
         )
-        .collect(no_optimization: true)
+        .collect(optimizations: QueryOptFlags._eager)
     end
 
     # Join in SQL-like fashion.
@@ -3280,7 +3280,7 @@ module Polars
           coalesce: coalesce,
           maintain_order: maintain_order
         )
-        .collect(no_optimization: true)
+        .collect(optimizations: QueryOptFlags._eager)
     end
 
     # Perform a join based on one or multiple (in)equality predicates.
@@ -4022,7 +4022,7 @@ module Polars
     #   # │ 4.0  ┆ 13.0 │
     #   # └──────┴──────┘
     def fill_nan(value)
-      lazy.fill_nan(value).collect(no_optimization: true)
+      lazy.fill_nan(value).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Explode `DataFrame` to long format by exploding a column with Lists.
@@ -4059,7 +4059,7 @@ module Polars
     #   # │ c       ┆ 8       │
     #   # └─────────┴─────────┘
     def explode(columns, *more_columns)
-      lazy.explode(columns, *more_columns).collect(no_optimization: true)
+      lazy.explode(columns, *more_columns).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Create a spreadsheet-style pivot table as a DataFrame.
@@ -5281,7 +5281,7 @@ module Polars
       self._from_rbdf(
         lazy
           .unique(maintain_order: maintain_order, subset: subset, keep: keep)
-          .collect(no_optimization: true)
+          .collect(optimizations: QueryOptFlags._eager)
           ._df
       )
     end
@@ -6128,7 +6128,7 @@ module Polars
     )
       lazy
         .set_sorted(column, descending: descending)
-        .collect(no_optimization: true)
+        .collect(optimizations: QueryOptFlags._eager)
     end
 
     # Update the values in this `DataFrame` with the values in `other`.

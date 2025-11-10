@@ -42,7 +42,7 @@ module Polars
           .with_row_index(name: temp_col)
           .group_by(@by, **@named_by, maintain_order: @maintain_order)
           .agg(Polars.col(temp_col))
-          .collect(no_optimization: true)
+          .collect(optimizations: QueryOptFlags.none)
 
       group_names = groups_df.select(Polars.all.exclude(temp_col))
 
@@ -205,7 +205,7 @@ module Polars
       @df.lazy
         .group_by(@by, **@named_by, maintain_order: @maintain_order)
         .agg(*aggs, **named_aggs)
-        .collect(no_optimization: true)
+        .collect(optimizations: QueryOptFlags.none)
     end
 
     # Get the first `n` rows of each group.
@@ -256,7 +256,7 @@ module Polars
       @df.lazy
         .group_by(@by, **@named_by, maintain_order: @maintain_order)
         .head(n)
-        .collect(no_optimization: true)
+        .collect(optimizations: QueryOptFlags._eager)
     end
 
     # Get the last `n` rows of each group.
@@ -307,7 +307,7 @@ module Polars
       @df.lazy
         .group_by(@by, **@named_by, maintain_order: @maintain_order)
         .tail(n)
-        .collect(no_optimization: true)
+        .collect(optimizations: QueryOptFlags.none)
     end
 
     # Aggregate the first values in the group.

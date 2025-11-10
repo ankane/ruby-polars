@@ -152,7 +152,7 @@ module Polars
               parallel,
               true
             )
-          ).collect(no_optimization: true)
+          ).collect(optimizations: QueryOptFlags._eager)
         elsif how == "diagonal"
           out = Utils.wrap_df(Plr.concat_df_diagonal(elems))
         elsif how == "diagonal_relaxed"
@@ -163,7 +163,7 @@ module Polars
               parallel,
               true
             )
-          ).collect(no_optimization: true)
+          ).collect(optimizations: QueryOptFlags._eager)
         elsif how == "horizontal"
           out = Utils.wrap_df(Plr.concat_df_horizontal(elems))
         else

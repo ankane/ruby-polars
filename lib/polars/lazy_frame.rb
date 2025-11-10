@@ -561,24 +561,6 @@ module Polars
     # Note: use {#fetch} if you want to run your query on the first `n` rows
     # only. This can be a huge time saver in debugging queries.
     #
-    # @param type_coercion [Boolean]
-    #   Do type coercion optimization.
-    # @param predicate_pushdown [Boolean]
-    #   Do predicate pushdown optimization.
-    # @param projection_pushdown [Boolean]
-    #   Do projection pushdown optimization.
-    # @param simplify_expression [Boolean]
-    #   Run simplify expressions optimization.
-    # @param no_optimization [Boolean]
-    #   Turn off (certain) optimizations.
-    # @param slice_pushdown [Boolean]
-    #   Slice pushdown optimization.
-    # @param common_subplan_elimination [Boolean]
-    #   Will try to cache branching subplans that occur on self-joins or unions.
-    # @param comm_subexpr_elim [Boolean]
-    #   Common subexpressions will be cached and reused.
-    # @param allow_streaming [Boolean]
-    #   Run parts of the query in a streaming fashion (this is in an alpha state)
     # @param engine
     #   Select the engine used to process the query, optional.
     #   At the moment, if set to `"auto"` (default), the query is run
@@ -615,17 +597,8 @@ module Polars
     #   # │ c   ┆ 6   ┆ 1   │
     #   # └─────┴─────┴─────┘
     def collect(
-      type_coercion: true,
-      predicate_pushdown: true,
-      projection_pushdown: true,
-      simplify_expression: true,
-      no_optimization: false,
-      slice_pushdown: true,
-      common_subplan_elimination: true,
-      comm_subexpr_elim: true,
-      allow_streaming: false,
       engine: "auto",
-      optimizations: nil
+      optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
       engine = _select_engine(engine)
 
@@ -633,33 +606,7 @@ module Polars
         Utils.issue_unstable_warning("streaming mode is considered unstable.")
       end
 
-      if optimizations.nil?
-        if no_optimization
-          predicate_pushdown = false
-          projection_pushdown = false
-          slice_pushdown = false
-          common_subplan_elimination = false
-          comm_subexpr_elim = false
-        end
-
-        if allow_streaming
-          common_subplan_elimination = false
-        end
-
-        ldf = _ldf.optimization_toggle(
-          type_coercion,
-          predicate_pushdown,
-          projection_pushdown,
-          simplify_expression,
-          slice_pushdown,
-          common_subplan_elimination,
-          comm_subexpr_elim,
-          allow_streaming,
-          nil
-        )
-      else
-        ldf = _ldf.with_optimizations(optimizations._rboptflags)
-      end
+      ldf = _ldf.with_optimizations(optimizations._rboptflags)
 
       Utils.wrap_df(ldf.collect(engine))
     end

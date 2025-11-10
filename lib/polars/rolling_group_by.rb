@@ -29,7 +29,7 @@ module Polars
           index_column: @time_column, period: @period, offset: @offset, closed: @closed, group_by: @group_by
         )
         .agg(*aggs, **named_aggs)
-        .collect(no_optimization: true)
+        .collect(optimizations: QueryOptFlags.none)
     end
   end
 end
