@@ -30,6 +30,7 @@
 - Changed `unit` option to `time_unit` for `from_epoch` method
 - Removed `take` and `take_every` methods (use `gather` and `gather_every` instead)
 - Removed `cleared` methods (use `clear` instead)
+- Removed `read_sql` method (use `read_database` instead)
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods
 - Removed `in_place` option from `rename` method
 - Removed `append_chunks` option from `append` method

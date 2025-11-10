@@ -85,6 +85,5 @@ module Polars
 
       DataFrame.new(data, schema_overrides: schema_overrides)
     end
-    alias_method :read_sql, :read_database
   end
 end
