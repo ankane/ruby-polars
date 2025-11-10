@@ -987,15 +987,19 @@ module Polars
     # @param retries [Integer]
     #   Number of retries if accessing a cloud instance fails.
     # @param sync_on_close ['data', 'all']
-    #     Sync to disk when before closing a file.
+    #   Sync to disk when before closing a file.
     #
-    #     * `nil` does not sync.
-    #     * `data` syncs the file contents.
-    #     * `all` syncs the file contents and metadata.
+    #   * `nil` does not sync.
+    #   * `data` syncs the file contents.
+    #   * `all` syncs the file contents and metadata.
     # @param mkdir [Boolean]
-    #     Recursively create all the directories in the path.
+    #   Recursively create all the directories in the path.
     # @param lazy [Boolean]
-    #     Wait to start execution until `collect` is called.
+    #   Wait to start execution until `collect` is called.
+    # @param optimizations
+    #   The optimization passes done during query optimization.
+    #
+    #   This has no effect if `lazy` is set to `true`.
     #
     # @return [DataFrame]
     #
@@ -1024,7 +1028,8 @@ module Polars
       retries: 2,
       sync_on_close: nil,
       mkdir: false,
-      lazy: false
+      lazy: false,
+      optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
       Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, false)
@@ -1067,7 +1072,7 @@ module Polars
       )
 
       if !lazy
-        # TODO optimizations
+        ldf_rb = ldf_rb.with_optimizations(optimizations._rboptflags)
         ldf = LazyFrame._from_rbldf(ldf_rb)
         ldf.collect
         return nil

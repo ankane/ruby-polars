@@ -10,13 +10,13 @@ use std::cell::RefCell;
 use std::io::BufWriter;
 use std::num::NonZeroUsize;
 
-use super::SinkTarget;
+use super::{RbLazyFrame, RbOptFlags, SinkTarget};
 use crate::conversion::*;
 use crate::expr::rb_exprs_to_exprs;
 use crate::expr::selector::RbSelector;
 use crate::file::get_file_like;
 use crate::io::RbScanOptions;
-use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
+use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
 
 fn rbobject_to_first_path_and_scan_sources(obj: Value) -> RbResult<(Option<PlPath>, ScanSources)> {
     use crate::file::{RubyScanSourceInput, get_ruby_scan_source_input};
@@ -389,6 +389,12 @@ impl RbLazyFrame {
     pub fn cache(&self) -> Self {
         let ldf = self.ldf.borrow().clone();
         ldf.cache().into()
+    }
+
+    pub fn with_optimizations(&self, optflags: &RbOptFlags) -> Self {
+        let ldf = self.ldf.borrow().clone();
+        ldf.with_optimizations(optflags.inner.clone().into_inner())
+            .into()
     }
 
     pub fn collect(&self) -> RbResult<RbDataFrame> {

@@ -880,6 +880,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("top_k", method!(RbLazyFrame::top_k, 3))?;
     class.define_method("bottom_k", method!(RbLazyFrame::bottom_k, 3))?;
     class.define_method("cache", method!(RbLazyFrame::cache, 0))?;
+    class.define_method(
+        "with_optimizations",
+        method!(RbLazyFrame::with_optimizations, 1),
+    )?;
     class.define_method("collect", method!(RbLazyFrame::collect, 0))?;
     class.define_method("sink_parquet", method!(RbLazyFrame::sink_parquet, 12))?;
     class.define_method("sink_ipc", method!(RbLazyFrame::sink_ipc, 6))?;
