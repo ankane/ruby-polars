@@ -10,7 +10,7 @@ use crate::expr::datatype::RbDataTypeExpr;
 use crate::lazyframe::RbOptFlags;
 use crate::map::lazy::binary_lambda;
 use crate::rb_exprs_to_exprs;
-use crate::utils::to_rb_err;
+use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
 
 macro_rules! set_unwrapped_or_0 {
@@ -115,9 +115,9 @@ pub fn collect_all(
     optflags: &RbOptFlags,
 ) -> RbResult<RArray> {
     let plans = lfs_to_plans(lfs)?;
-    let dfs =
+    let dfs = ruby.enter_polars(|| {
         LazyFrame::collect_all_with_engine(plans, engine.0, optflags.inner.clone().into_inner())
-            .map_err(to_rb_err)?;
+    })?;
     Ok(ruby.ary_from_iter(dfs.into_iter().map(Into::<RbDataFrame>::into)))
 }
 

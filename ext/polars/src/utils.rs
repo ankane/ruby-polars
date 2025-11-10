@@ -1,4 +1,6 @@
-use crate::{RbErr, RbPolarsErr};
+use magnus::Ruby;
+
+use crate::{RbErr, RbPolarsErr, RbResult};
 
 #[macro_export]
 macro_rules! apply_method_all_arrow_series2 {
@@ -29,4 +31,25 @@ macro_rules! apply_method_all_arrow_series2 {
 #[allow(unused)]
 pub(crate) fn to_rb_err<E: Into<RbPolarsErr>>(e: E) -> RbErr {
     e.into().into()
+}
+
+pub trait EnterPolarsExt {
+    fn enter_polars<T, E, F>(self, f: F) -> RbResult<T>
+    where
+        F: FnOnce() -> Result<T, E>,
+        E: Into<RbPolarsErr>;
+}
+
+impl EnterPolarsExt for &Ruby {
+    fn enter_polars<T, E, F>(self, f: F) -> RbResult<T>
+    where
+        F: FnOnce() -> Result<T, E>,
+        E: Into<RbPolarsErr>,
+    {
+        let ret = f();
+        match ret {
+            Ok(ret) => Ok(ret),
+            Err(err) => Err(RbErr::from(err.into())),
+        }
+    }
 }
