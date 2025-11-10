@@ -894,7 +894,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "group_by_dynamic",
         method!(RbLazyFrame::group_by_dynamic, 9),
     )?;
-    class.define_method("with_context", method!(RbLazyFrame::with_context, 1))?;
     class.define_method("join_asof", method!(RbLazyFrame::join_asof, 14))?;
     class.define_method("join", method!(RbLazyFrame::join, 11))?;
     class.define_method("join_where", method!(RbLazyFrame::join_where, 3))?;

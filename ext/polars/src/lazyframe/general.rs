@@ -1,6 +1,6 @@
 use magnus::{
     IntoValue, RArray, RHash, Ruby, TryConvert, Value, r_hash::ForEach,
-    try_convert::TryConvertOwned, typed_data::Obj,
+    try_convert::TryConvertOwned,
 };
 use polars::io::RowIndex;
 use polars::lazy::frame::LazyFrame;
@@ -665,15 +665,6 @@ impl RbLazyFrame {
         Ok(RbLazyGroupBy {
             lgb: RefCell::new(Some(lazy_gb)),
         })
-    }
-
-    pub fn with_context(&self, contexts: RArray) -> RbResult<Self> {
-        let contexts = contexts.typecheck::<Obj<RbLazyFrame>>()?;
-        let contexts = contexts
-            .into_iter()
-            .map(|ldf| ldf.ldf.borrow().clone())
-            .collect::<Vec<_>>();
-        Ok(self.ldf.borrow().clone().with_context(contexts).into())
     }
 
     #[allow(clippy::too_many_arguments)]
