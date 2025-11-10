@@ -2066,12 +2066,12 @@ module Polars
       lazy
       .top_k(k, by: by, reverse: reverse)
       .collect(
-        # optimizations=QueryOptFlags(
-        #   projection_pushdown=False,
-        #   predicate_pushdown=False,
-        #   comm_subplan_elim=False,
-        #   slice_pushdown=True
-        # )
+        optimizations: QueryOptFlags.new(
+          projection_pushdown: false,
+          predicate_pushdown: false,
+          comm_subplan_elim: false,
+          slice_pushdown: true
+        )
       )
     end
 
@@ -2137,12 +2137,12 @@ module Polars
       lazy
       .bottom_k(k, by: by, reverse: reverse)
       .collect(
-        # optimizations=QueryOptFlags(
-        #   projection_pushdown=False,
-        #   predicate_pushdown=False,
-        #   comm_subplan_elim=False,
-        #   slice_pushdown=True,
-        # )
+        optimizations: QueryOptFlags.new(
+          projection_pushdown: false,
+          predicate_pushdown: false,
+          comm_subplan_elim: false,
+          slice_pushdown: true
+        )
       )
     end
 
