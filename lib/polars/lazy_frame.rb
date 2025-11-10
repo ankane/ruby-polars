@@ -612,8 +612,12 @@ module Polars
       common_subplan_elimination: true,
       comm_subexpr_elim: true,
       allow_streaming: false,
+      engine: "auto",
       _eager: false
     )
+      # TODO fix
+      engine = nil if engine == "auto"
+
       if no_optimization
         predicate_pushdown = false
         projection_pushdown = false
@@ -637,7 +641,7 @@ module Polars
         allow_streaming,
         _eager
       )
-      Utils.wrap_df(ldf.collect)
+      Utils.wrap_df(ldf.collect(engine))
     end
 
     # Resolve the schema of this LazyFrame.
@@ -996,6 +1000,14 @@ module Polars
     #   Recursively create all the directories in the path.
     # @param lazy [Boolean]
     #   Wait to start execution until `collect` is called.
+    # @param engine
+    #   Select the engine used to process the query, optional.
+    #   At the moment, if set to `"auto"` (default), the query is run
+    #   using the polars streaming engine. Polars will also
+    #   attempt to use the engine set by the `POLARS_ENGINE_AFFINITY`
+    #   environment variable. If it cannot run the query using the
+    #   selected engine, the query is run using the polars streaming
+    #   engine.
     # @param optimizations
     #   The optimization passes done during query optimization.
     #
@@ -1029,10 +1041,12 @@ module Polars
       sync_on_close: nil,
       mkdir: false,
       lazy: false,
+      engine: "auto",
       optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
       Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, false)
+      engine = _select_engine(engine)
 
       if credential_provider != "auto"
         raise Todo
@@ -1074,7 +1088,7 @@ module Polars
       if !lazy
         ldf_rb = ldf_rb.with_optimizations(optimizations._rboptflags)
         ldf = LazyFrame._from_rbldf(ldf_rb)
-        ldf.collect
+        ldf.collect(engine: engine)
         return nil
       end
       LazyFrame._from_rbldf(ldf_rb)
@@ -4530,6 +4544,10 @@ module Polars
 
       filter_method = invert ? _ldf.method(:remove) : _ldf.method(:filter)
       _from_rbldf(filter_method.(combined_predicate._rbexpr))
+    end
+
+    def _select_engine(engine)
+      engine == "auto" ? Plr.get_engine_affinity : engine
     end
   end
 end

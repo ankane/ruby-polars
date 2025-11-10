@@ -3,9 +3,13 @@ mod optflags;
 mod serde;
 mod sink;
 
-use polars::prelude::{LazyFrame, OptFlags};
+use magnus::{TryConvert, Value};
+use polars::prelude::{Engine, LazyFrame, OptFlags};
 pub use sink::SinkTarget;
 use std::cell::RefCell;
+
+use crate::prelude::Wrap;
+use crate::{RbResult, RbValueError};
 
 #[magnus::wrap(class = "Polars::RbLazyFrame")]
 #[derive(Clone)]
@@ -32,5 +36,14 @@ impl From<OptFlags> for RbOptFlags {
         RbOptFlags {
             inner: RefCell::new(inner),
         }
+    }
+}
+
+impl TryConvert for Wrap<Engine> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = String::try_convert(ob)?
+            .parse()
+            .map_err(RbValueError::new_err)?;
+        Ok(Wrap(parsed))
     }
 }

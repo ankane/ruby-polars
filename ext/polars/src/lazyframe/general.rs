@@ -397,9 +397,13 @@ impl RbLazyFrame {
             .into()
     }
 
-    pub fn collect(&self) -> RbResult<RbDataFrame> {
+    pub fn collect(&self, engine: Option<Wrap<Engine>>) -> RbResult<RbDataFrame> {
         let ldf = self.ldf.borrow().clone();
-        let df = ldf.collect().map_err(RbPolarsErr::from)?;
+        let df = if let Some(e) = engine {
+            ldf.collect_with_engine(e.0).map_err(RbPolarsErr::from)?
+        } else {
+            ldf.collect().map_err(RbPolarsErr::from)?
+        };
         Ok(df.into())
     }
 
