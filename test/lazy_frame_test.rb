@@ -68,7 +68,7 @@ class LazyFrameTest < Minitest::Test
 
   def test_describe_optimized_plan
     df = Polars::DataFrame.new({"a" => [1, 2, 3]}).lazy
-    assert_match "PROJECT", df.select("a").describe_optimized_plan
+    assert_match "PROJECT", df.select("a").explain(optimized: true)
   end
 
   def test_concat

@@ -170,9 +170,9 @@ module Polars
     # @return [String]
     def to_s
       <<~EOS
-        naive plan: (run LazyFrame#describe_optimized_plan to see the optimized plan)
+        naive plan: (run LazyFrame#explain(optimized: true) to see the optimized plan)
 
-        #{describe_plan}
+        #{explain(optimized: false)}
       EOS
     end
 
@@ -257,17 +257,13 @@ module Polars
       function.call(self, *args, **kwargs, &block)
     end
 
-    # Create a string representation of the unoptimized query plan.
+    # Create a string representation of the query plan.
+    #
+    # Different optimizations can be turned on or off.
     #
     # @return [String]
-    def describe_plan
-      _ldf.describe_plan
-    end
-
-    # Create a string representation of the optimized query plan.
-    #
-    # @return [String]
-    def describe_optimized_plan(
+    def explain(
+      optimized: true,
       type_coercion: true,
       predicate_pushdown: true,
       projection_pushdown: true,
@@ -277,19 +273,22 @@ module Polars
       comm_subexpr_elim: true,
       allow_streaming: false
     )
-      ldf = _ldf.optimization_toggle(
-        type_coercion,
-        predicate_pushdown,
-        projection_pushdown,
-        simplify_expression,
-        slice_pushdown,
-        common_subplan_elimination,
-        comm_subexpr_elim,
-        allow_streaming,
-        false
-      )
-
-      ldf.describe_optimized_plan
+      if optimized
+        ldf = _ldf.optimization_toggle(
+          type_coercion,
+          predicate_pushdown,
+          projection_pushdown,
+          simplify_expression,
+          slice_pushdown,
+          common_subplan_elimination,
+          comm_subexpr_elim,
+          allow_streaming,
+          false
+        )
+        ldf.describe_optimized_plan
+      else
+        _ldf.describe_plan
+      end
     end
 
     # def show_graph

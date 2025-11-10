@@ -57,6 +57,7 @@
 - Removed `avg` method (use `mean` instead)
 - Removed `read_sql` method (use `read_database` instead)
 - Removed `replace` method from `DataFrame` (use `[]=` instead)
+- Removed `describe_plan` and `describe_optimized_plan` methods (use `explain` instead)
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods
 - Removed `in_place` option from `rename` method
 - Removed `append_chunks` option from `append` method
