@@ -1200,34 +1200,6 @@ module Polars
       LazyFrame._from_rbldf(ldf_rb)
     end
 
-    # @private
-    def _set_sink_optimizations(
-      type_coercion: true,
-      predicate_pushdown: true,
-      projection_pushdown: true,
-      simplify_expression: true,
-      slice_pushdown: true,
-      no_optimization: false
-    )
-      if no_optimization
-        predicate_pushdown = false
-        projection_pushdown = false
-        slice_pushdown = false
-      end
-
-      _ldf.optimization_toggle(
-        type_coercion,
-        predicate_pushdown,
-        projection_pushdown,
-        simplify_expression,
-        slice_pushdown,
-        false,
-        false,
-        true,
-        false
-      )
-    end
-
     # Collect a small number of rows for debugging purposes.
     #
     # Fetch is like a {#collect} operation, but it overwrites the number of rows
