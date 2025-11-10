@@ -35,6 +35,7 @@
 - Removed `utc` option from `strptime` method
 - Removed `truncate` option from `group_by_dynamic` methods
 - Removed `eager` option from `from_epoch` method
+- Removed `string_cache` option from `collect` and `collect_all` methods
 
 ## 0.23.0 (2025-11-04)
 

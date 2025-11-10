@@ -1309,8 +1309,6 @@ module Polars
     #   Do projection pushdown optimization.
     # @param simplify_expression [Boolean]
     #   Run simplify expressions optimization.
-    # @param string_cache [Boolean]
-    #   This argument is deprecated and will be ignored
     # @param no_optimization [Boolean]
     #   Turn off optimizations.
     # @param slice_pushdown [Boolean]
@@ -1327,7 +1325,6 @@ module Polars
       predicate_pushdown: true,
       projection_pushdown: true,
       simplify_expression: true,
-      string_cache: false,
       no_optimization: false,
       slice_pushdown: true,
       common_subplan_elimination: true,
