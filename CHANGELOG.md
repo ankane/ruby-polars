@@ -36,6 +36,7 @@
 - Removed `group_by_rolling` methods (use `rolling` instead)
 - Removed `days`, `hours`, `minutes`, `seconds`, `milliseconds`, `microseconds`, and `nanoseconds` methods (use `total_*` instead)
 - Removed `with_column` methods (use `with_columns` instead)
+- Removed `keep_name`, `prefix`, `suffix`, and `map_alias` methods (use `name` methods instead)
 - Removed `cleared` methods (use `clear` instead)
 - Removed `count_match` methods (use `count_matches` instead)
 - Removed `avg` method (use `mean` instead)

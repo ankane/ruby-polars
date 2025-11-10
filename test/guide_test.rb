@@ -102,7 +102,7 @@ class GuideTest < Minitest::Test
     output df.group_by("groups").agg([
       Polars.sum("nrs"),
       Polars.col("random").count.alias("count"),
-      Polars.col("random").filter(Polars.col("names").is_not_null).sum.suffix("_sum"),
+      Polars.col("random").filter(Polars.col("names").is_not_null).sum.name.suffix("_sum"),
       Polars.col("names").reverse.alias(("reversed names"))
     ])
   end
@@ -156,7 +156,7 @@ class GuideTest < Minitest::Test
 
     output df.select([
       Polars.all,
-      Polars.all.reverse.suffix("_reverse")
+      Polars.all.reverse.name.suffix("_reverse")
     ])
 
     output df.select([
@@ -242,7 +242,7 @@ class GuideTest < Minitest::Test
 
     output df.group_by("fruits")
       .agg([
-        Polars.col("B").filter(Polars.col("B") > 1).implode.keep_name
+        Polars.col("B").filter(Polars.col("B") > 1).implode.name.keep
       ])
 
     output df.group_by("fruits")

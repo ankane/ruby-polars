@@ -449,114 +449,6 @@ module Polars
       meta.as_selector.exclude(columns, *more_columns).as_expr
     end
 
-    # Keep the original root name of the expression.
-    #
-    # @return [Expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "a" => [1, 2],
-    #       "b" => [3, 4]
-    #     }
-    #   )
-    #   df.with_columns([(Polars.col("a") * 9).alias("c").keep_name])
-    #   # =>
-    #   # shape: (2, 2)
-    #   # ┌─────┬─────┐
-    #   # │ a   ┆ b   │
-    #   # │ --- ┆ --- │
-    #   # │ i64 ┆ i64 │
-    #   # ╞═════╪═════╡
-    #   # │ 9   ┆ 3   │
-    #   # │ 18  ┆ 4   │
-    #   # └─────┴─────┘
-    def keep_name
-      name.keep
-    end
-
-    # Add a prefix to the root column name of the expression.
-    #
-    # @return [Expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "a" => [1, 2, 3],
-    #       "b" => ["x", "y", "z"]
-    #     }
-    #   )
-    #   df.with_columns(Polars.all.reverse.name.prefix("reverse_"))
-    #   # =>
-    #   # shape: (3, 4)
-    #   # ┌─────┬─────┬───────────┬───────────┐
-    #   # │ a   ┆ b   ┆ reverse_a ┆ reverse_b │
-    #   # │ --- ┆ --- ┆ ---       ┆ ---       │
-    #   # │ i64 ┆ str ┆ i64       ┆ str       │
-    #   # ╞═════╪═════╪═══════════╪═══════════╡
-    #   # │ 1   ┆ x   ┆ 3         ┆ z         │
-    #   # │ 2   ┆ y   ┆ 2         ┆ y         │
-    #   # │ 3   ┆ z   ┆ 1         ┆ x         │
-    #   # └─────┴─────┴───────────┴───────────┘
-    def prefix(prefix)
-      name.prefix(prefix)
-    end
-
-    # Add a suffix to the root column name of the expression.
-    #
-    # @return [Expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "a" => [1, 2, 3],
-    #       "b" => ["x", "y", "z"]
-    #     }
-    #   )
-    #   df.with_columns(Polars.all.reverse.name.suffix("_reverse"))
-    #   # =>
-    #   # shape: (3, 4)
-    #   # ┌─────┬─────┬───────────┬───────────┐
-    #   # │ a   ┆ b   ┆ a_reverse ┆ b_reverse │
-    #   # │ --- ┆ --- ┆ ---       ┆ ---       │
-    #   # │ i64 ┆ str ┆ i64       ┆ str       │
-    #   # ╞═════╪═════╪═══════════╪═══════════╡
-    #   # │ 1   ┆ x   ┆ 3         ┆ z         │
-    #   # │ 2   ┆ y   ┆ 2         ┆ y         │
-    #   # │ 3   ┆ z   ┆ 1         ┆ x         │
-    #   # └─────┴─────┴───────────┴───────────┘
-    def suffix(suffix)
-      name.suffix(suffix)
-    end
-
-    # Rename the output of an expression by mapping a function over the root name.
-    #
-    # @return [Expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "A" => [1, 2],
-    #       "B" => [3, 4]
-    #     }
-    #   )
-    #   df.select(
-    #     Polars.all.reverse.map_alias { |colName| colName + "_reverse" }
-    #   )
-    #   # =>
-    #   # shape: (2, 2)
-    #   # ┌───────────┬───────────┐
-    #   # │ A_reverse ┆ B_reverse │
-    #   # │ ---       ┆ ---       │
-    #   # │ i64       ┆ i64       │
-    #   # ╞═══════════╪═══════════╡
-    #   # │ 2         ┆ 4         │
-    #   # │ 1         ┆ 3         │
-    #   # └───────────┴───────────┘
-    def map_alias(&f)
-      name.map(&f)
-    end
-
     # Negate a boolean expression.
     #
     # @return [Expr]
@@ -609,7 +501,7 @@ module Polars
     #       "b" => [1.0, 2.0, Float::NAN, 1.0, 5.0]
     #     }
     #   )
-    #   df.with_columns(Polars.all.is_null.suffix("_isnull"))
+    #   df.with_columns(Polars.all.is_null.name.suffix("_isnull"))
     #   # =>
     #   # shape: (5, 4)
     #   # ┌──────┬─────┬──────────┬──────────┐
@@ -638,7 +530,7 @@ module Polars
     #       "b" => [1.0, 2.0, Float::NAN, 1.0, 5.0]
     #     }
     #   )
-    #   df.with_columns(Polars.all.is_not_null.suffix("_not_null"))
+    #   df.with_columns(Polars.all.is_not_null.name.suffix("_not_null"))
     #   # =>
     #   # shape: (5, 4)
     #   # ┌──────┬─────┬────────────┬────────────┐
@@ -723,7 +615,7 @@ module Polars
     #       "b" => [1.0, 2.0, Float::NAN, 1.0, 5.0]
     #     }
     #   )
-    #   df.with_columns(Polars.col(Polars::Float64).is_nan.suffix("_isnan"))
+    #   df.with_columns(Polars.col(Polars::Float64).is_nan.name.suffix("_isnan"))
     #   # =>
     #   # shape: (5, 3)
     #   # ┌──────┬─────┬─────────┐
@@ -756,7 +648,7 @@ module Polars
     #       "b" => [1.0, 2.0, Float::NAN, 1.0, 5.0]
     #     }
     #   )
-    #   df.with_columns(Polars.col(Polars::Float64).is_not_nan.suffix("_is_not_nan"))
+    #   df.with_columns(Polars.col(Polars::Float64).is_not_nan.name.suffix("_is_not_nan"))
     #   # =>
     #   # shape: (5, 3)
     #   # ┌──────┬─────┬──────────────┐

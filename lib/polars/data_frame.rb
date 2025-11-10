@@ -6638,7 +6638,7 @@ module Polars
       end
 
       suffix = "__POLARS_CMP_OTHER"
-      other_renamed = other.select(Polars.all.suffix(suffix))
+      other_renamed = other.select(Polars.all.name.suffix(suffix))
       combined = Polars.concat([self, other_renamed], how: "horizontal")
 
       expr = case op
