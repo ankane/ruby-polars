@@ -59,6 +59,7 @@
 - Removed `insert_at_idx` and `replace_at_idx` methods (use `insert_column` and `replace_column` instead)
 - Removed `find_idx_by_name` method (use `get_column_index` instead)
 - Removed `avg` method (use `mean` instead)
+- Removed `arctan2d` method (use `arctan2` + `degrees` instead)
 - Removed `read_sql` method (use `read_database` instead)
 - Removed `with_row_count` methods (use `with_row_index` instead)
 - Removed `has_validity` method (use `has_nulls` instead)
