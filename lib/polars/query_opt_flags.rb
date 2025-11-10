@@ -87,10 +87,12 @@ module Polars
       self
     end
 
+    # Remove selected optimizations.
     def no_optimizations
       _rboptflags.no_optimizations
     end
 
+    # Only read columns that are used later in the query.
     def projection_pushdown
       _rboptflags.projection_pushdown
     end
@@ -99,12 +101,76 @@ module Polars
       _rboptflags.projection_pushdown = value
     end
 
+    # Apply predicates/filters as early as possible.
     def predicate_pushdown
       _rboptflags.predicate_pushdown
     end
 
     def predicate_pushdown=(value)
       _rboptflags.predicate_pushdown = value
+    end
+
+    # Cluster sequential `with_columns` calls to independent calls.
+    def cluster_with_columns
+      _rboptflags.cluster_with_columns
+    end
+
+    def cluster_with_columns=(value)
+      _rboptflags.cluster_with_columns = value
+    end
+
+    # Run many expression optimization rules until fixed point.
+    def simplify_expression
+      _rboptflags.simplify_expression
+    end
+
+    def simplify_expression=(value)
+      _rboptflags.simplify_expression = value
+    end
+
+    # Pushdown slices/limits.
+    def slice_pushdown
+      _rboptflags.slice_pushdown
+    end
+
+    def slice_pushdown=(value)
+      _rboptflags.slice_pushdown = value
+    end
+
+    # Elide duplicate plans and caches their outputs.
+    def comm_subplan_elim
+      _rboptflags.comm_subplan_elim
+    end
+
+    def comm_subplan_elim=(value)
+      _rboptflags.comm_subplan_elim = value
+    end
+
+    # Elide duplicate expressions and caches their outputs.
+    def comm_subexpr_elim
+      _rboptflags.comm_subexpr_elim
+    end
+
+    def comm_subexpr_elim=(value)
+      _rboptflags.comm_subexpr_elim = value
+    end
+
+    # Do not maintain order if the order would not be observed.
+    def check_order_observe
+      _rboptflags.check_order_observe
+    end
+
+    def check_order_observe=(value)
+      _rboptflags.check_order_observe = value
+    end
+
+    # Replace simple projections with a faster inlined projection that skips the expression engine.
+    def fast_projection
+      _rboptflags.fast_projection
+    end
+
+    def fast_projection=(value)
+      _rboptflags.fast_projection = value
     end
   end
 
