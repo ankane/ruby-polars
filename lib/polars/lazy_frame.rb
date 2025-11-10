@@ -625,8 +625,7 @@ module Polars
       comm_subexpr_elim: true,
       allow_streaming: false,
       engine: "auto",
-      optimizations: nil,
-      _eager: false
+      optimizations: nil
     )
       engine = _select_engine(engine)
 
@@ -656,7 +655,7 @@ module Polars
           common_subplan_elimination,
           comm_subexpr_elim,
           allow_streaming,
-          _eager
+          nil
         )
       else
         ldf = _ldf.with_optimizations(optimizations._rboptflags)

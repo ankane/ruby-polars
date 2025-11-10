@@ -1590,7 +1590,7 @@ module Polars
     #   # │ 1   ┆ 6   ┆ a   │
     #   # └─────┴─────┴─────┘
     def filter(*predicates, **constraints)
-      lazy.filter(*predicates, **constraints).collect(_eager: true)
+      lazy.filter(*predicates, **constraints).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Remove rows, dropping those that match the given predicate expression(s).
@@ -1710,7 +1710,7 @@ module Polars
     )
       lazy
       .remove(*predicates, **constraints)
-      .collect(_eager: true)
+      .collect(optimizations: QueryOptFlags._eager)
     end
 
     # Summary statistics for a DataFrame.
@@ -2349,7 +2349,7 @@ module Polars
     #   # │ 80.0 ┆ 25.5  ┆ null │
     #   # └──────┴───────┴──────┘
     def drop_nans(subset: nil)
-      lazy.drop_nans(subset: subset).collect(_eager: true)
+      lazy.drop_nans(subset: subset).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Drop all rows that contain one or more null values.
@@ -2394,7 +2394,7 @@ module Polars
     #   # │ 3   ┆ 8   ┆ null │
     #   # └─────┴─────┴──────┘
     def drop_nulls(subset: nil)
-      lazy.drop_nulls(subset: subset).collect(_eager: true)
+      lazy.drop_nulls(subset: subset).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Offers a structured way to apply a sequence of user-defined functions (UDFs).
@@ -3375,7 +3375,7 @@ module Polars
         *predicates,
         suffix: suffix
       )
-      .collect(_eager: true)
+      .collect(optimizations: QueryOptFlags._eager)
     end
 
     # Apply a custom/user-defined function (UDF) over the rows of the DataFrame.
@@ -3639,7 +3639,7 @@ module Polars
     #   # │ 8.0 │
     #   # └─────┘
     def drop(*columns, strict: true)
-      lazy.drop(*columns, strict: strict).collect(_eager: true)
+      lazy.drop(*columns, strict: strict).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Drop in place.
@@ -3752,7 +3752,7 @@ module Polars
     #   df.cast(Polars::String).to_h(as_series: false)
     #   # => {"foo"=>["1", "2", "3"], "bar"=>["6.0", "7.0", "8.0"], "ham"=>["2020-01-02", "2021-03-04", "2022-05-06"]}
     def cast(dtypes, strict: true)
-      lazy.cast(dtypes, strict: strict).collect(_eager: true)
+      lazy.cast(dtypes, strict: strict).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Create an empty copy of the current DataFrame.
@@ -4483,7 +4483,7 @@ module Polars
     #   # │ null ┆ null ┆ null │
     #   # └──────┴──────┴──────┘
     def shift(n, fill_value: nil)
-      lazy.shift(n, fill_value: fill_value).collect(_eager: true)
+      lazy.shift(n, fill_value: fill_value).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Get a mask of all duplicated rows in this DataFrame.
@@ -4632,7 +4632,7 @@ module Polars
     #   # │ 10      │
     #   # └─────────┘
     def select(*exprs, **named_exprs)
-      lazy.select(*exprs, **named_exprs).collect(_eager: true)
+      lazy.select(*exprs, **named_exprs).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Select columns from this DataFrame.
@@ -4652,7 +4652,7 @@ module Polars
     def select_seq(*exprs, **named_exprs)
       lazy
       .select_seq(*exprs, **named_exprs)
-      .collect(_eager: true)
+      .collect(optimizations: QueryOptFlags._eager)
     end
 
     # Add columns to this DataFrame.
@@ -4764,7 +4764,7 @@ module Polars
     #   # │ 4   ┆ 13.0 ┆ true  ┆ 52.0 ┆ false │
     #   # └─────┴──────┴───────┴──────┴───────┘
     def with_columns(*exprs, **named_exprs)
-      lazy.with_columns(*exprs, **named_exprs).collect(_eager: true)
+      lazy.with_columns(*exprs, **named_exprs).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Add columns to this DataFrame.
@@ -4789,7 +4789,7 @@ module Polars
     )
       lazy
       .with_columns_seq(*exprs, **named_exprs)
-      .collect(_eager: true)
+      .collect(optimizations: QueryOptFlags._eager)
     end
 
     # Get number of chunks used by the ChunkedArrays of this DataFrame.
@@ -4845,7 +4845,7 @@ module Polars
     #   # │ 3   ┆ 8   ┆ c   │
     #   # └─────┴─────┴─────┘
     def max
-      lazy.max.collect(_eager: true)
+      lazy.max.collect(optimizations: QueryOptFlags._eager)
     end
 
     # Get the maximum value horizontally across columns.
@@ -4895,7 +4895,7 @@ module Polars
     #   # │ 1   ┆ 6   ┆ a   │
     #   # └─────┴─────┴─────┘
     def min
-      lazy.min.collect(_eager: true)
+      lazy.min.collect(optimizations: QueryOptFlags._eager)
     end
 
     # Get the minimum value horizontally across columns.
@@ -4945,7 +4945,7 @@ module Polars
     #   # │ 6   ┆ 21  ┆ null │
     #   # └─────┴─────┴──────┘
     def sum
-      lazy.sum.collect(_eager: true)
+      lazy.sum.collect(optimizations: QueryOptFlags._eager)
     end
 
     # Sum all values horizontally across columns.
@@ -5001,7 +5001,7 @@ module Polars
     #   # │ 2.0 ┆ 7.0 ┆ null │
     #   # └─────┴─────┴──────┘
     def mean
-      lazy.mean.collect(_eager: true)
+      lazy.mean.collect(optimizations: QueryOptFlags._eager)
     end
 
     # Take the mean of all values horizontally across columns.
@@ -5072,7 +5072,7 @@ module Polars
     #   # │ 0.816497 ┆ 0.816497 ┆ null │
     #   # └──────────┴──────────┴──────┘
     def std(ddof: 1)
-      lazy.std(ddof: ddof).collect(_eager: true)
+      lazy.std(ddof: ddof).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Aggregate the columns of this DataFrame to their variance value.
@@ -5113,7 +5113,7 @@ module Polars
     #   # │ 0.666667 ┆ 0.666667 ┆ null │
     #   # └──────────┴──────────┴──────┘
     def var(ddof: 1)
-      lazy.var(ddof: ddof).collect(_eager: true)
+      lazy.var(ddof: ddof).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Aggregate the columns of this DataFrame to their median value.
@@ -5139,7 +5139,7 @@ module Polars
     #   # │ 2.0 ┆ 7.0 ┆ null │
     #   # └─────┴─────┴──────┘
     def median
-      lazy.median.collect(_eager: true)
+      lazy.median.collect(optimizations: QueryOptFlags._eager)
     end
 
     # Aggregate the columns of this DataFrame to their product values.
@@ -5196,7 +5196,7 @@ module Polars
     #   # │ 2.0 ┆ 7.0 ┆ null │
     #   # └─────┴─────┴──────┘
     def quantile(quantile, interpolation: "nearest")
-      lazy.quantile(quantile, interpolation: interpolation).collect(_eager: true)
+      lazy.quantile(quantile, interpolation: interpolation).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Get one hot encoded dummy variables.
@@ -6060,7 +6060,7 @@ module Polars
     #   # │ bar    ┆ 2   ┆ b   ┆ null ┆ [3]       ┆ womp  │
     #   # └────────┴─────┴─────┴──────┴───────────┴───────┘
     def unnest(columns, *more_columns, separator: nil)
-      lazy.unnest(columns, *more_columns, separator: separator).collect(_eager: true)
+      lazy.unnest(columns, *more_columns, separator: separator).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Requires NumPy
@@ -6106,7 +6106,7 @@ module Polars
     #   # │ elise  ┆ 44  │
     #   # └────────┴─────┘
     def merge_sorted(other, key)
-      lazy.merge_sorted(other.lazy, key).collect(_eager: true)
+      lazy.merge_sorted(other.lazy, key).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Flag a column as sorted.
@@ -6259,7 +6259,7 @@ module Polars
         include_nulls: include_nulls,
         maintain_order: maintain_order
       )
-      .collect(_eager: true)
+      .collect(optimizations: QueryOptFlags._eager)
     end
 
     private
