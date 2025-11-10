@@ -3274,52 +3274,6 @@ module Polars
       _from_rbldf(_ldf.shift(n, fill_value))
     end
 
-    # Shift the values by a given period and fill the resulting null values.
-    #
-    # @param periods [Integer]
-    #   Number of places to shift (may be negative).
-    # @param fill_value [Object]
-    #   Fill `nil` values with the result of this expression.
-    #
-    # @return [LazyFrame]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "a" => [1, 3, 5],
-    #       "b" => [2, 4, 6]
-    #     }
-    #   ).lazy
-    #   df.shift_and_fill(1, 0).collect
-    #   # =>
-    #   # shape: (3, 2)
-    #   # ┌─────┬─────┐
-    #   # │ a   ┆ b   │
-    #   # │ --- ┆ --- │
-    #   # │ i64 ┆ i64 │
-    #   # ╞═════╪═════╡
-    #   # │ 0   ┆ 0   │
-    #   # │ 1   ┆ 2   │
-    #   # │ 3   ┆ 4   │
-    #   # └─────┴─────┘
-    #
-    # @example
-    #   df.shift_and_fill(-1, 0).collect
-    #   # =>
-    #   # shape: (3, 2)
-    #   # ┌─────┬─────┐
-    #   # │ a   ┆ b   │
-    #   # │ --- ┆ --- │
-    #   # │ i64 ┆ i64 │
-    #   # ╞═════╪═════╡
-    #   # │ 3   ┆ 4   │
-    #   # │ 5   ┆ 6   │
-    #   # │ 0   ┆ 0   │
-    #   # └─────┴─────┘
-    def shift_and_fill(periods, fill_value)
-      shift(periods, fill_value: fill_value)
-    end
-
     # Get a slice of this DataFrame.
     #
     # @param offset [Integer]

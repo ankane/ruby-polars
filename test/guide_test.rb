@@ -252,8 +252,8 @@ class GuideTest < Minitest::Test
 
     output df.group_by("fruits")
       .agg([
-        Polars.col("B").shift_and_fill(1, 0).alias("shifted"),
-        Polars.col("B").shift_and_fill(1, 0).sum.alias("shifted_sum")
+        Polars.col("B").shift(1, fill_value: 0).alias("shifted"),
+        Polars.col("B").shift(1, fill_value: 0).sum.alias("shifted_sum")
       ])
 
     output df.select([

@@ -2065,34 +2065,6 @@ module Polars
       wrap_expr(_rbexpr.shift(n, fill_value))
     end
 
-    # Shift the values by a given period and fill the resulting null values.
-    #
-    # @param periods [Integer]
-    #   Number of places to shift (may be negative).
-    # @param fill_value [Object]
-    #   Fill nil values with the result of this expression.
-    #
-    # @return [Expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new({"foo" => [1, 2, 3, 4]})
-    #   df.select(Polars.col("foo").shift_and_fill(1, "a"))
-    #   # =>
-    #   # shape: (4, 1)
-    #   # ┌─────┐
-    #   # │ foo │
-    #   # │ --- │
-    #   # │ str │
-    #   # ╞═════╡
-    #   # │ a   │
-    #   # │ 1   │
-    #   # │ 2   │
-    #   # │ 3   │
-    #   # └─────┘
-    def shift_and_fill(periods, fill_value)
-      shift(periods, fill_value: fill_value)
-    end
-
     # Fill null values using the specified value or strategy.
     #
     # To interpolate over null values see interpolate.

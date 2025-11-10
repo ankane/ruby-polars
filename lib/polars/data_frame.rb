@@ -4553,39 +4553,6 @@ module Polars
       lazy.shift(n, fill_value: fill_value).collect(_eager: true)
     end
 
-    # Shift the values by a given period and fill the resulting null values.
-    #
-    # @param periods [Integer]
-    #   Number of places to shift (may be negative).
-    # @param fill_value [Object]
-    #   fill nil values with this value.
-    #
-    # @return [DataFrame]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "foo" => [1, 2, 3],
-    #       "bar" => [6, 7, 8],
-    #       "ham" => ["a", "b", "c"]
-    #     }
-    #   )
-    #   df.shift_and_fill(1, 0)
-    #   # =>
-    #   # shape: (3, 3)
-    #   # ┌─────┬─────┬─────┐
-    #   # │ foo ┆ bar ┆ ham │
-    #   # │ --- ┆ --- ┆ --- │
-    #   # │ i64 ┆ i64 ┆ str │
-    #   # ╞═════╪═════╪═════╡
-    #   # │ 0   ┆ 0   ┆ 0   │
-    #   # │ 1   ┆ 6   ┆ a   │
-    #   # │ 2   ┆ 7   ┆ b   │
-    #   # └─────┴─────┴─────┘
-    def shift_and_fill(periods, fill_value)
-      shift(periods, fill_value: fill_value)
-    end
-
     # Get a mask of all duplicated rows in this DataFrame.
     #
     # @return [Series]

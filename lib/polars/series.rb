@@ -3750,18 +3750,6 @@ module Polars
       super
     end
 
-    # Shift the values by a given period and fill the resulting null values.
-    #
-    # @param periods [Integer]
-    #   Number of places to shift (may be negative).
-    # @param fill_value [Object]
-    #   Fill nil values with the result of this expression.
-    #
-    # @return [Series]
-    def shift_and_fill(periods, fill_value)
-      super
-    end
-
     # Take values from self or other based on the given mask.
     #
     # Where mask evaluates true, take values from self. Where mask evaluates false,
