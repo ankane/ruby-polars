@@ -3287,6 +3287,8 @@ module Polars
       wrap_expr(_rbexpr.filter(predicate))
     end
 
+    # @deprecated `where` is deprecated; use `filter` instead.
+    #
     # Filter a single column.
     #
     # Alias for {#filter}.
@@ -3322,6 +3324,8 @@ module Polars
     #   # │ g2        ┆ 0   ┆ 3   │
     #   # └───────────┴─────┴─────┘
     def where(predicate)
+      Utils.deprecated("`where` is deprecated; use `filter` instead.")
+
       filter(predicate)
     end
 

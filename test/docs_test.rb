@@ -214,6 +214,11 @@ class DocsTest < Minitest::Test
           with_stress(method.name != :estimated_size) do
             if cls == Polars::Config
               capture_io { instance_eval(code) }[0].chomp
+            elsif method.tags(:deprecated).any?
+              # TODO improve
+              out = nil
+              capture_io { out = instance_eval(code).inspect }
+              out
             else
               instance_eval(code).inspect
             end
