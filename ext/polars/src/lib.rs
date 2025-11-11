@@ -34,7 +34,7 @@ use expr::selector::RbSelector;
 use functions::string_cache::RbStringCacheHolder;
 use functions::whenthen::{RbChainedThen, RbChainedWhen, RbThen, RbWhen};
 use interop::arrow::to_ruby::RbArrowArrayStream;
-use lazyframe::{RbLazyFrame, RbOptFlags};
+use lazyframe::{RbInProcessQuery, RbLazyFrame, RbOptFlags};
 use lazygroupby::RbLazyGroupBy;
 use magnus::{Ruby, function, method, prelude::*};
 use series::RbSeries;
@@ -931,6 +931,18 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("unnest", method!(RbLazyFrame::unnest, 2))?;
     class.define_method("count", method!(RbLazyFrame::count, 0))?;
     class.define_method("merge_sorted", method!(RbLazyFrame::merge_sorted, 2))?;
+    class.define_method(
+        "collect_concurrently",
+        method!(RbLazyFrame::collect_concurrently, 0),
+    )?;
+
+    let class = module.define_class("RbInProcessQuery", ruby.class_object())?;
+    class.define_method("cancel", method!(RbInProcessQuery::cancel, 0))?;
+    class.define_method("fetch", method!(RbInProcessQuery::fetch, 0))?;
+    class.define_method(
+        "fetch_blocking",
+        method!(RbInProcessQuery::fetch_blocking, 0),
+    )?;
 
     let class = module.define_class("RbLazyGroupBy", ruby.class_object())?;
     class.define_method("agg", method!(RbLazyGroupBy::agg, 1))?;

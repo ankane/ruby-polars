@@ -38,6 +38,16 @@ pub trait EnterPolarsExt {
     where
         F: FnOnce() -> Result<T, E>,
         E: Into<RbPolarsErr>;
+
+    #[inline(always)]
+    fn enter_polars_ok<T, F>(self, f: F) -> RbResult<T>
+    where
+        Self: Sized,
+        F: FnOnce() -> T,
+    {
+        // TODO use enter_polars
+        RbResult::Ok(f())
+    }
 }
 
 impl EnterPolarsExt for &Ruby {

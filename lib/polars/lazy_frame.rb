@@ -552,6 +552,9 @@ module Polars
     #   environment variable. If it cannot run the query using the
     #   selected engine, the query is run using the polars streaming
     #   engine.
+    # @param background [Boolean]
+    #   Run the query in the background and get a handle to the query.
+    #   This handle can be used to fetch the result or cancel the query.
     # @param optimizations
     #   The optimization passes done during query optimization.
     #
@@ -581,6 +584,7 @@ module Polars
     #   # └─────┴─────┴─────┘
     def collect(
       engine: "auto",
+      background: false,
       optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
       engine = _select_engine(engine)
@@ -590,6 +594,10 @@ module Polars
       end
 
       ldf = _ldf.with_optimizations(optimizations._rboptflags)
+      if background
+        Utils.issue_unstable_warning("background mode is considered unstable.")
+        return InProcessQuery.new(ldf.collect_concurrently)
+      end
 
       Utils.wrap_df(ldf.collect(engine))
     end

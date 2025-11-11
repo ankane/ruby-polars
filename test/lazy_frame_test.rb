@@ -71,6 +71,11 @@ class LazyFrameTest < Minitest::Test
     assert_match "PROJECT", df.select("a").explain(optimized: true)
   end
 
+  def test_collect_background
+    df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    assert_frame df, df.lazy.collect(background: true).fetch_blocking
+  end
+
   def test_concat
     df1 = Polars::LazyFrame.new({"a" => [1], "b" => [3]})
     df2 = Polars::LazyFrame.new({"a" => [2], "b" => [4]})

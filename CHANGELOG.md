@@ -1,6 +1,7 @@
 ## 0.24.0 (unreleased)
 
 - Added support for streaming engine to `sink_*` methods
+- Added experimental support for background queries
 - Added `concat_arr`, `escape_regex`, `int_ranges`, and `linear_spaces` methods to `Polars`
 - Added `rolling_rank` and `rolling_rank_by` methods to `Series` and `Expr`
 - Added `days_in_month` method to `DateTimeExpr` and `DateTimeNameSpace`
