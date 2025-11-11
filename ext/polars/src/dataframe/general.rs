@@ -6,6 +6,7 @@ use polars::prelude::pivot::{pivot, pivot_stable};
 use polars::prelude::*;
 
 use crate::conversion::*;
+use crate::exceptions::RbIndexError;
 use crate::map::dataframe::{
     apply_lambda_unknown, apply_lambda_with_bool_out_type, apply_lambda_with_primitive_out_type,
     apply_lambda_with_utf8_out_type,
@@ -236,6 +237,24 @@ impl RbDataFrame {
             .borrow()
             .select_at_idx(idx)
             .map(|s| RbSeries::new(s.as_materialized_series().clone()))
+    }
+
+    pub fn to_series(&self, index: isize) -> RbResult<RbSeries> {
+        let df = &self.df.borrow();
+
+        let index_adjusted = if index < 0 {
+            df.width().checked_sub(index.unsigned_abs())
+        } else {
+            Some(usize::try_from(index).unwrap())
+        };
+
+        let s = index_adjusted.and_then(|i| df.select_at_idx(i));
+        match s {
+            Some(s) => Ok(RbSeries::new(s.as_materialized_series().clone())),
+            None => Err(RbIndexError::new_err(
+                polars_err!(oob = index, df.width()).to_string(),
+            )),
+        }
     }
 
     pub fn get_column_index(&self, name: String) -> Option<usize> {

@@ -566,22 +566,55 @@ module Polars
       Schema.new(columns.zip(dtypes), check_dtypes: false)
     end
 
-    # Return the dataframe as a scalar.
+    # Return the DataFrame as a scalar, or return the element at the given row/column.
     #
-    # Equivalent to `df[0,0]`, with a check that the shape is (1,1).
+    # @param row [Integer]
+    #   Optional row index.
+    # @param column [Integer, String]
+    #   Optional column index or name.
     #
     # @return [Object]
     #
+    # @note
+    #   If row/col not provided, this is equivalent to `df[0,0]`, with a check that
+    #   the shape is (1,1). With row/col, this is equivalent to `df[row,col]`.
+    #
     # @example
     #   df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
-    #   result = df.select((Polars.col("a") * Polars.col("b")).sum)
-    #   result.item
+    #   df.select((Polars.col("a") * Polars.col("b")).sum).item
     #   # => 32
-    def item
-      if shape != [1, 1]
-        raise ArgumentError, "Can only call .item if the dataframe is of shape (1,1), dataframe is of shape #{shape}"
+    #
+    # @example
+    #   df.item(1, 1)
+    #   # => 5
+    #
+    # @example
+    #   df.item(2, "b")
+    #   # => 6
+    def item(row = nil, column = nil)
+      if row.nil? && column.nil?
+        if shape != [1, 1]
+          msg = (
+            "can only call `.item()` if the dataframe is of shape (1, 1)," +
+            " or if explicit row/col values are provided;" +
+            " frame has shape #{shape.inspect}"
+          )
+          raise ArgumentError, msg
+        end
+        return _df.to_series(0).get_index(0)
+
+      elsif row.nil? || column.nil?
+        msg = "cannot call `.item()` with only one of `row` or `column`"
+        raise ArgumentError, msg
       end
-      self[0, 0]
+
+      s =
+        if column.is_a?(Integer)
+          _df.to_series(column)
+        else
+          _df.get_column(column)
+        end
+      s.get_index_signed(row)
     end
 
     # no to_arrow
