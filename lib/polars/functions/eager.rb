@@ -271,6 +271,7 @@ module Polars
     def align_frames(
       *frames,
       on:,
+      how: "left", # TODO change to "full"
       select: nil,
       descending: false
     )
@@ -296,7 +297,7 @@ module Polars
           alignment_frame.join(
             df.lazy,
             on: alignment_frame.columns,
-            how: "left"
+            how: how
           ).select(df.columns)
         end
       if !select.nil?
