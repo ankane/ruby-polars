@@ -66,9 +66,12 @@ class LazyFrameTest < Minitest::Test
     assert_in_delta 0.989778, df["a"][0]
   end
 
-  def test_describe_optimized_plan
+  def test_explain
     df = Polars::DataFrame.new({"a" => [1, 2, 3]}).lazy
+    assert_match "PROJECT", df.select("a").explain
     assert_match "PROJECT", df.select("a").explain(optimized: true)
+    assert_match "PROJECT", df.select("a").explain(format: "tree")
+    assert_match "PROJECT", df.select("a").explain(format: "tree", optimized: true)
   end
 
   def test_collect_background

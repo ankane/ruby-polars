@@ -5,8 +5,8 @@ use magnus::{
 use polars::io::RowIndex;
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
-use polars_plan::plans::{HintIR, Sorted};
 use polars_plan::dsl::ScanSources;
+use polars_plan::plans::{HintIR, Sorted};
 use std::cell::RefCell;
 use std::io::BufWriter;
 use std::num::NonZeroUsize;
@@ -17,6 +17,7 @@ use crate::expr::rb_exprs_to_exprs;
 use crate::expr::selector::RbSelector;
 use crate::file::get_file_like;
 use crate::io::RbScanOptions;
+use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
 
 fn rbobject_to_first_path_and_scan_sources(obj: Value) -> RbResult<(Option<PlPath>, ScanSources)> {
@@ -286,6 +287,14 @@ impl RbLazyFrame {
             .describe_optimized_plan()
             .map_err(RbPolarsErr::from)?;
         Ok(result)
+    }
+
+    pub fn describe_plan_tree(rb: &Ruby, self_: &Self) -> RbResult<String> {
+        rb.enter_polars(|| self_.ldf.borrow().describe_plan_tree())
+    }
+
+    pub fn describe_optimized_plan_tree(rb: &Ruby, self_: &Self) -> RbResult<String> {
+        rb.enter_polars(|| self_.ldf.borrow().describe_optimized_plan_tree())
     }
 
     pub fn sort(

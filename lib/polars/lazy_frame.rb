@@ -471,6 +471,7 @@ module Polars
     #
     # @return [String]
     def explain(
+      format: "plain",
       optimized: true,
       engine: "auto",
       optimizations: DEFAULT_QUERY_OPT_FLAGS
@@ -483,7 +484,15 @@ module Polars
 
       if optimized
         ldf = _ldf.with_optimizations(optimizations._rboptflags)
-        ldf.describe_optimized_plan
+        if format == "tree"
+          return ldf.describe_optimized_plan_tree
+        else
+          return ldf.describe_optimized_plan
+        end
+      end
+
+      if format == "tree"
+        _ldf.describe_plan_tree
       else
         _ldf.describe_plan
       end
