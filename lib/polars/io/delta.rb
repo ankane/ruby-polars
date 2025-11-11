@@ -25,15 +25,19 @@ module Polars
       storage_options: nil,
       delta_table_options: nil
     )
-      dl_tbl =
-        _get_delta_lake_table(
+      df =
+        scan_delta(
           source,
           version: version,
           storage_options: storage_options,
-          delta_table_options: delta_table_options
+          delta_table_options: delta_table_options,
+          rechunk: rechunk
         )
 
-      dl_tbl.to_polars(columns: columns, rechunk: rechunk)
+      if !columns.nil?
+        df = df.select(columns)
+      end
+      df.collect
     end
 
     # Lazily read from a Delta lake table.
