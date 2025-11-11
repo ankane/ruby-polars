@@ -4305,19 +4305,41 @@ module Polars
     #
     # @param column [Object]
     #   Column that is sorted.
+    # @param more_columns [Array]
+    #   Columns that are sorted over after `column`.
     # @param descending [Boolean]
     #   Whether the column is sorted in descending order.
+    # @param nulls_last [Boolean]
+    #   Whether the nulls are at the end.
     #
     # @return [LazyFrame]
     def set_sorted(
       column,
-      descending: false
+      *more_columns,
+      descending: false,
+      nulls_last: false
     )
       if !Utils.strlike?(column)
         msg = "expected a 'str' for argument 'column' in 'set_sorted'"
         raise TypeError, msg
       end
-      with_columns(F.col(column).set_sorted(descending: descending))
+
+      if Utils.bool?(descending)
+        ds = [descending]
+      else
+        ds = descending
+      end
+      if Utils.bool?(nulls_last)
+        nl = [nulls_last]
+      else
+        nl = nulls_last
+      end
+
+      _from_rbldf(
+        _ldf.hint_sorted(
+          [column] + more_columns, ds, nl
+        )
+      )
     end
 
     # Update the values in this `LazyFrame` with the values in `other`.

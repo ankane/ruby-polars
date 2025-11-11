@@ -5,6 +5,7 @@ use magnus::{
 use polars::io::RowIndex;
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
+use polars_plan::plans::{HintIR, Sorted};
 use polars_plan::dsl::ScanSources;
 use std::cell::RefCell;
 use std::io::BufWriter;
@@ -1004,6 +1005,61 @@ impl RbLazyFrame {
             .borrow()
             .clone()
             .merge_sorted(other.ldf.borrow().clone(), &key)
+            .map_err(RbPolarsErr::from)?;
+        Ok(out.into())
+    }
+
+    pub fn hint_sorted(
+        &self,
+        columns: Vec<String>,
+        descending: Vec<bool>,
+        nulls_last: Vec<bool>,
+    ) -> RbResult<Self> {
+        if columns.len() != descending.len() && descending.len() != 1 {
+            return Err(RbValueError::new_err(
+                "`set_sorted` expects the same amount of `columns` as `descending` values.",
+            ));
+        }
+        if columns.len() != nulls_last.len() && nulls_last.len() != 1 {
+            return Err(RbValueError::new_err(
+                "`set_sorted` expects the same amount of `columns` as `nulls_last` values.",
+            ));
+        }
+
+        let mut sorted = columns
+            .iter()
+            .map(|c| Sorted {
+                column: PlSmallStr::from_str(c.as_str()),
+                descending: false,
+                nulls_last: false,
+            })
+            .collect::<Vec<_>>();
+
+        if !columns.is_empty() {
+            if descending.len() != 1 {
+                sorted
+                    .iter_mut()
+                    .zip(descending)
+                    .for_each(|(s, d)| s.descending = d);
+            } else if descending[0] {
+                sorted.iter_mut().for_each(|s| s.descending = true);
+            }
+
+            if nulls_last.len() != 1 {
+                sorted
+                    .iter_mut()
+                    .zip(nulls_last)
+                    .for_each(|(s, d)| s.nulls_last = d);
+            } else if nulls_last[0] {
+                sorted.iter_mut().for_each(|s| s.nulls_last = true);
+            }
+        }
+
+        let out = self
+            .ldf
+            .borrow()
+            .clone()
+            .hint(HintIR::Sorted(sorted.into()))
             .map_err(RbPolarsErr::from)?;
         Ok(out.into())
     }

@@ -931,6 +931,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("unnest", method!(RbLazyFrame::unnest, 2))?;
     class.define_method("count", method!(RbLazyFrame::count, 0))?;
     class.define_method("merge_sorted", method!(RbLazyFrame::merge_sorted, 2))?;
+    class.define_method("hint_sorted", method!(RbLazyFrame::hint_sorted, 3))?;
     class.define_method(
         "collect_concurrently",
         method!(RbLazyFrame::collect_concurrently, 0),
