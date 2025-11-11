@@ -472,8 +472,15 @@ module Polars
     # @return [String]
     def explain(
       optimized: true,
+      engine: "auto",
       optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
+      engine = _select_engine(engine)
+
+      if engine == "streaming"
+        Utils.issue_unstable_warning("streaming mode is considered unstable.")
+      end
+
       if optimized
         ldf = _ldf.with_optimizations(optimizations._rboptflags)
         ldf.describe_optimized_plan
