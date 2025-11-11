@@ -827,81 +827,60 @@ module Polars
     # Series with mixed datatypes will return summary statistics for the datatype of
     # the first value.
     #
+    # @param percentiles [Array]
+    #   One or more percentiles to include in the summary statistics (if the
+    #   Series has a numeric dtype). All values must be in the range `[0, 1]`.
+    # @param interpolation ['nearest', 'higher', 'lower', 'midpoint', 'linear', 'equiprobable']
+    #   Interpolation method used when calculating percentiles.
+    #
     # @return [DataFrame]
     #
     # @example
-    #   series_num = Polars::Series.new([1, 2, 3, 4, 5])
-    #   series_num.describe
+    #   s = Polars::Series.new([1, 2, 3, 4, 5])
+    #   s.describe
     #   # =>
-    #   # shape: (6, 2)
+    #   # shape: (9, 2)
     #   # ┌────────────┬──────────┐
     #   # │ statistic  ┆ value    │
     #   # │ ---        ┆ ---      │
     #   # │ str        ┆ f64      │
     #   # ╞════════════╪══════════╡
-    #   # │ min        ┆ 1.0      │
-    #   # │ max        ┆ 5.0      │
+    #   # │ count      ┆ 5.0      │
     #   # │ null_count ┆ 0.0      │
     #   # │ mean       ┆ 3.0      │
     #   # │ std        ┆ 1.581139 │
-    #   # │ count      ┆ 5.0      │
+    #   # │ min        ┆ 1.0      │
+    #   # │ 25%        ┆ 2.0      │
+    #   # │ 50%        ┆ 3.0      │
+    #   # │ 75%        ┆ 4.0      │
+    #   # │ max        ┆ 5.0      │
     #   # └────────────┴──────────┘
     #
-    # @example
-    #   series_str = Polars::Series.new(["a", "a", nil, "b", "c"])
-    #   series_str.describe
+    # @example Non-numeric data types may not have all statistics available.
+    #   s = Polars::Series.new(["aa", "aa", nil, "bb", "cc"])
+    #   s.describe
     #   # =>
-    #   # shape: (3, 2)
+    #   # shape: (4, 2)
     #   # ┌────────────┬───────┐
     #   # │ statistic  ┆ value │
     #   # │ ---        ┆ ---   │
-    #   # │ str        ┆ i64   │
+    #   # │ str        ┆ str   │
     #   # ╞════════════╪═══════╡
-    #   # │ unique     ┆ 4     │
+    #   # │ count      ┆ 4     │
     #   # │ null_count ┆ 1     │
-    #   # │ count      ┆ 5     │
+    #   # │ min        ┆ aa    │
+    #   # │ max        ┆ cc    │
     #   # └────────────┴───────┘
-    def describe
-      if len == 0
-        raise ArgumentError, "Series must contain at least one value"
-      elsif dtype.numeric?
-        s = cast(Float64)
-        stats = {
-          "min" => s.min,
-          "max" => s.max,
-          "null_count" => s.null_count,
-          "mean" => s.mean,
-          "std" => s.std,
-          "count" => s.len
-        }
-      elsif dtype == Boolean
-        stats = {
-          "sum" => sum,
-          "null_count" => null_count,
-          "count" => len
-        }
-      elsif dtype == String
-        stats = {
-          "unique" => unique.length,
-          "null_count" => null_count,
-          "count" => len
-        }
-      elsif dtype.temporal?
-        # we coerce all to string, because a polars column
-        # only has a single dtype and dates: datetime and count: int don't match
-        stats = {
-          "min" => dt.min.to_s,
-          "max" => dt.max.to_s,
-          "null_count" => null_count.to_s,
-          "count" => len.to_s
-        }
-      else
-        raise TypeError, "This type is not supported"
-      end
-
-      Polars::DataFrame.new(
-        {"statistic" => stats.keys, "value" => stats.values}
+    def describe(
+      percentiles: [0.25, 0.50, 0.75],
+      interpolation: "nearest"
+    )
+      stats = to_frame.describe(
+        percentiles: percentiles,
+        interpolation: interpolation
       )
+      stats.columns = ["statistic", "value"]
+      stats.filter(F.col("value").is_not_null)
     end
 
     # Reduce this Series to the sum value.

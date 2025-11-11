@@ -109,5 +109,28 @@ module Polars
       df.columns = new_columns.to_a
       df
     end
+
+    def self.parse_percentiles(
+      percentiles, inject_median: false
+    )
+      if percentiles.is_a?(Float)
+        percentiles = [percentiles]
+      elsif percentiles.nil?
+        percentiles = []
+      end
+      if !percentiles.all? { |p| p >= 0 && p <= 1 }
+        msg = "`percentiles` must all be in the range [0, 1]"
+        raise ArgumentError, msg
+      end
+
+      sub_50_percentiles = percentiles.select { |p| p < 0.5 }.sort
+      at_or_above_50_percentiles = percentiles.select { |p| p >= 0.5 }.sort
+
+      if inject_median && (!at_or_above_50_percentiles || at_or_above_50_percentiles[0] != 0.5)
+        at_or_above_50_percentiles = [0.5, *at_or_above_50_percentiles]
+      end
+
+      [*sub_50_percentiles, *at_or_above_50_percentiles]
+    end
   end
 end

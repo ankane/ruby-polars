@@ -1715,72 +1715,79 @@ module Polars
 
     # Summary statistics for a DataFrame.
     #
+    # @param percentiles [Array]
+    #   One or more percentiles to include in the summary statistics.
+    #   All values must be in the range `[0, 1]`.
+    # @param interpolation ['nearest', 'higher', 'lower', 'midpoint', 'linear', 'equiprobable']
+    #   Interpolation method used when calculating percentiles.
+    #
     # @return [DataFrame]
     #
-    # @example
+    # @example Show default frame statistics:
     #   df = Polars::DataFrame.new(
     #     {
-    #       "a" => [1.0, 2.8, 3.0],
-    #       "b" => [4, 5, nil],
-    #       "c" => [true, false, true],
-    #       "d" => [nil, "b", "c"],
-    #       "e" => ["usd", "eur", nil]
+    #       "float" => [1.0, 2.8, 3.0],
+    #       "int" => [40, 50, nil],
+    #       "bool" => [true, false, true],
+    #       "str" => ["zz", "xx", "yy"],
+    #       "date" => [Date.new(2020, 1, 1), Date.new(2021, 7, 5), Date.new(2022, 12, 31)]
     #     }
     #   )
     #   df.describe
     #   # =>
-    #   # shape: (7, 6)
-    #   # ┌────────────┬──────────┬──────────┬──────────┬──────┬──────┐
-    #   # │ describe   ┆ a        ┆ b        ┆ c        ┆ d    ┆ e    │
-    #   # │ ---        ┆ ---      ┆ ---      ┆ ---      ┆ ---  ┆ ---  │
-    #   # │ str        ┆ f64      ┆ f64      ┆ f64      ┆ str  ┆ str  │
-    #   # ╞════════════╪══════════╪══════════╪══════════╪══════╪══════╡
-    #   # │ count      ┆ 3.0      ┆ 3.0      ┆ 3.0      ┆ 3    ┆ 3    │
-    #   # │ null_count ┆ 0.0      ┆ 1.0      ┆ 0.0      ┆ 1    ┆ 1    │
-    #   # │ mean       ┆ 2.266667 ┆ 4.5      ┆ 0.666667 ┆ null ┆ null │
-    #   # │ std        ┆ 1.101514 ┆ 0.707107 ┆ 0.57735  ┆ null ┆ null │
-    #   # │ min        ┆ 1.0      ┆ 4.0      ┆ 0.0      ┆ b    ┆ eur  │
-    #   # │ max        ┆ 3.0      ┆ 5.0      ┆ 1.0      ┆ c    ┆ usd  │
-    #   # │ median     ┆ 2.8      ┆ 4.5      ┆ 1.0      ┆ null ┆ null │
-    #   # └────────────┴──────────┴──────────┴──────────┴──────┴──────┘
-    def describe
-      describe_cast = lambda do |stat|
-        columns = []
-        self.columns.each_with_index do |s, i|
-          if self[s].dtype.numeric? || self[s].dtype == Boolean
-            columns << stat[0.., i].cast(Float64)
-          else
-            # for dates, strings, etc, we cast to string so that all
-            # statistics can be shown
-            columns << stat[0.., i].cast(String)
-          end
-        end
-        self.class.new(columns)
+    #   # shape: (9, 6)
+    #   # ┌────────────┬──────────┬──────────┬──────────┬──────┬─────────────────────────┐
+    #   # │ statistic  ┆ float    ┆ int      ┆ bool     ┆ str  ┆ date                    │
+    #   # │ ---        ┆ ---      ┆ ---      ┆ ---      ┆ ---  ┆ ---                     │
+    #   # │ str        ┆ f64      ┆ f64      ┆ f64      ┆ str  ┆ str                     │
+    #   # ╞════════════╪══════════╪══════════╪══════════╪══════╪═════════════════════════╡
+    #   # │ count      ┆ 3.0      ┆ 2.0      ┆ 3.0      ┆ 3    ┆ 3                       │
+    #   # │ null_count ┆ 0.0      ┆ 1.0      ┆ 0.0      ┆ 0    ┆ 0                       │
+    #   # │ mean       ┆ 2.266667 ┆ 45.0     ┆ 0.666667 ┆ null ┆ 2021-07-02 16:00:00 UTC │
+    #   # │ std        ┆ 1.101514 ┆ 7.071068 ┆ null     ┆ null ┆ null                    │
+    #   # │ min        ┆ 1.0      ┆ 40.0     ┆ 0.0      ┆ xx   ┆ 2020-01-01              │
+    #   # │ 25%        ┆ 2.8      ┆ 40.0     ┆ null     ┆ null ┆ 2021-07-05              │
+    #   # │ 50%        ┆ 2.8      ┆ 50.0     ┆ null     ┆ null ┆ 2021-07-05              │
+    #   # │ 75%        ┆ 3.0      ┆ 50.0     ┆ null     ┆ null ┆ 2022-12-31              │
+    #   # │ max        ┆ 3.0      ┆ 50.0     ┆ 1.0      ┆ zz   ┆ 2022-12-31              │
+    #   # └────────────┴──────────┴──────────┴──────────┴──────┴─────────────────────────┘
+    #
+    # @example Customize which percentiles are displayed, applying linear interpolation:
+    #   df.describe(
+    #     percentiles: [0.1, 0.3, 0.5, 0.7, 0.9],
+    #     interpolation: "linear"
+    #   )
+    #   # =>
+    #   # shape: (11, 6)
+    #   # ┌────────────┬──────────┬──────────┬──────────┬──────┬─────────────────────────┐
+    #   # │ statistic  ┆ float    ┆ int      ┆ bool     ┆ str  ┆ date                    │
+    #   # │ ---        ┆ ---      ┆ ---      ┆ ---      ┆ ---  ┆ ---                     │
+    #   # │ str        ┆ f64      ┆ f64      ┆ f64      ┆ str  ┆ str                     │
+    #   # ╞════════════╪══════════╪══════════╪══════════╪══════╪═════════════════════════╡
+    #   # │ count      ┆ 3.0      ┆ 2.0      ┆ 3.0      ┆ 3    ┆ 3                       │
+    #   # │ null_count ┆ 0.0      ┆ 1.0      ┆ 0.0      ┆ 0    ┆ 0                       │
+    #   # │ mean       ┆ 2.266667 ┆ 45.0     ┆ 0.666667 ┆ null ┆ 2021-07-02 16:00:00 UTC │
+    #   # │ std        ┆ 1.101514 ┆ 7.071068 ┆ null     ┆ null ┆ null                    │
+    #   # │ min        ┆ 1.0      ┆ 40.0     ┆ 0.0      ┆ xx   ┆ 2020-01-01              │
+    #   # │ …          ┆ …        ┆ …        ┆ …        ┆ …    ┆ …                       │
+    #   # │ 30%        ┆ 2.08     ┆ 43.0     ┆ null     ┆ null ┆ 2020-11-26              │
+    #   # │ 50%        ┆ 2.8      ┆ 45.0     ┆ null     ┆ null ┆ 2021-07-05              │
+    #   # │ 70%        ┆ 2.88     ┆ 47.0     ┆ null     ┆ null ┆ 2022-02-07              │
+    #   # │ 90%        ┆ 2.96     ┆ 49.0     ┆ null     ┆ null ┆ 2022-09-13              │
+    #   # │ max        ┆ 3.0      ┆ 50.0     ┆ 1.0      ┆ zz   ┆ 2022-12-31              │
+    #   # └────────────┴──────────┴──────────┴──────────┴──────┴─────────────────────────┘
+    def describe(
+      percentiles: [0.25, 0.50, 0.75],
+      interpolation: "nearest"
+    )
+      if columns.empty?
+        msg = "cannot describe a DataFrame that has no columns"
+        raise TypeError, msg
       end
 
-      summary = _from_rbdf(
-        Polars.concat(
-          [
-            describe_cast.(
-              self.class.new(columns.to_h { |c| [c, [height]] })
-            ),
-            describe_cast.(null_count),
-            describe_cast.(mean),
-            describe_cast.(std),
-            describe_cast.(min),
-            describe_cast.(max),
-            describe_cast.(median)
-          ]
-        )._df
+      lazy.describe(
+        percentiles: percentiles, interpolation: interpolation
       )
-      summary.insert_column(
-        0,
-        Polars::Series.new(
-          "describe",
-          ["count", "null_count", "mean", "std", "min", "max", "median"],
-        )
-      )
-      summary
     end
 
     # Find the index of a column by name.

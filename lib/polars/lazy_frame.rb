@@ -257,6 +257,214 @@ module Polars
       function.call(self, *args, **kwargs, &block)
     end
 
+    # Creates a summary of statistics for a LazyFrame, returning a DataFrame.
+    #
+    # @param percentiles [Array]
+    #   One or more percentiles to include in the summary statistics.
+    #   All values must be in the range `[0, 1]`.
+    # @param interpolation ['nearest', 'higher', 'lower', 'midpoint', 'linear', 'equiprobable']
+    #   Interpolation method used when calculating percentiles.
+    #
+    # @return [DataFrame]
+    #
+    # @note
+    #   The median is included by default as the 50% percentile.
+    #
+    # @note
+    #   This method does *not* maintain the laziness of the frame, and will `collect`
+    #   the final result. This could potentially be an expensive operation.
+    #
+    # @note
+    #   We do not guarantee the output of `describe` to be stable. It will show
+    #   statistics that we deem informative, and may be updated in the future.
+    #   Using `describe` programmatically (versus interactive exploration) is
+    #   not recommended for this reason.
+    #
+    # @example Show default frame statistics:
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "float" => [1.0, 2.8, 3.0],
+    #       "int" => [40, 50, nil],
+    #       "bool" => [true, false, true],
+    #       "str" => ["zz", "xx", "yy"],
+    #       "date" => [Date.new(2020, 1, 1), Date.new(2021, 7, 5), Date.new(2022, 12, 31)]
+    #     }
+    #   )
+    #   lf.describe
+    #   # =>
+    #   # shape: (9, 6)
+    #   # ┌────────────┬──────────┬──────────┬──────────┬──────┬─────────────────────────┐
+    #   # │ statistic  ┆ float    ┆ int      ┆ bool     ┆ str  ┆ date                    │
+    #   # │ ---        ┆ ---      ┆ ---      ┆ ---      ┆ ---  ┆ ---                     │
+    #   # │ str        ┆ f64      ┆ f64      ┆ f64      ┆ str  ┆ str                     │
+    #   # ╞════════════╪══════════╪══════════╪══════════╪══════╪═════════════════════════╡
+    #   # │ count      ┆ 3.0      ┆ 2.0      ┆ 3.0      ┆ 3    ┆ 3                       │
+    #   # │ null_count ┆ 0.0      ┆ 1.0      ┆ 0.0      ┆ 0    ┆ 0                       │
+    #   # │ mean       ┆ 2.266667 ┆ 45.0     ┆ 0.666667 ┆ null ┆ 2021-07-02 16:00:00 UTC │
+    #   # │ std        ┆ 1.101514 ┆ 7.071068 ┆ null     ┆ null ┆ null                    │
+    #   # │ min        ┆ 1.0      ┆ 40.0     ┆ 0.0      ┆ xx   ┆ 2020-01-01              │
+    #   # │ 25%        ┆ 2.8      ┆ 40.0     ┆ null     ┆ null ┆ 2021-07-05              │
+    #   # │ 50%        ┆ 2.8      ┆ 50.0     ┆ null     ┆ null ┆ 2021-07-05              │
+    #   # │ 75%        ┆ 3.0      ┆ 50.0     ┆ null     ┆ null ┆ 2022-12-31              │
+    #   # │ max        ┆ 3.0      ┆ 50.0     ┆ 1.0      ┆ zz   ┆ 2022-12-31              │
+    #   # └────────────┴──────────┴──────────┴──────────┴──────┴─────────────────────────┘
+    #
+    # @example Customize which percentiles are displayed, applying linear interpolation:
+    #   lf.describe(
+    #     percentiles: [0.1, 0.3, 0.5, 0.7, 0.9],
+    #     interpolation: "linear"
+    #   )
+    #   # =>
+    #   # shape: (11, 6)
+    #   # ┌────────────┬──────────┬──────────┬──────────┬──────┬─────────────────────────┐
+    #   # │ statistic  ┆ float    ┆ int      ┆ bool     ┆ str  ┆ date                    │
+    #   # │ ---        ┆ ---      ┆ ---      ┆ ---      ┆ ---  ┆ ---                     │
+    #   # │ str        ┆ f64      ┆ f64      ┆ f64      ┆ str  ┆ str                     │
+    #   # ╞════════════╪══════════╪══════════╪══════════╪══════╪═════════════════════════╡
+    #   # │ count      ┆ 3.0      ┆ 2.0      ┆ 3.0      ┆ 3    ┆ 3                       │
+    #   # │ null_count ┆ 0.0      ┆ 1.0      ┆ 0.0      ┆ 0    ┆ 0                       │
+    #   # │ mean       ┆ 2.266667 ┆ 45.0     ┆ 0.666667 ┆ null ┆ 2021-07-02 16:00:00 UTC │
+    #   # │ std        ┆ 1.101514 ┆ 7.071068 ┆ null     ┆ null ┆ null                    │
+    #   # │ min        ┆ 1.0      ┆ 40.0     ┆ 0.0      ┆ xx   ┆ 2020-01-01              │
+    #   # │ …          ┆ …        ┆ …        ┆ …        ┆ …    ┆ …                       │
+    #   # │ 30%        ┆ 2.08     ┆ 43.0     ┆ null     ┆ null ┆ 2020-11-26              │
+    #   # │ 50%        ┆ 2.8      ┆ 45.0     ┆ null     ┆ null ┆ 2021-07-05              │
+    #   # │ 70%        ┆ 2.88     ┆ 47.0     ┆ null     ┆ null ┆ 2022-02-07              │
+    #   # │ 90%        ┆ 2.96     ┆ 49.0     ┆ null     ┆ null ┆ 2022-09-13              │
+    #   # │ max        ┆ 3.0      ┆ 50.0     ┆ 1.0      ┆ zz   ┆ 2022-12-31              │
+    #   # └────────────┴──────────┴──────────┴──────────┴──────┴─────────────────────────┘
+    def describe(
+      percentiles: [0.25, 0.50, 0.75],
+      interpolation: "nearest"
+    )
+      schema = collect_schema.to_h
+
+      if schema.empty?
+        msg = "cannot describe a LazyFrame that has no columns"
+        raise TypeError, msg
+      end
+
+      # create list of metrics
+      metrics = ["count", "null_count", "mean", "std", "min"]
+      if (quantiles = Utils.parse_percentiles(percentiles)).any?
+        metrics.concat(quantiles.map { |q| "%g%%" % [q * 100] })
+      end
+      metrics.append("max")
+
+      skip_minmax = lambda do |dt|
+        dt.nested? || [Categorical, Enum, Null, Object, Unknown].include?(dt)
+      end
+
+      # determine which columns will produce std/mean/percentile/etc
+      # statistics in a single pass over the frame schema
+      has_numeric_result, sort_cols = Set.new, Set.new
+      metric_exprs = []
+      null = F.lit(nil)
+
+      schema.each do |c, dtype|
+        is_numeric = dtype.numeric?
+        is_temporal = !is_numeric && dtype.temporal?
+
+        # counts
+        count_exprs = [
+          F.col(c).count.name.prefix("count:"),
+          F.col(c).null_count.name.prefix("null_count:")
+        ]
+        # mean
+        mean_expr =
+          if is_temporal || is_numeric || dtype == Boolean
+            F.col(c).mean
+          else
+            null
+          end
+
+        # standard deviation, min, max
+        expr_std = is_numeric ? F.col(c).std : null
+        min_expr = !skip_minmax.(dtype) ? F.col(c).min : null
+        max_expr = !skip_minmax.(dtype) ? F.col(c).max : null
+
+        # percentiles
+        pct_exprs = []
+        quantiles.each do |p|
+          if is_numeric || is_temporal
+            pct_expr =
+              if is_temporal
+                F.col(c).to_physical.quantile(p, interpolation: interpolation).cast(dtype)
+              else
+                F.col(c).quantile(p, interpolation: interpolation)
+              end
+            sort_cols.add(c)
+          else
+            pct_expr = null
+          end
+          pct_exprs << pct_expr.alias("#{p}:#{c}")
+        end
+
+        if is_numeric || dtype.nested? || [Null, Boolean].include?(dtype)
+          has_numeric_result.add(c)
+        end
+
+        # add column expressions (in end-state 'metrics' list order)
+        metric_exprs.concat(
+          [
+            *count_exprs,
+            mean_expr.alias("mean:#{c}"),
+            expr_std.alias("std:#{c}"),
+            min_expr.alias("min:#{c}"),
+            *pct_exprs,
+            max_expr.alias("max:#{c}")
+          ]
+        )
+      end
+
+      # calculate requested metrics in parallel, then collect the result
+      df_metrics = (
+        (
+          # if more than one quantile, sort the relevant columns to make them O(1)
+          # TODO: drop sort once we have efficient retrieval of multiple quantiles
+          sort_cols ? with_columns(sort_cols.map { |c| F.col(c).sort }) : self
+        )
+        .select(*metric_exprs)
+        .collect
+      )
+
+      # reshape wide result
+      n_metrics = metrics.length
+      column_metrics =
+        schema.length.times.map do |n|
+          df_metrics.row(0)[(n * n_metrics)...((n + 1) * n_metrics)]
+        end
+
+      summary = schema.keys.zip(column_metrics).to_h
+
+      # cast by column type (numeric/bool -> float), (other -> string)
+      schema.each_key do |c|
+        summary[c] =
+          summary[c].map do |v|
+            if v.nil? || v.is_a?(Hash)
+              nil
+            else
+              if has_numeric_result.include?(c)
+                if v == true
+                  1.0
+                elsif v == false
+                  0.0
+                else
+                  v.to_f
+                end
+              else
+                "#{v}"
+              end
+            end
+          end
+      end
+
+      # return results as a DataFrame
+      df_summary = Polars.from_hash(summary)
+      df_summary.insert_column(0, Polars::Series.new("statistic", metrics))
+      df_summary
+    end
+
     # Create a string representation of the query plan.
     #
     # Different optimizations can be turned on or off.
