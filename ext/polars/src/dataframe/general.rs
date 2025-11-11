@@ -232,13 +232,6 @@ impl RbDataFrame {
         Ok(RbSeries::new(s))
     }
 
-    pub fn select_at_idx(&self, idx: usize) -> Option<RbSeries> {
-        self.df
-            .borrow()
-            .select_at_idx(idx)
-            .map(|s| RbSeries::new(s.as_materialized_series().clone()))
-    }
-
     pub fn to_series(&self, index: isize) -> RbResult<RbSeries> {
         let df = &self.df.borrow();
 

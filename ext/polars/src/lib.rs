@@ -116,7 +116,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("vstack_mut", method!(RbDataFrame::vstack_mut, 1))?;
     class.define_method("vstack", method!(RbDataFrame::vstack, 1))?;
     class.define_method("drop_in_place", method!(RbDataFrame::drop_in_place, 1))?;
-    class.define_method("select_at_idx", method!(RbDataFrame::select_at_idx, 1))?;
     class.define_method("to_series", method!(RbDataFrame::to_series, 1))?;
     class.define_method(
         "get_column_index",

@@ -694,7 +694,7 @@ module Polars
       if index < 0
         index = columns.length + index
       end
-      Utils.wrap_s(_df.select_at_idx(index))
+      Utils.wrap_s(_df.to_series(index))
     end
 
     # Serialize this DataFrame to a file or string.
