@@ -83,4 +83,8 @@ impl RbExpr {
     pub fn meta_tree_format(&self, schema: Option<Wrap<Schema>>) -> RbResult<String> {
         self.compute_tree_format(false, schema)
     }
+
+    pub fn meta_show_graph(&self, schema: Option<Wrap<Schema>>) -> RbResult<String> {
+        self.compute_tree_format(true, schema)
+    }
 }

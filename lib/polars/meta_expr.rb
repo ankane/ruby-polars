@@ -297,5 +297,41 @@ module Polars
         nil
       end
     end
+
+    # Format the expression as a Graphviz graph.
+    #
+    # Note that Graphviz must be installed to render the visualization (if not
+    # already present, you can download it here: https://graphviz.org/download.
+    #
+    # @param show
+    #     Show the figure.
+    # @param output_path
+    #     Write the figure to disk.
+    # @param raw_output
+    #     Return dot syntax. This cannot be combined with `show` and/or `output_path`.
+    # @param figsize
+    #     Passed to matplotlib if `show == True`.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   e = (Polars.col("foo") * Polars.col("bar")).sum.over(Polars.col("ham")) / 2
+    #   e.meta.show_graph
+    def show_graph(
+      show: true,
+      output_path: nil,
+      raw_output: false,
+      figsize: [16.0, 12.0],
+      schema: nil
+    )
+      dot = _rbexpr.meta_show_graph(schema)
+      Utils.display_dot_graph(
+        dot: dot,
+        show: show,
+        output_path: output_path,
+        raw_output: raw_output,
+        figsize: figsize
+      )
+    end
   end
 end

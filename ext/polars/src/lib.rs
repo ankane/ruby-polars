@@ -642,6 +642,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("meta_is_literal", method!(RbExpr::meta_is_literal, 1))?;
     class.define_method("meta_tree_format", method!(RbExpr::meta_tree_format, 1))?;
+    class.define_method("meta_show_graph", method!(RbExpr::meta_show_graph, 1))?;
 
     // name
     class.define_method("name_keep", method!(RbExpr::name_keep, 0))?;

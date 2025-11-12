@@ -198,9 +198,6 @@ class DocsTest < Minitest::Test
     # yard global
     return if [:log].include?(method.name)
 
-    # TODO
-    return if [:show_graph].include?(method.name)
-
     if ENV["EXAMPLES"] && missing_examples?(method, cls)
       warn "Missing examples (#{method})"
     end
@@ -222,6 +219,12 @@ class DocsTest < Minitest::Test
               out = nil
               capture_io { out = instance_eval(code).inspect }
               out
+            elsif [:show_graph].include?(method.name)
+              begin
+                instance_eval(code)
+              rescue Polars::Todo
+                ""
+              end
             else
               instance_eval(code).inspect
             end
