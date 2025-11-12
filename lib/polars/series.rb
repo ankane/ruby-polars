@@ -1754,6 +1754,57 @@ module Polars
       self
     end
 
+    # Extend the memory backed by this Series with the values from another.
+    #
+    # Different from `append`, which adds the chunks from `other` to the chunks of
+    # this series, `extend` appends the data from `other` to the underlying memory
+    # locations and thus may cause a reallocation (which is expensive).
+    #
+    # If this does `not` cause a reallocation, the resulting data structure will not
+    # have any extra chunks and thus will yield faster queries.
+    #
+    # Prefer `extend` over `append` when you want to do a query after a single
+    # append. For instance, during online operations where you add `n` rows
+    # and rerun a query.
+    #
+    # Prefer `append` over `extend` when you want to append many times
+    # before doing a query. For instance, when you read in multiple files and want
+    # to store them in a single `Series`. In the latter case, finish the sequence
+    # of `append` operations with a `rechunk`.
+    #
+    # @param other [Series]
+    #   Series to extend the series with.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   This method modifies the series in-place. The series is returned for
+    #   convenience only.
+    #
+    # @example
+    #   a = Polars::Series.new("a", [1, 2, 3])
+    #   b = Polars::Series.new("b", [4, 5])
+    #   a.extend(b)
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   #         4
+    #   #         5
+    #   # ]
+    #
+    # @example The resulting series will consist of a single chunk.
+    #   a.n_chunks
+    #   # => 1
+    def extend(other)
+      Utils.require_same_type(self, other)
+      _s.extend(other._s)
+      self
+    end
+
     # Filter elements by a boolean mask.
     #
     # @param predicate [Series, Array]
