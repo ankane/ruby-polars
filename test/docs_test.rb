@@ -45,6 +45,10 @@ class DocsTest < Minitest::Test
     assert_docs Polars::DataFrame
   end
 
+  def test_data_frame_plot
+    assert_docs Polars::DataFramePlot
+  end
+
   def test_data_types
     assert_docs Polars::DataType
   end
@@ -115,6 +119,10 @@ class DocsTest < Minitest::Test
 
   def test_series
     assert_docs Polars::Series
+  end
+
+  def test_series_plot
+    assert_docs Polars::SeriesPlot
   end
 
   def test_sql_context

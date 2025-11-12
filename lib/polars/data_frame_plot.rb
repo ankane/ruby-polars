@@ -8,6 +8,16 @@ module Polars
       @df = df
     end
 
+    # Draw line plot.
+    #
+    # @param x [String]
+    #   Column with x-coordinates of lines.
+    # @param y [String]
+    #   Column with y-coordinates of lines.
+    # @param color [String]
+    #   Column to color lines by.
+    #
+    # @return [Vega::LiteChart]
     def line(x, y, color: nil, _type: "line")
       data = @df[[x, y, color].compact.map(&:to_s).uniq].rows(named: true)
 
@@ -34,10 +44,28 @@ module Polars
         .config(axis: {labelFontSize: 12})
     end
 
+    # Draw area plot.
+    #
+    # @param x [String]
+    #   Column with x-coordinates of lines.
+    # @param y [String]
+    #   Column with y-coordinates of lines.
+    # @param color [String]
+    #   Column to color lines by.
+    #
+    # @return [Vega::LiteChart]
     def area(x, y, color: nil)
       line(x, y, color: color, _type: "area")
     end
 
+    # Draw pie chart.
+    #
+    # @param x [String]
+    #   Column with label of slice.
+    # @param y [String]
+    #   Column with size of slice.
+    #
+    # @return [Vega::LiteChart]
     def pie(x, y)
       data = @df[[x, y].map(&:to_s).uniq].rows(named: true)
 
@@ -51,6 +79,18 @@ module Polars
         .view(stroke: nil)
     end
 
+    # Draw column plot.
+    #
+    # @param x [String]
+    #   Column with x-coordinates of columns.
+    # @param y [String]
+    #   Column with y-coordinates of columns.
+    # @param color [String]
+    #   Column to color columns by.
+    # @param stacked [Boolean]
+    #   Stack columns.
+    #
+    # @return [Vega::LiteChart]
     def column(x, y, color: nil, stacked: nil)
       data = @df[[x, y, color].compact.map(&:to_s).uniq].rows(named: true)
 
@@ -70,6 +110,18 @@ module Polars
         .config(axis: {labelFontSize: 12})
     end
 
+    # Draw bar plot.
+    #
+    # @param x [String]
+    #   Column with x-coordinates of bars.
+    # @param y [String]
+    #   Column with y-coordinates of bars.
+    # @param color [String]
+    #   Column to color bars by.
+    # @param stacked [Boolean]
+    #   Stack bars.
+    #
+    # @return [Vega::LiteChart]
     def bar(x, y, color: nil, stacked: nil)
       data = @df[[x, y, color].compact.map(&:to_s).uniq].rows(named: true)
 
@@ -90,6 +142,16 @@ module Polars
         .config(axis: {labelFontSize: 12})
     end
 
+    # Draw scatter plot.
+    #
+    # @param x [String]
+    #   Column with x-coordinates of points.
+    # @param y [String]
+    #   Column with y-coordinates of points.
+    # @param color [String]
+    #   Column to color points by.
+    #
+    # @return [Vega::LiteChart]
     def scatter(x, y, color: nil)
       data = @df[[x, y, color].compact.map(&:to_s).uniq].rows(named: true)
 
