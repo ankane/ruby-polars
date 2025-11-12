@@ -211,6 +211,29 @@ module Polars
       _rboptflags.fast_projection = value
     end
 
+    def to_s
+      <<~STR
+        QueryOptFlags {
+            type_coercion: #{_rboptflags.type_coercion}
+            type_check: #{_rboptflags.type_check}
+
+            predicate_pushdown: #{predicate_pushdown}
+            projection_pushdown: #{projection_pushdown}
+            simplify_expression: #{simplify_expression}
+            slice_pushdown: #{slice_pushdown}
+            comm_subplan_elim: #{comm_subplan_elim}
+            comm_subexpr_elim: #{comm_subexpr_elim}
+            cluster_with_columns: #{cluster_with_columns}
+            check_order_observe: #{check_order_observe}
+            fast_projection: #{fast_projection}
+
+            eager: #{_rboptflags.eager}
+            streaming: #{_rboptflags.streaming}
+        }
+      STR
+    end
+    alias_method :inspect, :to_s
+
     private
 
     def initialize_copy(other)
