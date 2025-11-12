@@ -378,6 +378,14 @@ impl RbLazyFrame {
             .into()
     }
 
+    pub fn profile(rb: &Ruby, self_: &Self) -> RbResult<(RbDataFrame, RbDataFrame)> {
+        let (df, time_df) = rb.enter_polars(|| {
+            let ldf = self_.ldf.borrow().clone();
+            ldf.profile()
+        })?;
+        Ok((df.into(), time_df.into()))
+    }
+
     pub fn collect(&self, engine: Wrap<Engine>) -> RbResult<RbDataFrame> {
         let ldf = self.ldf.borrow().clone();
         let df = ldf

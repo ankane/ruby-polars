@@ -886,6 +886,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "with_optimizations",
         method!(RbLazyFrame::with_optimizations, 1),
     )?;
+    class.define_method("profile", method!(RbLazyFrame::profile, 0))?;
     class.define_method("collect", method!(RbLazyFrame::collect, 1))?;
     class.define_method("sink_parquet", method!(RbLazyFrame::sink_parquet, 12))?;
     class.define_method("sink_ipc", method!(RbLazyFrame::sink_ipc, 7))?;

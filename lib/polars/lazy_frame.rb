@@ -760,8 +760,69 @@ module Polars
       _from_rbldf(_ldf.bottom_k(k, by, reverse))
     end
 
-    # def profile
-    # end
+    # Profile a LazyFrame.
+    #
+    # This will run the query and return a tuple
+    # containing the materialized DataFrame and a DataFrame that
+    # contains profiling information of each node that is executed.
+    #
+    # The units of the timings are microseconds.
+    #
+    # @param engine [String]
+    #     Select the engine used to process the query, optional.
+    #     At the moment, if set to `"auto"` (default), the query
+    #     is run using the polars in-memory engine. Polars will also
+    #     attempt to use the engine set by the `POLARS_ENGINE_AFFINITY`
+    #     environment variable. If it cannot run the query using the
+    #     selected engine, the query is run using the polars in-memory
+    #     engine.
+    # @param optimizations [Object]
+    #     The optimization passes done during query optimization.
+    #
+    # @return [Array]
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "a" => ["a", "b", "a", "b", "b", "c"],
+    #       "b" => [1, 2, 3, 4, 5, 6],
+    #       "c" => [6, 5, 4, 3, 2, 1]
+    #     }
+    #   )
+    #   lf.group_by("a", maintain_order: true).agg(Polars.all.sum).sort(
+    #     "a"
+    #   ).profile
+    #   # =>
+    #   # [shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ a   ┆ b   ┆ c   │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ a   ┆ 4   ┆ 10  │
+    #   # │ b   ┆ 11  ┆ 10  │
+    #   # │ c   ┆ 6   ┆ 1   │
+    #   # └─────┴─────┴─────┘,
+    #   # shape: (3, 3)
+    #   # ┌──────────────┬───────┬─────┐
+    #   # │ node         ┆ start ┆ end │
+    #   # │ ---          ┆ ---   ┆ --- │
+    #   # │ str          ┆ u64   ┆ u64 │
+    #   # ╞══════════════╪═══════╪═════╡
+    #   # │ optimization ┆ 0     ┆ 67  │
+    #   # │ sort(a)      ┆ 67    ┆ 79  │
+    #   # └──────────────┴───────┴─────┘]
+    def profile(
+      engine: "auto",
+      optimizations: DEFAULT_QUERY_OPT_FLAGS
+    )
+      engine = _select_engine(engine)
+
+      ldf = _ldf.with_optimizations(optimizations._rboptflags)
+
+      df_rb, timings_rb = ldf.profile
+      [Utils.wrap_df(df_rb), Utils.wrap_df(timings_rb)]
+    end
 
     # Materialize this LazyFrame into a DataFrame.
     #
