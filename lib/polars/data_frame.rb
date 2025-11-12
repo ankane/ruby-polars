@@ -1,8 +1,6 @@
 module Polars
   # Two-dimensional data structure representing data as a table with rows and columns.
   class DataFrame
-    include Plot
-
     # @private
     attr_accessor :_df
 
@@ -114,6 +112,45 @@ module Polars
       df = DataFrame.allocate
       df._df = rb_df
       df
+    end
+
+    # Plot data.
+    #
+    # @return [Object]
+    def plot(x = nil, y = nil, type: nil, group: nil, stacked: nil)
+      plot = DataFramePlot.new(self)
+      return plot if x.nil? && y.nil?
+
+      raise ArgumentError, "Must specify columns" if x.nil? || y.nil?
+      type ||= begin
+        if self[x].dtype.numeric? && self[y].dtype.numeric?
+          "scatter"
+        elsif self[x].dtype == String && self[y].dtype.numeric?
+          "column"
+        elsif (self[x].dtype == Date || self[x].dtype == Datetime) && self[y].dtype.numeric?
+          "line"
+        else
+          raise "Cannot determine type. Use the type option."
+        end
+      end
+
+      case type
+      when "line"
+        plot.line(x, y, color: group)
+      when "area"
+        plot.area(x, y, color: group)
+      when "pie"
+        raise ArgumentError, "Cannot use group option with pie chart" unless group.nil?
+        plot.pie(x, y)
+      when "column"
+        plot.column(x, y, color: group, stacked: stacked)
+      when "bar"
+        plot.bar(x, y, color: group, stacked: stacked)
+      when "scatter"
+        plot.scatter(x, y, color: group)
+      else
+        raise ArgumentError, "Invalid type: #{type}"
+      end
     end
 
     # Get the shape of the DataFrame.

@@ -17,15 +17,10 @@ class PlotTest < Minitest::Test
     assert_plot_type "line", df.plot("a", "b")
   end
 
-  def test_default_columns
-    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
-    assert_plot_type "column", df.plot
-  end
-
   def test_default_columns_not_two
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"]})
     error = assert_raises(ArgumentError) do
-      df.plot
+      df.plot("a")
     end
     assert_equal "Must specify columns", error.message
   end
@@ -38,6 +33,17 @@ class PlotTest < Minitest::Test
     assert_plot_type "bar", df.plot("a", "b", type: "bar")
     assert_plot_type "area", df.plot("a", "b", type: "area")
     assert_plot_type "scatter", df.plot("b", "b", type: "scatter")
+  end
+
+  def test_plot_type
+    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3]})
+    assert_plot_type "pie", df.plot.pie("a", "b")
+    assert_plot_type "line", df.plot.line("a", "b")
+    assert_plot_type "column", df.plot.column("a", "b")
+    assert_plot_type "bar", df.plot.bar("a", "b")
+    assert_plot_type "area", df.plot.area("a", "b")
+    assert_plot_type "scatter", df.plot.scatter("b", "b")
+    assert_plot_type "scatter", df.plot.point("b", "b")
   end
 
   def test_group_option
