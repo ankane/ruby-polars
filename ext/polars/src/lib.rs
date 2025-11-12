@@ -877,6 +877,11 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "describe_optimized_plan_tree",
         method!(RbLazyFrame::describe_optimized_plan_tree, 0),
     )?;
+    class.define_method("to_dot", method!(RbLazyFrame::to_dot, 1))?;
+    class.define_method(
+        "to_dot_streaming_phys",
+        method!(RbLazyFrame::to_dot_streaming_phys, 1),
+    )?;
     class.define_method("sort", method!(RbLazyFrame::sort, 5))?;
     class.define_method("sort_by_exprs", method!(RbLazyFrame::sort_by_exprs, 5))?;
     class.define_method("top_k", method!(RbLazyFrame::top_k, 3))?;

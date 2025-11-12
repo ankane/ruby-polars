@@ -132,5 +132,14 @@ module Polars
 
       [*sub_50_percentiles, *at_or_above_50_percentiles]
     end
+
+    def self.display_dot_graph(
+      dot:,
+      show: true,
+      output_path: nil,
+      raw_output: false
+    )
+      raise Todo
+    end
   end
 end

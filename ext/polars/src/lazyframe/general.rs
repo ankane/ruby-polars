@@ -297,6 +297,14 @@ impl RbLazyFrame {
         rb.enter_polars(|| self_.ldf.borrow().describe_optimized_plan_tree())
     }
 
+    pub fn to_dot(rb: &Ruby, self_: &Self, optimized: bool) -> RbResult<String> {
+        rb.enter_polars(|| self_.ldf.borrow().to_dot(optimized))
+    }
+
+    pub fn to_dot_streaming_phys(rb: &Ruby, self_: &Self, optimized: bool) -> RbResult<String> {
+        rb.enter_polars(|| self_.ldf.borrow().to_dot_streaming_phys(optimized))
+    }
+
     pub fn sort(
         &self,
         by_column: String,

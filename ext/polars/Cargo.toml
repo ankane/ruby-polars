@@ -60,6 +60,7 @@ features = [
     "dataframe_arithmetic",
     "diagonal_concat",
     "diff",
+    "dot_diagram",
     "dot_product",
     "dtype-full",
     "dynamic_group_by",

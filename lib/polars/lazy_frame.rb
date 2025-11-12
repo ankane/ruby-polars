@@ -498,8 +498,87 @@ module Polars
       end
     end
 
-    # def show_graph
-    # end
+    # Show a plot of the query plan.
+    #
+    # Note that Graphviz must be installed to render the visualization (if not
+    # already present, you can download it here: https://graphviz.org/download.
+    #
+    # @param optimized [Boolean]
+    #   Optimize the query plan.
+    # @param show [Boolean]
+    #   Show the figure.
+    # @param output_path [String]
+    #   Write the figure to disk.
+    # @param raw_output [Boolean]
+    #   Return dot syntax. This cannot be combined with `show` and/or `output_path`.
+    # @param engine [String]
+    #   Select the engine used to process the query, optional.
+    #   At the moment, if set to `"auto"` (default), the query
+    #   is run using the polars in-memory engine. Polars will also
+    #   attempt to use the engine set by the `POLARS_ENGINE_AFFINITY`
+    #   environment variable. If it cannot run the query using the
+    #   selected engine, the query is run using the polars in-memory
+    #   engine.
+    # @param plan_stage ['ir', 'physical']
+    #   Select the stage to display. Currently only the streaming engine has a
+    #   separate physical stage, for the other engines both IR and physical are the
+    #   same.
+    # @param optimizations [Object]
+    #   The set of the optimizations considered during query optimization.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "a" => ["a", "b", "a", "b", "b", "c"],
+    #       "b" => [1, 2, 3, 4, 5, 6],
+    #       "c" => [6, 5, 4, 3, 2, 1]
+    #     }
+    #   )
+    #   lf.group_by("a", maintain_order: true).agg(Polars.all.sum).sort(
+    #     "a"
+    #   ).show_graph
+    def show_graph(
+      optimized: true,
+      show: true,
+      output_path: nil,
+      raw_output: false,
+      figsize: [16.0, 12.0],
+      engine: "auto",
+      plan_stage: "ir",
+      optimizations: DEFAULT_QUERY_OPT_FLAGS
+    )
+      engine = _select_engine(engine)
+
+      if engine == "streaming"
+        issue_unstable_warning("streaming mode is considered unstable.")
+      end
+
+      optimizations = optimizations.dup
+      optimizations._rboptflags.streaming = engine == "streaming"
+      _ldf = self._ldf.with_optimizations(optimizations._rboptflags)
+
+      if plan_stage == "ir"
+        dot = _ldf.to_dot(optimized)
+      elsif plan_stage == "physical"
+        if engine == "streaming"
+          dot = _ldf.to_dot_streaming_phys(optimized)
+        else
+          dot = _ldf.to_dot(optimized)
+        end
+      else
+        error_msg = "invalid plan stage '#{plan_stage}'"
+        raise TypeError, error_msg
+      end
+
+      Utils.display_dot_graph(
+        dot: dot,
+        show: show,
+        output_path: output_path,
+        raw_output: raw_output
+      )
+    end
 
     # Sort the DataFrame.
     #

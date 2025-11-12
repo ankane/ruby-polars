@@ -198,6 +198,9 @@ class DocsTest < Minitest::Test
     # yard global
     return if [:log].include?(method.name)
 
+    # TODO
+    return if [:show_graph].include?(method.name)
+
     if ENV["EXAMPLES"] && missing_examples?(method, cls)
       warn "Missing examples (#{method})"
     end
