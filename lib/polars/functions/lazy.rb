@@ -1482,6 +1482,86 @@ module Polars
       end
     end
 
+    # Compute the rolling covariance between two columns/ expressions.
+    #
+    # The window at a given row includes the row itself and the
+    # `window_size - 1` elements before it.
+    #
+    # @param a [Object]
+    #   Column name or Expression.
+    # @param b [Object]
+    #   Column name or Expression.
+    # @param window_size [Integer]
+    #   The length of the window.
+    # @param min_samples [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If None, it will be set equal to window size.
+    # @param ddof [Integer]
+    #   Delta degrees of freedom. The divisor used in calculations
+    #   is `N - ddof`, where `N` represents the number of elements.
+    #
+    # @return [Expr]
+    def rolling_cov(
+      a,
+      b,
+      window_size:,
+      min_samples: nil,
+      ddof: 1
+    )
+      if min_samples.nil?
+        min_samples = window_size
+      end
+      if Utils.strlike?(a)
+        a = F.col(a)
+      end
+      if Utils.strlike?(b)
+        b = F.col(b)
+      end
+      Utils.wrap_expr(
+        Plr.rolling_cov(a._rbexpr, b._rbexpr, window_size, min_samples, ddof)
+      )
+    end
+
+    # Compute the rolling correlation between two columns/ expressions.
+    #
+    # The window at a given row includes the row itself and the
+    # `window_size - 1` elements before it.
+    #
+    # @param a [Object]
+    #   Column name or Expression.
+    # @param b [Object]
+    #   Column name or Expression.
+    # @param window_size [Integer]
+    #   The length of the window.
+    # @param min_samples [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If None, it will be set equal to window size.
+    # @param ddof [Integer]
+    #   Delta degrees of freedom. The divisor used in calculations
+    #   is `N - ddof`, where `N` represents the number of elements.
+    #
+    # @return [Expr]
+    def rolling_corr(
+      a,
+      b,
+      window_size:,
+      min_samples: nil,
+      ddof: 1
+    )
+      if min_samples.nil?
+        min_samples = window_size
+      end
+      if Utils.strlike?(a)
+        a = F.col(a)
+      end
+      if Utils.strlike?(b)
+        b = F.col(b)
+      end
+      Utils.wrap_expr(
+        Plr.rolling_corr(a._rbexpr, b._rbexpr, window_size, min_samples, ddof)
+      )
+    end
+
     # Parse one or more SQL expressions to polars expression(s).
     #
     # @param sql [Object]
