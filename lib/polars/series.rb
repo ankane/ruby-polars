@@ -6187,6 +6187,21 @@ module Polars
       StructNameSpace.new(self)
     end
 
+    # Create a plot namespace.
+    #
+    # @note
+    #   This functionality is currently considered **unstable**. It may be
+    #   changed at any point without it being considered a breaking change.
+    #
+    # @return [SeriesPlot]
+    #
+    # @example Histogram:
+    #   s = Polars::Series.new([1, 4, 4, 6, 2, 4, 3, 5, 5, 7, 1])
+    #   s.plot.hist
+    def plot
+      SeriesPlot.new(self)
+    end
+
     # Repeat the elements in this Series as specified in the given expression.
     #
     # The repeated elements are expanded into a List.
