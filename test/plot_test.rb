@@ -63,6 +63,15 @@ class PlotTest < Minitest::Test
     assert_equal "Cannot use group option with pie chart", error.message
   end
 
+  def test_color_option
+    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3], "c" => ["group1", "group1", "group2"]})
+    assert_group df.plot.line("a", "b", color: "c")
+    assert_group df.plot.column("a", "b", color: "c")
+    assert_group df.plot.bar("a", "b", color: "c")
+    assert_group df.plot.area("a", "b", color: "c")
+    assert_group df.plot.scatter("b", "b", color: "c")
+  end
+
   def test_group_method
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3], "c" => ["group1", "group1", "group2"]})
     assert_group df.group_by("c").plot("a", "b", type: "line")

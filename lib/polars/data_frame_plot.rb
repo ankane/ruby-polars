@@ -9,7 +9,7 @@ module Polars
     end
 
     def line(x, y, color: nil, _type: "line")
-      data = @df[[x, y].map(&:to_s).uniq].rows(named: true)
+      data = @df[[x, y, color].compact.map(&:to_s).uniq].rows(named: true)
 
       x_type =
         if @df[x].dtype.numeric?
