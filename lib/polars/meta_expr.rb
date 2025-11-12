@@ -303,14 +303,14 @@ module Polars
     # Note that Graphviz must be installed to render the visualization (if not
     # already present, you can download it here: https://graphviz.org/download.
     #
-    # @param show
-    #     Show the figure.
-    # @param output_path
-    #     Write the figure to disk.
-    # @param raw_output
-    #     Return dot syntax. This cannot be combined with `show` and/or `output_path`.
-    # @param figsize
-    #     Passed to matplotlib if `show == True`.
+    # @param show [Boolean]
+    #   Show the figure.
+    # @param output_path [String]
+    #   Write the figure to disk.
+    # @param raw_output [Boolean]
+    #   Return dot syntax. This cannot be combined with `show` and/or `output_path`.
+    # @param figsize [Array]
+    #   Passed to matplotlib if `show == True`.
     #
     # @return [Object]
     #
