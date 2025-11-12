@@ -137,7 +137,8 @@ module Polars
       dot:,
       show: true,
       output_path: nil,
-      raw_output: false
+      raw_output: false,
+      figsize: [16.0, 12.0]
     )
       raise Todo
     end
