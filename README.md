@@ -438,26 +438,30 @@ gem "vega"
 And use:
 
 ```ruby
-df.plot("a", "b")
+df.plot("a", "b", type: "line")
 ```
 
-Specify the chart type (`line`, `pie`, `column`, `bar`, `area`, or `scatter`)
-
-```ruby
-df.plot("a", "b", type: "pie")
-```
+Supports `line`, `pie`, `column`, `bar`, `area`, and `scatter` plots
 
 Group data
 
 ```ruby
-df.group_by("c").plot("a", "b")
+df.group_by("c").plot("a", "b", type: "line")
 ```
 
 Stacked columns or bars
 
 ```ruby
-df.group_by("c").plot("a", "b", stacked: true)
+df.group_by("c").plot("a", "b", type: "column", stacked: true)
 ```
+
+Plot a series [unreleased]
+
+```ruby
+df["a"].plot.hist
+```
+
+Supports `hist`, `kde`, and `line` plots
 
 ## History
 
