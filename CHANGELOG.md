@@ -1,6 +1,6 @@
 ## 0.24.0 (unreleased)
 
-- Added support for streaming engine to `sink_*` methods
+- Added support for streaming engine
 - Added experimental support for background queries
 - Added `plot` method to `Series`
 - Added `concat_arr`, `escape_regex`, `int_ranges`, and `linear_spaces` methods to `Polars`
@@ -55,6 +55,7 @@
 - Removed `melt` method (use `unpivot` instead)
 - Removed `count_match` methods (use `count_matches` instead)
 - Removed `is_numeric`, `is_datelike`, `is_temporal`, `is_float`, `is_bool`, `is_boolean`, and `is_utf8` methods from `Series` (use `dtype` methods instead)
+- Removed `numeric?`, `datelike?`, `temporal?`, `float?`, `bool?`, `boolean?`, and `utf8?` methods from `Series` (use `dtype` methods instead)
 - Removed `is_first` method (use `is_first_distinct` instead)
 - Removed `approx_unique` method (use `approx_n_unique` instead)
 - Removed `set_at_idx` method (use `scatter` instead)
