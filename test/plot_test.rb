@@ -108,6 +108,7 @@ class PlotTest < Minitest::Test
   def test_series
     s = Polars::Series.new("a", [1, 2, 3])
     assert_plot_type "bar", s.plot.hist
+    assert_plot_type "line", s.plot.line
   end
 
   def assert_plot_type(expected, plot)
