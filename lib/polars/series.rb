@@ -1784,7 +1784,7 @@ module Polars
     # @example
     #   a = Polars::Series.new("a", [1, 2, 3])
     #   b = Polars::Series.new("b", [4, 5])
-    #   a.extend_(b)
+    #   a.extend(b)
     #   # =>
     #   # shape: (5,)
     #   # Series: 'a' [i64]
@@ -1799,7 +1799,7 @@ module Polars
     # @example The resulting series will consist of a single chunk.
     #   a.n_chunks
     #   # => 1
-    def extend_(other)
+    def extend(other)
       Utils.require_same_type(self, other)
       _s.extend(other._s)
       self
