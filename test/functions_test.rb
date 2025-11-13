@@ -40,6 +40,13 @@ class FunctionsTest < Minitest::Test
     assert_equal "\\^hello\\$", Polars.escape_regex("^hello$")
   end
 
+  def test_show_versions
+    stdout, _ = capture_io do
+      Polars.show_versions
+    end
+    assert_match "Version info", stdout
+  end
+
   def assert_lit(expected, lit)
     assert_equal expected, lit.inspect
   end

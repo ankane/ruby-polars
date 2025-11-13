@@ -149,7 +149,19 @@ module Polars
   #
   # @example
   #   Polars.build_info
-  def build_info
+  def self.build_info
     {"version" => VERSION}
+  end
+
+  # Print out the version of Polars and its optional dependencies.
+  #
+  # @return nil
+  def self.show_versions
+    puts "--------Version info---------"
+    puts "Polars: #{VERSION}"
+    puts "Index type: #{get_index_type}"
+    puts "Platform: #{RUBY_PLATFORM}"
+    puts "Ruby: #{RUBY_VERSION}"
+    nil
   end
 end
