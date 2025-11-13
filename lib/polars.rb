@@ -155,7 +155,7 @@ module Polars
 
   # Print out the version of Polars and its optional dependencies.
   #
-  # @return nil
+  # @return [nil]
   def self.show_versions
     puts "--------Version info---------"
     puts "Polars: #{VERSION}"
