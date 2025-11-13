@@ -142,4 +142,14 @@ module Polars
   def self.get_index_type
     Plr.get_index_type
   end
+
+  # Return detailed Polars build information.
+  #
+  # @return [Hash]
+  #
+  # @example
+  #   Polars.build_info
+  def build_info
+    {"version" => VERSION}
+  end
 end
