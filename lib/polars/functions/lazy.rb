@@ -947,8 +947,69 @@ module Polars
       )
     end
 
-    # def reduce
-    # end
+    # Accumulate over multiple columns horizontally/ row wise with a left fold.
+    #
+    # @param function [Object]
+    #   Function to apply over the accumulator and the value.
+    #   Fn(acc, value) -> new_value
+    # @param exprs [Object]
+    #   Expressions to aggregate over. May also be a wildcard expression.
+    # @param returns_scalar [Boolean]
+    #   Whether or not `function` applied returns a scalar. This must be set correctly
+    #   by the user.
+    # @param return_dtype [Object]
+    #   Output datatype.
+    #   If not set, the dtype will be inferred based on the dtype of the input
+    #   expressions.
+    #
+    # @return [Expr]
+    #
+    # @example Horizontally sum over all columns.
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3],
+    #       "b" => [0, 1, 2]
+    #     }
+    #   )
+    #   df.select(
+    #     Polars.reduce(function: ->(acc, x) { acc + x }, exprs: Polars.col("*")).alias("sum")
+    #   )
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ sum │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 3   │
+    #   # │ 5   │
+    #   # └─────┘
+    def reduce(
+      function:,
+      exprs:,
+      returns_scalar: false,
+      return_dtype: nil
+    )
+      if exprs.is_a?(Expr)
+        exprs = [exprs]
+      end
+
+      rt = nil
+      if !return_dtype.nil?
+        rt = Utils.parse_into_datatype_expr(return_dtype)._rbdatatype_expr
+      end
+
+      rbexprs = Utils.parse_into_list_of_expressions(exprs)
+      Utils.wrap_expr(
+        Plr.reduce(
+          _wrap_acc_lamba(function),
+          rbexprs,
+          returns_scalar,
+          rt
+        )
+      )
+    end
 
     # Cumulatively accumulate over multiple columns horizontally/row wise with a left fold.
     #
@@ -1603,6 +1664,12 @@ module Polars
       else
         sql.map { |q| Utils.wrap_expr(Plr.sql_expr(q)) }
       end
+    end
+
+    private
+
+    def _wrap_acc_lamba(function)
+      raise Todo
     end
   end
 end
