@@ -26,6 +26,28 @@ module Polars
         .config(axis: {labelFontSize: 12})
     end
 
+    # Draw kernel density estimate plot.
+    #
+    # @return [Vega::LiteChart]
+    def kde
+      if @series_name == "density"
+        msg = "cannot use `plot.kde` when Series name is `'density'`"
+        raise ArgumentError, msg
+      end
+
+      encoding = {
+        x: {field: @series_name, type: "quantitative"},
+        y: {field: "density", type: "quantitative"}
+      }
+
+      Vega.lite
+        .data(@df.rows(named: true))
+        .transform(density: @series_name, as: [@series_name, "density"])
+        .mark(type: "area", tooltip: true)
+        .encoding(encoding)
+        .config(axis: {labelFontSize: 12})
+    end
+
     # Draw line plot.
     #
     # @return [Vega::LiteChart]
