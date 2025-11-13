@@ -1783,6 +1783,100 @@ module Polars
       .collect(optimizations: QueryOptFlags._eager)
     end
 
+    # Return a dense preview of the DataFrame.
+    #
+    # The formatting shows one line per column so that wide dataframes display
+    # cleanly. Each line shows the column name, the data type, and the first
+    # few values.
+    #
+    # @param max_items_per_column [Integer]
+    #   Maximum number of items to show per column.
+    # @param max_colname_length [Integer]
+    #   Maximum length of the displayed column names; values that exceed
+    #   this value are truncated with a trailing ellipsis.
+    # @param return_type [nil, 'self', 'frame', 'string']
+    #   Modify the return format:
+    #
+    #   - `nil` (default): Print the glimpse output to stdout, returning `nil`.
+    #   - `"self"`: Print the glimpse output to stdout, returning the *original* frame.
+    #   - `"frame"`: Return the glimpse output as a new DataFrame.
+    #   - `"string"`: Return the glimpse output as a string.
+    #
+    # @return [Object]
+    #
+    # @example Return the glimpse output as a DataFrame:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1.0, 2.8, 3.0],
+    #       "b" => [4, 5, nil],
+    #       "c" => [true, false, true],
+    #       "d" => [nil, "b", "c"],
+    #       "e" => ["usd", "eur", nil],
+    #       "f" => [Date.new(2020, 1, 1), Date.new(2021, 1, 2), Date.new(2022, 1, 1)]
+    #     }
+    #   )
+    #   df.glimpse(return_type: "frame")
+    #   # =>
+    #   # shape: (6, 3)
+    #   # ┌────────┬───────┬─────────────────────────────────┐
+    #   # │ column ┆ dtype ┆ values                          │
+    #   # │ ---    ┆ ---   ┆ ---                             │
+    #   # │ str    ┆ str   ┆ list[str]                       │
+    #   # ╞════════╪═══════╪═════════════════════════════════╡
+    #   # │ a      ┆ f64   ┆ ["1.0", "2.8", "3.0"]           │
+    #   # │ b      ┆ i64   ┆ ["4", "5", null]                │
+    #   # │ c      ┆ bool  ┆ ["true", "false", "true"]       │
+    #   # │ d      ┆ str   ┆ [null, ""b"", ""c""]            │
+    #   # │ e      ┆ str   ┆ [""usd"", ""eur"", null]        │
+    #   # │ f      ┆ date  ┆ ["2020-01-01", "2021-01-02", "… │
+    #   # └────────┴───────┴─────────────────────────────────┘
+    def glimpse(
+      max_items_per_column: 10,
+      max_colname_length: 50,
+      return_type: nil
+    )
+      if return_type.nil?
+        return_frame = false
+      else
+        return_frame = return_type == "frame"
+        if !return_frame && !["self", "string"].include?(return_type)
+          msg = "invalid `return_type`; found #{return_type.inspect}, expected one of 'string', 'frame', 'self', or nil"
+          raise ArgumentError, msg
+        end
+      end
+
+      # always print at most this number of values (mainly ensures that
+      # we do not cast long arrays to strings, which would be slow)
+      max_n_values = [max_items_per_column, height].min
+      schema = self.schema
+
+      _column_to_row_output = lambda do |col_name, dtype|
+        fn = schema[col_name] == String ? :inspect : :to_s
+        values = self[0...max_n_values, col_name].to_series.to_a
+        if col_name.length > max_colname_length
+          col_name = col_name[0...(max_colname_length - 1)] + "…"
+        end
+        dtype_str = Plr.dtype_str_repr(dtype)
+        if !return_frame
+          dtype_str = "<#{dtype_str}>"
+        end
+        [col_name, dtype_str, values.map { |v| !v.nil? ? v.send(fn) : nil }]
+      end
+
+      data = self.schema.map { |s, dtype| _column_to_row_output.(s, dtype) }
+
+      # output one row per column
+      if return_frame
+        DataFrame.new(
+          data,
+          orient: "row",
+          schema: {"column" => String, "dtype" => String, "values" => List.new(String)}
+        )
+      else
+        raise Todo
+      end
+    end
+
     # Summary statistics for a DataFrame.
     #
     # @param percentiles [Array]
