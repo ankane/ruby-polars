@@ -4844,7 +4844,7 @@ module Polars
 
     def _select_engine(engine, path = nil)
       engine = Plr.get_engine_affinity if engine == "auto"
-      engine == "auto" && !path.is_a?(::String) ? "in-memory" : engine
+      engine == "auto" && !path.is_a?(::String) && !path.nil? ? "in-memory" : engine
     end
   end
 end
