@@ -105,6 +105,11 @@ class PlotTest < Minitest::Test
     assert_equal "Cannot determine type. Use the type option.", error.message
   end
 
+  def test_series
+    s = Polars::Series.new("a", [1, 2, 3])
+    assert_plot_type "bar", s.plot.hist
+  end
+
   def assert_plot_type(expected, plot)
     assert_kind_of Vega::LiteChart, plot
 

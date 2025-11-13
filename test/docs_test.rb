@@ -207,7 +207,7 @@ class DocsTest < Minitest::Test
     return if [:log].include?(method.name)
 
     # TODO
-    todo = [:plot, :show_graph].include?(method.name)
+    todo = [:show_graph].include?(method.name)
 
     if ENV["EXAMPLES"] && missing_examples?(method, cls)
       warn "Missing examples (#{method})"
