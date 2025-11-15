@@ -17,9 +17,14 @@ module Polars
     #   If you supply an array of column names that does not match the names in the
     #   underlying data, the names given here will overwrite them. The number
     #   of names given in the schema should match the underlying data dimensions.
-    # @param columns [Array]
-    #   Column labels to use for resulting DataFrame. If specified, overrides any
-    #   labels already present in the data. Must match data dimensions.
+    # @param schema_overrides [Hash]
+    #   Support type specification or override of one or more columns; note that
+    #   any dtypes inferred from the columns param will be overridden.
+    # @param strict [Boolean]
+    #   Throw an error if any `data` value does not exactly match the given or inferred
+    #   data type for that column. If set to `false`, values that do not match the data
+    #   type are cast to that data type or, if casting is not possible, set to null
+    #   instead.
     #
     # @return [DataFrame]
     #
@@ -36,11 +41,13 @@ module Polars
     #   # │ 1   ┆ 3   │
     #   # │ 2   ┆ 4   │
     #   # └─────┴─────┘
-    def from_hash(data, schema: nil, columns: nil)
+    def from_hash(data, schema: nil, schema_overrides: nil, strict: true)
       Utils.wrap_df(
         DataFrame.hash_to_rbdf(
           data,
-          schema: schema || columns
+          schema: schema,
+          schema_overrides: schema_overrides,
+          strict: strict
         )
       )
     end
