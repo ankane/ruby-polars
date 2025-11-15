@@ -184,6 +184,50 @@ module Polars
       datetime(year, month, day).cast(Date).alias("date")
     end
 
+    # Create a Polars literal expression of type Time.
+    #
+    # @param hour [Object]
+    #   column or literal, ranging from 0-23.
+    # @param minute [Object]
+    #   column or literal, ranging from 0-59.
+    # @param second [Object]
+    #   column or literal, ranging from 0-59.
+    # @param microsecond [Object]
+    #   column or literal, ranging from 0-999999.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "hour" => [12, 13, 14],
+    #       "minute" => [15, 30, 45]
+    #     }
+    #   )
+    #   df.with_columns(Polars.time(Polars.col("hour"), Polars.col("minute")))
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌──────┬────────┬──────────┐
+    #   # │ hour ┆ minute ┆ time     │
+    #   # │ ---  ┆ ---    ┆ ---      │
+    #   # │ i64  ┆ i64    ┆ time     │
+    #   # ╞══════╪════════╪══════════╡
+    #   # │ 12   ┆ 15     ┆ 12:15:00 │
+    #   # │ 13   ┆ 30     ┆ 13:30:00 │
+    #   # │ 14   ┆ 45     ┆ 14:45:00 │
+    #   # └──────┴────────┴──────────┘
+    def time(
+      hour = nil,
+      minute = nil,
+      second = nil,
+      microsecond = nil
+    )
+      epoch_start = [1970, 1, 1]
+      datetime(*epoch_start, hour, minute, second, microsecond)
+        .cast(Time)
+        .alias("time")
+    end
+
     # Create polars `Duration` from distinct time components.
     #
     # @return [Expr]
