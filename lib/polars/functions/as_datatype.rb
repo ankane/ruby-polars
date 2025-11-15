@@ -1,5 +1,189 @@
 module Polars
   module Functions
+    # Create a Polars literal expression of type Datetime.
+    #
+    # @param year [Object]
+    #   Column or literal.
+    # @param month [Object]
+    #   Column or literal, ranging from 1-12.
+    # @param day [Object]
+    #   Column or literal, ranging from 1-31.
+    # @param hour [Object]
+    #   Column or literal, ranging from 0-23.
+    # @param minute [Object]
+    #   Column or literal, ranging from 0-59.
+    # @param second [Object]
+    #   Column or literal, ranging from 0-59.
+    # @param microsecond [Object]
+    #   Column or literal, ranging from 0-999999.
+    # @param time_unit ['us', 'ms', 'ns']
+    #   Time unit of the resulting expression.
+    # @param time_zone [Object]
+    #   Time zone of the resulting expression.
+    # @param ambiguous ['raise', 'earliest', 'latest', 'null']
+    #   Determine how to deal with ambiguous datetimes:
+    #
+    #   - `'raise'` (default): raise
+    #   - `'earliest'`: use the earliest datetime
+    #   - `'latest'`: use the latest datetime
+    #   - `'null'`: set to null
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "month" => [1, 2, 3],
+    #       "day" => [4, 5, 6],
+    #       "hour" => [12, 13, 14],
+    #       "minute" => [15, 30, 45]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.datetime(
+    #       2024,
+    #       Polars.col("month"),
+    #       Polars.col("day"),
+    #       Polars.col("hour"),
+    #       Polars.col("minute"),
+    #       time_zone: "Australia/Sydney"
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (3, 5)
+    #   # ┌───────┬─────┬──────┬────────┬────────────────────────────────┐
+    #   # │ month ┆ day ┆ hour ┆ minute ┆ datetime                       │
+    #   # │ ---   ┆ --- ┆ ---  ┆ ---    ┆ ---                            │
+    #   # │ i64   ┆ i64 ┆ i64  ┆ i64    ┆ datetime[μs, Australia/Sydney] │
+    #   # ╞═══════╪═════╪══════╪════════╪════════════════════════════════╡
+    #   # │ 1     ┆ 4   ┆ 12   ┆ 15     ┆ 2024-01-04 12:15:00 AEDT       │
+    #   # │ 2     ┆ 5   ┆ 13   ┆ 30     ┆ 2024-02-05 13:30:00 AEDT       │
+    #   # │ 3     ┆ 6   ┆ 14   ┆ 45     ┆ 2024-03-06 14:45:00 AEDT       │
+    #   # └───────┴─────┴──────┴────────┴────────────────────────────────┘
+    #
+    # @example We can also use `Polars.datetime` for filtering:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "start" => [
+    #         DateTime.new(2024, 1, 1, 0, 0, 0),
+    #         DateTime.new(2024, 1, 1, 0, 0, 0),
+    #         DateTime.new(2024, 1, 1, 0, 0, 0)
+    #       ],
+    #       "end" => [
+    #         DateTime.new(2024, 5, 1, 20, 15, 10),
+    #         DateTime.new(2024, 7, 1, 21, 25, 20),
+    #         DateTime.new(2024, 9, 1, 22, 35, 30)
+    #       ]
+    #     }
+    #   )
+    #   df.filter(Polars.col("end") > Polars.datetime(2024, 6, 1))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────────────────────┬─────────────────────┐
+    #   # │ start               ┆ end                 │
+    #   # │ ---                 ┆ ---                 │
+    #   # │ datetime[ns]        ┆ datetime[ns]        │
+    #   # ╞═════════════════════╪═════════════════════╡
+    #   # │ 2024-01-01 00:00:00 ┆ 2024-07-01 21:25:20 │
+    #   # │ 2024-01-01 00:00:00 ┆ 2024-09-01 22:35:30 │
+    #   # └─────────────────────┴─────────────────────┘
+    def datetime(
+      year,
+      month,
+      day,
+      hour = nil,
+      minute = nil,
+      second = nil,
+      microsecond = nil,
+      time_unit: "us",
+      time_zone: nil,
+      ambiguous: "raise"
+    )
+      ambiguous_expr = Utils.parse_into_expression(ambiguous, str_as_lit: true)
+      year_expr = Utils.parse_into_expression(year)
+      month_expr = Utils.parse_into_expression(month)
+      day_expr = Utils.parse_into_expression(day)
+
+      hour_expr = !hour.nil? ? Utils.parse_into_expression(hour) : nil
+      minute_expr = !minute.nil? ? Utils.parse_into_expression(minute) : nil
+      second_expr = !second.nil? ? Utils.parse_into_expression(second) : nil
+      microsecond_expr = (
+        !microsecond.nil? ? Utils.parse_into_expression(microsecond) : nil
+      )
+
+      Utils.wrap_expr(
+        Plr.datetime(
+          year_expr,
+          month_expr,
+          day_expr,
+          hour_expr,
+          minute_expr,
+          second_expr,
+          microsecond_expr,
+          time_unit,
+          time_zone,
+          ambiguous_expr
+        )
+      )
+    end
+
+    # Create a Polars literal expression of type Date.
+    #
+    # @param year [Object]
+    #   column or literal.
+    # @param month [Object]
+    #   column or literal, ranging from 1-12.
+    # @param day [Object]
+    #   column or literal, ranging from 1-31.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "month" => [1, 2, 3],
+    #       "day" => [4, 5, 6]
+    #     }
+    #   )
+    #   df.with_columns(Polars.date(2024, Polars.col("month"), Polars.col("day")))
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌───────┬─────┬────────────┐
+    #   # │ month ┆ day ┆ date       │
+    #   # │ ---   ┆ --- ┆ ---        │
+    #   # │ i64   ┆ i64 ┆ date       │
+    #   # ╞═══════╪═════╪════════════╡
+    #   # │ 1     ┆ 4   ┆ 2024-01-04 │
+    #   # │ 2     ┆ 5   ┆ 2024-02-05 │
+    #   # │ 3     ┆ 6   ┆ 2024-03-06 │
+    #   # └───────┴─────┴────────────┘
+    #
+    # @example We can also use `pl.date` for filtering:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "start" => [Date.new(2024, 1, 1), Date.new(2024, 1, 1), Date.new(2024, 1, 1)],
+    #       "end" => [Date.new(2024, 5, 1), Date.new(2024, 7, 1), Date.new(2024, 9, 1)]
+    #     }
+    #   )
+    #   df.filter(Polars.col("end") > Polars.date(2024, 6, 1))
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────────┬────────────┐
+    #   # │ start      ┆ end        │
+    #   # │ ---        ┆ ---        │
+    #   # │ date       ┆ date       │
+    #   # ╞════════════╪════════════╡
+    #   # │ 2024-01-01 ┆ 2024-07-01 │
+    #   # │ 2024-01-01 ┆ 2024-09-01 │
+    #   # └────────────┴────────────┘
+    def date(
+      year,
+      month,
+      day
+    )
+      datetime(year, month, day).cast(Date).alias("date")
+    end
+
     # Create polars `Duration` from distinct time components.
     #
     # @return [Expr]

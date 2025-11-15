@@ -202,6 +202,40 @@ pub fn cum_fold(
     .into())
 }
 
+pub fn datetime(
+    year: &RbExpr,
+    month: &RbExpr,
+    day: &RbExpr,
+    hour: Option<&RbExpr>,
+    minute: Option<&RbExpr>,
+    second: Option<&RbExpr>,
+    microsecond: Option<&RbExpr>,
+    time_unit: Wrap<TimeUnit>,
+    time_zone: Wrap<Option<TimeZone>>,
+    ambiguous: &RbExpr,
+) -> RbExpr {
+    let year = year.inner.clone();
+    let month = month.inner.clone();
+    let day = day.inner.clone();
+    set_unwrapped_or_0!(hour, minute, second, microsecond);
+    let ambiguous = ambiguous.inner.clone();
+    let time_unit = time_unit.0;
+    let time_zone = time_zone.0;
+    let args = DatetimeArgs {
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        second,
+        microsecond,
+        time_unit,
+        time_zone,
+        ambiguous,
+    };
+    dsl::datetime(args).into()
+}
+
 pub fn concat_lf_diagonal(
     lfs: RArray,
     rechunk: bool,
