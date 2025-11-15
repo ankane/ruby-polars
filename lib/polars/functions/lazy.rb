@@ -1091,8 +1091,70 @@ module Polars
       )
     end
 
-    # def cum_reduce
-    # end
+    # Cumulatively reduce horizontally across columns with a left fold.
+    #
+    # Every cumulative result is added as a separate field in a Struct column.
+    #
+    # @param function [Object]
+    #   Function to apply over the accumulator and the value.
+    #   Fn(acc, value) -> new_value
+    # @param exprs [Object]
+    #   Expressions to aggregate over. May also be a wildcard expression.
+    # @param returns_scalar [Boolean]
+    #   Whether or not `function` applied returns a scalar. This must be set correctly
+    #   by the user.
+    # @param return_dtype [Object]
+    #   Output datatype.
+    #   If not set, the dtype will be inferred based on the dtype of the input
+    #   expressions.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3],
+    #       "b" => [3, 4, 5],
+    #       "c" => [5, 6, 7]
+    #     }
+    #   )
+    #   df.with_columns(Polars.cum_reduce(function: ->(acc, x) { acc + x }, exprs: Polars.all))
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌─────┬─────┬─────┬────────────┐
+    #   # │ a   ┆ b   ┆ c   ┆ cum_reduce │
+    #   # │ --- ┆ --- ┆ --- ┆ ---        │
+    #   # │ i64 ┆ i64 ┆ i64 ┆ struct[3]  │
+    #   # ╞═════╪═════╪═════╪════════════╡
+    #   # │ 1   ┆ 3   ┆ 5   ┆ {1,4,9}    │
+    #   # │ 2   ┆ 4   ┆ 6   ┆ {2,6,12}   │
+    #   # │ 3   ┆ 5   ┆ 7   ┆ {3,8,15}   │
+    #   # └─────┴─────┴─────┴────────────┘
+    def cum_reduce(
+      function:,
+      exprs:,
+      returns_scalar: false,
+      return_dtype: nil
+    )
+      if exprs.is_a?(Expr)
+        exprs = [exprs]
+      end
+
+      rt = nil
+      if !return_dtype.nil?
+        rt = Utils.parse_into_datatype_expr(return_dtype)._rbdatatype_expr
+      end
+
+      rbexprs = Utils.parse_into_list_of_expressions(exprs)
+      Utils.wrap_expr(
+        Plr.cum_reduce(
+          _wrap_acc_lamba(function),
+          rbexprs,
+          returns_scalar,
+          rt
+        ).alias("cum_reduce")
+      )
+    end
 
     # Compute two argument arctan in radians.
     #

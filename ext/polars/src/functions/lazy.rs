@@ -202,6 +202,26 @@ pub fn cum_fold(
     .into())
 }
 
+pub fn cum_reduce(
+    lambda: Value,
+    exprs: RArray,
+    returns_scalar: bool,
+    return_dtype: Option<&RbDataTypeExpr>,
+) -> RbResult<RbExpr> {
+    let exprs = rb_exprs_to_exprs(exprs)?;
+    let lambda = Opaque::from(lambda);
+    let func = PlanCallback::new(move |(a, b): (Series, Series)| {
+        binary_lambda(Ruby::get().unwrap().get_inner(lambda), a, b).map(|v| v.unwrap())
+    });
+    Ok(dsl::cum_reduce_exprs(
+        func,
+        exprs,
+        returns_scalar,
+        return_dtype.map(|v| v.inner.clone()),
+    )
+    .into())
+}
+
 pub fn datetime(
     year: &RbExpr,
     month: &RbExpr,
