@@ -52,15 +52,36 @@ module Polars
       )
     end
 
-    # Construct a DataFrame from an array of hashes. This operation clones data.
+    # Construct a DataFrame from a sequence of dictionaries. This operation clones data.
     #
-    # @param hashes [Array]
-    #   Array with hashes mapping column name to value.
-    # @param infer_schema_length [Integer]
-    #   How many hashes/rows to scan to determine the data types
-    #   if set to `nil` all rows are scanned. This will be slow.
+    # @param data [Array]
+    #   Sequence with dictionaries mapping column name to value
     # @param schema [Object]
-    #   Schema that (partially) overwrites the inferred schema.
+    #   The DataFrame schema may be declared in several ways:
+    #
+    #   * As a dict of \\\\{name:type} pairs; if type is None, it will be auto-inferred.
+    #   * As a list of column names; in this case types are automatically inferred.
+    #   * As a list of (name,type) pairs; this is equivalent to the dictionary form.
+    #
+    #   If a list of column names is supplied that does NOT match the names in the
+    #   underlying data, the names given here will overwrite the actual fields in
+    #   the order that they appear - however, in this case it is typically clearer
+    #   to rename after loading the frame.
+    #
+    #   If you want to drop some of the fields found in the input dictionaries, a
+    #   *partial* schema can be declared, in which case omitted fields will not be
+    #   loaded. Similarly, you can extend the loaded frame with empty columns by
+    #   adding them to the schema.
+    # @param schema_overrides [Hash]
+    #   Support override of inferred types for one or more columns.
+    # @param strict [Boolean]
+    #   Throw an error if any `data` value does not exactly match the given or inferred
+    #   data type for that column. If set to `false`, values that do not match the data
+    #   type are cast to that data type or, if casting is not possible, set to null
+    #   instead.
+    # @param infer_schema_length [Integer]
+    #   The maximum number of rows to scan for schema inference.
+    #   If set to `nil`, the full data may be scanned *(this is slow)*.
     #
     # @return [DataFrame]
     #
@@ -79,35 +100,39 @@ module Polars
     #   # │ 3   ┆ 6   │
     #   # └─────┴─────┘
     #
-    # @example Overwrite first column name and dtype
-    #   Polars.from_hashes(data, schema: {"c" => :i32})
+    # @example Declaring a partial `schema` will drop the omitted columns.
+    #   Polars.from_hashes(data, schema: {"a" => Polars::Int32})
     #   # =>
-    #   # shape: (3, 2)
-    #   # ┌─────┬─────┐
-    #   # │ c   ┆ b   │
-    #   # │ --- ┆ --- │
-    #   # │ i32 ┆ i64 │
-    #   # ╞═════╪═════╡
-    #   # │ 1   ┆ 4   │
-    #   # │ 2   ┆ 5   │
-    #   # │ 3   ┆ 6   │
-    #   # └─────┴─────┘
-    #
-    # @example Let polars infer the dtypes but inform about a 3rd column
-    #   Polars.from_hashes(data, schema: {"a" => :unknown, "b" => :unknown, "c" => :i32})
-    #   # shape: (3, 3)
-    #   # ┌─────┬─────┬──────┐
-    #   # │ a   ┆ b   ┆ c    │
-    #   # │ --- ┆ --- ┆ ---  │
-    #   # │ i64 ┆ i64 ┆ i32  │
-    #   # ╞═════╪═════╪══════╡
-    #   # │ 1   ┆ 4   ┆ null │
-    #   # │ 2   ┆ 5   ┆ null │
-    #   # │ 3   ┆ 6   ┆ null │
-    #   # └─────┴─────┴──────┘
-    # def from_hashes(hashes, infer_schema_length: 50, schema: nil)
-    #   DataFrame._from_hashes(hashes, infer_schema_length: infer_schema_length, schema: schema)
-    # end
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i32 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 2   │
+    #   # │ 3   │
+    #   # └─────┘
+    def from_hashes(
+      data,
+      schema: nil,
+      schema_overrides: nil,
+      strict: true,
+      infer_schema_length: N_INFER_DEFAULT
+    )
+      if !data.any? && !(schema.any? || schema_overrides.any?)
+        msg = "no data, cannot infer schema"
+        raise NoDataError, msg
+      end
+
+      DataFrame.new(
+        data,
+        schema: schema,
+        schema_overrides: schema_overrides,
+        strict: strict,
+        infer_schema_length: infer_schema_length
+      )
+    end
 
     # def from_records
     # end
