@@ -206,6 +206,193 @@ module Polars
       end
     end
 
+    # Combine multiple DataFrames, LazyFrames, or Series into a single object.
+    #
+    # @note
+    #   This function does not guarantee any specific ordering of rows in the result.
+    #   If you need predictable row ordering, use `Polars.concat` instead.
+    #
+    # @param items [Array]
+    #   DataFrames, LazyFrames, or Series to concatenate.
+    # @param how ['vertical', 'vertical_relaxed', 'diagonal', 'diagonal_relaxed', 'horizontal', 'align', 'align_full', 'align_inner', 'align_left', 'align_right']
+    #   Note that `Series` only support the `vertical` strategy.
+    #
+    #   * vertical: Applies multiple `vstack` operations.
+    #   * vertical_relaxed: Same as `vertical`, but additionally coerces columns to
+    #     their common supertype *if* they are mismatched (eg: Int32 → Int64).
+    #   * diagonal: Finds a union between the column schemas and fills missing column
+    #     values with `null`.
+    #   * diagonal_relaxed: Same as `diagonal`, but additionally coerces columns to
+    #     their common supertype *if* they are mismatched (eg: Int32 → Int64).
+    #   * horizontal: Stacks Series from DataFrames horizontally and fills with `null`
+    #     if the lengths don't match.
+    #   * align, align_full, align_left, align_right: Combines frames horizontally,
+    #     auto-determining the common key columns and aligning rows using the same
+    #     logic as `align_frames` (note that "align" is an alias for "align_full").
+    #     The "align" strategy determines the type of join used to align the frames,
+    #     equivalent to the "how" parameter on `align_frames`. Note that the common
+    #     join columns are automatically coalesced, but other column collisions
+    #     will raise an error (if you need more control over this you should use
+    #     a suitable `join` method directly).
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df1 = Polars::DataFrame.new({"a" => [1], "b" => [3]})
+    #   df2 = Polars::DataFrame.new({"a" => [2], "b" => [4]})
+    #   Polars.union([df1, df2])
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 3   │
+    #   # │ 2   ┆ 4   │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df1 = Polars::DataFrame.new({"a" => [1], "b" => [3]})
+    #   df2 = Polars::DataFrame.new({"a" => [2.5], "b" => [4]})
+    #   Polars.union([df1, df2], how: "vertical_relaxed")
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ f64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1.0 ┆ 3   │
+    #   # │ 2.5 ┆ 4   │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df_h1 = Polars::DataFrame.new({"l1" => [1, 2], "l2" => [3, 4]})
+    #   df_h2 = Polars::DataFrame.new({"r1" => [5, 6], "r2" => [7, 8], "r3" => [9, 10]})
+    #   Polars.union([df_h1, df_h2], how: "horizontal")
+    #   # =>
+    #   # shape: (2, 5)
+    #   # ┌─────┬─────┬─────┬─────┬─────┐
+    #   # │ l1  ┆ l2  ┆ r1  ┆ r2  ┆ r3  │
+    #   # │ --- ┆ --- ┆ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ i64 ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╪═════╪═════╡
+    #   # │ 1   ┆ 3   ┆ 5   ┆ 7   ┆ 9   │
+    #   # │ 2   ┆ 4   ┆ 6   ┆ 8   ┆ 10  │
+    #   # └─────┴─────┴─────┴─────┴─────┘
+    #
+    # @example The "diagonal" strategy allows for some frames to have missing columns, the values for which are filled with `null`:
+    #   df_d1 = Polars::DataFrame.new({"a" => [1], "b" => [3]})
+    #   df_d2 = Polars::DataFrame.new({"a" => [2], "c" => [4]})
+    #   Polars.union([df_d1, df_d2], how: "diagonal")
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬──────┬──────┐
+    #   # │ a   ┆ b    ┆ c    │
+    #   # │ --- ┆ ---  ┆ ---  │
+    #   # │ i64 ┆ i64  ┆ i64  │
+    #   # ╞═════╪══════╪══════╡
+    #   # │ 1   ┆ 3    ┆ null │
+    #   # │ 2   ┆ null ┆ 4    │
+    #   # └─────┴──────┴──────┘
+    def union(
+      items,
+      how: "vertical"
+    )
+      elems = items.to_a
+
+      if elems.empty?
+        msg = "cannot concat empty list"
+        raise ArgumentError, msg
+      elsif elems.length == 1 && (elems[0].is_a?(DataFrame) || elems[0].is_a?(Series) || elems[0].is_a?(LazyFrame))
+        return elems[0]
+      end
+
+      if how.start_with?("align")
+        raise Todo
+      end
+
+      out = nil
+      first = elems[0]
+
+      if first.is_a?(DataFrame)
+        if ["vertical", "vertical_relaxed"].include?(how)
+          out = Utils.wrap_ldf(
+            Plr.concat_lf(
+              elems.map { |df| df.lazy },
+              false,
+              true,
+              how.end_with?("relaxed")
+            )
+          ).collect(optimizations: QueryOptFlags._eager)
+        elsif ["diagonal", "diagonal_relaxed"].include?(how)
+          out = Utils.wrap_ldf(
+            Plr.concat_lf_diagonal(
+              elems.map { |df| df.lazy },
+              false,
+              true,
+              how.end_with?("relaxed")
+            )
+          ).collect(optimizations: QueryOptFlags._eager)
+        elsif how == "horizontal"
+          out = Utils.wrap_df(Plr.concat_df_horizontal(elems))
+        else
+          raise Todo
+          msg = "DataFrame `how` must be one of {{#{allowed}}}, got #{how.inspect}"
+          raise ArgumentError, msg
+        end
+
+      elsif first.is_a?(LazyFrame)
+        if ["vertical", "vertical_relaxed"].include?(how)
+          return Utils.wrap_ldf(
+            Plr.concat_lf(
+              elems,
+              false,
+              true,
+              how.end_with?("relaxed")
+            )
+          )
+        elsif ["diagonal", "diagonal_relaxed"].include?(how)
+          return Utils.wrap_ldf(
+            Plr.concat_lf_diagonal(
+              elems,
+              false,
+              true,
+              how.end_with?("relaxed")
+            )
+          )
+        elsif how == "horizontal"
+          return Utils.wrap_ldf(
+            Plr.concat_lf_horizontal(
+              elems,
+              true
+            )
+          )
+        else
+          raise Todo
+          msg = "LazyFrame `how` must be one of {{#{allowed}}}, got #{how.inspect}"
+          raise ArgumentError, msg
+        end
+
+      elsif first.is_a?(Series)
+        if how == "vertical"
+          out = Utils.wrap_s(Plr.concat_series(elems))
+        else
+          msg = "Series only supports 'vertical' concat strategy"
+          raise ArgumentError, msg
+        end
+
+      elsif first.is_a?(Expr)
+        return Utils.wrap_expr(Plr.concat_expr(elems.map { |e| e._rbexpr }, false))
+      else
+        msg = "did not expect type: #{first.class.name.inspect} in `concat`"
+        raise TypeError, msg
+      end
+
+      out
+    end
+
     # Align a sequence of frames using the unique values from one or more columns as a key.
     #
     # Frames that do not contain the given key values have rows injected (with nulls
