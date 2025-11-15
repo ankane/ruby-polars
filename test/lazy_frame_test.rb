@@ -40,7 +40,7 @@ class LazyFrameTest < Minitest::Test
     df.unnest("t_struct").collect
   end
 
-  def test_write_json
+  def test_serialize
     df = Polars::DataFrame.new(
       {
         "foo" => [1, 2, 3],
@@ -49,8 +49,11 @@ class LazyFrameTest < Minitest::Test
       }
     ).lazy
     path = temp_path
-    df.select("foo").write_json(path)
-    assert_frame df.select("foo").collect, Polars::LazyFrame.read_json(path).collect
+    _, stderr = capture_io do
+      df.select("foo").serialize(path, format: "json")
+    end
+    assert_match "'json' serialization format of LazyFrame is deprecated", stderr
+    assert_frame df.select("foo").collect, Polars::LazyFrame.deserialize(path, format: "json").collect
   end
 
   def test_pearson_corr

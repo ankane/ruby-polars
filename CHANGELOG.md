@@ -68,6 +68,7 @@
 - Removed `has_validity` method (use `has_nulls` instead)
 - Removed `shrink_dtype` method from `Expr` (use `Series#shrink_dtype` instead)
 - Removed `replace` method from `DataFrame` (use `[]=` instead)
+- Removed `read_json` and `write_json` methods from `LazyFrame` (use `deserialize` and `serialize` instead)
 - Removed `fetch` method from `LazyFrame` (use `head` + `collect` instead)
 - Removed `with_context` method from `LazyFrame` (use `Polars.concat(how: "horizontal")` instead)
 - Removed `with_time_unit` method from `DateTimeExpr` and `DateTimeNameSpace` (use `cast(Polars::Int64).cast(Polars::Datetime.new(...))` instead)

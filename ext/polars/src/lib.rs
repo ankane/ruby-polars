@@ -847,6 +847,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "serialize_binary",
         method!(RbLazyFrame::serialize_binary, 1),
     )?;
+    class.define_method("serialize_json", method!(RbLazyFrame::serialize_json, 1))?;
     #[cfg(feature = "serialize_binary")]
     class.define_singleton_method(
         "deserialize_binary",
@@ -866,7 +867,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(RbLazyFrame::new_from_parquet, 6),
     )?;
     class.define_singleton_method("new_from_ipc", function!(RbLazyFrame::new_from_ipc, 3))?;
-    class.define_method("write_json", method!(RbLazyFrame::write_json, 1))?;
     class.define_method("describe_plan", method!(RbLazyFrame::describe_plan, 0))?;
     class.define_method(
         "describe_optimized_plan",

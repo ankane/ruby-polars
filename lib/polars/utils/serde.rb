@@ -8,10 +8,15 @@ module Polars
       end
 
       if file.nil?
-        return serialize_to_bytes.call
+        serialize_to_bytes.call
+      elsif pathlike?(file)
+        file = normalize_filepath(file)
+        serializer.(file)
+        nil
+      else
+        serializer.(file)
+        nil
       end
-
-      raise Todo
     end
   end
 end

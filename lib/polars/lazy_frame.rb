@@ -27,25 +27,16 @@ module Polars
       ldf
     end
 
-    # Read a logical plan from a JSON file to construct a LazyFrame.
-    #
-    # @param file [String]
-    #   Path to a file or a file-like object.
-    #
-    # @return [LazyFrame]
-    def self.read_json(file)
-      if Utils.pathlike?(file)
-        file = Utils.normalize_filepath(file)
-      end
-
-      Utils.wrap_ldf(RbLazyFrame.deserialize_json(file))
-    end
-
     # Read a logical plan from a file to construct a LazyFrame.
     #
     # @param source [Object]
     #   Path to a file or a file-like object (by file-like object, we refer to
     #   objects that have a `read` method, such as a file handler or `StringIO`).
+    # @param format ['binary', 'json']
+    #   The format with which the LazyFrame was serialized. Options:
+    #
+    #   - `"binary"`: Deserialize from binary format (bytes). This is the default.
+    #   - `"json"`: Deserialize from JSON format (string).
     #
     # @return [LazyFrame]
     #
@@ -71,14 +62,20 @@ module Polars
     #   # ╞═════╡
     #   # │ 6   │
     #   # └─────┘
-    def self.deserialize(source)
-      raise Todo unless RbLazyFrame.respond_to?(:deserialize_binary)
-
+    def self.deserialize(source, format: "binary")
       if Utils.pathlike?(source)
         source = Utils.normalize_filepath(source)
       end
 
-      deserializer = RbLazyFrame.method(:deserialize_binary)
+      if format == "binary"
+        raise Todo unless RbLazyFrame.respond_to?(:deserialize_binary)
+        deserializer = RbLazyFrame.method(:deserialize_binary)
+      elsif format == "json"
+        deserializer = RbLazyFrame.method(:deserialize_json)
+      else
+        msg = "`format` must be one of {{'binary', 'json'}}, got #{format.inspect}"
+        raise ArgumentError, msg
+      end
 
       _from_rbldf(deserializer.(source))
     end
@@ -176,25 +173,16 @@ module Polars
       EOS
     end
 
-    # Write the logical plan of this LazyFrame to a file or string in JSON format.
-    #
-    # @param file [String]
-    #   File path to which the result should be written.
-    #
-    # @return [nil]
-    def write_json(file)
-      if Utils.pathlike?(file)
-        file = Utils.normalize_filepath(file)
-      end
-      _ldf.write_json(file)
-      nil
-    end
-
     # Serialize the logical plan of this LazyFrame to a file or string.
     #
     # @param file [Object]
     #   File path to which the result should be written. If set to `nil`
     #   (default), the output is returned as a string instead.
+    # @param format ['binary', 'json']
+    #   The format in which to serialize. Options:
+    #
+    #   - `"binary"`: Serialize to binary format (bytes). This is the default.
+    #   - `"json"`: Serialize to JSON format (string) (deprecated).
     #
     # @return [Object]
     #
@@ -215,10 +203,19 @@ module Polars
     #   # ╞═════╡
     #   # │ 6   │
     #   # └─────┘
-    def serialize(file = nil)
-      raise Todo unless _ldf.respond_to?(:serialize_binary)
+    def serialize(file = nil, format: "binary")
+      if format == "binary"
+        raise Todo unless _ldf.respond_to?(:serialize_binary)
+        serializer = _ldf.method(:serialize_binary)
+      elsif format == "json"
+        msg = "'json' serialization format of LazyFrame is deprecated"
+        warn msg
+        serializer = _ldf.method(:serialize_json)
+      else
+        msg = "`format` must be one of {{'binary', 'json'}}, got #{format.inspect}"
+        raise ArgumentError, msg
+      end
 
-      serializer = _ldf.method(:serialize_binary)
       Utils.serialize_polars_object(serializer, file)
     end
 

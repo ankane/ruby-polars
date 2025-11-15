@@ -1,11 +1,12 @@
-use std::io::Read;
 #[cfg(feature = "serialize_binary")]
 use std::io::{BufReader, BufWriter};
+use std::io::{BufWriter, Read};
 
 use magnus::Value;
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
 
+use crate::exceptions::ComputeError;
 use crate::file::get_file_like;
 #[cfg(feature = "serialize_binary")]
 use crate::utils::to_rb_err;
@@ -21,6 +22,13 @@ impl RbLazyFrame {
             .logical_plan
             .serialize_versioned(writer, Default::default())
             .map_err(to_rb_err)
+    }
+
+    pub fn serialize_json(&self, rb_f: Value) -> RbResult<()> {
+        let file = get_file_like(rb_f, true)?;
+        let writer = BufWriter::new(file);
+        serde_json::to_writer(writer, &self.ldf.borrow().logical_plan)
+            .map_err(|err| ComputeError::new_err(err.to_string()))
     }
 
     #[cfg(feature = "serialize_binary")]

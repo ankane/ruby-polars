@@ -8,14 +8,12 @@ use polars::prelude::*;
 use polars_plan::dsl::ScanSources;
 use polars_plan::plans::{HintIR, Sorted};
 use std::cell::RefCell;
-use std::io::BufWriter;
 use std::num::NonZeroUsize;
 
 use super::{RbLazyFrame, RbOptFlags, SinkTarget};
 use crate::conversion::*;
 use crate::expr::rb_exprs_to_exprs;
 use crate::expr::selector::RbSelector;
-use crate::file::get_file_like;
 use crate::io::RbScanOptions;
 use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
@@ -263,13 +261,6 @@ impl RbLazyFrame {
         let lf = LazyFrame::scan_ipc_sources(sources, options, unified_scan_args)
             .map_err(RbPolarsErr::from)?;
         Ok(lf.into())
-    }
-
-    pub fn write_json(&self, rb_f: Value) -> RbResult<()> {
-        let file = BufWriter::new(get_file_like(rb_f, true)?);
-        serde_json::to_writer(file, &self.ldf.borrow().logical_plan)
-            .map_err(|err| RbValueError::new_err(format!("{err:?}")))?;
-        Ok(())
     }
 
     pub fn describe_plan(&self) -> RbResult<String> {
