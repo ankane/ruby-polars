@@ -241,5 +241,204 @@ module Polars
       end
       agg(len_expr)
     end
+
+    # Aggregate the first values in the group.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   ldf = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "c" => [true, true, true, false, false, true],
+    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   ).lazy
+    #   ldf.group_by("d", maintain_order: true).first.collect
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌────────┬─────┬──────┬───────┐
+    #   # │ d      ┆ a   ┆ b    ┆ c     │
+    #   # │ ---    ┆ --- ┆ ---  ┆ ---   │
+    #   # │ str    ┆ i64 ┆ f64  ┆ bool  │
+    #   # ╞════════╪═════╪══════╪═══════╡
+    #   # │ Apple  ┆ 1   ┆ 0.5  ┆ true  │
+    #   # │ Orange ┆ 2   ┆ 0.5  ┆ true  │
+    #   # │ Banana ┆ 4   ┆ 13.0 ┆ false │
+    #   # └────────┴─────┴──────┴───────┘
+    def first
+      agg(F.all.first)
+    end
+
+    # Aggregate the last values in the group.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   ldf = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 14, 13],
+    #       "c" => [true, true, true, false, false, true],
+    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   ).lazy
+    #   ldf.group_by("d", maintain_order: true).last.collect
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌────────┬─────┬──────┬───────┐
+    #   # │ d      ┆ a   ┆ b    ┆ c     │
+    #   # │ ---    ┆ --- ┆ ---  ┆ ---   │
+    #   # │ str    ┆ i64 ┆ f64  ┆ bool  │
+    #   # ╞════════╪═════╪══════╪═══════╡
+    #   # │ Apple  ┆ 3   ┆ 10.0 ┆ false │
+    #   # │ Orange ┆ 2   ┆ 0.5  ┆ true  │
+    #   # │ Banana ┆ 5   ┆ 13.0 ┆ true  │
+    #   # └────────┴─────┴──────┴───────┘
+    def last
+      agg(F.all.last)
+    end
+
+    # Reduce the groups to the maximal value.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   ldf = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "c" => [true, true, true, false, false, true],
+    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   ).lazy
+    #   ldf.group_by("d", maintain_order: true).max.collect
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌────────┬─────┬──────┬──────┐
+    #   # │ d      ┆ a   ┆ b    ┆ c    │
+    #   # │ ---    ┆ --- ┆ ---  ┆ ---  │
+    #   # │ str    ┆ i64 ┆ f64  ┆ bool │
+    #   # ╞════════╪═════╪══════╪══════╡
+    #   # │ Apple  ┆ 3   ┆ 10.0 ┆ true │
+    #   # │ Orange ┆ 2   ┆ 0.5  ┆ true │
+    #   # │ Banana ┆ 5   ┆ 14.0 ┆ true │
+    #   # └────────┴─────┴──────┴──────┘
+    def max
+      agg(F.all.max)
+    end
+
+    # Reduce the groups to the mean values.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   ldf = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "c" => [true, true, true, false, false, true],
+    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   ).lazy
+    #   ldf.group_by("d", maintain_order: true).mean.collect
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌────────┬─────┬──────────┬──────────┐
+    #   # │ d      ┆ a   ┆ b        ┆ c        │
+    #   # │ ---    ┆ --- ┆ ---      ┆ ---      │
+    #   # │ str    ┆ f64 ┆ f64      ┆ f64      │
+    #   # ╞════════╪═════╪══════════╪══════════╡
+    #   # │ Apple  ┆ 2.0 ┆ 4.833333 ┆ 0.666667 │
+    #   # │ Orange ┆ 2.0 ┆ 0.5      ┆ 1.0      │
+    #   # │ Banana ┆ 4.5 ┆ 13.5     ┆ 0.5      │
+    #   # └────────┴─────┴──────────┴──────────┘
+    def mean
+      agg(F.all.mean)
+    end
+
+    # Return the median per group.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   ldf = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "d" => ["Apple", "Banana", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   ).lazy
+    #   ldf.group_by("d", maintain_order: true).median.collect
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌────────┬─────┬──────┐
+    #   # │ d      ┆ a   ┆ b    │
+    #   # │ ---    ┆ --- ┆ ---  │
+    #   # │ str    ┆ f64 ┆ f64  │
+    #   # ╞════════╪═════╪══════╡
+    #   # │ Apple  ┆ 2.0 ┆ 4.0  │
+    #   # │ Banana ┆ 4.0 ┆ 13.0 │
+    #   # └────────┴─────┴──────┘
+    def median
+      agg(F.all.median)
+    end
+
+    # Reduce the groups to the minimal value.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   ldf = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "c" => [true, true, true, false, false, true],
+    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   ).lazy
+    #   ldf.group_by("d", maintain_order: true).min.collect
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌────────┬─────┬──────┬───────┐
+    #   # │ d      ┆ a   ┆ b    ┆ c     │
+    #   # │ ---    ┆ --- ┆ ---  ┆ ---   │
+    #   # │ str    ┆ i64 ┆ f64  ┆ bool  │
+    #   # ╞════════╪═════╪══════╪═══════╡
+    #   # │ Apple  ┆ 1   ┆ 0.5  ┆ false │
+    #   # │ Orange ┆ 2   ┆ 0.5  ┆ true  │
+    #   # │ Banana ┆ 4   ┆ 13.0 ┆ false │
+    #   # └────────┴─────┴──────┴───────┘
+    def min
+      agg(F.all.min)
+    end
+
+    # Count the unique values per group.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   ldf = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 1, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 0.5, 10, 13, 14],
+    #       "d" => ["Apple", "Banana", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   ).lazy
+    #   ldf.group_by("d", maintain_order: true).n_unique.collect
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌────────┬─────┬─────┐
+    #   # │ d      ┆ a   ┆ b   │
+    #   # │ ---    ┆ --- ┆ --- │
+    #   # │ str    ┆ u32 ┆ u32 │
+    #   # ╞════════╪═════╪═════╡
+    #   # │ Apple  ┆ 2   ┆ 2   │
+    #   # │ Banana ┆ 3   ┆ 3   │
+    #   # └────────┴─────┴─────┘
+    def n_unique
+      agg(F.all.n_unique)
+    end
   end
 end
