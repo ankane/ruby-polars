@@ -25,12 +25,6 @@ impl From<RbErr> for RbPolarsErr {
     }
 }
 
-impl From<std::io::Error> for RbPolarsErr {
-    fn from(value: std::io::Error) -> Self {
-        RbPolarsErr::Other(format!("{value:?}"))
-    }
-}
-
 impl From<RbPolarsErr> for Error {
     fn from(err: RbPolarsErr) -> Self {
         match err {
