@@ -1037,12 +1037,20 @@ module Polars
     # Select all datetime columns, optionally filtering by time unit/zone.
     #
     # @return [Selector]
-    def self.datetime
-      time_unit = ["ms", "us", "ns"]
+    def self.datetime(time_unit = nil, time_zone: nil)
+      if time_unit.nil?
+        time_unit_lst = ["ms", "us", "ns"]
+      else
+        time_unit_lst = time_unit.is_a?(::String) ? [time_unit] : time_unit.to_a
+      end
 
-      time_zone = [nil]
+      if time_zone.nil?
+        time_zone_lst = [nil]
+      elsif time_zone
+        raise Todo
+      end
 
-      Selector._from_rbselector(RbSelector.datetime(time_unit, time_zone))
+      Selector._from_rbselector(RbSelector.datetime(time_unit_lst, time_zone_lst))
     end
 
     # Select all decimal columns.
@@ -1181,8 +1189,12 @@ module Polars
     # Select all duration columns, optionally filtering by time unit.
     #
     # @return [Selector]
-    def self.duration
-      time_unit = ["ms", "us", "ns"]
+    def self.duration(time_unit = nil)
+      if time_unit.nil?
+        time_unit = ["ms", "us", "ns"]
+      else
+        time_unit = time_unit.is_a?(::String) ? [time_unit] : time_unit.to_a
+      end
 
       Selector._from_rbselector(RbSelector.duration(time_unit))
     end
