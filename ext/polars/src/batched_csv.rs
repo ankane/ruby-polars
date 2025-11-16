@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
@@ -13,7 +12,7 @@ use crate::{RbDataFrame, RbPolarsErr, RbResult};
 
 #[magnus::wrap(class = "Polars::RbBatchedCsv")]
 pub struct RbBatchedCsv {
-    pub reader: RefCell<Mutex<OwnedBatchedCsvReader>>,
+    pub reader: Mutex<OwnedBatchedCsvReader>,
 }
 
 impl RbBatchedCsv {
@@ -121,14 +120,13 @@ impl RbBatchedCsv {
         let reader = reader.batched(None).map_err(RbPolarsErr::from)?;
 
         Ok(RbBatchedCsv {
-            reader: RefCell::new(Mutex::new(reader)),
+            reader: Mutex::new(reader),
         })
     }
 
     pub fn next_batches(ruby: &Ruby, rb_self: &Self, n: usize) -> RbResult<Option<RArray>> {
         let reader = &rb_self.reader;
         let batches = reader
-            .borrow()
             .lock()
             .map_err(|e| RbPolarsErr::Other(e.to_string()))?
             .next_batches(n)
