@@ -39,9 +39,8 @@ impl RbDataFrame {
             .collect()
     }
 
-    pub fn add(&self, s: &RbSeries) -> RbResult<Self> {
-        let df = (&*self.df.borrow() + &*s.series.borrow()).map_err(RbPolarsErr::from)?;
-        Ok(df.into())
+    pub fn add(rb: &Ruby, self_: &Self, s: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_df(|| &*self_.df.borrow() + &*s.series.borrow())
     }
 
     pub fn sub(&self, s: &RbSeries) -> RbResult<Self> {
