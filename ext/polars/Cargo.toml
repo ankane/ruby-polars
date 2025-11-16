@@ -27,6 +27,7 @@ polars-lazy = { version = "=0.52.0", features = ["catalog"] }
 polars-ops = "=0.52.0"
 polars-plan = "=0.52.0"
 polars-parquet = "=0.52.0"
+polars-testing = "=0.52.0"
 polars-utils = "=0.52.0"
 rayon = "1.9"
 regex = "1"

@@ -22,7 +22,7 @@ class TestingTest < Minitest::Test
     error = assert_raises(Polars::AssertionError) do
       assert_frame_equal df, df2
     end
-    assert_equal "columns [\"b\"] in left DataFrames, but not in right", error.message
+    assert_match "columns mismatch: [\"a\"] in left, but not in right", error.message
   end
 
   def test_assert_frame_not_equal

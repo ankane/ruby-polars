@@ -46,6 +46,13 @@ pub(crate) fn error() -> ExceptionClass {
     Ruby::get().unwrap().get_inner(&ERROR)
 }
 
+static ASSERTION_ERROR: Lazy<ExceptionClass> =
+    Lazy::new(|ruby| ruby.get_inner(&POLARS).const_get("AssertionError").unwrap());
+
+pub(crate) fn assertion_error() -> ExceptionClass {
+    Ruby::get().unwrap().get_inner(&ASSERTION_ERROR)
+}
+
 static COLUMN_NOT_FOUND_ERROR: Lazy<ExceptionClass> = Lazy::new(|ruby| {
     ruby.get_inner(&POLARS)
         .const_get("ColumnNotFoundError")

@@ -19,6 +19,7 @@ mod prelude;
 pub(crate) mod rb_modules;
 mod series;
 mod sql;
+mod testing;
 mod utils;
 
 use batched_csv::RbBatchedCsv;
@@ -835,6 +836,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method(
         "escape_regex",
         function!(functions::strings::escape_regex, 1),
+    )?;
+    class.define_singleton_method(
+        "assert_dataframe_equal_rb",
+        function!(testing::assert_dataframe_equal_rb, 9),
+    )?;
+    class.define_singleton_method(
+        "assert_series_equal_rb",
+        function!(testing::assert_series_equal_rb, 9),
     )?;
     class.define_singleton_method(
         "get_engine_affinity",

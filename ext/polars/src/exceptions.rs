@@ -24,6 +24,7 @@ create_exception!(
     Ruby::get().unwrap().exception_range_error()
 );
 create_exception!(RbIndexError, Ruby::get().unwrap().exception_index_error());
+create_exception!(AssertionError, rb_modules::assertion_error());
 create_exception!(ColumnNotFoundError, rb_modules::column_not_found_error());
 create_exception!(ComputeError, rb_modules::compute_error());
 create_exception!(InvalidOperationError, rb_modules::invalid_operation_error());

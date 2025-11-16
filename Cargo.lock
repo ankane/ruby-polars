@@ -1695,6 +1695,7 @@ dependencies = [
  "polars-ops",
  "polars-parquet",
  "polars-plan",
+ "polars-testing",
  "polars-utils",
  "rayon",
  "regex",
@@ -2208,6 +2209,16 @@ dependencies = [
  "slotmap",
  "tokio",
  "version_check",
+]
+
+[[package]]
+name = "polars-testing"
+version = "0.52.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9626bad4c4c1b7382601be00ce87c65809dc843fa40b35721eaf92397ca8b6ce"
+dependencies = [
+ "polars-core",
+ "polars-ops",
 ]
 
 [[package]]
