@@ -338,7 +338,8 @@ impl RbDataFrame {
     }
 
     pub fn unpivot(
-        &self,
+        rb: &Ruby,
+        self_: &Self,
         on: Vec<String>,
         index: Vec<String>,
         value_name: Option<String>,
@@ -351,13 +352,13 @@ impl RbDataFrame {
             variable_name: variable_name.map(|s| s.into()),
         };
 
-        let df = self.df.read().unpivot2(args).map_err(RbPolarsErr::from)?;
-        Ok(RbDataFrame::new(df))
+        rb.enter_polars_df(|| self_.df.read().unpivot2(args))
     }
 
     #[allow(clippy::too_many_arguments)]
     pub fn pivot_expr(
-        &self,
+        rb: &Ruby,
+        self_: &Self,
         on: Vec<String>,
         index: Option<Vec<String>>,
         values: Option<Vec<String>>,
@@ -366,19 +367,20 @@ impl RbDataFrame {
         aggregate_expr: Option<&RbExpr>,
         separator: Option<String>,
     ) -> RbResult<Self> {
+        let df = self_.df.read().clone(); // Clone to avoid dead lock on re-entrance in aggregate_expr.
         let fun = if maintain_order { pivot_stable } else { pivot };
-        let agg_expr = aggregate_expr.map(|aggregate_expr| aggregate_expr.inner.clone());
-        let df = fun(
-            &self.df.read(),
-            on,
-            index,
-            values,
-            sort_columns,
-            agg_expr,
-            separator.as_deref(),
-        )
-        .map_err(RbPolarsErr::from)?;
-        Ok(RbDataFrame::new(df))
+        let agg_expr = aggregate_expr.map(|expr| expr.inner.clone());
+        rb.enter_polars_df(|| {
+            fun(
+                &df,
+                on,
+                index,
+                values,
+                sort_columns,
+                agg_expr,
+                separator.as_deref(),
+            )
+        })
     }
 
     pub fn partition_by(
