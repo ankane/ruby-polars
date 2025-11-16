@@ -7,7 +7,6 @@ use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
 use polars_plan::dsl::ScanSources;
 use polars_plan::plans::{HintIR, Sorted};
-use std::cell::RefCell;
 use std::num::NonZeroUsize;
 
 use super::{RbLazyFrame, RbOptFlags, SinkTarget};
@@ -616,9 +615,7 @@ impl RbLazyFrame {
         } else {
             ldf.group_by(by)
         };
-        Ok(RbLazyGroupBy {
-            lgb: RefCell::new(Some(lazy_gb)),
-        })
+        Ok(RbLazyGroupBy { lgb: Some(lazy_gb) })
     }
 
     pub fn rolling(
@@ -643,9 +640,7 @@ impl RbLazyFrame {
             },
         );
 
-        Ok(RbLazyGroupBy {
-            lgb: RefCell::new(Some(lazy_gb)),
-        })
+        Ok(RbLazyGroupBy { lgb: Some(lazy_gb) })
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -679,9 +674,7 @@ impl RbLazyFrame {
             },
         );
 
-        Ok(RbLazyGroupBy {
-            lgb: RefCell::new(Some(lazy_gb)),
-        })
+        Ok(RbLazyGroupBy { lgb: Some(lazy_gb) })
     }
 
     #[allow(clippy::too_many_arguments)]
