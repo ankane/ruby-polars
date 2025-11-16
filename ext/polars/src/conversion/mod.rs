@@ -500,7 +500,7 @@ impl<'s> TryConvert for Wrap<Row<'s>> {
 
 impl TryConvert for Wrap<Schema> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let dict = RHash::try_convert(ob)?;
+        let dict: RHash = ob.funcall("to_h", ())?;
 
         let mut schema = Vec::new();
         dict.foreach(|key: String, val: Wrap<DataType>| {
