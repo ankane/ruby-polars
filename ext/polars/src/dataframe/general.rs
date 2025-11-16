@@ -288,46 +288,49 @@ impl RbDataFrame {
         Ok(())
     }
 
-    pub fn slice(&self, offset: i64, length: Option<usize>) -> Self {
-        let df = self
-            .df
-            .read()
-            .slice(offset, length.unwrap_or_else(|| self.df.read().height()));
-        df.into()
+    pub fn slice(rb: &Ruby, self_: &Self, offset: i64, length: Option<usize>) -> RbResult<Self> {
+        rb.enter_polars_df(|| {
+            let df = self_.df.read();
+            Ok(df.slice(offset, length.unwrap_or_else(|| df.height())))
+        })
     }
 
-    pub fn head(&self, length: Option<usize>) -> Self {
-        self.df.read().head(length).into()
+    pub fn head(rb: &Ruby, self_: &Self, n: usize) -> RbResult<Self> {
+        rb.enter_polars_df(|| Ok(self_.df.read().head(Some(n))))
     }
 
-    pub fn tail(&self, length: Option<usize>) -> Self {
-        self.df.read().tail(length).into()
+    pub fn tail(rb: &Ruby, self_: &Self, n: usize) -> RbResult<Self> {
+        rb.enter_polars_df(|| Ok(self_.df.read().tail(Some(n))))
     }
 
     pub fn is_unique(rb: &Ruby, self_: &Self) -> RbResult<RbSeries> {
         rb.enter_polars_series(|| self_.df.read().is_unique())
     }
 
-    pub fn is_duplicated(&self) -> RbResult<RbSeries> {
-        let mask = self.df.read().is_duplicated().map_err(RbPolarsErr::from)?;
-        Ok(mask.into_series().into())
+    pub fn is_duplicated(rb: &Ruby, self_: &Self) -> RbResult<RbSeries> {
+        rb.enter_polars_series(|| self_.df.read().is_duplicated())
     }
 
-    pub fn equals(&self, other: &RbDataFrame, null_equal: bool) -> bool {
+    pub fn equals(
+        rb: &Ruby,
+        self_: &Self,
+        other: &RbDataFrame,
+        null_equal: bool,
+    ) -> RbResult<bool> {
         if null_equal {
-            self.df.read().equals_missing(&other.df.read())
+            rb.enter_polars_ok(|| self_.df.read().equals_missing(&other.df.read()))
         } else {
-            self.df.read().equals(&other.df.read())
+            rb.enter_polars_ok(|| self_.df.read().equals(&other.df.read()))
         }
     }
 
-    pub fn with_row_index(&self, name: String, offset: Option<IdxSize>) -> RbResult<Self> {
-        let df = self
-            .df
-            .read()
-            .with_row_index(name.into(), offset)
-            .map_err(RbPolarsErr::from)?;
-        Ok(df.into())
+    pub fn with_row_index(
+        rb: &Ruby,
+        self_: &Self,
+        name: String,
+        offset: Option<IdxSize>,
+    ) -> RbResult<Self> {
+        rb.enter_polars_df(|| self_.df.read().with_row_index(name.into(), offset))
     }
 
     pub fn clone(&self) -> Self {
