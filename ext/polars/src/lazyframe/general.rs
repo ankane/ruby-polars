@@ -384,12 +384,11 @@ impl RbLazyFrame {
         Ok((df.into(), time_df.into()))
     }
 
-    pub fn collect(&self, engine: Wrap<Engine>) -> RbResult<RbDataFrame> {
-        let ldf = self.ldf.borrow().clone();
-        let df = ldf
-            .collect_with_engine(engine.0)
-            .map_err(RbPolarsErr::from)?;
-        Ok(df.into())
+    pub fn collect(rb: &Ruby, self_: &Self, engine: Wrap<Engine>) -> RbResult<RbDataFrame> {
+        rb.enter_polars_df(|| {
+            let ldf = self_.ldf.borrow().clone();
+            ldf.collect_with_engine(engine.0)
+        })
     }
 
     #[allow(clippy::too_many_arguments)]

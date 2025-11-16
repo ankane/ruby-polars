@@ -1,6 +1,8 @@
 use magnus::Ruby;
+use polars::frame::DataFrame;
+use polars_error::PolarsResult;
 
-use crate::{RbErr, RbPolarsErr, RbResult};
+use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult};
 
 #[macro_export]
 macro_rules! apply_method_all_arrow_series2 {
@@ -47,6 +49,15 @@ pub trait EnterPolarsExt {
     {
         // TODO use enter_polars
         RbResult::Ok(f())
+    }
+
+    #[inline(always)]
+    fn enter_polars_df<F>(self, f: F) -> RbResult<RbDataFrame>
+    where
+        Self: Sized,
+        F: FnOnce() -> PolarsResult<DataFrame>,
+    {
+        self.enter_polars(f).map(RbDataFrame::new)
     }
 }
 
