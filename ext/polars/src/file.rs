@@ -8,6 +8,7 @@ use polars::io::mmap::MmapBytesReader;
 use polars::prelude::PlPath;
 use polars::prelude::file::DynWriteable;
 use polars::prelude::sync_on_close::SyncOnCloseType;
+use polars_utils::create_file;
 use polars_utils::file::ClosableFile;
 use polars_utils::mmap::MemSlice;
 
@@ -222,7 +223,7 @@ pub fn get_either_file(rb_f: Value, truncate: bool) -> RbResult<EitherRustRubyFi
         let file_path = std::path::Path::new(&s);
         let file_path = resolve_homedir(&file_path);
         let f = if truncate {
-            File::create(file_path).map_err(RbPolarsErr::from)?
+            create_file(&file_path).map_err(RbPolarsErr::from)?
         } else {
             polars_utils::open_file(&file_path).map_err(RbPolarsErr::from)?
         };
