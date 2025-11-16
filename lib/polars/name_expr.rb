@@ -208,7 +208,7 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new({"x" => {"a" => 1, "b" => 2}})
     #   df.select(Polars.col("x").name.prefix_fields("prefix_")).schema
-    #   # => {"x"=>Polars::Struct({"prefix_a"=>Polars::Int64, "prefix_b"=>Polars::Int64})}
+    #   # => Polars::Schema({"x"=>Polars::Struct({"prefix_a"=>Polars::Int64, "prefix_b"=>Polars::Int64})})
     def prefix_fields(prefix)
       Utils.wrap_expr(_rbexpr.name_prefix_fields(prefix))
     end
@@ -260,7 +260,7 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new({"x" => {"a" => 1, "b" => 2}})
     #   df.select(Polars.col("x").name.suffix_fields("_suffix")).schema
-    #   # => {"x"=>Polars::Struct({"a_suffix"=>Polars::Int64, "b_suffix"=>Polars::Int64})}
+    #   # => Polars::Schema({"x"=>Polars::Struct({"a_suffix"=>Polars::Int64, "b_suffix"=>Polars::Int64})})
     def suffix_fields(suffix)
       Utils.wrap_expr(_rbexpr.name_suffix_fields(suffix))
     end

@@ -15,6 +15,7 @@
 - Added more options to `sort` method
 - Added more options to `over` method
 - Added `ambiguous` option to `strptime` method
+- Changed `schema` method to return `Schema` instead of `Hash`
 - Changed `reverse` option to `descending`
 - Changed `sep` option to `separator`
 - Changed `row_count_name` option to `row_index_name`

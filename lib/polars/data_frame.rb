@@ -281,9 +281,9 @@ module Polars
     #     }
     #   )
     #   df.schema
-    #   # => {"foo"=>Polars::Int64, "bar"=>Polars::Float64, "ham"=>Polars::String}
+    #   # => Polars::Schema({"foo"=>Polars::Int64, "bar"=>Polars::Float64, "ham"=>Polars::String})
     def schema
-      columns.zip(dtypes).to_h
+      Schema.new(columns.zip(dtypes).to_h)
     end
 
     # Equal.
@@ -5863,7 +5863,7 @@ module Polars
       if include_key
         values = self
       else
-        data_cols = schema.keys - key
+        data_cols = schema.names - key
         values = select(data_cols)
       end
 

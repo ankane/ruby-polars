@@ -171,7 +171,7 @@ class DataFrameTest < Minitest::Test
   def test_schema
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     expected = {"a" => Polars::Int64, "b" => Polars::String}
-    assert_equal expected, df.schema
+    assert_equal expected, df.schema.to_h
   end
 
   def test_comp_data_frame

@@ -1,5 +1,7 @@
 module Polars
   class Schema
+    include Enumerable
+
     # Ordered mapping of column names to their data type.
     #
     # @param schema [Object]
@@ -79,13 +81,18 @@ module Polars
     alias_method :inspect, :to_s
 
     # @private
+    def each(&block)
+      @schema.each(&block)
+    end
+
+    # @private
     def include?(name)
       @schema.include?(name)
     end
 
     # @private
-    def to_h
-      @schema.to_h
+    def to_h(&block)
+      @schema.to_h(&block)
     end
 
     private
