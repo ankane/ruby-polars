@@ -440,5 +440,67 @@ module Polars
     def n_unique
       agg(F.all.n_unique)
     end
+
+    # Compute the quantile per group.
+    #
+    # @param quantile [Float]
+    #   Quantile between 0.0 and 1.0.
+    # @param interpolation ['nearest', 'higher', 'lower', 'midpoint', 'linear', 'equiprobable']
+    #   Interpolation method.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   ldf = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   ).lazy
+    #   ldf.group_by("d", maintain_order: true).quantile(1).collect
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────┬─────┬──────┐
+    #   # │ d      ┆ a   ┆ b    │
+    #   # │ ---    ┆ --- ┆ ---  │
+    #   # │ str    ┆ f64 ┆ f64  │
+    #   # ╞════════╪═════╪══════╡
+    #   # │ Apple  ┆ 3.0 ┆ 10.0 │
+    #   # │ Orange ┆ 2.0 ┆ 0.5  │
+    #   # │ Banana ┆ 5.0 ┆ 14.0 │
+    #   # └────────┴─────┴──────┘
+    def quantile(quantile, interpolation: "nearest")
+      agg(F.all.quantile(quantile, interpolation: interpolation))
+    end
+
+    # Reduce the groups to the sum.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   ldf = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 2, 3, 4, 5],
+    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
+    #       "c" => [true, true, true, false, false, true],
+    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
+    #     }
+    #   ).lazy
+    #   ldf.group_by("d", maintain_order: true).sum.collect
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌────────┬─────┬──────┬─────┐
+    #   # │ d      ┆ a   ┆ b    ┆ c   │
+    #   # │ ---    ┆ --- ┆ ---  ┆ --- │
+    #   # │ str    ┆ i64 ┆ f64  ┆ u32 │
+    #   # ╞════════╪═════╪══════╪═════╡
+    #   # │ Apple  ┆ 6   ┆ 14.5 ┆ 2   │
+    #   # │ Orange ┆ 2   ┆ 0.5  ┆ 1   │
+    #   # │ Banana ┆ 9   ┆ 27.0 ┆ 1   │
+    #   # └────────┴─────┴──────┴─────┘
+    def sum
+      agg(F.all.sum)
+    end
   end
 end
