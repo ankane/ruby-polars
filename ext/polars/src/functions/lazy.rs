@@ -222,6 +222,7 @@ pub fn cum_reduce(
     .into())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn datetime(
     year: &RbExpr,
     month: &RbExpr,
