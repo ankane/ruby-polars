@@ -20,11 +20,41 @@ impl RbArrowArrayStream {
     }
 }
 
+#[magnus::wrap(class = "Polars::ArrowSchema")]
+pub struct RbArrowSchema {
+    pub(crate) schema: ffi::ArrowSchema,
+}
+
+impl RbArrowSchema {
+    pub fn to_i(&self) -> usize {
+        (&self.schema as *const _) as usize
+    }
+}
+
 pub(crate) fn dataframe_to_stream(df: &DataFrame, ruby: &Ruby) -> RbResult<Value> {
     let iter = Box::new(DataFrameStreamIterator::new(df));
     let field = iter.field();
     let stream = ffi::export_iterator(iter, field);
     Ok(RbArrowArrayStream { stream }.into_value_with(ruby))
+}
+
+pub(crate) fn polars_schema_to_rbcapsule(
+    ruby: &Ruby,
+    schema: crate::prelude::Wrap<polars::prelude::Schema>,
+) -> RbResult<Value> {
+    let schema: arrow::ffi::ArrowSchema = arrow::ffi::export_field_to_c(&ArrowField::new(
+        PlSmallStr::EMPTY,
+        ArrowDataType::Struct(
+            schema
+                .0
+                .iter_fields()
+                .map(|x| x.to_arrow(CompatLevel::newest()))
+                .collect(),
+        ),
+        false,
+    ));
+
+    Ok(RbArrowSchema { schema }.into_value_with(ruby))
 }
 
 pub struct DataFrameStreamIterator {

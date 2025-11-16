@@ -8,6 +8,8 @@ mod import;
 mod map;
 mod scatter;
 
+pub(crate) use import::import_schema_rbcapsule;
+
 use magnus::{DataTypeFunctions, RArray, Ruby, TypedData, gc, prelude::*};
 use polars::prelude::*;
 use std::cell::RefCell;

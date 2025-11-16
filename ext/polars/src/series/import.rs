@@ -1,4 +1,5 @@
 use arrow::array::Array;
+use arrow::ffi;
 use arrow::ffi::{ArrowArrayStream, ArrowArrayStreamReader};
 use magnus::Value;
 use magnus::prelude::*;
@@ -8,6 +9,22 @@ use super::RbSeries;
 
 use crate::RbResult;
 use crate::exceptions::RbValueError;
+
+pub(crate) fn import_schema_rbcapsule(schema_capsule: Value) -> RbResult<arrow::datatypes::Field> {
+    let capsule_pointer: usize = schema_capsule.funcall("to_i", ())?;
+
+    // # Safety
+    // schema_capsule holds a valid C ArrowSchema pointer, as defined by the Arrow PyCapsule
+    // Interface
+    unsafe {
+        let schema_ptr = (capsule_pointer as *const ffi::ArrowSchema)
+            .as_ref()
+            .unwrap();
+        let field = ffi::import_field_from_c(schema_ptr).unwrap();
+
+        Ok(field)
+    }
+}
 
 /// Import `arrow_c_stream` across Ruby boundary.
 fn call_arrow_c_stream(ob: Value) -> RbResult<Value> {

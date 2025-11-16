@@ -8,8 +8,14 @@ module Polars
     #   The schema definition given by column names and their associated
     #   Polars data type. Accepts a mapping or an enumerable of arrays.
     def initialize(schema = nil, check_dtypes: true)
-      input = schema || {}
       @schema = {}
+
+      if schema.respond_to?(:arrow_c_schema) && !schema.is_a?(Schema)
+        Plr.init_polars_schema_from_arrow_c_schema(@schema, schema)
+        return
+      end
+
+      input = schema || {}
       input.each do |name, tp|
         if !check_dtypes
           @schema[name] = tp
@@ -34,6 +40,11 @@ module Polars
     def []=(name, dtype)
       _check_dtype(dtype)
       @schema[name] = dtype
+    end
+
+    # @private
+    def arrow_c_schema
+      Plr.polars_schema_to_rbcapsule(self)
     end
 
     # Get the column names of the schema.

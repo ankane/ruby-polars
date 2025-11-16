@@ -34,7 +34,7 @@ use expr::rb_exprs_to_exprs;
 use expr::selector::RbSelector;
 use functions::string_cache::RbStringCacheHolder;
 use functions::whenthen::{RbChainedThen, RbChainedWhen, RbThen, RbWhen};
-use interop::arrow::to_ruby::RbArrowArrayStream;
+use interop::arrow::to_ruby::{RbArrowArrayStream, RbArrowSchema};
 use lazyframe::{RbInProcessQuery, RbLazyFrame, RbOptFlags};
 use lazygroupby::RbLazyGroupBy;
 use magnus::{Ruby, function, method, prelude::*};
@@ -849,6 +849,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "get_engine_affinity",
         function!(functions::utils::rb_get_engine_affinity, 0),
     )?;
+    class.define_singleton_method(
+        "polars_schema_to_rbcapsule",
+        function!(interop::arrow::to_ruby::polars_schema_to_rbcapsule, 1),
+    )?;
+    class.define_singleton_method(
+        "init_polars_schema_from_arrow_c_schema",
+        function!(interop::arrow::init_polars_schema_from_arrow_c_schema, 2),
+    )?;
 
     let class = module.define_class("RbLazyFrame", ruby.class_object())?;
     #[cfg(feature = "serialize_binary")]
@@ -1301,6 +1309,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     // arrow array stream
     let class = module.define_class("ArrowArrayStream", ruby.class_object())?;
     class.define_method("to_i", method!(RbArrowArrayStream::to_i, 0))?;
+
+    // arrow schema
+    let class = module.define_class("ArrowSchema", ruby.class_object())?;
+    class.define_method("to_i", method!(RbArrowSchema::to_i, 0))?;
 
     // catalog
     let class = module.define_class("RbCatalogClient", ruby.class_object())?;
