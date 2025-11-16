@@ -384,7 +384,7 @@ impl RbDataFrame {
     }
 
     pub fn partition_by(
-        ruby: &Ruby,
+        rb: &Ruby,
         self_: &Self,
         by: Vec<String>,
         maintain_order: bool,
@@ -396,7 +396,7 @@ impl RbDataFrame {
             self_.df.read().partition_by(by, include_key)
         }
         .map_err(RbPolarsErr::from)?;
-        Ok(ruby.ary_from_iter(out.into_iter().map(RbDataFrame::new)))
+        Ok(rb.ary_from_iter(out.into_iter().map(RbDataFrame::new)))
     }
 
     pub fn lazy(&self) -> RbLazyFrame {
@@ -404,31 +404,29 @@ impl RbDataFrame {
     }
 
     pub fn to_dummies(
-        &self,
+        rb: &Ruby,
+        self_: &Self,
         columns: Option<Vec<String>>,
         separator: Option<String>,
         drop_first: bool,
         drop_nulls: bool,
     ) -> RbResult<Self> {
-        let df = match columns {
-            Some(cols) => self.df.read().columns_to_dummies(
+        rb.enter_polars_df(|| match columns {
+            Some(cols) => self_.df.read().columns_to_dummies(
                 cols.iter().map(|x| x as &str).collect(),
                 separator.as_deref(),
                 drop_first,
                 drop_nulls,
             ),
-            None => self
+            None => self_
                 .df
                 .read()
                 .to_dummies(separator.as_deref(), drop_first, drop_nulls),
-        }
-        .map_err(RbPolarsErr::from)?;
-        Ok(df.into())
+        })
     }
 
-    pub fn null_count(&self) -> Self {
-        let df = self.df.read().null_count();
-        df.into()
+    pub fn null_count(rb: &Ruby, self_: &Self) -> RbResult<Self> {
+        rb.enter_polars_df(|| Ok(self_.df.read().null_count()))
     }
 
     pub fn map_rows(
@@ -486,22 +484,29 @@ impl RbDataFrame {
         Ok((ruby.obj_wrap(RbSeries::from(out)).as_value(), false))
     }
 
-    pub fn shrink_to_fit(&self) {
-        self.df.write().shrink_to_fit();
+    pub fn shrink_to_fit(rb: &Ruby, self_: &Self) -> RbResult<()> {
+        rb.enter_polars_ok(|| self_.df.write().shrink_to_fit())
     }
 
-    pub fn hash_rows(&self, k0: u64, k1: u64, k2: u64, k3: u64) -> RbResult<RbSeries> {
+    pub fn hash_rows(
+        rb: &Ruby,
+        self_: &Self,
+        k0: u64,
+        k1: u64,
+        k2: u64,
+        k3: u64,
+    ) -> RbResult<RbSeries> {
         let seed = PlFixedStateQuality::default().hash_one((k0, k1, k2, k3));
         let hb = PlSeedableRandomStateQuality::seed_from_u64(seed);
-        let hash = self
-            .df
-            .write()
-            .hash_rows(Some(hb))
-            .map_err(RbPolarsErr::from)?;
-        Ok(hash.into_series().into())
+        rb.enter_polars_series(|| self_.df.write().hash_rows(Some(hb)))
     }
 
-    pub fn transpose(&self, keep_names_as: Option<String>, column_names: Value) -> RbResult<Self> {
+    pub fn transpose(
+        rb: &Ruby,
+        self_: &Self,
+        keep_names_as: Option<String>,
+        column_names: Value,
+    ) -> RbResult<Self> {
         let new_col_names = if let Ok(name) = <Vec<String>>::try_convert(column_names) {
             Some(Either::Right(name))
         } else if let Ok(name) = String::try_convert(column_names) {
@@ -509,40 +514,45 @@ impl RbDataFrame {
         } else {
             None
         };
-        Ok(self
-            .df
-            .write()
-            .transpose(keep_names_as.as_deref(), new_col_names)
-            .map_err(RbPolarsErr::from)?
-            .into())
+        rb.enter_polars_df(|| {
+            self_
+                .df
+                .write()
+                .transpose(keep_names_as.as_deref(), new_col_names)
+        })
     }
 
     pub fn upsample(
-        &self,
+        rb: &Ruby,
+        self_: &Self,
         by: Vec<String>,
         index_column: String,
         every: String,
         stable: bool,
     ) -> RbResult<Self> {
-        let out = if stable {
-            self.df
-                .read()
-                .upsample_stable(by, &index_column, Duration::parse(&every))
-        } else {
-            self.df
-                .read()
-                .upsample(by, &index_column, Duration::parse(&every))
-        };
-        let out = out.map_err(RbPolarsErr::from)?;
-        Ok(out.into())
+        rb.enter_polars_df(|| {
+            if stable {
+                self_
+                    .df
+                    .read()
+                    .upsample_stable(by, &index_column, Duration::parse(&every))
+            } else {
+                self_
+                    .df
+                    .read()
+                    .upsample(by, &index_column, Duration::parse(&every))
+            }
+        })
     }
 
-    pub fn to_struct(&self, name: String) -> RbSeries {
-        let s = self.df.read().clone().into_struct(name.into());
-        s.into_series().into()
+    pub fn to_struct(rb: &Ruby, self_: &Self, name: String) -> RbResult<RbSeries> {
+        rb.enter_polars_series(|| {
+            let ca = self_.df.read().clone().into_struct(name.into());
+            Ok(ca)
+        })
     }
 
-    pub fn clear(&self) -> Self {
-        self.df.read().clear().into()
+    pub fn clear(rb: &Ruby, self_: &Self) -> RbResult<Self> {
+        rb.enter_polars_df(|| Ok(self_.df.read().clear()))
     }
 }
