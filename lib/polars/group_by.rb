@@ -310,6 +310,68 @@ module Polars
         .collect(optimizations: QueryOptFlags.none)
     end
 
+    # Aggregate the groups into Series.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => ["one", "two", "one", "two"], "b" => [1, 2, 3, 4]})
+    #   df.group_by("a", maintain_order: true).all
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬───────────┐
+    #   # │ a   ┆ b         │
+    #   # │ --- ┆ ---       │
+    #   # │ str ┆ list[i64] │
+    #   # ╞═════╪═══════════╡
+    #   # │ one ┆ [1, 3]    │
+    #   # │ two ┆ [2, 4]    │
+    #   # └─────┴───────────┘
+    def all
+      agg(F.all)
+    end
+
+    # Return the number of rows in each group.
+    #
+    # @param name [String]
+    #   Assign a name to the resulting column; if unset, defaults to "len".
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => ["Apple", "Apple", "Orange"], "b" => [1, nil, 2]})
+    #   df.group_by("a").len
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────┬─────┐
+    #   # │ a      ┆ len │
+    #   # │ ---    ┆ --- │
+    #   # │ str    ┆ u32 │
+    #   # ╞════════╪═════╡
+    #   # │ Apple  ┆ 2   │
+    #   # │ Orange ┆ 1   │
+    #   # └────────┴─────┘
+    #
+    # @example
+    #   df.group_by("a").len(name: "n")
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────┬─────┐
+    #   # │ a      ┆ n   │
+    #   # │ ---    ┆ --- │
+    #   # │ str    ┆ u32 │
+    #   # ╞════════╪═════╡
+    #   # │ Apple  ┆ 2   │
+    #   # │ Orange ┆ 1   │
+    #   # └────────┴─────┘
+    def len(name: nil)
+      len_expr = F.len
+      if !name.nil?
+        len_expr = len_expr.alias(name)
+      end
+      agg(len_expr)
+    end
+
     # Aggregate the first values in the group.
     #
     # @return [DataFrame]

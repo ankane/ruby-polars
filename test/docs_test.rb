@@ -250,6 +250,8 @@ class DocsTest < Minitest::Test
         # non-deterministic output
         next if [:sort, :mode, :duration, :_hash, :hash_rows, :flatten, :value_counts, :agg, :top_k, :bottom_k, :get_categories, :to_physical, :profile].include?(method.name)
 
+        next if cls == Polars::GroupBy && [:len].include?(method.name)
+
         # check output
         lines = code.split("\n")
         if RUBY_VERSION.to_f >= 3.4
