@@ -6,6 +6,7 @@ use polars::io::RowIndex;
 use polars::io::csv::read::OwnedBatchedCsvReader;
 use polars::io::mmap::MmapBytesReader;
 use polars::prelude::*;
+use polars_utils::open_file;
 
 use crate::conversion::*;
 use crate::{RbDataFrame, RbPolarsErr, RbResult};
@@ -82,7 +83,7 @@ impl RbBatchedCsv {
                 .collect::<Vec<_>>()
         });
 
-        let file = std::fs::File::open(path).map_err(RbPolarsErr::from)?;
+        let file = open_file(&path).map_err(RbPolarsErr::from)?;
         let reader = Box::new(file) as Box<dyn MmapBytesReader>;
         let reader = CsvReadOptions::default()
             .with_infer_schema_length(infer_schema_length)
