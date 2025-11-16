@@ -48,8 +48,7 @@ pub trait EnterPolarsExt {
         Self: Sized,
         F: FnOnce() -> T,
     {
-        // TODO use enter_polars
-        RbResult::Ok(f())
+        self.enter_polars(move || RbResult::Ok(f()))
     }
 
     #[inline(always)]

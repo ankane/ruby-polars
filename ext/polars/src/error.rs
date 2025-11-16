@@ -3,17 +3,25 @@ use std::fmt::{Debug, Formatter};
 use magnus::Error;
 use polars::prelude::PolarsError;
 
+use crate::RbErr;
 use crate::exceptions::{AssertionError, ColumnNotFoundError, ComputeError, InvalidOperationError};
 use crate::rb_modules;
 
 pub enum RbPolarsErr {
     Polars(PolarsError),
+    Ruby(RbErr),
     Other(String),
 }
 
 impl From<PolarsError> for RbPolarsErr {
     fn from(err: PolarsError) -> Self {
         RbPolarsErr::Polars(err)
+    }
+}
+
+impl From<RbErr> for RbPolarsErr {
+    fn from(err: RbErr) -> Self {
+        RbPolarsErr::Ruby(err)
     }
 }
 
@@ -35,6 +43,7 @@ impl From<RbPolarsErr> for Error {
                 }
                 _ => Error::new(rb_modules::error(), err.to_string()),
             },
+            RbPolarsErr::Ruby(err) => err,
             RbPolarsErr::Other(err) => Error::new(rb_modules::error(), err.to_string()),
         }
     }
@@ -45,6 +54,7 @@ impl Debug for RbPolarsErr {
         use RbPolarsErr::*;
         match self {
             Polars(err) => write!(f, "{err:?}"),
+            Ruby(err) => write!(f, "{err:?}"),
             Other(err) => write!(f, "BindingsError: {err:?}"),
         }
     }
