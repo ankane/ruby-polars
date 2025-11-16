@@ -171,45 +171,39 @@ impl RbDataFrame {
         self.df.read().width()
     }
 
-    pub fn hstack(&self, columns: RArray) -> RbResult<Self> {
+    pub fn hstack(rb: &Ruby, self_: &Self, columns: RArray) -> RbResult<Self> {
         let columns = to_series(columns)?;
         let columns = columns.into_iter().map(Into::into).collect::<Vec<_>>();
-        let df = self.df.read().hstack(&columns).map_err(RbPolarsErr::from)?;
-        Ok(df.into())
+        rb.enter_polars_df(|| self_.df.read().hstack(&columns))
     }
 
-    pub fn hstack_mut(&self, columns: RArray) -> RbResult<()> {
+    pub fn hstack_mut(rb: &Ruby, self_: &Self, columns: RArray) -> RbResult<()> {
         let columns = to_series(columns)?;
         let columns = columns.into_iter().map(Into::into).collect::<Vec<_>>();
-        self.df
-            .write()
-            .hstack_mut(&columns)
-            .map_err(RbPolarsErr::from)?;
+        rb.enter_polars(|| self_.df.write().hstack_mut(&columns).map(drop))?;
         Ok(())
     }
 
-    pub fn vstack(&self, df: &RbDataFrame) -> RbResult<Self> {
-        let df = self
-            .df
-            .read()
-            .vstack(&df.df.read())
-            .map_err(RbPolarsErr::from)?;
-        Ok(df.into())
+    pub fn vstack(rb: &Ruby, self_: &Self, other: &RbDataFrame) -> RbResult<Self> {
+        rb.enter_polars_df(|| self_.df.read().vstack(&other.df.read()))
     }
 
-    pub fn vstack_mut(&self, df: &RbDataFrame) -> RbResult<()> {
-        self.df
-            .write()
-            .vstack_mut(&df.df.read())
-            .map_err(RbPolarsErr::from)?;
+    pub fn vstack_mut(rb: &Ruby, self_: &Self, other: &RbDataFrame) -> RbResult<()> {
+        rb.enter_polars(|| {
+            // Prevent self-vstack deadlocks.
+            let other = other.df.read().clone();
+            self_.df.write().vstack_mut(&other)?;
+            PolarsResult::Ok(())
+        })?;
         Ok(())
     }
 
-    pub fn extend(&self, df: &RbDataFrame) -> RbResult<()> {
-        self.df
-            .write()
-            .extend(&df.df.read())
-            .map_err(RbPolarsErr::from)?;
+    pub fn extend(rb: &Ruby, self_: &Self, other: &RbDataFrame) -> RbResult<()> {
+        rb.enter_polars(|| {
+            // Prevent self-extend deadlocks.
+            let other = other.df.read().clone();
+            self_.df.write().extend(&other)
+        })?;
         Ok(())
     }
 
@@ -255,26 +249,19 @@ impl RbDataFrame {
         Ok(series)
     }
 
-    pub fn select(&self, selection: Vec<String>) -> RbResult<Self> {
-        let df = self
-            .df
-            .read()
-            .select(selection)
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbDataFrame::new(df))
+    pub fn select(rb: &Ruby, self_: &Self, columns: Vec<String>) -> RbResult<Self> {
+        rb.enter_polars_df(|| self_.df.read().select(columns.iter().map(|x| &**x)))
     }
 
-    pub fn gather(&self, indices: Vec<IdxSize>) -> RbResult<Self> {
+    pub fn gather(rb: &Ruby, self_: &Self, indices: Vec<IdxSize>) -> RbResult<Self> {
         let indices = IdxCa::from_vec("".into(), indices);
-        let df = self.df.read().take(&indices).map_err(RbPolarsErr::from)?;
-        Ok(RbDataFrame::new(df))
+        rb.enter_polars_df(|| self_.df.read().take(&indices))
     }
 
-    pub fn take_with_series(&self, indices: &RbSeries) -> RbResult<Self> {
-        let binding = indices.series.read();
-        let idx = binding.idx().map_err(RbPolarsErr::from)?;
-        let df = self.df.read().take(idx).map_err(RbPolarsErr::from)?;
-        Ok(RbDataFrame::new(df))
+    pub fn gather_with_series(rb: &Ruby, self_: &Self, indices: &RbSeries) -> RbResult<Self> {
+        let idx_s = indices.series.read();
+        let indices = idx_s.idx().map_err(RbPolarsErr::from)?;
+        rb.enter_polars_df(|| self_.df.read().take(indices))
     }
 
     pub fn replace(&self, column: String, new_col: &RbSeries) -> RbResult<()> {

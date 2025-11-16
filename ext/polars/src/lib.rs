@@ -124,10 +124,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("get_column", method!(RbDataFrame::get_column, 1))?;
     class.define_method("select", method!(RbDataFrame::select, 1))?;
-    class.define_method("take", method!(RbDataFrame::gather, 1))?;
+    class.define_method("gather", method!(RbDataFrame::gather, 1))?;
     class.define_method(
-        "take_with_series",
-        method!(RbDataFrame::take_with_series, 1),
+        "gather_with_series",
+        method!(RbDataFrame::gather_with_series, 1),
     )?;
     class.define_method("replace", method!(RbDataFrame::replace, 2))?;
     class.define_method("replace_column", method!(RbDataFrame::replace_column, 2))?;

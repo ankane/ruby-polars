@@ -502,10 +502,10 @@ module Polars
           if dtype == String
             return _from_rbdf(_df.select(item))
           elsif dtype == UInt32
-            return _from_rbdf(_df.take_with_series(item._s))
+            return _from_rbdf(_df.gather_with_series(item._s))
           elsif [UInt8, UInt16, UInt64, Int8, Int16, Int32, Int64].include?(dtype)
             return _from_rbdf(
-              _df.take_with_series(_pos_idxs(item, 0)._s)
+              _df.gather_with_series(_pos_idxs(item, 0)._s)
             )
           end
         end
