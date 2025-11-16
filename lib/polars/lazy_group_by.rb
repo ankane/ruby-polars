@@ -175,7 +175,71 @@ module Polars
       Utils.wrap_ldf(@lgb.tail(n))
     end
 
-    # def apply
-    # end
+    # Aggregate the groups into Series.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   ldf = Polars::DataFrame.new(
+    #     {
+    #       "a" => ["one", "two", "one", "two"],
+    #       "b" => [1, 2, 3, 4]
+    #     }
+    #   ).lazy
+    #   ldf.group_by("a", maintain_order: true).all.collect
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬───────────┐
+    #   # │ a   ┆ b         │
+    #   # │ --- ┆ ---       │
+    #   # │ str ┆ list[i64] │
+    #   # ╞═════╪═══════════╡
+    #   # │ one ┆ [1, 3]    │
+    #   # │ two ┆ [2, 4]    │
+    #   # └─────┴───────────┘
+    def all
+      agg(F.all)
+    end
+
+    # Return the number of rows in each group.
+    #
+    # @param name [String]
+    #   Assign a name to the resulting column; if unset, defaults to "len".
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new({"a" => ["Apple", "Apple", "Orange"], "b" => [1, nil, 2]})
+    #   lf.group_by("a").len.collect
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────┬─────┐
+    #   # │ a      ┆ len │
+    #   # │ ---    ┆ --- │
+    #   # │ str    ┆ u32 │
+    #   # ╞════════╪═════╡
+    #   # │ Apple  ┆ 2   │
+    #   # │ Orange ┆ 1   │
+    #   # └────────┴─────┘
+    #
+    # @example
+    #   lf.group_by("a").len(name: "n").collect
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────┬─────┐
+    #   # │ a      ┆ n   │
+    #   # │ ---    ┆ --- │
+    #   # │ str    ┆ u32 │
+    #   # ╞════════╪═════╡
+    #   # │ Apple  ┆ 2   │
+    #   # │ Orange ┆ 1   │
+    #   # └────────┴─────┘
+    def len(name: nil)
+      len_expr = F.len
+      if !name.nil?
+        len_expr = len_expr.alias(name)
+      end
+      agg(len_expr)
+    end
   end
 end
