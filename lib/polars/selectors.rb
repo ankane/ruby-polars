@@ -1036,8 +1036,17 @@ module Polars
 
     # Select all datetime columns, optionally filtering by time unit/zone.
     #
+    # @param time_unit ['ms', 'us', 'ns']
+    #   One (or more) of the allowed timeunit precision strings, "ms", "us", and "ns".
+    #   Omit to select columns with any valid timeunit.
+    # @param time_zone [String]
+    #   * One or more timezone strings, as defined in zoneinfo (to see valid options
+    #     run `import zoneinfo; zoneinfo.available_timezones()` for a full list).
+    #   * Set `nil` to select Datetime columns that do not have a timezone.
+    #   * Set "*" to select Datetime columns that have *any* timezone.
+    #
     # @return [Selector]
-    def self.datetime(time_unit = nil, time_zone: nil)
+    def self.datetime(time_unit = nil, time_zone: ["*", nil])
       if time_unit.nil?
         time_unit_lst = ["ms", "us", "ns"]
       else
@@ -1047,7 +1056,8 @@ module Polars
       if time_zone.nil?
         time_zone_lst = [nil]
       elsif time_zone
-        raise Todo
+        # TODO improve
+        time_zone_lst = time_zone.to_a
       end
 
       Selector._from_rbselector(RbSelector.datetime(time_unit_lst, time_zone_lst))
@@ -1187,6 +1197,10 @@ module Polars
     end
 
     # Select all duration columns, optionally filtering by time unit.
+    #
+    # @param time_unit ['ms', 'us', 'ns']
+    #   One (or more) of the allowed timeunit precision strings, "ms", "us", and "ns".
+    #   Omit to select columns with any valid timeunit.
     #
     # @return [Selector]
     def self.duration(time_unit = nil)
