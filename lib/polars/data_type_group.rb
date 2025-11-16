@@ -1,4 +1,5 @@
 module Polars
+  # @private
   class DataTypeGroup < Set
   end
 
