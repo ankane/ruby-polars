@@ -6,8 +6,8 @@ use crate::{RbErr, RbResult, RbSeries};
 
 impl RbSeries {
     pub fn scatter(&self, idx: &RbSeries, values: &RbSeries) -> RbResult<()> {
-        let mut s = self.series.borrow_mut();
-        match scatter(s.clone(), &idx.series.borrow(), &values.series.borrow()) {
+        let mut s = self.series.write();
+        match scatter(s.clone(), &idx.series.read(), &values.series.read()) {
             Ok(out) => {
                 *s = out;
                 Ok(())

@@ -10,14 +10,14 @@ use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
 
 impl RbSeries {
     pub fn struct_unnest(&self) -> RbResult<RbDataFrame> {
-        let binding = self.series.borrow();
+        let binding = self.series.read();
         let ca = binding.struct_().map_err(RbPolarsErr::from)?;
         let df: DataFrame = ca.clone().unnest();
         Ok(df.into())
     }
 
     pub fn struct_fields(&self) -> RbResult<Vec<String>> {
-        let binding = self.series.borrow();
+        let binding = self.series.read();
         let ca = binding.struct_().map_err(RbPolarsErr::from)?;
         Ok(ca
             .struct_fields()
@@ -27,15 +27,15 @@ impl RbSeries {
     }
 
     pub fn is_sorted_ascending_flag(&self) -> bool {
-        matches!(self.series.borrow().is_sorted_flag(), IsSorted::Ascending)
+        matches!(self.series.read().is_sorted_flag(), IsSorted::Ascending)
     }
 
     pub fn is_sorted_descending_flag(&self) -> bool {
-        matches!(self.series.borrow().is_sorted_flag(), IsSorted::Descending)
+        matches!(self.series.read().is_sorted_flag(), IsSorted::Descending)
     }
 
     pub fn can_fast_explode_flag(&self) -> bool {
-        match self.series.borrow().list() {
+        match self.series.read().list() {
             Err(_) => false,
             Ok(list) => list._can_fast_explode(),
         }
@@ -54,12 +54,12 @@ impl RbSeries {
     }
 
     pub fn estimated_size(&self) -> usize {
-        self.series.borrow().estimated_size()
+        self.series.read().estimated_size()
     }
 
     pub fn get_fmt(&self, index: usize, str_lengths: usize) -> String {
-        let val = format!("{}", self.series.borrow().get(index).unwrap());
-        if let DataType::String | DataType::Categorical(_, _) = self.series.borrow().dtype() {
+        let val = format!("{}", self.series.read().get(index).unwrap());
+        if let DataType::String | DataType::Categorical(_, _) = self.series.read().dtype() {
             let v_trunc = &val[..val
                 .char_indices()
                 .take(str_lengths)
@@ -77,9 +77,9 @@ impl RbSeries {
     }
 
     pub fn rechunk(&self, in_place: bool) -> Option<Self> {
-        let series = self.series.borrow_mut().rechunk();
+        let series = self.series.write().rechunk();
         if in_place {
-            *self.series.borrow_mut() = series;
+            *self.series.write() = series;
             None
         } else {
             Some(series.into())
@@ -87,7 +87,7 @@ impl RbSeries {
     }
 
     pub fn get_index(ruby: &Ruby, self_: &Self, index: usize) -> RbResult<Value> {
-        let binding = self_.series.borrow();
+        let binding = self_.series.read();
         let av = match binding.get(index) {
             Ok(v) => v,
             Err(PolarsError::OutOfBounds(err)) => {
@@ -122,47 +122,47 @@ impl RbSeries {
     }
 
     pub fn bitand(&self, other: &RbSeries) -> RbResult<Self> {
-        let out = (&*self.series.borrow() & &*other.series.borrow()).map_err(RbPolarsErr::from)?;
+        let out = (&*self.series.read() & &*other.series.read()).map_err(RbPolarsErr::from)?;
         Ok(out.into())
     }
 
     pub fn bitor(&self, other: &RbSeries) -> RbResult<Self> {
-        let out = (&*self.series.borrow() | &*other.series.borrow()).map_err(RbPolarsErr::from)?;
+        let out = (&*self.series.read() | &*other.series.read()).map_err(RbPolarsErr::from)?;
         Ok(out.into())
     }
 
     pub fn bitxor(&self, other: &RbSeries) -> RbResult<Self> {
-        let out = (&*self.series.borrow() ^ &*other.series.borrow()).map_err(RbPolarsErr::from)?;
+        let out = (&*self.series.read() ^ &*other.series.read()).map_err(RbPolarsErr::from)?;
         Ok(out.into())
     }
 
     pub fn chunk_lengths(&self) -> Vec<usize> {
-        self.series.borrow().chunk_lengths().collect()
+        self.series.read().chunk_lengths().collect()
     }
 
     pub fn name(&self) -> String {
-        self.series.borrow().name().to_string()
+        self.series.read().name().to_string()
     }
 
     pub fn rename(&self, name: String) {
-        self.series.borrow_mut().rename(name.into());
+        self.series.write().rename(name.into());
     }
 
     pub fn dtype(ruby: &Ruby, self_: &Self) -> Value {
-        Wrap(self_.series.borrow().dtype().clone()).into_value_with(ruby)
+        Wrap(self_.series.read().dtype().clone()).into_value_with(ruby)
     }
 
     pub fn inner_dtype(ruby: &Ruby, self_: &Self) -> Option<Value> {
         self_
             .series
-            .borrow()
+            .read()
             .dtype()
             .inner_dtype()
             .map(|dt| Wrap(dt.clone()).into_value_with(ruby))
     }
 
     pub fn set_sorted_flag(&self, descending: bool) -> Self {
-        let mut out = self.series.borrow().clone();
+        let mut out = self.series.read().clone();
         if descending {
             out.set_sorted_flag(IsSorted::Descending);
         } else {
@@ -172,12 +172,12 @@ impl RbSeries {
     }
 
     pub fn n_chunks(&self) -> usize {
-        self.series.borrow().n_chunks()
+        self.series.read().n_chunks()
     }
 
     pub fn append(ruby: &Ruby, self_: &Self, other: &RbSeries) -> RbResult<()> {
-        let mut binding = self_.series.borrow_mut();
-        let res = binding.append(&other.series.borrow());
+        let mut binding = self_.series.write();
+        let res = binding.append(&other.series.read());
         if let Err(e) = res {
             Err(Error::new(ruby.exception_runtime_error(), e.to_string()))
         } else {
@@ -187,8 +187,8 @@ impl RbSeries {
 
     pub fn extend(&self, other: &RbSeries) -> RbResult<()> {
         self.series
-            .borrow_mut()
-            .extend(&other.series.borrow())
+            .write()
+            .extend(&other.series.read())
             .map_err(RbPolarsErr::from)?;
         Ok(())
     }
@@ -199,20 +199,20 @@ impl RbSeries {
         index: usize,
         length: usize,
     ) -> RbResult<Self> {
-        if index >= self_.series.borrow().len() {
+        if index >= self_.series.read().len() {
             Err(Error::new(
                 ruby.exception_arg_error(),
                 "index is out of bounds",
             ))
         } else {
-            Ok(self_.series.borrow().new_from_index(index, length).into())
+            Ok(self_.series.read().new_from_index(index, length).into())
         }
     }
 
     pub fn filter(ruby: &Ruby, self_: &Self, filter: &RbSeries) -> RbResult<Self> {
-        let filter_series = &filter.series.borrow();
+        let filter_series = &filter.series.read();
         if let Ok(ca) = filter_series.bool() {
-            let series = self_.series.borrow().filter(ca).unwrap();
+            let series = self_.series.read().filter(ca).unwrap();
             Ok(series.into())
         } else {
             Err(Error::new(
@@ -225,7 +225,7 @@ impl RbSeries {
     pub fn sort(&self, descending: bool, nulls_last: bool, multithreaded: bool) -> RbResult<Self> {
         Ok(self
             .series
-            .borrow_mut()
+            .write()
             .sort(
                 SortOptions::default()
                     .with_order_descending(descending)
@@ -245,30 +245,30 @@ impl RbSeries {
     ) -> RbResult<RbDataFrame> {
         let out = self
             .series
-            .borrow()
+            .read()
             .value_counts(sort, parallel, name.into(), normalize)
             .map_err(RbPolarsErr::from)?;
         Ok(out.into())
     }
 
     pub fn slice(&self, offset: i64, length: Option<usize>) -> Self {
-        let length = length.unwrap_or_else(|| self.series.borrow().len());
-        self.series.borrow().slice(offset, length).into()
+        let length = length.unwrap_or_else(|| self.series.read().len());
+        self.series.read().slice(offset, length).into()
     }
 
     pub fn take_with_series(&self, indices: &RbSeries) -> RbResult<Self> {
-        let binding = indices.series.borrow();
+        let binding = indices.series.read();
         let idx = binding.idx().map_err(RbPolarsErr::from)?;
-        let take = self.series.borrow().take(idx).map_err(RbPolarsErr::from)?;
+        let take = self.series.read().take(idx).map_err(RbPolarsErr::from)?;
         Ok(RbSeries::new(take))
     }
 
     pub fn null_count(&self) -> RbResult<usize> {
-        Ok(self.series.borrow().null_count())
+        Ok(self.series.read().null_count())
     }
 
     pub fn has_nulls(&self) -> bool {
-        self.series.borrow().has_nulls()
+        self.series.read().has_nulls()
     }
 
     pub fn sample_n(
@@ -280,7 +280,7 @@ impl RbSeries {
     ) -> RbResult<Self> {
         let s = self
             .series
-            .borrow()
+            .read()
             .sample_n(n, with_replacement, shuffle, seed)
             .map_err(RbPolarsErr::from)?;
         Ok(s.into())
@@ -295,7 +295,7 @@ impl RbSeries {
     ) -> RbResult<Self> {
         let s = self
             .series
-            .borrow()
+            .read()
             .sample_frac(frac, with_replacement, shuffle, seed)
             .map_err(RbPolarsErr::from)?;
         Ok(s.into())
@@ -308,28 +308,28 @@ impl RbSeries {
         check_names: bool,
         null_equal: bool,
     ) -> bool {
-        if check_dtypes && (self.series.borrow().dtype() != other.series.borrow().dtype()) {
+        if check_dtypes && (self.series.read().dtype() != other.series.read().dtype()) {
             return false;
         }
-        if check_names && (self.series.borrow().name() != other.series.borrow().name()) {
+        if check_names && (self.series.read().name() != other.series.read().name()) {
             return false;
         }
         if null_equal {
-            self.series.borrow().equals_missing(&other.series.borrow())
+            self.series.read().equals_missing(&other.series.read())
         } else {
-            self.series.borrow().equals(&other.series.borrow())
+            self.series.read().equals(&other.series.read())
         }
     }
 
     pub fn not_(&self) -> RbResult<Self> {
-        let binding = self.series.borrow();
+        let binding = self.series.read();
         let bool = binding.bool().map_err(RbPolarsErr::from)?;
         Ok((!bool).into_series().into())
     }
 
     pub fn shrink_dtype(&self) -> RbResult<Self> {
         self.series
-            .borrow()
+            .read()
             .shrink_type()
             .map(Into::into)
             .map_err(RbPolarsErr::from)
@@ -337,7 +337,7 @@ impl RbSeries {
     }
 
     pub fn str_to_decimal_infer(&self, inference_length: usize) -> RbResult<Self> {
-        let s = self.series.borrow();
+        let s = self.series.read();
         let ca = s.str().map_err(RbPolarsErr::from)?;
         ca.to_decimal_infer(inference_length)
             .map(Into::into)
@@ -346,7 +346,7 @@ impl RbSeries {
     }
 
     pub fn str_json_decode(&self, infer_schema_length: Option<usize>) -> RbResult<Self> {
-        let lock = self.series.borrow();
+        let lock = self.series.read();
         lock.str()
             .map_err(RbPolarsErr::from)?
             .json_decode(None, infer_schema_length)
@@ -357,24 +357,24 @@ impl RbSeries {
     }
 
     pub fn to_s(&self) -> String {
-        format!("{}", self.series.borrow())
+        format!("{}", self.series.read())
     }
 
     pub fn len(&self) -> usize {
-        self.series.borrow().len()
+        self.series.read().len()
     }
 
     pub fn clone(&self) -> Self {
-        RbSeries::new(self.series.borrow().clone())
+        RbSeries::new(self.series.read().clone())
     }
 
     pub fn zip_with(&self, mask: &RbSeries, other: &RbSeries) -> RbResult<Self> {
-        let binding = mask.series.borrow();
+        let binding = mask.series.read();
         let mask = binding.bool().map_err(RbPolarsErr::from)?;
         let s = self
             .series
-            .borrow()
-            .zip_with(mask, &other.series.borrow())
+            .read()
+            .zip_with(mask, &other.series.read())
             .map_err(RbPolarsErr::from)?;
         Ok(RbSeries::new(s))
     }
@@ -387,44 +387,44 @@ impl RbSeries {
     ) -> RbResult<RbDataFrame> {
         let df = self
             .series
-            .borrow()
+            .read()
             .to_dummies(sep.as_deref(), drop_first, drop_nulls)
             .map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }
 
     pub fn n_unique(&self) -> RbResult<usize> {
-        let n = self.series.borrow().n_unique().map_err(RbPolarsErr::from)?;
+        let n = self.series.read().n_unique().map_err(RbPolarsErr::from)?;
         Ok(n)
     }
 
     pub fn floor(&self) -> RbResult<Self> {
-        let s = self.series.borrow().floor().map_err(RbPolarsErr::from)?;
+        let s = self.series.read().floor().map_err(RbPolarsErr::from)?;
         Ok(s.into())
     }
 
     pub fn shrink_to_fit(&self) {
-        self.series.borrow_mut().shrink_to_fit();
+        self.series.write().shrink_to_fit();
     }
 
     pub fn dot(&self, other: &RbSeries) -> RbResult<f64> {
         let out = self
             .series
-            .borrow()
-            .dot(&other.series.borrow())
+            .read()
+            .dot(&other.series.read())
             .map_err(RbPolarsErr::from)?;
         Ok(out)
     }
 
     pub fn skew(&self, bias: bool) -> RbResult<Option<f64>> {
-        let out = self.series.borrow().skew(bias).map_err(RbPolarsErr::from)?;
+        let out = self.series.read().skew(bias).map_err(RbPolarsErr::from)?;
         Ok(out)
     }
 
     pub fn kurtosis(&self, fisher: bool, bias: bool) -> RbResult<Option<f64>> {
         let out = self
             .series
-            .borrow()
+            .read()
             .kurtosis(fisher, bias)
             .map_err(RbPolarsErr::from)?;
         Ok(out)
@@ -433,9 +433,9 @@ impl RbSeries {
     pub fn cast(&self, dtype: Wrap<DataType>, strict: bool) -> RbResult<Self> {
         let dtype = dtype.0;
         let out = if strict {
-            self.series.borrow().strict_cast(&dtype)
+            self.series.read().strict_cast(&dtype)
         } else {
-            self.series.borrow().cast(&dtype)
+            self.series.read().cast(&dtype)
         };
         let out = out.map_err(RbPolarsErr::from)?;
         Ok(out.into())
@@ -443,7 +443,7 @@ impl RbSeries {
 
     pub fn get_chunks(ruby: &Ruby, self_: &Self) -> RbResult<RArray> {
         ruby.ary_try_from_iter(
-            flatten_series(&self_.series.borrow())
+            flatten_series(&self_.series.read())
                 .into_iter()
                 .map(|s| rb_modules::pl_utils().funcall::<_, _, Value>("wrap_s", (Self::new(s),))),
         )
@@ -459,17 +459,17 @@ impl RbSeries {
         };
         Ok(self
             .series
-            .borrow()
+            .read()
             .is_sorted(options)
             .map_err(RbPolarsErr::from)?)
     }
 
     pub fn clear(&self) -> Self {
-        self.series.borrow().clear().into()
+        self.series.read().clear().into()
     }
 
     pub fn time_unit(&self) -> Option<String> {
-        if let DataType::Datetime(tu, _) | DataType::Duration(tu) = self.series.borrow().dtype() {
+        if let DataType::Datetime(tu, _) | DataType::Duration(tu) = self.series.read().dtype() {
             Some(
                 match tu {
                     TimeUnit::Nanoseconds => "ns",
@@ -491,7 +491,7 @@ macro_rules! impl_set_with_mask {
             filter: &RbSeries,
             value: Option<$native>,
         ) -> PolarsResult<Series> {
-            let binding = filter.series.borrow();
+            let binding = filter.series.read();
             let mask = binding.bool()?;
             let ca = series.$cast()?;
             let new = ca.set(mask, value)?;
@@ -501,7 +501,7 @@ macro_rules! impl_set_with_mask {
         impl RbSeries {
             pub fn $name(&self, filter: &RbSeries, value: Option<$native>) -> RbResult<Self> {
                 let series =
-                    $name(&self.series.borrow(), filter, value).map_err(RbPolarsErr::from)?;
+                    $name(&self.series.read(), filter, value).map_err(RbPolarsErr::from)?;
                 Ok(Self::new(series))
             }
         }
@@ -525,7 +525,7 @@ impl RbSeries {
     pub fn extend_constant(&self, value: Wrap<AnyValue>, n: usize) -> RbResult<Self> {
         Ok(self
             .series
-            .borrow()
+            .read()
             .clone()
             .extend_constant(value.0, n)
             .map_err(RbPolarsErr::from)?

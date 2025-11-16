@@ -222,7 +222,7 @@ impl RbDataFrame {
 
         JsonWriter::new(file)
             .with_json_format(JsonFormat::Json)
-            .finish(&mut self.df.borrow_mut())
+            .finish(&mut self.df.write())
             .map_err(RbPolarsErr::from)?;
         Ok(())
     }
@@ -237,7 +237,7 @@ impl RbDataFrame {
         IpcStreamWriter::new(&mut buf)
             .with_compression(compression.0)
             .with_compat_level(compat_level.0)
-            .finish(&mut self.df.borrow_mut())
+            .finish(&mut self.df.write())
             .map_err(RbPolarsErr::from)?;
         Ok(())
     }
@@ -253,7 +253,7 @@ impl RbDataFrame {
         AvroWriter::new(&mut buf)
             .with_compression(compression.0)
             .with_name(name)
-            .finish(&mut self.df.borrow_mut())
+            .finish(&mut self.df.write())
             .map_err(RbPolarsErr::from)?;
         Ok(())
     }

@@ -6,7 +6,7 @@ use crate::dataframe::RbDataFrame;
 impl RbDataFrame {
     pub fn to_numo(&self) -> Option<Value> {
         let mut st = None;
-        for s in self.df.borrow().iter() {
+        for s in self.df.read().iter() {
             let dt_i = s.dtype();
             match st {
                 None => st = Some(dt_i.clone()),

@@ -1,3 +1,4 @@
+use parking_lot::RwLock;
 use polars::prelude::OptFlags;
 
 use super::RbOptFlags;
@@ -18,20 +19,20 @@ macro_rules! flag_getter_setters {
 
             pub fn no_optimizations(&self) {
                 $(if $clear {
-                    self.inner.borrow_mut().remove(OptFlags::$flag);
+                    self.inner.write().remove(OptFlags::$flag);
                 })+
             }
 
             pub fn copy(&self) -> Self {
-                Self { inner: self.inner.clone() }
+                Self { inner: RwLock::new(self.inner.read().clone()) }
             }
 
             $(
             pub fn $getter(&self) -> bool {
-                self.inner.borrow().contains(OptFlags::$flag)
+                self.inner.read().contains(OptFlags::$flag)
             }
             pub fn $setter(&self, value: bool) {
-                self.inner.borrow_mut().set(OptFlags::$flag, value)
+                self.inner.write().set(OptFlags::$flag, value)
             }
             )+
         }

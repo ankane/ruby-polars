@@ -11,27 +11,27 @@ mod scatter;
 pub(crate) use import::import_schema_rbcapsule;
 
 use magnus::{DataTypeFunctions, RArray, Ruby, TypedData, gc, prelude::*};
+use parking_lot::RwLock;
 use polars::prelude::*;
-use std::cell::RefCell;
 
 use crate::{ObjectValue, RbResult};
 
 #[derive(TypedData)]
 #[magnus(class = "Polars::RbSeries", mark)]
 pub struct RbSeries {
-    pub series: RefCell<Series>,
+    pub series: RwLock<Series>,
 }
 
 impl From<Series> for RbSeries {
     fn from(series: Series) -> Self {
-        RbSeries::new(series)
+        Self::new(series)
     }
 }
 
 impl RbSeries {
     pub fn new(series: Series) -> Self {
         RbSeries {
-            series: RefCell::new(series),
+            series: RwLock::new(series),
         }
     }
 }
@@ -39,7 +39,7 @@ impl RbSeries {
 pub fn to_series(rs: RArray) -> RbResult<Vec<Series>> {
     let mut series = Vec::new();
     for item in rs.into_iter() {
-        series.push(<&RbSeries>::try_convert(item)?.series.borrow().clone());
+        series.push(<&RbSeries>::try_convert(item)?.series.read().clone());
     }
     Ok(series)
 }
@@ -68,7 +68,7 @@ impl DataTypeFunctions for RbSeries {
         // this is not ideal, as objects will not be marked if unable to borrow
         // this should never happen, but log for now to avoid panic,
         // as most series will not use Object datatype
-        if let Ok(s) = &self.series.try_borrow() {
+        if let Some(s) = &self.series.try_read() {
             mark_series(marker, s);
         } else {
             eprintln!("[polars] Could not borrow!");

@@ -8,7 +8,7 @@ use crate::{RbDataFrame, RbResult};
 impl RbLazyFrame {
     pub fn collect_concurrently(ruby: &Ruby, self_: &Self) -> RbResult<RbInProcessQuery> {
         let ipq = ruby.enter_polars(|| {
-            let ldf = self_.ldf.borrow().clone();
+            let ldf = self_.ldf.read().clone();
             ldf.collect_concurrently()
         })?;
         Ok(RbInProcessQuery { ipq })

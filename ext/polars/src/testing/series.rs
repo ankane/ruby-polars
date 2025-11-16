@@ -15,8 +15,8 @@ pub fn assert_series_equal_rb(
     abs_tol: f64,
     categorical_as_str: bool,
 ) -> RbResult<()> {
-    let left_series = &left.series.borrow();
-    let right_series = &right.series.borrow();
+    let left_series = &left.series.read();
+    let right_series = &right.series.read();
 
     let options = SeriesEqualOptions {
         check_dtypes,

@@ -92,7 +92,7 @@ pub fn apply_lambda_unknown<'a>(
         //     ));
         } else if out.respond_to("_s", true)? {
             let rb_rbseries: Obj<RbSeries> = out.funcall("_s", ()).unwrap();
-            let series = rb_rbseries.series.borrow();
+            let series = rb_rbseries.series.read();
             let dt = series.dtype();
             return Ok((
                 ruby.obj_wrap(RbSeries::new(
@@ -245,7 +245,7 @@ pub fn apply_lambda_with_list_out_type(
                 Ok(val) => match val.funcall::<_, _, Value>("_s", ()) {
                     Ok(val) => Obj::<RbSeries>::try_convert(val)
                         .ok()
-                        .map(|ps| ps.series.borrow().clone()),
+                        .map(|ps| ps.series.read().clone()),
                     Err(_) => {
                         if val.is_nil() {
                             None

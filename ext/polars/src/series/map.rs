@@ -14,7 +14,7 @@ impl RbSeries {
         return_dtype: Option<Wrap<DataType>>,
         skip_nulls: bool,
     ) -> RbResult<Self> {
-        let series = &self.series.borrow();
+        let series = &self.series.read();
 
         if return_dtype.is_none() {
             polars_warn!(

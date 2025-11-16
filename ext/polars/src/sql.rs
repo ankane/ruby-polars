@@ -1,13 +1,20 @@
+use parking_lot::RwLock;
 use polars::sql::SQLContext;
-use std::cell::RefCell;
 
 use crate::{RbLazyFrame, RbPolarsErr, RbResult};
 
 #[magnus::wrap(class = "Polars::RbSQLContext")]
 #[repr(transparent)]
-#[derive(Clone)]
 pub struct RbSQLContext {
-    pub context: RefCell<SQLContext>,
+    pub context: RwLock<SQLContext>,
+}
+
+impl Clone for RbSQLContext {
+    fn clone(&self) -> Self {
+        Self {
+            context: RwLock::new(self.context.read().clone()),
+        }
+    }
 }
 
 #[allow(
@@ -19,30 +26,28 @@ impl RbSQLContext {
     #[allow(clippy::new_without_default)]
     pub fn new() -> RbSQLContext {
         RbSQLContext {
-            context: SQLContext::new().into(),
+            context: RwLock::new(SQLContext::new()),
         }
     }
 
     pub fn execute(&self, query: String) -> RbResult<RbLazyFrame> {
         Ok(self
             .context
-            .borrow_mut()
+            .write()
             .execute(&query)
             .map_err(RbPolarsErr::from)?
             .into())
     }
 
     pub fn get_tables(&self) -> RbResult<Vec<String>> {
-        Ok(self.context.borrow().get_tables())
+        Ok(self.context.read().get_tables())
     }
 
     pub fn register(&self, name: String, lf: &RbLazyFrame) {
-        self.context
-            .borrow_mut()
-            .register(&name, lf.ldf.borrow().clone())
+        self.context.write().register(&name, lf.ldf.read().clone())
     }
 
     pub fn unregister(&self, name: String) {
-        self.context.borrow_mut().unregister(&name)
+        self.context.write().unregister(&name)
     }
 }

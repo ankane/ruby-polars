@@ -1684,6 +1684,7 @@ dependencies = [
  "magnus",
  "mimalloc",
  "num-traits",
+ "parking_lot",
  "polars 0.52.0",
  "polars-arrow",
  "polars-compute",

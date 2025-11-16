@@ -77,17 +77,17 @@ pub(crate) fn get_rbseq(obj: Value) -> RbResult<(RArray, usize)> {
 
 pub(crate) fn get_df(obj: Value) -> RbResult<DataFrame> {
     let rbdf = obj.funcall::<_, _, &RbDataFrame>("_df", ())?;
-    Ok(rbdf.df.borrow().clone())
+    Ok(rbdf.df.read().clone())
 }
 
 pub(crate) fn get_lf(obj: Value) -> RbResult<LazyFrame> {
     let rbdf = obj.funcall::<_, _, &RbLazyFrame>("_ldf", ())?;
-    Ok(rbdf.ldf.borrow().clone())
+    Ok(rbdf.ldf.read().clone())
 }
 
 pub(crate) fn get_series(obj: Value) -> RbResult<Series> {
     let rbs = obj.funcall::<_, _, &RbSeries>("_s", ())?;
-    Ok(rbs.series.borrow().clone())
+    Ok(rbs.series.read().clone())
 }
 
 pub(crate) fn to_series(s: RbSeries) -> Value {

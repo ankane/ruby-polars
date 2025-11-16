@@ -26,7 +26,7 @@ fn to_series(v: Value, name: &str) -> PolarsResult<Series> {
         }
     };
     // Finally get the actual Series
-    Ok(rb_rbseries.series.borrow().clone())
+    Ok(rb_rbseries.series.read().clone())
 }
 
 pub fn binary_lambda(lambda: Value, a: Series, b: Series) -> PolarsResult<Option<Series>> {
@@ -64,7 +64,7 @@ pub fn binary_lambda(lambda: Value, a: Series, b: Series) -> PolarsResult<Option
     };
 
     // Finally get the actual Series
-    let binding = rbseries.series.borrow();
+    let binding = rbseries.series.read();
     Ok(Some(binding.clone()))
 }
 

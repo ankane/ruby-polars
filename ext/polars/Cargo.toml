@@ -18,6 +18,7 @@ chrono = "0.4"
 either = "1.8"
 magnus = { version = "0.8", features = ["chrono"] }
 num-traits = "0.2"
+parking_lot = "0.12"
 polars-compute = "=0.52.0"
 polars-core = "=0.52.0"
 polars-dtype = "=0.52.0"

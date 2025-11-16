@@ -6,8 +6,8 @@ impl RbSeries {
     pub fn eq(&self, rhs: &RbSeries) -> RbResult<Self> {
         let s = self
             .series
-            .borrow()
-            .equal(&*rhs.series.borrow())
+            .read()
+            .equal(&*rhs.series.read())
             .map_err(RbPolarsErr::from)?;
         Ok(Self::new(s.into_series()))
     }
@@ -15,8 +15,8 @@ impl RbSeries {
     pub fn neq(&self, rhs: &RbSeries) -> RbResult<Self> {
         let s = self
             .series
-            .borrow()
-            .not_equal(&*rhs.series.borrow())
+            .read()
+            .not_equal(&*rhs.series.read())
             .map_err(RbPolarsErr::from)?;
         Ok(Self::new(s.into_series()))
     }
@@ -24,8 +24,8 @@ impl RbSeries {
     pub fn gt(&self, rhs: &RbSeries) -> RbResult<Self> {
         let s = self
             .series
-            .borrow()
-            .gt(&*rhs.series.borrow())
+            .read()
+            .gt(&*rhs.series.read())
             .map_err(RbPolarsErr::from)?;
         Ok(Self::new(s.into_series()))
     }
@@ -33,8 +33,8 @@ impl RbSeries {
     pub fn gt_eq(&self, rhs: &RbSeries) -> RbResult<Self> {
         let s = self
             .series
-            .borrow()
-            .gt_eq(&*rhs.series.borrow())
+            .read()
+            .gt_eq(&*rhs.series.read())
             .map_err(RbPolarsErr::from)?;
         Ok(Self::new(s.into_series()))
     }
@@ -42,8 +42,8 @@ impl RbSeries {
     pub fn lt(&self, rhs: &RbSeries) -> RbResult<Self> {
         let s = self
             .series
-            .borrow()
-            .lt(&*rhs.series.borrow())
+            .read()
+            .lt(&*rhs.series.read())
             .map_err(RbPolarsErr::from)?;
         Ok(Self::new(s.into_series()))
     }
@@ -51,8 +51,8 @@ impl RbSeries {
     pub fn lt_eq(&self, rhs: &RbSeries) -> RbResult<Self> {
         let s = self
             .series
-            .borrow()
-            .lt_eq(&*rhs.series.borrow())
+            .read()
+            .lt_eq(&*rhs.series.read())
             .map_err(RbPolarsErr::from)?;
         Ok(Self::new(s.into_series()))
     }
@@ -62,7 +62,7 @@ macro_rules! impl_eq_num {
     ($name:ident, $type:ty) => {
         impl RbSeries {
             pub fn $name(&self, rhs: $type) -> RbResult<Self> {
-                let s = self.series.borrow().equal(rhs).map_err(RbPolarsErr::from)?;
+                let s = self.series.read().equal(rhs).map_err(RbPolarsErr::from)?;
                 Ok(RbSeries::new(s.into_series()))
             }
         }
@@ -86,7 +86,7 @@ macro_rules! impl_neq_num {
             pub fn $name(&self, rhs: $type) -> RbResult<Self> {
                 let s = self
                     .series
-                    .borrow()
+                    .read()
                     .not_equal(rhs)
                     .map_err(RbPolarsErr::from)?;
                 Ok(RbSeries::new(s.into_series()))
@@ -110,7 +110,7 @@ macro_rules! impl_gt_num {
     ($name:ident, $type:ty) => {
         impl RbSeries {
             pub fn $name(&self, rhs: $type) -> RbResult<Self> {
-                let s = self.series.borrow().gt(rhs).map_err(RbPolarsErr::from)?;
+                let s = self.series.read().gt(rhs).map_err(RbPolarsErr::from)?;
                 Ok(RbSeries::new(s.into_series()))
             }
         }
@@ -132,7 +132,7 @@ macro_rules! impl_gt_eq_num {
     ($name:ident, $type:ty) => {
         impl RbSeries {
             pub fn $name(&self, rhs: $type) -> RbResult<Self> {
-                let s = self.series.borrow().gt_eq(rhs).map_err(RbPolarsErr::from)?;
+                let s = self.series.read().gt_eq(rhs).map_err(RbPolarsErr::from)?;
                 Ok(RbSeries::new(s.into_series()))
             }
         }
@@ -154,7 +154,7 @@ macro_rules! impl_lt_num {
     ($name:ident, $type:ty) => {
         impl RbSeries {
             pub fn $name(&self, rhs: $type) -> RbResult<RbSeries> {
-                let s = self.series.borrow().lt(rhs).map_err(RbPolarsErr::from)?;
+                let s = self.series.read().lt(rhs).map_err(RbPolarsErr::from)?;
                 Ok(RbSeries::new(s.into_series()))
             }
         }
@@ -176,7 +176,7 @@ macro_rules! impl_lt_eq_num {
     ($name:ident, $type:ty) => {
         impl RbSeries {
             pub fn $name(&self, rhs: $type) -> RbResult<Self> {
-                let s = self.series.borrow().lt_eq(rhs).map_err(RbPolarsErr::from)?;
+                let s = self.series.read().lt_eq(rhs).map_err(RbPolarsErr::from)?;
                 Ok(RbSeries::new(s.into_series()))
             }
         }
@@ -198,7 +198,7 @@ impl RbSeries {
     pub fn eq_str(&self, rhs: String) -> RbResult<Self> {
         let s = self
             .series
-            .borrow()
+            .read()
             .equal(rhs.as_str())
             .map_err(RbPolarsErr::from)?;
         Ok(RbSeries::new(s.into_series()))
@@ -207,7 +207,7 @@ impl RbSeries {
     pub fn neq_str(&self, rhs: String) -> RbResult<Self> {
         let s = self
             .series
-            .borrow()
+            .read()
             .not_equal(rhs.as_str())
             .map_err(RbPolarsErr::from)?;
         Ok(RbSeries::new(s.into_series()))
@@ -216,7 +216,7 @@ impl RbSeries {
     pub fn gt_str(&self, rhs: String) -> RbResult<Self> {
         let s = self
             .series
-            .borrow()
+            .read()
             .gt(rhs.as_str())
             .map_err(RbPolarsErr::from)?;
         Ok(RbSeries::new(s.into_series()))
@@ -225,7 +225,7 @@ impl RbSeries {
     pub fn gt_eq_str(&self, rhs: String) -> RbResult<Self> {
         let s = self
             .series
-            .borrow()
+            .read()
             .gt_eq(rhs.as_str())
             .map_err(RbPolarsErr::from)?;
         Ok(RbSeries::new(s.into_series()))
@@ -234,7 +234,7 @@ impl RbSeries {
     pub fn lt_str(&self, rhs: String) -> RbResult<Self> {
         let s = self
             .series
-            .borrow()
+            .read()
             .lt(rhs.as_str())
             .map_err(RbPolarsErr::from)?;
         Ok(RbSeries::new(s.into_series()))
@@ -243,7 +243,7 @@ impl RbSeries {
     pub fn lt_eq_str(&self, rhs: String) -> RbResult<Self> {
         let s = self
             .series
-            .borrow()
+            .read()
             .lt_eq(rhs.as_str())
             .map_err(RbPolarsErr::from)?;
         Ok(RbSeries::new(s.into_series()))

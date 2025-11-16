@@ -20,19 +20,19 @@ impl RbDataFrame {
     pub fn init(columns: RArray) -> RbResult<Self> {
         let mut cols = Vec::new();
         for i in columns.into_iter() {
-            cols.push(<&RbSeries>::try_convert(i)?.series.borrow().clone().into());
+            cols.push(<&RbSeries>::try_convert(i)?.series.read().clone().into());
         }
         let df = DataFrame::new(cols).map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
     }
 
     pub fn estimated_size(&self) -> usize {
-        self.df.borrow().estimated_size()
+        self.df.read().estimated_size()
     }
 
     pub fn dtype_strings(&self) -> Vec<String> {
         self.df
-            .borrow()
+            .read()
             .get_columns()
             .iter()
             .map(|s| format!("{}", s.dtype()))
@@ -40,43 +40,43 @@ impl RbDataFrame {
     }
 
     pub fn add(rb: &Ruby, self_: &Self, s: &RbSeries) -> RbResult<Self> {
-        rb.enter_polars_df(|| &*self_.df.borrow() + &*s.series.borrow())
+        rb.enter_polars_df(|| &*self_.df.read() + &*s.series.read())
     }
 
     pub fn sub(rb: &Ruby, self_: &Self, s: &RbSeries) -> RbResult<Self> {
-        rb.enter_polars_df(|| &*self_.df.borrow() - &*s.series.borrow())
+        rb.enter_polars_df(|| &*self_.df.read() - &*s.series.read())
     }
 
     pub fn div(rb: &Ruby, self_: &Self, s: &RbSeries) -> RbResult<Self> {
-        rb.enter_polars_df(|| &*self_.df.borrow() / &*s.series.borrow())
+        rb.enter_polars_df(|| &*self_.df.read() / &*s.series.read())
     }
 
     pub fn mul(rb: &Ruby, self_: &Self, s: &RbSeries) -> RbResult<Self> {
-        rb.enter_polars_df(|| &*self_.df.borrow() * &*s.series.borrow())
+        rb.enter_polars_df(|| &*self_.df.read() * &*s.series.read())
     }
 
     pub fn rem(rb: &Ruby, self_: &Self, s: &RbSeries) -> RbResult<Self> {
-        rb.enter_polars_df(|| &*self_.df.borrow() % &*s.series.borrow())
+        rb.enter_polars_df(|| &*self_.df.read() % &*s.series.read())
     }
 
     pub fn add_df(rb: &Ruby, self_: &Self, s: &Self) -> RbResult<Self> {
-        rb.enter_polars_df(|| &*self_.df.borrow() + &*s.df.borrow())
+        rb.enter_polars_df(|| &*self_.df.read() + &*s.df.read())
     }
 
     pub fn sub_df(rb: &Ruby, self_: &Self, s: &Self) -> RbResult<Self> {
-        rb.enter_polars_df(|| &*self_.df.borrow() - &*s.df.borrow())
+        rb.enter_polars_df(|| &*self_.df.read() - &*s.df.read())
     }
 
     pub fn div_df(rb: &Ruby, self_: &Self, s: &Self) -> RbResult<Self> {
-        rb.enter_polars_df(|| &*self_.df.borrow() / &*s.df.borrow())
+        rb.enter_polars_df(|| &*self_.df.read() / &*s.df.read())
     }
 
     pub fn mul_df(rb: &Ruby, self_: &Self, s: &Self) -> RbResult<Self> {
-        rb.enter_polars_df(|| &*self_.df.borrow() * &*s.df.borrow())
+        rb.enter_polars_df(|| &*self_.df.read() * &*s.df.read())
     }
 
     pub fn rem_df(rb: &Ruby, self_: &Self, s: &Self) -> RbResult<Self> {
-        rb.enter_polars_df(|| &*self_.df.borrow() % &*s.df.borrow())
+        rb.enter_polars_df(|| &*self_.df.read() % &*s.df.read())
     }
 
     pub fn sample_n(
@@ -90,8 +90,8 @@ impl RbDataFrame {
         rb.enter_polars_df(|| {
             self_
                 .df
-                .borrow()
-                .sample_n(&n.series.borrow(), with_replacement, shuffle, seed)
+                .read()
+                .sample_n(&n.series.read(), with_replacement, shuffle, seed)
         })
     }
 
@@ -106,31 +106,31 @@ impl RbDataFrame {
         rb.enter_polars_df(|| {
             self_
                 .df
-                .borrow()
-                .sample_frac(&frac.series.borrow(), with_replacement, shuffle, seed)
+                .read()
+                .sample_frac(&frac.series.read(), with_replacement, shuffle, seed)
         })
     }
 
     pub fn rechunk(rb: &Ruby, self_: &Self) -> RbResult<Self> {
         rb.enter_polars_df(|| {
-            let mut df = self_.df.borrow_mut().clone();
+            let mut df = self_.df.write().clone();
             df.as_single_chunk_par();
             Ok(df)
         })
     }
 
     pub fn as_str(&self) -> String {
-        format!("{}", self.df.borrow())
+        format!("{}", self.df.read())
     }
 
     pub fn get_columns(&self) -> RArray {
-        let cols = self.df.borrow().get_columns().to_vec();
+        let cols = self.df.read().get_columns().to_vec();
         to_rbseries(cols)
     }
 
     pub fn columns(&self) -> Vec<String> {
         self.df
-            .borrow()
+            .read()
             .get_column_names()
             .iter()
             .map(|v| v.to_string())
@@ -139,7 +139,7 @@ impl RbDataFrame {
 
     pub fn set_column_names(&self, names: Vec<String>) -> RbResult<()> {
         self.df
-            .borrow_mut()
+            .write()
             .set_column_names(&names)
             .map_err(RbPolarsErr::from)?;
         Ok(())
@@ -149,36 +149,32 @@ impl RbDataFrame {
         ruby.ary_from_iter(
             self_
                 .df
-                .borrow()
+                .read()
                 .iter()
                 .map(|s| Wrap(s.dtype().clone()).into_value_with(ruby)),
         )
     }
 
     pub fn n_chunks(&self) -> usize {
-        self.df.borrow().first_col_n_chunks()
+        self.df.read().first_col_n_chunks()
     }
 
     pub fn shape(&self) -> (usize, usize) {
-        self.df.borrow().shape()
+        self.df.read().shape()
     }
 
     pub fn height(&self) -> usize {
-        self.df.borrow().height()
+        self.df.read().height()
     }
 
     pub fn width(&self) -> usize {
-        self.df.borrow().width()
+        self.df.read().width()
     }
 
     pub fn hstack(&self, columns: RArray) -> RbResult<Self> {
         let columns = to_series(columns)?;
         let columns = columns.into_iter().map(Into::into).collect::<Vec<_>>();
-        let df = self
-            .df
-            .borrow()
-            .hstack(&columns)
-            .map_err(RbPolarsErr::from)?;
+        let df = self.df.read().hstack(&columns).map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }
 
@@ -186,7 +182,7 @@ impl RbDataFrame {
         let columns = to_series(columns)?;
         let columns = columns.into_iter().map(Into::into).collect::<Vec<_>>();
         self.df
-            .borrow_mut()
+            .write()
             .hstack_mut(&columns)
             .map_err(RbPolarsErr::from)?;
         Ok(())
@@ -195,24 +191,24 @@ impl RbDataFrame {
     pub fn vstack(&self, df: &RbDataFrame) -> RbResult<Self> {
         let df = self
             .df
-            .borrow()
-            .vstack(&df.df.borrow())
+            .read()
+            .vstack(&df.df.read())
             .map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }
 
     pub fn vstack_mut(&self, df: &RbDataFrame) -> RbResult<()> {
         self.df
-            .borrow_mut()
-            .vstack_mut(&df.df.borrow())
+            .write()
+            .vstack_mut(&df.df.read())
             .map_err(RbPolarsErr::from)?;
         Ok(())
     }
 
     pub fn extend(&self, df: &RbDataFrame) -> RbResult<()> {
         self.df
-            .borrow_mut()
-            .extend(&df.df.borrow())
+            .write()
+            .extend(&df.df.read())
             .map_err(RbPolarsErr::from)?;
         Ok(())
     }
@@ -220,7 +216,7 @@ impl RbDataFrame {
     pub fn drop_in_place(&self, name: String) -> RbResult<RbSeries> {
         let s = self
             .df
-            .borrow_mut()
+            .write()
             .drop_in_place(&name)
             .map_err(RbPolarsErr::from)?;
         let s = s.take_materialized_series();
@@ -228,7 +224,7 @@ impl RbDataFrame {
     }
 
     pub fn to_series(&self, index: isize) -> RbResult<RbSeries> {
-        let df = &self.df.borrow();
+        let df = &self.df.read();
 
         let index_adjusted = if index < 0 {
             df.width().checked_sub(index.unsigned_abs())
@@ -246,13 +242,13 @@ impl RbDataFrame {
     }
 
     pub fn get_column_index(&self, name: String) -> Option<usize> {
-        self.df.borrow().get_column_index(&name)
+        self.df.read().get_column_index(&name)
     }
 
     pub fn get_column(&self, name: String) -> RbResult<RbSeries> {
         let series = self
             .df
-            .borrow()
+            .read()
             .column(&name)
             .map(|s| RbSeries::new(s.as_materialized_series().clone()))
             .map_err(RbPolarsErr::from)?;
@@ -262,7 +258,7 @@ impl RbDataFrame {
     pub fn select(&self, selection: Vec<String>) -> RbResult<Self> {
         let df = self
             .df
-            .borrow()
+            .read()
             .select(selection)
             .map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
@@ -270,37 +266,37 @@ impl RbDataFrame {
 
     pub fn gather(&self, indices: Vec<IdxSize>) -> RbResult<Self> {
         let indices = IdxCa::from_vec("".into(), indices);
-        let df = self.df.borrow().take(&indices).map_err(RbPolarsErr::from)?;
+        let df = self.df.read().take(&indices).map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
     }
 
     pub fn take_with_series(&self, indices: &RbSeries) -> RbResult<Self> {
-        let binding = indices.series.borrow();
+        let binding = indices.series.read();
         let idx = binding.idx().map_err(RbPolarsErr::from)?;
-        let df = self.df.borrow().take(idx).map_err(RbPolarsErr::from)?;
+        let df = self.df.read().take(idx).map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
     }
 
     pub fn replace(&self, column: String, new_col: &RbSeries) -> RbResult<()> {
         self.df
-            .borrow_mut()
-            .replace(&column, new_col.series.borrow().clone())
+            .write()
+            .replace(&column, new_col.series.read().clone())
             .map_err(RbPolarsErr::from)?;
         Ok(())
     }
 
     pub fn replace_column(&self, index: usize, new_col: &RbSeries) -> RbResult<()> {
         self.df
-            .borrow_mut()
-            .replace_column(index, new_col.series.borrow().clone())
+            .write()
+            .replace_column(index, new_col.series.read().clone())
             .map_err(RbPolarsErr::from)?;
         Ok(())
     }
 
     pub fn insert_column(&self, index: usize, new_col: &RbSeries) -> RbResult<()> {
         self.df
-            .borrow_mut()
-            .insert_column(index, new_col.series.borrow().clone())
+            .write()
+            .insert_column(index, new_col.series.read().clone())
             .map_err(RbPolarsErr::from)?;
         Ok(())
     }
@@ -308,51 +304,47 @@ impl RbDataFrame {
     pub fn slice(&self, offset: i64, length: Option<usize>) -> Self {
         let df = self
             .df
-            .borrow()
-            .slice(offset, length.unwrap_or_else(|| self.df.borrow().height()));
+            .read()
+            .slice(offset, length.unwrap_or_else(|| self.df.read().height()));
         df.into()
     }
 
     pub fn head(&self, length: Option<usize>) -> Self {
-        self.df.borrow().head(length).into()
+        self.df.read().head(length).into()
     }
 
     pub fn tail(&self, length: Option<usize>) -> Self {
-        self.df.borrow().tail(length).into()
+        self.df.read().tail(length).into()
     }
 
     pub fn is_unique(rb: &Ruby, self_: &Self) -> RbResult<RbSeries> {
-        rb.enter_polars_series(|| self_.df.borrow().is_unique())
+        rb.enter_polars_series(|| self_.df.read().is_unique())
     }
 
     pub fn is_duplicated(&self) -> RbResult<RbSeries> {
-        let mask = self
-            .df
-            .borrow()
-            .is_duplicated()
-            .map_err(RbPolarsErr::from)?;
+        let mask = self.df.read().is_duplicated().map_err(RbPolarsErr::from)?;
         Ok(mask.into_series().into())
     }
 
     pub fn equals(&self, other: &RbDataFrame, null_equal: bool) -> bool {
         if null_equal {
-            self.df.borrow().equals_missing(&other.df.borrow())
+            self.df.read().equals_missing(&other.df.read())
         } else {
-            self.df.borrow().equals(&other.df.borrow())
+            self.df.read().equals(&other.df.read())
         }
     }
 
     pub fn with_row_index(&self, name: String, offset: Option<IdxSize>) -> RbResult<Self> {
         let df = self
             .df
-            .borrow()
+            .read()
             .with_row_index(name.into(), offset)
             .map_err(RbPolarsErr::from)?;
         Ok(df.into())
     }
 
     pub fn clone(&self) -> Self {
-        RbDataFrame::new(self.df.borrow().clone())
+        RbDataFrame::new(self.df.read().clone())
     }
 
     pub fn unpivot(
@@ -369,7 +361,7 @@ impl RbDataFrame {
             variable_name: variable_name.map(|s| s.into()),
         };
 
-        let df = self.df.borrow().unpivot2(args).map_err(RbPolarsErr::from)?;
+        let df = self.df.read().unpivot2(args).map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
     }
 
@@ -387,7 +379,7 @@ impl RbDataFrame {
         let fun = if maintain_order { pivot_stable } else { pivot };
         let agg_expr = aggregate_expr.map(|aggregate_expr| aggregate_expr.inner.clone());
         let df = fun(
-            &self.df.borrow(),
+            &self.df.read(),
             on,
             index,
             values,
@@ -407,16 +399,16 @@ impl RbDataFrame {
         include_key: bool,
     ) -> RbResult<RArray> {
         let out = if maintain_order {
-            self_.df.borrow().partition_by_stable(by, include_key)
+            self_.df.read().partition_by_stable(by, include_key)
         } else {
-            self_.df.borrow().partition_by(by, include_key)
+            self_.df.read().partition_by(by, include_key)
         }
         .map_err(RbPolarsErr::from)?;
         Ok(ruby.ary_from_iter(out.into_iter().map(RbDataFrame::new)))
     }
 
     pub fn lazy(&self) -> RbLazyFrame {
-        self.df.borrow().clone().lazy().into()
+        self.df.read().clone().lazy().into()
     }
 
     pub fn to_dummies(
@@ -427,7 +419,7 @@ impl RbDataFrame {
         drop_nulls: bool,
     ) -> RbResult<Self> {
         let df = match columns {
-            Some(cols) => self.df.borrow().columns_to_dummies(
+            Some(cols) => self.df.read().columns_to_dummies(
                 cols.iter().map(|x| x as &str).collect(),
                 separator.as_deref(),
                 drop_first,
@@ -435,7 +427,7 @@ impl RbDataFrame {
             ),
             None => self
                 .df
-                .borrow()
+                .read()
                 .to_dummies(separator.as_deref(), drop_first, drop_nulls),
         }
         .map_err(RbPolarsErr::from)?;
@@ -443,7 +435,7 @@ impl RbDataFrame {
     }
 
     pub fn null_count(&self) -> Self {
-        let df = self.df.borrow().null_count();
+        let df = self.df.read().null_count();
         df.into()
     }
 
@@ -454,7 +446,7 @@ impl RbDataFrame {
         output_type: Option<Wrap<DataType>>,
         inference_size: usize,
     ) -> RbResult<(Value, bool)> {
-        let df = &self_.df.borrow();
+        let df = &self_.df.read();
 
         let output_type = output_type.map(|dt| dt.0);
         let out = match output_type {
@@ -503,7 +495,7 @@ impl RbDataFrame {
     }
 
     pub fn shrink_to_fit(&self) {
-        self.df.borrow_mut().shrink_to_fit();
+        self.df.write().shrink_to_fit();
     }
 
     pub fn hash_rows(&self, k0: u64, k1: u64, k2: u64, k3: u64) -> RbResult<RbSeries> {
@@ -511,7 +503,7 @@ impl RbDataFrame {
         let hb = PlSeedableRandomStateQuality::seed_from_u64(seed);
         let hash = self
             .df
-            .borrow_mut()
+            .write()
             .hash_rows(Some(hb))
             .map_err(RbPolarsErr::from)?;
         Ok(hash.into_series().into())
@@ -527,7 +519,7 @@ impl RbDataFrame {
         };
         Ok(self
             .df
-            .borrow_mut()
+            .write()
             .transpose(keep_names_as.as_deref(), new_col_names)
             .map_err(RbPolarsErr::from)?
             .into())
@@ -542,11 +534,11 @@ impl RbDataFrame {
     ) -> RbResult<Self> {
         let out = if stable {
             self.df
-                .borrow()
+                .read()
                 .upsample_stable(by, &index_column, Duration::parse(&every))
         } else {
             self.df
-                .borrow()
+                .read()
                 .upsample(by, &index_column, Duration::parse(&every))
         };
         let out = out.map_err(RbPolarsErr::from)?;
@@ -554,11 +546,11 @@ impl RbDataFrame {
     }
 
     pub fn to_struct(&self, name: String) -> RbSeries {
-        let s = self.df.borrow().clone().into_struct(name.into());
+        let s = self.df.read().clone().into_struct(name.into());
         s.into_series().into()
     }
 
     pub fn clear(&self) -> Self {
-        self.df.borrow().clear().into()
+        self.df.read().clear().into()
     }
 }

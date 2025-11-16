@@ -2,31 +2,31 @@ use crate::{RbPolarsErr, RbResult, RbSeries};
 
 impl RbSeries {
     pub fn add(&self, other: &RbSeries) -> RbResult<Self> {
-        Ok((&*self.series.borrow() + &*other.series.borrow())
+        Ok((&*self.series.read() + &*other.series.read())
             .map(Into::into)
             .map_err(RbPolarsErr::from)?)
     }
 
     pub fn sub(&self, other: &RbSeries) -> RbResult<Self> {
-        Ok((&*self.series.borrow() - &*other.series.borrow())
+        Ok((&*self.series.read() - &*other.series.read())
             .map(Into::into)
             .map_err(RbPolarsErr::from)?)
     }
 
     pub fn mul(&self, other: &RbSeries) -> RbResult<Self> {
-        Ok((&*self.series.borrow() * &*other.series.borrow())
+        Ok((&*self.series.read() * &*other.series.read())
             .map(Into::into)
             .map_err(RbPolarsErr::from)?)
     }
 
     pub fn div(&self, other: &RbSeries) -> RbResult<Self> {
-        Ok((&*self.series.borrow() / &*other.series.borrow())
+        Ok((&*self.series.read() / &*other.series.read())
             .map(Into::into)
             .map_err(RbPolarsErr::from)?)
     }
 
     pub fn rem(&self, other: &RbSeries) -> RbResult<Self> {
-        Ok((&*self.series.borrow() % &*other.series.borrow())
+        Ok((&*self.series.read() % &*other.series.read())
             .map(Into::into)
             .map_err(RbPolarsErr::from)?)
     }
@@ -36,7 +36,7 @@ macro_rules! impl_arithmetic {
     ($name:ident, $type:ty, $operand:tt) => {
         impl RbSeries {
             pub fn $name(&self, other: $type) -> RbResult<Self> {
-                Ok(RbSeries::new(&*self.series.borrow() $operand other))
+                Ok(RbSeries::new(&*self.series.read() $operand other))
             }
         }
     };

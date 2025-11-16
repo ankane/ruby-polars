@@ -34,7 +34,7 @@ fn infer_and_finish<'a, A: ApplyLambda<'a>>(
             .map(|ca| ca.into_series().into())
     } else if out.respond_to("_s", true)? {
         let rb_rbseries: &RbSeries = out.funcall("_s", ()).unwrap();
-        let series = rb_rbseries.series.borrow();
+        let series = rb_rbseries.series.read();
         let dt = series.dtype();
         applyer
             .apply_lambda_with_list_out_type(lambda, null_count, &series, dt)
@@ -153,8 +153,8 @@ where
     T: IntoValue,
 {
     let out: Value = lambda.funcall("call", (in_val,))?;
-    let py_series: Obj<RbSeries> = out.funcall("_s", ())?;
-    let tmp = py_series.series.borrow();
+    let rb_series: Obj<RbSeries> = out.funcall("_s", ())?;
+    let tmp = rb_series.series.read();
     Ok(tmp.clone())
 }
 

@@ -14,7 +14,7 @@ impl RbDataFrame {
 
         Ok(self
             .df
-            .borrow_mut()
+            .write()
             .serialize_into_writer(&mut writer)
             .map_err(RbPolarsErr::from)?)
     }

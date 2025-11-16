@@ -104,7 +104,7 @@ fn lfs_to_plans(lfs: RArray) -> RbResult<Vec<DslPlan>> {
     let lfs = lfs.typecheck::<Obj<RbLazyFrame>>()?;
     Ok(lfs
         .into_iter()
-        .map(|lf| lf.ldf.borrow().logical_plan.clone())
+        .map(|lf| lf.ldf.read().logical_plan.clone())
         .collect())
 }
 
@@ -116,7 +116,7 @@ pub fn collect_all(
 ) -> RbResult<RArray> {
     let plans = lfs_to_plans(lfs)?;
     let dfs = ruby.enter_polars(|| {
-        LazyFrame::collect_all_with_engine(plans, engine.0, optflags.inner.clone().into_inner())
+        LazyFrame::collect_all_with_engine(plans, engine.0, optflags.clone().inner.into_inner())
     })?;
     Ok(ruby.ary_from_iter(dfs.into_iter().map(Into::<RbDataFrame>::into)))
 }
@@ -380,7 +380,7 @@ pub fn lit(value: Value, allow_object: bool, is_scalar: bool) -> RbResult<RbExpr
             Ok(dsl::lit(unsafe { v.as_slice() }).into())
         }
     } else if let Ok(series) = Obj::<RbSeries>::try_convert(value) {
-        let s = series.series.borrow();
+        let s = series.series.read();
         if is_scalar {
             let av = s
                 .get(0)

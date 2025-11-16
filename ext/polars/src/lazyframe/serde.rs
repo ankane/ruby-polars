@@ -18,7 +18,7 @@ impl RbLazyFrame {
         let file = get_file_like(rb_f, true)?;
         let writer = BufWriter::new(file);
         self.ldf
-            .borrow()
+            .read()
             .logical_plan
             .serialize_versioned(writer, Default::default())
             .map_err(to_rb_err)
@@ -27,7 +27,7 @@ impl RbLazyFrame {
     pub fn serialize_json(&self, rb_f: Value) -> RbResult<()> {
         let file = get_file_like(rb_f, true)?;
         let writer = BufWriter::new(file);
-        serde_json::to_writer(writer, &self.ldf.borrow().logical_plan)
+        serde_json::to_writer(writer, &self.ldf.read().logical_plan)
             .map_err(|err| ComputeError::new_err(err.to_string()))
     }
 

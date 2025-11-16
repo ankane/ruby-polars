@@ -6,29 +6,43 @@ mod sink;
 
 pub use exitable::RbInProcessQuery;
 use magnus::{TryConvert, Value};
+use parking_lot::RwLock;
 use polars::prelude::{Engine, LazyFrame, OptFlags};
 pub use sink::SinkTarget;
-use std::cell::RefCell;
 
 use crate::prelude::Wrap;
 use crate::{RbResult, RbValueError};
 
 #[magnus::wrap(class = "Polars::RbLazyFrame")]
-#[derive(Clone)]
 pub struct RbLazyFrame {
-    pub ldf: RefCell<LazyFrame>,
+    pub ldf: RwLock<LazyFrame>,
 }
 
-#[magnus::wrap(class = "Polars::RbOptFlags")]
-#[derive(Clone)]
-pub struct RbOptFlags {
-    pub inner: RefCell<OptFlags>,
+impl Clone for RbLazyFrame {
+    fn clone(&self) -> Self {
+        Self {
+            ldf: RwLock::new(self.ldf.read().clone()),
+        }
+    }
 }
 
 impl From<LazyFrame> for RbLazyFrame {
     fn from(ldf: LazyFrame) -> Self {
         RbLazyFrame {
-            ldf: RefCell::new(ldf),
+            ldf: RwLock::new(ldf),
+        }
+    }
+}
+
+#[magnus::wrap(class = "Polars::RbOptFlags")]
+pub struct RbOptFlags {
+    pub inner: RwLock<OptFlags>,
+}
+
+impl Clone for RbOptFlags {
+    fn clone(&self) -> Self {
+        Self {
+            inner: RwLock::new(*self.inner.read()),
         }
     }
 }
@@ -36,7 +50,7 @@ impl From<LazyFrame> for RbLazyFrame {
 impl From<OptFlags> for RbOptFlags {
     fn from(inner: OptFlags) -> Self {
         RbOptFlags {
-            inner: RefCell::new(inner),
+            inner: RwLock::new(inner),
         }
     }
 }

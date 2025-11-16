@@ -5,27 +5,27 @@ mod io;
 mod serde;
 
 use magnus::{DataTypeFunctions, TypedData, gc};
+use parking_lot::RwLock;
 use polars::prelude::*;
-use std::cell::RefCell;
 
 use crate::series::mark_series;
 
 #[derive(TypedData)]
 #[magnus(class = "Polars::RbDataFrame", mark)]
 pub struct RbDataFrame {
-    pub df: RefCell<DataFrame>,
+    pub df: RwLock<DataFrame>,
 }
 
 impl From<DataFrame> for RbDataFrame {
     fn from(df: DataFrame) -> Self {
-        RbDataFrame::new(df)
+        Self::new(df)
     }
 }
 
 impl RbDataFrame {
     pub fn new(df: DataFrame) -> Self {
         RbDataFrame {
-            df: RefCell::new(df),
+            df: RwLock::new(df),
         }
     }
 }
@@ -36,7 +36,7 @@ impl DataTypeFunctions for RbDataFrame {
         // currently, this should only happen for write_* methods,
         // which should refuse to write Object datatype, and therefore be safe,
         // since GC will not have a chance to run
-        if let Ok(df) = self.df.try_borrow() {
+        if let Some(df) = self.df.try_read() {
             for column in df.get_columns() {
                 if let DataType::Object(_) = column.dtype() {
                     match column {

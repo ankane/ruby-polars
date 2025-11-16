@@ -11,7 +11,7 @@ use crate::series::RbSeries;
 impl RbSeries {
     /// Convert this Series to a Numo array.
     pub fn to_numo(&self) -> RbResult<Value> {
-        series_to_numo(&self.series.borrow())
+        series_to_numo(&self.series.read())
     }
 }
 

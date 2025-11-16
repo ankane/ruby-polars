@@ -8,7 +8,7 @@ impl RbSeries {
     /// Convert this Series to a Ruby array.
     /// This operation copies data.
     pub fn to_a(&self) -> Value {
-        let series = &self.series.borrow();
+        let series = &self.series.read();
 
         fn to_a_recursive(series: &Series) -> Value {
             let ruby = Ruby::get().unwrap();

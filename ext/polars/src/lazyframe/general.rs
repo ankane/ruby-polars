@@ -264,7 +264,7 @@ impl RbLazyFrame {
 
     pub fn describe_plan(&self) -> RbResult<String> {
         self.ldf
-            .borrow()
+            .read()
             .describe_plan()
             .map_err(RbPolarsErr::from)
             .map_err(Into::into)
@@ -273,26 +273,26 @@ impl RbLazyFrame {
     pub fn describe_optimized_plan(&self) -> RbResult<String> {
         let result = self
             .ldf
-            .borrow()
+            .read()
             .describe_optimized_plan()
             .map_err(RbPolarsErr::from)?;
         Ok(result)
     }
 
     pub fn describe_plan_tree(rb: &Ruby, self_: &Self) -> RbResult<String> {
-        rb.enter_polars(|| self_.ldf.borrow().describe_plan_tree())
+        rb.enter_polars(|| self_.ldf.read().describe_plan_tree())
     }
 
     pub fn describe_optimized_plan_tree(rb: &Ruby, self_: &Self) -> RbResult<String> {
-        rb.enter_polars(|| self_.ldf.borrow().describe_optimized_plan_tree())
+        rb.enter_polars(|| self_.ldf.read().describe_optimized_plan_tree())
     }
 
     pub fn to_dot(rb: &Ruby, self_: &Self, optimized: bool) -> RbResult<String> {
-        rb.enter_polars(|| self_.ldf.borrow().to_dot(optimized))
+        rb.enter_polars(|| self_.ldf.read().to_dot(optimized))
     }
 
     pub fn to_dot_streaming_phys(rb: &Ruby, self_: &Self, optimized: bool) -> RbResult<String> {
-        rb.enter_polars(|| self_.ldf.borrow().to_dot_streaming_phys(optimized))
+        rb.enter_polars(|| self_.ldf.read().to_dot_streaming_phys(optimized))
     }
 
     pub fn sort(
@@ -303,7 +303,7 @@ impl RbLazyFrame {
         maintain_order: bool,
         multithreaded: bool,
     ) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         ldf.sort(
             [&by_column],
             SortMultipleOptions {
@@ -325,7 +325,7 @@ impl RbLazyFrame {
         maintain_order: bool,
         multithreaded: bool,
     ) -> RbResult<Self> {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let exprs = rb_exprs_to_exprs(by)?;
         Ok(ldf
             .sort_by_exprs(
@@ -342,7 +342,7 @@ impl RbLazyFrame {
     }
 
     pub fn top_k(&self, k: IdxSize, by: RArray, reverse: Vec<bool>) -> RbResult<Self> {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let exprs = rb_exprs_to_exprs(by)?;
         Ok(ldf
             .top_k(
@@ -354,7 +354,7 @@ impl RbLazyFrame {
     }
 
     pub fn bottom_k(&self, k: IdxSize, by: RArray, reverse: Vec<bool>) -> RbResult<Self> {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let exprs = rb_exprs_to_exprs(by)?;
         Ok(ldf
             .bottom_k(
@@ -366,19 +366,19 @@ impl RbLazyFrame {
     }
 
     pub fn cache(&self) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         ldf.cache().into()
     }
 
     pub fn with_optimizations(&self, optflags: &RbOptFlags) -> Self {
-        let ldf = self.ldf.borrow().clone();
-        ldf.with_optimizations(optflags.inner.clone().into_inner())
+        let ldf = self.ldf.read().clone();
+        ldf.with_optimizations(optflags.clone().inner.into_inner())
             .into()
     }
 
     pub fn profile(rb: &Ruby, self_: &Self) -> RbResult<(RbDataFrame, RbDataFrame)> {
         let (df, time_df) = rb.enter_polars(|| {
-            let ldf = self_.ldf.borrow().clone();
+            let ldf = self_.ldf.read().clone();
             ldf.profile()
         })?;
         Ok((df.into(), time_df.into()))
@@ -386,7 +386,7 @@ impl RbLazyFrame {
 
     pub fn collect(rb: &Ruby, self_: &Self, engine: Wrap<Engine>) -> RbResult<RbDataFrame> {
         rb.enter_polars_df(|| {
-            let ldf = self_.ldf.borrow().clone();
+            let ldf = self_.ldf.read().clone();
             ldf.collect_with_engine(engine.0)
         })
     }
@@ -431,7 +431,7 @@ impl RbLazyFrame {
             }
         };
 
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         match target {
             SinkTarget::File(target) => {
                 ldf.sink_parquet(target, options, cloud_options, sink_options.0)
@@ -472,7 +472,7 @@ impl RbLazyFrame {
             }
         };
 
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         match target {
             SinkTarget::File(target) => {
                 ldf.sink_ipc(target, options, cloud_options, sink_options.0)
@@ -541,7 +541,7 @@ impl RbLazyFrame {
             }
         };
 
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         match target {
             SinkTarget::File(target) => {
                 ldf.sink_csv(target, options, cloud_options, sink_options.0)
@@ -575,7 +575,7 @@ impl RbLazyFrame {
             }
         };
 
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         match target {
             SinkTarget::File(path) => ldf.sink_json(path, options, cloud_options, sink_options.0),
         }
@@ -585,29 +585,29 @@ impl RbLazyFrame {
     }
 
     pub fn filter(&self, predicate: &RbExpr) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         ldf.filter(predicate.inner.clone()).into()
     }
 
     pub fn remove(&self, predicate: &RbExpr) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         ldf.remove(predicate.inner.clone()).into()
     }
 
     pub fn select(&self, exprs: RArray) -> RbResult<Self> {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let exprs = rb_exprs_to_exprs(exprs)?;
         Ok(ldf.select(exprs).into())
     }
 
     pub fn select_seq(&self, exprs: RArray) -> RbResult<Self> {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let exprs = rb_exprs_to_exprs(exprs)?;
         Ok(ldf.select_seq(exprs).into())
     }
 
     pub fn group_by(&self, by: RArray, maintain_order: bool) -> RbResult<RbLazyGroupBy> {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let by = rb_exprs_to_exprs(by)?;
         let lazy_gb = if maintain_order {
             ldf.group_by_stable(by)
@@ -626,7 +626,7 @@ impl RbLazyFrame {
         by: RArray,
     ) -> RbResult<RbLazyGroupBy> {
         let closed_window = closed.0;
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let by = rb_exprs_to_exprs(by)?;
         let lazy_gb = ldf.rolling(
             index_column.inner.clone(),
@@ -657,7 +657,7 @@ impl RbLazyFrame {
     ) -> RbResult<RbLazyGroupBy> {
         let closed_window = closed.0;
         let by = rb_exprs_to_exprs(by)?;
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let lazy_gb = ldf.group_by_dynamic(
             index_column.inner.clone(),
             by,
@@ -699,8 +699,8 @@ impl RbLazyFrame {
         } else {
             JoinCoalesce::KeepColumns
         };
-        let ldf = self.ldf.borrow().clone();
-        let other = other.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
+        let other = other.ldf.read().clone();
         let left_on = left_on.inner.clone();
         let right_on = right_on.inner.clone();
         Ok(ldf
@@ -749,8 +749,8 @@ impl RbLazyFrame {
             Some(true) => JoinCoalesce::CoalesceColumns,
             Some(false) => JoinCoalesce::KeepColumns,
         };
-        let ldf = self.ldf.borrow().clone();
-        let other = other.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
+        let other = other.ldf.read().clone();
         let left_on = rb_exprs_to_exprs(left_on)?;
         let right_on = rb_exprs_to_exprs(right_on)?;
 
@@ -772,8 +772,8 @@ impl RbLazyFrame {
     }
 
     pub fn join_where(&self, other: &Self, predicates: RArray, suffix: String) -> RbResult<Self> {
-        let ldf = self.ldf.borrow().clone();
-        let other = other.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
+        let other = other.ldf.read().clone();
 
         let predicates = rb_exprs_to_exprs(predicates)?;
 
@@ -786,32 +786,32 @@ impl RbLazyFrame {
     }
 
     pub fn with_column(&self, expr: &RbExpr) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         ldf.with_column(expr.inner.clone()).into()
     }
 
     pub fn with_columns(&self, exprs: RArray) -> RbResult<Self> {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         Ok(ldf.with_columns(rb_exprs_to_exprs(exprs)?).into())
     }
 
     pub fn with_columns_seq(&self, exprs: RArray) -> RbResult<Self> {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         Ok(ldf.with_columns_seq(rb_exprs_to_exprs(exprs)?).into())
     }
 
     pub fn rename(&self, existing: Vec<String>, new: Vec<String>, strict: bool) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         ldf.rename(existing, new, strict).into()
     }
 
     pub fn reverse(&self) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         ldf.reverse().into()
     }
 
     pub fn shift(&self, n: &RbExpr, fill_value: Option<&RbExpr>) -> Self {
-        let lf = self.ldf.borrow().clone();
+        let lf = self.ldf.read().clone();
         let out = match fill_value {
             Some(v) => lf.shift_and_fill(n.inner.clone(), v.inner.clone()),
             None => lf.shift(n.inner.clone()),
@@ -820,68 +820,64 @@ impl RbLazyFrame {
     }
 
     pub fn fill_nan(&self, fill_value: &RbExpr) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         ldf.fill_nan(fill_value.inner.clone()).into()
     }
 
     pub fn min(&self) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let out = ldf.min();
         out.into()
     }
 
     pub fn max(&self) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let out = ldf.max();
         out.into()
     }
 
     pub fn sum(&self) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let out = ldf.sum();
         out.into()
     }
 
     pub fn mean(&self) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let out = ldf.mean();
         out.into()
     }
 
     pub fn std(&self, ddof: u8) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let out = ldf.std(ddof);
         out.into()
     }
 
     pub fn var(&self, ddof: u8) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let out = ldf.var(ddof);
         out.into()
     }
 
     pub fn median(&self) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let out = ldf.median();
         out.into()
     }
 
     pub fn quantile(&self, quantile: &RbExpr, interpolation: Wrap<QuantileMethod>) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let out = ldf.quantile(quantile.inner.clone(), interpolation.0);
         out.into()
     }
 
     pub fn explode(&self, subset: &RbSelector) -> Self {
-        self.ldf
-            .borrow()
-            .clone()
-            .explode(subset.inner.clone())
-            .into()
+        self.ldf.read().clone().explode(subset.inner.clone()).into()
     }
 
     pub fn null_count(&self) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         ldf.null_count().into()
     }
 
@@ -891,7 +887,7 @@ impl RbLazyFrame {
         subset: Option<&RbSelector>,
         keep: Wrap<UniqueKeepStrategy>,
     ) -> RbResult<Self> {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         let subset = subset.map(|e| e.inner.clone());
         Ok(match maintain_order {
             true => ldf.unique_stable_generic(subset, keep.0),
@@ -902,7 +898,7 @@ impl RbLazyFrame {
 
     pub fn drop_nans(&self, subset: Option<&RbSelector>) -> Self {
         self.ldf
-            .borrow()
+            .read()
             .clone()
             .drop_nans(subset.map(|e| e.inner.clone()))
             .into()
@@ -910,19 +906,19 @@ impl RbLazyFrame {
 
     pub fn drop_nulls(&self, subset: Option<&RbSelector>) -> Self {
         self.ldf
-            .borrow()
+            .read()
             .clone()
             .drop_nulls(subset.map(|e| e.inner.clone()))
             .into()
     }
 
     pub fn slice(&self, offset: i64, len: Option<IdxSize>) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         ldf.slice(offset, len.unwrap_or(IdxSize::MAX)).into()
     }
 
     pub fn tail(&self, n: IdxSize) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         ldf.tail(n).into()
     }
 
@@ -940,17 +936,17 @@ impl RbLazyFrame {
             variable_name: variable_name.map(|s| s.into()),
         };
 
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         Ok(ldf.unpivot(args).into())
     }
 
     pub fn with_row_index(&self, name: String, offset: Option<IdxSize>) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         ldf.with_row_index(&name, offset).into()
     }
 
     pub fn drop(&self, columns: &RbSelector) -> Self {
-        self.ldf.borrow().clone().drop(columns.inner.clone()).into()
+        self.ldf.read().clone().drop(columns.inner.clone()).into()
     }
 
     pub fn cast(&self, rb_dtypes: RHash, strict: bool) -> RbResult<Self> {
@@ -961,21 +957,21 @@ impl RbLazyFrame {
         })?;
         let mut cast_map = PlHashMap::with_capacity(dtypes.len());
         cast_map.extend(dtypes.iter().map(|(k, v)| (k.as_ref(), v.clone())));
-        Ok(self.ldf.borrow().clone().cast(cast_map, strict).into())
+        Ok(self.ldf.read().clone().cast(cast_map, strict).into())
     }
 
     pub fn cast_all(&self, dtype: Wrap<DataType>, strict: bool) -> Self {
-        self.ldf.borrow().clone().cast_all(dtype.0, strict).into()
+        self.ldf.read().clone().cast_all(dtype.0, strict).into()
     }
 
     pub fn clone(&self) -> Self {
-        self.ldf.borrow().clone().into()
+        self.ldf.read().clone().into()
     }
 
     pub fn collect_schema(ruby: &Ruby, self_: &Self) -> RbResult<RHash> {
         let schema = self_
             .ldf
-            .borrow_mut()
+            .write()
             .collect_schema()
             .map_err(RbPolarsErr::from)?;
 
@@ -993,7 +989,7 @@ impl RbLazyFrame {
 
     pub fn unnest(&self, columns: &RbSelector, separator: Option<String>) -> Self {
         self.ldf
-            .borrow()
+            .read()
             .clone()
             .unnest(
                 columns.inner.clone(),
@@ -1003,16 +999,16 @@ impl RbLazyFrame {
     }
 
     pub fn count(&self) -> Self {
-        let ldf = self.ldf.borrow().clone();
+        let ldf = self.ldf.read().clone();
         ldf.count().into()
     }
 
     pub fn merge_sorted(&self, other: &Self, key: String) -> RbResult<Self> {
         let out = self
             .ldf
-            .borrow()
+            .read()
             .clone()
-            .merge_sorted(other.ldf.borrow().clone(), &key)
+            .merge_sorted(other.ldf.read().clone(), &key)
             .map_err(RbPolarsErr::from)?;
         Ok(out.into())
     }
@@ -1065,7 +1061,7 @@ impl RbLazyFrame {
 
         let out = self
             .ldf
-            .borrow()
+            .read()
             .clone()
             .hint(HintIR::Sorted(sorted.into()))
             .map_err(RbPolarsErr::from)?;

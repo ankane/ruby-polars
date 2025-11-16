@@ -8,14 +8,14 @@ use crate::interop::arrow::to_ruby::dataframe_to_stream;
 impl RbDataFrame {
     pub fn row_tuple(ruby: &Ruby, self_: &Self, idx: i64) -> Value {
         let idx = if idx < 0 {
-            (self_.df.borrow().height() as i64 + idx) as usize
+            (self_.df.read().height() as i64 + idx) as usize
         } else {
             idx as usize
         };
         ruby.ary_from_iter(
             self_
                 .df
-                .borrow()
+                .read()
                 .get_columns()
                 .iter()
                 .map(|s| match s.dtype() {
@@ -31,11 +31,11 @@ impl RbDataFrame {
 
     pub fn row_tuples(ruby: &Ruby, self_: &Self) -> Value {
         let df = &self_.df;
-        ruby.ary_from_iter((0..df.borrow().height()).map(|idx| {
+        ruby.ary_from_iter((0..df.read().height()).map(|idx| {
             ruby.ary_from_iter(
                 self_
                     .df
-                    .borrow()
+                    .read()
                     .get_columns()
                     .iter()
                     .map(|s| match s.dtype() {
@@ -51,7 +51,7 @@ impl RbDataFrame {
     }
 
     pub fn __arrow_c_stream__(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
-        self_.df.borrow_mut().align_chunks();
-        dataframe_to_stream(&self_.df.borrow(), ruby)
+        self_.df.write().align_chunks();
+        dataframe_to_stream(&self_.df.read(), ruby)
     }
 }

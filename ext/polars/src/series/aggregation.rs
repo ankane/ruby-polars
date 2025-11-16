@@ -11,7 +11,7 @@ fn scalar_to_rb(scalar: RbResult<Scalar>) -> RbResult<Value> {
 
 impl RbSeries {
     pub fn any(&self, ignore_nulls: bool) -> RbResult<Option<bool>> {
-        let binding = self.series.borrow();
+        let binding = self.series.read();
         let s = binding.bool().map_err(RbPolarsErr::from)?;
         Ok(if ignore_nulls {
             Some(s.any())
@@ -21,7 +21,7 @@ impl RbSeries {
     }
 
     pub fn all(&self, ignore_nulls: bool) -> RbResult<Option<bool>> {
-        let binding = self.series.borrow();
+        let binding = self.series.read();
         let s = binding.bool().map_err(RbPolarsErr::from)?;
         Ok(if ignore_nulls {
             Some(s.all())
@@ -31,18 +31,18 @@ impl RbSeries {
     }
 
     pub fn arg_max(&self) -> Option<usize> {
-        self.series.borrow().arg_max()
+        self.series.read().arg_max()
     }
 
     pub fn arg_min(&self) -> Option<usize> {
-        self.series.borrow().arg_min()
+        self.series.read().arg_min()
     }
 
     pub fn max(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
         Ok(Wrap(
             self_
                 .series
-                .borrow()
+                .read()
                 .max_reduce()
                 .map_err(RbPolarsErr::from)?
                 .as_any_value(),
@@ -51,11 +51,11 @@ impl RbSeries {
     }
 
     pub fn mean(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
-        match self_.series.borrow().dtype() {
+        match self_.series.read().dtype() {
             DataType::Boolean => Ok(Wrap(
                 self_
                     .series
-                    .borrow()
+                    .read()
                     .cast(&DataType::UInt8)
                     .unwrap()
                     .mean_reduce()
@@ -67,22 +67,22 @@ impl RbSeries {
             dt if dt.is_temporal() => Ok(Wrap(
                 self_
                     .series
-                    .borrow()
+                    .read()
                     .mean_reduce()
                     .map_err(to_rb_err)?
                     .as_any_value(),
             )
             .into_value_with(ruby)),
-            _ => Ok(self_.series.borrow().mean().into_value_with(ruby)),
+            _ => Ok(self_.series.read().mean().into_value_with(ruby)),
         }
     }
 
     pub fn median(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
-        match self_.series.borrow().dtype() {
+        match self_.series.read().dtype() {
             DataType::Boolean => Ok(Wrap(
                 self_
                     .series
-                    .borrow()
+                    .read()
                     .cast(&DataType::UInt8)
                     .unwrap()
                     .median_reduce()
@@ -94,13 +94,13 @@ impl RbSeries {
             dt if dt.is_temporal() => Ok(Wrap(
                 self_
                     .series
-                    .borrow()
+                    .read()
                     .median_reduce()
                     .map_err(RbPolarsErr::from)?
                     .as_any_value(),
             )
             .into_value_with(ruby)),
-            _ => Ok(self_.series.borrow().median().into_value_with(ruby)),
+            _ => Ok(self_.series.read().median().into_value_with(ruby)),
         }
     }
 
@@ -108,7 +108,7 @@ impl RbSeries {
         Ok(Wrap(
             self_
                 .series
-                .borrow()
+                .read()
                 .min_reduce()
                 .map_err(RbPolarsErr::from)?
                 .as_any_value(),
@@ -124,7 +124,7 @@ impl RbSeries {
     ) -> RbResult<Value> {
         let bind = self_
             .series
-            .borrow()
+            .read()
             .quantile_reduce(quantile, interpolation.0);
         let sc = bind.map_err(RbPolarsErr::from)?;
 
@@ -135,7 +135,7 @@ impl RbSeries {
         Ok(Wrap(
             self_
                 .series
-                .borrow()
+                .read()
                 .sum_reduce()
                 .map_err(RbPolarsErr::from)?
                 .as_any_value(),
@@ -144,17 +144,17 @@ impl RbSeries {
     }
 
     pub fn first(&self) -> RbResult<Value> {
-        scalar_to_rb(Ok(self.series.borrow().first()))
+        scalar_to_rb(Ok(self.series.read().first()))
     }
 
     pub fn last(&self) -> RbResult<Value> {
-        scalar_to_rb(Ok(self.series.borrow().last()))
+        scalar_to_rb(Ok(self.series.read().last()))
     }
 
     pub fn approx_n_unique(&self) -> RbResult<IdxSize> {
         Ok(self
             .series
-            .borrow()
+            .read()
             .approx_n_unique()
             .map_err(RbPolarsErr::from)?)
     }
@@ -162,7 +162,7 @@ impl RbSeries {
     pub fn bitwise_and(&self) -> RbResult<Value> {
         scalar_to_rb(Ok(self
             .series
-            .borrow()
+            .read()
             .and_reduce()
             .map_err(RbPolarsErr::from)?))
     }
@@ -170,7 +170,7 @@ impl RbSeries {
     pub fn bitwise_or(&self) -> RbResult<Value> {
         scalar_to_rb(Ok(self
             .series
-            .borrow()
+            .read()
             .or_reduce()
             .map_err(RbPolarsErr::from)?))
     }
@@ -178,7 +178,7 @@ impl RbSeries {
     pub fn bitwise_xor(&self) -> RbResult<Value> {
         scalar_to_rb(Ok(self
             .series
-            .borrow()
+            .read()
             .xor_reduce()
             .map_err(RbPolarsErr::from)?))
     }
