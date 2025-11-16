@@ -13,6 +13,7 @@ use crate::map::dataframe::{
 };
 use crate::prelude::strings_to_pl_smallstr;
 use crate::series::{to_rbseries, to_series};
+use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 
 impl RbDataFrame {
@@ -326,9 +327,8 @@ impl RbDataFrame {
         self.df.borrow().tail(length).into()
     }
 
-    pub fn is_unique(&self) -> RbResult<RbSeries> {
-        let mask = self.df.borrow().is_unique().map_err(RbPolarsErr::from)?;
-        Ok(mask.into_series().into())
+    pub fn is_unique(rb: &Ruby, self_: &Self) -> RbResult<RbSeries> {
+        rb.enter_polars_series(|| self_.df.borrow().is_unique())
     }
 
     pub fn is_duplicated(&self) -> RbResult<RbSeries> {
