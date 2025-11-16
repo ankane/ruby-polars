@@ -80,39 +80,43 @@ impl RbDataFrame {
     }
 
     pub fn sample_n(
-        &self,
+        rb: &Ruby,
+        self_: &Self,
         n: &RbSeries,
         with_replacement: bool,
         shuffle: bool,
         seed: Option<u64>,
     ) -> RbResult<Self> {
-        let df = self
-            .df
-            .borrow()
-            .sample_n(&n.series.borrow(), with_replacement, shuffle, seed)
-            .map_err(RbPolarsErr::from)?;
-        Ok(df.into())
+        rb.enter_polars_df(|| {
+            self_
+                .df
+                .borrow()
+                .sample_n(&n.series.borrow(), with_replacement, shuffle, seed)
+        })
     }
 
     pub fn sample_frac(
-        &self,
+        rb: &Ruby,
+        self_: &Self,
         frac: &RbSeries,
         with_replacement: bool,
         shuffle: bool,
         seed: Option<u64>,
     ) -> RbResult<Self> {
-        let df = self
-            .df
-            .borrow()
-            .sample_frac(&frac.series.borrow(), with_replacement, shuffle, seed)
-            .map_err(RbPolarsErr::from)?;
-        Ok(df.into())
+        rb.enter_polars_df(|| {
+            self_
+                .df
+                .borrow()
+                .sample_frac(&frac.series.borrow(), with_replacement, shuffle, seed)
+        })
     }
 
-    pub fn rechunk(&self) -> Self {
-        let mut df = self.df.borrow_mut().clone();
-        df.as_single_chunk_par();
-        df.into()
+    pub fn rechunk(rb: &Ruby, self_: &Self) -> RbResult<Self> {
+        rb.enter_polars_df(|| {
+            let mut df = self_.df.borrow_mut().clone();
+            df.as_single_chunk_par();
+            Ok(df)
+        })
     }
 
     pub fn as_str(&self) -> String {
