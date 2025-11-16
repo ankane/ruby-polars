@@ -972,8 +972,8 @@ impl RbLazyFrame {
         self.ldf.borrow().clone().into()
     }
 
-    pub fn collect_schema(ruby: &Ruby, rb_self: &Self) -> RbResult<RHash> {
-        let schema = rb_self
+    pub fn collect_schema(ruby: &Ruby, self_: &Self) -> RbResult<RHash> {
+        let schema = self_
             .ldf
             .borrow_mut()
             .collect_schema()

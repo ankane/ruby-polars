@@ -6,14 +6,14 @@ use crate::conversion::{ObjectValue, Wrap};
 use crate::interop::arrow::to_ruby::dataframe_to_stream;
 
 impl RbDataFrame {
-    pub fn row_tuple(ruby: &Ruby, rb_self: &Self, idx: i64) -> Value {
+    pub fn row_tuple(ruby: &Ruby, self_: &Self, idx: i64) -> Value {
         let idx = if idx < 0 {
-            (rb_self.df.borrow().height() as i64 + idx) as usize
+            (self_.df.borrow().height() as i64 + idx) as usize
         } else {
             idx as usize
         };
         ruby.ary_from_iter(
-            rb_self
+            self_
                 .df
                 .borrow()
                 .get_columns()
@@ -29,11 +29,11 @@ impl RbDataFrame {
         .as_value()
     }
 
-    pub fn row_tuples(ruby: &Ruby, rb_self: &Self) -> Value {
-        let df = &rb_self.df;
+    pub fn row_tuples(ruby: &Ruby, self_: &Self) -> Value {
+        let df = &self_.df;
         ruby.ary_from_iter((0..df.borrow().height()).map(|idx| {
             ruby.ary_from_iter(
-                rb_self
+                self_
                     .df
                     .borrow()
                     .get_columns()
@@ -50,8 +50,8 @@ impl RbDataFrame {
         .as_value()
     }
 
-    pub fn __arrow_c_stream__(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
-        rb_self.df.borrow_mut().align_chunks();
-        dataframe_to_stream(&rb_self.df.borrow(), ruby)
+    pub fn __arrow_c_stream__(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
+        self_.df.borrow_mut().align_chunks();
+        dataframe_to_stream(&self_.df.borrow(), ruby)
     }
 }

@@ -145,9 +145,9 @@ impl RbDataFrame {
         Ok(())
     }
 
-    pub fn dtypes(ruby: &Ruby, rb_self: &Self) -> RArray {
+    pub fn dtypes(ruby: &Ruby, self_: &Self) -> RArray {
         ruby.ary_from_iter(
-            rb_self
+            self_
                 .df
                 .borrow()
                 .iter()
@@ -401,15 +401,15 @@ impl RbDataFrame {
 
     pub fn partition_by(
         ruby: &Ruby,
-        rb_self: &Self,
+        self_: &Self,
         by: Vec<String>,
         maintain_order: bool,
         include_key: bool,
     ) -> RbResult<RArray> {
         let out = if maintain_order {
-            rb_self.df.borrow().partition_by_stable(by, include_key)
+            self_.df.borrow().partition_by_stable(by, include_key)
         } else {
-            rb_self.df.borrow().partition_by(by, include_key)
+            self_.df.borrow().partition_by(by, include_key)
         }
         .map_err(RbPolarsErr::from)?;
         Ok(ruby.ary_from_iter(out.into_iter().map(RbDataFrame::new)))
@@ -449,12 +449,12 @@ impl RbDataFrame {
 
     pub fn map_rows(
         ruby: &Ruby,
-        rb_self: &Self,
+        self_: &Self,
         lambda: Value,
         output_type: Option<Wrap<DataType>>,
         inference_size: usize,
     ) -> RbResult<(Value, bool)> {
-        let df = &rb_self.df.borrow();
+        let df = &self_.df.borrow();
 
         let output_type = output_type.map(|dt| dt.0);
         let out = match output_type {

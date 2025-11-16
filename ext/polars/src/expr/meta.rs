@@ -8,9 +8,9 @@ impl RbExpr {
         self.inner == other.inner
     }
 
-    pub fn meta_pop(ruby: &Ruby, rb_self: &Self, schema: Option<Wrap<Schema>>) -> RbResult<RArray> {
+    pub fn meta_pop(ruby: &Ruby, self_: &Self, schema: Option<Wrap<Schema>>) -> RbResult<RArray> {
         let schema = schema.as_ref().map(|s| &s.0);
-        let exprs = rb_self
+        let exprs = self_
             .inner
             .clone()
             .meta()

@@ -85,9 +85,9 @@ impl RbCatalogClient {
         builder.build().map(RbCatalogClient).map_err(to_rb_err)
     }
 
-    pub fn list_catalogs(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
+    pub fn list_catalogs(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
         let v = pl_async::get_runtime()
-            .block_in_place_on(rb_self.client().list_catalogs())
+            .block_in_place_on(self_.client().list_catalogs())
             .map_err(to_rb_err)?;
 
         let mut opt_err = None;
@@ -107,9 +107,9 @@ impl RbCatalogClient {
         Ok(out.as_value())
     }
 
-    pub fn list_namespaces(ruby: &Ruby, rb_self: &Self, catalog_name: String) -> RbResult<Value> {
+    pub fn list_namespaces(ruby: &Ruby, self_: &Self, catalog_name: String) -> RbResult<Value> {
         let v = pl_async::get_runtime()
-            .block_in_place_on(rb_self.client().list_namespaces(&catalog_name))
+            .block_in_place_on(self_.client().list_namespaces(&catalog_name))
             .map_err(to_rb_err)?;
 
         let mut opt_err = None;
@@ -132,12 +132,12 @@ impl RbCatalogClient {
 
     pub fn list_tables(
         ruby: &Ruby,
-        rb_self: &Self,
+        self_: &Self,
         catalog_name: String,
         namespace: String,
     ) -> RbResult<Value> {
         let v = pl_async::get_runtime()
-            .block_in_place_on(rb_self.client().list_tables(&catalog_name, &namespace))
+            .block_in_place_on(self_.client().list_tables(&catalog_name, &namespace))
             .map_err(to_rb_err)?;
 
         let mut opt_err = None;
@@ -162,13 +162,13 @@ impl RbCatalogClient {
 
     pub fn get_table_info(
         ruby: &Ruby,
-        rb_self: &Self,
+        self_: &Self,
         table_name: String,
         catalog_name: String,
         namespace: String,
     ) -> RbResult<Value> {
         let table_info = pl_async::get_runtime()
-            .block_in_place_on(rb_self.client().get_table_info(
+            .block_in_place_on(self_.client().get_table_info(
                 &table_name,
                 &catalog_name,
                 &namespace,
@@ -180,13 +180,13 @@ impl RbCatalogClient {
 
     pub fn create_catalog(
         ruby: &Ruby,
-        rb_self: &Self,
+        self_: &Self,
         catalog_name: String,
         comment: Option<String>,
         storage_root: Option<String>,
     ) -> RbResult<Value> {
         let catalog_info = pl_async::get_runtime()
-            .block_in_place_on(rb_self.client().create_catalog(
+            .block_in_place_on(self_.client().create_catalog(
                 &catalog_name,
                 comment.as_deref(),
                 storage_root.as_deref(),
@@ -204,14 +204,14 @@ impl RbCatalogClient {
 
     pub fn create_namespace(
         ruby: &Ruby,
-        rb_self: &Self,
+        self_: &Self,
         catalog_name: String,
         namespace: String,
         comment: Option<String>,
         storage_root: Option<String>,
     ) -> RbResult<Value> {
         let namespace_info = pl_async::get_runtime()
-            .block_in_place_on(rb_self.client().create_namespace(
+            .block_in_place_on(self_.client().create_namespace(
                 &catalog_name,
                 &namespace,
                 comment.as_deref(),
@@ -239,7 +239,7 @@ impl RbCatalogClient {
     #[allow(clippy::too_many_arguments)]
     pub fn create_table(
         ruby: &Ruby,
-        rb_self: &Self,
+        self_: &Self,
         catalog_name: String,
         namespace: String,
         table_name: String,
@@ -252,7 +252,7 @@ impl RbCatalogClient {
     ) -> RbResult<Value> {
         let table_info = pl_async::get_runtime()
             .block_in_place_on(
-                rb_self.client().create_table(
+                self_.client().create_table(
                     &catalog_name,
                     &namespace,
                     &table_name,

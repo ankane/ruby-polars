@@ -125,8 +125,8 @@ impl RbBatchedCsv {
         })
     }
 
-    pub fn next_batches(ruby: &Ruby, rb_self: &Self, n: usize) -> RbResult<Option<RArray>> {
-        let reader = &rb_self.reader;
+    pub fn next_batches(ruby: &Ruby, self_: &Self, n: usize) -> RbResult<Option<RArray>> {
+        let reader = &self_.reader;
         let batches = reader
             .lock()
             .map_err(|e| RbPolarsErr::Other(e.to_string()))?

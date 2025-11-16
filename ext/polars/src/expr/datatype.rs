@@ -26,8 +26,8 @@ impl RbDataTypeExpr {
         DataTypeExpr::OfExpr(Box::new(expr.inner.clone())).into()
     }
 
-    pub fn collect_dtype(ruby: &Ruby, rb_self: &Self, schema: Wrap<Schema>) -> RbResult<Value> {
-        let dtype = rb_self
+    pub fn collect_dtype(ruby: &Ruby, self_: &Self, schema: Wrap<Schema>) -> RbResult<Value> {
+        let dtype = self_
             .clone()
             .inner
             .into_datatype(&schema.0)

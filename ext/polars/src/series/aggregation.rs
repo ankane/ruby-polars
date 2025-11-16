@@ -38,9 +38,9 @@ impl RbSeries {
         self.series.borrow().arg_min()
     }
 
-    pub fn max(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
+    pub fn max(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
         Ok(Wrap(
-            rb_self
+            self_
                 .series
                 .borrow()
                 .max_reduce()
@@ -50,10 +50,10 @@ impl RbSeries {
         .into_value_with(ruby))
     }
 
-    pub fn mean(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
-        match rb_self.series.borrow().dtype() {
+    pub fn mean(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
+        match self_.series.borrow().dtype() {
             DataType::Boolean => Ok(Wrap(
-                rb_self
+                self_
                     .series
                     .borrow()
                     .cast(&DataType::UInt8)
@@ -65,7 +65,7 @@ impl RbSeries {
             .into_value_with(ruby)),
             // For non-numeric output types we require mean_reduce.
             dt if dt.is_temporal() => Ok(Wrap(
-                rb_self
+                self_
                     .series
                     .borrow()
                     .mean_reduce()
@@ -73,14 +73,14 @@ impl RbSeries {
                     .as_any_value(),
             )
             .into_value_with(ruby)),
-            _ => Ok(rb_self.series.borrow().mean().into_value_with(ruby)),
+            _ => Ok(self_.series.borrow().mean().into_value_with(ruby)),
         }
     }
 
-    pub fn median(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
-        match rb_self.series.borrow().dtype() {
+    pub fn median(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
+        match self_.series.borrow().dtype() {
             DataType::Boolean => Ok(Wrap(
-                rb_self
+                self_
                     .series
                     .borrow()
                     .cast(&DataType::UInt8)
@@ -92,7 +92,7 @@ impl RbSeries {
             .into_value_with(ruby)),
             // For non-numeric output types we require median_reduce.
             dt if dt.is_temporal() => Ok(Wrap(
-                rb_self
+                self_
                     .series
                     .borrow()
                     .median_reduce()
@@ -100,13 +100,13 @@ impl RbSeries {
                     .as_any_value(),
             )
             .into_value_with(ruby)),
-            _ => Ok(rb_self.series.borrow().median().into_value_with(ruby)),
+            _ => Ok(self_.series.borrow().median().into_value_with(ruby)),
         }
     }
 
-    pub fn min(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
+    pub fn min(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
         Ok(Wrap(
-            rb_self
+            self_
                 .series
                 .borrow()
                 .min_reduce()
@@ -118,11 +118,11 @@ impl RbSeries {
 
     pub fn quantile(
         ruby: &Ruby,
-        rb_self: &Self,
+        self_: &Self,
         quantile: f64,
         interpolation: Wrap<QuantileMethod>,
     ) -> RbResult<Value> {
-        let bind = rb_self
+        let bind = self_
             .series
             .borrow()
             .quantile_reduce(quantile, interpolation.0);
@@ -131,9 +131,9 @@ impl RbSeries {
         Ok(Wrap(sc.as_any_value()).into_value_with(ruby))
     }
 
-    pub fn sum(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
+    pub fn sum(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
         Ok(Wrap(
-            rb_self
+            self_
                 .series
                 .borrow()
                 .sum_reduce()

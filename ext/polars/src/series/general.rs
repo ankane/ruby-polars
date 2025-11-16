@@ -86,8 +86,8 @@ impl RbSeries {
         }
     }
 
-    pub fn get_index(ruby: &Ruby, rb_self: &Self, index: usize) -> RbResult<Value> {
-        let binding = rb_self.series.borrow();
+    pub fn get_index(ruby: &Ruby, self_: &Self, index: usize) -> RbResult<Value> {
+        let binding = self_.series.borrow();
         let av = match binding.get(index) {
             Ok(v) => v,
             Err(PolarsError::OutOfBounds(err)) => {
@@ -105,20 +105,20 @@ impl RbSeries {
         }
     }
 
-    pub fn get_index_signed(ruby: &Ruby, rb_self: &Self, index: isize) -> RbResult<Value> {
+    pub fn get_index_signed(ruby: &Ruby, self_: &Self, index: isize) -> RbResult<Value> {
         let index = if index < 0 {
-            match rb_self.len().checked_sub(index.unsigned_abs()) {
+            match self_.len().checked_sub(index.unsigned_abs()) {
                 Some(v) => v,
                 None => {
                     return Err(RbIndexError::new_err(
-                        polars_err!(oob = index, rb_self.len()).to_string(),
+                        polars_err!(oob = index, self_.len()).to_string(),
                     ));
                 }
             }
         } else {
             usize::try_from(index).unwrap()
         };
-        Self::get_index(ruby, rb_self, index)
+        Self::get_index(ruby, self_, index)
     }
 
     pub fn bitand(&self, other: &RbSeries) -> RbResult<Self> {
@@ -148,12 +148,12 @@ impl RbSeries {
         self.series.borrow_mut().rename(name.into());
     }
 
-    pub fn dtype(ruby: &Ruby, rb_self: &Self) -> Value {
-        Wrap(rb_self.series.borrow().dtype().clone()).into_value_with(ruby)
+    pub fn dtype(ruby: &Ruby, self_: &Self) -> Value {
+        Wrap(self_.series.borrow().dtype().clone()).into_value_with(ruby)
     }
 
-    pub fn inner_dtype(ruby: &Ruby, rb_self: &Self) -> Option<Value> {
-        rb_self
+    pub fn inner_dtype(ruby: &Ruby, self_: &Self) -> Option<Value> {
+        self_
             .series
             .borrow()
             .dtype()
@@ -175,8 +175,8 @@ impl RbSeries {
         self.series.borrow().n_chunks()
     }
 
-    pub fn append(ruby: &Ruby, rb_self: &Self, other: &RbSeries) -> RbResult<()> {
-        let mut binding = rb_self.series.borrow_mut();
+    pub fn append(ruby: &Ruby, self_: &Self, other: &RbSeries) -> RbResult<()> {
+        let mut binding = self_.series.borrow_mut();
         let res = binding.append(&other.series.borrow());
         if let Err(e) = res {
             Err(Error::new(ruby.exception_runtime_error(), e.to_string()))
@@ -195,24 +195,24 @@ impl RbSeries {
 
     pub fn new_from_index(
         ruby: &Ruby,
-        rb_self: &Self,
+        self_: &Self,
         index: usize,
         length: usize,
     ) -> RbResult<Self> {
-        if index >= rb_self.series.borrow().len() {
+        if index >= self_.series.borrow().len() {
             Err(Error::new(
                 ruby.exception_arg_error(),
                 "index is out of bounds",
             ))
         } else {
-            Ok(rb_self.series.borrow().new_from_index(index, length).into())
+            Ok(self_.series.borrow().new_from_index(index, length).into())
         }
     }
 
-    pub fn filter(ruby: &Ruby, rb_self: &Self, filter: &RbSeries) -> RbResult<Self> {
+    pub fn filter(ruby: &Ruby, self_: &Self, filter: &RbSeries) -> RbResult<Self> {
         let filter_series = &filter.series.borrow();
         if let Ok(ca) = filter_series.bool() {
-            let series = rb_self.series.borrow().filter(ca).unwrap();
+            let series = self_.series.borrow().filter(ca).unwrap();
             Ok(series.into())
         } else {
             Err(Error::new(
@@ -441,9 +441,9 @@ impl RbSeries {
         Ok(out.into())
     }
 
-    pub fn get_chunks(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
+    pub fn get_chunks(ruby: &Ruby, self_: &Self) -> RbResult<RArray> {
         ruby.ary_try_from_iter(
-            flatten_series(&rb_self.series.borrow())
+            flatten_series(&self_.series.borrow())
                 .into_iter()
                 .map(|s| rb_modules::pl_utils().funcall::<_, _, Value>("wrap_s", (Self::new(s),))),
         )
