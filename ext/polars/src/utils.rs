@@ -130,12 +130,20 @@ pub trait RubyAttach {
         F: FnOnce(&Ruby) -> T;
 }
 
+unsafe extern "C" {
+    fn ruby_thread_has_gvl_p() -> std::ffi::c_int;
+}
+
 impl RubyAttach for Ruby {
     fn attach<T, F>(f: F) -> T
     where
         F: FnOnce(&Ruby) -> T,
     {
-        if let Ok(rb) = Ruby::get() {
+        // recheck GVL state since cached value can be incorrect
+        // https://github.com/matsadler/magnus/pull/161
+        if let Ok(rb) = Ruby::get()
+            && unsafe { ruby_thread_has_gvl_p() } != 0
+        {
             f(&rb)
         } else {
             let mut data = CallbackData {
