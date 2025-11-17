@@ -54,7 +54,7 @@ fn re_escape(pattern: String) -> String {
 
 #[magnus::init]
 fn init(ruby: &Ruby) -> RbResult<()> {
-    crate::on_startup::register_startup_deps();
+    crate::on_startup::register_startup_deps(true);
 
     let module = ruby.define_module("Polars")?;
 

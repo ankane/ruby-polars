@@ -9,6 +9,7 @@ use polars_core::chunked_array::object::registry;
 use polars_core::chunked_array::object::registry::AnonymousObjectBuilder;
 use polars_core::prelude::AnyValue;
 use polars_error::PolarsWarning;
+use polars_error::signals::register_polars_keyboard_interrupt_hook;
 
 use crate::Wrap;
 use crate::prelude::ObjectValue;
@@ -25,7 +26,7 @@ fn warning_function(msg: &str, _warning: PolarsWarning) {
 
 static POLARS_REGISTRY_INIT_LOCK: OnceLock<()> = OnceLock::new();
 
-pub(crate) fn register_startup_deps() {
+pub(crate) fn register_startup_deps(catch_keyboard_interrupt: bool) {
     POLARS_REGISTRY_INIT_LOCK.get_or_init(|| {
         let object_builder = Box::new(|name: PlSmallStr, capacity: usize| {
             Box::new(ObjectChunkedBuilder::<ObjectValue>::new(name, capacity))
@@ -53,5 +54,9 @@ pub(crate) fn register_startup_deps() {
         );
         // Register warning function for `polars_warn!`.
         polars_error::set_warning_function(warning_function);
+
+        if catch_keyboard_interrupt {
+            register_polars_keyboard_interrupt_hook();
+        }
     });
 }
