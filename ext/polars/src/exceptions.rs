@@ -11,7 +11,10 @@ macro_rules! create_exception {
             where
                 T: Into<Cow<'static, str>>,
             {
-                let cls = rb_modules::polars().const_get(stringify!($type)).unwrap();
+                let ruby = Ruby::get().unwrap();
+                let cls = rb_modules::polars(&ruby)
+                    .const_get(stringify!($type))
+                    .unwrap();
                 Error::new(cls, message)
             }
         }

@@ -30,8 +30,8 @@ macro_rules! rbdict_insert_keys {
     };
 }
 
-static CATALOG_INFO_CLS: Lazy<RClass> = Lazy::new(|_| {
-    polars()
+static CATALOG_INFO_CLS: Lazy<RClass> = Lazy::new(|rb| {
+    polars(rb)
         .const_get::<_, RClass>("Catalog")
         .unwrap()
         .const_get::<_, RModule>("Unity")
@@ -40,8 +40,8 @@ static CATALOG_INFO_CLS: Lazy<RClass> = Lazy::new(|_| {
         .unwrap()
 });
 
-static NAMESPACE_INFO_CLS: Lazy<RClass> = Lazy::new(|_| {
-    polars()
+static NAMESPACE_INFO_CLS: Lazy<RClass> = Lazy::new(|rb| {
+    polars(rb)
         .const_get::<_, RClass>("Catalog")
         .unwrap()
         .const_get::<_, RModule>("Unity")
@@ -50,8 +50,8 @@ static NAMESPACE_INFO_CLS: Lazy<RClass> = Lazy::new(|_| {
         .unwrap()
 });
 
-static TABLE_INFO_CLS: Lazy<RClass> = Lazy::new(|_| {
-    polars()
+static TABLE_INFO_CLS: Lazy<RClass> = Lazy::new(|rb| {
+    polars(rb)
         .const_get::<_, RClass>("Catalog")
         .unwrap()
         .const_get::<_, RModule>("Unity")
@@ -60,8 +60,8 @@ static TABLE_INFO_CLS: Lazy<RClass> = Lazy::new(|_| {
         .unwrap()
 });
 
-static COLUMN_INFO_CLS: Lazy<RClass> = Lazy::new(|_| {
-    polars()
+static COLUMN_INFO_CLS: Lazy<RClass> = Lazy::new(|rb| {
+    polars(rb)
         .const_get::<_, RClass>("Catalog")
         .unwrap()
         .const_get::<_, RModule>("Unity")

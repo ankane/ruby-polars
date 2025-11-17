@@ -137,7 +137,7 @@ fn struct_dict<'a>(ruby: &Ruby, vals: impl Iterator<Item = AnyValue<'a>>, flds: 
 
 impl IntoValue for Wrap<DataType> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
-        let pl = crate::rb_modules::polars();
+        let pl = crate::rb_modules::polars(&ruby);
 
         match self.0 {
             DataType::Int8 => {

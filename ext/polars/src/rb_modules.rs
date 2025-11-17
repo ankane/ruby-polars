@@ -5,8 +5,8 @@ static UTILS: Lazy<RModule> = Lazy::new(|ruby| ruby.get_inner(&POLARS).const_get
 static SERIES: Lazy<RClass> =
     Lazy::new(|ruby| ruby.get_inner(&POLARS).const_get("Series").unwrap());
 
-pub(crate) fn polars() -> RModule {
-    Ruby::get().unwrap().get_inner(&POLARS)
+pub(crate) fn polars(rb: &Ruby) -> RModule {
+    rb.get_inner(&POLARS)
 }
 
 pub(crate) fn pl_utils(rb: &Ruby) -> RModule {
