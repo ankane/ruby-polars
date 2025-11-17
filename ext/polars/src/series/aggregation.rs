@@ -1,8 +1,10 @@
+use magnus::{IntoValue, Ruby, Value};
+
 use crate::error::RbPolarsErr;
 use crate::prelude::*;
+use crate::utils::EnterPolarsExt;
 use crate::utils::to_rb_err;
 use crate::{RbResult, RbSeries};
-use magnus::{IntoValue, Ruby, Value};
 
 fn scalar_to_rb(scalar: RbResult<Scalar>) -> RbResult<Value> {
     let ruby = Ruby::get().unwrap();
@@ -10,32 +12,36 @@ fn scalar_to_rb(scalar: RbResult<Scalar>) -> RbResult<Value> {
 }
 
 impl RbSeries {
-    pub fn any(&self, ignore_nulls: bool) -> RbResult<Option<bool>> {
-        let binding = self.series.read();
-        let s = binding.bool().map_err(RbPolarsErr::from)?;
-        Ok(if ignore_nulls {
-            Some(s.any())
-        } else {
-            s.any_kleene()
+    pub fn any(rb: &Ruby, self_: &Self, ignore_nulls: bool) -> RbResult<Option<bool>> {
+        rb.enter_polars(|| {
+            let s = self_.series.read();
+            let s = s.bool()?;
+            PolarsResult::Ok(if ignore_nulls {
+                Some(s.any())
+            } else {
+                s.any_kleene()
+            })
         })
     }
 
-    pub fn all(&self, ignore_nulls: bool) -> RbResult<Option<bool>> {
-        let binding = self.series.read();
-        let s = binding.bool().map_err(RbPolarsErr::from)?;
-        Ok(if ignore_nulls {
-            Some(s.all())
-        } else {
-            s.all_kleene()
+    pub fn all(rb: &Ruby, self_: &Self, ignore_nulls: bool) -> RbResult<Option<bool>> {
+        rb.enter_polars(|| {
+            let s = self_.series.read();
+            let s = s.bool()?;
+            PolarsResult::Ok(if ignore_nulls {
+                Some(s.all())
+            } else {
+                s.all_kleene()
+            })
         })
     }
 
-    pub fn arg_max(&self) -> Option<usize> {
-        self.series.read().arg_max()
+    pub fn arg_max(rb: &Ruby, self_: &Self) -> RbResult<Option<usize>> {
+        rb.enter_polars_ok(|| self_.series.read().arg_max())
     }
 
-    pub fn arg_min(&self) -> Option<usize> {
-        self.series.read().arg_min()
+    pub fn arg_min(rb: &Ruby, self_: &Self) -> RbResult<Option<usize>> {
+        rb.enter_polars_ok(|| self_.series.read().arg_min())
     }
 
     pub fn max(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
