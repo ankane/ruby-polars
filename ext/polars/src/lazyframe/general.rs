@@ -382,7 +382,8 @@ impl RbLazyFrame {
     }
 
     pub fn sink_parquet(
-        &self,
+        rb: &Ruby,
+        self_: &Self,
         target: SinkTarget,
         compression: String,
         compression_level: Option<i32>,
@@ -420,19 +421,21 @@ impl RbLazyFrame {
             }
         };
 
-        let ldf = self.ldf.read().clone();
-        match target {
-            SinkTarget::File(target) => {
-                ldf.sink_parquet(target, options, cloud_options, sink_options.0)
+        rb.enter_polars(|| {
+            let ldf = self_.ldf.read().clone();
+            match target {
+                SinkTarget::File(target) => {
+                    ldf.sink_parquet(target, options, cloud_options, sink_options.0)
+                }
             }
-        }
-        .map_err(RbPolarsErr::from)
+        })
         .map(Into::into)
         .map_err(Into::into)
     }
 
     pub fn sink_ipc(
-        &self,
+        rb: &Ruby,
+        self_: &Self,
         target: SinkTarget,
         compression: Wrap<Option<IpcCompression>>,
         compat_level: RbCompatLevel,
@@ -460,13 +463,14 @@ impl RbLazyFrame {
             }
         };
 
-        let ldf = self.ldf.read().clone();
-        match target {
-            SinkTarget::File(target) => {
-                ldf.sink_ipc(target, options, cloud_options, sink_options.0)
+        rb.enter_polars(|| {
+            let ldf = self_.ldf.read().clone();
+            match target {
+                SinkTarget::File(target) => {
+                    ldf.sink_ipc(target, options, cloud_options, sink_options.0)
+                }
             }
-        }
-        .map_err(RbPolarsErr::from)
+        })
         .map(Into::into)
         .map_err(Into::into)
     }
@@ -541,7 +545,8 @@ impl RbLazyFrame {
     }
 
     pub fn sink_json(
-        &self,
+        rb: &Ruby,
+        self_: &Self,
         target: SinkTarget,
         cloud_options: Option<Vec<(String, String)>>,
         credential_provider: Option<Value>,
@@ -563,11 +568,14 @@ impl RbLazyFrame {
             }
         };
 
-        let ldf = self.ldf.read().clone();
-        match target {
-            SinkTarget::File(path) => ldf.sink_json(path, options, cloud_options, sink_options.0),
-        }
-        .map_err(RbPolarsErr::from)
+        rb.enter_polars(|| {
+            let ldf = self_.ldf.read().clone();
+            match target {
+                SinkTarget::File(path) => {
+                    ldf.sink_json(path, options, cloud_options, sink_options.0)
+                }
+            }
+        })
         .map(Into::into)
         .map_err(Into::into)
     }
