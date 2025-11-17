@@ -3,7 +3,7 @@ use magnus::{IntoValue, Ruby, Value, prelude::*};
 use super::*;
 use crate::RbResult;
 use crate::conversion::{ObjectValue, Wrap};
-use crate::interop::arrow::to_ruby::dataframe_to_stream;
+use crate::interop::arrow::to_rb::dataframe_to_stream;
 
 impl RbDataFrame {
     pub fn row_tuple(ruby: &Ruby, self_: &Self, idx: i64) -> Value {

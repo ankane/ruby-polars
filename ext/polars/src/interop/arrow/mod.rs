@@ -9,7 +9,7 @@ use crate::series::import_schema_rbcapsule;
 use crate::utils::to_rb_err;
 use crate::{RbResult, RbValueError};
 
-pub mod to_ruby;
+pub mod to_rb;
 pub mod to_rust;
 
 pub fn init_polars_schema_from_arrow_c_schema(
