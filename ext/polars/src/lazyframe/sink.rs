@@ -20,7 +20,7 @@ impl TryConvert for Wrap<polars_plan::dsl::SinkTarget> {
             Ok(Wrap(polars::prelude::SinkTarget::Path(PlPath::new(&v))))
         } else {
             let writer = Ruby::attach(|rb| {
-                let rb_f = ob.clone();
+                let rb_f = ob;
                 RbResult::Ok(
                     crate::file::try_get_rbfile(rb, rb_f, true)?
                         .0

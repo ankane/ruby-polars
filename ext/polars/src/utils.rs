@@ -82,7 +82,7 @@ pub trait EnterPolarsExt {
         Self: Sized,
         F: FnOnce() -> T,
     {
-        if let Ok(_) = std::env::var("POLARS_NO_GVL") {
+        if std::env::var("POLARS_NO_GVL").is_ok() {
             let mut data = CallbackData {
                 func: Some(f),
                 result: None,

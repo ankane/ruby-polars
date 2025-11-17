@@ -14,15 +14,15 @@ pub(crate) fn normalize_arrow_fields(field: &ArrowField) -> ArrowField {
                 .map(|f| {
                     // note: google bigquery column data is returned as a standard arrow dtype, but the
                     // sql type it was loaded from is associated as metadata (resulting in an extension dtype)
-                    if let ArrowDataType::Extension(ext_type) = &f.dtype {
-                        if ext_type.name.starts_with("google:sqlType:") {
-                            normalized = true;
-                            return ArrowField::new(
-                                f.name.clone(),
-                                ext_type.inner.clone(),
-                                f.is_nullable,
-                            );
-                        }
+                    if let ArrowDataType::Extension(ext_type) = &f.dtype
+                        && ext_type.name.starts_with("google:sqlType:")
+                    {
+                        normalized = true;
+                        return ArrowField::new(
+                            f.name.clone(),
+                            ext_type.inner.clone(),
+                            f.is_nullable,
+                        );
                     }
                     f.clone()
                 })
