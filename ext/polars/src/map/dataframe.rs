@@ -80,16 +80,16 @@ pub fn apply_lambda_unknown<'a>(
                 .as_value(),
                 false,
             ));
-        // } else if out.is_kind_of(ruby.class_string()) {
-        //     let first_value = String::try_convert(out).ok();
-        //     return Ok((
-        //         RbSeries::new(
-        //             apply_lambda_with_utf8_out_type(df, lambda, null_count, first_value)
-        //                 .into_series(),
-        //         )
-        //         .into(),
-        //         false,
-        //     ));
+        } else if out.is_kind_of(ruby.class_string()) {
+            let first_value = String::try_convert(out).ok();
+            return Ok((
+                ruby.obj_wrap(RbSeries::new(
+                    apply_lambda_with_utf8_out_type(df, lambda, null_count, first_value.as_deref())
+                        .into_series(),
+                ))
+                .as_value(),
+                false,
+            ));
         } else if out.respond_to("_s", true)? {
             let rb_rbseries: Obj<RbSeries> = out.funcall("_s", ()).unwrap();
             let series = rb_rbseries.series.read();
