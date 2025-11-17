@@ -46,9 +46,7 @@ impl From<RbPolarsErr> for Error {
                     } else {
                         error.to_string()
                     };
-                    match error.kind() {
-                        _ => RbIOError::new_err(msg),
-                    }
+                    RbIOError::new_err(msg)
                 }
                 PolarsError::NoData(err) => NoDataError::new_err(err.to_string()),
                 PolarsError::OutOfBounds(err) => OutOfBoundsError::new_err(err.to_string()),

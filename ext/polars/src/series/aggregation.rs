@@ -7,7 +7,7 @@ use crate::utils::EnterPolarsExt;
 use crate::{RbResult, RbSeries};
 
 fn scalar_to_rb(scalar: RbResult<Scalar>, rb: &Ruby) -> RbResult<Value> {
-    Ok(Wrap(scalar?.as_any_value()).into_value_with(&rb))
+    Ok(Wrap(scalar?.as_any_value()).into_value_with(rb))
 }
 
 impl RbSeries {

@@ -1,7 +1,7 @@
 #![allow(clippy::too_many_arguments)]
 
-mod c_api;
 mod batched_csv;
+mod c_api;
 mod catalog;
 mod conversion;
 mod dataframe;
