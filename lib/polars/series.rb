@@ -5014,18 +5014,7 @@ module Polars
       shuffle: false,
       seed: nil
     )
-      if !n.nil? && !fraction.nil?
-        raise ArgumentError, "cannot specify both `n` and `fraction`"
-      end
-
-      if n.nil? && !fraction.nil?
-        return Utils.wrap_s(_s.sample_frac(fraction, with_replacement, shuffle, seed))
-      end
-
-      if n.nil?
-        n = 1
-      end
-      Utils.wrap_s(_s.sample_n(n, with_replacement, shuffle, seed))
+      super
     end
 
     # Get a boolean mask of the local maximum peaks.

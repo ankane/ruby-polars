@@ -229,36 +229,6 @@ impl RbSeries {
         self.series.read().has_nulls()
     }
 
-    pub fn sample_n(
-        &self,
-        n: usize,
-        with_replacement: bool,
-        shuffle: bool,
-        seed: Option<u64>,
-    ) -> RbResult<Self> {
-        let s = self
-            .series
-            .read()
-            .sample_n(n, with_replacement, shuffle, seed)
-            .map_err(RbPolarsErr::from)?;
-        Ok(s.into())
-    }
-
-    pub fn sample_frac(
-        &self,
-        frac: f64,
-        with_replacement: bool,
-        shuffle: bool,
-        seed: Option<u64>,
-    ) -> RbResult<Self> {
-        let s = self
-            .series
-            .read()
-            .sample_frac(frac, with_replacement, shuffle, seed)
-            .map_err(RbPolarsErr::from)?;
-        Ok(s.into())
-    }
-
     pub fn equals(
         &self,
         other: &RbSeries,

@@ -1085,8 +1085,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("null_count", method!(RbSeries::null_count, 0))?;
     class.define_method("has_nulls", method!(RbSeries::has_nulls, 0))?;
-    class.define_method("sample_n", method!(RbSeries::sample_n, 4))?;
-    class.define_method("sample_frac", method!(RbSeries::sample_frac, 4))?;
     class.define_method("equals", method!(RbSeries::equals, 4))?;
     class.define_method("eq", method!(RbSeries::eq, 1))?;
     class.define_method("neq", method!(RbSeries::neq, 1))?;
