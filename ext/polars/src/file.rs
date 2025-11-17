@@ -12,9 +12,10 @@ use polars_utils::create_file;
 use polars_utils::file::ClosableFile;
 use polars_utils::mmap::MemSlice;
 
-use crate::RbResult;
 use crate::error::RbPolarsErr;
 use crate::prelude::resolve_homedir;
+use crate::utils::RubyAttach;
+use crate::{RbErr, RbResult};
 
 #[derive(Clone)]
 pub struct RbFileLikeObject {
@@ -95,43 +96,45 @@ impl RbFileLikeObject {
 }
 
 /// Extracts a string repr from, and returns an IO error to send back to rust.
-fn rberr_to_io_err(e: Error) -> io::Error {
-    io::Error::other(e.to_string())
+fn rberr_to_io_err(e: RbErr) -> io::Error {
+    Ruby::attach(|_rb| io::Error::other(e.to_string()))
 }
 
 impl Read for RbFileLikeObject {
     fn read(&mut self, mut buf: &mut [u8]) -> Result<usize, io::Error> {
-        let bytes = Ruby::get()
-            .unwrap()
-            .get_inner(self.inner)
-            .funcall::<_, _, RString>("read", (buf.len(),))
-            .map_err(rberr_to_io_err)?;
+        Ruby::attach(|rb| {
+            let bytes = rb
+                .get_inner(self.inner)
+                .funcall::<_, _, RString>("read", (buf.len(),))
+                .map_err(rberr_to_io_err)?;
 
-        buf.write_all(unsafe { bytes.as_slice() })?;
+            buf.write_all(unsafe { bytes.as_slice() })?;
 
-        Ok(bytes.len())
+            Ok(bytes.len())
+        })
     }
 }
 
 impl Write for RbFileLikeObject {
     fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
-        let ruby = Ruby::get().unwrap();
-        let rbbytes = ruby.str_from_slice(buf);
+        Ruby::attach(|rb| {
+            let rbbytes = rb.str_from_slice(buf);
 
-        let number_bytes_written = ruby
-            .get_inner(self.inner)
-            .funcall::<_, _, usize>("write", (rbbytes,))
-            .map_err(rberr_to_io_err)?;
+            let number_bytes_written = rb
+                .get_inner(self.inner)
+                .funcall::<_, _, usize>("write", (rbbytes,))
+                .map_err(rberr_to_io_err)?;
 
-        Ok(number_bytes_written)
+            Ok(number_bytes_written)
+        })
     }
 
     fn flush(&mut self) -> Result<(), io::Error> {
-        Ruby::get()
-            .unwrap()
-            .get_inner(self.inner)
-            .funcall::<_, _, Value>("flush", ())
-            .map_err(rberr_to_io_err)?;
+        Ruby::attach(|rb| {
+            rb.get_inner(self.inner)
+                .funcall::<_, _, Value>("flush", ())
+                .map_err(rberr_to_io_err)
+        })?;
 
         Ok(())
     }
@@ -139,19 +142,21 @@ impl Write for RbFileLikeObject {
 
 impl Seek for RbFileLikeObject {
     fn seek(&mut self, pos: SeekFrom) -> Result<u64, io::Error> {
-        let (whence, offset) = match pos {
-            SeekFrom::Start(i) => (0, i as i64),
-            SeekFrom::Current(i) => (1, i),
-            SeekFrom::End(i) => (2, i),
-        };
+        Ruby::attach(|rb| {
+            let (whence, offset) = match pos {
+                SeekFrom::Start(i) => (0, i as i64),
+                SeekFrom::Current(i) => (1, i),
+                SeekFrom::End(i) => (2, i),
+            };
 
-        let inner = Ruby::get().unwrap().get_inner(self.inner);
+            let inner = rb.get_inner(self.inner);
 
-        inner
-            .funcall::<_, _, Value>("seek", (offset, whence))
-            .map_err(rberr_to_io_err)?;
+            inner
+                .funcall::<_, _, Value>("seek", (offset, whence))
+                .map_err(rberr_to_io_err)?;
 
-        inner.funcall("tell", ()).map_err(rberr_to_io_err)
+            inner.funcall("tell", ()).map_err(rberr_to_io_err)
+        })
     }
 }
 
