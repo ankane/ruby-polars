@@ -306,13 +306,28 @@ impl RbSeries {
         rb.enter_polars_ok(|| self_.series.write().shrink_to_fit())
     }
 
-    pub fn dot(&self, other: &RbSeries) -> RbResult<f64> {
-        let out = self
-            .series
-            .read()
-            .dot(&other.series.read())
-            .map_err(RbPolarsErr::from)?;
-        Ok(out)
+    pub fn dot(rb: &Ruby, self_: &Self, other: &RbSeries) -> RbResult<Value> {
+        let s = &*self_.series.read();
+        let o = &*other.series.read();
+        let lhs_dtype = s.dtype();
+        let rhs_dtype = o.dtype();
+
+        if !lhs_dtype.is_primitive_numeric() {
+            return Err(RbPolarsErr::from(polars_err!(opq = dot, lhs_dtype)).into());
+        };
+        if !rhs_dtype.is_primitive_numeric() {
+            return Err(RbPolarsErr::from(polars_err!(opq = dot, rhs_dtype)).into());
+        }
+
+        let result: Value = if lhs_dtype.is_float() || rhs_dtype.is_float() {
+            rb.enter_polars(|| (s * o)?.sum::<f64>())?
+                .into_value_with(rb)
+        } else {
+            rb.enter_polars(|| (s * o)?.sum::<i64>())?
+                .into_value_with(rb)
+        };
+
+        Ok(result)
     }
 
     pub fn skew(rb: &Ruby, self_: &Self, bias: bool) -> RbResult<Option<f64>> {
