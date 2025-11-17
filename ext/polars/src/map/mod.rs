@@ -2,13 +2,14 @@ pub mod dataframe;
 pub mod lazy;
 pub mod series;
 
-use magnus::{RHash, Value, prelude::*};
+use magnus::{RHash, Ruby, Value, prelude::*};
 use polars::chunked_array::builder::get_list_builder;
 use polars::prelude::*;
 use polars_core::POOL;
 use polars_core::utils::CustomIterTools;
 use rayon::prelude::*;
 
+use crate::utils::EnterPolarsExt;
 use crate::{ObjectValue, RbPolarsErr, RbResult, RbSeries, RbValueError, Wrap};
 
 pub trait RbPolarsNumericType: PolarsNumericType {}
@@ -43,6 +44,8 @@ fn iterator_to_struct(
     name: PlSmallStr,
     capacity: usize,
 ) -> RbResult<RbSeries> {
+    let rb = Ruby::get().unwrap();
+
     let (vals, flds) = match &first_value {
         av @ AnyValue::Struct(_, _, flds) => (av._iter_struct_av().collect::<Vec<_>>(), &**flds),
         AnyValue::StructOwned(payload) => (payload.0.clone(), &*payload.1),
@@ -99,13 +102,15 @@ fn iterator_to_struct(
         }
     }
 
-    let fields = POOL.install(|| {
-        items
-            .par_iter()
-            .zip(flds)
-            .map(|(av, fld)| Series::new(fld.name().clone(), av))
-            .collect::<Vec<_>>()
-    });
+    let fields = rb.enter_polars_ok(|| {
+        POOL.install(|| {
+            items
+                .par_iter()
+                .zip(flds)
+                .map(|(av, fld)| Series::new(fld.name().clone(), av))
+                .collect::<Vec<_>>()
+        })
+    })?;
 
     Ok(
         StructChunked::from_series(name, fields[0].len(), fields.iter())

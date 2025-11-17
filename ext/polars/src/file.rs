@@ -308,13 +308,9 @@ pub fn get_mmap_bytes_reader_and_path<'a>(
 ) -> RbResult<(Box<dyn MmapBytesReader + 'a>, Option<PathBuf>)> {
     match rb_f {
         RbReadBytes::Bytes(v) => Ok((Box::new(Cursor::new(unsafe { v.as_slice() })), None)),
-        RbReadBytes::Other(v) => {
-            match get_either_buffer_or_path(*v, false)? {
-                (EitherRustRubyFile::Rust(f), path) => Ok((Box::new(f), path)),
-                (EitherRustRubyFile::Rb(f), path) => {
-                    Ok((Box::new(Cursor::new(f.to_memslice())), path))
-                }
-            }
-        }
+        RbReadBytes::Other(v) => match get_either_buffer_or_path(*v, false)? {
+            (EitherRustRubyFile::Rust(f), path) => Ok((Box::new(f), path)),
+            (EitherRustRubyFile::Rb(f), path) => Ok((Box::new(Cursor::new(f.to_memslice())), path)),
+        },
     }
 }
