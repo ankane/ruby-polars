@@ -473,10 +473,13 @@ macro_rules! impl_set_with_mask {
         }
 
         impl RbSeries {
-            pub fn $name(&self, filter: &RbSeries, value: Option<$native>) -> RbResult<Self> {
-                let series =
-                    $name(&self.series.read(), filter, value).map_err(RbPolarsErr::from)?;
-                Ok(Self::new(series))
+            pub fn $name(
+                rb: &Ruby,
+                self_: &Self,
+                filter: &RbSeries,
+                value: Option<$native>,
+            ) -> RbResult<Self> {
+                rb.enter_polars_series(|| $name(&self_.series.read(), filter, value))
             }
         }
     };
