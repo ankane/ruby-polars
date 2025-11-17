@@ -10,7 +10,7 @@ use crate::file::{EitherRustRubyFile, get_either_file};
 use crate::utils::EnterPolarsExt;
 use crate::{RbPolarsErr, RbResult};
 
-pub fn read_ipc_schema(rb_f: Value) -> RbResult<RHash> {
+pub fn read_ipc_schema(rb: &Ruby, rb_f: Value) -> RbResult<RHash> {
     use arrow::io::ipc::read::read_file_metadata;
     let metadata = match get_either_file(rb_f, false)? {
         EitherRustRubyFile::Rust(r) => {
@@ -19,20 +19,18 @@ pub fn read_ipc_schema(rb_f: Value) -> RbResult<RHash> {
         EitherRustRubyFile::Rb(mut r) => read_file_metadata(&mut r).map_err(RbPolarsErr::from)?,
     };
 
-    let ruby = Ruby::get_with(rb_f);
-    let dict = ruby.hash_new();
+    let dict = rb.hash_new();
     fields_to_rbdict(&metadata.schema, &dict)?;
     Ok(dict)
 }
 
 pub fn read_parquet_metadata(
+    rb: &Ruby,
     rb_f: Value,
     storage_options: Option<Vec<(String, String)>>,
     credential_provider: Option<Value>,
     retries: usize,
 ) -> RbResult<RHash> {
-    let rb = Ruby::get_with(rb_f);
-
     use std::io::Cursor;
 
     use polars_io::pl_async::get_runtime;
