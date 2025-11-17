@@ -5115,7 +5115,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3])
-    #   s._hash(42)
+    #   s.hash_(42)
     #   # =>
     #   # shape: (3,)
     #   # Series: 'a' [u64]
@@ -5124,7 +5124,7 @@ module Polars
     #   #         10386026231460783898
     #   #         17796317186427479491
     #   # ]
-    def _hash(seed = 0, seed_1 = nil, seed_2 = nil, seed_3 = nil)
+    def hash_(seed = 0, seed_1 = nil, seed_2 = nil, seed_3 = nil)
       super
     end
 

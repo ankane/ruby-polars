@@ -4461,7 +4461,7 @@ module Polars
     #       "b" => ["x", nil, "z"]
     #     }
     #   )
-    #   df.with_columns(Polars.all._hash(10, 20, 30, 40))
+    #   df.with_columns(Polars.all.hash_(10, 20, 30, 40))
     #   # =>
     #   # shape: (3, 2)
     #   # ┌──────────────────────┬──────────────────────┐
@@ -4473,7 +4473,7 @@ module Polars
     #   # │ 16386608652769605760 ┆ 11638928888656214026 │
     #   # │ 11638928888656214026 ┆ 11040941213715918520 │
     #   # └──────────────────────┴──────────────────────┘
-    def _hash(seed = 0, seed_1 = nil, seed_2 = nil, seed_3 = nil)
+    def hash_(seed = 0, seed_1 = nil, seed_2 = nil, seed_3 = nil)
       k0 = seed
       k1 = seed_1.nil? ? seed : seed_1
       k2 = seed_2.nil? ? seed : seed_2
@@ -4521,7 +4521,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [1, 1, 2]})
-    #   df.select(Polars.col("foo").cumsum._inspect("value is: %s").alias("bar"))
+    #   df.select(Polars.col("foo").cumsum.inspect_("value is: %s").alias("bar"))
     #   # =>
     #   # value is: shape: (3,)
     #   # Series: 'foo' [i64]
@@ -4540,7 +4540,7 @@ module Polars
     #   # │ 2   │
     #   # │ 4   │
     #   # └─────┘
-    # def _inspect(fmt = "%s")
+    # def inspect_(fmt = "%s")
     #   inspect = lambda do |s|
     #     puts(fmt % [s])
     #     s
