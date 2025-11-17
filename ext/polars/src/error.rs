@@ -6,7 +6,7 @@ use polars::prelude::PolarsError;
 use crate::RbErr;
 use crate::exceptions::{
     AssertionError, ColumnNotFoundError, ComputeError, DuplicateError, InvalidOperationError,
-    NoDataError, OutOfBoundsError, SQLInterfaceError, SQLSyntaxError, SchemaError,
+    NoDataError, OutOfBoundsError, RbIOError, SQLInterfaceError, SQLSyntaxError, SchemaError,
     SchemaFieldNotFoundError, ShapeError, StringCacheMismatchError, StructFieldNotFoundError,
 };
 use crate::rb_modules;
@@ -40,6 +40,16 @@ impl From<RbPolarsErr> for Error {
                 PolarsError::InvalidOperation(err) => {
                     InvalidOperationError::new_err(err.to_string())
                 }
+                PolarsError::IO { error, msg } => {
+                    let msg = if let Some(msg) = msg {
+                        msg.to_string()
+                    } else {
+                        error.to_string()
+                    };
+                    match error.kind() {
+                        _ => RbIOError::new_err(msg),
+                    }
+                }
                 PolarsError::NoData(err) => NoDataError::new_err(err.to_string()),
                 PolarsError::OutOfBounds(err) => OutOfBoundsError::new_err(err.to_string()),
                 PolarsError::SQLInterface(name) => SQLInterfaceError::new_err(name.to_string()),
@@ -55,7 +65,10 @@ impl From<RbPolarsErr> for Error {
                 PolarsError::StructFieldNotFound(name) => {
                     StructFieldNotFoundError::new_err(name.to_string())
                 }
-                _ => Error::new(rb_modules::error(), err.to_string()),
+                PolarsError::Context { .. } => {
+                    let tmp = RbPolarsErr::Polars(err.context_trace());
+                    RbErr::from(tmp)
+                }
             },
             RbPolarsErr::Ruby(err) => err,
             RbPolarsErr::Other(err) => Error::new(rb_modules::error(), err.to_string()),

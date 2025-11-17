@@ -49,7 +49,8 @@ macro_rules! create_ruby_exception {
     };
 }
 
+create_ruby_exception!(RbIndexError, exception_index_error);
+create_ruby_exception!(RbIOError, exception_io_error);
+create_ruby_exception!(RbOverflowError, exception_range_error);
 create_ruby_exception!(RbTypeError, exception_type_error);
 create_ruby_exception!(RbValueError, exception_arg_error);
-create_ruby_exception!(RbOverflowError, exception_range_error);
-create_ruby_exception!(RbIndexError, exception_index_error);

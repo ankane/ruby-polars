@@ -15,6 +15,7 @@
 - Added more options to `sort` method
 - Added more options to `over` method
 - Added `ambiguous` option to `strptime` method
+- Improved exception classes
 - Changed `schema` method to return `Schema` instead of `Hash`
 - Changed `reverse` option to `descending`
 - Changed `sep` option to `separator`
