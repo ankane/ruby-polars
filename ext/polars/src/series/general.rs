@@ -173,22 +173,24 @@ impl RbSeries {
         self.series.read().n_chunks()
     }
 
-    pub fn append(ruby: &Ruby, self_: &Self, other: &RbSeries) -> RbResult<()> {
-        let mut binding = self_.series.write();
-        let res = binding.append(&other.series.read());
-        if let Err(e) = res {
-            Err(Error::new(ruby.exception_runtime_error(), e.to_string()))
-        } else {
-            Ok(())
-        }
+    pub fn append(rb: &Ruby, self_: &Self, other: &RbSeries) -> RbResult<()> {
+        rb.enter_polars(|| {
+            // Prevent self-append deadlocks.
+            let other = other.series.read().clone();
+            let mut s = self_.series.write();
+            s.append(&other)?;
+            PolarsResult::Ok(())
+        })
     }
 
-    pub fn extend(&self, other: &RbSeries) -> RbResult<()> {
-        self.series
-            .write()
-            .extend(&other.series.read())
-            .map_err(RbPolarsErr::from)?;
-        Ok(())
+    pub fn extend(rb: &Ruby, self_: &Self, other: &RbSeries) -> RbResult<()> {
+        rb.enter_polars(|| {
+            // Prevent self-extend deadlocks.
+            let other = other.series.read().clone();
+            let mut s = self_.series.write();
+            s.extend(&other)?;
+            PolarsResult::Ok(())
+        })
     }
 
     pub fn new_from_index(

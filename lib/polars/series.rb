@@ -1742,15 +1742,8 @@ module Polars
     #   #         6
     #   # ]
     def append(other)
-      begin
-        _s.append(other._s)
-      rescue => e
-        if e.message == "Already mutably borrowed"
-          append(other.clone)
-        else
-          raise e
-        end
-      end
+      Utils.require_same_type(self, other)
+      _s.append(other._s)
       self
     end
 

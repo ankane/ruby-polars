@@ -14,7 +14,7 @@ impl RbSeries {
         return_dtype: Option<Wrap<DataType>>,
         skip_nulls: bool,
     ) -> RbResult<Self> {
-        let series = &self.series.read();
+        let series = &self.series.read().clone(); // Clone so we don't deadlock on re-entrance.
 
         if return_dtype.is_none() {
             polars_warn!(
