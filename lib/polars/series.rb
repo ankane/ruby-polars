@@ -1891,7 +1891,7 @@ module Polars
     #   #         2
     #   # ]
     def limit(n = 10)
-      to_frame.select(F.col(name).limit(n)).to_series
+      head(n)
     end
 
     # Take every nth value in the Series and return as new Series.
