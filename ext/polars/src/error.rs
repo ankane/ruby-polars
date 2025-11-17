@@ -6,10 +6,10 @@ use polars::prelude::PolarsError;
 use crate::RbErr;
 use crate::exceptions::{
     AssertionError, ColumnNotFoundError, ComputeError, DuplicateError, InvalidOperationError,
-    NoDataError, OutOfBoundsError, RbIOError, SQLInterfaceError, SQLSyntaxError, SchemaError,
-    SchemaFieldNotFoundError, ShapeError, StringCacheMismatchError, StructFieldNotFoundError,
+    NoDataError, OutOfBoundsError, RbIOError, RbRuntimeError, SQLInterfaceError, SQLSyntaxError,
+    SchemaError, SchemaFieldNotFoundError, ShapeError, StringCacheMismatchError,
+    StructFieldNotFoundError,
 };
-use crate::rb_modules;
 
 pub enum RbPolarsErr {
     Polars(PolarsError),
@@ -69,7 +69,7 @@ impl From<RbPolarsErr> for Error {
                 }
             },
             RbPolarsErr::Ruby(err) => err,
-            RbPolarsErr::Other(err) => Error::new(rb_modules::error(), err.to_string()),
+            err => RbRuntimeError::new_err(format!("{:?}", &err)),
         }
     }
 }
