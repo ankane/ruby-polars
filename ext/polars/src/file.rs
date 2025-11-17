@@ -203,40 +203,44 @@ pub(crate) fn try_get_rbfile(
 }
 
 pub fn get_ruby_scan_source_input(rb_f: Value, write: bool) -> RbResult<RubyScanSourceInput> {
-    if let Ok(s) = String::try_convert(rb_f) {
-        let mut file_path = PlPath::new(&s);
-        if let Some(p) = file_path.as_ref().as_local_path()
-            && p.starts_with("~/")
-        {
-            file_path = PlPath::Local(resolve_homedir(&p).into());
+    Ruby::attach(|_rb| {
+        if let Ok(s) = String::try_convert(rb_f) {
+            let mut file_path = PlPath::new(&s);
+            if let Some(p) = file_path.as_ref().as_local_path()
+                && p.starts_with("~/")
+            {
+                file_path = PlPath::Local(resolve_homedir(&p).into());
+            }
+            Ok(RubyScanSourceInput::Path(file_path))
+        } else {
+            let f = RbFileLikeObject::with_requirements(rb_f, !write, write, !write)?;
+            Ok(RubyScanSourceInput::Buffer(MemSlice::from_bytes(
+                f.as_bytes(),
+            )))
         }
-        Ok(RubyScanSourceInput::Path(file_path))
-    } else {
-        let f = RbFileLikeObject::with_requirements(rb_f, !write, write, !write)?;
-        Ok(RubyScanSourceInput::Buffer(MemSlice::from_bytes(
-            f.as_bytes(),
-        )))
-    }
+    })
 }
 
 ///
 /// # Arguments
 /// * `truncate` - open or create a new file.
 pub fn get_either_file(rb_f: Value, truncate: bool) -> RbResult<EitherRustRubyFile> {
-    if let Ok(rstring) = RString::try_convert(rb_f) {
-        let s = unsafe { rstring.as_str() }?;
-        let file_path = std::path::Path::new(&s);
-        let file_path = resolve_homedir(&file_path);
-        let f = if truncate {
-            create_file(&file_path).map_err(RbPolarsErr::from)?
+    Ruby::attach(|_rb| {
+        if let Ok(rstring) = RString::try_convert(rb_f) {
+            let s = unsafe { rstring.as_str() }?;
+            let file_path = std::path::Path::new(&s);
+            let file_path = resolve_homedir(&file_path);
+            let f = if truncate {
+                create_file(&file_path).map_err(RbPolarsErr::from)?
+            } else {
+                polars_utils::open_file(&file_path).map_err(RbPolarsErr::from)?
+            };
+            Ok(EitherRustRubyFile::Rust(f.into()))
         } else {
-            polars_utils::open_file(&file_path).map_err(RbPolarsErr::from)?
-        };
-        Ok(EitherRustRubyFile::Rust(f.into()))
-    } else {
-        let f = RbFileLikeObject::with_requirements(rb_f, !truncate, truncate, !truncate)?;
-        Ok(EitherRustRubyFile::Rb(f))
-    }
+            let f = RbFileLikeObject::with_requirements(rb_f, !truncate, truncate, !truncate)?;
+            Ok(EitherRustRubyFile::Rb(f))
+        }
+    })
 }
 
 pub fn get_file_like(f: Value, truncate: bool) -> RbResult<Box<dyn FileLike>> {
