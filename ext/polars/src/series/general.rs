@@ -392,23 +392,25 @@ impl RbSeries {
     }
 
     pub fn value_counts(
-        &self,
+        rb: &Ruby,
+        self_: &Self,
         sort: bool,
         parallel: bool,
         name: String,
         normalize: bool,
     ) -> RbResult<RbDataFrame> {
-        let out = self
-            .series
-            .read()
-            .value_counts(sort, parallel, name.into(), normalize)
-            .map_err(RbPolarsErr::from)?;
-        Ok(out.into())
+        rb.enter_polars_df(|| {
+            self_
+                .series
+                .read()
+                .value_counts(sort, parallel, name.into(), normalize)
+        })
     }
 
     pub fn slice(&self, offset: i64, length: Option<usize>) -> Self {
-        let length = length.unwrap_or_else(|| self.series.read().len());
-        self.series.read().slice(offset, length).into()
+        let s = self.series.read();
+        let length = length.unwrap_or_else(|| s.len());
+        s.slice(offset, length).into()
     }
 
     pub fn not_(rb: &Ruby, self_: &Self) -> RbResult<Self> {
