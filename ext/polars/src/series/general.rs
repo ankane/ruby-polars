@@ -497,15 +497,3 @@ impl_set_with_mask!(set_with_mask_i16, i16, i16, Int16);
 impl_set_with_mask!(set_with_mask_i32, i32, i32, Int32);
 impl_set_with_mask!(set_with_mask_i64, i64, i64, Int64);
 impl_set_with_mask!(set_with_mask_bool, bool, bool, Boolean);
-
-impl RbSeries {
-    pub fn extend_constant(&self, value: Wrap<AnyValue>, n: usize) -> RbResult<Self> {
-        Ok(self
-            .series
-            .read()
-            .clone()
-            .extend_constant(value.0, n)
-            .map_err(RbPolarsErr::from)?
-            .into())
-    }
-}
