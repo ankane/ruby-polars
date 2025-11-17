@@ -1,6 +1,5 @@
 use magnus::Ruby;
 
-use crate::error::RbPolarsErr;
 use crate::prelude::*;
 use crate::utils::EnterPolarsExt;
 use crate::{RbResult, RbSeries};
@@ -113,58 +112,19 @@ impl_op!(lt_eq, lt_eq_i128, i128);
 impl_op!(lt_eq, lt_eq_f32, f32);
 impl_op!(lt_eq, lt_eq_f64, f64);
 
-impl RbSeries {
-    pub fn eq_str(&self, rhs: String) -> RbResult<Self> {
-        let s = self
-            .series
-            .read()
-            .equal(rhs.as_str())
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbSeries::new(s.into_series()))
-    }
-
-    pub fn neq_str(&self, rhs: String) -> RbResult<Self> {
-        let s = self
-            .series
-            .read()
-            .not_equal(rhs.as_str())
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbSeries::new(s.into_series()))
-    }
-
-    pub fn gt_str(&self, rhs: String) -> RbResult<Self> {
-        let s = self
-            .series
-            .read()
-            .gt(rhs.as_str())
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbSeries::new(s.into_series()))
-    }
-
-    pub fn gt_eq_str(&self, rhs: String) -> RbResult<Self> {
-        let s = self
-            .series
-            .read()
-            .gt_eq(rhs.as_str())
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbSeries::new(s.into_series()))
-    }
-
-    pub fn lt_str(&self, rhs: String) -> RbResult<Self> {
-        let s = self
-            .series
-            .read()
-            .lt(rhs.as_str())
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbSeries::new(s.into_series()))
-    }
-
-    pub fn lt_eq_str(&self, rhs: String) -> RbResult<Self> {
-        let s = self
-            .series
-            .read()
-            .lt_eq(rhs.as_str())
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbSeries::new(s.into_series()))
-    }
+macro_rules! impl_str {
+    ($name:ident, $method:ident) => {
+        impl RbSeries {
+            pub fn $name(rb: &Ruby, self_: &Self, rhs: String) -> RbResult<Self> {
+                rb.enter_polars_series(|| self_.series.read().$method(rhs.as_str()))
+            }
+        }
+    };
 }
+
+impl_str!(eq_str, equal);
+impl_str!(neq_str, not_equal);
+impl_str!(gt_str, gt);
+impl_str!(gt_eq_str, gt_eq);
+impl_str!(lt_str, lt);
+impl_str!(lt_eq_str, lt_eq);
