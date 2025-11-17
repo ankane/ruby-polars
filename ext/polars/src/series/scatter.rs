@@ -2,18 +2,21 @@ use arrow::array::Array;
 use polars::prelude::*;
 
 use crate::error::RbPolarsErr;
-use crate::{RbErr, RbResult, RbSeries};
+use crate::utils::EnterPolarsExt;
+use crate::{RbErr, RbResult, RbSeries, Ruby};
 
 impl RbSeries {
-    pub fn scatter(&self, idx: &RbSeries, values: &RbSeries) -> RbResult<()> {
-        let mut s = self.series.write();
-        match scatter(s.clone(), &idx.series.read(), &values.series.read()) {
-            Ok(out) => {
-                *s = out;
-                Ok(())
+    pub fn scatter(rb: &Ruby, self_: &Self, idx: &RbSeries, values: &RbSeries) -> RbResult<()> {
+        rb.enter_polars(|| {
+            let mut s = self_.series.write();
+            match scatter(s.clone(), &idx.series.read(), &values.series.read()) {
+                Ok(out) => {
+                    *s = out;
+                    Ok(())
+                }
+                Err(e) => Err(RbErr::from(RbPolarsErr::from(e))),
             }
-            Err(e) => Err(RbErr::from(RbPolarsErr::from(e))),
-        }
+        })
     }
 }
 
