@@ -13,8 +13,8 @@ pub(crate) fn pl_utils(rb: &Ruby) -> RModule {
     rb.get_inner(&UTILS)
 }
 
-pub(crate) fn pl_series() -> RClass {
-    Ruby::get().unwrap().get_inner(&SERIES)
+pub(crate) fn pl_series(rb: &Ruby) -> RClass {
+    rb.get_inner(&SERIES)
 }
 
 static BIGDECIMAL: Lazy<RClass> =

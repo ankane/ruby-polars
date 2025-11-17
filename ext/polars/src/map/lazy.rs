@@ -12,7 +12,7 @@ fn to_series(v: Value, name: &str) -> PolarsResult<Series> {
         _ => {
             let data = ruby.ary_new();
             data.push(v).unwrap();
-            let res = pl_series().funcall::<_, _, Value>("new", (name.to_string(), data));
+            let res = pl_series(&ruby).funcall::<_, _, Value>("new", (name.to_string(), data));
 
             match res {
                 Ok(ruby_s) => ruby_s.funcall::<_, _, &RbSeries>("_s", ()).unwrap(),

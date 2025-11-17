@@ -91,7 +91,8 @@ pub(crate) fn get_series(obj: Value) -> RbResult<Series> {
 }
 
 pub(crate) fn to_series(s: RbSeries) -> Value {
-    let series = pl_series();
+    let ruby = Ruby::get().unwrap();
+    let series = pl_series(&ruby);
     series
         .funcall::<_, _, Value>("_from_rbseries", (s,))
         .unwrap()
