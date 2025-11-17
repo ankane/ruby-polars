@@ -1051,7 +1051,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("name", method!(RbSeries::name, 0))?;
     class.define_method("rename", method!(RbSeries::rename, 1))?;
     class.define_method("dtype", method!(RbSeries::dtype, 0))?;
-    class.define_method("inner_dtype", method!(RbSeries::inner_dtype, 0))?;
     class.define_method("set_sorted", method!(RbSeries::set_sorted_flag, 1))?;
     class.define_method("mean", method!(RbSeries::mean, 0))?;
     class.define_method("max", method!(RbSeries::max, 0))?;
@@ -1080,7 +1079,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("all", method!(RbSeries::all, 1))?;
     class.define_method("arg_min", method!(RbSeries::arg_min, 0))?;
     class.define_method("arg_max", method!(RbSeries::arg_max, 0))?;
-    class.define_method("take_with_series", method!(RbSeries::take_with_series, 1))?;
+    class.define_method(
+        "gather_with_series",
+        method!(RbSeries::gather_with_series, 1),
+    )?;
     class.define_method("null_count", method!(RbSeries::null_count, 0))?;
     class.define_method("has_nulls", method!(RbSeries::has_nulls, 0))?;
     class.define_method("sample_n", method!(RbSeries::sample_n, 4))?;
@@ -1118,7 +1120,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("get_chunks", method!(RbSeries::get_chunks, 0))?;
     class.define_method("is_sorted", method!(RbSeries::is_sorted, 2))?;
     class.define_method("clear", method!(RbSeries::clear, 0))?;
-    class.define_method("time_unit", method!(RbSeries::time_unit, 0))?;
     class.define_method("scatter", method!(RbSeries::scatter, 2))?;
 
     // set

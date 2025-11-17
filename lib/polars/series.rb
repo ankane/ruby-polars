@@ -435,7 +435,7 @@ module Polars
     # @return [Object]
     def [](item)
       if item.is_a?(Series) && [UInt8, UInt16, UInt32, UInt64, Int8, Int16, Int32, Int64].include?(item.dtype)
-        return Utils.wrap_s(_s.take_with_series(_pos_idxs(item)._s))
+        return Utils.wrap_s(_s.gather_with_series(_pos_idxs(item)._s))
       end
 
       if item.is_a?(Series) && item.bool?
@@ -455,7 +455,7 @@ module Polars
       end
 
       if Utils.is_int_sequence(item)
-        return Utils.wrap_s(_s.take_with_series(_pos_idxs(Series.new("", item))._s))
+        return Utils.wrap_s(_s.gather_with_series(_pos_idxs(Series.new("", item))._s))
       end
 
       raise ArgumentError, "Cannot get item of type: #{item.class.name}"

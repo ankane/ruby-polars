@@ -148,15 +148,6 @@ impl RbSeries {
         Wrap(self_.series.read().dtype().clone()).into_value_with(rb)
     }
 
-    pub fn inner_dtype(rb: &Ruby, self_: &Self) -> Option<Value> {
-        self_
-            .series
-            .read()
-            .dtype()
-            .inner_dtype()
-            .map(|dt| Wrap(dt.clone()).into_value_with(rb))
-    }
-
     pub fn set_sorted_flag(&self, descending: bool) -> Self {
         let mut out = self.series.read().clone();
         if descending {
@@ -226,31 +217,8 @@ impl RbSeries {
         })
     }
 
-    pub fn value_counts(
-        &self,
-        sort: bool,
-        parallel: bool,
-        name: String,
-        normalize: bool,
-    ) -> RbResult<RbDataFrame> {
-        let out = self
-            .series
-            .read()
-            .value_counts(sort, parallel, name.into(), normalize)
-            .map_err(RbPolarsErr::from)?;
-        Ok(out.into())
-    }
-
-    pub fn slice(&self, offset: i64, length: Option<usize>) -> Self {
-        let length = length.unwrap_or_else(|| self.series.read().len());
-        self.series.read().slice(offset, length).into()
-    }
-
-    pub fn take_with_series(&self, indices: &RbSeries) -> RbResult<Self> {
-        let binding = indices.series.read();
-        let idx = binding.idx().map_err(RbPolarsErr::from)?;
-        let take = self.series.read().take(idx).map_err(RbPolarsErr::from)?;
-        Ok(RbSeries::new(take))
+    pub fn gather_with_series(rb: &Ruby, self_: &Self, indices: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_series(|| self_.series.read().take(indices.series.read().idx()?))
     }
 
     pub fn null_count(&self) -> RbResult<usize> {
@@ -458,19 +426,24 @@ impl RbSeries {
         self.series.read().clear().into()
     }
 
-    pub fn time_unit(&self) -> Option<String> {
-        if let DataType::Datetime(tu, _) | DataType::Duration(tu) = self.series.read().dtype() {
-            Some(
-                match tu {
-                    TimeUnit::Nanoseconds => "ns",
-                    TimeUnit::Microseconds => "us",
-                    TimeUnit::Milliseconds => "ms",
-                }
-                .to_string(),
-            )
-        } else {
-            None
-        }
+    pub fn value_counts(
+        &self,
+        sort: bool,
+        parallel: bool,
+        name: String,
+        normalize: bool,
+    ) -> RbResult<RbDataFrame> {
+        let out = self
+            .series
+            .read()
+            .value_counts(sort, parallel, name.into(), normalize)
+            .map_err(RbPolarsErr::from)?;
+        Ok(out.into())
+    }
+
+    pub fn slice(&self, offset: i64, length: Option<usize>) -> Self {
+        let length = length.unwrap_or_else(|| self.series.read().len());
+        self.series.read().slice(offset, length).into()
     }
 }
 
