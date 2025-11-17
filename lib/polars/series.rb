@@ -5731,7 +5731,7 @@ module Polars
     #   #         9
     #   # ]
     def reshape(dimensions)
-      super
+      self.class._from_rbseries(_s.reshape(dimensions))
     end
 
     # Shuffle the contents of this Series.

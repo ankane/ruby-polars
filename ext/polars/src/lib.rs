@@ -1040,6 +1040,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("cat_is_local", method!(RbSeries::cat_is_local, 0))?;
     class.define_method("cat_to_local", method!(RbSeries::cat_to_local, 0))?;
     class.define_method("estimated_size", method!(RbSeries::estimated_size, 0))?;
+    class.define_method("reshape", method!(RbSeries::reshape, 1))?;
     class.define_method("get_fmt", method!(RbSeries::get_fmt, 2))?;
     class.define_method("rechunk", method!(RbSeries::rechunk, 1))?;
     class.define_method("get_index", method!(RbSeries::get_index, 1))?;

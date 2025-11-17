@@ -56,6 +56,15 @@ impl RbSeries {
         self.series.read().estimated_size()
     }
 
+    pub fn reshape(rb: &Ruby, self_: &Self, dims: Vec<i64>) -> RbResult<Self> {
+        let dims = dims
+            .into_iter()
+            .map(ReshapeDimension::new)
+            .collect::<Vec<_>>();
+
+        rb.enter_polars_series(|| self_.series.read().reshape_array(&dims))
+    }
+
     pub fn get_fmt(&self, index: usize, str_lengths: usize) -> String {
         let val = format!("{}", self.series.read().get(index).unwrap());
         if let DataType::String | DataType::Categorical(_, _) = self.series.read().dtype() {
