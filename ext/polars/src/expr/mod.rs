@@ -15,7 +15,7 @@ mod serde;
 mod string;
 mod r#struct;
 
-use magnus::{RArray, prelude::*};
+use magnus::{RArray, Ruby, prelude::*};
 use polars::lazy::dsl::Expr;
 
 use crate::RbResult;
@@ -43,5 +43,15 @@ impl ToExprs for RArray {
             exprs.push(<&RbExpr>::try_convert(item)?.inner.clone());
         }
         Ok(exprs)
+    }
+}
+
+pub(crate) trait ToRbExprs {
+    fn to_rbexprs(self, rb: &Ruby) -> RArray;
+}
+
+impl ToRbExprs for Vec<Expr> {
+    fn to_rbexprs(self, rb: &Ruby) -> RArray {
+        rb.ary_from_iter(self.iter().map(|e| RbExpr::from(e.clone())))
     }
 }
