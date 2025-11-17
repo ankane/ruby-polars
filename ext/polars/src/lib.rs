@@ -22,6 +22,7 @@ pub(crate) mod rb_modules;
 mod series;
 mod sql;
 mod testing;
+mod timeout;
 mod utils;
 
 use batched_csv::RbBatchedCsv;

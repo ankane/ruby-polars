@@ -4,6 +4,7 @@ use polars::series::IntoSeries;
 use polars_error::PolarsResult;
 
 use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
+use crate::timeout::{cancel_polars_timeout, schedule_polars_timeout};
 
 #[macro_export]
 macro_rules! apply_method_all_arrow_series2 {
@@ -86,7 +87,9 @@ impl EnterPolarsExt for &Ruby {
         F: FnOnce() -> Result<T, E>,
         E: Into<RbPolarsErr>,
     {
+        let timeout = schedule_polars_timeout();
         let ret = self.detach(f);
+        cancel_polars_timeout(timeout);
         match ret {
             Ok(ret) => Ok(ret),
             Err(err) => Err(RbErr::from(err.into())),
