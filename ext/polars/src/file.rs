@@ -79,7 +79,12 @@ impl RbFileLikeObject {
     /// Same as `RbFileLikeObject::new`, but validates that the underlying
     /// ruby object has a `read`, `write`, and `seek` methods in respect to parameters.
     /// Will return a `TypeError` if object does not have `read`, `seek`, and `write` methods.
-    pub fn with_requirements(object: Value, read: bool, write: bool, seek: bool) -> RbResult<Self> {
+    pub fn ensure_requirements(
+        object: Value,
+        read: bool,
+        write: bool,
+        seek: bool,
+    ) -> RbResult<Self> {
         let ruby = Ruby::get_with(object);
 
         if read && !object.respond_to("read", false)? {
@@ -222,7 +227,7 @@ pub(crate) fn try_get_rbfile(
     rb_f: Value,
     write: bool,
 ) -> RbResult<(EitherRustRubyFile, Option<PathBuf>)> {
-    let f = RbFileLikeObject::with_requirements(rb_f, !write, write, !write)?;
+    let f = RbFileLikeObject::ensure_requirements(rb_f, !write, write, !write)?;
     Ok((EitherRustRubyFile::Rb(f), None))
 }
 
@@ -237,7 +242,7 @@ pub fn get_ruby_scan_source_input(rb_f: Value, write: bool) -> RbResult<RubyScan
             }
             Ok(RubyScanSourceInput::Path(file_path))
         } else {
-            let f = RbFileLikeObject::with_requirements(rb_f, !write, write, !write)?;
+            let f = RbFileLikeObject::ensure_requirements(rb_f, !write, write, !write)?;
             Ok(RubyScanSourceInput::Buffer(f.to_memslice()))
         }
     })
