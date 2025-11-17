@@ -239,27 +239,30 @@ impl RbSeries {
     }
 
     pub fn equals(
-        &self,
+        rb: &Ruby,
+        self_: &Self,
         other: &RbSeries,
         check_dtypes: bool,
         check_names: bool,
         null_equal: bool,
-    ) -> bool {
-        if check_dtypes && (self.series.read().dtype() != other.series.read().dtype()) {
-            return false;
+    ) -> RbResult<bool> {
+        let s = self_.series.read();
+        let o = other.series.read();
+        if check_dtypes && (s.dtype() != o.dtype()) {
+            return Ok(false);
         }
-        if check_names && (self.series.read().name() != other.series.read().name()) {
-            return false;
+        if check_names && (s.name() != o.name()) {
+            return Ok(false);
         }
         if null_equal {
-            self.series.read().equals_missing(&other.series.read())
+            rb.enter_polars_ok(|| s.equals_missing(&o))
         } else {
-            self.series.read().equals(&other.series.read())
+            rb.enter_polars_ok(|| s.equals(&o))
         }
     }
 
     pub fn as_str(&self) -> String {
-        format!("{}", self.series.read())
+        format!("{:?}", self.series.read())
     }
 
     pub fn len(&self) -> usize {
