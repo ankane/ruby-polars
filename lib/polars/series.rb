@@ -2734,7 +2734,8 @@ module Polars
     #   #         1
     #   # ]
     def cast(dtype, strict: true, wrap_numerical: false)
-      super
+      dtype = Utils.parse_into_dtype(dtype)
+      self.class._from_rbseries(_s.cast(dtype, strict, wrap_numerical))
     end
 
     # Cast to physical representation of the logical dtype.
@@ -6449,7 +6450,7 @@ module Polars
         base_type = dtype.is_a?(DataType) ? dtype.class : dtype
         if [Date, Datetime, Duration, Time, Categorical, Boolean, Enum].include?(base_type) || dtype.is_a?(Decimal)
           if rbseries.dtype != dtype
-            rbseries = rbseries.cast(dtype, true)
+            rbseries = rbseries.cast(dtype, true, false)
           end
         end
 
@@ -6460,11 +6461,11 @@ module Polars
           elsif rbseries.dtype.float?
             # Go through string so we infer an appropriate scale.
             rbseries = rbseries.cast(
-              String, strict: strict, wrap_numerical: false
+              String, strict, false
             ).str_to_decimal_infer(0)
           elsif rbseries.dtype.integer? || rbseries.dtype == Null
             rbseries = rbseries.cast(
-              Decimal.new(nil, 0), strict: strict, wrap_numerical: false
+              Decimal.new(nil, 0), strict, false
             )
           elsif !rbseries.dtype.is_a?(Decimal)
             msg = "can't convert #{rbseries.dtype} to Decimal"
@@ -6517,7 +6518,7 @@ module Polars
           if dtype
             srs = sequence_from_anyvalue_or_object(name, values)
             if dtype != srs.dtype
-              srs = srs.cast(dtype, strict: false)
+              srs = srs.cast(dtype, false, false)
             end
             return srs
           end

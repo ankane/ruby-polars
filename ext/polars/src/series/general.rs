@@ -1,6 +1,7 @@
 use magnus::{Error, IntoValue, RArray, Ruby, Value, value::ReprValue};
 use polars::prelude::*;
 use polars::series::IsSorted;
+use polars_core::chunked_array::cast::CastOptions;
 use polars_core::utils::flatten::flatten_series;
 
 use crate::conversion::*;
@@ -424,15 +425,21 @@ impl RbSeries {
         rb.enter_polars(|| self_.series.read().kurtosis(fisher, bias))
     }
 
-    pub fn cast(&self, dtype: Wrap<DataType>, strict: bool) -> RbResult<Self> {
-        let dtype = dtype.0;
-        let out = if strict {
-            self.series.read().strict_cast(&dtype)
+    pub fn cast(
+        rb: &Ruby,
+        self_: &Self,
+        dtype: Wrap<DataType>,
+        strict: bool,
+        wrap_numerical: bool,
+    ) -> RbResult<Self> {
+        let options = if wrap_numerical {
+            CastOptions::Overflowing
+        } else if strict {
+            CastOptions::Strict
         } else {
-            self.series.read().cast(&dtype)
+            CastOptions::NonStrict
         };
-        let out = out.map_err(RbPolarsErr::from)?;
-        Ok(out.into())
+        rb.enter_polars_series(|| self_.series.read().cast_with_options(&dtype.0, options))
     }
 
     pub fn get_chunks(ruby: &Ruby, self_: &Self) -> RbResult<RArray> {
