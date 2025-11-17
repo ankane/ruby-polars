@@ -5,7 +5,7 @@ use polars_core::utils::flatten::flatten_series;
 
 use crate::conversion::*;
 use crate::exceptions::RbIndexError;
-use crate::rb_modules;
+use crate::prelude::*;
 use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
 
