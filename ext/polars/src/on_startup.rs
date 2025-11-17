@@ -33,13 +33,13 @@ pub(crate) fn register_startup_deps() {
         });
 
         let object_converter = Arc::new(|av: AnyValue| {
-            let object = ObjectValue {
-                inner: Wrap(av).into_value_with(&Ruby::get().unwrap()).into(),
-            };
+            let object = Ruby::attach(|rb| ObjectValue {
+                inner: Wrap(av).into_value_with(rb).into(),
+            });
             Box::new(object) as Box<dyn Any>
         });
         let rbobject_converter = Arc::new(|av: AnyValue| {
-            let object = Wrap(av).into_value_with(&Ruby::get().unwrap());
+            let object = Ruby::attach(|rb| Wrap(av).into_value_with(rb));
             Box::new(object) as Box<dyn Any>
         });
 
