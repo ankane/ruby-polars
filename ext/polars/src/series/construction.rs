@@ -224,18 +224,4 @@ impl RbSeries {
     pub fn new_decimal(name: String, values: RArray, strict: bool) -> RbResult<Self> {
         Self::new_from_any_values(name, values, strict)
     }
-
-    pub fn repeat(
-        name: String,
-        val: Wrap<AnyValue>,
-        n: usize,
-        dtype: Wrap<DataType>,
-    ) -> RbResult<Self> {
-        let av = val.0;
-        Ok(Series::new(name.into(), &[av])
-            .cast(&dtype.0)
-            .map_err(RbPolarsErr::from)?
-            .new_from_index(0, n)
-            .into())
-    }
 }
