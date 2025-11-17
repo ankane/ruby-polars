@@ -30,7 +30,7 @@ fn to_series(v: Value, name: &str) -> PolarsResult<Series> {
 }
 
 pub fn binary_lambda(lambda: Value, a: Series, b: Series) -> PolarsResult<Option<Series>> {
-    let ruby = Ruby::get().unwrap();
+    let ruby = Ruby::get_with(lambda);
 
     // create a RbSeries struct/object for Ruby
     let rbseries_a = RbSeries::new(a);

@@ -309,14 +309,12 @@ pub fn get_mmap_bytes_reader_and_path<'a>(
     match rb_f {
         RbReadBytes::Bytes(v) => Ok((Box::new(Cursor::new(unsafe { v.as_slice() })), None)),
         RbReadBytes::Other(v) => {
-            let path = PathBuf::try_convert(*v)?;
-            let f = File::open(&path).map_err(|e| {
-                Error::new(
-                    Ruby::get().unwrap().exception_runtime_error(),
-                    e.to_string(),
-                )
-            })?;
-            Ok((Box::new(f), Some(path)))
+            match get_either_buffer_or_path(*v, false)? {
+                (EitherRustRubyFile::Rust(f), path) => Ok((Box::new(f), path)),
+                (EitherRustRubyFile::Rb(f), path) => {
+                    Ok((Box::new(Cursor::new(f.to_memslice())), path))
+                }
+            }
         }
     }
 }
