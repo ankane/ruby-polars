@@ -38,14 +38,10 @@ pub(crate) trait ToExprs {
 
 impl ToExprs for RArray {
     fn to_exprs(self) -> RbResult<Vec<Expr>> {
-        rb_exprs_to_exprs(self)
+        let mut exprs = Vec::new();
+        for item in self.into_iter() {
+            exprs.push(<&RbExpr>::try_convert(item)?.inner.clone());
+        }
+        Ok(exprs)
     }
-}
-
-pub fn rb_exprs_to_exprs(rb_exprs: RArray) -> RbResult<Vec<Expr>> {
-    let mut exprs = Vec::new();
-    for item in rb_exprs.into_iter() {
-        exprs.push(<&RbExpr>::try_convert(item)?.inner.clone());
-    }
-    Ok(exprs)
 }

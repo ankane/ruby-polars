@@ -33,7 +33,6 @@ use error::RbPolarsErr;
 use exceptions::{RbTypeError, RbValueError};
 use expr::RbExpr;
 use expr::datatype::RbDataTypeExpr;
-use expr::rb_exprs_to_exprs;
 use expr::selector::RbSelector;
 use functions::string_cache::RbStringCacheHolder;
 use functions::whenthen::{RbChainedThen, RbChainedWhen, RbThen, RbWhen};

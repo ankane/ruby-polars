@@ -11,7 +11,7 @@ use std::num::NonZeroUsize;
 
 use super::{RbLazyFrame, RbOptFlags, SinkTarget};
 use crate::conversion::*;
-use crate::expr::rb_exprs_to_exprs;
+use crate::expr::ToExprs;
 use crate::expr::selector::RbSelector;
 use crate::io::RbScanOptions;
 use crate::utils::EnterPolarsExt;
@@ -325,7 +325,7 @@ impl RbLazyFrame {
         multithreaded: bool,
     ) -> RbResult<Self> {
         let ldf = self.ldf.read().clone();
-        let exprs = rb_exprs_to_exprs(by)?;
+        let exprs = by.to_exprs()?;
         Ok(ldf
             .sort_by_exprs(
                 exprs,
@@ -342,7 +342,7 @@ impl RbLazyFrame {
 
     pub fn top_k(&self, k: IdxSize, by: RArray, reverse: Vec<bool>) -> RbResult<Self> {
         let ldf = self.ldf.read().clone();
-        let exprs = rb_exprs_to_exprs(by)?;
+        let exprs = by.to_exprs()?;
         Ok(ldf
             .top_k(
                 k,
@@ -354,7 +354,7 @@ impl RbLazyFrame {
 
     pub fn bottom_k(&self, k: IdxSize, by: RArray, reverse: Vec<bool>) -> RbResult<Self> {
         let ldf = self.ldf.read().clone();
-        let exprs = rb_exprs_to_exprs(by)?;
+        let exprs = by.to_exprs()?;
         Ok(ldf
             .bottom_k(
                 k,
@@ -593,19 +593,19 @@ impl RbLazyFrame {
 
     pub fn select(&self, exprs: RArray) -> RbResult<Self> {
         let ldf = self.ldf.read().clone();
-        let exprs = rb_exprs_to_exprs(exprs)?;
+        let exprs = exprs.to_exprs()?;
         Ok(ldf.select(exprs).into())
     }
 
     pub fn select_seq(&self, exprs: RArray) -> RbResult<Self> {
         let ldf = self.ldf.read().clone();
-        let exprs = rb_exprs_to_exprs(exprs)?;
+        let exprs = exprs.to_exprs()?;
         Ok(ldf.select_seq(exprs).into())
     }
 
     pub fn group_by(&self, by: RArray, maintain_order: bool) -> RbResult<RbLazyGroupBy> {
         let ldf = self.ldf.read().clone();
-        let by = rb_exprs_to_exprs(by)?;
+        let by = by.to_exprs()?;
         let lazy_gb = if maintain_order {
             ldf.group_by_stable(by)
         } else {
@@ -624,7 +624,7 @@ impl RbLazyFrame {
     ) -> RbResult<RbLazyGroupBy> {
         let closed_window = closed.0;
         let ldf = self.ldf.read().clone();
-        let by = rb_exprs_to_exprs(by)?;
+        let by = by.to_exprs()?;
         let lazy_gb = ldf.rolling(
             index_column.inner.clone(),
             by,
@@ -652,7 +652,7 @@ impl RbLazyFrame {
         start_by: Wrap<StartBy>,
     ) -> RbResult<RbLazyGroupBy> {
         let closed_window = closed.0;
-        let by = rb_exprs_to_exprs(by)?;
+        let by = by.to_exprs()?;
         let ldf = self.ldf.read().clone();
         let lazy_gb = ldf.group_by_dynamic(
             index_column.inner.clone(),
@@ -745,8 +745,8 @@ impl RbLazyFrame {
         };
         let ldf = self.ldf.read().clone();
         let other = other.ldf.read().clone();
-        let left_on = rb_exprs_to_exprs(left_on)?;
-        let right_on = rb_exprs_to_exprs(right_on)?;
+        let left_on = left_on.to_exprs()?;
+        let right_on = right_on.to_exprs()?;
 
         Ok(ldf
             .join_builder()
@@ -769,7 +769,7 @@ impl RbLazyFrame {
         let ldf = self.ldf.read().clone();
         let other = other.ldf.read().clone();
 
-        let predicates = rb_exprs_to_exprs(predicates)?;
+        let predicates = predicates.to_exprs()?;
 
         Ok(ldf
             .join_builder()
@@ -786,12 +786,12 @@ impl RbLazyFrame {
 
     pub fn with_columns(&self, exprs: RArray) -> RbResult<Self> {
         let ldf = self.ldf.read().clone();
-        Ok(ldf.with_columns(rb_exprs_to_exprs(exprs)?).into())
+        Ok(ldf.with_columns(exprs.to_exprs()?).into())
     }
 
     pub fn with_columns_seq(&self, exprs: RArray) -> RbResult<Self> {
         let ldf = self.ldf.read().clone();
-        Ok(ldf.with_columns_seq(rb_exprs_to_exprs(exprs)?).into())
+        Ok(ldf.with_columns_seq(exprs.to_exprs()?).into())
     }
 
     pub fn rename(&self, existing: Vec<String>, new: Vec<String>, strict: bool) -> Self {

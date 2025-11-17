@@ -1,7 +1,7 @@
 use magnus::RArray;
 use polars::lazy::frame::LazyGroupBy;
 
-use crate::expr::rb_exprs_to_exprs;
+use crate::expr::ToExprs;
 use crate::{RbLazyFrame, RbResult};
 
 #[magnus::wrap(class = "Polars::RbLazyGroupBy")]
@@ -12,7 +12,7 @@ pub struct RbLazyGroupBy {
 impl RbLazyGroupBy {
     pub fn agg(&self, aggs: RArray) -> RbResult<RbLazyFrame> {
         let lgb = self.lgb.clone().unwrap();
-        let aggs = rb_exprs_to_exprs(aggs)?;
+        let aggs = aggs.to_exprs()?;
         Ok(lgb.agg(aggs).into())
     }
 

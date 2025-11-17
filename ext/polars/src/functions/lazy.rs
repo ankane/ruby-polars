@@ -6,10 +6,10 @@ use polars::lazy::dsl;
 use polars::prelude::*;
 
 use crate::conversion::{Wrap, get_lf, get_rbseq};
+use crate::expr::ToExprs;
 use crate::expr::datatype::RbDataTypeExpr;
 use crate::lazyframe::RbOptFlags;
 use crate::map::lazy::binary_lambda;
-use crate::rb_exprs_to_exprs;
 use crate::utils::{EnterPolarsExt, RubyAttach};
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
 
@@ -64,7 +64,7 @@ pub fn arg_sort_by(
     multithreaded: bool,
     maintain_order: bool,
 ) -> RbResult<RbExpr> {
-    let by = rb_exprs_to_exprs(by)?;
+    let by = by.to_exprs()?;
     Ok(dsl::arg_sort_by(
         by,
         SortMultipleOptions {
@@ -83,7 +83,12 @@ pub fn arg_where(condition: &RbExpr) -> RbExpr {
 }
 
 pub fn as_struct(exprs: RArray) -> RbResult<RbExpr> {
-    let exprs = rb_exprs_to_exprs(exprs)?;
+    let exprs = exprs.to_exprs()?;
+    if exprs.is_empty() {
+        return Err(RbValueError::new_err(
+            "expected at least 1 expression in 'as_struct'",
+        ));
+    }
     Ok(dsl::as_struct(exprs).into())
 }
 
@@ -92,7 +97,7 @@ pub fn field(names: Vec<String>) -> RbExpr {
 }
 
 pub fn coalesce(exprs: RArray) -> RbResult<RbExpr> {
-    let exprs = rb_exprs_to_exprs(exprs)?;
+    let exprs = exprs.to_exprs()?;
     Ok(dsl::coalesce(&exprs).into())
 }
 
@@ -150,19 +155,19 @@ pub fn concat_lf(
 }
 
 pub fn concat_list(s: RArray) -> RbResult<RbExpr> {
-    let s = rb_exprs_to_exprs(s)?;
+    let s = s.to_exprs()?;
     let expr = dsl::concat_list(s).map_err(RbPolarsErr::from)?;
     Ok(expr.into())
 }
 
 pub fn concat_arr(s: RArray) -> RbResult<RbExpr> {
-    let s = rb_exprs_to_exprs(s)?;
+    let s = s.to_exprs()?;
     let expr = dsl::concat_arr(s).map_err(RbPolarsErr::from)?;
     Ok(expr.into())
 }
 
 pub fn concat_str(s: RArray, separator: String, ignore_nulls: bool) -> RbResult<RbExpr> {
-    let s = rb_exprs_to_exprs(s)?;
+    let s = s.to_exprs()?;
     Ok(dsl::concat_str(s, &separator, ignore_nulls).into())
 }
 
@@ -186,7 +191,7 @@ pub fn cum_fold(
     return_dtype: Option<&RbDataTypeExpr>,
     include_init: bool,
 ) -> RbResult<RbExpr> {
-    let exprs = rb_exprs_to_exprs(exprs)?;
+    let exprs = exprs.to_exprs()?;
     let lambda = Opaque::from(lambda);
     let func = PlanCallback::new(move |(a, b): (Series, Series)| {
         Ruby::attach(|rb| binary_lambda(rb.get_inner(lambda), a, b).map(|v| v.unwrap()))
@@ -208,7 +213,7 @@ pub fn cum_reduce(
     returns_scalar: bool,
     return_dtype: Option<&RbDataTypeExpr>,
 ) -> RbResult<RbExpr> {
-    let exprs = rb_exprs_to_exprs(exprs)?;
+    let exprs = exprs.to_exprs()?;
     let lambda = Opaque::from(lambda);
     let func = PlanCallback::new(move |(a, b): (Series, Series)| {
         Ruby::attach(|rb| binary_lambda(rb.get_inner(lambda), a, b).map(|v| v.unwrap()))
@@ -336,7 +341,7 @@ pub fn fold(
     returns_scalar: bool,
     return_dtype: Option<&RbDataTypeExpr>,
 ) -> RbResult<RbExpr> {
-    let exprs = rb_exprs_to_exprs(exprs)?;
+    let exprs = exprs.to_exprs()?;
     let lambda = Opaque::from(lambda);
     let func = PlanCallback::new(move |(a, b): (Series, Series)| {
         Ruby::attach(|rb| binary_lambda(rb.get_inner(lambda), a, b).map(|v| v.unwrap()))

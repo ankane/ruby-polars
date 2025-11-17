@@ -9,8 +9,8 @@ use polars_core::series::IsSorted;
 
 use super::selector::RbSelector;
 use crate::conversion::{Wrap, parse_fill_null_strategy};
+use crate::expr::ToExprs;
 use crate::map::lazy::map_single;
-use crate::rb_exprs_to_exprs;
 use crate::{RbExpr, RbPolarsErr, RbResult};
 
 impl RbExpr {
@@ -294,7 +294,7 @@ impl RbExpr {
     }
 
     pub fn top_k_by(&self, by: RArray, k: &Self, reverse: Vec<bool>) -> RbResult<Self> {
-        let by = rb_exprs_to_exprs(by)?;
+        let by = by.to_exprs()?;
         Ok(self
             .inner
             .clone()
@@ -307,7 +307,7 @@ impl RbExpr {
     }
 
     pub fn bottom_k_by(&self, by: RArray, k: &Self, reverse: Vec<bool>) -> RbResult<Self> {
-        let by = rb_exprs_to_exprs(by)?;
+        let by = by.to_exprs()?;
         Ok(self
             .inner
             .clone()
@@ -363,7 +363,7 @@ impl RbExpr {
         multithreaded: bool,
         maintain_order: bool,
     ) -> RbResult<Self> {
-        let by = rb_exprs_to_exprs(by)?;
+        let by = by.to_exprs()?;
         Ok(self
             .inner
             .clone()
@@ -601,21 +601,18 @@ impl RbExpr {
         order_by_nulls_last: bool,
         mapping_strategy: Wrap<WindowMapping>,
     ) -> RbResult<Self> {
-        let partition_by = partition_by.map(rb_exprs_to_exprs).transpose()?;
+        let partition_by = partition_by.map(|v| v.to_exprs()).transpose()?;
 
-        let order_by = order_by
-            .map(rb_exprs_to_exprs)
-            .transpose()?
-            .map(|order_by| {
-                (
-                    order_by,
-                    SortOptions {
-                        descending: order_by_descending,
-                        nulls_last: order_by_nulls_last,
-                        ..Default::default()
-                    },
-                )
-            });
+        let order_by = order_by.map(|v| v.to_exprs()).transpose()?.map(|order_by| {
+            (
+                order_by,
+                SortOptions {
+                    descending: order_by_descending,
+                    nulls_last: order_by_nulls_last,
+                    ..Default::default()
+                },
+            )
+        });
 
         Ok(self
             .inner
