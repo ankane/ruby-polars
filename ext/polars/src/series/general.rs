@@ -1,11 +1,11 @@
-use magnus::{Error, IntoValue, RArray, Ruby, Value, value::ReprValue};
+use magnus::{IntoValue, RArray, Ruby, Value, value::ReprValue};
 use polars::prelude::*;
 use polars::series::IsSorted;
 use polars_core::chunked_array::cast::CastOptions;
 use polars_core::utils::flatten::flatten_series;
 
 use crate::conversion::*;
-use crate::exceptions::RbIndexError;
+use crate::exceptions::{RbIndexError, RbRuntimeError, RbValueError};
 use crate::prelude::*;
 use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
@@ -120,19 +120,16 @@ impl RbSeries {
         Self::get_index(ruby, self_, index)
     }
 
-    pub fn bitand(&self, other: &RbSeries) -> RbResult<Self> {
-        let out = (&*self.series.read() & &*other.series.read()).map_err(RbPolarsErr::from)?;
-        Ok(out.into())
+    pub fn bitand(rb: &Ruby, self_: &Self, other: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_series(|| &*self_.series.read() & &*other.series.read())
     }
 
-    pub fn bitor(&self, other: &RbSeries) -> RbResult<Self> {
-        let out = (&*self.series.read() | &*other.series.read()).map_err(RbPolarsErr::from)?;
-        Ok(out.into())
+    pub fn bitor(rb: &Ruby, self_: &Self, other: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_series(|| &*self_.series.read() | &*other.series.read())
     }
 
-    pub fn bitxor(&self, other: &RbSeries) -> RbResult<Self> {
-        let out = (&*self.series.read() ^ &*other.series.read()).map_err(RbPolarsErr::from)?;
-        Ok(out.into())
+    pub fn bitxor(rb: &Ruby, self_: &Self, other: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_series(|| &*self_.series.read() ^ &*other.series.read())
     }
 
     pub fn chunk_lengths(&self) -> Vec<usize> {
@@ -147,17 +144,17 @@ impl RbSeries {
         self.series.write().rename(name.into());
     }
 
-    pub fn dtype(ruby: &Ruby, self_: &Self) -> Value {
-        Wrap(self_.series.read().dtype().clone()).into_value_with(ruby)
+    pub fn dtype(rb: &Ruby, self_: &Self) -> Value {
+        Wrap(self_.series.read().dtype().clone()).into_value_with(rb)
     }
 
-    pub fn inner_dtype(ruby: &Ruby, self_: &Self) -> Option<Value> {
+    pub fn inner_dtype(rb: &Ruby, self_: &Self) -> Option<Value> {
         self_
             .series
             .read()
             .dtype()
             .inner_dtype()
-            .map(|dt| Wrap(dt.clone()).into_value_with(ruby))
+            .map(|dt| Wrap(dt.clone()).into_value_with(rb))
     }
 
     pub fn set_sorted_flag(&self, descending: bool) -> Self {
@@ -194,47 +191,39 @@ impl RbSeries {
         })
     }
 
-    pub fn new_from_index(
-        ruby: &Ruby,
-        self_: &Self,
-        index: usize,
-        length: usize,
-    ) -> RbResult<Self> {
-        if index >= self_.series.read().len() {
-            Err(Error::new(
-                ruby.exception_arg_error(),
-                "index is out of bounds",
-            ))
+    pub fn new_from_index(rb: &Ruby, self_: &Self, index: usize, length: usize) -> RbResult<Self> {
+        let s = self_.series.read();
+        if index >= s.len() {
+            Err(RbValueError::new_err("index is out of bounds"))
         } else {
-            Ok(self_.series.read().new_from_index(index, length).into())
+            rb.enter_polars_series(|| Ok(s.new_from_index(index, length)))
         }
     }
 
-    pub fn filter(ruby: &Ruby, self_: &Self, filter: &RbSeries) -> RbResult<Self> {
+    pub fn filter(rb: &Ruby, self_: &Self, filter: &RbSeries) -> RbResult<Self> {
         let filter_series = &filter.series.read();
         if let Ok(ca) = filter_series.bool() {
-            let series = self_.series.read().filter(ca).unwrap();
-            Ok(series.into())
+            rb.enter_polars_series(|| self_.series.read().filter(ca))
         } else {
-            Err(Error::new(
-                ruby.exception_runtime_error(),
-                "Expected a boolean mask".to_string(),
-            ))
+            Err(RbRuntimeError::new_err("Expected a boolean mask"))
         }
     }
 
-    pub fn sort(&self, descending: bool, nulls_last: bool, multithreaded: bool) -> RbResult<Self> {
-        Ok(self
-            .series
-            .write()
-            .sort(
+    pub fn sort(
+        rb: &Ruby,
+        self_: &Self,
+        descending: bool,
+        nulls_last: bool,
+        multithreaded: bool,
+    ) -> RbResult<Self> {
+        rb.enter_polars_series(|| {
+            self_.series.read().sort(
                 SortOptions::default()
                     .with_order_descending(descending)
                     .with_nulls_last(nulls_last)
                     .with_multithreaded(multithreaded),
             )
-            .map_err(RbPolarsErr::from)?
-            .into())
+        })
     }
 
     pub fn value_counts(
