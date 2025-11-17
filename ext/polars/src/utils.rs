@@ -6,7 +6,7 @@ use polars::frame::DataFrame;
 use polars::series::IntoSeries;
 use polars_error::PolarsResult;
 use polars_error::signals::{KeyboardInterrupt, catch_keyboard_interrupt};
-use rb_sys::{rb_thread_call_with_gvl, rb_thread_call_without_gvl};
+use rb_sys::{rb_thread_call_with_gvl, rb_thread_call_without_gvl2};
 
 use crate::exceptions::RbKeyboardInterrupt;
 use crate::timeout::{cancel_polars_timeout, schedule_polars_timeout};
@@ -94,7 +94,7 @@ pub trait EnterPolarsExt {
             };
 
             unsafe {
-                rb_thread_call_without_gvl(
+                rb_thread_call_without_gvl2(
                     Some(call_without_gvl::<F, T>),
                     &mut data as *mut _ as *mut c_void,
                     None,
