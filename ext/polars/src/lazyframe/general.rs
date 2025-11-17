@@ -24,7 +24,7 @@ fn rbobject_to_first_path_and_scan_sources(obj: Value) -> RbResult<(Option<PlPat
             Some(path.clone()),
             ScanSources::Paths(FromIterator::from_iter([path])),
         ),
-        RubyScanSourceInput::File(file) => (None, ScanSources::Files([file].into())),
+        RubyScanSourceInput::File(file) => (None, ScanSources::Files([file.into()].into())),
         RubyScanSourceInput::Buffer(buff) => (None, ScanSources::Buffers([buff].into())),
     })
 }

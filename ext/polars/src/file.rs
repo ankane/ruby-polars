@@ -207,6 +207,14 @@ impl EitherRustRubyFile {
         }
     }
 
+    #[allow(dead_code)]
+    fn into_scan_source_input(self) -> RubyScanSourceInput {
+        match self {
+            EitherRustRubyFile::Rb(f) => RubyScanSourceInput::Buffer(f.to_memslice()),
+            EitherRustRubyFile::Rust(f) => RubyScanSourceInput::File(f),
+        }
+    }
+
     pub(crate) fn into_writeable(self) -> Box<dyn DynWriteable> {
         match self {
             Self::Rb(f) => Box::new(f),
@@ -219,7 +227,7 @@ pub enum RubyScanSourceInput {
     Buffer(MemSlice),
     Path(PlPath),
     #[allow(dead_code)]
-    File(File),
+    File(ClosableFile),
 }
 
 pub(crate) fn try_get_rbfile(
