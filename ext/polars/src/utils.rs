@@ -69,6 +69,15 @@ pub trait EnterPolarsExt {
     {
         self.enter_polars(f).map(|s| RbSeries::new(s.into_series()))
     }
+
+    fn detach<T, F>(self, f: F) -> T
+    where
+        Self: Sized,
+        F: FnOnce() -> T,
+    {
+        // TODO release GVL
+        f()
+    }
 }
 
 impl EnterPolarsExt for &Ruby {
@@ -77,7 +86,7 @@ impl EnterPolarsExt for &Ruby {
         F: FnOnce() -> Result<T, E>,
         E: Into<RbPolarsErr>,
     {
-        let ret = f();
+        let ret = self.detach(f);
         match ret {
             Ok(ret) => Ok(ret),
             Err(err) => Err(RbErr::from(err.into())),
