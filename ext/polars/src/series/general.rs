@@ -6,14 +6,12 @@ use polars_core::utils::flatten::flatten_series;
 use crate::conversion::*;
 use crate::exceptions::RbIndexError;
 use crate::rb_modules;
+use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
 
 impl RbSeries {
-    pub fn struct_unnest(&self) -> RbResult<RbDataFrame> {
-        let binding = self.series.read();
-        let ca = binding.struct_().map_err(RbPolarsErr::from)?;
-        let df: DataFrame = ca.clone().unnest();
-        Ok(df.into())
+    pub fn struct_unnest(rb: &Ruby, self_: &Self) -> RbResult<RbDataFrame> {
+        rb.enter_polars_df(|| Ok(self_.series.read().struct_()?.clone().unnest()))
     }
 
     pub fn struct_fields(&self) -> RbResult<Vec<String>> {
@@ -76,13 +74,13 @@ impl RbSeries {
         }
     }
 
-    pub fn rechunk(&self, in_place: bool) -> Option<Self> {
-        let series = self.series.write().rechunk();
+    pub fn rechunk(rb: &Ruby, self_: &Self, in_place: bool) -> RbResult<Option<Self>> {
+        let series = rb.enter_polars_ok(|| self_.series.read().rechunk())?;
         if in_place {
-            *self.series.write() = series;
-            None
+            *self_.series.write() = series;
+            Ok(None)
         } else {
-            Some(series.into())
+            Ok(Some(series.into()))
         }
     }
 
