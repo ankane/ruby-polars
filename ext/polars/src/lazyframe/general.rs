@@ -962,19 +962,15 @@ impl RbLazyFrame {
         self.ldf.read().clone().into()
     }
 
-    pub fn collect_schema(ruby: &Ruby, self_: &Self) -> RbResult<RHash> {
-        let schema = self_
-            .ldf
-            .write()
-            .collect_schema()
-            .map_err(RbPolarsErr::from)?;
+    pub fn collect_schema(rb: &Ruby, self_: &Self) -> RbResult<RHash> {
+        let schema = rb.enter_polars(|| self_.ldf.write().collect_schema())?;
 
-        let schema_dict = ruby.hash_new();
+        let schema_dict = rb.hash_new();
         schema.iter_fields().for_each(|fld| {
             schema_dict
                 .aset::<String, Value>(
                     fld.name().to_string(),
-                    Wrap(fld.dtype().clone()).into_value_with(ruby),
+                    Wrap(fld.dtype().clone()).into_value_with(rb),
                 )
                 .unwrap();
         });
