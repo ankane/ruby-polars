@@ -1202,6 +1202,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("eq_i16", method!(RbSeries::eq_i16, 1))?;
     class.define_method("eq_i32", method!(RbSeries::eq_i32, 1))?;
     class.define_method("eq_i64", method!(RbSeries::eq_i64, 1))?;
+    class.define_method("eq_i128", method!(RbSeries::eq_i128, 1))?;
     class.define_method("eq_f32", method!(RbSeries::eq_f32, 1))?;
     class.define_method("eq_f64", method!(RbSeries::eq_f64, 1))?;
 
@@ -1214,6 +1215,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("neq_i16", method!(RbSeries::neq_i16, 1))?;
     class.define_method("neq_i32", method!(RbSeries::neq_i32, 1))?;
     class.define_method("neq_i64", method!(RbSeries::neq_i64, 1))?;
+    class.define_method("neq_i128", method!(RbSeries::neq_i128, 1))?;
     class.define_method("neq_f32", method!(RbSeries::neq_f32, 1))?;
     class.define_method("neq_f64", method!(RbSeries::neq_f64, 1))?;
 
@@ -1226,6 +1228,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("gt_i16", method!(RbSeries::gt_i16, 1))?;
     class.define_method("gt_i32", method!(RbSeries::gt_i32, 1))?;
     class.define_method("gt_i64", method!(RbSeries::gt_i64, 1))?;
+    class.define_method("gt_i128", method!(RbSeries::gt_i128, 1))?;
     class.define_method("gt_f32", method!(RbSeries::gt_f32, 1))?;
     class.define_method("gt_f64", method!(RbSeries::gt_f64, 1))?;
 
@@ -1238,6 +1241,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("gt_eq_i16", method!(RbSeries::gt_eq_i16, 1))?;
     class.define_method("gt_eq_i32", method!(RbSeries::gt_eq_i32, 1))?;
     class.define_method("gt_eq_i64", method!(RbSeries::gt_eq_i64, 1))?;
+    class.define_method("gt_eq_i128", method!(RbSeries::gt_eq_i128, 1))?;
     class.define_method("gt_eq_f32", method!(RbSeries::gt_eq_f32, 1))?;
     class.define_method("gt_eq_f64", method!(RbSeries::gt_eq_f64, 1))?;
 
@@ -1250,6 +1254,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("lt_i16", method!(RbSeries::lt_i16, 1))?;
     class.define_method("lt_i32", method!(RbSeries::lt_i32, 1))?;
     class.define_method("lt_i64", method!(RbSeries::lt_i64, 1))?;
+    class.define_method("lt_i128", method!(RbSeries::lt_i128, 1))?;
     class.define_method("lt_f32", method!(RbSeries::lt_f32, 1))?;
     class.define_method("lt_f64", method!(RbSeries::lt_f64, 1))?;
 
@@ -1262,6 +1267,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("lt_eq_i16", method!(RbSeries::lt_eq_i16, 1))?;
     class.define_method("lt_eq_i32", method!(RbSeries::lt_eq_i32, 1))?;
     class.define_method("lt_eq_i64", method!(RbSeries::lt_eq_i64, 1))?;
+    class.define_method("lt_eq_i128", method!(RbSeries::lt_eq_i128, 1))?;
     class.define_method("lt_eq_f32", method!(RbSeries::lt_eq_f32, 1))?;
     class.define_method("lt_eq_f64", method!(RbSeries::lt_eq_f64, 1))?;
 
