@@ -261,21 +261,12 @@ impl RbLazyFrame {
         Ok(lf.into())
     }
 
-    pub fn describe_plan(&self) -> RbResult<String> {
-        self.ldf
-            .read()
-            .describe_plan()
-            .map_err(RbPolarsErr::from)
-            .map_err(Into::into)
+    pub fn describe_plan(rb: &Ruby, self_: &Self) -> RbResult<String> {
+        rb.enter_polars(|| self_.ldf.read().describe_plan())
     }
 
-    pub fn describe_optimized_plan(&self) -> RbResult<String> {
-        let result = self
-            .ldf
-            .read()
-            .describe_optimized_plan()
-            .map_err(RbPolarsErr::from)?;
-        Ok(result)
+    pub fn describe_optimized_plan(rb: &Ruby, self_: &Self) -> RbResult<String> {
+        rb.enter_polars(|| self_.ldf.read().describe_optimized_plan())
     }
 
     pub fn describe_plan_tree(rb: &Ruby, self_: &Self) -> RbResult<String> {
