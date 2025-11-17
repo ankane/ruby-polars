@@ -44,7 +44,9 @@ impl RbSQLContext {
     }
 
     pub fn register(&self, name: String, lf: &RbLazyFrame) {
-        self.context.write().register(&name, lf.ldf.read().clone())
+        self.context
+            .write()
+            .register(&name, lf.clone().ldf.into_inner())
     }
 
     pub fn unregister(&self, name: String) {

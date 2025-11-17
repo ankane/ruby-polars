@@ -14,6 +14,7 @@ use crate::prelude::Wrap;
 use crate::{RbResult, RbValueError};
 
 #[magnus::wrap(class = "Polars::RbLazyFrame")]
+#[repr(transparent)]
 pub struct RbLazyFrame {
     pub ldf: RwLock<LazyFrame>,
 }
@@ -31,6 +32,12 @@ impl From<LazyFrame> for RbLazyFrame {
         RbLazyFrame {
             ldf: RwLock::new(ldf),
         }
+    }
+}
+
+impl From<RbLazyFrame> for LazyFrame {
+    fn from(pldf: RbLazyFrame) -> Self {
+        pldf.ldf.into_inner()
     }
 }
 
