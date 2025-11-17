@@ -64,20 +64,16 @@ impl RbFileLikeObject {
         }
     }
 
-    pub fn as_bytes(&self) -> bytes::Bytes {
-        self.as_file_buffer().into_inner().into()
-    }
+    pub(crate) fn to_memslice(&self) -> MemSlice {
+        Ruby::attach(|rb| {
+            let bytes = rb
+                .get_inner(self.inner)
+                .funcall::<_, _, RString>("read", ())
+                .expect("no read method found");
 
-    pub fn as_file_buffer(&self) -> Cursor<Vec<u8>> {
-        let bytes = Ruby::get()
-            .unwrap()
-            .get_inner(self.inner)
-            .funcall::<_, _, RString>("read", ())
-            .expect("no read method found");
-
-        let buf = unsafe { bytes.as_slice() }.to_vec();
-
-        Cursor::new(buf)
+            let b = unsafe { bytes.as_slice() }.to_vec();
+            MemSlice::from_vec(b)
+        })
     }
 
     /// Same as `RbFileLikeObject::new`, but validates that the underlying
@@ -242,9 +238,7 @@ pub fn get_ruby_scan_source_input(rb_f: Value, write: bool) -> RbResult<RubyScan
             Ok(RubyScanSourceInput::Path(file_path))
         } else {
             let f = RbFileLikeObject::with_requirements(rb_f, !write, write, !write)?;
-            Ok(RubyScanSourceInput::Buffer(MemSlice::from_bytes(
-                f.as_bytes(),
-            )))
+            Ok(RubyScanSourceInput::Buffer(f.to_memslice()))
         }
     })
 }
