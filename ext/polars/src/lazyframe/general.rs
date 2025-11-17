@@ -475,7 +475,7 @@ impl RbLazyFrame {
         .map_err(Into::into)
     }
 
-    pub fn sink_csv(&self, arguments: &[Value]) -> RbResult<RbLazyFrame> {
+    pub fn sink_csv(rb: &Ruby, self_: &Self, arguments: &[Value]) -> RbResult<RbLazyFrame> {
         let target = SinkTarget::try_convert(arguments[0])?;
         let include_bom = bool::try_convert(arguments[1])?;
         let include_header = bool::try_convert(arguments[2])?;
@@ -533,13 +533,14 @@ impl RbLazyFrame {
             }
         };
 
-        let ldf = self.ldf.read().clone();
-        match target {
-            SinkTarget::File(target) => {
-                ldf.sink_csv(target, options, cloud_options, sink_options.0)
+        rb.enter_polars(|| {
+            let ldf = self_.ldf.read().clone();
+            match target {
+                SinkTarget::File(target) => {
+                    ldf.sink_csv(target, options, cloud_options, sink_options.0)
+                }
             }
-        }
-        .map_err(RbPolarsErr::from)
+        })
         .map(Into::into)
         .map_err(Into::into)
     }
