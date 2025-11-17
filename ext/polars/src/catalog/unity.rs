@@ -11,6 +11,7 @@ use polars_io::catalog::unity::schema::parse_type_json_str;
 use polars_io::pl_async;
 
 use crate::rb_modules::polars;
+use crate::utils::EnterPolarsExt;
 use crate::utils::to_rb_err;
 use crate::{RbResult, RbValueError, Wrap};
 
@@ -85,15 +86,15 @@ impl RbCatalogClient {
         builder.build().map(RbCatalogClient).map_err(to_rb_err)
     }
 
-    pub fn list_catalogs(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
-        let v = pl_async::get_runtime()
-            .block_in_place_on(self_.client().list_catalogs())
-            .map_err(to_rb_err)?;
+    pub fn list_catalogs(rb: &Ruby, self_: &Self) -> RbResult<Value> {
+        let v = rb.enter_polars(|| {
+            pl_async::get_runtime().block_in_place_on(self_.client().list_catalogs())
+        })?;
 
         let mut opt_err = None;
 
-        let out = ruby.ary_from_iter(v.into_iter().map(|x| {
-            let v = catalog_info_to_rbobject(ruby, x);
+        let out = rb.ary_from_iter(v.into_iter().map(|x| {
+            let v = catalog_info_to_rbobject(rb, x);
             if let Ok(v) = v {
                 Some(v)
             } else {
@@ -107,15 +108,15 @@ impl RbCatalogClient {
         Ok(out.as_value())
     }
 
-    pub fn list_namespaces(ruby: &Ruby, self_: &Self, catalog_name: String) -> RbResult<Value> {
-        let v = pl_async::get_runtime()
-            .block_in_place_on(self_.client().list_namespaces(&catalog_name))
-            .map_err(to_rb_err)?;
+    pub fn list_namespaces(rb: &Ruby, self_: &Self, catalog_name: String) -> RbResult<Value> {
+        let v = rb.enter_polars(|| {
+            pl_async::get_runtime().block_in_place_on(self_.client().list_namespaces(&catalog_name))
+        })?;
 
         let mut opt_err = None;
 
-        let out = ruby.ary_from_iter(v.into_iter().map(|x| {
-            let v = namespace_info_to_rbobject(ruby, x);
+        let out = rb.ary_from_iter(v.into_iter().map(|x| {
+            let v = namespace_info_to_rbobject(rb, x);
             match v {
                 Ok(v) => Some(v),
                 Err(_) => {
@@ -131,20 +132,21 @@ impl RbCatalogClient {
     }
 
     pub fn list_tables(
-        ruby: &Ruby,
+        rb: &Ruby,
         self_: &Self,
         catalog_name: String,
         namespace: String,
     ) -> RbResult<Value> {
-        let v = pl_async::get_runtime()
-            .block_in_place_on(self_.client().list_tables(&catalog_name, &namespace))
-            .map_err(to_rb_err)?;
+        let v = rb.enter_polars(|| {
+            pl_async::get_runtime()
+                .block_in_place_on(self_.client().list_tables(&catalog_name, &namespace))
+        })?;
 
         let mut opt_err = None;
 
-        let out = ruby
+        let out = rb
             .ary_from_iter(v.into_iter().map(|table_info| {
-                let v = table_info_to_rbobject(ruby, table_info);
+                let v = table_info_to_rbobject(rb, table_info);
 
                 if let Ok(v) = v {
                     Some(v)
@@ -161,84 +163,100 @@ impl RbCatalogClient {
     }
 
     pub fn get_table_info(
-        ruby: &Ruby,
+        rb: &Ruby,
         self_: &Self,
         table_name: String,
         catalog_name: String,
         namespace: String,
     ) -> RbResult<Value> {
-        let table_info = pl_async::get_runtime()
-            .block_in_place_on(self_.client().get_table_info(
-                &table_name,
-                &catalog_name,
-                &namespace,
-            ))
+        let table_info = rb
+            .enter_polars(|| {
+                pl_async::get_runtime().block_in_place_on(self_.client().get_table_info(
+                    &table_name,
+                    &catalog_name,
+                    &namespace,
+                ))
+            })
             .map_err(to_rb_err)?;
 
-        table_info_to_rbobject(ruby, table_info)
+        table_info_to_rbobject(rb, table_info)
     }
 
     pub fn create_catalog(
-        ruby: &Ruby,
+        rb: &Ruby,
         self_: &Self,
         catalog_name: String,
         comment: Option<String>,
         storage_root: Option<String>,
     ) -> RbResult<Value> {
-        let catalog_info = pl_async::get_runtime()
-            .block_in_place_on(self_.client().create_catalog(
-                &catalog_name,
-                comment.as_deref(),
-                storage_root.as_deref(),
-            ))
+        let catalog_info = rb
+            .detach(|| {
+                pl_async::get_runtime().block_in_place_on(self_.client().create_catalog(
+                    &catalog_name,
+                    comment.as_deref(),
+                    storage_root.as_deref(),
+                ))
+            })
             .map_err(to_rb_err)?;
 
-        catalog_info_to_rbobject(ruby, catalog_info)
+        catalog_info_to_rbobject(rb, catalog_info)
     }
 
-    pub fn delete_catalog(&self, catalog_name: String, force: bool) -> RbResult<()> {
-        pl_async::get_runtime()
-            .block_in_place_on(self.client().delete_catalog(&catalog_name, force))
-            .map_err(to_rb_err)
+    pub fn delete_catalog(
+        rb: &Ruby,
+        self_: &Self,
+        catalog_name: String,
+        force: bool,
+    ) -> RbResult<()> {
+        rb.detach(|| {
+            pl_async::get_runtime()
+                .block_in_place_on(self_.client().delete_catalog(&catalog_name, force))
+        })
+        .map_err(to_rb_err)
     }
 
     pub fn create_namespace(
-        ruby: &Ruby,
+        rb: &Ruby,
         self_: &Self,
         catalog_name: String,
         namespace: String,
         comment: Option<String>,
         storage_root: Option<String>,
     ) -> RbResult<Value> {
-        let namespace_info = pl_async::get_runtime()
-            .block_in_place_on(self_.client().create_namespace(
-                &catalog_name,
-                &namespace,
-                comment.as_deref(),
-                storage_root.as_deref(),
-            ))
+        let namespace_info = rb
+            .detach(|| {
+                pl_async::get_runtime().block_in_place_on(self_.client().create_namespace(
+                    &catalog_name,
+                    &namespace,
+                    comment.as_deref(),
+                    storage_root.as_deref(),
+                ))
+            })
             .map_err(to_rb_err)?;
 
-        namespace_info_to_rbobject(ruby, namespace_info)
+        namespace_info_to_rbobject(rb, namespace_info)
     }
 
     pub fn delete_namespace(
-        &self,
+        rb: &Ruby,
+        self_: &Self,
         catalog_name: String,
         namespace: String,
         force: bool,
     ) -> RbResult<()> {
-        pl_async::get_runtime()
-            .block_in_place_on(
-                self.client()
-                    .delete_namespace(&catalog_name, &namespace, force),
-            )
-            .map_err(to_rb_err)
+        rb.detach(|| {
+            pl_async::get_runtime().block_in_place_on(self_.client().delete_namespace(
+                &catalog_name,
+                &namespace,
+                force,
+            ))
+        })
+        .map_err(to_rb_err)
     }
 
     #[allow(clippy::too_many_arguments)]
     pub fn create_table(
-        ruby: &Ruby,
+        rb: &Ruby,
         self_: &Self,
         catalog_name: String,
         namespace: String,
@@ -250,47 +268,52 @@ impl RbCatalogClient {
         storage_root: Option<String>,
         properties: Vec<(String, String)>,
     ) -> RbResult<Value> {
-        let table_info = pl_async::get_runtime()
-            .block_in_place_on(
-                self_.client().create_table(
-                    &catalog_name,
-                    &namespace,
-                    &table_name,
-                    schema.as_ref().map(|x| &x.0),
-                    &TableType::from_str(&table_type)
-                        .map_err(|e| RbValueError::new_err(e.to_string()))?,
-                    data_source_format
-                        .as_deref()
-                        .map(DataSourceFormat::from_str)
-                        .transpose()
-                        .map_err(|e| RbValueError::new_err(e.to_string()))?
-                        .as_ref(),
-                    comment.as_deref(),
-                    storage_root.as_deref(),
-                    &mut properties.iter().map(|(a, b)| (a.as_str(), b.as_str())),
-                ),
-            )
-            .map_err(to_rb_err)?;
+        let table_info = rb.detach(|| {
+            pl_async::get_runtime()
+                .block_in_place_on(
+                    self_.client().create_table(
+                        &catalog_name,
+                        &namespace,
+                        &table_name,
+                        schema.as_ref().map(|x| &x.0),
+                        &TableType::from_str(&table_type)
+                            .map_err(|e| RbValueError::new_err(e.to_string()))?,
+                        data_source_format
+                            .as_deref()
+                            .map(DataSourceFormat::from_str)
+                            .transpose()
+                            .map_err(|e| RbValueError::new_err(e.to_string()))?
+                            .as_ref(),
+                        comment.as_deref(),
+                        storage_root.as_deref(),
+                        &mut properties.iter().map(|(a, b)| (a.as_str(), b.as_str())),
+                    ),
+                )
+                .map_err(to_rb_err)
+        })?;
 
-        table_info_to_rbobject(ruby, table_info)
+        table_info_to_rbobject(rb, table_info)
     }
 
     pub fn delete_table(
-        &self,
+        rb: &Ruby,
+        self_: &Self,
         catalog_name: String,
         namespace: String,
         table_name: String,
     ) -> RbResult<()> {
-        pl_async::get_runtime()
-            .block_in_place_on(
-                self.client()
-                    .delete_table(&catalog_name, &namespace, &table_name),
-            )
-            .map_err(to_rb_err)
+        rb.detach(|| {
+            pl_async::get_runtime().block_in_place_on(self_.client().delete_table(
+                &catalog_name,
+                &namespace,
+                &table_name,
+            ))
+        })
+        .map_err(to_rb_err)
     }
 
-    pub fn type_json_to_polars_type(ruby: &Ruby, type_json: String) -> RbResult<Value> {
-        Ok(Wrap(parse_type_json_str(&type_json).map_err(to_rb_err)?).into_value_with(ruby))
+    pub fn type_json_to_polars_type(rb: &Ruby, type_json: String) -> RbResult<Value> {
+        Ok(Wrap(parse_type_json_str(&type_json).map_err(to_rb_err)?).into_value_with(rb))
     }
 }
 
