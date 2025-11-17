@@ -356,6 +356,14 @@ impl RbSeries {
         self.series.read().clear().into()
     }
 
+    pub fn head(rb: &Ruby, self_: &Self, n: usize) -> RbResult<Self> {
+        rb.enter_polars_series(|| Ok(self_.series.read().head(Some(n))))
+    }
+
+    pub fn tail(rb: &Ruby, self_: &Self, n: usize) -> RbResult<Self> {
+        rb.enter_polars_series(|| Ok(self_.series.read().tail(Some(n))))
+    }
+
     pub fn value_counts(
         &self,
         sort: bool,

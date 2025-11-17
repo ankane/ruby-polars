@@ -1118,6 +1118,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("get_chunks", method!(RbSeries::get_chunks, 0))?;
     class.define_method("is_sorted", method!(RbSeries::is_sorted, 2))?;
     class.define_method("clear", method!(RbSeries::clear, 0))?;
+    class.define_method("head", method!(RbSeries::head, 1))?;
+    class.define_method("tail", method!(RbSeries::tail, 1))?;
     class.define_method("scatter", method!(RbSeries::scatter, 2))?;
 
     // set

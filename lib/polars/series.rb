@@ -1841,7 +1841,10 @@ module Polars
     #   #         2
     #   # ]
     def head(n = 10)
-      to_frame.select(F.col(name).head(n)).to_series
+      if n < 0
+        n = [0, len + n].max
+      end
+      self.class._from_rbseries(_s.head(n))
     end
 
     # Get the last `n` rows.
@@ -1862,7 +1865,10 @@ module Polars
     #   #         3
     #   # ]
     def tail(n = 10)
-      to_frame.select(F.col(name).tail(n)).to_series
+      if n < 0
+        n = [0, len + n].max
+      end
+      self.class._from_rbseries(_s.tail(n))
     end
 
     # Get the first `n` rows.
