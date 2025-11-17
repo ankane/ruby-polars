@@ -143,11 +143,15 @@ features = [
     "unique_counts",
 ]
 
-[target.'cfg(target_os = "linux")'.dependencies]
-jemallocator = { version = "0.5", features = ["disable_initial_exec_tls"] }
-
-[target.'cfg(not(any(target_os = "linux", target_os = "windows")))'.dependencies]
+[target.'cfg(not(target_family = "unix"))'.dependencies]
 mimalloc = { version = "0.1", default-features = false }
+
+# Feature background_threads is unsupported on MacOS (https://github.com/jemalloc/jemalloc/issues/843).
+[target.'cfg(all(target_family = "unix", not(target_os = "macos")))'.dependencies]
+tikv-jemallocator = { version = "0.6", features = ["disable_initial_exec_tls", "background_threads"] }
+
+[target.'cfg(all(target_family = "unix", target_os = "macos"))'.dependencies]
+tikv-jemallocator = { version = "0.6", features = ["disable_initial_exec_tls"] }
 
 [features]
 default = []
