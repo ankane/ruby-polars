@@ -9,6 +9,7 @@ use polars::prelude::*;
 use polars_utils::open_file;
 
 use crate::conversion::*;
+use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbPolarsErr, RbResult};
 
 #[magnus::wrap(class = "Polars::RbBatchedCsv")]
@@ -125,14 +126,9 @@ impl RbBatchedCsv {
         })
     }
 
-    pub fn next_batches(ruby: &Ruby, self_: &Self, n: usize) -> RbResult<Option<RArray>> {
+    pub fn next_batches(rb: &Ruby, self_: &Self, n: usize) -> RbResult<Option<RArray>> {
         let reader = &self_.reader;
-        let batches = reader
-            .lock()
-            .map_err(|e| RbPolarsErr::Other(e.to_string()))?
-            .next_batches(n)
-            .map_err(RbPolarsErr::from)?;
-
-        Ok(batches.map(|batches| ruby.ary_from_iter(batches.into_iter().map(RbDataFrame::from))))
+        let batches = rb.enter_polars(move || reader.lock().unwrap().next_batches(n))?;
+        Ok(batches.map(|batches| rb.ary_from_iter(batches.into_iter().map(RbDataFrame::from))))
     }
 }
