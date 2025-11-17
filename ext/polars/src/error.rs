@@ -4,7 +4,11 @@ use magnus::Error;
 use polars::prelude::PolarsError;
 
 use crate::RbErr;
-use crate::exceptions::{AssertionError, ColumnNotFoundError, ComputeError, InvalidOperationError};
+use crate::exceptions::{
+    AssertionError, ColumnNotFoundError, ComputeError, DuplicateError, InvalidOperationError,
+    NoDataError, OutOfBoundsError, SQLInterfaceError, SQLSyntaxError, SchemaError,
+    SchemaFieldNotFoundError, ShapeError, StringCacheMismatchError, StructFieldNotFoundError,
+};
 use crate::rb_modules;
 
 pub enum RbPolarsErr {
@@ -32,8 +36,24 @@ impl From<RbPolarsErr> for Error {
                 PolarsError::AssertionError(err) => AssertionError::new_err(err.to_string()),
                 PolarsError::ColumnNotFound(name) => ColumnNotFoundError::new_err(name.to_string()),
                 PolarsError::ComputeError(err) => ComputeError::new_err(err.to_string()),
+                PolarsError::Duplicate(err) => DuplicateError::new_err(err.to_string()),
                 PolarsError::InvalidOperation(err) => {
                     InvalidOperationError::new_err(err.to_string())
+                }
+                PolarsError::NoData(err) => NoDataError::new_err(err.to_string()),
+                PolarsError::OutOfBounds(err) => OutOfBoundsError::new_err(err.to_string()),
+                PolarsError::SQLInterface(name) => SQLInterfaceError::new_err(name.to_string()),
+                PolarsError::SQLSyntax(name) => SQLSyntaxError::new_err(name.to_string()),
+                PolarsError::SchemaFieldNotFound(name) => {
+                    SchemaFieldNotFoundError::new_err(name.to_string())
+                }
+                PolarsError::SchemaMismatch(err) => SchemaError::new_err(err.to_string()),
+                PolarsError::ShapeMismatch(err) => ShapeError::new_err(err.to_string()),
+                PolarsError::StringCacheMismatch(err) => {
+                    StringCacheMismatchError::new_err(err.to_string())
+                }
+                PolarsError::StructFieldNotFound(name) => {
+                    StructFieldNotFoundError::new_err(name.to_string())
                 }
                 _ => Error::new(rb_modules::error(), err.to_string()),
             },

@@ -1,8 +1,22 @@
 use crate::rb_modules;
-use magnus::{Error, Ruby};
+use magnus::{Error, Module, Ruby};
 use std::borrow::Cow;
 
 macro_rules! create_exception {
+    ($type:ident) => {
+        pub struct $type {}
+
+        impl $type {
+            pub fn new_err<T>(message: T) -> Error
+            where
+                T: Into<Cow<'static, str>>,
+            {
+                let cls = rb_modules::polars().const_get(stringify!($type)).unwrap();
+                Error::new(cls, message)
+            }
+        }
+    };
+
     ($type:ident, $cls:expr) => {
         pub struct $type {}
 
@@ -17,6 +31,23 @@ macro_rules! create_exception {
     };
 }
 
+// Errors
+create_exception!(AssertionError);
+create_exception!(ColumnNotFoundError);
+create_exception!(ComputeError);
+create_exception!(DuplicateError);
+create_exception!(InvalidOperationError);
+create_exception!(NoDataError);
+create_exception!(OutOfBoundsError);
+create_exception!(SQLInterfaceError);
+create_exception!(SQLSyntaxError);
+create_exception!(SchemaError);
+create_exception!(SchemaFieldNotFoundError);
+create_exception!(ShapeError);
+create_exception!(StringCacheMismatchError);
+create_exception!(StructFieldNotFoundError);
+
+// Ruby errors
 create_exception!(RbTypeError, Ruby::get().unwrap().exception_type_error());
 create_exception!(RbValueError, Ruby::get().unwrap().exception_arg_error());
 create_exception!(
@@ -24,7 +55,3 @@ create_exception!(
     Ruby::get().unwrap().exception_range_error()
 );
 create_exception!(RbIndexError, Ruby::get().unwrap().exception_index_error());
-create_exception!(AssertionError, rb_modules::assertion_error());
-create_exception!(ColumnNotFoundError, rb_modules::column_not_found_error());
-create_exception!(ComputeError, rb_modules::compute_error());
-create_exception!(InvalidOperationError, rb_modules::invalid_operation_error());

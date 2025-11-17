@@ -83,10 +83,10 @@ class DataFrameTest < Minitest::Test
   end
 
   def test_new_hash_different_sizes
-    error = assert_raises do
+    error = assert_raises(Polars::ShapeError) do
       Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [1, 2]})
     end
-    assert_match "lengths don't match", error.message
+    assert_match "does not match height", error.message
   end
 
   def test_new_hash_scalar
@@ -282,10 +282,10 @@ class DataFrameTest < Minitest::Test
     end
     assert_equal "wrong number of arguments (given 1, expected 2..3)", error.message
 
-    error = assert_raises do
+    error = assert_raises(Polars::ShapeError) do
       df["d"] = [1, 2]
     end
-    assert_match "lengths don't match", error.message
+    assert_equal "unable to add a column of length 2 to a DataFrame of height 3", error.message
   end
 
   def test_to_h
