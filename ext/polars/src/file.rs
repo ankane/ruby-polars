@@ -9,7 +9,7 @@ use polars::prelude::PlPath;
 use polars::prelude::file::DynWriteable;
 use polars::prelude::sync_on_close::SyncOnCloseType;
 use polars_utils::create_file;
-use polars_utils::file::ClosableFile;
+use polars_utils::file::{ClosableFile, WriteClose};
 use polars_utils::mmap::MemSlice;
 
 use crate::error::RbPolarsErr;
@@ -17,12 +17,13 @@ use crate::prelude::resolve_homedir;
 use crate::utils::RubyAttach;
 use crate::{RbErr, RbResult};
 
-#[derive(Clone)]
 pub struct RbFileLikeObject {
     inner: Opaque<Value>,
     expects_str: bool,
     has_flush: bool,
 }
+
+impl WriteClose for RbFileLikeObject {}
 
 impl DynWriteable for RbFileLikeObject {
     fn as_dyn_write(&self) -> &(dyn io::Write + Send + 'static) {
@@ -36,6 +37,17 @@ impl DynWriteable for RbFileLikeObject {
     }
     fn sync_on_close(&mut self, _sync_on_close: SyncOnCloseType) -> io::Result<()> {
         Ok(())
+    }
+}
+
+impl Clone for RbFileLikeObject {
+    fn clone(&self) -> Self {
+        Ruby::attach(|_rb| Self {
+            // TODO clone
+            inner: self.inner,
+            expects_str: self.expects_str,
+            has_flush: self.has_flush,
+        })
     }
 }
 
