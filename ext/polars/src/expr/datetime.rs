@@ -86,7 +86,6 @@ impl RbExpr {
         self.inner.clone().dt().round(every.inner.clone()).into()
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn dt_replace(
         &self,
         year: &Self,

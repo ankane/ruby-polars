@@ -30,7 +30,6 @@ fn rbobject_to_first_path_and_scan_sources(obj: Value) -> RbResult<(Option<PlPat
 }
 
 impl RbLazyFrame {
-    #[allow(clippy::too_many_arguments)]
     pub fn new_from_ndjson(arguments: &[Value]) -> RbResult<Self> {
         let source = Option::<Value>::try_convert(arguments[0])?;
         let sources = Wrap::<ScanSources>::try_convert(arguments[1])?;
@@ -391,7 +390,6 @@ impl RbLazyFrame {
         })
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn sink_parquet(
         &self,
         target: SinkTarget,
@@ -442,7 +440,6 @@ impl RbLazyFrame {
         .map_err(Into::into)
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn sink_ipc(
         &self,
         target: SinkTarget,
@@ -642,7 +639,6 @@ impl RbLazyFrame {
         Ok(RbLazyGroupBy { lgb: Some(lazy_gb) })
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn group_by_dynamic(
         &self,
         index_column: &RbExpr,
@@ -676,7 +672,6 @@ impl RbLazyFrame {
         Ok(RbLazyGroupBy { lgb: Some(lazy_gb) })
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn join_asof(
         &self,
         other: &RbLazyFrame,
@@ -729,7 +724,6 @@ impl RbLazyFrame {
             .into())
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn join(
         &self,
         other: &RbLazyFrame,

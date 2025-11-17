@@ -30,7 +30,6 @@ impl RbExpr {
         self.inner.clone().str().to_date(options).into()
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn str_to_datetime(
         &self,
         format: Option<String>,

@@ -3,7 +3,6 @@ use polars_testing::asserts::{DataFrameEqualOptions, assert_dataframe_equal};
 use crate::error::RbPolarsErr;
 use crate::{RbDataFrame, RbResult};
 
-#[allow(clippy::too_many_arguments)]
 pub fn assert_dataframe_equal_rb(
     left: &RbDataFrame,
     right: &RbDataFrame,

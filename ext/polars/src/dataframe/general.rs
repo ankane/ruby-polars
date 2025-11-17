@@ -355,7 +355,6 @@ impl RbDataFrame {
         rb.enter_polars_df(|| self_.df.read().unpivot2(args))
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn pivot_expr(
         rb: &Ruby,
         self_: &Self,

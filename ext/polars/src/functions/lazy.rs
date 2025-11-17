@@ -222,7 +222,6 @@ pub fn cum_reduce(
     .into())
 }
 
-#[allow(clippy::too_many_arguments)]
 pub fn datetime(
     year: &RbExpr,
     month: &RbExpr,
@@ -295,7 +294,6 @@ pub fn concat_lf_horizontal(lfs: RArray, parallel: bool) -> RbResult<RbLazyFrame
     Ok(lf.into())
 }
 
-#[allow(clippy::too_many_arguments)]
 pub fn duration(
     weeks: Option<&RbExpr>,
     days: Option<&RbExpr>,

@@ -254,7 +254,6 @@ impl RbCatalogClient {
         .map_err(to_rb_err)
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn create_table(
         rb: &Ruby,
         self_: &Self,

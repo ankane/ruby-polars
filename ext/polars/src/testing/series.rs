@@ -3,7 +3,6 @@ use polars_testing::asserts::{SeriesEqualOptions, assert_series_equal};
 use crate::error::RbPolarsErr;
 use crate::{RbResult, RbSeries};
 
-#[allow(clippy::too_many_arguments)]
 pub fn assert_series_equal_rb(
     left: &RbSeries,
     right: &RbSeries,

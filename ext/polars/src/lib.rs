@@ -1,3 +1,5 @@
+#![allow(clippy::too_many_arguments)]
+
 mod c_api;
 mod batched_csv;
 mod catalog;
