@@ -1,4 +1,4 @@
-## 0.24.0 (unreleased)
+## 1.0.0 (unreleased)
 
 - Added support for streaming engine
 - Added support for releasing GVL
