@@ -430,7 +430,6 @@ impl RbLazyFrame {
             }
         })
         .map(Into::into)
-        .map_err(Into::into)
     }
 
     pub fn sink_ipc(
@@ -472,7 +471,6 @@ impl RbLazyFrame {
             }
         })
         .map(Into::into)
-        .map_err(Into::into)
     }
 
     pub fn sink_csv(rb: &Ruby, self_: &Self, arguments: &[Value]) -> RbResult<RbLazyFrame> {
@@ -542,7 +540,6 @@ impl RbLazyFrame {
             }
         })
         .map(Into::into)
-        .map_err(Into::into)
     }
 
     pub fn sink_json(
@@ -578,7 +575,6 @@ impl RbLazyFrame {
             }
         })
         .map(Into::into)
-        .map_err(Into::into)
     }
 
     pub fn filter(&self, predicate: &RbExpr) -> Self {
