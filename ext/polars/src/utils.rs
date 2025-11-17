@@ -1,10 +1,14 @@
+use std::panic::AssertUnwindSafe;
+
 use magnus::Ruby;
 use polars::frame::DataFrame;
 use polars::series::IntoSeries;
 use polars_error::PolarsResult;
+use polars_error::signals::{KeyboardInterrupt, catch_keyboard_interrupt};
 
-use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
+use crate::exceptions::RbKeyboardInterrupt;
 use crate::timeout::{cancel_polars_timeout, schedule_polars_timeout};
+use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
 
 #[macro_export]
 macro_rules! apply_method_all_arrow_series2 {
@@ -88,11 +92,12 @@ impl EnterPolarsExt for &Ruby {
         E: Into<RbPolarsErr>,
     {
         let timeout = schedule_polars_timeout();
-        let ret = self.detach(f);
+        let ret = self.detach(|| catch_keyboard_interrupt(AssertUnwindSafe(f)));
         cancel_polars_timeout(timeout);
         match ret {
-            Ok(ret) => Ok(ret),
-            Err(err) => Err(RbErr::from(err.into())),
+            Ok(Ok(ret)) => Ok(ret),
+            Ok(Err(err)) => Err(RbErr::from(err.into())),
+            Err(KeyboardInterrupt) => Err(RbKeyboardInterrupt::new_err("")),
         }
     }
 }

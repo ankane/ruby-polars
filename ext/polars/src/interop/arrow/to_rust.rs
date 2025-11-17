@@ -37,7 +37,7 @@ pub(crate) fn normalize_arrow_fields(field: &ArrowField) -> ArrowField {
             } else {
                 field.clone()
             }
-        },
+        }
         _ => field.clone(),
     }
 }

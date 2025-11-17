@@ -44,7 +44,7 @@ pub fn get_timeout() -> Option<Duration> {
         Err(e) => {
             eprintln!("failed to parse POLARS_TIMEOUT_MS: {e:?}");
             None
-        },
+        }
     }
 }
 
@@ -66,7 +66,7 @@ fn timeout_thread(recv: Receiver<TimeoutRequest>) {
                     eprintln!("exiting the process, POLARS_TIMEOUT_MS exceeded");
                     std::thread::sleep(Duration::from_secs_f64(1.0));
                     std::process::exit(1);
-                },
+                }
                 r => r.unwrap(),
             }
         } else {
@@ -77,10 +77,10 @@ fn timeout_thread(recv: Receiver<TimeoutRequest>) {
             TimeoutRequest::Start(duration, id) => {
                 shortest_timeout.push(Priority(Reverse(duration), id));
                 active_timeouts.insert(id);
-            },
+            }
             TimeoutRequest::Cancel(id) => {
                 active_timeouts.remove(&id);
-            },
+            }
         }
     }
 }
