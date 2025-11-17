@@ -11,7 +11,7 @@ use super::{ObjectValue, Wrap, struct_dict};
 
 use crate::exceptions::RbOverflowError;
 use crate::rb_modules::pl_utils;
-use crate::{RbErr, RbPolarsErr, RbResult, RbSeries};
+use crate::{RbErr, RbPolarsErr, RbResult, RbSeries, RbValueError};
 
 impl IntoValue for Wrap<AnyValue<'_>> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
@@ -265,6 +265,6 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
     } else if ob.is_kind_of(crate::rb_modules::bigdecimal()) {
         get_decimal(ob, strict)
     } else {
-        Err(RbPolarsErr::Other(format!("object type not supported {ob:?}")).into())
+        Err(RbValueError::new_err(format!("Cannot convert {ob}")))
     }
 }
