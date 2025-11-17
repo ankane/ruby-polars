@@ -82,25 +82,21 @@ pub trait EnterPolarsExt {
         Self: Sized,
         F: FnOnce() -> T,
     {
-        if std::env::var("POLARS_NO_GVL").is_ok() {
-            let mut data = CallbackData {
-                func: Some(f),
-                result: None,
-            };
+        let mut data = CallbackData {
+            func: Some(f),
+            result: None,
+        };
 
-            unsafe {
-                rb_thread_call_without_gvl(
-                    Some(call_without_gvl::<F, T>),
-                    &mut data as *mut _ as *mut c_void,
-                    None,
-                    std::ptr::null_mut(),
-                );
-            }
-
-            data.result.unwrap()
-        } else {
-            f()
+        unsafe {
+            rb_thread_call_without_gvl(
+                Some(call_without_gvl::<F, T>),
+                &mut data as *mut _ as *mut c_void,
+                None,
+                std::ptr::null_mut(),
+            );
         }
+
+        data.result.unwrap()
     }
 }
 
