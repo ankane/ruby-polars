@@ -29,12 +29,15 @@ impl DynWriteable for RbFileLikeObject {
     fn as_dyn_write(&self) -> &(dyn io::Write + Send + 'static) {
         self as _
     }
+
     fn as_mut_dyn_write(&mut self) -> &mut (dyn io::Write + Send + 'static) {
         self as _
     }
+
     fn close(self: Box<Self>) -> io::Result<()> {
         Ok(())
     }
+
     fn sync_on_close(&mut self, _sync_on_close: SyncOnCloseType) -> io::Result<()> {
         Ok(())
     }
