@@ -1,34 +1,28 @@
-use crate::{RbPolarsErr, RbResult, RbSeries};
+use magnus::Ruby;
+
+use super::RbSeries;
+use crate::RbResult;
+use crate::utils::EnterPolarsExt;
 
 impl RbSeries {
-    pub fn add(&self, other: &RbSeries) -> RbResult<Self> {
-        Ok((&*self.series.read() + &*other.series.read())
-            .map(Into::into)
-            .map_err(RbPolarsErr::from)?)
+    pub fn add(rb: &Ruby, self_: &Self, other: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_series(|| &*self_.series.read() + &*other.series.read())
     }
 
-    pub fn sub(&self, other: &RbSeries) -> RbResult<Self> {
-        Ok((&*self.series.read() - &*other.series.read())
-            .map(Into::into)
-            .map_err(RbPolarsErr::from)?)
+    pub fn sub(rb: &Ruby, self_: &Self, other: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_series(|| &*self_.series.read() - &*other.series.read())
     }
 
-    pub fn mul(&self, other: &RbSeries) -> RbResult<Self> {
-        Ok((&*self.series.read() * &*other.series.read())
-            .map(Into::into)
-            .map_err(RbPolarsErr::from)?)
+    pub fn mul(rb: &Ruby, self_: &Self, other: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_series(|| &*self_.series.read() * &*other.series.read())
     }
 
-    pub fn div(&self, other: &RbSeries) -> RbResult<Self> {
-        Ok((&*self.series.read() / &*other.series.read())
-            .map(Into::into)
-            .map_err(RbPolarsErr::from)?)
+    pub fn div(rb: &Ruby, self_: &Self, other: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_series(|| &*self_.series.read() / &*other.series.read())
     }
 
-    pub fn rem(&self, other: &RbSeries) -> RbResult<Self> {
-        Ok((&*self.series.read() % &*other.series.read())
-            .map(Into::into)
-            .map_err(RbPolarsErr::from)?)
+    pub fn rem(rb: &Ruby, self_: &Self, other: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_series(|| &*self_.series.read() % &*other.series.read())
     }
 }
 
