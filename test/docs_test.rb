@@ -210,6 +210,9 @@ class DocsTest < Minitest::Test
     todo = [:cum_reduce, :reduce, :show_graph, :from_numo].include?(method.name)
     todo |= cls == Polars::NameExpr && method.name == :map
     todo |= cls == Polars::Functions && [:fold, :cum_fold, :cum_sum_horizontal].include?(method.name)
+    todo |= cls == Polars::Expr && method.name == :deserialize
+    todo |= cls == Polars::LazyFrame && [:deserialize, :serialize].include?(method.name)
+    todo |= cls == Polars::MetaExpr && method.name == :serialize
 
     if ENV["EXAMPLES"] && missing_examples?(method, cls)
       warn "Missing examples (#{method})"
@@ -274,10 +277,8 @@ class DocsTest < Minitest::Test
           assert_equal expected, output, "Example output (#{method.name})"
         end
       rescue => e
-        unless e.is_a?(Polars::Todo) && [:deserialize, :serialize].include?(method.name)
-          raise e if ENV["DEBUG"]
-          raise "Example failed (#{method.name}): #{e.message}"
-        end
+        raise e if ENV["DEBUG"]
+        raise "Example failed (#{method.name}): #{e.message}"
       end
     end
   end
