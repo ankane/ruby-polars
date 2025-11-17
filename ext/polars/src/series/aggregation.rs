@@ -1,9 +1,9 @@
+use DataType::*;
 use magnus::{IntoValue, Ruby, Value};
+use polars::prelude::*;
 
-use crate::error::RbPolarsErr;
 use crate::prelude::*;
 use crate::utils::EnterPolarsExt;
-use crate::utils::to_rb_err;
 use crate::{RbResult, RbSeries};
 
 fn scalar_to_rb(scalar: RbResult<Scalar>, rb: &Ruby) -> RbResult<Value> {
@@ -51,73 +51,47 @@ impl RbSeries {
         scalar_to_rb(rb.enter_polars(|| self_.series.read().max_reduce()), rb)
     }
 
-    pub fn mean(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
-        match self_.series.read().dtype() {
-            DataType::Boolean => Ok(Wrap(
-                self_
-                    .series
-                    .read()
-                    .cast(&DataType::UInt8)
-                    .unwrap()
-                    .mean_reduce()
-                    .map_err(to_rb_err)?
-                    .as_any_value(),
-            )
-            .into_value_with(ruby)),
+    pub fn mean(rb: &Ruby, self_: &Self) -> RbResult<Value> {
+        let s = self_.series.read();
+        match s.dtype() {
+            Boolean => scalar_to_rb(
+                rb.enter_polars(|| s.cast(&DataType::UInt8).unwrap().mean_reduce()),
+                rb,
+            ),
             // For non-numeric output types we require mean_reduce.
-            dt if dt.is_temporal() => Ok(Wrap(
-                self_
-                    .series
-                    .read()
-                    .mean_reduce()
-                    .map_err(to_rb_err)?
-                    .as_any_value(),
-            )
-            .into_value_with(ruby)),
-            _ => Ok(self_.series.read().mean().into_value_with(ruby)),
+            dt if dt.is_temporal() => scalar_to_rb(rb.enter_polars(|| s.mean_reduce()), rb),
+            _ => Ok(s.mean().into_value_with(rb)),
         }
     }
 
-    pub fn median(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
-        match self_.series.read().dtype() {
-            DataType::Boolean => Ok(Wrap(
-                self_
-                    .series
-                    .read()
-                    .cast(&DataType::UInt8)
-                    .unwrap()
-                    .median_reduce()
-                    .map_err(RbPolarsErr::from)?
-                    .as_any_value(),
-            )
-            .into_value_with(ruby)),
+    pub fn median(rb: &Ruby, self_: &Self) -> RbResult<Value> {
+        let s = self_.series.read();
+        match s.dtype() {
+            Boolean => scalar_to_rb(
+                rb.enter_polars(|| s.cast(&DataType::UInt8).unwrap().median_reduce()),
+                rb,
+            ),
             // For non-numeric output types we require median_reduce.
-            dt if dt.is_temporal() => Ok(Wrap(
-                self_
-                    .series
-                    .read()
-                    .median_reduce()
-                    .map_err(RbPolarsErr::from)?
-                    .as_any_value(),
-            )
-            .into_value_with(ruby)),
-            _ => Ok(self_.series.read().median().into_value_with(ruby)),
+            dt if dt.is_temporal() => scalar_to_rb(rb.enter_polars(|| s.median_reduce()), rb),
+            _ => Ok(s.median().into_value_with(rb)),
         }
     }
 
     pub fn quantile(
-        ruby: &Ruby,
+        rb: &Ruby,
         self_: &Self,
         quantile: f64,
         interpolation: Wrap<QuantileMethod>,
     ) -> RbResult<Value> {
-        let bind = self_
-            .series
-            .read()
-            .quantile_reduce(quantile, interpolation.0);
-        let sc = bind.map_err(RbPolarsErr::from)?;
-
-        Ok(Wrap(sc.as_any_value()).into_value_with(ruby))
+        scalar_to_rb(
+            rb.enter_polars(|| {
+                self_
+                    .series
+                    .read()
+                    .quantile_reduce(quantile, interpolation.0)
+            }),
+            rb,
+        )
     }
 
     pub fn sum(rb: &Ruby, self_: &Self) -> RbResult<Value> {
