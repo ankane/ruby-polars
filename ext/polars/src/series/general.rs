@@ -270,7 +270,7 @@ impl RbSeries {
     }
 
     pub fn clone(&self) -> Self {
-        RbSeries::new(self.series.read().clone())
+        Clone::clone(self)
     }
 
     pub fn zip_with(rb: &Ruby, self_: &Self, mask: &RbSeries, other: &RbSeries) -> RbResult<Self> {

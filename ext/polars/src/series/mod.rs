@@ -22,6 +22,14 @@ pub struct RbSeries {
     pub series: RwLock<Series>,
 }
 
+impl Clone for RbSeries {
+    fn clone(&self) -> Self {
+        Self {
+            series: RwLock::new(self.series.read().clone()),
+        }
+    }
+}
+
 impl From<Series> for RbSeries {
     fn from(series: Series) -> Self {
         Self::new(series)
