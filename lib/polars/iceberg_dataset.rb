@@ -66,7 +66,7 @@ module Polars
         scan_options = {
           storage_options: @storage_options,
           cast_options: Polars::ScanCastOptions._default_iceberg,
-          allow_missing_columns: true,
+          missing_columns: "insert",
           extra_columns: "ignore",
           _column_mapping: column_mapping,
           _deletion_files: deletion_files
