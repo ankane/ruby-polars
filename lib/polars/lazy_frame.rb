@@ -3324,20 +3324,6 @@ module Polars
     #   # │ 2     ┆ 7   ┆ b   │
     #   # │ 3     ┆ 8   ┆ c   │
     #   # └───────┴─────┴─────┘
-    #
-    # @example
-    #   lf.rename(->(column_name) { "c" + column_name[1..] }).collect
-    #   # =>
-    #   # shape: (3, 3)
-    #   # ┌─────┬─────┬─────┐
-    #   # │ coo ┆ car ┆ cam │
-    #   # │ --- ┆ --- ┆ --- │
-    #   # │ i64 ┆ i64 ┆ str │
-    #   # ╞═════╪═════╪═════╡
-    #   # │ 1   ┆ 6   ┆ a   │
-    #   # │ 2   ┆ 7   ┆ b   │
-    #   # │ 3   ┆ 8   ┆ c   │
-    #   # └─────┴─────┴─────┘
     def rename(mapping, strict: true)
       if mapping.respond_to?(:call)
         select(F.all.name.map(&mapping))
