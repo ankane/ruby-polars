@@ -1,11 +1,12 @@
 use std::sync::{Arc, Mutex};
 
-use magnus::{RHash, TryConvert, Value};
+use magnus::{RHash, Ruby, TryConvert, Value};
 use polars::prelude::sync_on_close::SyncOnCloseType;
 use polars::prelude::{PlPath, SinkOptions, SpecialEq};
 use polars_utils::plpath::PlPathRef;
 
 use crate::prelude::Wrap;
+use crate::utils::RubyAttach;
 use crate::{RbResult, RbValueError};
 
 #[derive(Clone)]
@@ -18,10 +19,10 @@ impl TryConvert for Wrap<polars_plan::dsl::SinkTarget> {
         if let Ok(v) = String::try_convert(ob) {
             Ok(Wrap(polars::prelude::SinkTarget::Path(PlPath::new(&v))))
         } else {
-            let writer = {
+            let writer = Ruby::attach(|_rb| {
                 let rb_f = ob;
                 RbResult::Ok(crate::file::try_get_rbfile(rb_f, true)?.0.into_writeable())
-            }?;
+            })?;
 
             Ok(Wrap(polars_plan::prelude::SinkTarget::Dyn(SpecialEq::new(
                 Arc::new(Mutex::new(Some(writer))),
