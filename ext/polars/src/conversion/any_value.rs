@@ -49,7 +49,7 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
         AnyValue::CategoricalOwned(cat, map) | AnyValue::EnumOwned(cat, map) => unsafe {
             map.cat_to_str_unchecked(cat).into_value_with(ruby)
         },
-        AnyValue::Date(v) => pl_utils().funcall("_to_ruby_date", (v,)).unwrap(),
+        AnyValue::Date(v) => pl_utils(ruby).funcall("_to_ruby_date", (v,)).unwrap(),
         AnyValue::Datetime(v, time_unit, time_zone) => {
             datetime_to_rb_object(v, time_unit, time_zone)
         }
@@ -58,11 +58,11 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
         }
         AnyValue::Duration(v, time_unit) => {
             let time_unit = time_unit.to_ascii();
-            pl_utils()
+            pl_utils(ruby)
                 .funcall("_to_ruby_duration", (v, time_unit))
                 .unwrap()
         }
-        AnyValue::Time(v) => pl_utils().funcall("_to_ruby_time", (v,)).unwrap(),
+        AnyValue::Time(v) => pl_utils(ruby).funcall("_to_ruby_time", (v,)).unwrap(),
         AnyValue::Array(v, _) | AnyValue::List(v) => RbSeries::new(v).to_a().as_value(),
         ref av @ AnyValue::Struct(_, _, flds) => struct_dict(ruby, av._iter_struct_av(), flds),
         AnyValue::StructOwned(payload) => struct_dict(ruby, payload.0.into_iter(), &payload.1),
@@ -79,7 +79,9 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
         AnyValue::Decimal(v, prec, scale) => {
             let mut buf = DecimalFmtBuffer::new();
             let s = buf.format_dec128(v, scale, false, false);
-            pl_utils().funcall("_to_ruby_decimal", (prec, s)).unwrap()
+            pl_utils(ruby)
+                .funcall("_to_ruby_decimal", (prec, s))
+                .unwrap()
         }
     }
 }

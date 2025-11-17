@@ -74,7 +74,7 @@ impl IntoValue for Wrap<&StructChunked> {
 
 impl IntoValue for Wrap<&DurationChunked> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
-        let utils = pl_utils();
+        let utils = pl_utils(ruby);
         let time_unit = Wrap(self.0.time_unit()).into_value_with(ruby);
         let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| {
@@ -89,7 +89,7 @@ impl IntoValue for Wrap<&DurationChunked> {
 
 impl IntoValue for Wrap<&DatetimeChunked> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
-        let utils = pl_utils();
+        let utils = pl_utils(ruby);
         let time_unit = Wrap(self.0.time_unit()).into_value_with(ruby);
         let time_zone = self
             .0
@@ -109,7 +109,7 @@ impl IntoValue for Wrap<&DatetimeChunked> {
 
 impl IntoValue for Wrap<&TimeChunked> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
-        let utils = pl_utils();
+        let utils = pl_utils(ruby);
         let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_time", (v,)).unwrap())
         });
@@ -119,7 +119,7 @@ impl IntoValue for Wrap<&TimeChunked> {
 
 impl IntoValue for Wrap<&DateChunked> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
-        let utils = pl_utils();
+        let utils = pl_utils(ruby);
         let iter = self.0.physical().into_iter().map(|opt_v| {
             opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_date", (v,)).unwrap())
         });
@@ -129,7 +129,7 @@ impl IntoValue for Wrap<&DateChunked> {
 
 impl IntoValue for Wrap<&DecimalChunked> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
-        let utils = pl_utils();
+        let utils = pl_utils(ruby);
         let rb_precision = self.0.precision().into_value_with(ruby);
         let mut buf = DecimalFmtBuffer::new();
         let iter = self.0.physical().into_iter().map(|opt_v| {

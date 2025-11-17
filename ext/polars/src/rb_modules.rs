@@ -9,8 +9,8 @@ pub(crate) fn polars() -> RModule {
     Ruby::get().unwrap().get_inner(&POLARS)
 }
 
-pub(crate) fn pl_utils() -> RModule {
-    Ruby::get().unwrap().get_inner(&UTILS)
+pub(crate) fn pl_utils(rb: &Ruby) -> RModule {
+    rb.get_inner(&UTILS)
 }
 
 pub(crate) fn pl_series() -> RClass {

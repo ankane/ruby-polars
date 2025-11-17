@@ -16,8 +16,8 @@ use crate::rb_modules::pl_utils;
 use crate::utils::RubyAttach;
 
 fn warning_function(msg: &str, _warning: PolarsWarning) {
-    Ruby::attach(|_rb| {
-        if let Err(e) = pl_utils().funcall::<_, _, Value>("_polars_warn", (msg.to_string(),)) {
+    Ruby::attach(|rb| {
+        if let Err(e) = pl_utils(rb).funcall::<_, _, Value>("_polars_warn", (msg.to_string(),)) {
             eprintln!("{e}")
         }
     })

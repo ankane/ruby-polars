@@ -97,7 +97,7 @@ impl RbSeries {
         match av {
             AnyValue::List(s) | AnyValue::Array(s, _) => {
                 let rbseries = RbSeries::new(s);
-                rb_modules::pl_utils().funcall("wrap_s", (rbseries,))
+                rb_modules::pl_utils(ruby).funcall("wrap_s", (rbseries,))
             }
             _ => Ok(Wrap(av).into_value_with(ruby)),
         }
@@ -443,9 +443,9 @@ impl RbSeries {
 
     pub fn get_chunks(ruby: &Ruby, self_: &Self) -> RbResult<RArray> {
         ruby.ary_try_from_iter(
-            flatten_series(&self_.series.read())
-                .into_iter()
-                .map(|s| rb_modules::pl_utils().funcall::<_, _, Value>("wrap_s", (Self::new(s),))),
+            flatten_series(&self_.series.read()).into_iter().map(|s| {
+                rb_modules::pl_utils(ruby).funcall::<_, _, Value>("wrap_s", (Self::new(s),))
+            }),
         )
     }
 

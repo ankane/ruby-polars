@@ -30,13 +30,15 @@ fn to_series(v: Value, name: &str) -> PolarsResult<Series> {
 }
 
 pub fn binary_lambda(lambda: Value, a: Series, b: Series) -> PolarsResult<Option<Series>> {
+    let ruby = Ruby::get().unwrap();
+
     // create a RbSeries struct/object for Ruby
     let rbseries_a = RbSeries::new(a);
     let rbseries_b = RbSeries::new(b);
 
     // Wrap this RbSeries object in the Ruby side Series wrapper
-    let ruby_series_wrapper_a: Value = pl_utils().funcall("wrap_s", (rbseries_a,)).unwrap();
-    let ruby_series_wrapper_b: Value = pl_utils().funcall("wrap_s", (rbseries_b,)).unwrap();
+    let ruby_series_wrapper_a: Value = pl_utils(&ruby).funcall("wrap_s", (rbseries_a,)).unwrap();
+    let ruby_series_wrapper_b: Value = pl_utils(&ruby).funcall("wrap_s", (rbseries_b,)).unwrap();
 
     // call the lambda and get a Ruby side Series wrapper
     let result_series_wrapper: Value =
