@@ -221,26 +221,33 @@ pub fn get_ruby_scan_source_input(rb_f: Value, write: bool) -> RbResult<RubyScan
     })
 }
 
-///
-/// # Arguments
-/// * `truncate` - open or create a new file.
-pub fn get_either_file(rb_f: Value, truncate: bool) -> RbResult<EitherRustRubyFile> {
+pub fn get_either_buffer_or_path(
+    rb_f: Value,
+    write: bool,
+) -> RbResult<(EitherRustRubyFile, Option<PathBuf>)> {
     Ruby::attach(|_rb| {
         if let Ok(rstring) = RString::try_convert(rb_f) {
             let s = unsafe { rstring.as_str() }?;
             let file_path = std::path::Path::new(&s);
             let file_path = resolve_homedir(&file_path);
-            let f = if truncate {
+            let f = if write {
                 create_file(&file_path).map_err(RbPolarsErr::from)?
             } else {
                 polars_utils::open_file(&file_path).map_err(RbPolarsErr::from)?
             };
-            Ok(EitherRustRubyFile::Rust(f.into()))
+            Ok((EitherRustRubyFile::Rust(f.into()), Some(file_path)))
         } else {
-            let f = RbFileLikeObject::with_requirements(rb_f, !truncate, truncate, !truncate)?;
-            Ok(EitherRustRubyFile::Rb(f))
+            let f = RbFileLikeObject::with_requirements(rb_f, !write, write, !write)?;
+            Ok((EitherRustRubyFile::Rb(f), None))
         }
     })
+}
+
+///
+/// # Arguments
+/// * `write` - open for writing; will truncate existing file and create new file if not.
+pub fn get_either_file(rb_f: Value, write: bool) -> RbResult<EitherRustRubyFile> {
+    Ok(get_either_buffer_or_path(rb_f, write)?.0)
 }
 
 pub fn get_file_like(f: Value, truncate: bool) -> RbResult<Box<dyn FileLike>> {
