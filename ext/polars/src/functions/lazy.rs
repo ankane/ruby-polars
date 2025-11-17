@@ -10,7 +10,7 @@ use crate::expr::datatype::RbDataTypeExpr;
 use crate::lazyframe::RbOptFlags;
 use crate::map::lazy::binary_lambda;
 use crate::rb_exprs_to_exprs;
-use crate::utils::EnterPolarsExt;
+use crate::utils::{EnterPolarsExt, RubyAttach};
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
 
 macro_rules! set_unwrapped_or_0 {
@@ -189,7 +189,7 @@ pub fn cum_fold(
     let exprs = rb_exprs_to_exprs(exprs)?;
     let lambda = Opaque::from(lambda);
     let func = PlanCallback::new(move |(a, b): (Series, Series)| {
-        binary_lambda(Ruby::get().unwrap().get_inner(lambda), a, b).map(|v| v.unwrap())
+        Ruby::attach(|rb| binary_lambda(rb.get_inner(lambda), a, b).map(|v| v.unwrap()))
     });
     Ok(dsl::cum_fold_exprs(
         acc.inner.clone(),
@@ -211,7 +211,7 @@ pub fn cum_reduce(
     let exprs = rb_exprs_to_exprs(exprs)?;
     let lambda = Opaque::from(lambda);
     let func = PlanCallback::new(move |(a, b): (Series, Series)| {
-        binary_lambda(Ruby::get().unwrap().get_inner(lambda), a, b).map(|v| v.unwrap())
+        Ruby::attach(|rb| binary_lambda(rb.get_inner(lambda), a, b).map(|v| v.unwrap()))
     });
     Ok(dsl::cum_reduce_exprs(
         func,
@@ -339,7 +339,7 @@ pub fn fold(
     let exprs = rb_exprs_to_exprs(exprs)?;
     let lambda = Opaque::from(lambda);
     let func = PlanCallback::new(move |(a, b): (Series, Series)| {
-        binary_lambda(Ruby::get().unwrap().get_inner(lambda), a, b).map(|v| v.unwrap())
+        Ruby::attach(|rb| binary_lambda(rb.get_inner(lambda), a, b).map(|v| v.unwrap()))
     });
     Ok(dsl::fold_exprs(
         acc.inner.clone(),

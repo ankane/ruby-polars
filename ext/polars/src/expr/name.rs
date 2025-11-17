@@ -3,6 +3,7 @@ use polars::prelude::*;
 use polars_utils::format_pl_smallstr;
 
 use crate::RbExpr;
+use crate::utils::RubyAttach;
 
 impl RbExpr {
     pub fn name_keep(&self) -> Self {
@@ -12,14 +13,16 @@ impl RbExpr {
     pub fn name_map(&self, lambda: Proc) -> Self {
         let lambda = Opaque::from(lambda);
         let func = PlanCallback::new(move |name: PlSmallStr| {
-            let lambda = Ruby::get().unwrap().get_inner(lambda);
-            let out = lambda.call::<_, String>((name.as_str(),));
-            match out {
-                Ok(out) => Ok(format_pl_smallstr!("{}", out)),
-                Err(e) => Err(PolarsError::ComputeError(
-                    format!("Ruby function in 'name.map' produced an error: {e}.").into(),
-                )),
-            }
+            Ruby::attach(|rb| {
+                let lambda = rb.get_inner(lambda);
+                let out = lambda.call::<_, String>((name.as_str(),));
+                match out {
+                    Ok(out) => Ok(format_pl_smallstr!("{}", out)),
+                    Err(e) => Err(PolarsError::ComputeError(
+                        format!("Ruby function in 'name.map' produced an error: {e}.").into(),
+                    )),
+                }
+            })
         });
         self.inner.clone().name().map(func).into()
     }

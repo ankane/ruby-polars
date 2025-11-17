@@ -101,3 +101,20 @@ impl EnterPolarsExt for &Ruby {
         }
     }
 }
+
+pub trait RubyAttach {
+    fn attach<T, F>(f: F) -> T
+    where
+        F: FnOnce(&Ruby) -> T;
+}
+
+impl RubyAttach for Ruby {
+    fn attach<T, F>(f: F) -> T
+    where
+        F: FnOnce(&Ruby) -> T,
+    {
+        let rb = Ruby::get().unwrap();
+        // TODO acquire GVL
+        f(&rb)
+    }
+}
