@@ -6,9 +6,8 @@ use crate::utils::EnterPolarsExt;
 use crate::utils::to_rb_err;
 use crate::{RbResult, RbSeries};
 
-fn scalar_to_rb(scalar: RbResult<Scalar>) -> RbResult<Value> {
-    let ruby = Ruby::get().unwrap();
-    Ok(Wrap(scalar?.as_any_value()).into_value_with(&ruby))
+fn scalar_to_rb(scalar: RbResult<Scalar>, rb: &Ruby) -> RbResult<Value> {
+    Ok(Wrap(scalar?.as_any_value()).into_value_with(&rb))
 }
 
 impl RbSeries {
@@ -44,16 +43,12 @@ impl RbSeries {
         rb.enter_polars_ok(|| self_.series.read().arg_min())
     }
 
-    pub fn max(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
-        Ok(Wrap(
-            self_
-                .series
-                .read()
-                .max_reduce()
-                .map_err(RbPolarsErr::from)?
-                .as_any_value(),
-        )
-        .into_value_with(ruby))
+    pub fn min(rb: &Ruby, self_: &Self) -> RbResult<Value> {
+        scalar_to_rb(rb.enter_polars(|| self_.series.read().min_reduce()), rb)
+    }
+
+    pub fn max(rb: &Ruby, self_: &Self) -> RbResult<Value> {
+        scalar_to_rb(rb.enter_polars(|| self_.series.read().max_reduce()), rb)
     }
 
     pub fn mean(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
@@ -110,18 +105,6 @@ impl RbSeries {
         }
     }
 
-    pub fn min(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
-        Ok(Wrap(
-            self_
-                .series
-                .read()
-                .min_reduce()
-                .map_err(RbPolarsErr::from)?
-                .as_any_value(),
-        )
-        .into_value_with(ruby))
-    }
-
     pub fn quantile(
         ruby: &Ruby,
         self_: &Self,
@@ -137,55 +120,31 @@ impl RbSeries {
         Ok(Wrap(sc.as_any_value()).into_value_with(ruby))
     }
 
-    pub fn sum(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
-        Ok(Wrap(
-            self_
-                .series
-                .read()
-                .sum_reduce()
-                .map_err(RbPolarsErr::from)?
-                .as_any_value(),
-        )
-        .into_value_with(ruby))
+    pub fn sum(rb: &Ruby, self_: &Self) -> RbResult<Value> {
+        scalar_to_rb(rb.enter_polars(|| self_.series.read().sum_reduce()), rb)
     }
 
-    pub fn first(&self) -> RbResult<Value> {
-        scalar_to_rb(Ok(self.series.read().first()))
+    pub fn first(rb: &Ruby, self_: &Self) -> RbResult<Value> {
+        scalar_to_rb(rb.enter_polars_ok(|| self_.series.read().first()), rb)
     }
 
-    pub fn last(&self) -> RbResult<Value> {
-        scalar_to_rb(Ok(self.series.read().last()))
+    pub fn last(rb: &Ruby, self_: &Self) -> RbResult<Value> {
+        scalar_to_rb(rb.enter_polars_ok(|| self_.series.read().last()), rb)
     }
 
-    pub fn approx_n_unique(&self) -> RbResult<IdxSize> {
-        Ok(self
-            .series
-            .read()
-            .approx_n_unique()
-            .map_err(RbPolarsErr::from)?)
+    pub fn approx_n_unique(rb: &Ruby, self_: &Self) -> RbResult<IdxSize> {
+        rb.enter_polars(|| self_.series.read().approx_n_unique())
     }
 
-    pub fn bitwise_and(&self) -> RbResult<Value> {
-        scalar_to_rb(Ok(self
-            .series
-            .read()
-            .and_reduce()
-            .map_err(RbPolarsErr::from)?))
+    pub fn bitwise_and(rb: &Ruby, self_: &Self) -> RbResult<Value> {
+        scalar_to_rb(rb.enter_polars(|| self_.series.read().and_reduce()), rb)
     }
 
-    pub fn bitwise_or(&self) -> RbResult<Value> {
-        scalar_to_rb(Ok(self
-            .series
-            .read()
-            .or_reduce()
-            .map_err(RbPolarsErr::from)?))
+    pub fn bitwise_or(rb: &Ruby, self_: &Self) -> RbResult<Value> {
+        scalar_to_rb(rb.enter_polars(|| self_.series.read().or_reduce()), rb)
     }
 
-    pub fn bitwise_xor(&self) -> RbResult<Value> {
-        scalar_to_rb(Ok(self
-            .series
-            .read()
-            .xor_reduce()
-            .map_err(RbPolarsErr::from)?))
+    pub fn bitwise_xor(rb: &Ruby, self_: &Self) -> RbResult<Value> {
+        scalar_to_rb(rb.enter_polars(|| self_.series.read().xor_reduce()), rb)
     }
 }
