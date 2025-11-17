@@ -1,60 +1,33 @@
+use magnus::Ruby;
+
 use crate::error::RbPolarsErr;
 use crate::prelude::*;
+use crate::utils::EnterPolarsExt;
 use crate::{RbResult, RbSeries};
 
 impl RbSeries {
-    pub fn eq(&self, rhs: &RbSeries) -> RbResult<Self> {
-        let s = self
-            .series
-            .read()
-            .equal(&*rhs.series.read())
-            .map_err(RbPolarsErr::from)?;
-        Ok(Self::new(s.into_series()))
+    pub fn eq(rb: &Ruby, self_: &Self, rhs: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_series(|| self_.series.read().equal(&*rhs.series.read()))
     }
 
-    pub fn neq(&self, rhs: &RbSeries) -> RbResult<Self> {
-        let s = self
-            .series
-            .read()
-            .not_equal(&*rhs.series.read())
-            .map_err(RbPolarsErr::from)?;
-        Ok(Self::new(s.into_series()))
+    pub fn neq(rb: &Ruby, self_: &Self, rhs: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_series(|| self_.series.read().not_equal(&*rhs.series.read()))
     }
 
-    pub fn gt(&self, rhs: &RbSeries) -> RbResult<Self> {
-        let s = self
-            .series
-            .read()
-            .gt(&*rhs.series.read())
-            .map_err(RbPolarsErr::from)?;
-        Ok(Self::new(s.into_series()))
+    pub fn gt(rb: &Ruby, self_: &Self, rhs: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_series(|| self_.series.read().gt(&*rhs.series.read()))
     }
 
-    pub fn gt_eq(&self, rhs: &RbSeries) -> RbResult<Self> {
-        let s = self
-            .series
-            .read()
-            .gt_eq(&*rhs.series.read())
-            .map_err(RbPolarsErr::from)?;
-        Ok(Self::new(s.into_series()))
+    pub fn gt_eq(rb: &Ruby, self_: &Self, rhs: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_series(|| self_.series.read().gt_eq(&*rhs.series.read()))
     }
 
-    pub fn lt(&self, rhs: &RbSeries) -> RbResult<Self> {
-        let s = self
-            .series
-            .read()
-            .lt(&*rhs.series.read())
-            .map_err(RbPolarsErr::from)?;
-        Ok(Self::new(s.into_series()))
+    pub fn lt(rb: &Ruby, self_: &Self, rhs: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_series(|| self_.series.read().lt(&*rhs.series.read()))
     }
 
-    pub fn lt_eq(&self, rhs: &RbSeries) -> RbResult<Self> {
-        let s = self
-            .series
-            .read()
-            .lt_eq(&*rhs.series.read())
-            .map_err(RbPolarsErr::from)?;
-        Ok(Self::new(s.into_series()))
+    pub fn lt_eq(rb: &Ruby, self_: &Self, rhs: &RbSeries) -> RbResult<Self> {
+        rb.enter_polars_series(|| self_.series.read().lt_eq(&*rhs.series.read()))
     }
 }
 
