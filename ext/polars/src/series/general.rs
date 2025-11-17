@@ -416,18 +416,12 @@ impl RbSeries {
         Ok(out)
     }
 
-    pub fn skew(&self, bias: bool) -> RbResult<Option<f64>> {
-        let out = self.series.read().skew(bias).map_err(RbPolarsErr::from)?;
-        Ok(out)
+    pub fn skew(rb: &Ruby, self_: &Self, bias: bool) -> RbResult<Option<f64>> {
+        rb.enter_polars(|| self_.series.read().skew(bias))
     }
 
-    pub fn kurtosis(&self, fisher: bool, bias: bool) -> RbResult<Option<f64>> {
-        let out = self
-            .series
-            .read()
-            .kurtosis(fisher, bias)
-            .map_err(RbPolarsErr::from)?;
-        Ok(out)
+    pub fn kurtosis(rb: &Ruby, self_: &Self, fisher: bool, bias: bool) -> RbResult<Option<f64>> {
+        rb.enter_polars(|| self_.series.read().kurtosis(fisher, bias))
     }
 
     pub fn cast(&self, dtype: Wrap<DataType>, strict: bool) -> RbResult<Self> {
