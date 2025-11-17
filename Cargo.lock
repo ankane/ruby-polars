@@ -1699,6 +1699,7 @@ dependencies = [
  "polars-testing",
  "polars-utils",
  "rayon",
+ "rb-sys",
  "regex",
  "serde_json",
 ]

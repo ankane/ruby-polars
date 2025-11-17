@@ -31,6 +31,7 @@ polars-parquet = "=0.52.0"
 polars-testing = "=0.52.0"
 polars-utils = "=0.52.0"
 rayon = "1.9"
+rb-sys = "0.9"
 regex = "1"
 serde_json = "1"
 

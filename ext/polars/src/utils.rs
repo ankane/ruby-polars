@@ -1,3 +1,4 @@
+use std::os::raw::c_void;
 use std::panic::AssertUnwindSafe;
 
 use magnus::Ruby;
@@ -5,6 +6,7 @@ use polars::frame::DataFrame;
 use polars::series::IntoSeries;
 use polars_error::PolarsResult;
 use polars_error::signals::{KeyboardInterrupt, catch_keyboard_interrupt};
+use rb_sys::{rb_thread_call_with_gvl, rb_thread_call_without_gvl};
 
 use crate::exceptions::RbKeyboardInterrupt;
 use crate::timeout::{cancel_polars_timeout, schedule_polars_timeout};
@@ -80,8 +82,25 @@ pub trait EnterPolarsExt {
         Self: Sized,
         F: FnOnce() -> T,
     {
-        // TODO release GVL
-        f()
+        if let Ok(_) = std::env::var("POLARS_NO_GVL") {
+            let mut data = CallbackData {
+                func: Some(f),
+                result: None,
+            };
+
+            unsafe {
+                rb_thread_call_without_gvl(
+                    Some(call_without_gvl::<F, T>),
+                    &mut data as *mut _ as *mut c_void,
+                    None,
+                    std::ptr::null_mut(),
+                );
+            }
+
+            data.result.unwrap()
+        } else {
+            f()
+        }
     }
 }
 
@@ -113,8 +132,48 @@ impl RubyAttach for Ruby {
     where
         F: FnOnce(&Ruby) -> T,
     {
-        let rb = Ruby::get().unwrap();
-        // TODO acquire GVL
-        f(&rb)
+        if let Ok(rb) = Ruby::get() {
+            f(&rb)
+        } else {
+            let mut data = CallbackData {
+                func: Some(f),
+                result: None,
+            };
+
+            unsafe {
+                rb_thread_call_with_gvl(
+                    Some(call_with_gvl::<F, T>),
+                    &mut data as *mut _ as *mut c_void,
+                );
+            }
+
+            data.result.unwrap()
+        }
     }
+}
+
+struct CallbackData<F, T> {
+    func: Option<F>,
+    result: Option<T>,
+}
+
+extern "C" fn call_without_gvl<F, T>(data: *mut c_void) -> *mut c_void
+where
+    F: FnOnce() -> T,
+{
+    let data = unsafe { &mut *(data as *mut CallbackData<F, T>) };
+    let func = data.func.take().unwrap();
+    data.result = Some(func());
+    std::ptr::null_mut()
+}
+
+extern "C" fn call_with_gvl<F, T>(data: *mut c_void) -> *mut c_void
+where
+    F: FnOnce(&Ruby) -> T,
+{
+    let rb = Ruby::get().unwrap();
+    let data = unsafe { &mut *(data as *mut CallbackData<F, T>) };
+    let func = data.func.take().unwrap();
+    data.result = Some(func(&rb));
+    std::ptr::null_mut()
 }
