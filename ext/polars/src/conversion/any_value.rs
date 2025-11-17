@@ -260,11 +260,11 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
     // call is_a? for ActiveSupport::TimeWithZone
     } else if ob.funcall::<_, _, bool>("is_a?", (ruby.class_time(),))? {
         get_time(ob, strict)
-    } else if ob.is_kind_of(crate::rb_modules::datetime()) {
+    } else if ob.is_kind_of(crate::rb_modules::datetime(&ruby)) {
         get_datetime(ob, strict)
-    } else if ob.is_kind_of(crate::rb_modules::date()) {
+    } else if ob.is_kind_of(crate::rb_modules::date(&ruby)) {
         get_date(ob, strict)
-    } else if ob.is_kind_of(crate::rb_modules::bigdecimal()) {
+    } else if ob.is_kind_of(crate::rb_modules::bigdecimal(&ruby)) {
         get_decimal(ob, strict)
     } else {
         Err(RbValueError::new_err(format!("Cannot convert {ob}")))

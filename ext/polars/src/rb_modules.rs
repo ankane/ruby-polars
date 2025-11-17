@@ -1,9 +1,8 @@
 use magnus::{Module, RClass, RModule, Ruby, value::Lazy};
 
-static POLARS: Lazy<RModule> = Lazy::new(|ruby| ruby.class_object().const_get("Polars").unwrap());
-static UTILS: Lazy<RModule> = Lazy::new(|ruby| ruby.get_inner(&POLARS).const_get("Utils").unwrap());
-static SERIES: Lazy<RClass> =
-    Lazy::new(|ruby| ruby.get_inner(&POLARS).const_get("Series").unwrap());
+static POLARS: Lazy<RModule> = Lazy::new(|rb| rb.class_object().const_get("Polars").unwrap());
+static UTILS: Lazy<RModule> = Lazy::new(|rb| rb.get_inner(&POLARS).const_get("Utils").unwrap());
+static SERIES: Lazy<RClass> = Lazy::new(|rb| rb.get_inner(&POLARS).const_get("Series").unwrap());
 
 pub(crate) fn polars(rb: &Ruby) -> RModule {
     rb.get_inner(&POLARS)
@@ -18,19 +17,18 @@ pub(crate) fn pl_series(rb: &Ruby) -> RClass {
 }
 
 static BIGDECIMAL: Lazy<RClass> =
-    Lazy::new(|ruby| ruby.class_object().const_get("BigDecimal").unwrap());
-static DATE: Lazy<RClass> = Lazy::new(|ruby| ruby.class_object().const_get("Date").unwrap());
-static DATETIME: Lazy<RClass> =
-    Lazy::new(|ruby| ruby.class_object().const_get("DateTime").unwrap());
+    Lazy::new(|rb| rb.class_object().const_get("BigDecimal").unwrap());
+static DATE: Lazy<RClass> = Lazy::new(|rb| rb.class_object().const_get("Date").unwrap());
+static DATETIME: Lazy<RClass> = Lazy::new(|rb| rb.class_object().const_get("DateTime").unwrap());
 
-pub(crate) fn bigdecimal() -> RClass {
-    Ruby::get().unwrap().get_inner(&BIGDECIMAL)
+pub(crate) fn bigdecimal(rb: &Ruby) -> RClass {
+    rb.get_inner(&BIGDECIMAL)
 }
 
-pub(crate) fn date() -> RClass {
-    Ruby::get().unwrap().get_inner(&DATE)
+pub(crate) fn date(rb: &Ruby) -> RClass {
+    rb.get_inner(&DATE)
 }
 
-pub(crate) fn datetime() -> RClass {
-    Ruby::get().unwrap().get_inner(&DATETIME)
+pub(crate) fn datetime(rb: &Ruby) -> RClass {
+    rb.get_inner(&DATETIME)
 }
