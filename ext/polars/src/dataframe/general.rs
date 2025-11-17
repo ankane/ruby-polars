@@ -12,7 +12,8 @@ use crate::map::dataframe::{
     apply_lambda_with_utf8_out_type,
 };
 use crate::prelude::strings_to_pl_smallstr;
-use crate::series::{to_rbseries, to_series};
+use crate::series::ToRbSeries;
+use crate::series::to_series;
 use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 
@@ -123,9 +124,9 @@ impl RbDataFrame {
         format!("{}", self.df.read())
     }
 
-    pub fn get_columns(&self) -> RArray {
-        let cols = self.df.read().get_columns().to_vec();
-        to_rbseries(cols)
+    pub fn get_columns(rb: &Ruby, self_: &Self) -> RArray {
+        let cols = self_.df.read().get_columns().to_vec();
+        cols.to_rbseries(rb)
     }
 
     pub fn columns(&self) -> Vec<String> {

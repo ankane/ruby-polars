@@ -44,12 +44,18 @@ pub fn to_series(rs: RArray) -> RbResult<Vec<Series>> {
     Ok(series)
 }
 
-pub fn to_rbseries(s: Vec<Column>) -> RArray {
-    Ruby::get().unwrap().ary_from_iter(
-        s.into_iter()
-            .map(|c| c.take_materialized_series())
-            .map(RbSeries::new),
-    )
+pub(crate) trait ToRbSeries {
+    fn to_rbseries(self, rb: &Ruby) -> RArray;
+}
+
+impl ToRbSeries for Vec<Column> {
+    fn to_rbseries(self, rb: &Ruby) -> RArray {
+        rb.ary_from_iter(
+            self.into_iter()
+                .map(|c| c.take_materialized_series())
+                .map(RbSeries::new),
+        )
+    }
 }
 
 pub fn mark_series(marker: &gc::Marker, series: &Series) {
