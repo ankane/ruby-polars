@@ -925,6 +925,9 @@ module Polars
       returns_scalar: false,
       return_dtype: nil
     )
+      # need to mark function for GC
+      raise Todo
+
       acc = Utils.parse_into_expression(acc, str_as_lit: true)
       if exprs.is_a?(Expr)
         exprs = [exprs]
@@ -991,6 +994,9 @@ module Polars
       returns_scalar: false,
       return_dtype: nil
     )
+      # need to mark function for GC
+      raise Todo
+
       if exprs.is_a?(Expr)
         exprs = [exprs]
       end
@@ -1068,6 +1074,9 @@ module Polars
       return_dtype: nil,
       include_init: false
     )
+      # need to mark function for GC
+      raise Todo
+
       acc = Utils.parse_into_expression(acc, str_as_lit: true)
       if exprs.is_a?(Expr)
         exprs = [exprs]
@@ -1136,6 +1145,9 @@ module Polars
       returns_scalar: false,
       return_dtype: nil
     )
+      # need to mark function for GC
+      raise Todo
+
       if exprs.is_a?(Expr)
         exprs = [exprs]
       end

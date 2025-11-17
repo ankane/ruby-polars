@@ -209,6 +209,7 @@ class DocsTest < Minitest::Test
     # TODO
     todo = [:cum_reduce, :reduce, :show_graph, :from_numo].include?(method.name)
     todo |= cls == Polars::NameExpr && method.name == :map
+    todo |= cls == Polars::Functions && [:fold, :cum_fold].include?(method.name)
 
     if ENV["EXAMPLES"] && missing_examples?(method, cls)
       warn "Missing examples (#{method})"
