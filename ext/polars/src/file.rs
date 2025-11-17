@@ -20,6 +20,8 @@ use crate::{RbErr, RbResult};
 #[derive(Clone)]
 pub struct RbFileLikeObject {
     inner: Opaque<Value>,
+    expects_str: bool,
+    has_flush: bool,
 }
 
 impl DynWriteable for RbFileLikeObject {
@@ -42,9 +44,11 @@ impl RbFileLikeObject {
     /// Creates an instance of a `RbFileLikeObject` from a `Value`.
     /// To assert the object has the required methods methods,
     /// instantiate it with `RbFileLikeObject::require`
-    pub fn new(object: Value) -> Self {
+    pub fn new(object: Value, expects_str: bool, has_flush: bool) -> Self {
         RbFileLikeObject {
             inner: object.into(),
+            expects_str,
+            has_flush,
         }
     }
 
@@ -91,7 +95,10 @@ impl RbFileLikeObject {
             ));
         }
 
-        Ok(RbFileLikeObject::new(object))
+        // TODO fix
+        let expects_str = false;
+        let has_flush = object.respond_to("write", false)?;
+        Ok(RbFileLikeObject::new(object, expects_str, has_flush))
     }
 }
 
@@ -117,7 +124,13 @@ impl Read for RbFileLikeObject {
 
 impl Write for RbFileLikeObject {
     fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
+        let expects_str = self.expects_str;
+
         Ruby::attach(|rb| {
+            if expects_str {
+                todo!();
+            }
+
             let rbbytes = rb.str_from_slice(buf);
 
             let number_bytes_written = rb
@@ -130,11 +143,13 @@ impl Write for RbFileLikeObject {
     }
 
     fn flush(&mut self) -> Result<(), io::Error> {
-        Ruby::attach(|rb| {
-            rb.get_inner(self.inner)
-                .funcall::<_, _, Value>("flush", ())
-                .map_err(rberr_to_io_err)
-        })?;
+        if self.has_flush {
+            Ruby::attach(|rb| {
+                rb.get_inner(self.inner)
+                    .funcall::<_, _, Value>("flush", ())
+                    .map_err(rberr_to_io_err)
+            })?;
+        }
 
         Ok(())
     }
