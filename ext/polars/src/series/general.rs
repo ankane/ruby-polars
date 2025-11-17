@@ -249,42 +249,7 @@ impl RbSeries {
         }
     }
 
-    pub fn not_(&self) -> RbResult<Self> {
-        let binding = self.series.read();
-        let bool = binding.bool().map_err(RbPolarsErr::from)?;
-        Ok((!bool).into_series().into())
-    }
-
-    pub fn shrink_dtype(&self) -> RbResult<Self> {
-        self.series
-            .read()
-            .shrink_type()
-            .map(Into::into)
-            .map_err(RbPolarsErr::from)
-            .map_err(RbErr::from)
-    }
-
-    pub fn str_to_decimal_infer(&self, inference_length: usize) -> RbResult<Self> {
-        let s = self.series.read();
-        let ca = s.str().map_err(RbPolarsErr::from)?;
-        ca.to_decimal_infer(inference_length)
-            .map(Into::into)
-            .map_err(RbPolarsErr::from)
-            .map_err(RbErr::from)
-    }
-
-    pub fn str_json_decode(&self, infer_schema_length: Option<usize>) -> RbResult<Self> {
-        let lock = self.series.read();
-        lock.str()
-            .map_err(RbPolarsErr::from)?
-            .json_decode(None, infer_schema_length)
-            .map(|s| s.with_name(lock.name().clone()))
-            .map(Into::into)
-            .map_err(RbPolarsErr::from)
-            .map_err(RbErr::from)
-    }
-
-    pub fn to_s(&self) -> String {
+    pub fn as_str(&self) -> String {
         format!("{}", self.series.read())
     }
 
@@ -296,43 +261,37 @@ impl RbSeries {
         RbSeries::new(self.series.read().clone())
     }
 
-    pub fn zip_with(&self, mask: &RbSeries, other: &RbSeries) -> RbResult<Self> {
-        let binding = mask.series.read();
-        let mask = binding.bool().map_err(RbPolarsErr::from)?;
-        let s = self
-            .series
-            .read()
-            .zip_with(mask, &other.series.read())
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbSeries::new(s))
+    pub fn zip_with(rb: &Ruby, self_: &Self, mask: &RbSeries, other: &RbSeries) -> RbResult<Self> {
+        let ms = mask.series.read();
+        let mask = ms.bool().map_err(RbPolarsErr::from)?;
+        rb.enter_polars_series(|| self_.series.read().zip_with(mask, &other.series.read()))
     }
 
     pub fn to_dummies(
-        &self,
-        sep: Option<String>,
+        rb: &Ruby,
+        self_: &Self,
+        separator: Option<String>,
         drop_first: bool,
         drop_nulls: bool,
     ) -> RbResult<RbDataFrame> {
-        let df = self
-            .series
-            .read()
-            .to_dummies(sep.as_deref(), drop_first, drop_nulls)
-            .map_err(RbPolarsErr::from)?;
-        Ok(df.into())
+        rb.enter_polars_df(|| {
+            self_
+                .series
+                .read()
+                .to_dummies(separator.as_deref(), drop_first, drop_nulls)
+        })
     }
 
-    pub fn n_unique(&self) -> RbResult<usize> {
-        let n = self.series.read().n_unique().map_err(RbPolarsErr::from)?;
-        Ok(n)
+    pub fn n_unique(rb: &Ruby, self_: &Self) -> RbResult<usize> {
+        rb.enter_polars(|| self_.series.read().n_unique())
     }
 
-    pub fn floor(&self) -> RbResult<Self> {
-        let s = self.series.read().floor().map_err(RbPolarsErr::from)?;
-        Ok(s.into())
+    pub fn floor(rb: &Ruby, self_: &Self) -> RbResult<Self> {
+        rb.enter_polars_series(|| self_.series.read().floor())
     }
 
-    pub fn shrink_to_fit(&self) {
-        self.series.write().shrink_to_fit();
+    pub fn shrink_to_fit(rb: &Ruby, self_: &Self) -> RbResult<()> {
+        rb.enter_polars_ok(|| self_.series.write().shrink_to_fit())
     }
 
     pub fn dot(&self, other: &RbSeries) -> RbResult<f64> {
@@ -414,6 +373,41 @@ impl RbSeries {
     pub fn slice(&self, offset: i64, length: Option<usize>) -> Self {
         let length = length.unwrap_or_else(|| self.series.read().len());
         self.series.read().slice(offset, length).into()
+    }
+
+    pub fn not_(&self) -> RbResult<Self> {
+        let binding = self.series.read();
+        let bool = binding.bool().map_err(RbPolarsErr::from)?;
+        Ok((!bool).into_series().into())
+    }
+
+    pub fn shrink_dtype(&self) -> RbResult<Self> {
+        self.series
+            .read()
+            .shrink_type()
+            .map(Into::into)
+            .map_err(RbPolarsErr::from)
+            .map_err(RbErr::from)
+    }
+
+    pub fn str_to_decimal_infer(&self, inference_length: usize) -> RbResult<Self> {
+        let s = self.series.read();
+        let ca = s.str().map_err(RbPolarsErr::from)?;
+        ca.to_decimal_infer(inference_length)
+            .map(Into::into)
+            .map_err(RbPolarsErr::from)
+            .map_err(RbErr::from)
+    }
+
+    pub fn str_json_decode(&self, infer_schema_length: Option<usize>) -> RbResult<Self> {
+        let lock = self.series.read();
+        lock.str()
+            .map_err(RbPolarsErr::from)?
+            .json_decode(None, infer_schema_length)
+            .map(|s| s.with_name(lock.name().clone()))
+            .map(Into::into)
+            .map_err(RbPolarsErr::from)
+            .map_err(RbErr::from)
     }
 }
 

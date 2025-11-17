@@ -1099,7 +1099,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbSeries::str_to_decimal_infer, 1),
     )?;
     class.define_method("str_json_decode", method!(RbSeries::str_json_decode, 1))?;
-    class.define_method("to_s", method!(RbSeries::to_s, 0))?;
+    class.define_method("to_s", method!(RbSeries::as_str, 0))?;
     class.define_method("len", method!(RbSeries::len, 0))?;
     class.define_method("to_a", method!(RbSeries::to_a, 0))?;
     class.define_method("median", method!(RbSeries::median, 0))?;
