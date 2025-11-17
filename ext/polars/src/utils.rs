@@ -32,6 +32,7 @@ macro_rules! apply_method_all_arrow_series2 {
             DataType::Float64 => $self.f64().unwrap().$method($($args),*),
             DataType::Date => $self.date().unwrap().physical().$method($($args),*),
             DataType::Datetime(_, _) => $self.datetime().unwrap().physical().$method($($args),*),
+            // TODO implement
             // DataType::List(_) => $self.list().unwrap().$method($($args),*),
             DataType::Struct(_) => $self.struct_().unwrap().$method($($args),*),
             dt => panic!("dtype {:?} not supported", dt)
