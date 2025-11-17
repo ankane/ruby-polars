@@ -1,6 +1,7 @@
 ## 0.24.0 (unreleased)
 
 - Added support for streaming engine
+- Added support for releasing GVL
 - Added experimental support for background queries
 - Added `plot` method to `Series`
 - Added `concat_arr`, `escape_regex`, `int_ranges`, and `linear_spaces` methods to `Polars`
