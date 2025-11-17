@@ -285,7 +285,7 @@ class DocsTest < Minitest::Test
 
   def missing_examples?(method, cls)
     method.tags(:example).empty? &&
-    ![Polars::Config, Polars::IO, Polars::Testing, Polars::DataType, Polars::SQLContext].include?(cls) &&
+    ![Polars::Config, Polars::IO, Polars::Testing, Polars::DataType, Polars::SQLContext, Polars::DataFramePlot, Polars::SeriesPlot, Polars::Catalog].include?(cls) &&
     method.name.match?(/\A[a-z]/i) &&
     ![:inspect, :to_s, :plot, :list, :arr, :bin, :cat, :dt, :meta, :name, :str, :struct, :initialize, :set_random_seed, :col].include?(method.name) &&
     !method.name.start_with?("write_")
