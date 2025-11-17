@@ -7,7 +7,7 @@ use polars_core::utils::flatten::flatten_series;
 use crate::conversion::*;
 use crate::exceptions::{RbIndexError, RbRuntimeError, RbValueError};
 use crate::prelude::*;
-use crate::utils::EnterPolarsExt;
+use crate::utils::{EnterPolarsExt, RubyAttach};
 use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
 
 impl RbSeries {
@@ -328,15 +328,20 @@ impl RbSeries {
         rb.enter_polars_series(|| self_.series.read().cast_with_options(&dtype.0, options))
     }
 
-    pub fn get_chunks(ruby: &Ruby, self_: &Self) -> RbResult<RArray> {
-        ruby.ary_try_from_iter(
-            flatten_series(&self_.series.read()).into_iter().map(|s| {
-                rb_modules::pl_utils(ruby).funcall::<_, _, Value>("wrap_s", (Self::new(s),))
-            }),
-        )
+    pub fn get_chunks(&self) -> RbResult<RArray> {
+        Ruby::attach(|rb| {
+            rb.ary_try_from_iter(flatten_series(&self.series.read()).into_iter().map(|s| {
+                rb_modules::pl_utils(rb).funcall::<_, _, Value>("wrap_s", (Self::new(s),))
+            }))
+        })
     }
 
-    pub fn is_sorted(&self, descending: bool, nulls_last: bool) -> RbResult<bool> {
+    pub fn is_sorted(
+        rb: &Ruby,
+        self_: &Self,
+        descending: bool,
+        nulls_last: bool,
+    ) -> RbResult<bool> {
         let options = SortOptions {
             descending,
             nulls_last,
@@ -344,11 +349,7 @@ impl RbSeries {
             maintain_order: false,
             limit: None,
         };
-        Ok(self
-            .series
-            .read()
-            .is_sorted(options)
-            .map_err(RbPolarsErr::from)?)
+        rb.enter_polars(|| self_.series.read().is_sorted(options))
     }
 
     pub fn clear(&self) -> Self {
@@ -375,39 +376,48 @@ impl RbSeries {
         self.series.read().slice(offset, length).into()
     }
 
-    pub fn not_(&self) -> RbResult<Self> {
-        let binding = self.series.read();
-        let bool = binding.bool().map_err(RbPolarsErr::from)?;
-        Ok((!bool).into_series().into())
+    pub fn not_(rb: &Ruby, self_: &Self) -> RbResult<Self> {
+        rb.enter_polars_series(|| polars_ops::series::negate_bitwise(&self_.series.read()))
     }
 
-    pub fn shrink_dtype(&self) -> RbResult<Self> {
-        self.series
-            .read()
-            .shrink_type()
-            .map(Into::into)
-            .map_err(RbPolarsErr::from)
-            .map_err(RbErr::from)
+    pub fn shrink_dtype(rb: &Ruby, self_: &Self) -> RbResult<Self> {
+        rb.enter_polars(|| {
+            self_
+                .series
+                .read()
+                .shrink_type()
+                .map(Into::into)
+                .map_err(RbPolarsErr::from)
+                .map_err(RbErr::from)
+        })
     }
 
-    pub fn str_to_decimal_infer(&self, inference_length: usize) -> RbResult<Self> {
-        let s = self.series.read();
-        let ca = s.str().map_err(RbPolarsErr::from)?;
-        ca.to_decimal_infer(inference_length)
-            .map(Into::into)
-            .map_err(RbPolarsErr::from)
-            .map_err(RbErr::from)
+    pub fn str_to_decimal_infer(
+        rb: &Ruby,
+        self_: &Self,
+        inference_length: usize,
+    ) -> RbResult<Self> {
+        rb.enter_polars_series(|| {
+            let s = self_.series.read();
+            let ca = s.str()?;
+            ca.to_decimal_infer(inference_length)
+        })
     }
 
-    pub fn str_json_decode(&self, infer_schema_length: Option<usize>) -> RbResult<Self> {
-        let lock = self.series.read();
-        lock.str()
-            .map_err(RbPolarsErr::from)?
-            .json_decode(None, infer_schema_length)
-            .map(|s| s.with_name(lock.name().clone()))
-            .map(Into::into)
-            .map_err(RbPolarsErr::from)
-            .map_err(RbErr::from)
+    pub fn str_json_decode(
+        rb: &Ruby,
+        self_: &Self,
+        infer_schema_length: Option<usize>,
+    ) -> RbResult<Self> {
+        rb.enter_polars(|| {
+            let lock = self_.series.read();
+            lock.str()?
+                .json_decode(None, infer_schema_length)
+                .map(|s| s.with_name(lock.name().clone()))
+        })
+        .map(Into::into)
+        .map_err(RbPolarsErr::from)
+        .map_err(RbErr::from)
     }
 }
 
