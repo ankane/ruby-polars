@@ -88,13 +88,13 @@ From Avro
 Polars.read_avro("file.avro")
 ```
 
-From Iceberg (requires [iceberg](https://github.com/ankane/iceberg-ruby)) [experimental]
+From Iceberg (experimental, requires [iceberg](https://github.com/ankane/iceberg-ruby))
 
 ```ruby
 Polars.scan_iceberg(table)
 ```
 
-From Delta Lake (requires [deltalake-rb](https://github.com/ankane/delta-ruby)) [experimental]
+From Delta Lake (experimental, requires [deltalake-rb](https://github.com/ankane/delta-ruby))
 
 ```ruby
 Polars.read_delta("./table")
@@ -328,7 +328,7 @@ df.to_dummies
 Array of hashes
 
 ```ruby
-df.rows(named: true)
+df.to_a
 ```
 
 Hash of series
@@ -371,13 +371,13 @@ Avro
 df.write_avro("file.avro")
 ```
 
-Iceberg [experimental]
+Iceberg (experimental)
 
 ```ruby
 df.write_iceberg(table, mode: "append")
 ```
 
-Delta Lake [experimental]
+Delta Lake (experimental)
 
 ```ruby
 df.write_delta("./table")
