@@ -100,7 +100,7 @@ pub(crate) fn to_series(s: RbSeries) -> Value {
 
 impl TryConvert for Wrap<PlSmallStr> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        Ok(Wrap(String::try_convert(ob)?.into()))
+        Ok(Wrap((&*String::try_convert(ob)?).into()))
     }
 }
 
