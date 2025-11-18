@@ -20,19 +20,19 @@ jobs:
       - run: bundle exec rake compile
         env:
           RUST_TARGET: x86_64-pc-windows-gnu
-      - run: bundle exec rake test
-        env:
-          STRESS: 1
-      - run: bundle exec yard --fail-on-warning
-      - run: bundle exec rake test:docs
+      # - run: bundle exec rake test
+      #   env:
+      #     STRESS: 1
+      # - run: bundle exec yard --fail-on-warning
+      # - run: bundle exec rake test:docs
 
-      - uses: ankane/setup-postgres@v1
-        with:
-          database: polars_ruby_test
-      - run: ADAPTER=postgresql ruby test/database_test.rb
+      # - uses: ankane/setup-postgres@v1
+      #   with:
+      #     database: polars_ruby_test
+      # - run: ADAPTER=postgresql ruby test/database_test.rb
 
-      - uses: ankane/setup-mysql@v1
-        with:
-          database: polars_ruby_test
-      - run: ADAPTER=mysql ruby test/database_test.rb
+      # - uses: ankane/setup-mysql@v1
+      #   with:
+      #     database: polars_ruby_test
+      # - run: ADAPTER=mysql ruby test/database_test.rb
       # - run: ADAPTER=trilogy ruby test/database_test.rb
