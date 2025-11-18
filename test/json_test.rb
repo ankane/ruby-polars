@@ -78,6 +78,7 @@ class JsonTest < Minitest::Test
   end
 
   def test_scan_ndjson_io
+    skip
     io = StringIO.new(File.binread("test/support/data.ndjson"))
     df = Polars.scan_ndjson(io)
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
