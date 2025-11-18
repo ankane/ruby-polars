@@ -46,8 +46,7 @@ module Polars
         elsif schema_overrides.is_a?(::Array)
           dtype_slice = schema_overrides
         else
-          # TODO improve type and message
-          raise ArgumentError, "dtype arg should be list or dict"
+          raise TypeError, "dtype arg should be array or hash"
         end
       end
 
