@@ -6,7 +6,7 @@ class ParquetTest < Minitest::Test
   # end
 
   def test_read_parquet
-    df = Polars.read_parquet("test/support/data.parquet")
+    df = Polars.read_parquet("test/support/data.parquet", hive_partitioning: true)
     p df
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     puts "assert_frame"
