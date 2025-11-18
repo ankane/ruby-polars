@@ -879,8 +879,8 @@ module Polars
     #   [chrono](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
     #   Rust crate.
     # @param float_precision [Integer, nil]
-    #   Number of decimal places to write, applied to both `:f32` and
-    #   `:f64` datatypes.
+    #   Number of decimal places to write, applied to both `Float32` and
+    #   `Float64` datatypes.
     # @param null_value [String, nil]
     #   A string representing null values (defaulting to the empty string).
     #
@@ -2692,8 +2692,6 @@ module Polars
 
     # Create rolling groups based on a time column.
     #
-    # Also works for index values of type `:i32` or `:i64`.
-    #
     # Different from a `dynamic_group_by` the windows are now determined by the
     # individual values and are not of constant intervals. For constant intervals use
     # *group_by_dynamic*
@@ -2727,9 +2725,9 @@ module Polars
     #   This column must be sorted in ascending order. If not the output will not
     #   make sense.
     #
-    #   In case of a rolling group by on indices, dtype needs to be one of
-    #   `:i32`, `:i64`. Note that `:i32` gets temporarily cast to `:i64`, so if
-    #   performance matters use an `:i64` column.
+    #   In case of a rolling operation on indices, dtype needs to be one of
+    #   \\\\{UInt32, UInt64, Int32, Int64}. Note that the first three get temporarily
+    #   cast to Int64, so if performance matters use an Int64 column.
     # @param period [Object]
     #   Length of the window.
     # @param offset [Object]
@@ -2784,7 +2782,7 @@ module Polars
       RollingGroupBy.new(self, index_column, period, offset, closed, group_by)
     end
 
-    # Group based on a time value (or index value of type `:i32`, `:i64`).
+    # Group based on a time value (or index value of type Int32, Int64).
     #
     # Time windows are calculated and rows are assigned to windows. Different from a
     # normal group by is that a row can be member of multiple groups. The time/index
@@ -2827,8 +2825,8 @@ module Polars
     #   make sense.
     #
     #   In case of a dynamic group by on indices, dtype needs to be one of
-    #   `:i32`, `:i64`. Note that `:i32` gets temporarily cast to `:i64`, so if
-    #   performance matters use an `:i64` column.
+    #   \\\\{Int32, Int64}. Note that Int32 gets temporarily cast to Int64, so if
+    #   performance matters use an Int64 column.
     # @param every
     #   Interval of the window.
     # @param period
@@ -6078,7 +6076,7 @@ module Polars
 
     # Hash and combine the rows in this DataFrame.
     #
-    # The hash value is of type `:u64`.
+    # The hash value is of type `UInt64`.
     #
     # @param seed [Integer]
     #   Random seed parameter. Defaults to 0.

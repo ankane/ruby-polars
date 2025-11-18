@@ -62,9 +62,9 @@ module Polars
     #   When `false`, the schema is not inferred and will be `Polars::String` if not
     #   specified in `schema` or `schema_overrides`.
     # @param infer_schema_length [Integer]
-    #   Maximum number of lines to read to infer schema.
-    #   If set to 0, all columns will be read as `:utf8`.
-    #   If set to `nil`, a full table scan will be done (slow).
+    #   The maximum number of rows to scan for schema inference.
+    #   If set to `nil`, the full data may be scanned *(this is slow)*.
+    #   Set `infer_schema: false` to read all columns as `Polars::String`.
     # @param batch_size [Integer]
     #   Number of lines to read into the buffer at once.
     #   Modify this to change performance.

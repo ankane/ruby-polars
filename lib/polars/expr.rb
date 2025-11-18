@@ -891,8 +891,8 @@ module Polars
     # @return [Expr]
     #
     # @note
-    #   Dtypes in `:i8`, `:u8`, `:i16`, and `:u16` are cast to
-    #   `:i64` before summing to prevent overflow issues.
+    #   Dtypes in \\\\{Int8, UInt8, Int16, UInt16} are cast to
+    #   Int64 before summing to prevent overflow issues.
     #
     # @example
     #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4]})
@@ -926,8 +926,8 @@ module Polars
     # @return [Expr]
     #
     # @note
-    #   Dtypes in `:i8`, `:u8`, `:i16`, and `:u16` are cast to
-    #   `:i64` before summing to prevent overflow issues.
+    #   Dtypes in \\\\{Int8, UInt8, Int16, UInt16} are cast to
+    #   Int64 before summing to prevent overflow issues.
     #
     # @example
     #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4]})
@@ -2275,8 +2275,8 @@ module Polars
     # @return [Expr]
     #
     # @note
-    #   Dtypes in `:i8`, `:u8`, `:i16`, and `:u16` are cast to
-    #   `:i64` before summing to prevent overflow issues.
+    #   Dtypes in \\\\{Int8, UInt8, Int16, UInt16} are cast to
+    #   Int64 before summing to prevent overflow issues.
     #
     # @example
     #   df = Polars::DataFrame.new({"a" => [-1, 0, 1]})
@@ -4441,7 +4441,7 @@ module Polars
 
     # Hash the elements in the selection.
     #
-    # The hash value is of type `:u64`.
+    # The hash value is of type `UInt64`.
     #
     # @param seed [Integer]
     #   Random seed parameter. Defaults to 0.

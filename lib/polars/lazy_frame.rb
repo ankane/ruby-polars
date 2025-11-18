@@ -2112,8 +2112,6 @@ module Polars
 
     # Create rolling groups based on a time column.
     #
-    # Also works for index values of type `:i32` or `:i64`.
-    #
     # Different from a `dynamic_group_by` the windows are now determined by the
     # individual values and are not of constant intervals. For constant intervals
     # use *group_by_dynamic*.
@@ -2148,8 +2146,8 @@ module Polars
     #   make sense.
     #
     #   In case of a rolling group by on indices, dtype needs to be one of
-    #   `:i32`, `:i64`. Note that `:i32` gets temporarily cast to `:i64`, so if
-    #   performance matters use an `:i64` column.
+    #   \\\\{UInt32, UInt64, Int32, Int64}. Note that the first three get temporarily
+    #   cast to Int64, so if performance matters use an Int64 column.
     # @param period [Object]
     #   Length of the window.
     # @param offset [Object]
@@ -2216,7 +2214,7 @@ module Polars
       LazyGroupBy.new(lgb)
     end
 
-    # Group based on a time value (or index value of type `:i32`, `:i64`).
+    # Group based on a time value (or index value of type Int32, Int64).
     #
     # Time windows are calculated and rows are assigned to windows. Different from a
     # normal group by is that a row can be member of multiple groups. The time/index
@@ -2259,8 +2257,8 @@ module Polars
     #   make sense.
     #
     #   In case of a dynamic group by on indices, dtype needs to be one of
-    #   `:i32`, `:i64`. Note that `:i32` gets temporarily cast to `:i64`, so if
-    #   performance matters use an `:i64` column.
+    #   \\\\{Int32, Int64}. Note that Int32 gets temporarily cast to Int64, so if
+    #   performance matters use an Int64 column.
     # @param every [Object]
     #   Interval of the window.
     # @param period [Object]

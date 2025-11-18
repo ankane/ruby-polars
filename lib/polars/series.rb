@@ -895,8 +895,8 @@ module Polars
     # @return [Numeric]
     #
     # @note
-    #   Dtypes `:i8`, `:u8`, `:i16`, and `:u16` are cast to
-    #   `:i64` before summing to prevent overflow issues.
+    #   Dtypes in \\\\{Int8, UInt8, Int16, UInt16} are cast to
+    #   Int64 before summing to prevent overflow issues.
     #
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3])
@@ -1591,8 +1591,8 @@ module Polars
     # @return [Series]
     #
     # @note
-    #   Dtypes `:i8`, `:u8`, `:i16`, and `:u16` are cast to
-    #   `:i64` before summing to prevent overflow issues.
+    #   Dtypes in \\\\{Int8, UInt8, Int16, UInt16} are cast to
+    #   Int64 before summing to prevent overflow issues.
     #
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3])
@@ -1684,8 +1684,8 @@ module Polars
     # @return [Series]
     #
     # @note
-    #   Dtypes `:i8`, `:u8`, `:i16`, and `:u16` are cast to
-    #   `:i64` before multiplying to prevent overflow issues.
+    #   Dtypes in \\\\{Int8, UInt8, Int16, UInt16} are cast to
+    #   Int64 before summing to prevent overflow issues.
     #
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3])
@@ -5103,7 +5103,7 @@ module Polars
 
     # Hash the Series.
     #
-    # The hash value is of type `:u64`.
+    # The hash value is of type `UInt64`.
     #
     # @param seed [Integer]
     #   Random seed parameter. Defaults to 0.
@@ -5137,7 +5137,7 @@ module Polars
     # you can safely use that cast operation.
     #
     # @param signed [Boolean]
-    #   If true, reinterpret as `:i64`. Otherwise, reinterpret as `:u64`.
+    #   If true, reinterpret as `Polars::Int64`. Otherwise, reinterpret as `Polars::UInt64`.
     #
     # @return [Series]
     #
