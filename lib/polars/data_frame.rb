@@ -4651,7 +4651,7 @@ module Polars
     #   # │ 3    ┆ 8    ┆ c    │
     #   # │ null ┆ null ┆ null │
     #   # └──────┴──────┴──────┘
-    def shift(n, fill_value: nil)
+    def shift(n = 1, fill_value: nil)
       lazy.shift(n, fill_value: fill_value).collect(optimizations: QueryOptFlags._eager)
     end
 

@@ -3403,7 +3403,7 @@ module Polars
     #   # │ 5    ┆ 6    │
     #   # │ null ┆ null │
     #   # └──────┴──────┘
-    def shift(n, fill_value: nil)
+    def shift(n = 1, fill_value: nil)
       if !fill_value.nil?
         fill_value = Utils.parse_into_expression(fill_value, str_as_lit: true)
       end
