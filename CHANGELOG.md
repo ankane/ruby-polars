@@ -19,6 +19,7 @@
 - Improved exception classes
 - Changed `schema` method to return `Schema` instead of `Hash`
 - Changed `partition_by(as_dict: true)` method to always return `Array` keys
+- Changed default `delimiter` for `join` method to empty string for `StringExpr` and `StringNameSpace`
 - Changed `reverse` option to `descending`
 - Changed `sep` option to `separator`
 - Changed `row_count_name` option to `row_index_name`
@@ -78,7 +79,7 @@
 - Removed `with_time_unit` method from `DateTimeExpr` and `DateTimeNameSpace` (use `cast(Polars::Int64).cast(Polars::Datetime.new(...))` instead)
 - Removed `datetime` method from `DateTimeExpr` (use `replace_time_zone` instead)
 - Removed `mean` and `median` methods from `DateTimeNameSpace` (use `Series#mean` and `Series#median` instead)
-- Removed `concat` method from `StringExpr` and `StringNameSpace` (use `join` instead)
+- Removed `concat` method from `StringExpr` and `StringNameSpace` (use `join("-")` instead)
 - Removed `describe_plan` and `describe_optimized_plan` methods (use `explain` instead)
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods
 - Removed `in_place` option from `rename` method

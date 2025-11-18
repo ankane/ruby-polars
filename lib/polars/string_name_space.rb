@@ -1477,8 +1477,7 @@ module Polars
     #   # [
     #   #         null
     #   # ]
-    def join(delimiter = "-", ignore_nulls: true)
-      # TODO make "" default delimiter
+    def join(delimiter = "", ignore_nulls: true)
       super
     end
 

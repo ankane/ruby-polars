@@ -378,8 +378,7 @@ module Polars
     #   # ╞══════╡
     #   # │ null │
     #   # └──────┘
-    def join(delimiter = "-", ignore_nulls: true)
-      # TODO make "" default delimiter
+    def join(delimiter = "", ignore_nulls: true)
       Utils.wrap_expr(_rbexpr.str_join(delimiter, ignore_nulls))
     end
 
