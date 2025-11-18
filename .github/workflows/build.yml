@@ -21,6 +21,8 @@ jobs:
         env:
           RUST_TARGET: x86_64-pc-windows-gnu
       - run: bundle exec rake test
+        env:
+          STRESS: 1
       - run: bundle exec yard --fail-on-warning
       - run: bundle exec rake test:docs
 
