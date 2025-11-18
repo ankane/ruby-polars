@@ -398,7 +398,10 @@ module Polars
     #   # │ 2020-04-01 00:00:00 ┆ 2020/04/01 00:00:00 │
     #   # │ 2020-05-01 00:00:00 ┆ 2020/05/01 00:00:00 │
     #   # └─────────────────────┴─────────────────────┘
-    def to_string(format)
+    def to_string(format = nil)
+      if format.nil?
+        format = "iso"
+      end
       Utils.wrap_expr(_rbexpr.dt_to_string(format))
     end
 

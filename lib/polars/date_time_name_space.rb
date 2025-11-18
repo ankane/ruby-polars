@@ -130,7 +130,7 @@ module Polars
     #   #         "2020/04/01"
     #   #         "2020/05/01"
     #   # ]
-    def to_string(format)
+    def to_string(format = nil)
       super
     end
 
