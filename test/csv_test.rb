@@ -1,9 +1,9 @@
 require_relative "test_helper"
 
 class CsvTest < Minitest::Test
-  def setup
-    skip
-  end
+  # def setup
+  #   skip
+  # end
 
   def test_read_csv
     df = Polars.read_csv("test/support/data.csv")
@@ -128,7 +128,7 @@ class CsvTest < Minitest::Test
   end
 
   def test_scan_csv_io
-    skip
+    # skip
     io = StringIO.new(File.binread("test/support/data.csv"))
     df = Polars.scan_csv(io)
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
@@ -143,13 +143,13 @@ class CsvTest < Minitest::Test
   end
 
   def test_write_csv_to_string
-    skip
+    # skip
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_equal "a,b\n1,one\n2,two\n3,three\n", df.write_csv
   end
 
   def test_to_csv
-    skip
+    # skip
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_equal "a,b\n1,one\n2,two\n3,three\n", df.to_csv
   end

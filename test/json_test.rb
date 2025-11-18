@@ -1,19 +1,19 @@
 require_relative "test_helper"
 
 class JsonTest < Minitest::Test
-  def setup
-    skip
-  end
+  # def setup
+  #   skip
+  # end
 
   def test_read_json
-    skip
+    # skip
     df = Polars.read_json("test/support/data.json")
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_frame expected, df
   end
 
   def test_read_json_pathname
-    skip
+    # skip
     require "pathname"
 
     df = Polars.read_json(Pathname.new("test/support/data.json"))
@@ -50,7 +50,7 @@ class JsonTest < Minitest::Test
   end
 
   def test_write_json_nil
-    skip
+    # skip
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     io = StringIO.new(df.write_json)
     assert_frame df, Polars.read_json(io)
@@ -84,7 +84,7 @@ class JsonTest < Minitest::Test
   end
 
   def test_scan_ndjson_io
-    skip
+    # skip
     io = StringIO.new(File.binread("test/support/data.ndjson"))
     df = Polars.scan_ndjson(io)
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})

@@ -1,9 +1,9 @@
 require_relative "test_helper"
 
 class IpcTest < Minitest::Test
-  def setup
-    skip
-  end
+  # def setup
+  #   skip
+  # end
 
   def test_read_ipc
     df = Polars.read_ipc("test/support/data.arrow")

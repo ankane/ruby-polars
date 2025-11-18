@@ -1,9 +1,9 @@
 require_relative "test_helper"
 
 class ParquetTest < Minitest::Test
-  def setup
-    skip
-  end
+  # def setup
+  #   skip
+  # end
 
   def test_read_parquet
     df = Polars.read_parquet("test/support/data.parquet")
