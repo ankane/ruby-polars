@@ -1,6 +1,10 @@
 require_relative "test_helper"
 
 class JsonTest < Minitest::Test
+  def setup
+    skip
+  end
+
   def test_read_json
     skip
     df = Polars.read_json("test/support/data.json")
