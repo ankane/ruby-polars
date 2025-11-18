@@ -3,9 +3,6 @@ require_relative "test_helper"
 class DocsTest < Minitest::Test
   def setup
     super unless stress?
-
-    # TODO remove
-    require "active_support/all"
   end
 
   def test_array_expr
@@ -219,6 +216,13 @@ class DocsTest < Minitest::Test
 
     if ENV["EXAMPLES"] && missing_examples?(method, cls)
       warn "Missing examples (#{method})"
+    end
+
+    # TODO remove
+    if cls == Polars::DateTimeExpr
+      require "active_support/core_ext/date_time"
+    elsif cls == Polars::DateTimeNameSpace
+      require "active_support/core_ext/date"
     end
 
     puts "#{cls}##{method.name}" if stress?
