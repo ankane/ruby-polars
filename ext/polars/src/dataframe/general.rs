@@ -335,7 +335,7 @@ impl RbDataFrame {
     }
 
     pub fn clone(&self) -> Self {
-        RbDataFrame::new(self.df.read().clone())
+        Clone::clone(self)
     }
 
     pub fn unpivot(

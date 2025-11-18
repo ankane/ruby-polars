@@ -16,6 +16,14 @@ pub struct RbDataFrame {
     pub df: RwLock<DataFrame>,
 }
 
+impl Clone for RbDataFrame {
+    fn clone(&self) -> Self {
+        RbDataFrame {
+            df: RwLock::new(self.df.read().clone()),
+        }
+    }
+}
+
 impl From<DataFrame> for RbDataFrame {
     fn from(df: DataFrame) -> Self {
         Self::new(df)
