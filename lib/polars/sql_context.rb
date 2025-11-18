@@ -129,7 +129,7 @@ module Polars
     #   Named eager/lazy frames, provided as kwargs.
     #
     # @return [SQLContext]
-    def register_many(frames, **named_frames)
+    def register_many(frames = nil, **named_frames)
       frames = (frames || {}).to_h
       frames = frames.merge(named_frames)
       frames.each do |name, frame|
