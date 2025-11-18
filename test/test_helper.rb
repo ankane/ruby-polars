@@ -8,7 +8,7 @@ class Minitest::Test
   def setup
     if stress?
       # load before GC.stress
-      @@once ||= ActiveSupport::TimeZone["Eastern Time (US & Canada)"]
+      # @@once ||= ActiveSupport::TimeZone["Eastern Time (US & Canada)"]
 
       puts "#{self.class.name}##{name}"
       GC.stress = true
