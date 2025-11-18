@@ -20,6 +20,7 @@
 - Changed `schema` method to return `Schema` instead of `Hash`
 - Changed `partition_by(as_dict: true)` method to always return `Array` keys
 - Changed default `delimiter` for `join` method to empty string for `StringExpr` and `StringNameSpace`
+- Changed default `how` for `align_frames` method from `left` to `full`
 - Changed `reverse` option to `descending`
 - Changed `sep` option to `separator`
 - Changed `row_count_name` option to `row_index_name`

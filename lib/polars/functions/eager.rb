@@ -441,7 +441,7 @@ module Polars
     #     }
     #   )
     #   af1, af2, af3 = Polars.align_frames(
-    #     df1, df2, df3, on: "dt", select: ["x", "y"]
+    #     df1, df2, df3, on: "dt", how: "left", select: ["x", "y"]
     #   )
     #   (af1 * af2 * af3).fill_null(0).select(Polars.sum_horizontal("*").alias("dot"))
     #   # =>
@@ -458,7 +458,7 @@ module Polars
     def align_frames(
       *frames,
       on:,
-      how: "left", # TODO change to "full"
+      how: "full",
       select: nil,
       descending: false
     )
