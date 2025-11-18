@@ -3371,7 +3371,7 @@ module Polars
     #   end
     #   wrap_expr(
     #     _rbexpr.map_batches(
-    #       # TODO _map_batches_wrapper
+    #       _map_batches_wrapper,
     #       f,
     #       return_dtype,
     #       agg_list,
