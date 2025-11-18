@@ -218,6 +218,13 @@ class DocsTest < Minitest::Test
       warn "Missing examples (#{method})"
     end
 
+    # TODO remove
+    if cls == Polars::DateTimeExpr
+      require "active_support/core_ext/date_time"
+    elsif cls == Polars::DateTimeNameSpace
+      require "active_support/core_ext/date"
+    end
+
     puts "#{cls}##{method.name}" if stress?
 
     code = ""

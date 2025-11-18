@@ -2,9 +2,6 @@ require "bundler/setup"
 Bundler.require(:default)
 require "minitest/autorun"
 
-# require_relative "support/active_record"
-require "active_support/all"
-
 class Minitest::Test
   include Polars::Testing
 
@@ -79,5 +76,9 @@ class Minitest::Test
 
   def cloud_file(filename)
     "#{cloud_prefix}/#{filename}"
+  end
+
+  def active_support?
+    false
   end
 end
