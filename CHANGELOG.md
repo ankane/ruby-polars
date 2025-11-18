@@ -8,7 +8,7 @@
 - Changed `partition_by(as_dict: true)` method to always return `Array` keys
 - Changed default `delimiter` for `join` method from `-` to empty string for `StringExpr` and `StringNameSpace`
 - Changed default `how` for `align_frames` method from `left` to `full`
-- Removed support for string and symbol data types
+- Removed support for string and symbol data types (`:i32`, `:f64`, etc.)
 
 Added methods
 
