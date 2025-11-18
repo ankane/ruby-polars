@@ -6,6 +6,9 @@ class DatabaseTest < Minitest::Test
 
     require_relative "support/active_record"
 
+    # load before GC.stress
+    @@once ||= ActiveSupport::TimeZone["Eastern Time (US & Canada)"] if stress?
+
     User.delete_all
     ActiveRecord::Base.connection_pool.with_connection do |connection|
       connection.drop_table("items") if connection.table_exists?("items")
