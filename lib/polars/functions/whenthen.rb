@@ -40,7 +40,7 @@ module Polars
     #   # │ 4   ┆ 0   ┆ 1   │
     #   # └─────┴─────┴─────┘
     #
-    # @example The `otherwise` at the end is optional. If left out, any rows where none of the `when` expressions evaluate to True, are set to `null`:
+    # @example The `otherwise` at the end is optional. If left out, any rows where none of the `when` expressions evaluate to true, are set to `null`:
     #   df.with_columns(Polars.when(Polars.col("foo") > 2).then(1).alias("val"))
     #   # =>
     #   # shape: (3, 3)

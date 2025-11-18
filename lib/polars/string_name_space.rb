@@ -1455,7 +1455,7 @@ module Polars
     #   The delimiter to insert between consecutive string values.
     # @param ignore_nulls [Boolean]
     #   Ignore null values (default).
-    #   If set to `False`, null values will be propagated. This means that
+    #   If set to `false`, null values will be propagated. This means that
     #   if the column contains any null values, the output is null.
     #
     # @return [Series]

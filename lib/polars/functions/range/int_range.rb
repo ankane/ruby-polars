@@ -12,7 +12,7 @@ module Polars
     # @param step [Integer]
     #   Step size of the range.
     # @param eager [Boolean]
-    #   If eager evaluation is `True`, a Series is returned instead of an Expr.
+    #   If eager evaluation is `true`, a Series is returned instead of an Expr.
     # @param dtype [Symbol]
     #   Apply an explicit integer dtype to the resulting expression (default is `Int64`).
     #
@@ -53,7 +53,7 @@ module Polars
     # @param start [Integer, Expr, Series]
     #   Start of the range (inclusive). Defaults to 0.
     # @param stop [Integer, Expr, Series]
-    #   End of the range (exclusive). If set to `None` (default),
+    #   End of the range (exclusive). If set to `nil` (default),
     #   the value of `start` is used and `start` is set to `0`.
     # @param step [Integer]
     #   Step size of the range.

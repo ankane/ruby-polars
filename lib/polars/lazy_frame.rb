@@ -4513,7 +4513,7 @@ module Polars
     # @note
     #   This is syntactic sugar for a left/inner join that preserves the order
     #   of the left `DataFrame` by default, with an optional coalesce when
-    #   `include_nulls: False`.
+    #   `include_nulls: false`.
     #
     # @example Update `df` values with the non-null values in `new_df`, by row index:
     #   lf = Polars::LazyFrame.new(
@@ -4667,7 +4667,7 @@ module Polars
       # only use non-idx right columns present in left frame
       right_other = Set.new(right_schema.to_h.keys).intersection(left_schema.to_h.keys) - Set.new(right_on)
 
-      # When include_nulls is True, we need to distinguish records after the join that
+      # When include_nulls is true, we need to distinguish records after the join that
       # were originally null in the right frame, as opposed to records that were null
       # because the key was missing from the right frame.
       # Add a validity column to track whether row was matched or not.

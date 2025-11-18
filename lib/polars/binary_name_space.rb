@@ -110,7 +110,7 @@ module Polars
     #   #         b"\x00\x00\xff"
     #   # ]
     #
-    # @example Set `strict=False` to set invalid values to null instead of raising an error.
+    # @example Set `strict: false` to set invalid values to null instead of raising an error.
     #   s = Polars::Series.new("colors", ["000000".b, "ffff00".b, "invalid_value".b])
     #   s.bin.decode("hex", strict: false)
     #   # =>

@@ -310,7 +310,7 @@ module Polars
     # @param raw_output [Boolean]
     #   Return dot syntax. This cannot be combined with `show` and/or `output_path`.
     # @param figsize [Array]
-    #   Passed to matplotlib if `show == True`.
+    #   Passed to matplotlib if `show == true`.
     #
     # @return [Object]
     #

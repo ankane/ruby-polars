@@ -12,7 +12,7 @@ module Polars
     #   Define which sides of the range are closed (inclusive).
     # @param eager [Boolean]
     #   Evaluate immediately and return a `Series`.
-    #   If set to `False` (default), return an expression instead.
+    #   If set to `false` (default), return an expression instead.
     #
     # @return [Object]
     #

@@ -1667,7 +1667,7 @@ module Polars
     #
     # The original order of the remaining rows is preserved.
     #
-    # Rows where the filter predicate does not evaluate to True are retained
+    # Rows where the filter predicate does not evaluate to true are retained
     # (this includes rows where the predicate evaluates as `null`).
     #
     # @param predicates [Array]

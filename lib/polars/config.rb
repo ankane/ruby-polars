@@ -122,7 +122,7 @@ module Polars
       self
     end
 
-    # Use ASCII characters to display table outlines (set False to revert to UTF8).
+    # Use ASCII characters to display table outlines (set false to revert to UTF8).
     #
     # @return [Config]
     #

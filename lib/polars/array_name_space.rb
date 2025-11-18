@@ -552,7 +552,7 @@ module Polars
     # @param ignore_nulls [Boolean]
     #   Ignore null values (default).
     #
-    #   If set to `False`, null values will be propagated.
+    #   If set to `false`, null values will be propagated.
     #   If the sub-list contains any null values, the output is `nil`.
     #
     # @return [Series]

@@ -59,7 +59,7 @@ module Polars
     # @param schema [Object]
     #   The DataFrame schema may be declared in several ways:
     #
-    #   * As a dict of \\\\{name:type} pairs; if type is None, it will be auto-inferred.
+    #   * As a dict of \\\\{name:type} pairs; if type is nil, it will be auto-inferred.
     #   * As a list of column names; in this case types are automatically inferred.
     #   * As a list of (name,type) pairs; this is equivalent to the dictionary form.
     #
@@ -143,7 +143,7 @@ module Polars
     # @param schema [Object]
     #   The DataFrame schema may be declared in several ways:
     #
-    #   * As a dict of \\\\{name:type} pairs; if type is None, it will be auto-inferred.
+    #   * As a dict of \\\\{name:type} pairs; if type is nil, it will be auto-inferred.
     #   * As a list of column names; in this case types are automatically inferred.
     #   * As a list of (name,type) pairs; this is equivalent to the dictionary form.
     #
@@ -155,11 +155,11 @@ module Polars
     #   any dtypes inferred from the columns param will be overridden.
     # @param strict [Boolean]
     #   Throw an error if any `data` value does not exactly match the given or inferred
-    #   data type for that column. If set to `False`, values that do not match the data
+    #   data type for that column. If set to `false`, values that do not match the data
     #   type are cast to that data type or, if casting is not possible, set to null
     #   instead.
     # @param orient ['col', 'row']
-    #   Whether to interpret two-dimensional data as columns or as rows. If None,
+    #   Whether to interpret two-dimensional data as columns or as rows. If nil,
     #   the orientation is inferred by matching the columns and data dimensions. If
     #   this does not yield conclusive results, column orientation is used.
     # @param infer_schema_length [Integer]
@@ -220,7 +220,7 @@ module Polars
     # @param schema [Object]
     #   The DataFrame schema may be declared in several ways:
     #
-    #   * As a dict of \\\\{name:type} pairs; if type is None, it will be auto-inferred.
+    #   * As a dict of \\\\{name:type} pairs; if type is nil, it will be auto-inferred.
     #   * As a list of column names; in this case types are automatically inferred.
     #   * As a list of (name,type) pairs; this is equivalent to the dictionary form.
     #

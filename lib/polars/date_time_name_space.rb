@@ -262,7 +262,7 @@ module Polars
     # @param week_mask [Array]
     #   Which days of the week to count. The default is Monday to Friday.
     #   If you wanted to count only Monday to Thursday, you would pass
-    #   `(True, True, True, True, False, False, False)`.
+    #   `[true, true, true, true, false, false, false]`.
     #
     # @return [Series]
     #

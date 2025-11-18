@@ -691,7 +691,7 @@ module Polars
     #   By default ddof is 1.
     # @param propagate_nans [Boolean]
     #   If `true` any `NaN` encountered will lead to `NaN` in the output.
-    #   Defaults to `False` where `NaN` are regarded as larger than any finite number
+    #   Defaults to `false` where `NaN` are regarded as larger than any finite number
     #   and thus lead to the highest rank.
     # @param eager [Boolean]
     #   Evaluate immediately and return a `Series`; this requires that at least one
@@ -1630,7 +1630,7 @@ module Polars
     #   The length of the window.
     # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
-    #   a result. If None, it will be set equal to window size.
+    #   a result. If nil, it will be set equal to window size.
     # @param ddof [Integer]
     #   Delta degrees of freedom. The divisor used in calculations
     #   is `N - ddof`, where `N` represents the number of elements.
@@ -1670,7 +1670,7 @@ module Polars
     #   The length of the window.
     # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
-    #   a result. If None, it will be set equal to window size.
+    #   a result. If nil, it will be set equal to window size.
     # @param ddof [Integer]
     #   Delta degrees of freedom. The divisor used in calculations
     #   is `N - ddof`, where `N` represents the number of elements.

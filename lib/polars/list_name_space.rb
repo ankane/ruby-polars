@@ -407,8 +407,8 @@ module Polars
     #   Indices to return per sublist
     # @param null_on_oob [Boolean]
     #   Behavior if an index is out of bounds:
-    #   True -> set as null
-    #   False -> raise an error
+    #   true -> set as null
+    #   false -> raise an error
     #   Note that defaulting to raising an error is much cheaper
     #
     # @return [Series]

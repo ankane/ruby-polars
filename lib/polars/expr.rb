@@ -6717,7 +6717,7 @@ module Polars
     # Kurtosis is the fourth central moment divided by the square of the
     # variance. If Fisher's definition is used, then 3.0 is subtracted from
     # the result to give 0.0 for a normal distribution.
-    # If bias is False then the kurtosis is calculated using k statistics to
+    # If bias is false then the kurtosis is calculated using k statistics to
     # eliminate bias coming from biased moment estimators
     #
     # @param fisher [Boolean]

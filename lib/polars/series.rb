@@ -33,7 +33,7 @@ module Polars
     # @example It is possible to construct a Series with values as the first positional argument. This syntax considered an anti-pattern, but it can be useful in certain scenarios. You must specify any other arguments through keywords.
     #   s3 = Polars::Series.new([1, 2, 3])
     def initialize(name = nil, values = nil, dtype: nil, strict: true, nan_to_null: false, dtype_if_empty: nil)
-      # If 'Unknown' treat as None to trigger type inference
+      # If 'Unknown' treat as nil to trigger type inference
       if dtype == Unknown
         dtype = nil
       elsif !dtype.nil? && !Utils.is_polars_dtype(dtype)
@@ -2857,7 +2857,7 @@ module Polars
     #
     # @note
     #   If the value of the `lower_bound` is greater than that of the `upper_bound`
-    #   then the result will be False, as no value can satisfy the condition.
+    #   then the result will be false, as no value can satisfy the condition.
     #
     # @example
     #   s = Polars::Series.new("num", [1, 2, 3, 4, 5])
@@ -4887,7 +4887,7 @@ module Polars
     #     elements.
     #   - 'random' : Choose a random rank for each value in a tie.
     # @param seed [Integer]
-    #   Random seed used when `method: 'random'`. If set to None (default), a
+    #   Random seed used when `method: 'random'`. If set to nil (default), a
     #   random seed is generated for each rolling rank operation.
     # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
