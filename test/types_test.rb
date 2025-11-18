@@ -7,6 +7,8 @@ class TypesTest < Minitest::Test
   end
 
   def test_dtypes_hashes
+    skip unless active_support?
+
     row = {
       b: true,
       i: 1,

@@ -2,7 +2,7 @@ require "bundler/setup"
 Bundler.require(:default)
 require "minitest/autorun"
 
-require_relative "support/active_record"
+require_relative "support/active_record" if ENV["ADAPTER"] != "none"
 
 class Minitest::Test
   include Polars::Testing
@@ -78,5 +78,9 @@ class Minitest::Test
 
   def cloud_file(filename)
     "#{cloud_prefix}/#{filename}"
+  end
+
+  def active_support?
+    ENV["ADAPTER"] != "none"
   end
 end
