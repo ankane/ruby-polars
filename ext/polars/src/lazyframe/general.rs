@@ -225,8 +225,8 @@ impl RbLazyFrame {
         let sources = sources.0;
         let first_path = sources.first_path().map(|p| p.into_owned());
 
-        let unified_scan_args =
-            extract_unified_scan_args(scan_options, first_path.as_ref().map(|p| p.as_ref()))?;
+        let unified_scan_args = UnifiedScanArgs::default();
+            // extract_unified_scan_args(scan_options, first_path.as_ref().map(|p| p.as_ref()))?;
 
         let lf: LazyFrame = DslBuilder::scan_parquet(sources, options, unified_scan_args)
             .map_err(to_rb_err)?
