@@ -13,7 +13,7 @@ use super::{RbLazyFrame, RbOptFlags, SinkTarget};
 use crate::conversion::*;
 use crate::expr::ToExprs;
 use crate::expr::selector::RbSelector;
-use crate::io::RbScanOptions;
+use crate::io::extract_unified_scan_args;
 use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
 
@@ -225,32 +225,20 @@ impl RbLazyFrame {
         let sources = sources.0;
         let first_path = sources.first_path().map(|p| p.into_owned());
 
-        println!("before unified_scan_args");
-
-        use crate::io::extract_unified_scan_args;
-
         let unified_scan_args =
             extract_unified_scan_args(scan_options, first_path.as_ref().map(|p| p.as_ref()))?;
-
-        println!("");
-        println!("{:?}", unified_scan_args);
-        println!("");
-        println!("{:?}", UnifiedScanArgs::default());
-        println!("");
 
         let lf: LazyFrame = DslBuilder::scan_parquet(sources, options, unified_scan_args)
             .map_err(to_rb_err)?
             .build()
             .into();
 
-        println!("done");
-
         Ok(lf.into())
     }
 
     pub fn new_from_ipc(
         sources: Wrap<ScanSources>,
-        scan_options: RbScanOptions,
+        scan_options: Value,
         file_cache_ttl: Option<u64>,
     ) -> RbResult<Self> {
         let options = IpcScanOptions;
@@ -259,7 +247,7 @@ impl RbLazyFrame {
         let first_path = sources.first_path().map(|p| p.into_owned());
 
         let mut unified_scan_args =
-            scan_options.extract_unified_scan_args(first_path.as_ref().map(|p| p.as_ref()))?;
+            extract_unified_scan_args(scan_options, first_path.as_ref().map(|p| p.as_ref()))?;
 
         if let Some(file_cache_ttl) = file_cache_ttl {
             unified_scan_args

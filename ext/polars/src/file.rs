@@ -243,8 +243,7 @@ pub(crate) fn try_get_rbfile(
 }
 
 pub fn get_ruby_scan_source_input(rb_f: Value, write: bool) -> RbResult<RubyScanSourceInput> {
-    // Ruby::attach(|_rb| {
-        println!("get_ruby_scan_source_input");
+    Ruby::attach(|_rb| {
         if let Ok(s) = String::try_convert(rb_f) {
             let mut file_path = PlPath::new(&s);
             if let Some(p) = file_path.as_ref().as_local_path()
@@ -252,14 +251,12 @@ pub fn get_ruby_scan_source_input(rb_f: Value, write: bool) -> RbResult<RubyScan
             {
                 file_path = PlPath::Local(resolve_homedir(&p).into());
             }
-            println!("file_path: {:?}", file_path);
             Ok(RubyScanSourceInput::Path(file_path))
         } else {
-            println!("other path");
             let f = RbFileLikeObject::ensure_requirements(rb_f, !write, write, !write)?;
             Ok(RubyScanSourceInput::Buffer(f.to_memslice()))
         }
-    // })
+    })
 }
 
 pub fn get_either_buffer_or_path(
