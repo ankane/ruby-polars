@@ -8,7 +8,7 @@ gem "minitest"
 gem "activerecord"
 gem "vega"
 gem "pg", require: false
-gem "mysql2", require: false
+gem "mysql2", require: false, platform: :ruby
 gem "trilogy", require: false, platform: :ruby
 gem "sqlite3", require: false
 
