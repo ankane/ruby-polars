@@ -159,7 +159,6 @@ class CsvTest < Minitest::Test
   end
 
   def test_sink_csv_io
-    skip
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     io = StringIO.new
     assert_nil df.lazy.sink_csv(io)
