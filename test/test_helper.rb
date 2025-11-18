@@ -2,7 +2,8 @@ require "bundler/setup"
 Bundler.require(:default)
 require "minitest/autorun"
 
-require_relative "support/active_record"
+# require_relative "support/active_record"
+require "active_support/all"
 
 class Minitest::Test
   include Polars::Testing
