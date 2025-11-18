@@ -9,6 +9,8 @@ class TypesTest < Minitest::Test
   def test_dtypes_hashes
     skip unless active_support?
 
+    require "active_support/core_ext/time"
+
     row = {
       b: true,
       i: 1,

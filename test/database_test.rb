@@ -4,6 +4,8 @@ class DatabaseTest < Minitest::Test
   def setup
     skip unless active_support?
 
+    require_relative "support/active_record"
+
     User.delete_all
     ActiveRecord::Base.connection_pool.with_connection do |connection|
       connection.drop_table("items") if connection.table_exists?("items")
