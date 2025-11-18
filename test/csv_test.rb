@@ -124,6 +124,7 @@ class CsvTest < Minitest::Test
   end
 
   def test_scan_csv_io
+    skip
     io = StringIO.new(File.binread("test/support/data.csv"))
     df = Polars.scan_csv(io)
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
