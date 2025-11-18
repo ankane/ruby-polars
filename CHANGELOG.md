@@ -3,6 +3,15 @@
 - Added support for streaming engine
 - Added support for releasing GVL
 - Added experimental support for background queries
+- Improved exception classes
+- Changed `schema` method to return `Schema` instead of `Hash`
+- Changed `partition_by(as_dict: true)` method to always return `Array` keys
+- Changed default `delimiter` for `join` method to empty string for `StringExpr` and `StringNameSpace`
+- Changed default `how` for `align_frames` method from `left` to `full`
+- Removed support for string and symbol data types
+
+Added methods
+
 - Added `plot` method to `Series`
 - Added `concat_arr`, `escape_regex`, `int_ranges`, and `linear_spaces` methods to `Polars`
 - Added `rolling_rank` and `rolling_rank_by` methods to `Series` and `Expr`
@@ -10,34 +19,37 @@
 - Added `agg` and `item` methods to `ListExpr` and `ListNameSpace`
 - Added `agg` and `eval` methods to `ArrayExpr` and `ArrayNameSpace`
 - Added `replace` method to `NameExpr`
+
+Added options
+
 - Added more options to `read_csv` and `scan_csv` methods
 - Added more options to `read_ndjson` and `scan_ndjson` methods
 - Added more options to `write_csv` method
 - Added more options to `sort` method
 - Added more options to `over` method
 - Added `ambiguous` option to `strptime` method
-- Improved exception classes
-- Changed `schema` method to return `Schema` instead of `Hash`
-- Changed `partition_by(as_dict: true)` method to always return `Array` keys
-- Changed default `delimiter` for `join` method to empty string for `StringExpr` and `StringNameSpace`
-- Changed default `how` for `align_frames` method from `left` to `full`
-- Changed `reverse` option to `descending`
-- Changed `sep` option to `separator`
-- Changed `row_count_name` option to `row_index_name`
-- Changed `row_count_offset` option to `row_index_offset`
-- Changed `comment_char` option to `comment_prefix` for `read_csv`, `read_csv_batched`, and `scan_csv` methods
-- Changed `dtypes` option to `schema_overrides` for `read_csv`, `read_csv_batched`, and `scan_csv` methods
-- Changed `parse_dates` option to `try_parse_dates` for `read_csv`, `read_csv_batched`, and `scan_csv` methods
-- Changed `min_periods` option to `min_samples`
-- Changed `by` option to `group_by` for `group_by_dynamic`, `rolling`, and `upsample` methods
-- Changed `frac` option to `fraction` for `sample` methods
-- Changed `drop_nulls` option to `ignore_nulls` for `all` and `any` methods
-- Changed `join_nulls` option to `nulls_equal` for `join` method
-- Changed `strict` option to `check_dtypes` for `equals` method
-- Changed `quote` option to `quote_char` for `write_csv` method
-- Changed `data_pagesize_limit` option to `data_page_size` for `sink_parquet` method
-- Changed `unit` option to `time_unit` for `from_epoch` method
-- Removed support for string and symbol data types
+
+Renamed options
+
+- Renamed `reverse` option to `descending`
+- Renamed `sep` option to `separator`
+- Renamed `row_count_name` option to `row_index_name`
+- Renamed `row_count_offset` option to `row_index_offset`
+- Renamed `comment_char` option to `comment_prefix` for `read_csv`, `read_csv_batched`, and `scan_csv` methods
+- Renamed `dtypes` option to `schema_overrides` for `read_csv`, `read_csv_batched`, and `scan_csv` methods
+- Renamed `parse_dates` option to `try_parse_dates` for `read_csv`, `read_csv_batched`, and `scan_csv` methods
+- Renamed `min_periods` option to `min_samples`
+- Renamed `by` option to `group_by` for `group_by_dynamic`, `rolling`, and `upsample` methods
+- Renamed `frac` option to `fraction` for `sample` methods
+- Renamed `drop_nulls` option to `ignore_nulls` for `all` and `any` methods
+- Renamed `join_nulls` option to `nulls_equal` for `join` method
+- Renamed `strict` option to `check_dtypes` for `equals` method
+- Renamed `quote` option to `quote_char` for `write_csv` method
+- Renamed `data_pagesize_limit` option to `data_page_size` for `sink_parquet` method
+- Renamed `unit` option to `time_unit` for `from_epoch` method
+
+Removed methods
+
 - Removed `take` and `take_every` methods (use `gather` and `gather_every` instead)
 - Removed `clip_min` and `clip_max` methods (use `clip` instead)
 - Removed `argsort` and `argsort_by` methods (use `arg_sort` and `arg_sort_by` instead)
@@ -82,6 +94,9 @@
 - Removed `mean` and `median` methods from `DateTimeNameSpace` (use `Series#mean` and `Series#median` instead)
 - Removed `concat` method from `StringExpr` and `StringNameSpace` (use `join("-")` instead)
 - Removed `describe_plan` and `describe_optimized_plan` methods (use `explain` instead)
+
+Removed options
+
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods
 - Removed `in_place` option from `rename` method
 - Removed `append_chunks` option from `append` method
