@@ -1866,11 +1866,11 @@ module Polars
     #   # └───────┴───────────┘
     def gather(indices)
       if indices.is_a?(::Array)
-        indices_lit = Polars.lit(Series.new("", indices, dtype: :u32))._rbexpr
+        indices_lit_rbexpr = Polars.lit(Series.new("", indices, dtype: Int64))._rbexpr
       else
-        indices_lit = Utils.parse_into_expression(indices, str_as_lit: false)
+        indices_lit_rbexpr = Utils.parse_into_expression(indices)
       end
-      wrap_expr(_rbexpr.gather(indices_lit))
+      wrap_expr(_rbexpr.gather(indices_lit_rbexpr))
     end
 
     # Return a single value by index.
@@ -4487,12 +4487,12 @@ module Polars
     # you can safely use that cast operation.
     #
     # @param signed [Boolean]
-    #   If true, reinterpret as `:i64`. Otherwise, reinterpret as `:u64`.
+    #   If true, reinterpret as `Polars::Int64`. Otherwise, reinterpret as `Polars::UInt64`.
     #
     # @return [Expr]
     #
     # @example
-    #   s = Polars::Series.new("a", [1, 1, 2], dtype: :u64)
+    #   s = Polars::Series.new("a", [1, 1, 2], dtype: Polars::UInt64)
     #   df = Polars::DataFrame.new([s])
     #   df.select(
     #     [

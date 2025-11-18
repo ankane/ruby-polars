@@ -4,7 +4,7 @@ module Polars
     DTYPE_TEMPORAL_UNITS = ["ns", "us", "ms"]
 
     def self.is_polars_dtype(dtype, include_unknown: false)
-      is_dtype = dtype.is_a?(Symbol) || dtype.is_a?(::String) || dtype.is_a?(DataType) || (dtype.is_a?(Class) && dtype < DataType)
+      is_dtype = dtype.is_a?(DataType) || (dtype.is_a?(Class) && dtype < DataType)
 
       if !include_unknown
         is_dtype && dtype != Unknown
@@ -42,7 +42,6 @@ module Polars
     # TODO fix
     def self.rb_type_to_dtype(data_type)
       if is_polars_dtype(data_type)
-        data_type = data_type.to_s if data_type.is_a?(Symbol)
         return data_type
       end
 
@@ -152,8 +151,34 @@ module Polars
       if is_polars_dtype(input)
         input
       else
-        raise Todo
+        parse_rb_type_into_dtype(input)
       end
+    end
+
+    def self.parse_rb_type_into_dtype(input)
+      if input == ::Integer
+        Int64.new
+      elsif input == ::Float
+        Float64.new
+      elsif input == ::String
+        String.new
+      elsif input.nil?
+        Null.new
+      elsif input == ::Array
+        List
+      # this is required as pass through. Don't remove
+      elsif input == Unknown
+        Unknown
+      else
+        _raise_on_invalid_dtype(input)
+      end
+    end
+
+    def self._raise_on_invalid_dtype(input)
+      # TODO improve
+      input_type = input.inspect
+      msg = "cannot parse input #{input_type} into Polars data type"
+      raise TypeError, msg
     end
 
     def self.re_escape(s)

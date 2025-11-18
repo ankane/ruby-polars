@@ -28,11 +28,18 @@ module Polars
     #   # => Polars::Int64
     #
     # @example Constructing a Series with a specific dtype:
-    #   s2 = Polars::Series.new("a", [1, 2, 3], dtype: :f32)
+    #   s2 = Polars::Series.new("a", [1, 2, 3], dtype: Polars::Float32)
     #
     # @example It is possible to construct a Series with values as the first positional argument. This syntax considered an anti-pattern, but it can be useful in certain scenarios. You must specify any other arguments through keywords.
     #   s3 = Polars::Series.new([1, 2, 3])
     def initialize(name = nil, values = nil, dtype: nil, strict: true, nan_to_null: false, dtype_if_empty: nil)
+      # If 'Unknown' treat as None to trigger type inference
+      if dtype == Unknown
+        dtype = nil
+      elsif !dtype.nil? && !Utils.is_polars_dtype(dtype)
+        dtype = Utils.parse_into_dtype(dtype)
+      end
+
       # Handle case where values are passed as the first argument
       if !name.nil? && !name.is_a?(::String)
         if values.nil?
@@ -2821,7 +2828,7 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   s = Polars::Series.new("a", [1, 2, 3], dtype: :i8)
+    #   s = Polars::Series.new("a", [1, 2, 3], dtype: Polars::Int8)
     #   s.reverse
     #   # =>
     #   # shape: (3,)
