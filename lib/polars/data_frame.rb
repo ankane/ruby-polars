@@ -6187,7 +6187,7 @@ module Polars
     #   #         {4,"four"}
     #   #         {5,"five"}
     #   # ]
-    def to_struct(name)
+    def to_struct(name = "")
       Utils.wrap_s(_df.to_struct(name))
     end
 
