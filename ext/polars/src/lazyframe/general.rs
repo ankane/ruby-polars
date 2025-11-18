@@ -206,7 +206,7 @@ impl RbLazyFrame {
     pub fn new_from_parquet(
         sources: Wrap<ScanSources>,
         schema: Option<Wrap<Schema>>,
-        scan_options: RbScanOptions,
+        scan_options: Value,
         parallel: Wrap<ParallelStrategy>,
         low_memory: bool,
         use_statistics: bool,
@@ -227,6 +227,7 @@ impl RbLazyFrame {
 
         println!("before unified_scan_args");
 
+        let scan_options = RbScanOptions(scan_options.into());
         let unified_scan_args =
             scan_options.extract_unified_scan_args(first_path.as_ref().map(|p| p.as_ref()))?;
 

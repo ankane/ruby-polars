@@ -16,7 +16,7 @@ use crate::RbResult;
 use crate::prelude::Wrap;
 
 /// Interface to `class ScanOptions` on the Ruby side
-pub struct RbScanOptions(Opaque<Value>);
+pub struct RbScanOptions(pub Opaque<Value>);
 
 impl TryConvert for RbScanOptions {
     fn try_convert(ob: Value) -> RbResult<Self> {
