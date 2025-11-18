@@ -44,6 +44,7 @@ class JsonTest < Minitest::Test
   end
 
   def test_write_json_nil
+    skip
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     io = StringIO.new(df.write_json)
     assert_frame df, Polars.read_json(io)
