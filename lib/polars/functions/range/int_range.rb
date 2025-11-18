@@ -28,7 +28,7 @@ module Polars
     #   #         1
     #   #         2
     #   # ]
-    def int_range(start, stop = nil, step: 1, eager: false, dtype: nil)
+    def int_range(start = 0, stop = nil, step: 1, eager: false, dtype: nil)
       if stop.nil?
         stop = start
         start = 0
