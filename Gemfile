@@ -9,7 +9,7 @@ gem "activerecord"
 gem "vega"
 gem "pg"
 gem "mysql2"
-gem "trilogy"
+gem "trilogy", platform: :ruby
 gem "sqlite3"
 
 # TODO remove when numo-narray > 0.9.2.1 is released

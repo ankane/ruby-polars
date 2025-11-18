@@ -31,4 +31,4 @@ jobs:
         with:
           database: polars_ruby_test
       - run: ADAPTER=mysql ruby test/database_test.rb
-      - run: ADAPTER=trilogy ruby test/database_test.rb
+      # - run: ADAPTER=trilogy ruby test/database_test.rb
