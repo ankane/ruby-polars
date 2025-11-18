@@ -21,7 +21,10 @@ jobs:
         env:
           RUST_TARGET: x86_64-pc-windows-gnu
       # - run: bundle exec rake test
-      - run: ruby test/parquet_test.rb --name test_read_parquet
+      - run: ruby test/parquet_test.rb #--name test_read_parquet
+        env:
+          STRESS: 1
+      - run: ruby test/csv_test.rb #--name test_read_parquet
         env:
           STRESS: 1
           # POLARS_GVL: 1
