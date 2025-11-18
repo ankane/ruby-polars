@@ -78,4 +78,8 @@ class Minitest::Test
   def active_support?
     ENV["ADAPTER"] != "none"
   end
+
+  def windows?
+    Gem.win_platform?
+  end
 end

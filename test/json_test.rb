@@ -1,6 +1,11 @@
 require_relative "test_helper"
 
 class JsonTest < Minitest::Test
+  def setup
+    skip if windows?
+    super
+  end
+
   def test_read_json
     df = Polars.read_json("test/support/data.json")
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})

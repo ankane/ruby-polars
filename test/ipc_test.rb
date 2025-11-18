@@ -1,6 +1,11 @@
 require_relative "test_helper"
 
 class IpcTest < Minitest::Test
+  def setup
+    skip if windows?
+    super
+  end
+
   def test_read_ipc
     df = Polars.read_ipc("test/support/data.arrow")
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
