@@ -4560,7 +4560,7 @@ module Polars
     # @example
     #   df.partition_by("foo", maintain_order: true, as_dict: true)
     #   # =>
-    #   # {"A"=>shape: (2, 3)
+    #   # {["A"]=>shape: (2, 3)
     #   # ┌─────┬─────┬─────┐
     #   # │ foo ┆ N   ┆ bar │
     #   # │ --- ┆ --- ┆ --- │
@@ -4568,7 +4568,7 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ A   ┆ 1   ┆ k   │
     #   # │ A   ┆ 2   ┆ l   │
-    #   # └─────┴─────┴─────┘, "B"=>shape: (2, 3)
+    #   # └─────┴─────┴─────┘, ["B"]=>shape: (2, 3)
     #   # ┌─────┬─────┬─────┐
     #   # │ foo ┆ N   ┆ bar │
     #   # │ --- ┆ --- ┆ --- │
@@ -4576,7 +4576,7 @@ module Polars
     #   # ╞═════╪═════╪═════╡
     #   # │ B   ┆ 2   ┆ m   │
     #   # │ B   ┆ 4   ┆ m   │
-    #   # └─────┴─────┴─────┘, "C"=>shape: (1, 3)
+    #   # └─────┴─────┴─────┘, ["C"]=>shape: (1, 3)
     #   # ┌─────┬─────┬─────┐
     #   # │ foo ┆ N   ┆ bar │
     #   # │ --- ┆ --- ┆ --- │
@@ -4592,8 +4592,6 @@ module Polars
       if as_dict
         if include_key
           names = partitions.map { |p| p.select(by_parsed).row(0) }
-          # TODO remove
-          names.map!(&:first) if names.first&.size == 1
         else
           if !maintain_order
             msg = "cannot use `partition_by` with `maintain_order: false, include_key: false, as_dict: true`"

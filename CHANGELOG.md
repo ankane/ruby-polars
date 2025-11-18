@@ -18,6 +18,7 @@
 - Added `ambiguous` option to `strptime` method
 - Improved exception classes
 - Changed `schema` method to return `Schema` instead of `Hash`
+- Changed `partition_by(as_dict: true)` method to always return `Array` keys
 - Changed `reverse` option to `descending`
 - Changed `sep` option to `separator`
 - Changed `row_count_name` option to `row_index_name`
