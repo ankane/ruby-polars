@@ -225,6 +225,8 @@ impl RbLazyFrame {
         let sources = sources.0;
         let first_path = sources.first_path().map(|p| p.into_owned());
 
+        println!("before unified_scan_args");
+
         let unified_scan_args =
             scan_options.extract_unified_scan_args(first_path.as_ref().map(|p| p.as_ref()))?;
 
@@ -232,6 +234,8 @@ impl RbLazyFrame {
             .map_err(to_rb_err)?
             .build()
             .into();
+
+        println!("done");
 
         Ok(lf.into())
     }
