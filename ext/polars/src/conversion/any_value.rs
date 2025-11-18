@@ -200,14 +200,8 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
         Ok(AnyValue::Datetime(v, TimeUnit::Nanoseconds, None))
     }
 
-    fn get_datetime(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
-        let sec: i64 = ob.funcall("to_i", ())?;
-        let nsec: i64 = ob.funcall("nsec", ())?;
-        Ok(AnyValue::Datetime(
-            sec * 1_000_000_000 + nsec,
-            TimeUnit::Nanoseconds,
-            None,
-        ))
+    fn get_datetime(ob: Value, strict: bool) -> RbResult<AnyValue<'static>> {
+        get_time(ob.funcall("to_time", ())?, strict)
     }
 
     fn get_decimal(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
