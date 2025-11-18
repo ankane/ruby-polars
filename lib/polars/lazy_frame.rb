@@ -4275,7 +4275,7 @@ module Polars
     #   # │ z   ┆ c        ┆ 6     │
     #   # └─────┴──────────┴───────┘
     def unpivot(
-      on,
+      on = nil,
       index: nil,
       variable_name: nil,
       value_name: nil,

@@ -4374,7 +4374,7 @@ module Polars
     #   # │ y   ┆ c        ┆ 4     │
     #   # │ z   ┆ c        ┆ 6     │
     #   # └─────┴──────────┴───────┘
-    def unpivot(on, index: nil, variable_name: nil, value_name: nil)
+    def unpivot(on = nil, index: nil, variable_name: nil, value_name: nil)
       on = on.nil? ? [] : Utils._expand_selectors(self, on)
       index = index.nil? ? [] : Utils._expand_selectors(self, index)
 
