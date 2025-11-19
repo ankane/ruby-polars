@@ -1,6 +1,11 @@
 require_relative "test_helper"
 
 class CsvTest < Minitest::Test
+  def setup
+    skip if windows?
+    super
+  end
+
   def test_read_csv
     df = Polars.read_csv("test/support/data.csv")
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})

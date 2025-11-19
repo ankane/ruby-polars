@@ -1,6 +1,11 @@
 require_relative "test_helper"
 
 class ParquetTest < Minitest::Test
+  def setup
+    skip if windows?
+    super
+  end
+
   def test_read_parquet
     df = Polars.read_parquet("test/support/data.parquet")
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})

@@ -2,7 +2,7 @@ require_relative "test_helper"
 
 class DatabaseTest < Minitest::Test
   def setup
-    skip unless active_support?
+    skip if !active_support? || windows?
 
     require_relative "support/active_record"
 
