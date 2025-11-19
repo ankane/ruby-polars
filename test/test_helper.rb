@@ -76,7 +76,7 @@ class Minitest::Test
   end
 
   def active_support?
-    ENV["ADAPTER"] != "none"
+    ENV["ADAPTER"] != "none" && !windows?
   end
 
   def windows?
