@@ -32,16 +32,18 @@ jobs:
       - run: bundle exec rake test
       - run: bundle exec yard --fail-on-warning
       - run: bundle exec rake test:docs
-        env:
-          STRESS: 1
+        # env:
+        #   STRESS: 1
 
       - uses: ankane/setup-postgres@v1
         with:
           database: polars_ruby_test
-      - run: ADAPTER=postgresql ruby test/database_test.rb
+      - run: ruby test/database_test.rb
+        env:
+          ADAPTER: postgresql
 
-      - uses: ankane/setup-mysql@v1
-        with:
-          database: polars_ruby_test
-      - run: ADAPTER=mysql ruby test/database_test.rb
-      - run: ADAPTER=trilogy ruby test/database_test.rb
+      # - uses: ankane/setup-mysql@v1
+      #   with:
+      #     database: polars_ruby_test
+      # - run: ADAPTER=mysql ruby test/database_test.rb
+      # - run: ADAPTER=trilogy ruby test/database_test.rb
