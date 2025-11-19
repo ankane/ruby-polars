@@ -32,16 +32,16 @@ jobs:
           echo "ADAPTER=none" >> "$env:GITHUB_ENV"
       - run: bundle exec rake compile
       - run: bundle exec rake test
-      # - run: bundle exec yard --fail-on-warning
-      # - run: bundle exec rake test:docs
+      - run: bundle exec yard --fail-on-warning
+      - run: bundle exec rake test:docs
 
-      # - uses: ankane/setup-postgres@v1
-      #   with:
-      #     database: polars_ruby_test
-      # - run: ADAPTER=postgresql ruby test/database_test.rb
+      - uses: ankane/setup-postgres@v1
+        with:
+          database: polars_ruby_test
+      - run: ADAPTER=postgresql ruby test/database_test.rb
 
-      # - uses: ankane/setup-mysql@v1
-      #   with:
-      #     database: polars_ruby_test
-      # - run: ADAPTER=mysql ruby test/database_test.rb
-      # - run: ADAPTER=trilogy ruby test/database_test.rb
+      - uses: ankane/setup-mysql@v1
+        with:
+          database: polars_ruby_test
+      - run: ADAPTER=mysql ruby test/database_test.rb
+      - run: ADAPTER=trilogy ruby test/database_test.rb
