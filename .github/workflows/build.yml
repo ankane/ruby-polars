@@ -32,6 +32,8 @@ jobs:
       - run: bundle exec rake test
       - run: bundle exec yard --fail-on-warning
       - run: bundle exec rake test:docs
+        env:
+          STRESS: 1
 
       - uses: ankane/setup-postgres@v1
         with:
