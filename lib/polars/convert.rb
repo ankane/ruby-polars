@@ -52,23 +52,23 @@ module Polars
       )
     end
 
-    # Construct a DataFrame from a sequence of dictionaries. This operation clones data.
+    # Construct a DataFrame from an array of hashes. This operation clones data.
     #
     # @param data [Array]
-    #   Sequence with dictionaries mapping column name to value
+    #   Array with hashes mapping column name to value
     # @param schema [Object]
     #   The DataFrame schema may be declared in several ways:
     #
     #   * As a dict of \\\\{name:type} pairs; if type is nil, it will be auto-inferred.
     #   * As a list of column names; in this case types are automatically inferred.
-    #   * As a list of (name,type) pairs; this is equivalent to the dictionary form.
+    #   * As a list of (name,type) pairs; this is equivalent to the hash form.
     #
     #   If a list of column names is supplied that does NOT match the names in the
     #   underlying data, the names given here will overwrite the actual fields in
     #   the order that they appear - however, in this case it is typically clearer
     #   to rename after loading the frame.
     #
-    #   If you want to drop some of the fields found in the input dictionaries, a
+    #   If you want to drop some of the fields found in the input hashes, a
     #   *partial* schema can be declared, in which case omitted fields will not be
     #   loaded. Similarly, you can extend the loaded frame with empty columns by
     #   adding them to the schema.
@@ -145,7 +145,7 @@ module Polars
     #
     #   * As a dict of \\\\{name:type} pairs; if type is nil, it will be auto-inferred.
     #   * As a list of column names; in this case types are automatically inferred.
-    #   * As a list of (name,type) pairs; this is equivalent to the dictionary form.
+    #   * As a list of (name,type) pairs; this is equivalent to the hash form.
     #
     #   If you supply a list of column names that does not match the names in the
     #   underlying data, the names given here will overwrite them. The number
@@ -222,7 +222,7 @@ module Polars
     #
     #   * As a dict of \\\\{name:type} pairs; if type is nil, it will be auto-inferred.
     #   * As a list of column names; in this case types are automatically inferred.
-    #   * As a list of (name,type) pairs; this is equivalent to the dictionary form.
+    #   * As a list of (name,type) pairs; this is equivalent to the hash form.
     #
     #   If you supply a list of column names that does not match the names in the
     #   underlying data, the names given here will overwrite them. The number

@@ -1029,7 +1029,7 @@ module Polars
     #   information from environment variables.
     # @param credential_provider [Object]
     #   Provide a function that can be called to provide cloud storage
-    #   credentials. The function is expected to return a dictionary of
+    #   credentials. The function is expected to return a hash of
     #   credential keys along with an optional credential expiry time.
     # @param retries [Integer]
     #   Number of retries if accessing a cloud instance fails.
@@ -6527,7 +6527,7 @@ module Polars
     def self.hash_to_rbdf(data, schema: nil, schema_overrides: nil, strict: true, nan_to_null: nil)
       if schema.is_a?(Hash) && !data.empty?
         if !data.all? { |col, _| schema[col] }
-          raise ArgumentError, "The given column-schema names do not match the data dictionary"
+          raise ArgumentError, "The given column-schema names do not match the data hash"
         end
 
         data = schema.to_h { |col| [col, data[col]] }

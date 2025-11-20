@@ -146,7 +146,7 @@ module Polars
     #   Extra options that make sense for a particular storage connection.
     # @param credential_provider [Object]
     #   Provide a function that can be called to provide cloud storage
-    #   credentials. The function is expected to return a dictionary of
+    #   credentials. The function is expected to return a hash of
     #   credential keys along with an optional credential expiry time.
     # @param retries [Integer]
     #   Number of retries if accessing a cloud instance fails.

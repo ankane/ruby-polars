@@ -76,7 +76,7 @@ impl TryConvert for Wrap<SinkOptions> {
 
         if parsed.len() != 3 {
             return Err(RbValueError::new_err(
-                "`sink_options` must be a dictionary with the exactly 3 field.",
+                "`sink_options` must be a hash with the exactly 3 field.",
             ));
         }
 

@@ -9,7 +9,7 @@ module Polars
     #
     #   * As a dict of \\\\{name:type} pairs; if type is nil, it will be auto-inferred.
     #   * As a list of column names; in this case types are automatically inferred.
-    #   * As a list of (name,type) pairs; this is equivalent to the dictionary form.
+    #   * As a list of (name,type) pairs; this is equivalent to the hash form.
     #
     #   If you supply a list of column names that does not match the names in the
     #   underlying data, the names given here will overwrite them. The number
@@ -50,7 +50,7 @@ module Polars
     #   from environment variables.
     # @param credential_provider [Object]
     #   Provide a function that can be called to provide cloud storage
-    #   credentials. The function is expected to return a dictionary of
+    #   credentials. The function is expected to return a hash of
     #   credential keys along with an optional credential expiry time.
     # @param retries [Integer]
     #   Number of retries if accessing a cloud instance fails.
@@ -116,7 +116,7 @@ module Polars
     #
     #   * As a dict of \\\\{name:type} pairs; if type is nil, it will be auto-inferred.
     #   * As a list of column names; in this case types are automatically inferred.
-    #   * As a list of (name,type) pairs; this is equivalent to the dictionary form.
+    #   * As a list of (name,type) pairs; this is equivalent to the hash form.
     #
     #   If you supply a list of column names that does not match the names in the
     #   underlying data, the names given here will overwrite them. The number
@@ -157,7 +157,7 @@ module Polars
     #   from environment variables.
     # @param credential_provider [Object]
     #   Provide a function that can be called to provide cloud storage
-    #   credentials. The function is expected to return a dictionary of
+    #   credentials. The function is expected to return a hash of
     #   credential keys along with an optional credential expiry time.
     # @param retries [Integer]
     #   Number of retries if accessing a cloud instance fails.
