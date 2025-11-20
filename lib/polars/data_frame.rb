@@ -420,103 +420,165 @@ module Polars
     # Returns subset of the DataFrame.
     #
     # @return [Object]
-    def [](*args)
-      if args.size == 2
-        row_selection, col_selection = args
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [1, 2, 3], "d" => [4, 5, 6], "c" => [1, 3, 2], "b" => [7, 8, 9]}
+    #   )
+    #   df[0]
+    #   # =>
+    #   # shape: (1, 4)
+    #   # ┌─────┬─────┬─────┬─────┐
+    #   # │ a   ┆ d   ┆ c   ┆ b   │
+    #   # │ --- ┆ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╪═════╡
+    #   # │ 1   ┆ 4   ┆ 1   ┆ 7   │
+    #   # └─────┴─────┴─────┴─────┘
+    #
+    # @example
+    #   df[0, "a"]
+    #   # => 1
+    #
+    # @example
+    #   df["a"]
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ]
+    #
+    # @example
+    #   df[0..1]
+    #   # =>
+    #   # shape: (2, 4)
+    #   # ┌─────┬─────┬─────┬─────┐
+    #   # │ a   ┆ d   ┆ c   ┆ b   │
+    #   # │ --- ┆ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╪═════╡
+    #   # │ 1   ┆ 4   ┆ 1   ┆ 7   │
+    #   # │ 2   ┆ 5   ┆ 3   ┆ 8   │
+    #   # └─────┴─────┴─────┴─────┘
+    #
+    # @example
+    #   df[0..1, "a"]
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   # ]
+    #
+    # @example
+    #   df[0..1, 0]
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   # ]
+    #
+    # @example
+    #   df[[0, 1], [0, 1, 2]]
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ a   ┆ d   ┆ c   │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 4   ┆ 1   │
+    #   # │ 2   ┆ 5   ┆ 3   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example
+    #   df[0..1, ["a", "c"]]
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ c   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 1   │
+    #   # │ 2   ┆ 3   │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df[0.., 0..1]
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ d   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 4   │
+    #   # │ 2   ┆ 5   │
+    #   # │ 3   ┆ 6   │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df[0.., "a".."c"]
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ a   ┆ d   ┆ c   │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ i64 ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1   ┆ 4   ┆ 1   │
+    #   # │ 2   ┆ 5   ┆ 3   │
+    #   # │ 3   ┆ 6   ┆ 2   │
+    #   # └─────┴─────┴─────┘
+    def [](*key)
+      df = self
 
-        # df[.., unknown]
-        if row_selection.is_a?(Range)
+      if key.size == 2
+        row_key, col_key = key
 
-          # multiple slices
-          # df[.., ..]
-          if col_selection.is_a?(Range)
-            raise Todo
-          end
+        # Support df[True, False] and df["a", "b"] as these are not ambiguous
+        if Utils.bool?(row_key) || Utils.strlike?(row_key)
+          return _select_columns(df, key)  # type: ignore[arg-type]
         end
 
-        # df[2, ..] (select row as df)
-        if row_selection.is_a?(Integer)
-          if col_selection.is_a?(::Array)
-            df = self[0.., col_selection]
-            return df.slice(row_selection, 1)
-          end
-          # df[2, "a"]
-          if col_selection.is_a?(::String) || col_selection.is_a?(Symbol)
-            return self[col_selection][row_selection]
-          end
-        end
+        selection = _select_columns(df, col_key)
 
-        # column selection can be "a" and ["a", "b"]
-        if col_selection.is_a?(::String) || col_selection.is_a?(Symbol)
-          col_selection = [col_selection]
+        if selection.is_empty
+          return selection
+        elsif selection.is_a?(Series)
+          return get_series_item_by_key(selection, row_key)
+        else
+          return _select_rows(selection, row_key)
         end
+      end
 
-        # df[.., 1]
-        if col_selection.is_a?(Integer)
-          series = to_series(col_selection)
-          return series[row_selection]
-        end
+      key = key[0] if key.size == 1
 
-        if col_selection.is_a?(::Array)
-          # df[.., [1, 2]]
-          if Utils.is_int_sequence(col_selection)
-            series_list = col_selection.map { |i| to_series(i) }
-            df = self.class.new(series_list)
-            return df[row_selection]
-          end
-        end
-
-        df = self[col_selection]
-        return df[row_selection]
-      elsif args.size == 1
-        item = args[0]
-
-        # select single column
-        # df["foo"]
-        if item.is_a?(::String) || item.is_a?(Symbol)
-          return Utils.wrap_s(_df.get_column(item.to_s))
-        end
-
-        # df[idx]
-        if item.is_a?(Integer)
-          return slice(_pos_idx(item, 0), 1)
-        end
-
-        # df[..]
-        if item.is_a?(Range)
-          return Slice.new(self).apply(item)
-        end
-
-        if item.is_a?(::Array) && item.all? { |v| Utils.strlike?(v) }
-          # select multiple columns
-          # df[["foo", "bar"]]
-          return _from_rbdf(_df.select(item.map(&:to_s)))
-        end
-
-        if Utils.is_int_sequence(item)
-          item = Series.new("", item)
-        end
-
-        if item.is_a?(Series)
-          dtype = item.dtype
-          if dtype == String
-            return _from_rbdf(_df.select(item))
-          elsif dtype == UInt32
-            return _from_rbdf(_df.gather_with_series(item._s))
-          elsif [UInt8, UInt16, UInt64, Int8, Int16, Int32, Int64].include?(dtype)
-            return _from_rbdf(
-              _df.gather_with_series(_pos_idxs(item, 0)._s)
-            )
-          end
-        end
+      # Single string input, e.g. df["a"]
+      if Utils.strlike?(key)
+        # This case is required because empty strings are otherwise treated
+        # as an empty Sequence in `_select_rows`
+        return df.get_column(key)
       end
 
       # Ruby-specific
-      if item.is_a?(Expr) || item.is_a?(Series)
-        return filter(item)
+      if key.is_a?(Expr) || (key.is_a?(Series) && key.dtype == Boolean)
+        return filter(key)
       end
 
-      raise ArgumentError, "Cannot get item of type: #{item.class.name}"
+      # Single input - df[1] - or multiple inputs - df["a", "b", "c"]
+      begin
+         _select_rows(df, key)
+      rescue TypeError
+        _select_columns(df, key)
+      end
     end
 
     # Set item.
@@ -1852,7 +1914,7 @@ module Polars
 
       _column_to_row_output = lambda do |col_name, dtype|
         fn = schema[col_name] == String ? :inspect : :to_s
-        values = self[0...max_n_values, col_name].to_series.to_a
+        values = self[0...max_n_values, col_name].to_a
         if col_name.length > max_colname_length
           col_name = col_name[0...(max_colname_length - 1)] + "…"
         end
@@ -4064,7 +4126,7 @@ module Polars
     #   #         "?"
     #   # ]
     def get_column(name, default: NO_DEFAULT)
-      Utils.wrap_s(_df.get_column(name))
+      Utils.wrap_s(_df.get_column(name.to_s))
     rescue ColumnNotFoundError
       raise if default.eql?(NO_DEFAULT)
       default
@@ -6858,6 +6920,232 @@ module Polars
       else
         yield
       end
+    end
+
+    def get_series_item_by_key(s, key)
+      if key.is_a?(Integer)
+        return s._s.get_index_signed(key)
+
+      elsif key.is_a?(Range)
+          return _select_elements_by_slice(s, key)
+
+      elsif key.is_a?(::Array)
+        if key.empty?
+          return s.clear
+        end
+
+        first = key[0]
+        if Utils.bool?(first)
+          _raise_on_boolean_mask
+        end
+
+        begin
+          indices = Series.new("", key, dtype: Int64)
+        rescue TypeError
+          msg = "cannot select elements using Sequence with elements of type #{first.class.name.inspect}"
+          raise TypeError, msg
+        end
+
+        indices = _convert_series_to_indices(indices, s.len)
+        return _select_elements_by_index(s, indices)
+
+      elsif key.is_a?(Series)
+        indices = _convert_series_to_indices(key, s.len)
+        return _select_elements_by_index(s, indices)
+      end
+
+      msg = "cannot select elements using key of type #{key.class.name.inspect}: #{key.inspect}"
+      raise TypeError, msg
+    end
+
+    def _select_elements_by_slice(s, key)
+      Slice.new(s).apply(key)
+    end
+
+    def _select_elements_by_index(s, key)
+      s.send(:_from_rbseries, s._s.gather_with_series(key._s))
+    end
+
+    def _select_columns(df, key)
+      if key.is_a?(Integer)
+        return df.to_series(key)
+
+      elsif Utils.strlike?(key)
+        return df.get_column(key)
+
+      elsif key.is_a?(Range)
+        start, stop = key.begin, key.end
+        if start.is_a?(::String)
+          start = df.get_column_index(start)
+          stop = df.get_column_index(stop)
+          rng = Range.new(start, stop, key.exclude_end?)
+          return _select_columns_by_index(df, rng)
+        else
+          return _select_columns_by_index(df, key)
+        end
+
+      elsif key.is_a?(::Array)
+        if key.empty?
+          return df.class.new
+        end
+        first = key[0]
+        if Utils.bool?(first)
+          return _select_columns_by_mask(df, key)
+        elsif first.is_a?(Integer)
+          return _select_columns_by_index(df, key)
+        elsif Utils.strlike?(first)
+          return _select_columns_by_name(df, key)
+        else
+          msg = "cannot select columns using Sequence with elements of type #{first.class.name.inspect}"
+          raise TypeError, msg
+        end
+
+      elsif key.is_a?(Series)
+        if key.is_empty
+          return df.class.new
+        end
+        dtype = key.dtype
+        if dtype == String
+          return _select_columns_by_name(df, key)
+        elsif dtype.integer?
+          return _select_columns_by_index(df, key)
+        elsif dtype == Boolean
+          return _select_columns_by_mask(df, key)
+        else
+          msg = "cannot select columns using Series of type #{dtype}"
+          raise TypeError, msg
+        end
+      end
+
+      msg = (
+        "cannot select columns using key of type #{key.class.name.inspect}: #{key.inspect}"
+      )
+      raise TypeError, msg
+    end
+
+    def _select_columns_by_index(df, key)
+      series = key.map { |i| df.to_series(i) }
+      df.class.new(series)
+    end
+
+    def _select_columns_by_name(df, key)
+      df.send(:_from_rbdf, df._df.select(Array(key)))
+    end
+
+    def _select_columns_by_mask(df, key)
+      if key.length != df.width
+        msg = "expected #{df.width} values when selecting columns by boolean mask, got #{key.length}"
+        raise ArgumentError, msg
+      end
+
+      indices = key.each_with_index.filter_map { |val, i| i if val }
+      _select_columns_by_index(df, indices)
+    end
+
+    def _select_rows(df, key)
+      if key.is_a?(Integer)
+        num_rows = df.height
+        if key >= num_rows || key < -num_rows
+          msg = "index #{key} is out of bounds for DataFrame of height #{num_rows}"
+          raise IndexError, msg
+        end
+        return df.slice(key, 1)
+      end
+
+      if key.is_a?(Range)
+        return _select_rows_by_slice(df, key)
+
+      elsif key.is_a?(::Array)
+        if key.empty?
+          return df.clear
+        end
+        if Utils.bool?(key[0])
+          _raise_on_boolean_mask
+        end
+        s = Series.new("", key, dtype: Int64)
+        indices = _convert_series_to_indices(s, df.height)
+        return _select_rows_by_index(df, indices)
+
+      elsif key.is_a?(Series)
+        indices = _convert_series_to_indices(key, df.height)
+        return _select_rows_by_index(df, indices)
+
+      else
+        msg = "cannot select rows using key of type #{key.class.name.inspect}: #{key.inspect}"
+        raise TypeError, msg
+      end
+    end
+
+    def _select_rows_by_slice(df, key)
+      return Slice.new(df).apply(key)
+    end
+
+    def _select_rows_by_index(df, key)
+      df.send(:_from_rbdf, df._df.gather_with_series(key._s))
+    end
+
+    def _convert_series_to_indices(s, size)
+      idx_type = Plr.get_index_type
+
+      if s.dtype == idx_type
+        return s
+      end
+
+      if !s.dtype.integer?
+        if s.dtype == Boolean
+          _raise_on_boolean_mask
+        else
+          msg = "cannot treat Series of type #{s.dtype} as indices"
+          raise TypeError, msg
+        end
+      end
+
+      if s.len == 0
+        return Series.new(s.name, [], dtype: idx_type)
+      end
+
+      if idx_type == UInt32
+        if [Int64, UInt64].include?(s.dtype) && s.max >= Utils::U32_MAX
+          msg = "index positions should be smaller than 2^32"
+          raise ArgumentError, msg
+        end
+        if s.dtype == Int64 && s.min < -Utils::U32_MAX
+          msg = "index positions should be greater than or equal to -2^32"
+          raise ArgumentError, msg
+        end
+      end
+
+      if s.dtype.signed_integer?
+        if s.min < 0
+          if idx_type == UInt32
+            idxs = [Int8, Int16].include?(s.dtype) ? s.cast(Int32) : s
+          else
+            idxs = [Int8, Int16, Int32].include?(s.dtype) ? s.cast(Int64) : s
+          end
+
+          # Update negative indexes to absolute indexes.
+          return (
+            idxs.to_frame
+            .select(
+              F.when(F.col(idxs.name) < 0)
+              .then(size + F.col(idxs.name))
+              .otherwise(F.col(idxs.name))
+              .cast(idx_type)
+            )
+            .to_series(0)
+          )
+        end
+      end
+
+      s.cast(idx_type)
+    end
+
+    def _raise_on_boolean_mask
+      msg = (
+        "selecting rows by passing a boolean mask to `[]` is not supported" +
+        "\n\nHint: Use the `filter` method instead."
+      )
+      raise TypeError, msg
     end
   end
 end
