@@ -4511,7 +4511,7 @@ module Polars
     #   # │ 1             ┆ 1        │
     #   # │ 2             ┆ 2        │
     #   # └───────────────┴──────────┘
-    def reinterpret(signed: false)
+    def reinterpret(signed: true)
       wrap_expr(_rbexpr.reinterpret(signed))
     end
 
@@ -7274,7 +7274,7 @@ module Polars
     #   # └─────┘
     def sample(
       fraction: nil,
-      with_replacement: true,
+      with_replacement: false,
       shuffle: false,
       seed: nil,
       n: nil
@@ -7322,7 +7322,7 @@ module Polars
       alpha: nil,
       adjust: true,
       min_samples: 1,
-      ignore_nulls: true
+      ignore_nulls: false
     )
       alpha = _prepare_alpha(com, span, half_life, alpha)
       wrap_expr(_rbexpr.ewm_mean(alpha, adjust, min_samples, ignore_nulls))
@@ -7423,7 +7423,7 @@ module Polars
       adjust: true,
       bias: false,
       min_samples: 1,
-      ignore_nulls: true
+      ignore_nulls: false
     )
       alpha = _prepare_alpha(com, span, half_life, alpha)
       wrap_expr(_rbexpr.ewm_std(alpha, adjust, bias, min_samples, ignore_nulls))
@@ -7455,7 +7455,7 @@ module Polars
       adjust: true,
       bias: false,
       min_samples: 1,
-      ignore_nulls: true
+      ignore_nulls: false
     )
       alpha = _prepare_alpha(com, span, half_life, alpha)
       wrap_expr(_rbexpr.ewm_var(alpha, adjust, bias, min_samples, ignore_nulls))
@@ -7667,7 +7667,7 @@ module Polars
     #   # ╞═══════════╡
     #   # │ -6.754888 │
     #   # └───────────┘
-    def entropy(base: 2, normalize: true)
+    def entropy(base: Math::E, normalize: true)
       wrap_expr(_rbexpr.entropy(base, normalize))
     end
 

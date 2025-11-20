@@ -73,7 +73,7 @@ module Polars
     #   #         1
     #   #         1
     #   # ]
-    def ones(n, dtype: nil, eager: true)
+    def ones(n, dtype: Float64, eager: false)
       if (zero = _one_or_zero_by_dtype(1, dtype)).nil?
         msg = "invalid dtype for `ones`; found #{dtype}"
         raise TypeError, msg
@@ -106,7 +106,7 @@ module Polars
     #   #         0
     #   #         0
     #   # ]
-    def zeros(n, dtype: nil, eager: true)
+    def zeros(n, dtype: Float64, eager: false)
       if (zero = _one_or_zero_by_dtype(0, dtype)).nil?
         msg = "invalid dtype for `zeros`; found #{dtype}"
         raise TypeError, msg

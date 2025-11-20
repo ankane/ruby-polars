@@ -93,7 +93,7 @@ module Polars
     #   # │ 2   ┆ 4    ┆ 5    ┆ null │
     #   # │ 3   ┆ null ┆ 6    ┆ 8    │
     #   # └─────┴──────┴──────┴──────┘
-    def concat(items, rechunk: true, how: "vertical", parallel: true)
+    def concat(items, rechunk: false, how: "vertical", parallel: true)
       elems = items.to_a
 
       if elems.empty?

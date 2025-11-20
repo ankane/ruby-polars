@@ -21,7 +21,7 @@ module Polars
       source,
       version: nil,
       columns: nil,
-      rechunk: false,
+      rechunk: nil,
       storage_options: nil,
       delta_table_options: nil
     )

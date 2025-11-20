@@ -1476,7 +1476,7 @@ module Polars
     #   b = Polars::Series.new([0.65, 0.10, 0.25])
     #   b.entropy(normalize: true)
     #   # => 0.8568409950394724
-    def entropy(base: Math::E, normalize: false)
+    def entropy(base: Math::E, normalize: true)
       Polars.select(Polars.lit(self).entropy(base: base, normalize: normalize)).to_series[0]
     end
 
@@ -1554,7 +1554,7 @@ module Polars
     #   s2 = Polars::Series.new("b", [4, 5, 6])
     #
     # @example Concatenate Series with rechunk: true
-    #   Polars.concat([s, s2]).chunk_lengths
+    #   Polars.concat([s, s2], rechunk: true).chunk_lengths
     #   # => [6]
     #
     # @example Concatenate Series with rechunk: false
@@ -1573,7 +1573,7 @@ module Polars
     #   s2 = Polars::Series.new("b", [4, 5, 6])
     #
     # @example Concatenate Series with rechunk: true
-    #   Polars.concat([s, s2]).n_chunks
+    #   Polars.concat([s, s2], rechunk: true).n_chunks
     #   # => 1
     #
     # @example Concatenate Series with rechunk: false
@@ -2693,7 +2693,7 @@ module Polars
     #   # => true
     #   s.equals(s2)
     #   # => false
-    def equals(other, check_dtypes: false, check_names: false, null_equal: false)
+    def equals(other, check_dtypes: false, check_names: false, null_equal: true)
       _s.equals(other._s, check_dtypes, check_names, null_equal)
     end
 
@@ -5785,7 +5785,7 @@ module Polars
       alpha: nil,
       adjust: true,
       min_samples: 1,
-      ignore_nulls: true
+      ignore_nulls: false
     )
       super
     end
@@ -5875,7 +5875,7 @@ module Polars
       adjust: true,
       bias: false,
       min_samples: 1,
-      ignore_nulls: true
+      ignore_nulls: false
     )
       super
     end
@@ -5903,7 +5903,7 @@ module Polars
       adjust: true,
       bias: false,
       min_samples: 1,
-      ignore_nulls: true
+      ignore_nulls: false
     )
       super
     end

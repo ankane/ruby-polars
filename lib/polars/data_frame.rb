@@ -1140,7 +1140,7 @@ module Polars
       file,
       compression: "zstd",
       compression_level: nil,
-      statistics: false,
+      statistics: true,
       row_group_size: nil,
       data_page_size: nil,
       partition_by: nil,
@@ -5428,7 +5428,7 @@ module Polars
     #       "c" => [true, true, true, false, true, true]
     #     }
     #   )
-    #   df.unique
+    #   df.unique(maintain_order: true)
     #   # =>
     #   # shape: (5, 3)
     #   # ┌─────┬─────┬───────┐
@@ -5442,7 +5442,7 @@ module Polars
     #   # │ 4   ┆ 3.0 ┆ true  │
     #   # │ 5   ┆ 3.0 ┆ true  │
     #   # └─────┴─────┴───────┘
-    def unique(maintain_order: true, subset: nil, keep: "first")
+    def unique(maintain_order: false, subset: nil, keep: "any")
       self._from_rbdf(
         lazy
           .unique(maintain_order: maintain_order, subset: subset, keep: keep)
@@ -5902,7 +5902,7 @@ module Polars
     # @example
     #   df.iter_rows(named: true).map { |row| row["b"] }
     #   # => [2, 4, 6]
-    def iter_rows(named: false, buffer_size: 500, &block)
+    def iter_rows(named: false, buffer_size: 512, &block)
       return to_enum(:iter_rows, named: named, buffer_size: buffer_size) unless block_given?
 
       # load into the local namespace for a modest performance boost in the hot loops

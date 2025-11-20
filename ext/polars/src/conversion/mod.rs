@@ -1079,9 +1079,11 @@ impl TryConvert for Wrap<UniqueKeepStrategy> {
         let parsed = match String::try_convert(ob)?.as_str() {
             "first" => UniqueKeepStrategy::First,
             "last" => UniqueKeepStrategy::Last,
+            "none" => UniqueKeepStrategy::None,
+            "any" => UniqueKeepStrategy::Any,
             v => {
                 return Err(RbValueError::new_err(format!(
-                    "keep must be one of {{'first', 'last'}}, got {v}"
+                    "`keep` must be one of {{'first', 'last', 'any', 'none'}}, got {v}",
                 )));
             }
         };

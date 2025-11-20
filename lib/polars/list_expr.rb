@@ -476,7 +476,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [[3, 2, 1], [], [1, 2]]})
-    #   df.select(Polars.col("foo").list.get(0))
+    #   df.select(Polars.col("foo").list.get(0, null_on_oob: true))
     #   # =>
     #   # shape: (3, 1)
     #   # ┌──────┐
@@ -488,7 +488,7 @@ module Polars
     #   # │ null │
     #   # │ 1    │
     #   # └──────┘
-    def get(index, null_on_oob: true)
+    def get(index, null_on_oob: false)
       index = Utils.parse_into_expression(index)
       Utils.wrap_expr(_rbexpr.list_get(index, null_on_oob))
     end
@@ -595,7 +595,7 @@ module Polars
     #   # │ 1    │
     #   # └──────┘
     def first
-      get(0)
+      get(0, null_on_oob: true)
     end
 
     # Get the last value of the sublists.
@@ -617,7 +617,7 @@ module Polars
     #   # │ 2    │
     #   # └──────┘
     def last
-      get(-1)
+      get(-1, null_on_oob: true)
     end
 
     # Get the single value of the sublists.
@@ -996,7 +996,7 @@ module Polars
     #   # │ [0, 1]    ┆ {0,1}     │
     #   # │ [0, 1, 2] ┆ {0,1}     │
     #   # └───────────┴───────────┘
-    def to_struct(n_field_strategy: "first_non_null", fields: nil, upper_bound: nil)
+    def to_struct(n_field_strategy: nil, fields: nil, upper_bound: nil)
       if !fields.is_a?(::Array)
         if fields.nil?
           fields = upper_bound.times.map { |i| "field_#{i}" }

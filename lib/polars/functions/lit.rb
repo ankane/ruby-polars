@@ -3,7 +3,7 @@ module Polars
     # Return an expression representing a literal value.
     #
     # @return [Expr]
-    def lit(value, dtype: nil, allow_object: nil)
+    def lit(value, dtype: nil, allow_object: false)
       if value.is_a?(::Time) || value.is_a?(::DateTime)
         time_unit = dtype&.time_unit || "ns"
         time_zone = dtype.&time_zone

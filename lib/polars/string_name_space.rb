@@ -431,7 +431,7 @@ module Polars
     #   #         b"bar"
     #   #         null
     #   # ]
-    def decode(encoding, strict: false)
+    def decode(encoding, strict: true)
       super
     end
 
@@ -481,7 +481,7 @@ module Polars
     #   #         null
     #   #         {2,false}
     #   # ]
-    def json_decode(dtype = nil, infer_schema_length: 100)
+    def json_decode(dtype = nil, infer_schema_length: N_INFER_DEFAULT)
       if !dtype.nil?
         s = Utils.wrap_s(_s)
         return (

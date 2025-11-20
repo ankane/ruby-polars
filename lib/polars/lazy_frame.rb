@@ -1215,7 +1215,7 @@ module Polars
     #   lf.sink_ipc("out.arrow")
     def sink_ipc(
       path,
-      compression: "zstd",
+      compression: "uncompressed",
       compat_level: nil,
       maintain_order: true,
       storage_options: nil,
@@ -3763,7 +3763,8 @@ module Polars
     #   # │ 0   ┆ 0.0  │
     #   # │ 4   ┆ 13.0 │
     #   # └─────┴──────┘
-    def fill_null(value = nil, strategy: nil, limit: nil, matches_supertype: nil)
+    def fill_null(value = nil, strategy: nil, limit: nil, matches_supertype: true)
+      # TODO use matches_supertype
       select(Polars.all.fill_null(value, strategy: strategy, limit: limit))
     end
 
@@ -4117,7 +4118,7 @@ module Polars
     #   # │ 3   ┆ a   ┆ b   │
     #   # │ 1   ┆ a   ┆ b   │
     #   # └─────┴─────┴─────┘
-    def unique(maintain_order: true, subset: nil, keep: "first")
+    def unique(maintain_order: false, subset: nil, keep: "any")
       selector_subset = nil
       if !subset.nil?
         selector_subset = Utils.parse_list_into_selector(subset)._rbselector

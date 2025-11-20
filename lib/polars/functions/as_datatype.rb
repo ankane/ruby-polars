@@ -269,8 +269,12 @@ module Polars
       milliseconds: nil,
       microseconds: nil,
       nanoseconds: nil,
-      time_unit: "us"
+      time_unit: nil
     )
+      if !nanoseconds.nil? && time_unit.nil?
+        time_unit = "ns"
+      end
+
       if !weeks.nil?
         weeks = Utils.parse_into_expression(weeks, str_as_lit: false)
       end
@@ -294,6 +298,10 @@ module Polars
       end
       if !nanoseconds.nil?
         nanoseconds = Utils.parse_into_expression(nanoseconds, str_as_lit: false)
+      end
+
+      if time_unit.nil?
+        time_unit = "us"
       end
 
       Utils.wrap_expr(

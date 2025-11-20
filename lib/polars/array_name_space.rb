@@ -488,7 +488,7 @@ module Polars
     #   s = Polars::Series.new(
     #     "a", [[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype: Polars::Array.new(Polars::Int32, 3)
     #   )
-    #   s.arr.get(Polars::Series.new([1, -2, 4]))
+    #   s.arr.get(Polars::Series.new([1, -2, 4]), null_on_oob: true)
     #   # =>
     #   # shape: (3,)
     #   # Series: 'a' [i32]
@@ -497,7 +497,7 @@ module Polars
     #   #         5
     #   #         null
     #   # ]
-    def get(index, null_on_oob: true)
+    def get(index, null_on_oob: false)
       super
     end
 

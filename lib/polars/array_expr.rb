@@ -642,7 +642,7 @@ module Polars
     #     {"arr" => [[1, 2, 3], [4, 5, 6], [7, 8, 9]], "idx" => [1, -2, 4]},
     #     schema: {"arr" => Polars::Array.new(Polars::Int32, 3), "idx" => Polars::Int32}
     #   )
-    #   df.with_columns(get: Polars.col("arr").arr.get("idx"))
+    #   df.with_columns(get: Polars.col("arr").arr.get("idx", null_on_oob: true))
     #   # =>
     #   # shape: (3, 3)
     #   # ┌───────────────┬─────┬──────┐
@@ -654,7 +654,7 @@ module Polars
     #   # │ [4, 5, 6]     ┆ -2  ┆ 5    │
     #   # │ [7, 8, 9]     ┆ 4   ┆ null │
     #   # └───────────────┴─────┴──────┘
-    def get(index, null_on_oob: true)
+    def get(index, null_on_oob: false)
       index = Utils.parse_into_expression(index)
       Utils.wrap_expr(_rbexpr.arr_get(index, null_on_oob))
     end
@@ -681,7 +681,7 @@ module Polars
     #   # │ [7, 8, 9]     ┆ 7     │
     #   # └───────────────┴───────┘
     def first
-      get(0)
+      get(0, null_on_oob: true)
     end
 
     # Get the last value of the sub-arrays.
@@ -706,7 +706,7 @@ module Polars
     #   # │ [7, 8, 9]     ┆ 9    │
     #   # └───────────────┴──────┘
     def last
-      get(-1)
+      get(-1, null_on_oob: true)
     end
 
     # Join all string items in a sub-array and place a separator between them.
