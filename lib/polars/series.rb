@@ -5590,11 +5590,11 @@ module Polars
     # Replace all values by different values.
     #
     # @param old [Object]
-    #   Value or sequence of values to replace.
+    #   Value or array of values to replace.
     #   Also accepts a mapping of values to their replacement as syntactic sugar for
     #   `replace_strict(old: Polars::Series.new(mapping.keys), new: Polars::Series.new(mapping.values))`.
     # @param new [Object]
-    #   Value or sequence of values to replace by.
+    #   Value or array of values to replace by.
     #   Length must match the length of `old` or have length 1.
     # @param default [Object]
     #   Set values that were not replaced to this value. If no default is specified,
@@ -5606,7 +5606,7 @@ module Polars
     #
     # @return [Series]
     #
-    # @example Replace values by passing sequences to the `old` and `new` parameters.
+    # @example Replace values by passing arrays to the `old` and `new` parameters.
     #   s = Polars::Series.new([1, 2, 2, 3])
     #   s.replace_strict([1, 2, 3], [100, 200, 300])
     #   # =>
