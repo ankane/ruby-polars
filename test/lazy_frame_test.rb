@@ -97,4 +97,10 @@ class LazyFrameTest < Minitest::Test
     expected = Polars::DataFrame.new({"a" => [1, 2], "b" => [3, 4]})
     assert_frame expected, df
   end
+
+  def test_fill_null
+    lf = Polars::LazyFrame.new({a: [1, nil], b: [nil, "two"]})
+    assert_frame ({"a" => [1, 2], "b" => [nil, "two"]}), lf.fill_null(2).collect
+    assert_frame ({"a" => [1, nil], "b" => ["one", "two"]}), lf.fill_null("one").collect
+  end
 end

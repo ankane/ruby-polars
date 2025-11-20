@@ -3764,7 +3764,46 @@ module Polars
     #   # │ 4   ┆ 13.0 │
     #   # └─────┴──────┘
     def fill_null(value = nil, strategy: nil, limit: nil, matches_supertype: true)
-      # TODO use matches_supertype
+      if !value.nil?
+        if value.is_a?(Expr)
+          dtypes = nil
+        elsif value.is_a?(TrueClass) || value.is_a?(FalseClass)
+          dtypes = [Boolean]
+        elsif matches_supertype && (value.is_a?(Integer) || value.is_a?(Float))
+          dtypes = [
+            Int8,
+            Int16,
+            Int32,
+            Int64,
+            Int128,
+            UInt8,
+            UInt16,
+            UInt32,
+            UInt64,
+            Float32,
+            Float64,
+            Decimal.new
+          ]
+        elsif value.is_a?(Integer)
+          dtypes = [Int64]
+        elsif value.is_a?(Float)
+          dtypes = [Float64]
+        elsif value.is_a?(::Date)
+          dtypes = [Date]
+        elsif value.is_a?(::String)
+          dtypes = [String, Categorical]
+        else
+          # fallback; anything not explicitly handled above
+          dtypes = nil
+        end
+
+        if dtypes
+          return with_columns(
+            F.col(dtypes).fill_null(value, strategy: strategy, limit: limit)
+          )
+        end
+      end
+
       select(Polars.all.fill_null(value, strategy: strategy, limit: limit))
     end
 
