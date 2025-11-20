@@ -879,7 +879,7 @@ module Polars
     #   # │ max        ┆ cc    │
     #   # └────────────┴───────┘
     def describe(
-      percentiles: [0.25, 0.50, 0.75],
+      percentiles: [0.25, 0.5, 0.75],
       interpolation: "nearest"
     )
       stats = to_frame.describe(
@@ -2950,7 +2950,7 @@ module Polars
     def is_close(
       other,
       abs_tol: 0.0,
-      rel_tol: 1e-09,
+      rel_tol: 1.0e-09,
       nans_equal: false
     )
       F.select(

@@ -4432,7 +4432,7 @@ module Polars
     def is_close(
       other,
       abs_tol: 0.0,
-      rel_tol: 1e-09,
+      rel_tol: 1.0e-09,
       nans_equal: false
     )
       other = Utils.parse_into_expression(other)

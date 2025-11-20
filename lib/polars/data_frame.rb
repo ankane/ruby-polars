@@ -1941,7 +1941,7 @@ module Polars
     #   # │ max        ┆ 3.0      ┆ 50.0     ┆ 1.0      ┆ zz   ┆ 2022-12-31              │
     #   # └────────────┴──────────┴──────────┴──────────┴──────┴─────────────────────────┘
     def describe(
-      percentiles: [0.25, 0.50, 0.75],
+      percentiles: [0.25, 0.5, 0.75],
       interpolation: "nearest"
     )
       if columns.empty?
