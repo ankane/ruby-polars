@@ -545,7 +545,7 @@ module Polars
 
         # Support df[True, False] and df["a", "b"] as these are not ambiguous
         if Utils.bool?(row_key) || Utils.strlike?(row_key)
-          return _select_columns(df, key)  # type: ignore[arg-type]
+          return _select_columns(df, key)
         end
 
         selection = _select_columns(df, col_key)
