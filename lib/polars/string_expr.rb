@@ -1890,7 +1890,15 @@ module Polars
     private
 
     def _validate_format_argument(format)
-      # TODO
+      if !format.nil? && format.include?(".%f")
+        message = (
+          "Detected the pattern `.%f` in the chrono format string." +
+          " This pattern should not be used to parse values after a decimal point." +
+          " Use `%.f` instead." +
+          " See the full specification: https://docs.rs/chrono/latest/chrono/format/strftime"
+        )
+        warn message
+      end
     end
   end
 end
