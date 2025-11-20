@@ -250,6 +250,10 @@ class DataFrameTest < Minitest::Test
     assert_frame({"a" => [2, 3]}, df[[1, 2]])
     assert_frame({"a" => [2, 3]}, df[1..2])
     assert_frame({"a" => [2]}, df[1...2])
+
+    df = Polars::DataFrame.new({"a" => [1], "d" => [4], "c" => [1], "b" => [7]})
+    assert_equal ["a", "d", "c"], df[0.., "a".."c"].columns
+    assert_equal ["a", "d"], df[0.., "a"..."c"].columns
   end
 
   def test_set
