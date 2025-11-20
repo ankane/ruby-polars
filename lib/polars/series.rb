@@ -2014,7 +2014,7 @@ module Polars
     #   Number of elements to return.
     # @param reverse [Object]
     #   Consider the `k` smallest elements of the `by` column (instead of the `k`
-    #   largest). This can be specified per column by passing a sequence of
+    #   largest). This can be specified per column by passing an array of
     #   booleans.
     #
     # @return [Series]
@@ -2074,7 +2074,7 @@ module Polars
     #   Number of elements to return.
     # @param reverse [Object]
     #   Consider the `k` largest elements of the `by` column( (instead of the `k`
-    #   smallest). This can be specified per column by passing a sequence of
+    #   smallest). This can be specified per column by passing an array of
     #   booleans.
     #
     # @return [Series]
@@ -5518,10 +5518,10 @@ module Polars
     # Replace values by different values.
     #
     # @param old [Object]
-    #   Value or sequence of values to replace.
+    #   Value or array of values to replace.
     #   Also accepts a mapping of values to their replacement.
     # @param new [Object]
-    #   Value or sequence of values to replace by.
+    #   Value or array of values to replace by.
     #   Length must match the length of `old` or have length 1.
     # @param default [Object]
     #   Set values that were not replaced to this value.
@@ -5546,7 +5546,7 @@ module Polars
     #   #         3
     #   # ]
     #
-    # @example Replace multiple values by passing sequences to the `old` and `new` parameters.
+    # @example Replace multiple values by passing arrays to the `old` and `new` parameters.
     #   s.replace([2, 3], [100, 200])
     #   # =>
     #   # shape: (4,)

@@ -1383,7 +1383,7 @@ module Polars
     #   Number of elements to return.
     # @param reverse [Object]
     #   Consider the `k` smallest elements of the `by` column(s) (instead of the `k`
-    #   largest). This can be specified per column by passing a sequence of
+    #   largest). This can be specified per column by passing an array of
     #   booleans.
     #
     # @return [Expr]
@@ -1528,7 +1528,7 @@ module Polars
     #   Number of elements to return.
     # @param reverse [Object]
     #   Consider the `k` largest elements of the `by` column(s) (instead of the `k`
-    #   smallest). This can be specified per column by passing a sequence of
+    #   smallest). This can be specified per column by passing an array of
     #   booleans.
     #
     # @return [Expr]
@@ -1784,7 +1784,7 @@ module Polars
     #   true -> order from large to small.
     # @param nulls_last [Boolean]
     #   Place null values last; can specify a single boolean applying to all columns
-    #   or a sequence of booleans for per-column control.
+    #   or an array of booleans for per-column control.
     # @param multithreaded [Boolean]
     #   Sort using multiple threads.
     # @param maintain_order [Boolean]
@@ -3329,7 +3329,7 @@ module Polars
       filter(predicate)
     end
 
-    # Apply a custom Ruby function to a Series or sequence of Series.
+    # Apply a custom Ruby function to a Series or array of Series.
     #
     # The output of this custom function must be a Series.
     # If you want to apply a custom function elementwise over single values, see
@@ -4264,7 +4264,7 @@ module Polars
     # Check if elements of this expression are present in the other Series.
     #
     # @param other [Object]
-    #   Series or sequence of primitive type.
+    #   Series or array of primitive type.
     # @param nulls_equal [Boolean]
     #   If true, treat null as a distinct value. Null values will not propagate.
     #
@@ -7839,13 +7839,13 @@ module Polars
     # Replace values by different values.
     #
     # @param old [Object]
-    #   Value or sequence of values to replace.
-    #   Accepts expression input. Sequences are parsed as Series,
+    #   Value or array of values to replace.
+    #   Accepts expression input. Arrays are parsed as Series,
     #   other non-expression inputs are parsed as literals.
     #   Also accepts a mapping of values to their replacement.
     # @param new [Object]
-    #   Value or sequence of values to replace by.
-    #   Accepts expression input. Sequences are parsed as Series,
+    #   Value or array of values to replace by.
+    #   Accepts expression input. Arrays are parsed as Series,
     #   other non-expression inputs are parsed as literals.
     #   Length must match the length of `old` or have length 1.
     # @param default [Object]
@@ -7874,7 +7874,7 @@ module Polars
     #   # │ 3   ┆ 3        │
     #   # └─────┴──────────┘
     #
-    # @example Replace multiple values by passing sequences to the `old` and `new` parameters.
+    # @example Replace multiple values by passing arrays to the `old` and `new` parameters.
     #   df.with_columns(replaced: Polars.col("a").replace([2, 3], [100, 200]))
     #   # =>
     #   # shape: (4, 2)
@@ -8004,14 +8004,14 @@ module Polars
     # Replace all values by different values.
     #
     # @param old [Object]
-    #   Value or sequence of values to replace.
-    #   Accepts expression input. Sequences are parsed as Series,
+    #   Value or array of values to replace.
+    #   Accepts expression input. Arrays are parsed as Series,
     #   other non-expression inputs are parsed as literals.
     #   Also accepts a mapping of values to their replacement as syntactic sugar for
     #   `replace_all(old: Series.new(mapping.keys), new: Series.new(mapping.values))`.
     # @param new [Object]
-    #   Value or sequence of values to replace by.
-    #   Accepts expression input. Sequences are parsed as Series,
+    #   Value or array of values to replace by.
+    #   Accepts expression input. Arrays are parsed as Series,
     #   other non-expression inputs are parsed as literals.
     #   Length must match the length of `old` or have length 1.
     # @param default [Object]
@@ -8027,7 +8027,7 @@ module Polars
     # @note
     #   The global string cache must be enabled when replacing categorical values.
     #
-    # @example Replace values by passing sequences to the `old` and `new` parameters.
+    # @example Replace values by passing arrays to the `old` and `new` parameters.
     #   df = Polars::DataFrame.new({"a" => [1, 2, 2, 3]})
     #   df.with_columns(
     #     replaced: Polars.col("a").replace_strict([1, 2, 3], [100, 200, 300])

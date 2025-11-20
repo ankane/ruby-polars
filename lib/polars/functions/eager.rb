@@ -393,7 +393,7 @@ module Polars
       out
     end
 
-    # Align a sequence of frames using the unique values from one or more columns as a key.
+    # Align an array of frames using the unique values from one or more columns as a key.
     #
     # Frames that do not contain the given key values have rows injected (with nulls
     # filling the non-key columns), and each resulting frame is sorted by the key.
@@ -406,7 +406,7 @@ module Polars
     # the same number of rows.
     #
     # @param frames [Array]
-    #   Sequence of DataFrames or LazyFrames.
+    #   Array of DataFrames or LazyFrames.
     # @param on [Object]
     #   One or more columns whose unique values will be used to align the frames.
     # @param select [Object]

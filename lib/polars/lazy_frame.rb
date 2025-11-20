@@ -722,7 +722,7 @@ module Polars
     #   Accepts expression input. Strings are parsed as column names.
     # @param reverse [Object]
     #   Consider the `k` smallest elements of the `by` column(s) (instead of the `k`
-    #   largest). This can be specified per column by passing a sequence of
+    #   largest). This can be specified per column by passing an array of
     #   booleans.
     #
     # @return [LazyFrame]
@@ -786,7 +786,7 @@ module Polars
     #   Accepts expression input. Strings are parsed as column names.
     # @param reverse [Object]
     #   Consider the `k` largest elements of the `by` column(s) (instead of the `k`
-    #   smallest). This can be specified per column by passing a sequence of
+    #   smallest). This can be specified per column by passing an array of
     #   booleans.
     #
     # @return [LazyFrame]

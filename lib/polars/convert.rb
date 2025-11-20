@@ -134,12 +134,12 @@ module Polars
       )
     end
 
-    # Construct a DataFrame from a sequence of sequences. This operation clones data.
+    # Construct a DataFrame from an array of arrays. This operation clones data.
     #
     # Note that this is slower than creating from columnar memory.
     #
     # @param data [Array]
-    #   Two-dimensional data represented as a sequence of sequences.
+    #   Two-dimensional data represented as an array of arrays.
     # @param schema [Object]
     #   The DataFrame schema may be declared in several ways:
     #
@@ -192,7 +192,7 @@ module Polars
     )
       if !data.is_a?(::Array)
         msg = (
-          "expected data of type Sequence, got #{data.class.name.inspect}" +
+          "expected data of type Array, got #{data.class.name.inspect}" +
           "\n\nHint: Try passing your data to the DataFrame constructor instead," +
           " e.g. `Polars::DataFrame.new(data)`."
         )

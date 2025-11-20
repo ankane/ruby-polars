@@ -1298,7 +1298,7 @@ module Polars
     #   #         "Can me feel the love tonight"
     #   # ]
     #
-    # @example Broadcast a replacement for many patterns by passing a sequence of length 1 to the `replace_with` parameter.
+    # @example Broadcast a replacement for many patterns by passing an array of length 1 to the `replace_with` parameter.
     #   s = Polars::Series.new(
     #     "lyrics",
     #     [

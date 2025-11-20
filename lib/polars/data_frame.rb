@@ -41,7 +41,7 @@ module Polars
     # @param infer_schema_length [Integer]
     #   The maximum number of rows to scan for schema inference. If set to `nil`, the
     #   full data may be scanned *(this can be slow)*. This parameter only applies if
-    #   the input data is a sequence or generator of rows; other input is read as-is.
+    #   the input data is an array or generator of rows; other input is read as-is.
     # @param nan_to_null [Boolean]
     #   If the data comes from one or more Numo arrays, can optionally convert input
     #   data NaN values to null instead. This is a no-op for all other input data.
@@ -2018,10 +2018,10 @@ module Polars
     #   Additional columns to sort by, specified as positional arguments.
     # @param descending [Boolean]
     #   Sort in descending order. When sorting by multiple columns, can be specified
-    #   per column by passing a sequence of booleans.
+    #   per column by passing an array of booleans.
     # @param nulls_last [Boolean]
     #   Place null values last; can specify a single boolean applying to all columns
-    #   or a sequence of booleans for per-column control.
+    #   or an array of booleans for per-column control.
     # @param multithreaded [Boolean]
     #   Sort using multiple threads.
     # @param maintain_order [Boolean]
@@ -2189,7 +2189,7 @@ module Polars
     #   Accepts expression input. Strings are parsed as column names.
     # @param reverse [Object]
     #   Consider the `k` smallest elements of the `by` column(s) (instead of the `k`
-    #   largest). This can be specified per column by passing a sequence of
+    #   largest). This can be specified per column by passing an array of
     #   booleans.
     #
     # @return [DataFrame]
@@ -2260,7 +2260,7 @@ module Polars
     #   Accepts expression input. Strings are parsed as column names.
     # @param reverse [Object]
     #   Consider the `k` largest elements of the `by` column(s) (instead of the `k`
-    #   smallest). This can be specified per column by passing a sequence of
+    #   smallest). This can be specified per column by passing an array of
     #   booleans.
     #
     # @return [DataFrame]
