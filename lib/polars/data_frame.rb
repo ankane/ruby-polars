@@ -538,47 +538,7 @@ module Polars
     #   # │ 3   ┆ 6   ┆ 2   │
     #   # └─────┴─────┴─────┘
     def [](*key)
-      df = self
-
-      if key.size == 2
-        row_key, col_key = key
-
-        # Support df[True, False] and df["a", "b"] as these are not ambiguous
-        if Utils.bool?(row_key) || Utils.strlike?(row_key)
-          return _select_columns(df, key)
-        end
-
-        selection = _select_columns(df, col_key)
-
-        if selection.is_empty
-          return selection
-        elsif selection.is_a?(Series)
-          return get_series_item_by_key(selection, row_key)
-        else
-          return _select_rows(selection, row_key)
-        end
-      end
-
-      key = key[0] if key.size == 1
-
-      # Single string input, e.g. df["a"]
-      if Utils.strlike?(key)
-        # This case is required because empty strings are otherwise treated
-        # as an empty Sequence in `_select_rows`
-        return df.get_column(key)
-      end
-
-      # Ruby-specific
-      if key.is_a?(Expr) || (key.is_a?(Series) && key.dtype == Boolean)
-        return filter(key)
-      end
-
-      # Single input - df[1] - or multiple inputs - df["a", "b", "c"]
-      begin
-         _select_rows(df, key)
-      rescue TypeError
-        _select_columns(df, key)
-      end
+      get_df_item_by_key(self, key)
     end
 
     # Set item.
@@ -6964,6 +6924,48 @@ module Polars
 
     def _select_elements_by_index(s, key)
       s.send(:_from_rbseries, s._s.gather_with_series(key._s))
+    end
+
+    def get_df_item_by_key(df, key)
+      if key.size == 2
+        row_key, col_key = key
+
+        # Support df[True, False] and df["a", "b"] as these are not ambiguous
+        if Utils.bool?(row_key) || Utils.strlike?(row_key)
+          return _select_columns(df, key)
+        end
+
+        selection = _select_columns(df, col_key)
+
+        if selection.is_empty
+          return selection
+        elsif selection.is_a?(Series)
+          return get_series_item_by_key(selection, row_key)
+        else
+          return _select_rows(selection, row_key)
+        end
+      end
+
+      key = key[0] if key.size == 1
+
+      # Single string input, e.g. df["a"]
+      if Utils.strlike?(key)
+        # This case is required because empty strings are otherwise treated
+        # as an empty Sequence in `_select_rows`
+        return df.get_column(key)
+      end
+
+      # Ruby-specific
+      if key.is_a?(Expr) || (key.is_a?(Series) && key.dtype == Boolean)
+        return filter(key)
+      end
+
+      # Single input - df[1] - or multiple inputs - df["a", "b", "c"]
+      begin
+         _select_rows(df, key)
+      rescue TypeError
+        _select_columns(df, key)
+      end
     end
 
     def _select_columns(df, key)
