@@ -446,13 +446,13 @@ Supports `line`, `pie`, `column`, `bar`, `area`, and `scatter` plots
 Group data
 
 ```ruby
-df.group_by("c").plot("a", "b", type: "line")
+df.plot("a", "b", group: "c", type: "line")
 ```
 
 Stacked columns or bars
 
 ```ruby
-df.group_by("c").plot("a", "b", type: "column", stacked: true)
+df.plot("a", "b", group: "c", type: "column", stacked: true)
 ```
 
 Plot a series [unreleased]
