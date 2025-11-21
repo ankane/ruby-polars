@@ -1251,8 +1251,8 @@ module Polars
     #   # │ 3.0 ┆ 6   │
     #   # └─────┴─────┘
     def cast(dtype, strict: true, wrap_numerical: false)
-      dtype = Utils.rb_type_to_dtype(dtype)
-      wrap_expr(_rbexpr.cast(dtype, strict, wrap_numerical))
+      dtype = Utils.parse_into_datatype_expr(dtype)
+      wrap_expr(_rbexpr.cast(dtype._rbdatatype_expr, strict, wrap_numerical))
     end
 
     # Sort this column. In projection/ selection context the whole column is sorted.

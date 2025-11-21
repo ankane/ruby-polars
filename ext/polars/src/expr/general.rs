@@ -7,6 +7,7 @@ use polars::series::ops::NullBehavior;
 use polars_core::chunked_array::cast::CastOptions;
 use polars_core::series::IsSorted;
 
+use super::datatype::RbDataTypeExpr;
 use super::selector::RbSelector;
 use crate::conversion::{Wrap, parse_fill_null_strategy};
 use crate::expr::ToExprs;
@@ -259,7 +260,7 @@ impl RbExpr {
         self.inner.clone().null_count().into()
     }
 
-    pub fn cast(&self, dtype: Wrap<DataType>, strict: bool, wrap_numerical: bool) -> Self {
+    pub fn cast(&self, dtype: &RbDataTypeExpr, strict: bool, wrap_numerical: bool) -> Self {
         let options = if wrap_numerical {
             CastOptions::Overflowing
         } else if strict {
@@ -268,7 +269,10 @@ impl RbExpr {
             CastOptions::NonStrict
         };
 
-        let expr = self.inner.clone().cast_with_options(dtype.0, options);
+        let expr = self
+            .inner
+            .clone()
+            .cast_with_options(dtype.inner.clone(), options);
         expr.into()
     }
 
