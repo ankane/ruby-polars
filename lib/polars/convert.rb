@@ -43,7 +43,7 @@ module Polars
     #   # └─────┴─────┘
     def from_hash(data, schema: nil, schema_overrides: nil, strict: true)
       Utils.wrap_df(
-        DataFrame.hash_to_rbdf(
+        Utils.hash_to_rbdf(
           data,
           schema: schema,
           schema_overrides: schema_overrides,
@@ -200,7 +200,7 @@ module Polars
       end
 
       Utils.wrap_df(
-        DataFrame.sequence_to_rbdf(
+        Utils.sequence_to_rbdf(
           data,
           schema: schema,
           schema_overrides: schema_overrides,

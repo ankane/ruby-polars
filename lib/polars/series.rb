@@ -6479,7 +6479,7 @@ module Polars
       elsif dtype == Struct
         struct_schema = dtype.is_a?(Struct) ? dtype.to_schema : nil
         empty = {}
-        DataFrame.sequence_to_rbdf(
+        Utils.sequence_to_rbdf(
           values.map { |v| v.nil? ? empty : v },
           schema: struct_schema,
           orient: "row",
