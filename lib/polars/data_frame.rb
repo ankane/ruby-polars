@@ -2706,7 +2706,7 @@ module Polars
     #   # │ 4   ┆ 40  │
     #   # └─────┴─────┘
     def pipe(function, *args, **kwargs, &block)
-      function.call(self, *args, **kwargs, &block)
+      function.(self, *args, **kwargs, &block)
     end
 
     # Add a column at index 0 that counts the rows.

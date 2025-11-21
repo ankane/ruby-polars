@@ -252,7 +252,7 @@ module Polars
     #   # │ 4   ┆ 40  │
     #   # └─────┴─────┘
     def pipe(function, *args, **kwargs, &block)
-      function.call(self, *args, **kwargs, &block)
+      function.(self, *args, **kwargs, &block)
     end
 
     # Creates a summary of statistics for a LazyFrame, returning a DataFrame.

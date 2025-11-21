@@ -191,7 +191,7 @@ module Polars
 
     def self._construct_series_with_fallbacks(constructor, name, values, dtype, strict:)
       begin
-        constructor.call(name, values, strict)
+        constructor.(name, values, strict)
       rescue
         if dtype.nil?
           RbSeries.new_from_any_values(name, values, strict)

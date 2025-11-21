@@ -6288,12 +6288,12 @@ module Polars
         ts = Utils.datetime_to_int(other, time_unit)
         f = ffi_func("#{op}_<>", Int64, _s)
         fail if f.nil?
-        return Utils.wrap_s(f.call(ts))
+        return Utils.wrap_s(f.(ts))
       elsif other.is_a?(::Date) && dtype == Date
         d = Utils.date_to_int(other)
         f = ffi_func("#{op}_<>", Int32, _s)
         fail if f.nil?
-        return Utils.wrap_s(f.call(d))
+        return Utils.wrap_s(f.(d))
       end
 
       if other.is_a?(Series)
@@ -6304,7 +6304,7 @@ module Polars
       if f.nil?
         raise NotImplementedError
       end
-      Utils.wrap_s(f.call(other))
+      Utils.wrap_s(f.(other))
     end
 
     def ffi_func(name, dtype, _s)
@@ -6328,7 +6328,7 @@ module Polars
       if f.nil?
         raise ArgumentError, "cannot do arithmetic with series of dtype: #{dtype} and argument of type: #{other.class.name}"
       end
-      Utils.wrap_s(f.call(other))
+      Utils.wrap_s(f.(other))
     end
 
     DTYPE_TO_FFINAME = {
