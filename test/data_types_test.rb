@@ -16,7 +16,7 @@ class DataTypesTest < Minitest::Test
     assert_equal %!Polars::Duration(time_unit: "ns")!, Polars::Duration.new("ns").to_s
     assert_equal "Polars::List", Polars::List.to_s
     assert_equal "Polars::List(Polars::Int64)", Polars::List.new(Polars::Int64).to_s
-    assert_equal "Polars::Array(Polars::Int64, width: 3)", Polars::Array.new(3, Polars::Int64).to_s
+    assert_equal "Polars::Array(Polars::Int64, shape: [3])", Polars::Array.new(Polars::Int64, 3).to_s
     assert_equal %!Polars::Struct({"a"=>Polars::Int64})!, Polars::Struct.new([Polars::Field.new("a", Polars::Int64)]).to_s.gsub(" => ", "=>")
   end
 
@@ -62,9 +62,9 @@ class DataTypesTest < Minitest::Test
 
   def test_equal_array
     assert_equal Polars::Array, Polars::Array
-    assert_equal Polars::Array.new(3, Polars::Int64), Polars::Array.new(3, Polars::Int64)
-    refute_equal Polars::Array.new(3, Polars::Int64), Polars::Array.new(3, Polars::Int32)
-    assert_equal Polars::Array.new(3, Polars::Int64), Polars::Array
+    assert_equal Polars::Array.new(Polars::Int64, 3), Polars::Array.new(Polars::Int64, 3)
+    refute_equal Polars::Array.new(Polars::Int64, 3), Polars::Array.new(Polars::Int32, 3)
+    assert_equal Polars::Array.new(Polars::Int64, 3), Polars::Array
   end
 
   def test_equal_struct

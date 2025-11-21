@@ -155,13 +155,23 @@ module Polars
       end
     end
 
+    def self.try_parse_into_dtype(input)
+      parse_into_dtype(input)
+    rescue TypeError
+      nil
+    end
+
     def self.parse_rb_type_into_dtype(input)
-      if input == ::Integer
+      if input == Integer
         Int64.new
-      elsif input == ::Float
+      elsif input == Float
         Float64.new
       elsif input == ::String
         String.new
+      elsif input == ::Time || input == ::DateTime || (defined?(ActiveSupport::TimeWithZone) && input == ActiveSupport::TimeWithZone)
+        Datetime.new("ns")
+      elsif input == ::Date
+        Date.new
       elsif input.nil?
         Null.new
       elsif input == ::Array

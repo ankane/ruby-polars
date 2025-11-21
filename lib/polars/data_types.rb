@@ -461,21 +461,42 @@ module Polars
 
   # Nested list/array type.
   class Array < NestedType
-    attr_reader :inner, :width
+    attr_reader :inner, :size, :shape
 
-    def initialize(inner, width)
-      if width.is_a?(DataType) || (width.is_a?(Class) && width < DataType)
-        inner, width = width, inner
+    def initialize(inner, shape)
+      if shape.nil?
+        msg = "Array constructor is missing the required argument `shape`"
+        raise TypeError, msg
       end
-      @inner = Utils.rb_type_to_dtype(inner) if inner
-      @width = width
+
+      inner_parsed = Utils.parse_into_dtype(inner)
+      inner_shape = inner_parsed.is_a?(Array) ? inner_parsed.shape : []
+
+      if shape.is_a?(Integer)
+        @inner = inner_parsed
+        @size = shape
+        @shape = [shape] + inner_shape
+
+      elsif shape.is_a?(::Array) && shape[0].is_a?(Integer)
+        if shape.length > 1
+          inner_parsed = Array.new(inner_parsed, shape[1..])
+        end
+
+        @inner = inner_parsed
+        @size = shape[0]
+        @shape = shape + inner_shape
+
+      else
+        msg = "invalid input for shape: #{shape.inspect}"
+        raise TypeError, msg
+      end
     end
 
     def ==(other)
       if other.eql?(Array)
         true
       elsif other.is_a?(Array)
-        if @width != other.width
+        if @shape != other.shape
           false
         elsif @inner.nil? || other.inner.nil?
           true
@@ -488,7 +509,7 @@ module Polars
     end
 
     def to_s
-      "#{self.class.name}(#{inner}, width: #{width.inspect})"
+      "#{self.class.name}(#{inner}, shape: #{shape.inspect})"
     end
   end
 

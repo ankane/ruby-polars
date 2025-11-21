@@ -191,7 +191,7 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {"a" => [[1, 2], [4, 3]]},
-    #     schema: {"a" => Polars::Array.new(2, Polars::Int64)}
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 2)}
     #   )
     #   df.select(Polars.col("a").arr.min)
     #   # =>
@@ -215,7 +215,7 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {"a" => [[1, 2], [4, 3]]},
-    #     schema: {"a" => Polars::Array.new(2, Polars::Int64)}
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 2)}
     #   )
     #   df.select(Polars.col("a").arr.max)
     #   # =>
@@ -239,7 +239,7 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {"a" => [[1, 2], [4, 3]]},
-    #     schema: {"a" => Polars::Array.new(2, Polars::Int64)}
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 2)}
     #   )
     #   df.select(Polars.col("a").arr.sum)
     #   # =>
@@ -263,7 +263,7 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {"a" => [[1, 2], [4, 3]]},
-    #     schema: {"a" => Polars::Array.new(2, Polars::Int64)}
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 2)}
     #   )
     #   df.select(Polars.col("a").arr.std)
     #   # =>
@@ -287,7 +287,7 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {"a" => [[1, 2], [4, 3]]},
-    #     schema: {"a" => Polars::Array.new(2, Polars::Int64)}
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 2)}
     #   )
     #   df.select(Polars.col("a").arr.var)
     #   # =>
@@ -335,7 +335,7 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {"a" => [[1, 2], [4, 3]]},
-    #     schema: {"a" => Polars::Array.new(2, Polars::Int64)}
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 2)}
     #   )
     #   df.select(Polars.col("a").arr.median)
     #   # =>
@@ -437,7 +437,7 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "a": [
+    #       "a" => [
     #         [true, true],
     #         [false, true],
     #         [false, false],
@@ -472,7 +472,7 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "a": [
+    #       "a" => [
     #         [true, true],
     #         [false, true],
     #         [false, false],

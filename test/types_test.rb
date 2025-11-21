@@ -156,17 +156,17 @@ class TypesTest < Minitest::Test
 
   def test_series_dtype_array
     s = Polars::Series.new([[1, 2], [3, 4]], dtype: Polars::Array)
-    assert_series [[1, 2], [3, 4]], s, dtype: Polars::Array.new(2, Polars::Int64)
+    assert_series [[1, 2], [3, 4]], s, dtype: Polars::Array.new(Polars::Int64, 2)
   end
 
   def test_series_dtype_array_width
-    s = Polars::Series.new([[1, 2], [3, 4]], dtype: Polars::Array.new(2, Polars::Int64))
-    assert_series [[1, 2], [3, 4]], s, dtype: Polars::Array.new(2, Polars::Int64)
+    s = Polars::Series.new([[1, 2], [3, 4]], dtype: Polars::Array.new(Polars::Int64, 2))
+    assert_series [[1, 2], [3, 4]], s, dtype: Polars::Array.new(Polars::Int64, 2)
   end
 
   def test_series_dtype_array_incompatible_width
     error = assert_raises do
-      Polars::Series.new([[1, 2], [3, 4]], dtype: Polars::Array.new(3, Polars::Int64))
+      Polars::Series.new([[1, 2], [3, 4]], dtype: Polars::Array.new(Polars::Int64, 3))
     end
     assert_equal "not all elements have the specified width 3", error.message
   end

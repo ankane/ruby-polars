@@ -139,11 +139,11 @@ class SeriesTest < Minitest::Test
 
   def test_new_empty
     s = Polars::Series.new([])
-    assert_series [], s, dtype: Polars::Float32
+    assert_series [], s, dtype: Polars::Null
   end
 
   def test_new_unsupported
-    error = assert_raises(ArgumentError) do
+    error = assert_raises(TypeError) do
       Polars::Series.new("a", Object.new)
     end
     assert_equal "Series constructor called with unsupported type; got Object", error.message
@@ -419,7 +419,7 @@ class SeriesTest < Minitest::Test
 
   def test_sum
     assert_equal 6, Polars::Series.new([1, 2, 3]).sum
-    assert_in_delta 0, Polars::Series.new([]).sum
+    assert_nil Polars::Series.new([]).sum
   end
 
   def test_mean

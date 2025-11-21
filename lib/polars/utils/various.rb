@@ -142,5 +142,21 @@ module Polars
     )
       raise Todo
     end
+
+    def self.range_to_series(
+      name, rng, dtype: nil
+    )
+      dtype ||= Int64
+      if dtype.integer?
+        range = F.int_range(
+          rng.first, rng.last + (rng.exclude_end? ? 0 : 1), step: 1, dtype: dtype, eager: true
+        )
+      else
+        range = F.int_range(
+          rng.first, rng.last + (rng.exclude_end? ? 0 : 1), step: 1, eager: true
+        ).cast(dtype)
+      end
+      range.alias(name)
+    end
   end
 end

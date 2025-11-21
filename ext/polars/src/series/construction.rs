@@ -4,7 +4,6 @@ use polars_core::prelude::*;
 use crate::any_value::rb_object_to_any_value;
 use crate::conversion::{Wrap, slice_extract_wrapped, vec_extract_wrapped};
 use crate::prelude::ObjectValue;
-use crate::series::to_series;
 use crate::{RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
 
 impl RbSeries {
@@ -190,9 +189,23 @@ impl RbSeries {
         Ok(s.into())
     }
 
-    pub fn new_series_list(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
-        let series_vec = to_series(val)?;
-        Ok(Series::new(name.into(), &series_vec).into())
+    pub fn new_series_list(name: String, values: RArray, _strict: bool) -> RbResult<Self> {
+        let series: Vec<_> = values
+            .into_iter()
+            .map(|ops| {
+                Option::<&RbSeries>::try_convert(ops)
+                    .unwrap()
+                    .map(|ps| ps.clone().series.into_inner())
+            })
+            .collect();
+        if let Some(s) = series.iter().flatten().next() {
+            if s.dtype().is_object() {
+                return Err(RbValueError::new_err(
+                    "list of objects isn't supported; try building a 'object' only series",
+                ));
+            }
+        }
+        Ok(Series::new(name.into(), series).into())
     }
 
     pub fn new_array(

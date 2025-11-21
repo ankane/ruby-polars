@@ -16,7 +16,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new(
-    #     "a", [[1, 2], [4, 3]], dtype: Polars::Array.new(2, Polars::Int64)
+    #     "a", [[1, 2], [4, 3]], dtype: Polars::Array.new(Polars::Int64, 2)
     #   )
     #   s.arr.min
     #   # =>
@@ -36,7 +36,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new(
-    #     "a", [[1, 2], [4, 3]], dtype: Polars::Array.new(2, Polars::Int64)
+    #     "a", [[1, 2], [4, 3]], dtype: Polars::Array.new(Polars::Int64, 2)
     #   )
     #   s.arr.max
     #   # =>
@@ -57,7 +57,7 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {"a" => [[1, 2], [4, 3]]},
-    #     schema: {"a" => Polars::Array.new(2, Polars::Int64)}
+    #     schema: {"a" => Polars::Array.new(Polars::Int64, 2)}
     #   )
     #   df.select(Polars.col("a").arr.sum)
     #   # =>

@@ -1,12 +1,19 @@
 module Polars
   module Utils
-    def self.sequence_to_rbseries(name, values, dtype: nil, strict: true)
+    def self.sequence_to_rbseries(name, values, dtype: nil, strict: true, nan_to_null: false)
       ruby_dtype = nil
 
-      if (values.nil? || values.empty?) && dtype.nil?
-        # TODO fix
-        dtype = Float32
-      elsif dtype == List
+      if values.is_a?(Range)
+        if values.begin.is_a?(::String)
+          values = values.to_a
+        else
+          return range_to_series(name, values, dtype: dtype)._s
+        end
+      end
+
+      if values.length == 0 && dtype.nil?
+        dtype = Null
+      elsif [List, Array].include?(dtype)
         ruby_dtype = ::Array
       end
 
@@ -20,21 +27,13 @@ module Polars
         end
       end
 
-      if !dtype.nil? && ![List, Struct, Unknown].include?(dtype) && Utils.is_polars_dtype(dtype) && ruby_dtype.nil?
-        if dtype == Array && !dtype.is_a?(Array) && value.is_a?(::Array)
-          dtype = Array.new(nil, value.size)
-        end
-
+      if !dtype.nil? && is_polars_dtype(dtype) && !dtype.nested? && dtype != Unknown && ruby_dtype.nil?
         constructor = polars_type_to_constructor(dtype)
-        rbseries =
-          if dtype == Array
-            constructor.call(name, values, strict)
-          else
-            _construct_series_with_fallbacks(constructor, name, values, dtype, strict: strict)
-          end
+        rbseries = _construct_series_with_fallbacks(
+          constructor, name, values, dtype, strict: strict
+        )
 
-        base_type = dtype.is_a?(DataType) ? dtype.class : dtype
-        if [Date, Datetime, Duration, Time, Categorical, Boolean, Enum].include?(base_type) || dtype.is_a?(Decimal)
+        if [Date, Datetime, Duration, Time, Boolean, Categorical, Enum].include?(dtype) || dtype.is_a?(Decimal) || dtype.is_a?(Categorical)
           if rbseries.dtype != dtype
             rbseries = rbseries.cast(dtype, true, false)
           end
@@ -59,77 +58,132 @@ module Polars
           end
         end
 
-        rbseries
+        return rbseries
+
       elsif dtype == Struct
         struct_schema = dtype.is_a?(Struct) ? dtype.to_schema : nil
         empty = {}
-        Utils.sequence_to_rbdf(
+
+        data = []
+        invalid = []
+        values.each_with_index do |v, i|
+          if v.nil?
+            invalid << i
+            data << empty
+          else
+            data << v
+          end
+        end
+
+        return sequence_to_rbdf(
           values.map { |v| v.nil? ? empty : v },
           schema: struct_schema,
           orient: "row",
-        ).to_struct(name)
-      else
-        if ruby_dtype.nil?
-          if value.nil?
-            # generic default dtype
-            ruby_dtype = Float
-          else
-            ruby_dtype = value.class
-          end
+        ).to_struct(name, invalid)
+      end
+
+      if ruby_dtype.nil?
+        if value.nil?
+          constructor = polars_type_to_constructor(Null)
+          return constructor.(name, values, strict)
         end
 
-        # temporal branch
-        if rb_temporal_types.include?(ruby_dtype)
-          if dtype.nil?
-            dtype = Utils.rb_type_to_dtype(ruby_dtype)
-          elsif rb_temporal_types.include?(dtype)
-            dtype = Utils.rb_type_to_dtype(dtype)
-          end
-          # TODO
-          time_unit = nil
+        ruby_dtype = value.class
+      end
 
-          rb_series = RbSeries.new_from_any_values(name, values, strict)
-          if time_unit.nil?
-            s = Utils.wrap_s(rb_series)
-          else
-            s = Utils.wrap_s(rb_series).dt.cast_time_unit(time_unit)
-          end
-          s._s
-        elsif defined?(Numo::NArray) && value.is_a?(Numo::NArray) && value.shape.length == 1
-          raise Todo
-        elsif ruby_dtype == ::Array
-          if dtype.is_a?(Object)
-            return RbSeries.new_object(name, values, strict)
-          end
-          if dtype
-            srs = sequence_from_anyvalue_or_object(name, values)
-            if dtype != srs.dtype
-              srs = srs.cast(dtype, false, false)
-            end
-            return srs
-          end
-          sequence_from_anyvalue_or_object(name, values)
-        elsif ruby_dtype == Series
-          RbSeries.new_series_list(name, values.map(&:_s), strict)
-        elsif ruby_dtype == RbSeries
-          RbSeries.new_series_list(name, values, strict)
+      # temporal branch
+      if rb_temporal_types.include?(ruby_dtype)
+        if dtype.nil?
+          dtype = parse_into_dtype(ruby_dtype)
+        elsif rb_temporal_types.include?(dtype)
+          dtype = parse_into_dtype(dtype)
+        end
+
+        values_dtype = value.nil? ? nil : try_parse_into_dtype(value.class)
+        if !values_dtype.nil? && values_dtype.float?
+          msg = "'float' object cannot be interpreted as a #{ruby_dtype.name.inspect}"
+          raise TypeError, msg
+        end
+
+        rb_series = RbSeries.new_from_any_values(name, values, strict)
+
+        time_unit = dtype.respond_to?(:time_unit) ? dtype.time_unit : nil
+        time_zone = dtype.respond_to?(:time_zone) ? dtype.time_zone : nil
+
+        if dtype.temporal? && values_dtype == String && dtype != Duration
+          s = wrap_s(rb_series).str.strptime(dtype, strict: strict)
+        elsif !time_unit.nil? && values_dtype != Date
+          s = wrap_s(rb_series).dt.cast_time_unit(time_unit)
         else
-          constructor =
-            if value.is_a?(::String)
-              if value.encoding == Encoding::UTF_8
-                RbSeries.method(:new_str)
-              else
-                RbSeries.method(:new_binary)
-              end
-            elsif value.is_a?(Integer) && values.any? { |v| v.is_a?(Float) }
-              # TODO improve performance
-              RbSeries.method(:new_opt_f64)
-            else
-              rb_type_to_constructor(value.class)
-            end
-
-          _construct_series_with_fallbacks(constructor, name, values, dtype, strict: strict)
+          s = wrap_s(rb_series)
         end
+
+        if dtype == Datetime && !time_zone.nil?
+          return s.dt.convert_time_zone(time_zone)._s
+        end
+        s._s
+
+      elsif defined?(Numo::NArray) && value.is_a?(Numo::NArray) && value.shape.length == 1
+        raise Todo
+
+      elsif ruby_dtype == ::Array
+        if dtype.nil?
+          RbSeries.new_from_any_values(name, values, strict)
+        elsif dtype.is_a?(Object)
+          RbSeries.new_object(name, values, strict)
+        else
+          inner_dtype = dtype.respond_to?(:inner) ? dtype.inner : nil
+          if !inner_dtype.nil?
+            rbseries_list =
+              values.map do |value|
+                if value.nil?
+                  nil
+                else
+                  sequence_to_rbseries(
+                    "",
+                    value,
+                    dtype: inner_dtype,
+                    strict: strict,
+                    nan_to_null: nan_to_null,
+                  )
+                end
+              end
+            rbseries = RbSeries.new_series_list(name, rbseries_list, strict)
+          else
+            raise Todo
+            # rbseries = RbSeries.new_from_any_values_and_dtype(
+            #   name, values, dtype, strict
+            # )
+          end
+          if dtype != rbseries.dtype
+            rbseries = rbseries.cast(dtype, false, false)
+          end
+          rbseries
+        end
+
+      elsif ruby_dtype == Series
+        RbSeries.new_series_list(
+          name, values.map { |v| !v.nil? ? v._s : v }, strict
+        )
+
+      elsif ruby_dtype == RbSeries
+        RbSeries.new_series_list(name, values, strict)
+      else
+        constructor =
+          if value.is_a?(::String)
+            if value.encoding == Encoding::UTF_8
+              RbSeries.method(:new_str)
+            else
+              RbSeries.method(:new_binary)
+            end
+          elsif value.is_a?(Integer) && values.any? { |v| v.is_a?(Float) }
+            # TODO improve performance
+            RbSeries.method(:new_opt_f64)
+          else
+            rb_type_to_constructor(value.class)
+          end
+
+        _construct_series_with_fallbacks(constructor, name, values, dtype, strict: strict)
       end
     end
 
@@ -175,17 +229,18 @@ module Polars
       end
     end
 
-    def self.series_to_rbseries(name, values)
-      values.rename(name)._s
+    def self.series_to_rbseries(name, values, dtype: nil, strict: true)
+      s = values.clone
+      if !dtype.nil? && dtype != s.dtype
+        s = s.cast(dtype, strict: strict)
+      end
+      if !name.nil?
+        s = s.alias(name)
+      end
+      s._s
     end
 
     # TODO move rest
-
-    def self.sequence_from_anyvalue_or_object(name, values)
-      RbSeries.new_from_any_values(name, values, true)
-    rescue
-      RbSeries.new_object(name, values, false)
-    end
 
     POLARS_TYPE_TO_CONSTRUCTOR = {
       Float32 => RbSeries.method(:new_opt_f32),

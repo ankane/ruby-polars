@@ -38,47 +38,39 @@ module Polars
       end
 
       # Handle case where values are passed as the first argument
-      if !name.nil? && !name.is_a?(::String)
+      original_name = nil
+      if name.nil?
+        name = ""
+      elsif name.is_a?(::String)
+        original_name = name
+      else
         if values.nil?
           values = name
-          name = nil
+          name = ""
         else
-          raise ArgumentError, "Series name must be a string."
+          raise TypeError, "Series name must be a string"
         end
       end
 
-      name = "" if name.nil?
-
-      # TODO improve
-      if values.is_a?(Range) && values.begin.is_a?(::String)
-        values = values.to_a
-      end
-
-      if values.nil?
+      if values.is_a?(::Array) || values.is_a?(Range)
+        self._s = Utils.sequence_to_rbseries(
+          name,
+          values,
+          dtype: dtype,
+          strict: strict
+        )
+      elsif values.nil?
         self._s = Utils.sequence_to_rbseries(name, [], dtype: dtype)
-      elsif values.is_a?(Series)
-        self._s = Utils.series_to_rbseries(name, values)
-      elsif values.is_a?(Range)
-        self._s =
-          Polars.arange(
-            values.first,
-            values.last + (values.exclude_end? ? 0 : 1),
-            step: 1,
-            eager: true,
-            dtype: dtype
-          )
-          .rename(name)
-          ._s
-      elsif values.is_a?(::Array)
-        self._s = Utils.sequence_to_rbseries(name, values, dtype: dtype, strict: strict)
       elsif defined?(Numo::NArray) && values.is_a?(Numo::NArray)
         self._s = Utils.numo_to_rbseries(name, values, strict: strict, nan_to_null: nan_to_null)
 
         if !dtype.nil?
-          self._s = cast(dtype, strict: true)._s
+          self._s = cast(dtype, strict: strict)._s
         end
+      elsif values.is_a?(Series)
+        self._s = Utils.series_to_rbseries(original_name, values, dtype: dtype, strict: strict)
       else
-        raise ArgumentError, "Series constructor called with unsupported type; got #{values.class.name}"
+        raise TypeError, "Series constructor called with unsupported type; got #{values.class.name}"
       end
     end
 
