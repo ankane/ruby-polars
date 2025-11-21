@@ -150,10 +150,10 @@ module Polars
               end
             rbseries = RbSeries.new_series_list(name, rbseries_list, strict)
           else
-            raise Todo
-            # rbseries = RbSeries.new_from_any_values_and_dtype(
-            #   name, values, dtype, strict
-            # )
+            raise Todo if dtype.eql?(Array)
+            rbseries = RbSeries.new_from_any_values_and_dtype(
+              name, values, dtype, strict
+            )
           end
           if dtype != rbseries.dtype
             rbseries = rbseries.cast(dtype, false, false)
