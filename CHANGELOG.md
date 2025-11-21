@@ -113,6 +113,7 @@ Removed methods
 - Removed `mean` and `median` methods from `DateTimeNameSpace` (use `Series#mean` and `Series#median` instead)
 - Removed `concat` method from `StringExpr` and `StringNameSpace` (use `join("-")` instead)
 - Removed `describe_plan` and `describe_optimized_plan` methods (use `explain` instead)
+- Removed `plot` method from `GroupBy` (use `DataFrame#plot` instead)
 
 Removed options
 

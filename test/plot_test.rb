@@ -46,23 +46,6 @@ class PlotTest < Minitest::Test
     assert_plot_type "scatter", df.plot.point("b", "b")
   end
 
-  def test_group_option
-    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3], "c" => ["group1", "group1", "group2"]})
-    assert_group df.plot("a", "b", type: "line", group: "c")
-    assert_group df.plot("a", "b", type: "column", group: "c")
-    assert_group df.plot("a", "b", type: "bar", group: "c")
-    assert_group df.plot("a", "b", type: "area", group: "c")
-    assert_group df.plot("b", "b", type: "scatter", group: "c")
-  end
-
-  def test_group_option_pie
-    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3], "c" => ["group1", "group1", "group2"]})
-    error = assert_raises(ArgumentError) do
-      df.plot("a", "b", type: "pie", group: "c")
-    end
-    assert_equal "Cannot use group option with pie chart", error.message
-  end
-
   def test_color_option
     df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3], "c" => ["group1", "group1", "group2"]})
     assert_group df.plot.line("a", "b", color: "c")
@@ -70,31 +53,6 @@ class PlotTest < Minitest::Test
     assert_group df.plot.bar("a", "b", color: "c")
     assert_group df.plot.area("a", "b", color: "c")
     assert_group df.plot.scatter("b", "b", color: "c")
-  end
-
-  def test_group_method
-    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3], "c" => ["group1", "group1", "group2"]})
-    assert_group df.group_by("c").plot("a", "b", type: "line")
-    assert_group df.group_by("c").plot("a", "b", type: "column")
-    assert_group df.group_by("c").plot("a", "b", type: "bar")
-    assert_group df.group_by("c").plot("a", "b", type: "area")
-    assert_group df.group_by("c").plot("b", "b", type: "scatter")
-  end
-
-  def test_group_method_multiple_columns
-    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3], "c" => ["group1", "group1", "group2"]})
-    error = assert_raises(ArgumentError) do
-      df.group_by(["c", "c"]).plot("a", "b")
-    end
-    assert_equal "Multiple groups not supported", error.message
-  end
-
-  def test_group_method_group_option
-    df = Polars::DataFrame.new({"a" => ["one", "two", "three"], "b" => [1, 2, 3], "c" => ["group1", "group1", "group2"]})
-    error = assert_raises(ArgumentError) do
-      df.group_by("c").plot("a", "b", group: "c")
-    end
-    assert_equal "unknown keyword: :group", error.message
   end
 
   def test_type_unknown
