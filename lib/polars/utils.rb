@@ -137,7 +137,7 @@ module Polars
         Datetime.new("ns")
       elsif input == ::Date
         Date.new
-      elsif input.nil?
+      elsif input == NilClass
         Null.new
       elsif input == ::Array
         List
