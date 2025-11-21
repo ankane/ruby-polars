@@ -208,22 +208,17 @@ module Polars
 
       if values.shape.length == 1
         values, dtype = numo_values_and_dtype(values)
-        strict = nan_to_null if [Numo::SFloat, Numo::DFloat].include?(dtype)
-        if dtype == Numo::RObject
-          sequence_to_rbseries(name, values.to_a, strict: strict)
-        else
-          constructor = numo_type_to_constructor(dtype)
-          # TODO improve performance
-          constructor.call(name, values.to_a, strict)
-        end
-      elsif values.shape.sum == 0
-        raise Todo
+        constructor = numo_type_to_constructor(dtype)
+        constructor.(
+          name, values.to_a, [Numo::SFloat, Numo::DFloat].include?(dtype) ? nan_to_null : strict
+        )
       else
         original_shape = values.shape
-        values = values.reshape(original_shape.inject(&:*))
+        values_1d = values.reshape(original_shape.inject(&:*))
+
         rb_s = numo_to_rbseries(
           name,
-          values,
+          values_1d,
           strict: strict,
           nan_to_null: nan_to_null
         )
