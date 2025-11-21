@@ -6767,82 +6767,230 @@ module Polars
         return hash_to_rbdf({}, schema: schema, schema_overrides: schema_overrides)
       end
 
-      if data[0].is_a?(Series)
-        # series_names = data.map(&:name)
-        # columns, dtypes = _unpack_schema(columns || series_names, n_expected: data.length)
-        data_series = []
-        data.each do |s|
-          data_series << s._s
-        end
-      elsif data[0].is_a?(Hash)
-        column_names, dtypes = _unpack_schema(schema)
-        schema_overrides = dtypes ? _include_unknowns(dtypes, column_names) : nil
-        rbdf = RbDataFrame.from_hashes(data, schema, schema_overrides, strict, infer_schema_length)
-        if column_names
-          rbdf = _post_apply_columns(rbdf, column_names)
-        end
-        return rbdf
-      elsif data[0].is_a?(::Array)
-        first_element = data[0]
-        if orient.nil? && !schema.nil?
-          row_types = first_element.filter_map { |value| value.class }.uniq
-          if row_types.include?(Integer) && row_types.include?(Float)
-            row_types.delete(Integer)
-          end
-          orient = row_types.length == 1 ? "col" : "row"
-        end
+      _sequence_to_rbdf_dispatcher(
+        get_first_non_none(data),
+        data,
+        schema,
+        schema_overrides: schema_overrides,
+        strict: strict,
+        orient: orient,
+        infer_schema_length: infer_schema_length,
+        nan_to_null: nan_to_null
+      )
+    end
 
-        if orient == "row"
-          column_names, schema_overrides = _unpack_schema(
-            schema, schema_overrides: schema_overrides, n_expected: first_element.length
-          )
-          local_schema_override = (
-            schema_overrides.any? ? _include_unknowns(schema_overrides, column_names) : {}
-          )
-          if column_names.any? && first_element.length > 0 && first_element.length != column_names.length
-            raise ArgumentError, "the row data does not match the number of columns"
-          end
+    # @private
+    def self._sequence_to_rbdf_dispatcher(
+      first_element,
+      data,
+      schema,
+      schema_overrides: nil,
+      strict: true,
+      orient: nil,
+      infer_schema_length: nil,
+      nan_to_null: false
+    )
+      common_params = {
+        data: data,
+        schema: schema,
+        schema_overrides: schema_overrides,
+        strict: strict,
+        orient: orient,
+        infer_schema_length: infer_schema_length,
+        nan_to_null: nan_to_null
+      }
 
-          unpack_nested = false
-          local_schema_override.each do |col, tp|
-            if [Categorical, Enum].include?(tp)
-              local_schema_override[col] = String
-            elsif !unpack_nested && [Unknown, Struct].include?(tp.base_type)
-              raise Todo
-            end
-          end
+      if first_element.is_a?(Series)
+        to_rbdf = method(:_sequence_of_series_to_rbdf)
+      elsif first_element.is_a?(::Array)
+        to_rbdf = method(:_sequence_of_sequence_to_rbdf)
+      elsif first_element.is_a?(Hash)
+        to_rbdf = method(:_sequence_of_dict_to_rbdf)
+      else
+        to_rbdf = method(:_sequence_of_elements_to_rbdf)
+      end
 
-          if unpack_nested
-            raise Todo
-          else
-            rbdf = RbDataFrame.from_rows(
-              data,
-              infer_schema_length,
-              local_schema_override.any? ? local_schema_override : nil
-            )
-          end
-          if column_names.any? || schema_overrides.any?
-            rbdf = _post_apply_columns(
-              rbdf, column_names, schema_overrides: schema_overrides, strict: strict
-            )
-          end
-          return rbdf
-        elsif orient == "col" || orient.nil?
-          column_names, schema_overrides = _unpack_schema(
-            schema, schema_overrides: schema_overrides, n_expected: data.length
-          )
-          data_series =
-            data.map.with_index do |element, i|
-              Series.new(column_names[i], element, dtype: schema_overrides[column_names[i]], strict: strict)._s
-            end
-          return RbDataFrame.new(data_series)
+      common_params[:first_element] = first_element
+      to_rbdf.(**common_params)
+    end
+
+    # @private
+    def self._sequence_of_sequence_to_rbdf(
+      first_element:,
+      data:,
+      schema:,
+      schema_overrides:,
+      strict:,
+      orient:,
+      infer_schema_length:,
+      nan_to_null: false
+    )
+      if orient.nil?
+        if schema.nil?
+          orient = "col"
         else
-          raise ArgumentError, "orient must be one of {{'col', 'row', nil}}, got #{orient} instead."
+          # Try to infer orientation from schema length and data dimensions
+          is_row_oriented = schema.length == first_element.length && schema.length != data.length
+          orient = is_row_oriented ? "row" : "col"
+
+          if is_row_oriented
+            Utils.issue_warning(
+              "Row orientation inferred during DataFrame construction." +
+              ' Explicitly specify the orientation by passing `orient: "row"` to silence this warning.'
+            )
+          end
         end
       end
 
-      data_series = _handle_columns_arg(data_series, columns: schema)
+      if orient == "row"
+        column_names, schema_overrides = _unpack_schema(
+          schema, schema_overrides: schema_overrides, n_expected: first_element.length
+        )
+        local_schema_override =
+          if schema_overrides
+            _include_unknowns(schema_overrides, column_names)
+          else
+            {}
+          end
+
+        unpack_nested = false
+        local_schema_override.each do |col, tp|
+          if [Categorical, Enum].include?(tp)
+            local_schema_override[col] = String
+          elsif !unpack_nested && [Unknown, Struct].include?(tp.base_type)
+            # TODO fix
+            unpack_nested = false
+          end
+        end
+
+        if unpack_nested
+          raise Todo
+        else
+          rbdf = RbDataFrame.from_rows(
+            data,
+            infer_schema_length,
+            local_schema_override
+          )
+        end
+        if column_names.any? || schema_overrides.any?
+          rbdf = _post_apply_columns(
+            rbdf, column_names, schema_overrides: schema_overrides, strict: strict
+          )
+        end
+        rbdf
+
+      elsif orient == "col"
+        column_names, schema_overrides = _unpack_schema(
+          schema, schema_overrides: schema_overrides, n_expected: data.length
+        )
+        data_series =
+          data.map.with_index do |element, i|
+            Series.new(
+              column_names[i],
+              element,
+              dtype: schema_overrides[column_names[i]],
+              strict: strict,
+              nan_to_null: nan_to_null
+            )._s
+          end
+        RbDataFrame.new(data_series)
+
+      else
+        msg = "`orient` must be one of {{'col', 'row', None}}, got #{orient.inspect}"
+        raise ArgumentError, msg
+      end
+    end
+
+    # @private
+    def self._sequence_of_series_to_rbdf(
+      first_element:,
+      data:,
+      schema:,
+      schema_overrides:,
+      strict:,
+      **kwargs
+    )
+      series_names = data.map { |s| s.name }
+      column_names, schema_overrides = _unpack_schema(
+        schema || series_names,
+        schema_overrides: schema_overrides,
+        n_expected: data.length
+      )
+      data_series = []
+      data.each_with_index do |s, i|
+        if !s.name
+          s = s.alias(column_names[i])
+        end
+        new_dtype = schema_overrides[column_names[i]]
+        if new_dtype && new_dtype != s.dtype
+          s = s.cast(new_dtype, strict: strict, wrap_numerical: false)
+        end
+        data_series << s._s
+      end
+
+      data_series = _handle_columns_arg(data_series, columns: column_names)
       RbDataFrame.new(data_series)
+    end
+
+    # @private
+    def self._sequence_of_dict_to_rbdf(
+      first_element:,
+      data:,
+      schema:,
+      schema_overrides:,
+      strict:,
+      infer_schema_length:,
+      **kwargs
+    )
+      column_names, schema_overrides = _unpack_schema(
+        schema, schema_overrides: schema_overrides
+      )
+      dicts_schema =
+        if column_names.any?
+          _include_unknowns(schema_overrides, column_names || schema_overrides.to_a)
+        else
+          nil
+        end
+
+      rbdf = RbDataFrame.from_hashes(
+        data,
+        dicts_schema,
+        schema_overrides,
+        strict,
+        infer_schema_length
+      )
+      rbdf
+    end
+
+    # @private
+    def self._sequence_of_elements_to_rbdf(
+      first_element:,
+      data:,
+      schema:,
+      schema_overrides:,
+      strict:,
+      **kwargs
+    )
+      column_names, schema_overrides = _unpack_schema(
+        schema, schema_overrides: schema_overrides, n_expected: 1
+      )
+      data_series = [
+        Series.new(
+          column_names[0],
+          data,
+          dtype: schema_overrides[column_names[0]],
+          strict: strict
+        )._s
+      ]
+      data_series = _handle_columns_arg(data_series, columns: column_names)
+      RbDataFrame.new(data_series)
+    end
+
+    # @private
+    def self.get_first_non_none(values)
+      if !values.nil?
+        values.find { |v| !v.nil? }
+      end
     end
 
     # @private

@@ -6431,7 +6431,7 @@ module Polars
 
       value = _get_first_non_none(values)
       if !value.nil?
-        if value.is_a?(Hash)
+        if value.is_a?(Hash) && dtype != Object
           return DataFrame.new(values).to_struct(name)._s
         end
       end
