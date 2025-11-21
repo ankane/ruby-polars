@@ -76,6 +76,7 @@ Removed methods
 - Removed `days`, `hours`, `minutes`, `seconds`, `milliseconds`, `microseconds`, and `nanoseconds` methods (use `total_*` instead)
 - Removed `cumsum`, `cumsum_horizontal`, `cumprod`, `cummin`, `cummax`, `cumcount`, and `cumfold` methods (use `cum_*` instead)
 - Removed `with_column` methods (use `with_columns` instead)
+- Removed `where` method (use `filter` instead)
 - Removed `series_equal` and `frame_equal` methods (use `equals` instead)
 - Removed `apply` methods (use `map_elements` or `map_rows` instead)
 - Removed `lengths` methods (use `len` or `len_bytes` instead)

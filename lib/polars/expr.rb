@@ -3287,48 +3287,6 @@ module Polars
       wrap_expr(_rbexpr.filter(predicate))
     end
 
-    # @deprecated `where` is deprecated; use `filter` instead.
-    #
-    # Filter a single column.
-    #
-    # Alias for {#filter}.
-    #
-    # @param predicate [Expr]
-    #   Boolean expression.
-    #
-    # @return [Expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "group_col" => ["g1", "g1", "g2"],
-    #       "b" => [1, 2, 3]
-    #     }
-    #   )
-    #   (
-    #     df.group_by("group_col").agg(
-    #       [
-    #         Polars.col("b").where(Polars.col("b") < 2).sum.alias("lt"),
-    #         Polars.col("b").where(Polars.col("b") >= 2).sum.alias("gte")
-    #       ]
-    #     )
-    #   ).sort("group_col")
-    #   # =>
-    #   # shape: (2, 3)
-    #   # ┌───────────┬─────┬─────┐
-    #   # │ group_col ┆ lt  ┆ gte │
-    #   # │ ---       ┆ --- ┆ --- │
-    #   # │ str       ┆ i64 ┆ i64 │
-    #   # ╞═══════════╪═════╪═════╡
-    #   # │ g1        ┆ 1   ┆ 2   │
-    #   # │ g2        ┆ 0   ┆ 3   │
-    #   # └───────────┴─────┴─────┘
-    def where(predicate)
-      Utils.deprecated("`where` is deprecated; use `filter` instead.")
-
-      filter(predicate)
-    end
-
     # Apply a custom Ruby function to a Series or array of Series.
     #
     # The output of this custom function must be a Series.
