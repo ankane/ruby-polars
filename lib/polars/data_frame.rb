@@ -6754,11 +6754,17 @@ module Polars
     end
 
     # @private
-    def self.sequence_to_rbdf(data, schema: nil, schema_overrides: nil, strict: true, orient: nil, infer_schema_length: 50)
-      columns = schema
-
-      if data.length == 0
-        return hash_to_rbdf({}, schema: schema, schema_overrides: schema_overrides, strict: strict)
+    def self.sequence_to_rbdf(
+      data,
+      schema: nil,
+      schema_overrides: nil,
+      strict: true,
+      orient: nil,
+      infer_schema_length: N_INFER_DEFAULT,
+      nan_to_null: false
+    )
+      if data.empty?
+        return hash_to_rbdf({}, schema: schema, schema_overrides: schema_overrides)
       end
 
       if data[0].is_a?(Series)
@@ -6769,7 +6775,7 @@ module Polars
           data_series << s._s
         end
       elsif data[0].is_a?(Hash)
-        column_names, dtypes = _unpack_schema(columns)
+        column_names, dtypes = _unpack_schema(schema)
         schema_overrides = dtypes ? _include_unknowns(dtypes, column_names) : nil
         rbdf = RbDataFrame.from_hashes(data, schema, schema_overrides, strict, infer_schema_length)
         if column_names
@@ -6778,7 +6784,7 @@ module Polars
         return rbdf
       elsif data[0].is_a?(::Array)
         first_element = data[0]
-        if orient.nil? && !columns.nil?
+        if orient.nil? && !schema.nil?
           row_types = first_element.filter_map { |value| value.class }.uniq
           if row_types.include?(Integer) && row_types.include?(Float)
             row_types.delete(Integer)
@@ -6835,7 +6841,7 @@ module Polars
         end
       end
 
-      data_series = _handle_columns_arg(data_series, columns: columns)
+      data_series = _handle_columns_arg(data_series, columns: schema)
       RbDataFrame.new(data_series)
     end
 
