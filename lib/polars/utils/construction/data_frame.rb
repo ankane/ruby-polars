@@ -386,12 +386,6 @@ module Polars
       RbDataFrame.new(data_series)
     end
 
-    def self.get_first_non_none(values)
-      if !values.nil?
-        values.find { |v| !v.nil? }
-      end
-    end
-
     def self._include_unknowns(schema, cols)
       cols.to_h { |col| [col, schema[col] || Unknown] }
     end
