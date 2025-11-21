@@ -16,9 +16,6 @@ module Polars
     #   Throw error on numeric overflow.
     # @param nan_to_null [Boolean]
     #   Not used.
-    # @param dtype_if_empty [Symbol, nil]
-    #   If no dtype is specified and values contains `nil` or an empty array,
-    #   set the Polars dtype of the Series data. If not specified, Float32 is used.
     #
     # @example Constructing a Series by specifying name and values positionally:
     #   s = Polars::Series.new("a", [1, 2, 3])
@@ -32,7 +29,7 @@ module Polars
     #
     # @example It is possible to construct a Series with values as the first positional argument. This syntax considered an anti-pattern, but it can be useful in certain scenarios. You must specify any other arguments through keywords.
     #   s3 = Polars::Series.new([1, 2, 3])
-    def initialize(name = nil, values = nil, dtype: nil, strict: true, nan_to_null: false, dtype_if_empty: nil)
+    def initialize(name = nil, values = nil, dtype: nil, strict: true, nan_to_null: false)
       # If 'Unknown' treat as nil to trigger type inference
       if dtype == Unknown
         dtype = nil
@@ -58,7 +55,7 @@ module Polars
       end
 
       if values.nil?
-        self._s = Utils.sequence_to_rbseries(name, [], dtype: dtype, dtype_if_empty: dtype_if_empty)
+        self._s = Utils.sequence_to_rbseries(name, [], dtype: dtype)
       elsif values.is_a?(Series)
         self._s = Utils.series_to_rbseries(name, values)
       elsif values.is_a?(Range)
@@ -73,7 +70,7 @@ module Polars
           .rename(name)
           ._s
       elsif values.is_a?(::Array)
-        self._s = Utils.sequence_to_rbseries(name, values, dtype: dtype, strict: strict, dtype_if_empty: dtype_if_empty)
+        self._s = Utils.sequence_to_rbseries(name, values, dtype: dtype, strict: strict)
       elsif defined?(Numo::NArray) && values.is_a?(Numo::NArray)
         self._s = Utils.numo_to_rbseries(name, values, strict: strict, nan_to_null: nan_to_null)
 

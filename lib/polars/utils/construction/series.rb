@@ -1,10 +1,11 @@
 module Polars
   module Utils
-    def self.sequence_to_rbseries(name, values, dtype: nil, strict: true, dtype_if_empty: nil)
+    def self.sequence_to_rbseries(name, values, dtype: nil, strict: true)
       ruby_dtype = nil
 
       if (values.nil? || values.empty?) && dtype.nil?
-        dtype = dtype_if_empty || Float32
+        # TODO fix
+        dtype = Float32
       elsif dtype == List
         ruby_dtype = ::Array
       end

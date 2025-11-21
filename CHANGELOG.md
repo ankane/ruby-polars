@@ -114,6 +114,7 @@ Removed methods
 
 Removed options
 
+- Removed `dtype_if_empty` option from `Series` constructor
 - Removed `warn_if_unsorted` option from `rolling_*_by` methods
 - Removed `in_place` option from `rename` method
 - Removed `append_chunks` option from `append` method
