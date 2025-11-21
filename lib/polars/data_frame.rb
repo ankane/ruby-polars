@@ -6762,11 +6762,6 @@ module Polars
         return df.get_column(key)
       end
 
-      # Ruby-specific
-      if key.is_a?(Expr) || (key.is_a?(Series) && key.dtype == Boolean)
-        return filter(key)
-      end
-
       # Single input - df[1] - or multiple inputs - df["a", "b", "c"]
       begin
          _select_rows(df, key)

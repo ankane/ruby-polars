@@ -245,8 +245,17 @@ class DataFrameTest < Minitest::Test
     df = Polars::DataFrame.new([a])
     assert_equal a, df["a"]
     assert_equal a, df[:a]
-    assert_frame({"a" => [2, 3]}, df[Polars.col("a") > 1])
-    assert_frame({"a" => [2, 3]}, df[df["a"] > 1])
+
+    error = assert_raises(TypeError) do
+      assert_frame({"a" => [2, 3]}, df[Polars.col("a") > 1])
+    end
+    assert_match %!cannot select columns using key of type "Polars::Expr"!, error.message
+
+    error = assert_raises(ArgumentError) do
+      assert_frame({"a" => [2, 3]}, df[df["a"] > 1])
+    end
+    assert_equal "expected 1 values when selecting columns by boolean mask, got 3", error.message
+
     assert_frame({"a" => [2, 3]}, df[[1, 2]])
     assert_frame({"a" => [2, 3]}, df[1..2])
     assert_frame({"a" => [2]}, df[1...2])
