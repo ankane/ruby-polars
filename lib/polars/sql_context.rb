@@ -5,9 +5,9 @@ module Polars
     attr_accessor :_ctxt, :_eager_execution
 
     # Initialize a new `SQLContext`.
-    def initialize(frames = nil, eager_execution: false, **named_frames)
+    def initialize(frames = nil, eager: false, **named_frames)
       self._ctxt = RbSQLContext.new
-      self._eager_execution = eager_execution
+      self._eager_execution = eager
 
       frames = (frames || {}).to_h
 

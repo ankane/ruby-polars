@@ -2270,7 +2270,7 @@ module Polars
     #   # │ 3   ┆ false     ┆ xx:xx ┆ 2077 ┆ 0.0  │
     #   # └─────┴───────────┴───────┴──────┴──────┘
     def sql(query, table_name: "self")
-      ctx = SQLContext.new(eager_execution: true)
+      ctx = SQLContext.new(eager: true)
       name = table_name || "self"
       ctx.register(name, self)
       ctx.execute(query)

@@ -63,6 +63,7 @@ Renamed options
 - Renamed `quote` option to `quote_char` for `write_csv` method
 - Renamed `data_pagesize_limit` option to `data_page_size` for `sink_parquet` method
 - Renamed `unit` option to `time_unit` for `from_epoch` method
+- Renamed `eager_execution` option to `eager` for `SQLContext` constructor
 
 Removed methods
 
