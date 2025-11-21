@@ -73,6 +73,7 @@ Removed methods
 - Removed `shift_and_fill` methods (use `shift(fill_value:)` instead)
 - Removed `groupby`, `groupby_dynamic`, and `groupby_rolling` methods (use `group_by*` instead)
 - Removed `group_by_rolling` methods (use `rolling` instead)
+- Removed `asin`, `asinh`, `acos`, `acosh`, `atan`, and `atanh` methods (use `arc*` instead)
 - Removed `days`, `hours`, `minutes`, `seconds`, `milliseconds`, `microseconds`, and `nanoseconds` methods (use `total_*` instead)
 - Removed `cumsum`, `cumsum_horizontal`, `cumprod`, `cummin`, `cummax`, `cumcount`, and `cumfold` methods (use `cum_*` instead)
 - Removed `with_column` methods (use `with_columns` instead)

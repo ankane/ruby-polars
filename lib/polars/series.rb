@@ -3457,7 +3457,6 @@ module Polars
     def arcsin
       super
     end
-    alias_method :asin, :arcsin
 
     # Compute the element-wise value for the inverse cosine.
     #
@@ -3477,7 +3476,6 @@ module Polars
     def arccos
       super
     end
-    alias_method :acos, :arccos
 
     # Compute the element-wise value for the inverse tangent.
     #
@@ -3497,7 +3495,6 @@ module Polars
     def arctan
       super
     end
-    alias_method :atan, :arctan
 
     # Compute the element-wise value for the inverse hyperbolic sine.
     #
@@ -3517,7 +3514,6 @@ module Polars
     def arcsinh
       super
     end
-    alias_method :asinh, :arcsinh
 
     # Compute the element-wise value for the inverse hyperbolic cosine.
     #
@@ -3538,7 +3534,6 @@ module Polars
     def arccosh
       super
     end
-    alias_method :acosh, :arccosh
 
     # Compute the element-wise value for the inverse hyperbolic tangent.
     #
@@ -3562,7 +3557,6 @@ module Polars
     def arctanh
       super
     end
-    alias_method :atanh, :arctanh
 
     # Compute the element-wise value for the hyperbolic sine.
     #
