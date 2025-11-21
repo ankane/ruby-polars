@@ -155,6 +155,8 @@ class TypesTest < Minitest::Test
   end
 
   def test_series_dtype_array
+    skip "panics in Python"
+
     s = Polars::Series.new([[1, 2], [3, 4]], dtype: Polars::Array)
     assert_series [[1, 2], [3, 4]], s, dtype: Polars::Array.new(Polars::Int64, 2)
   end

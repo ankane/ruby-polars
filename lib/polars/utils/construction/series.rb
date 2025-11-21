@@ -150,7 +150,9 @@ module Polars
               end
             rbseries = RbSeries.new_series_list(name, rbseries_list, strict)
           else
+            # panics in Python
             raise Todo if dtype.eql?(Array)
+
             rbseries = RbSeries.new_from_any_values_and_dtype(
               name, values, dtype, strict
             )
