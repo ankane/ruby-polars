@@ -441,7 +441,7 @@ module Polars
     attr_reader :inner
 
     def initialize(inner)
-      @inner = Utils.rb_type_to_dtype(inner)
+      @inner = Utils.parse_into_dtype(inner)
     end
 
     def ==(other)
@@ -519,7 +519,7 @@ module Polars
 
     def initialize(name, dtype)
       @name = name
-      @dtype = Utils.rb_type_to_dtype(dtype)
+      @dtype = Utils.parse_into_dtype(dtype)
     end
 
     def ==(other)

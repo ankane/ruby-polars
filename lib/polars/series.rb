@@ -3648,7 +3648,7 @@ module Polars
       if return_dtype.nil?
         pl_return_dtype = nil
       else
-        pl_return_dtype = Utils.rb_type_to_dtype(return_dtype)
+        pl_return_dtype = Utils.parse_into_dtype(return_dtype)
       end
       Utils.wrap_s(_s.map_elements(function, pl_return_dtype, skip_nulls))
     end

@@ -254,7 +254,7 @@ module Polars
         if schema_overrides.is_a?(Hash)
           dtype_list = []
           schema_overrides.each do |k, v|
-            dtype_list << [k, Utils.rb_type_to_dtype(v)]
+            dtype_list << [k, Utils.parse_into_dtype(v)]
           end
         elsif schema_overrides.is_a?(::Array)
           dtype_slice = schema_overrides
@@ -779,7 +779,7 @@ module Polars
       if !schema_overrides.nil?
         dtype_list = []
         schema_overrides.each do |k, v|
-          dtype_list << [k, Utils.rb_type_to_dtype(v)]
+          dtype_list << [k, Utils.parse_into_dtype(v)]
         end
       end
       processed_null_values = Utils._process_null_values(null_values)

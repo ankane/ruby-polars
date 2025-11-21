@@ -55,7 +55,7 @@ module Polars
 
       column_dtypes.each do |col, dtype|
         if !Utils.is_polars_dtype(dtype, include_unknown: true) && !dtype.nil?
-          column_dtypes[col] = Utils.rb_type_to_dtype(dtype)
+          column_dtypes[col] = Utils.parse_into_dtype(dtype)
         end
       end
 

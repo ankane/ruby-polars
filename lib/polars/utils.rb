@@ -17,41 +17,6 @@ module Polars
       obj.is_a?(Expr) && obj.meta.is_column
     end
 
-    def self.map_rb_type_to_dtype(ruby_dtype)
-      if ruby_dtype == Float
-        Float64
-      elsif ruby_dtype == Integer
-        Int64
-      elsif ruby_dtype == ::String
-        Utf8
-      elsif ruby_dtype == TrueClass || ruby_dtype == FalseClass
-        Boolean
-      elsif ruby_dtype == DateTime || ruby_dtype == ::Time || (defined?(ActiveSupport::TimeWithZone) && ruby_dtype == ActiveSupport::TimeWithZone)
-        Datetime.new("ns")
-      elsif ruby_dtype == ::Date
-        Date
-      elsif ruby_dtype == ::Array
-        List
-      elsif ruby_dtype == NilClass
-        Null
-      else
-        raise TypeError, "Invalid type"
-      end
-    end
-
-    # TODO fix
-    def self.rb_type_to_dtype(data_type)
-      if is_polars_dtype(data_type)
-        return data_type
-      end
-
-      begin
-        map_rb_type_to_dtype(data_type)
-      rescue TypeError
-        raise ArgumentError, "Conversion of Ruby data type #{data_type.inspect} to Polars data type not implemented."
-      end
-    end
-
     def self.parse_row_index_args(row_index_name = nil, row_index_offset = 0)
       if row_index_name.nil?
         nil

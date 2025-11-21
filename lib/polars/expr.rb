@@ -3367,7 +3367,7 @@ module Polars
     #   # └──────┴────────┘
     # def map_batches(return_dtype: nil, agg_list: false, is_elementwise: false, returns_scalar: false, &f)
     #   if !return_dtype.nil?
-    #     return_dtype = Utils.rb_type_to_dtype(return_dtype)
+    #     return_dtype = Utils.parse_into_dtype(return_dtype)
     #   end
     #   wrap_expr(
     #     _rbexpr.map_batches(
