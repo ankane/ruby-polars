@@ -5,12 +5,13 @@ module Polars
     attr_accessor :_ldf
 
     # Create a new LazyFrame.
-    def initialize(data = nil, schema: nil, schema_overrides: nil, orient: nil, infer_schema_length: 100, nan_to_null: false)
+    def initialize(data = nil, schema: nil, schema_overrides: nil, strict: true, orient: nil, infer_schema_length: N_INFER_DEFAULT, nan_to_null: false)
       self._ldf = (
         DataFrame.new(
           data,
           schema: schema,
           schema_overrides: schema_overrides,
+          strict: strict,
           orient: orient,
           infer_schema_length: infer_schema_length,
           nan_to_null: nan_to_null
