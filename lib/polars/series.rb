@@ -69,6 +69,10 @@ module Polars
         end
       elsif values.is_a?(Series)
         self._s = Utils.series_to_rbseries(original_name, values, dtype: dtype, strict: strict)
+      elsif values.is_a?(DataFrame)
+        self._s = Utils.dataframe_to_rbseries(
+          original_name, values, dtype: dtype, strict: strict
+        )
       else
         raise TypeError, "Series constructor called with unsupported type; got #{values.class.name}"
       end

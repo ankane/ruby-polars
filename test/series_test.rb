@@ -183,6 +183,18 @@ class SeriesTest < Minitest::Test
     assert_series ["a", "b", "c"], s
   end
 
+  def test_new_series
+    s = Polars::Series.new(Polars::Series.new([1, 2, 3]))
+    assert_series [1, 2, 3], s, dtype: Polars::Int64
+  end
+
+  def test_new_data_frame
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    s = Polars::Series.new(df)
+    expected = [{"a" => 1, "b" => "one"}, {"a" => 2, "b" => "two"}, {"a" => 3, "b" => "three"}]
+    assert_series expected, s, dtype: Polars::Struct
+  end
+
   def test_duration
     today = Date.today
     s = Polars::Series.new([today - 2, today - 1, today]) - (today - 3)

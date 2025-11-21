@@ -237,6 +237,32 @@ module Polars
       s._s
     end
 
+    def self.dataframe_to_rbseries(
+      name,
+      values,
+      dtype: nil,
+      strict: true
+    )
+      if values.width > 1
+        name ||= ""
+        s = values.to_struct(name)
+      elsif values.width == 1
+        s = values.to_series
+        if !name.nil?
+          s = s.alias(name)
+        end
+      else
+        msg = "cannot initialize Series from DataFrame without any columns"
+        raise TypeError, msg
+      end
+
+      if !dtype.nil? && dtype != s.dtype
+        s = s.cast(dtype, strict: strict)
+      end
+
+      s._s
+    end
+
     # TODO move rest
 
     POLARS_TYPE_TO_CONSTRUCTOR = {
