@@ -6,6 +6,9 @@ module Polars
 
     # Initialize a new `SQLContext`.
     def initialize(frames = nil, register_globals: false, eager: false, **named_frames)
+      Utils.issue_unstable_warning(
+        "`SQLContext` is considered **unstable**, although it is close to being considered stable."
+      )
       self._ctxt = RbSQLContext.new
       self._eager_execution = eager
 
