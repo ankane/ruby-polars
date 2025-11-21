@@ -2,7 +2,7 @@ module Polars
   # Starts a new GroupBy operation.
   class GroupBy
     # @private
-    def initialize(df, by, maintain_order: false, **named_by)
+    def initialize(df, by, maintain_order:, **named_by)
       @df = df
       @by = by
       @named_by = named_by
