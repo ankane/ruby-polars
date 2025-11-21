@@ -182,20 +182,20 @@ df.tail
 Filter on a condition
 
 ```ruby
-df[Polars.col("a") == 2]
-df[Polars.col("a") != 2]
-df[Polars.col("a") > 2]
-df[Polars.col("a") >= 2]
-df[Polars.col("a") < 2]
-df[Polars.col("a") <= 2]
+df.filter(Polars.col("a") == 2)
+df.filter(Polars.col("a") != 2)
+df.filter(Polars.col("a") > 2)
+df.filter(Polars.col("a") >= 2)
+df.filter(Polars.col("a") < 2)
+df.filter(Polars.col("a") <= 2)
 ```
 
 And, or, and exclusive or
 
 ```ruby
-df[(Polars.col("a") > 1) & (Polars.col("b") == "two")] # and
-df[(Polars.col("a") > 1) | (Polars.col("b") == "two")] # or
-df[(Polars.col("a") > 1) ^ (Polars.col("b") == "two")] # xor
+df.filter((Polars.col("a") > 1) & (Polars.col("b") == "two")) # and
+df.filter((Polars.col("a") > 1) | (Polars.col("b") == "two")) # or
+df.filter((Polars.col("a") > 1) ^ (Polars.col("b") == "two")) # xor
 ```
 
 ## Operations
@@ -240,9 +240,9 @@ Trigonometric functions
 df["a"].sin
 df["a"].cos
 df["a"].tan
-df["a"].asin
-df["a"].acos
-df["a"].atan
+df["a"].arcsin
+df["a"].arccos
+df["a"].arctan
 ```
 
 Hyperbolic functions
@@ -251,9 +251,9 @@ Hyperbolic functions
 df["a"].sinh
 df["a"].cosh
 df["a"].tanh
-df["a"].asinh
-df["a"].acosh
-df["a"].atanh
+df["a"].arcsinh
+df["a"].arccosh
+df["a"].arctanh
 ```
 
 Summary statistics
