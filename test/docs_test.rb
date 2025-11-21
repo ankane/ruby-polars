@@ -231,6 +231,8 @@ class DocsTest < Minitest::Test
     method.tags(:example).each do |example|
       # use variables from previous examples
       code += "\n" + example.text
+      # suppress warning about void context
+      code = "_ = (\n#{code}\n)"
       begin
         # just final output
         output =

@@ -544,40 +544,119 @@ module Polars
     # Set item.
     #
     # @return [Object]
+    #
+    # @example `df[["a", "b"]] = value`:
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
+    #   df[["a", "b"]] = [[10, 40], [20, 50], [30, 60]]
+    #   df
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 10  ┆ 40  │
+    #   # │ 20  ┆ 50  │
+    #   # │ 30  ┆ 60  │
+    #   # └─────┴─────┘
+    #
+    # @example `df[row_idx, "a"] = value`:
+    #   df[1, "a"] = 100
+    #   df
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 10  ┆ 40  │
+    #   # │ 100 ┆ 50  │
+    #   # │ 30  ┆ 60  │
+    #   # └─────┴─────┘
+    #
+    # @example `df[row_idx, col_idx] = value`:
+    #   df[0, 1] = 30
+    #   df
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 10  ┆ 30  │
+    #   # │ 100 ┆ 50  │
+    #   # │ 30  ┆ 60  │
+    #   # └─────┴─────┘
     def []=(*key, value)
-      if key.length == 1
-        key = key.first
-      elsif key.length != 2
+      if key.empty? || key.length > 2
         raise ArgumentError, "wrong number of arguments (given #{key.length + 1}, expected 2..3)"
       end
 
-      if Utils.strlike?(key)
+      if key.length == 1 && Utils.strlike?(key[0])
+        key = key[0]
+
         if value.is_a?(::Array) || (defined?(Numo::NArray) && value.is_a?(Numo::NArray))
           value = Series.new(value)
         elsif !value.is_a?(Series)
           value = Polars.lit(value)
         end
         self._df = with_columns(value.alias(key.to_s))._df
-      elsif key.is_a?(::Array)
+
+      # df[["C", "D"]]
+      elsif key.length == 1 && key[0].is_a?(::Array)
+        key = key[0]
+
+        if !value.is_a?(::Array) || !value.all? { |v| v.is_a?(::Array) }
+          msg = "can only set multiple columns with 2D matrix"
+          raise ArgumentError, msg
+        end
+        if value.any? { |v| v.size != key.length }
+          msg = "matrix columns should be equal to list used to determine column names"
+          raise ArgumentError, msg
+        end
+
+        columns = []
+        key.each_with_index do |name, i|
+          columns << Series.new(name, value.map { |v| v[i] })
+        end
+        self._df = with_columns(columns)._df
+
+      # df[a, b]
+      else
         row_selection, col_selection = key
 
+        if (row_selection.is_a?(Series) && row_selection.dtype == Boolean) || Utils.is_bool_sequence(row_selection)
+          msg = (
+            "not allowed to set DataFrame by boolean mask in the row position" +
+            "\n\nConsider using `DataFrame.with_columns`."
+          )
+          raise TypeError, msg
+        end
+
+        # get series column selection
         if Utils.strlike?(col_selection)
           s = self[col_selection]
         elsif col_selection.is_a?(Integer)
-          raise Todo
+          s = self[0.., col_selection]
         else
-          raise ArgumentError, "column selection not understood: #{col_selection}"
+          msg = "unexpected column selection #{col_selection.inspect}"
+          raise TypeError, msg
         end
 
+        # dispatch to []= of Series to do modification
         s[row_selection] = value
 
+        # now find the location to place series
+        # df[idx]
         if col_selection.is_a?(Integer)
           replace_column(col_selection, s)
+        # df["foo"]
         elsif Utils.strlike?(col_selection)
           _replace(col_selection.to_s, s)
         end
-      else
-        raise Todo
       end
     end
 
