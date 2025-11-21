@@ -2789,7 +2789,6 @@ module Polars
         maintain_order: maintain_order
       )
     end
-    alias_method :group, :group_by
 
     # Create rolling groups based on a time column.
     #

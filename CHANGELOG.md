@@ -71,7 +71,7 @@ Removed methods
 - Removed `clip_min` and `clip_max` methods (use `clip` instead)
 - Removed `argsort` and `argsort_by` methods (use `arg_sort` and `arg_sort_by` instead)
 - Removed `shift_and_fill` methods (use `shift(fill_value:)` instead)
-- Removed `groupby`, `groupby_dynamic`, and `groupby_rolling` methods (use `group_by*` instead)
+- Removed `group`, `groupby`, `groupby_dynamic`, and `groupby_rolling` methods (use `group_by*` instead)
 - Removed `group_by_rolling` methods (use `rolling` instead)
 - Removed `asin`, `asinh`, `acos`, `acosh`, `atan`, and `atanh` methods (use `arc*` instead)
 - Removed `days`, `hours`, `minutes`, `seconds`, `milliseconds`, `microseconds`, and `nanoseconds` methods (use `total_*` instead)

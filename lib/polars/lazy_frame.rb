@@ -2109,7 +2109,6 @@ module Polars
       lgb = _ldf.group_by(exprs, maintain_order)
       LazyGroupBy.new(lgb)
     end
-    alias_method :group, :group_by
 
     # Create rolling groups based on a time column.
     #

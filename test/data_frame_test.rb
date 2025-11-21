@@ -395,7 +395,6 @@ class DataFrameTest < Minitest::Test
     df.group_by(:a).count
     df.group_by(["a", "b"]).count
     df.group_by([:a, :b]).count
-    df.group("a").count
   end
 
   def test_group_by_dynamic
