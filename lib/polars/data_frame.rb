@@ -6688,6 +6688,7 @@ module Polars
       [column_names, column_dtypes]
     end
 
+    # @private
     def self._handle_columns_arg(data, columns: nil, from_hash: false)
       if columns.nil? || columns.empty?
         data
@@ -6713,6 +6714,7 @@ module Polars
       end
     end
 
+    # @private
     def self._post_apply_columns(rbdf, columns, structs: nil, schema_overrides: nil, strict: true)
       rbdf_columns = rbdf.columns
       rbdf_dtypes = rbdf.dtypes
