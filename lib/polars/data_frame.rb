@@ -4804,6 +4804,16 @@ module Polars
     # Start a lazy query from this point.
     #
     # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [nil, 2, 3, 4],
+    #       "b" => [0.5, nil, 2.5, 13],
+    #       "c" => [true, true, false, nil]
+    #     }
+    #   )
+    #   df.lazy
     def lazy
       wrap_ldf(_df.lazy)
     end

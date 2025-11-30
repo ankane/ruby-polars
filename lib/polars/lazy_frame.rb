@@ -468,6 +468,18 @@ module Polars
     # Different optimizations can be turned on or off.
     #
     # @return [String]
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new(
+    #     {
+    #       "a" => ["a", "b", "a", "b", "b", "c"],
+    #       "b" => [1, 2, 3, 4, 5, 6],
+    #       "c" => [6, 5, 4, 3, 2, 1]
+    #     }
+    #   )
+    #   lf.group_by("a", maintain_order: true).agg(Polars.all.sum).sort(
+    #     "a"
+    #   ).explain
     def explain(
       format: "plain",
       optimized: true,
