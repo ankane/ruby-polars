@@ -6,6 +6,20 @@ module Polars
     #   Name of the field(s) to select.
     #
     # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [{"x" => 5, "y" => 2}, {"x" => 3, "y" => 4}]})
+    #   df.select(Polars.col("a").struct.with_fields(Polars.field("x") ** 2))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌───────────┐
+    #   # │ a         │
+    #   # │ ---       │
+    #   # │ struct[2] │
+    #   # ╞═══════════╡
+    #   # │ {25,2}    │
+    #   # │ {9,4}     │
+    #   # └───────────┘
     def field(name)
       if name.is_a?(::String)
         name = [name]
