@@ -394,6 +394,26 @@ module Polars
     #   positional arguments.
     #
     # @return [Expr]
+    #
+    # @example Concatenate 2 array columns:
+    #   Polars.select(
+    #     a: Polars::Series.new([[1], [3], nil], dtype: Polars::Array.new(Polars::Int64, 1)),
+    #     b: Polars::Series.new([[3], [nil], [5]], dtype: Polars::Array.new(Polars::Int64, 1))
+    #   ).with_columns(
+    #     Polars.concat_arr("a", "b").alias("concat_arr(a, b)"),
+    #     Polars.concat_arr("a", Polars.first("b")).alias("concat_arr(a, first(b))")
+    #   )
+    #   # =>
+    #   # shape: (3, 4)
+    #   # ┌───────────────┬───────────────┬──────────────────┬─────────────────────────┐
+    #   # │ a             ┆ b             ┆ concat_arr(a, b) ┆ concat_arr(a, first(b)) │
+    #   # │ ---           ┆ ---           ┆ ---              ┆ ---                     │
+    #   # │ array[i64, 1] ┆ array[i64, 1] ┆ array[i64, 2]    ┆ array[i64, 2]           │
+    #   # ╞═══════════════╪═══════════════╪══════════════════╪═════════════════════════╡
+    #   # │ [1]           ┆ [3]           ┆ [1, 3]           ┆ [1, 3]                  │
+    #   # │ [3]           ┆ [null]        ┆ [3, null]        ┆ [3, 3]                  │
+    #   # │ null          ┆ [5]           ┆ null             ┆ null                    │
+    #   # └───────────────┴───────────────┴──────────────────┴─────────────────────────┘
     def concat_arr(exprs, *more_exprs)
       exprs = Utils.parse_into_list_of_expressions(exprs, *more_exprs)
       Utils.wrap_expr(Plr.concat_arr(exprs))
