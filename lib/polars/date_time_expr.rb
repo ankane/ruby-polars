@@ -353,7 +353,7 @@ module Polars
     #
     # @return [Expr]
     def combine(time, time_unit: "us")
-      unless time.is_a?(Time) || time.is_a?(Expr)
+      unless time.is_a?(::Time) || time.is_a?(Expr)
         raise TypeError, "expected 'time' to be a Ruby time or Polars expression, found #{time}"
       end
       time = Utils.parse_into_expression(time)

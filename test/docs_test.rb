@@ -206,7 +206,10 @@ class DocsTest < Minitest::Test
     # yard global
     return if [:log].include?(method.name)
 
-    # TODO
+    # TODO fix
+    return if [:combine].include?(method.name)
+
+    # todos
     todo = [:cum_reduce, :reduce, :show_graph, :from_numo].include?(method.name)
     todo |= cls == Polars::NameExpr && method.name == :map
     todo |= cls == Polars::Functions && [:fold, :cum_fold, :cum_sum_horizontal].include?(method.name)

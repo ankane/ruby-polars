@@ -1476,6 +1476,20 @@ module Polars
     #   Unit of time.
     #
     # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new(
+    #     "dtm",
+    #     [DateTime.new(2022, 12, 31, 10, 30, 45), DateTime.new(2023, 7, 5, 23, 59, 59)]
+    #   )
+    #   s.dt.combine(Time.new(2000, 1, 1, 1, 2, 3.456))
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'dtm' [datetime[μs]]
+    #   # [
+    #   #         2022-12-31 01:02:03.456
+    #   #         2023-07-05 01:02:03.456
+    #   # ]
     def combine(time, time_unit: "us")
       super
     end
