@@ -44,13 +44,13 @@ module Polars
     #   `len_chars` (_O(n)_).
     #
     # @example
-    #     df = Polars::DataFrame.new(
-    #       {"a" => Polars::Series.new(["Café", "345", "東京", nil], dtype: Polars::Categorical)}
-    #     )
-    #     df.with_columns(
-    #       Polars.col("a").cat.len_bytes.alias("n_bytes"),
-    #       Polars.col("a").cat.len_chars.alias("n_chars")
-    #     )
+    #   df = Polars::DataFrame.new(
+    #     {"a" => Polars::Series.new(["Café", "345", "東京", nil], dtype: Polars::Categorical)}
+    #   )
+    #   df.with_columns(
+    #     Polars.col("a").cat.len_bytes.alias("n_bytes"),
+    #     Polars.col("a").cat.len_chars.alias("n_chars")
+    #   )
     #   # =>
     #   # shape: (4, 3)
     #   # ┌──────┬─────────┬─────────┐

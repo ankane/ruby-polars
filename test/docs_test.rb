@@ -289,7 +289,7 @@ class DocsTest < Minitest::Test
           expected = expected.reverse.join("\n")
           output = output.gsub("\t", "        ")
           assert_equal expected, output, "Example output (#{method.name})"
-        elsif !([:initialize, :lit, :plot, :enable_string_cache, :disable_string_cache, :tree_format, :explain, :lazy].include?(method.name) || method.name.start_with?("write_") || cls == Polars::Selectors)
+        elsif !([:initialize, :lit, :plot, :enable_string_cache, :disable_string_cache, :tree_format, :explain, :lazy].include?(method.name) || method.name.start_with?("write_") || cls == Polars::Selectors || lines.last.include?(" = "))
           puts "Missing example output (#{cls}##{method.name})"
         end
       rescue => e

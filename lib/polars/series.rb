@@ -1542,6 +1542,14 @@ module Polars
     # @example
     #   s = Polars::Series.new("a", [1, 2, 3])
     #   s.rename("b")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'b' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ]
     def rename(name)
       self.alias(name)
     end
