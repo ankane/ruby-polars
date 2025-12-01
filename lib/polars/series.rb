@@ -1516,8 +1516,16 @@ module Polars
     # @return [Series]
     #
     # @example
-    #   s = Polars::Series.new("x", [1, 2, 3])
-    #   s.alias("y")
+    #   s = Polars::Series.new("a", [1, 2, 3])
+    #   s.alias("b")
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'b' [i64]
+    #   # [
+    #   #         1
+    #   #         2
+    #   #         3
+    #   # ]
     def alias(name)
       s = dup
       s._s.rename(name)
