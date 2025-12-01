@@ -270,9 +270,7 @@ class DocsTest < Minitest::Test
         next if [Polars::GroupBy, Polars::LazyGroupBy].include?(cls) && [:len].include?(method.name)
 
         # check output
-        lines = code.split("\n")
-        # remove last line, which is used to suppress warnings
-        lines.pop
+        lines = code.delete_suffix("\n)").split("\n")
         if RUBY_VERSION.to_f >= 3.4
           output = output.gsub(" => ", "=>")
         end
