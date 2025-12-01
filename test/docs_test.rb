@@ -271,6 +271,7 @@ class DocsTest < Minitest::Test
 
         # check output
         lines = code.split("\n")
+        lines.pop
         if RUBY_VERSION.to_f >= 3.4
           output = output.gsub(" => ", "=>")
         end

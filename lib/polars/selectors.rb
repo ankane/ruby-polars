@@ -1719,6 +1719,18 @@ module Polars
     # Select all object columns.
     #
     # @return [Selector]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "idx" => [0, 1],
+    #       "uuid_obj" => ["6be063cf-c9c6-43be-878e-e446cfd42981", "7849d8f9-2cac-48e7-96d3-63cf81c14869"],
+    #       "uuid_str" => ["acab9fea-c05d-4b91-b639-418004a63f33", "28c65415-8b7d-4857-a4ce-300dca14b12b"]
+    #     },
+    #     schema_overrides: {"idx" => Polars::Int32, "uuid_obj" => Polars::Object}
+    #   )
+    #   df.select(Polars.cs.object).to_h(as_series: false)
+    #   # => {"uuid_obj"=>["6be063cf-c9c6-43be-878e-e446cfd42981", "7849d8f9-2cac-48e7-96d3-63cf81c14869"]}
     def self.object
       Selector._from_rbselector(RbSelector.object)
     end
