@@ -39,7 +39,7 @@ module Polars
     #
     # @return [Selector]
     #
-    # @example
+    # @example Select all columns, casting them to string:
     #   df = Polars::DataFrame.new(
     #     {
     #       "dt" => [Date.new(1999, 12, 31), Date.new(2024, 1, 1)],
@@ -47,8 +47,6 @@ module Polars
     #     },
     #     schema_overrides: {"value" => Polars::Int32}
     #   )
-    #
-    # @example Select all columns, casting them to string:
     #   df.select(Polars.cs.all.cast(Polars::String))
     #   # =>
     #   # shape: (2, 2)

@@ -289,6 +289,8 @@ class DocsTest < Minitest::Test
           expected = expected.reverse.join("\n")
           output = output.gsub("\t", "        ")
           assert_equal expected, output, "Example output (#{method.name})"
+        elsif ![:initialize, :lit, :plot, :enable_string_cache, :disable_string_cache].include?(method.name)
+          puts "Missing example output (#{cls}##{method.name})"
         end
       rescue => e
         raise e if ENV["DEBUG"]
