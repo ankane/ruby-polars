@@ -217,7 +217,7 @@ class DocsTest < Minitest::Test
     todo |= cls == Polars::LazyFrame && [:deserialize, :serialize].include?(method.name)
     todo |= cls == Polars::MetaExpr && method.name == :serialize
 
-    if ENV["EXAMPLES"] && missing_examples?(method, cls)
+    if missing_examples?(method, cls)
       warn "Missing examples (#{method})"
     end
 
@@ -290,7 +290,7 @@ class DocsTest < Minitest::Test
           output = output.gsub("\t", "        ")
           assert_equal expected, output, "Example output (#{method.name})"
         elsif !([:initialize, :lit, :plot, :enable_string_cache, :disable_string_cache, :tree_format, :explain, :lazy].include?(method.name) || method.name.start_with?("write_") || cls == Polars::Selectors || lines.last.include?(" = "))
-          puts "Missing example output (#{cls}##{method.name})"
+          warn "Missing example output (#{cls}##{method.name})"
         end
       rescue => e
         raise e if ENV["DEBUG"]
