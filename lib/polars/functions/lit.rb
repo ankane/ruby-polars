@@ -3,6 +3,22 @@ module Polars
     # Return an expression representing a literal value.
     #
     # @return [Expr]
+    #
+    # @example Literal scalar values:
+    #   Polars.lit(1)
+    #   Polars.lit(5.5)
+    #   Polars.lit(nil)
+    #   Polars.lit("foo_bar")
+    #   Polars.lit(Date.new(2021, 1, 20))
+    #   Polars.lit(DateTime.new(2023, 3, 31, 10, 30, 45))
+    #
+    # @example Literal list/Series data (1D):
+    #   Polars.lit([1, 2, 3])
+    #   Polars.lit(Polars::Series.new("x", [1, 2, 3]))
+    #
+    # @example Literal list/Series data (2D):
+    #   Polars.lit([[1, 2], [3, 4]])
+    #   Polars.lit(Polars::Series.new("y", [[1, 2], [3, 4]]))
     def lit(value, dtype: nil, allow_object: false)
       if value.is_a?(::Time) || value.is_a?(::DateTime)
         time_unit = dtype&.time_unit || "ns"
