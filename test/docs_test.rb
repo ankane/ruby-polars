@@ -299,7 +299,7 @@ class DocsTest < Minitest::Test
     method.tags(:example).empty? &&
     ![Polars::Config, Polars::IO, Polars::Testing, Polars::DataType, Polars::SQLContext, Polars::DataFramePlot, Polars::SeriesPlot, Polars::Catalog].include?(cls) &&
     method.name.match?(/\A[a-z]/i) &&
-    ![:inspect, :plot, :list, :arr, :bin, :cat, :dt, :meta, :name, :str, :struct, :initialize, :set_random_seed, :col, :select_seq, :with_columns_seq, :eq, :ne, :gt, :ge, :lt, :le, :shrink_to_fit, :flags, :set_sorted, :each, :each_row, :rechunk, :first, :last, :approx_n_unique, :forward_fill, :backward_fill, :repeat_by, :rolling_rank_by, :cache, :is_local, :split, :rolling_cov, :rolling_corr, :escape_regex, :using_string_cache, :quantile, :groups, :collect_all].include?(method.name) &&
+    ![:inspect, :plot, :list, :arr, :bin, :cat, :dt, :meta, :name, :str, :struct, :initialize, :set_random_seed, :col, :select_seq, :with_columns_seq, :eq, :ne, :gt, :ge, :lt, :le, :shrink_to_fit, :flags, :set_sorted, :each, :each_row, :rechunk, :first, :last, :approx_n_unique, :forward_fill, :backward_fill, :repeat_by, :rolling_rank_by, :cache, :is_local, :split, :rolling_cov, :rolling_corr, :escape_regex, :using_string_cache, :quantile, :groups, :collect_all, :as_selector].include?(method.name) &&
     !method.name.start_with?("write_") &&
     !method.name.start_with?("bitwise_") &&
     !method.name.start_with?("to_") &&
