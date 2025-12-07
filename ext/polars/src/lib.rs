@@ -51,7 +51,7 @@ fn re_escape(pattern: String) -> String {
     regex::escape(&pattern)
 }
 
-#[magnus::init]
+#[magnus::init(name = "polars")]
 fn init(ruby: &Ruby) -> RbResult<()> {
     crate::on_startup::register_startup_deps(true);
 
