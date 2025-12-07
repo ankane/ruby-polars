@@ -198,12 +198,12 @@ impl RbSeries {
                     .map(|ps| ps.clone().series.into_inner())
             })
             .collect();
-        if let Some(s) = series.iter().flatten().next() {
-            if s.dtype().is_object() {
-                return Err(RbValueError::new_err(
-                    "list of objects isn't supported; try building a 'object' only series",
-                ));
-            }
+        if let Some(s) = series.iter().flatten().next()
+            && s.dtype().is_object()
+        {
+            return Err(RbValueError::new_err(
+                "list of objects isn't supported; try building a 'object' only series",
+            ));
         }
         Ok(Series::new(name.into(), series).into())
     }
