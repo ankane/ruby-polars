@@ -1,5 +1,6 @@
 ## 1.0.0 (unreleased)
 
+- Added support for Ruby 4.0
 - Added support for streaming engine
 - Added support for releasing GVL
 - Added experimental support for background queries
@@ -7,6 +8,7 @@
 - Changed `schema` method to return `Schema` instead of `Hash`
 - Changed `partition_by(as_dict: true)` method to always return `Array` keys
 - Removed support for string and symbol data types (`:i32`, `:f64`, etc.)
+- Dropped support for Ruby < 3.3
 
 Changed defaults
 

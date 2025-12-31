@@ -36,7 +36,7 @@ jobs:
         with:
           ruby-version: 3.4
       - run: gem install rb_sys
-      - run: rb-sys-dock --ruby-versions 3.4,3.3,3.2 --platform ${{ matrix.platform }} --build --mount-toolchains
+      - run: rb-sys-dock --ruby-versions 4.0,3.4,3.3 --platform ${{ matrix.platform }} --build --mount-toolchains
       - uses: actions/upload-artifact@v4
         with:
           name: cross-gem-${{ matrix.platform }}
