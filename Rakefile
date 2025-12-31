@@ -34,8 +34,9 @@ Rake::ExtensionTask.new("polars", gemspec) do |ext|
 end
 
 task :remove_ext do
-  path = "lib/polars/polars.bundle"
-  File.unlink(path) if File.exist?(path)
+  Dir["lib/polars/polars.{bundle,so}"].each do |path|
+    File.unlink(path)
+  end
 end
 
 Rake::Task["build"].enhance [:remove_ext]
