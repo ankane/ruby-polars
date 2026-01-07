@@ -8,7 +8,7 @@ jobs:
         include:
           - ruby: "4.0"
             os: ubuntu-latest
-          # - ruby: 3.2
+          # - ruby: 3.3
           #   os: windows-latest
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
