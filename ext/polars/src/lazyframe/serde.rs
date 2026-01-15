@@ -1,5 +1,5 @@
 #[cfg(feature = "serialize_binary")]
-use std::io::{BufReader, BufWriter};
+use std::io::{BufReader};
 use std::io::{BufWriter, Read};
 
 use magnus::Value;
