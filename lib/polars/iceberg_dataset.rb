@@ -12,11 +12,6 @@ module Polars
     end
 
     def to_lazyframe
-      # for iceberg < 0.10.3
-      if !@source.respond_to?(:scan)
-        return @source.to_polars(snapshot_id: @snapshot_id, storage_options: @storage_options)
-      end
-
       scan = @source.scan(snapshot_id: @snapshot_id)
       files = scan.plan_files
 
