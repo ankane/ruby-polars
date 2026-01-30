@@ -41,6 +41,11 @@ class TypesTest < Minitest::Test
     assert_equal Polars::Null, schema["u"]
   end
 
+  def test_data_frame_array_multiple_dimensions
+    df = Polars::DataFrame.new({"a" => [[[1, 2], [3, 4]]]}, schema: {"a" => Polars::Array.new(Polars::Int64, [2, 2])})
+    assert_equal df["a"].dtype, Polars::Array.new(Polars::Int64, [2, 2])
+  end
+
   def test_data_frame_hashes_schema_decimal
     error = assert_raises(TypeError) do
       Polars::DataFrame.new([{"a" => 1}], schema: {"a" => Polars::Decimal})
