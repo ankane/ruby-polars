@@ -18,7 +18,7 @@ Changed defaults
 - Changed default `eager` for `ones` and `zeros` method from `false` to `true`
 - Changed default `how` for `align_frames` method from `left` to `full`
 - Changed default `ignore_nulls` for `ewm_mean`, `ewm_std`, and `ewm_var` methods from `true` to `false`
-- Changed default `null_on_oob` for `get` method from `false` to `true`
+- Changed default `null_on_oob` for `get` method from `true` to `false`
 - Changed default `signed` for `reinterpret` method from `false` to `true` for `Expr`
 - Changed default `base` for `entropy` method from `2` to `Math::E` for `Expr`
 - Changed default `maintain_order` for `unique` method from `true` to `false` for `DataFrame` and `LazyFrame`
