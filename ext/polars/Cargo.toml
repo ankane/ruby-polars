@@ -146,6 +146,7 @@ features = [
 
 [target.'cfg(not(target_family = "unix"))'.dependencies]
 mimalloc = { version = "0.1", default-features = false }
+libmimalloc-sys = "=0.1.38"
 
 # Feature background_threads is unsupported on MacOS (https://github.com/jemalloc/jemalloc/issues/843).
 [target.'cfg(all(target_family = "unix", not(target_os = "macos")))'.dependencies]
