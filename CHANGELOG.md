@@ -1,4 +1,4 @@
-## 0.24.0 (unreleased)
+## 0.24.0 (2026-02-04)
 
 - Added support for Ruby 4.0
 - Added support for streaming engine
