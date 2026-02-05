@@ -15,7 +15,7 @@ Changed defaults
 - Changed default `statistics` for `write_parquet` method from `false` to `true`
 - Changed default `compression` for `sink_ipc` method from `zstd` to `uncompressed`
 - Changed default `raise_if_empty` for `read_csv` method from `false` to `true`
-- Changed default `eager` for `ones` and `zeros` method from `false` to `true`
+- Changed default `eager` for `ones` and `zeros` method from `true` to `false`
 - Changed default `how` for `align_frames` method from `left` to `full`
 - Changed default `ignore_nulls` for `ewm_mean`, `ewm_std`, and `ewm_var` methods from `true` to `false`
 - Changed default `null_on_oob` for `get` method from `true` to `false`
