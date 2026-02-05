@@ -10,7 +10,7 @@ class StringExprTest < Minitest::Test
   end
 
   def test_join
-    assert_expr str_expr.join
+    assert_expr str_expr.join("")
   end
 
   def test_to_uppercase

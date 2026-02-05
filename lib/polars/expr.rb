@@ -4469,7 +4469,13 @@ module Polars
     #   # │ 1             ┆ 1        │
     #   # │ 2             ┆ 2        │
     #   # └───────────────┴──────────┘
-    def reinterpret(signed: true)
+    def reinterpret(signed: nil)
+      # TODO update
+      if signed.nil?
+        warn "The default `signed` for `reinterpret` method will change from `false` to `true` in a future version"
+        signed = false
+      end
+
       wrap_expr(_rbexpr.reinterpret(signed))
     end
 
@@ -7232,11 +7238,17 @@ module Polars
     #   # └─────┘
     def sample(
       fraction: nil,
-      with_replacement: false,
+      with_replacement: nil,
       shuffle: false,
       seed: nil,
       n: nil
     )
+      # TODO update
+      if with_replacement.nil?
+        warn "The default `with_replacement` for `sample` method will change from `true` to `false` in a future version"
+        with_replacement = true
+      end
+
       if !n.nil? && !fraction.nil?
         raise ArgumentError, "cannot specify both `n` and `fraction`"
       end
@@ -7595,7 +7607,7 @@ module Polars
     # Uses the formula `-sum(pk * log(pk)` where `pk` are discrete probabilities.
     #
     # @param base [Float]
-    #   Given base, defaults to `e`.
+    #   Given base, defaults to `2`.
     # @param normalize [Boolean]
     #   Normalize pk if it doesn't sum to 1.
     #
@@ -7625,7 +7637,13 @@ module Polars
     #   # ╞═══════════╡
     #   # │ -6.754888 │
     #   # └───────────┘
-    def entropy(base: Math::E, normalize: true)
+    def entropy(base: nil, normalize: true)
+      # TODO update (including param docs)
+      if base.nil?
+        warn "The default `base` for `entropy` method will change from `2` to `Math::E` in a future version"
+        base = 2
+      end
+
       wrap_expr(_rbexpr.entropy(base, normalize))
     end
 

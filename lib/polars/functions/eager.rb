@@ -458,10 +458,16 @@ module Polars
     def align_frames(
       *frames,
       on:,
-      how: "full",
+      how: nil,
       select: nil,
       descending: false
     )
+      # TODO update
+      if how.nil?
+        warn "The default `how` for `align_frames` method will change from `left` to `full` in a future version"
+        how = "left"
+      end
+
       if frames.empty?
         return []
       elsif frames.map(&:class).uniq.length != 1
