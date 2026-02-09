@@ -8362,6 +8362,13 @@ module Polars
       StructExpr.new(self)
     end
 
+    # Create an object namespace of all extension type related expressions.
+    #
+    # @return [ExtensionExpr]
+    def ext
+      ExtensionExpr.new(self)
+    end
+
     private
 
     def wrap_expr(expr)

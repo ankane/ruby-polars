@@ -6279,6 +6279,13 @@ module Polars
       StructNameSpace.new(self)
     end
 
+    # Create an object namespace of all extension type related methods.
+    #
+    # @return [ExtensionNameSpace]
+    def ext
+      ExtensionNameSpace.new(self)
+    end
+
     # Create a plot namespace.
     #
     # @note
