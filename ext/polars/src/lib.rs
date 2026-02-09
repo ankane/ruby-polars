@@ -654,6 +654,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     // maybe add to different class
     let class = module.define_module("Plr")?;
     class.define_singleton_method("col", function!(functions::lazy::col, 1))?;
+    class.define_singleton_method("element", function!(functions::lazy::element, 0))?;
     class.define_singleton_method("len", function!(functions::lazy::len, 0))?;
     class.define_singleton_method("fold", function!(functions::lazy::fold, 5))?;
     class.define_singleton_method("cum_fold", function!(functions::lazy::cum_fold, 6))?;

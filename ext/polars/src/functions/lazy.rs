@@ -105,6 +105,10 @@ pub fn col(name: String) -> RbExpr {
     dsl::col(&name).into()
 }
 
+pub fn element() -> RbExpr {
+    dsl::element().into()
+}
+
 fn lfs_to_plans(lfs: RArray) -> RbResult<Vec<DslPlan>> {
     let lfs = lfs.typecheck::<Obj<RbLazyFrame>>()?;
     Ok(lfs

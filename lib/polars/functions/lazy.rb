@@ -48,7 +48,7 @@ module Polars
     #   # │ 3   ┆ 2   ┆ [2.0, 1.0] │
     #   # └─────┴─────┴────────────┘
     def element
-      col("")
+      Utils.wrap_expr(Plr.element)
     end
 
     # Return the number of non-null values in the column.
