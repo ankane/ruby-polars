@@ -230,7 +230,8 @@ module Polars
       hive_partitioning: nil,
       hive_schema: nil,
       try_parse_hive_dates: true,
-      include_file_paths: nil
+      include_file_paths: nil,
+      _record_batch_statistics: false
     )
       sources = get_sources(source)
 
@@ -255,6 +256,7 @@ module Polars
       rblf =
         RbLazyFrame.new_from_ipc(
           sources,
+          _record_batch_statistics,
           ScanOptions.new(
             row_index: !row_index_name.nil? ? [row_index_name, row_index_offset] : nil,
             pre_slice: !n_rows.nil? ? [0, n_rows] : nil,
@@ -267,8 +269,7 @@ module Polars
             cache: cache,
             storage_options: !storage_options.nil? ? storage_options.to_a : nil,
             credential_provider: credential_provider_builder
-          ),
-          file_cache_ttl
+          )
         )
       Utils.wrap_ldf(rblf)
     end
