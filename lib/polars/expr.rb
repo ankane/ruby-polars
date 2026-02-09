@@ -3485,8 +3485,8 @@ module Polars
     #   # │ 5   │
     #   # │ 6   │
     #   # └─────┘
-    def explode
-      wrap_expr(_rbexpr.explode)
+    def explode(empty_as_null: true, keep_nulls: true)
+      wrap_expr(_rbexpr.explode(empty_as_null, keep_nulls))
     end
 
     # Take every nth value in the Series and return as a new Series.

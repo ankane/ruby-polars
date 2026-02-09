@@ -4120,11 +4120,16 @@ module Polars
     #   # │ c       ┆ 7       │
     #   # │ c       ┆ 8       │
     #   # └─────────┴─────────┘
-    def explode(columns, *more_columns)
+    def explode(
+      columns,
+      *more_columns,
+      empty_as_null: true,
+      keep_nulls: true
+    )
       subset = Utils.parse_list_into_selector(columns) | Utils.parse_list_into_selector(
         more_columns
       )
-      _from_rbldf(_ldf.explode(subset._rbselector))
+      _from_rbldf(_ldf.explode(subset._rbselector, empty_as_null, keep_nulls))
     end
 
     # Drop duplicate rows from this DataFrame.
