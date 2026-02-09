@@ -4255,7 +4255,7 @@ module Polars
     #   # │ 1   ┆ a   ┆ b   │
     #   # └─────┴─────┴─────┘
     def unique(maintain_order: false, subset: nil, keep: "any")
-      selector_subset = nil
+      parsed_subset = nil
       if !subset.nil?
         parsed_subset = Utils.parse_into_list_of_expressions(subset, __require_selectors: true)
       end
