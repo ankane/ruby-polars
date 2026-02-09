@@ -1255,6 +1255,7 @@ module Polars
       credential_provider: "auto",
       retries: nil,
       metadata: nil,
+      arrow_schema: nil,
       mkdir: false
     )
       if compression.nil?
@@ -1265,6 +1266,7 @@ module Polars
       end
 
       target = file
+      engine = "streaming"
       if !partition_by.nil?
         raise Todo
       end
@@ -1280,7 +1282,10 @@ module Polars
         credential_provider: credential_provider,
         retries: retries,
         metadata: metadata,
-        mkdir: mkdir
+        arrow_schema: arrow_schema,
+        engine: engine,
+        mkdir: mkdir,
+        optimizations: QueryOptFlags._eager
       )
     end
 
