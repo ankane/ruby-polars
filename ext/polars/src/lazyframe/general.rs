@@ -47,8 +47,6 @@ impl RbLazyFrame {
         let include_file_paths = Option::<String>::try_convert(arguments[11])?;
         let cloud_options = OptRbCloudOptions::try_convert(arguments[12])?;
         let credential_provider = Option::<Value>::try_convert(arguments[13])?;
-        let retries = usize::try_convert(arguments[14])?;
-        let file_cache_ttl = Option::<u64>::try_convert(arguments[15])?;
 
         let row_index = row_index.map(|(name, offset)| RowIndex {
             name: name.into(),
