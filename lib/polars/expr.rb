@@ -2816,6 +2816,7 @@ module Polars
       offset: nil,
       closed: "right"
     )
+      index_column_rbexpr = Utils.parse_into_expression(index_column)
       if offset.nil?
         offset = Utils.negate_duration_string(Utils.parse_as_duration_string(period))
       end
@@ -2823,7 +2824,7 @@ module Polars
       period = Utils.parse_as_duration_string(period)
       offset = Utils.parse_as_duration_string(offset)
 
-      wrap_expr(_rbexpr.rolling(index_column, period, offset, closed))
+      wrap_expr(_rbexpr.rolling(index_column_rbexpr, period, offset, closed))
     end
 
     # Get mask of unique values.
@@ -3443,6 +3444,11 @@ module Polars
     #
     # @return [Expr]
     #
+    # @deprecated
+    #  `Expr#flatten` is deprecated and will be removed in a future version.
+    #   Use `Expr.list.explode(keep_nulls: false, empty_as_null: false)` instead,
+    #   which provides the behavior you likely expect.
+    #
     # @example
     #  df = Polars::DataFrame.new(
     #    {
@@ -3462,7 +3468,7 @@ module Polars
     #  # │ b     ┆ [2, 3, 4] │
     #  # └───────┴───────────┘
     def flatten
-      wrap_expr(_rbexpr.explode)
+      explode(empty_as_null: true, keep_nulls: true)
     end
 
     # Explode a list or utf8 Series.
