@@ -193,7 +193,7 @@ module Polars
       elsif exclude_dtypes.any?
         self - Selectors.by_dtype(exclude_dtypes)
       else
-        self - Selectors.by_name(exclude_cols, require_all: false)
+        self - Selector._by_name(exclude_cols, strict: false, expand_patterns: true)
       end
     end
 
