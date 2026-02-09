@@ -1131,12 +1131,12 @@ module Polars
       file,
       compression: "uncompressed",
       compat_level: nil,
+      record_batch_size: nil,
       storage_options: nil,
       credential_provider: "auto",
       retries: nil
     )
       return_bytes = file.nil?
-      target = nil
       if file.nil?
         target = StringIO.new
         target.set_encoding(Encoding::BINARY)
@@ -1148,9 +1148,12 @@ module Polars
         target,
         compression: compression,
         compat_level: compat_level,
+        record_batch_size: record_batch_size,
         storage_options: storage_options,
         credential_provider: credential_provider,
-        retries: retries
+        retries: retries,
+        optimizations: QueryOptFlags._eager,
+        engine: "streaming"
       )
       return_bytes ? target.string : nil
     end
