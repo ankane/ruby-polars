@@ -1100,7 +1100,7 @@ module Polars
       metadata: nil,
       mkdir: false,
       lazy: false,
-      field_overwrites: nil,
+      arrow_schema: nil,
       engine: "auto",
       optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
@@ -1126,40 +1126,35 @@ module Polars
 
       _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
 
+      if !retries.nil?
+        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["max_retries"] = retries
+      end
+
       credential_provider_builder = _init_credential_provider_builder.(
         credential_provider, path, storage_options, "sink_parquet"
       )
 
-      if storage_options&.any?
-        storage_options = storage_options.to_a
-      else
-        storage_options = nil
-      end
+      target = _to_sink_target(path)
 
       sink_options = {
-        "sync_on_close" => sync_on_close || "none",
+        "mkdir" => mkdir,
         "maintain_order" => maintain_order,
-        "mkdir" => mkdir
+        "sync_on_close" => sync_on_close || "none"
       }
 
-      field_overwrites_dicts = []
-      if !field_overwrites.nil?
-        raise Todo
-      end
-
       ldf_rb = _ldf.sink_parquet(
-        path,
+        target,
+        sink_options,
         compression,
         compression_level,
         statistics,
         row_group_size,
         data_page_size,
-        storage_options,
-        credential_provider_builder,
-        retries,
-        sink_options,
         metadata,
-        field_overwrites_dicts
+        arrow_schema
       )
 
       if !lazy

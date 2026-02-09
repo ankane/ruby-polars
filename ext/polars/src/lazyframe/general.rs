@@ -381,9 +381,6 @@ impl RbLazyFrame {
         statistics: Wrap<StatisticsOptions>,
         row_group_size: Option<usize>,
         data_page_size: Option<usize>,
-        cloud_options: Option<Vec<(String, String)>>,
-        credential_provider: Option<Value>,
-        retries: usize,
         metadata: Wrap<Option<KeyValueMetadata>>,
         arrow_schema: Option<Wrap<ArrowSchema>>,
     ) -> RbResult<RbLazyFrame> {
