@@ -1069,3 +1069,10 @@ pub struct RbCollectBatches {
     inner: Arc<Mutex<CollectBatches>>,
     ldf: LazyFrame,
 }
+
+impl RbCollectBatches {
+    pub fn next(rb: &Ruby, slf: &Self) -> RbResult<Option<RbDataFrame>> {
+        let inner = Arc::clone(&slf.inner);
+        rb.enter_polars(|| PolarsResult::Ok(inner.lock().next().transpose()?.map(RbDataFrame::new)))
+    }
+}

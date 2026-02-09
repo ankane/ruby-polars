@@ -5,6 +5,7 @@ mod serde;
 mod sink;
 
 pub use exitable::RbInProcessQuery;
+pub use general::RbCollectBatches;
 use magnus::{TryConvert, Value};
 use parking_lot::RwLock;
 use polars::prelude::{Engine, LazyFrame, OptFlags};
