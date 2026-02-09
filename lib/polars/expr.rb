@@ -1189,6 +1189,9 @@ module Polars
     #
     # Can return multiple Values.
     #
+    # @param maintain_order [Boolean]
+    #   Maintain order of data. This requires more work.
+    #
     # @return [Expr]
     #
     # @example
@@ -1209,8 +1212,8 @@ module Polars
     #   # │ 1   ┆ 1   │
     #   # │ 1   ┆ 2   │
     #   # └─────┴─────┘
-    def mode
-      wrap_expr(_rbexpr.mode)
+    def mode(maintain_order: false)
+      wrap_expr(_rbexpr.mode(maintain_order))
     end
 
     # Cast between data types.

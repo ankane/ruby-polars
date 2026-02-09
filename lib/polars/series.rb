@@ -3354,6 +3354,9 @@ module Polars
     #
     # Can return multiple Values.
     #
+    # @param maintain_order [Boolean]
+    #   Maintain order of data. This requires more work.
+    #
     # @return [Series]
     #
     # @example
@@ -3365,7 +3368,7 @@ module Polars
     #   # [
     #   #         2
     #   # ]
-    def mode
+    def mode(maintain_order: false)
       super
     end
 
