@@ -2668,6 +2668,11 @@ module Polars
     #
     # This means that every item is expanded to a new row.
     #
+    # @param empty_as_null [Boolean]
+    #   Explode an empty list into a `null`.
+    # @param keep_nulls [Boolean]
+    #   Explode a `null` list into a `null`.
+    #
     # @return [Series]
     #
     # @example
@@ -2684,7 +2689,7 @@ module Polars
     #   #         9
     #   #         10
     #   # ]
-    def explode
+    def explode(empty_as_null: true, keep_nulls: true)
       super
     end
 

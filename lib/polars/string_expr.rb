@@ -1674,6 +1674,10 @@ module Polars
     #   Enable ASCII-aware case insensitive matching.
     #   When this option is enabled, searching will be performed without respect
     #   to case for ASCII letters (a-z and A-Z) only.
+    # @param leftmost [Boolean]
+    #   Guarantees in case there are overlapping matches that the leftmost match
+    #   is used. In case there are multiple candidates for the leftmost match
+    #   the pattern which comes first in patterns is used.
     #
     # @return [Expr]
     #
@@ -1727,7 +1731,12 @@ module Polars
     #   # │ Tell me what you want, what yo… ┆ Tell you what me want, what me… │
     #   # │ Can you feel the love tonight   ┆ Can me feel the love tonight    │
     #   # └─────────────────────────────────┴─────────────────────────────────┘
-    def replace_many(patterns, replace_with = NO_DEFAULT, ascii_case_insensitive: false)
+    def replace_many(
+      patterns,
+      replace_with = NO_DEFAULT,
+      ascii_case_insensitive: false,
+      leftmost: false
+    )
       if replace_with == NO_DEFAULT
         if !patterns.is_a?(Hash)
           msg = "`replace_with` argument is required if `patterns` argument is not a Hash type"
@@ -1745,7 +1754,7 @@ module Polars
       replace_with = Utils.parse_into_expression(replace_with, str_as_lit: true)
       Utils.wrap_expr(
         _rbexpr.str_replace_many(
-          patterns, replace_with, ascii_case_insensitive
+          patterns, replace_with, ascii_case_insensitive, leftmost
         )
       )
     end
@@ -1760,6 +1769,11 @@ module Polars
     #   to case for ASCII letters (a-z and A-Z) only.
     # @param overlapping [Boolean]
     #   Whether matches may overlap.
+    # @param leftmost [Boolean]
+    #   Guarantees in case there are overlapping matches that the leftmost match
+    #   is used. In case there are multiple candidates for the leftmost match
+    #   the pattern which comes first in patterns is used. May not be used
+    #   together with overlapping: true.
     #
     # @return [Expr]
     #
@@ -1812,11 +1826,16 @@ module Polars
     def extract_many(
       patterns,
       ascii_case_insensitive: false,
-      overlapping: false
+      overlapping: false,
+      leftmost: false
     )
+      if overlapping && leftmost
+        msg = "can not match overlapping patterns when leftmost == true"
+        raise ArgumentError, msg
+      end
       patterns = Utils.parse_into_expression(patterns, str_as_lit: false)
       Utils.wrap_expr(
-        _rbexpr.str_extract_many(patterns, ascii_case_insensitive, overlapping)
+        _rbexpr.str_extract_many(patterns, ascii_case_insensitive, overlapping, leftmost)
       )
     end
 
@@ -1833,6 +1852,11 @@ module Polars
     #   to case for ASCII letters (a-z and A-Z) only.
     # @param overlapping [Boolean]
     #   Whether matches may overlap.
+    # @param leftmost [Boolean]
+    #   Guarantees in case there are overlapping matches that the leftmost match
+    #   is used. In case there are multiple candidates for the leftmost match
+    #   the pattern which comes first in patterns is used. May not be used
+    #   together with overlapping: true.
     #
     # @return [Expr]
     #
@@ -1885,11 +1909,16 @@ module Polars
     def find_many(
       patterns,
       ascii_case_insensitive: false,
-      overlapping: false
+      overlapping: false,
+      leftmost: false
     )
+      if overlapping && leftmost
+        msg = "can not match overlapping patterns when leftmost == true"
+        raise ArgumentError, msg
+      end
       patterns = Utils.parse_into_expression(patterns, str_as_lit: false)
       Utils.wrap_expr(
-        _rbexpr.str_find_many(patterns, ascii_case_insensitive, overlapping)
+        _rbexpr.str_find_many(patterns, ascii_case_insensitive, overlapping, leftmost)
       )
     end
 

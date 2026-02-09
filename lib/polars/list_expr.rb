@@ -884,6 +884,11 @@ module Polars
 
     # Returns a column with a separate row for every list element.
     #
+    # @param empty_as_null [Boolean]
+    #   Explode an empty list into a `null`.
+    # @param keep_nulls [Boolean]
+    #   Explode a `null` list into a `null`.
+    #
     # @return [Expr]
     #
     # @example
@@ -903,8 +908,8 @@ module Polars
     #   # │ 5   │
     #   # │ 6   │
     #   # └─────┘
-    def explode
-      Utils.wrap_expr(_rbexpr.explode)
+    def explode(empty_as_null: true, keep_nulls: true)
+      Utils.wrap_expr(_rbexpr.explode(empty_as_null, keep_nulls))
     end
 
     # Count how often the value produced by `element` occurs.

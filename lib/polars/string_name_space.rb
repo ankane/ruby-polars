@@ -1260,18 +1260,22 @@ module Polars
 
     # Use the Aho-Corasick algorithm to replace many matches.
     #
-    # @param patterns
+    # @param patterns [Object]
     #   String patterns to search and replace.
     #   Also accepts a mapping of patterns to their replacement as syntactic sugar
     #   for `replace_many(Polars::Series.new(mapping.keys), Polars::Series.new(mapping.values))`.
-    # @param replace_with
+    # @param replace_with [Object]
     #   Strings to replace where a pattern was a match.
     #   Length must match the length of `patterns` or have length 1. This can be
     #   broadcasted, so it supports many:one and many:many.
-    # @param ascii_case_insensitive
+    # @param ascii_case_insensitive [Boolean]
     #   Enable ASCII-aware case-insensitive matching.
     #   When this option is enabled, searching will be performed without respect
     #   to case for ASCII letters (a-z and A-Z) only.
+    # @param leftmost [Boolean]
+    #   Guarantees in case there are overlapping matches that the leftmost match
+    #   is used. In case there are multiple candidates for the leftmost match
+    #   the pattern which comes first in patterns is used.
     #
     # @return [Series]
     #
@@ -1339,7 +1343,8 @@ module Polars
     def replace_many(
       patterns,
       replace_with = NO_DEFAULT,
-      ascii_case_insensitive: false
+      ascii_case_insensitive: false,
+      leftmost: false
     )
       super
     end
@@ -1354,6 +1359,11 @@ module Polars
     #   to case for ASCII letters (a-z and A-Z) only.
     # @param overlapping [Boolean]
     #   Whether matches may overlap.
+    # @param leftmost [Boolean]
+    #   Guarantees in case there are overlapping matches that the leftmost match
+    #   is used. In case there are multiple candidates for the leftmost match
+    #   the pattern which comes first in patterns is used. May not be used
+    #   together with overlapping: true.
     #
     # @return [Series]
     #
@@ -1374,7 +1384,8 @@ module Polars
     def extract_many(
       patterns,
       ascii_case_insensitive: false,
-      overlapping: false
+      overlapping: false,
+      leftmost: false
     )
       super
     end
@@ -1392,6 +1403,11 @@ module Polars
     #   to case for ASCII letters (a-z and A-Z) only.
     # @param overlapping [Boolean]
     #   Whether matches may overlap.
+    # @param leftmost [Boolean]
+    #   Guarantees in case there are overlapping matches that the leftmost match
+    #   is used. In case there are multiple candidates for the leftmost match
+    #   the pattern which comes first in patterns is used. May not be used
+    #   together with overlapping: true.
     #
     # @return [Series]
     #
@@ -1444,7 +1460,8 @@ module Polars
     def find_many(
       patterns,
       ascii_case_insensitive: false,
-      overlapping: false
+      overlapping: false,
+      leftmost: false
     )
       super
     end

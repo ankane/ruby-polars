@@ -721,6 +721,11 @@ module Polars
 
     # Returns a column with a separate row for every list element.
     #
+    # @param empty_as_null [Boolean]
+    #   Explode an empty list into a `null`.
+    # @param keep_nulls [Boolean]
+    #   Explode a `null` list into a `null`.
+    #
     # @return [Series]
     #
     # @example
@@ -737,7 +742,7 @@ module Polars
     #   #         5
     #   #         6
     #   # ]
-    def explode
+    def explode(empty_as_null: true, keep_nulls: true)
       super
     end
 
