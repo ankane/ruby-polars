@@ -4396,6 +4396,33 @@ module Polars
     #
     # @note
     #   In some other frameworks, you might know this operation as `pivot_wider`.
+    #
+    # @example Using `pivot`, we can reshape so we have one row per student, with different subjects as columns, and their `test_1` scores as values:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "name" => ["Cady", "Cady", "Karen", "Karen"],
+    #       "subject" => ["maths", "physics", "maths", "physics"],
+    #       "test_1" => [98, 99, 61, 58],
+    #       "test_2" => [100, 100, 60, 60]
+    #     }
+    #   )
+    #   df.lazy.pivot(
+    #     "subject",
+    #     on_columns: ["maths", "physics"],
+    #     index: "name",
+    #     values: "test_1",
+    #     maintain_order: true
+    #   ).collect
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌───────┬───────┬─────────┐
+    #   # │ name  ┆ maths ┆ physics │
+    #   # │ ---   ┆ ---   ┆ ---     │
+    #   # │ str   ┆ i64   ┆ i64     │
+    #   # ╞═══════╪═══════╪═════════╡
+    #   # │ Cady  ┆ 98    ┆ 99      │
+    #   # │ Karen ┆ 61    ┆ 58      │
+    #   # └───────┴───────┴─────────┘
     def pivot(
       on,
       on_columns:,
