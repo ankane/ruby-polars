@@ -5110,9 +5110,8 @@ module Polars
 
     def _select_engine(engine, path = nil)
       engine = Plr.get_engine_affinity if engine == "auto"
-      engine = engine == "auto" && !path.is_a?(::String) && !path.nil? ? "in-memory" : engine
-      raise Todo if engine != "auto"
-      engine
+      raise Todo if !path.is_a?(::String) && !path.nil?
+      engine == "auto" && !path.is_a?(::String) && !path.nil? ? "in-memory" : engine
     end
 
     def _to_sink_target(path)
