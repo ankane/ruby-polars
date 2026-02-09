@@ -155,12 +155,20 @@ impl RbExpr {
         self.inner.clone().unique_stable().into()
     }
 
-    pub fn first(&self) -> Self {
-        self.inner.clone().first().into()
+    pub fn first(&self, ignore_nulls: bool) -> Self {
+        if ignore_nulls {
+            self.inner.clone().first_non_null().into()
+        } else {
+            self.inner.clone().first().into()
+        }
     }
 
-    pub fn last(&self) -> Self {
-        self.inner.clone().last().into()
+    pub fn last(&self, ignore_nulls: bool) -> Self {
+        if ignore_nulls {
+            self.inner.clone().last_non_null().into()
+        } else {
+            self.inner.clone().last().into()
+        }
     }
 
     pub fn item(&self, allow_empty: bool) -> Self {

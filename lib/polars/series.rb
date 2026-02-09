@@ -6128,18 +6128,28 @@ module Polars
     #
     # Returns `nil` if the Series is empty.
     #
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default `false`).
+    #   If set to `true`, the first non-null value is returned, otherwise `nil` is
+    #   returned if no non-null value exists.
+    #
     # @return [Object]
-    def first
-      _s.first
+    def first(ignore_nulls: false)
+      _s.first(ignore_nulls)
     end
 
     # Get the last element of the Series.
     #
     # Returns `nil` if the Series is empty.
     #
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default `false`).
+    #   If set to `true`, the last non-null value is returned, otherwise `nil` is
+    #   returned if no non-null value exists.
+    #
     # @return [Object]
-    def last
-      _s.last
+    def last(ignore_nulls: false)
+      _s.last(ignore_nulls)
     end
 
     # Approximate count of unique values.

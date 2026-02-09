@@ -244,6 +244,11 @@ module Polars
 
     # Aggregate the first values in the group.
     #
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default `false`).
+    #   If set to `true`, the first non-null value for each aggregation is returned,
+    #   otherwise `nil` is returned if no non-null value exists.
+    #
     # @return [LazyFrame]
     #
     # @example
@@ -267,11 +272,17 @@ module Polars
     #   # │ Orange ┆ 2   ┆ 0.5  ┆ true  │
     #   # │ Banana ┆ 4   ┆ 13.0 ┆ false │
     #   # └────────┴─────┴──────┴───────┘
-    def first
-      agg(F.all.first)
+    def first(ignore_nulls: false)
+      agg(F.all.first(ignore_nulls: ignore_nulls))
     end
 
     # Aggregate the last values in the group.
+    #
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default `false`).
+    #   If set to `true`, the last non-null value for each aggregation is returned,
+    #   otherwise `nil` is returned if no non-null value exists.
+    #
     #
     # @return [LazyFrame]
     #
@@ -296,8 +307,8 @@ module Polars
     #   # │ Orange ┆ 2   ┆ 0.5  ┆ true  │
     #   # │ Banana ┆ 5   ┆ 13.0 ┆ true  │
     #   # └────────┴─────┴──────┴───────┘
-    def last
-      agg(F.all.last)
+    def last(ignore_nulls: false)
+      agg(F.all.last(ignore_nulls: ignore_nulls))
     end
 
     # Reduce the groups to the maximal value.

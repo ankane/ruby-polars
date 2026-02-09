@@ -193,8 +193,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arg_unique", method!(RbExpr::arg_unique, 0))?;
     class.define_method("unique", method!(RbExpr::unique, 0))?;
     class.define_method("unique_stable", method!(RbExpr::unique_stable, 0))?;
-    class.define_method("first", method!(RbExpr::first, 0))?;
-    class.define_method("last", method!(RbExpr::last, 0))?;
+    class.define_method("first", method!(RbExpr::first, 1))?;
+    class.define_method("last", method!(RbExpr::last, 1))?;
     class.define_method("item", method!(RbExpr::item, 1))?;
     class.define_method("implode", method!(RbExpr::implode, 0))?;
     class.define_method("quantile", method!(RbExpr::quantile, 2))?;
@@ -1056,8 +1056,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("max", method!(RbSeries::max, 0))?;
     class.define_method("min", method!(RbSeries::min, 0))?;
     class.define_method("sum", method!(RbSeries::sum, 0))?;
-    class.define_method("first", method!(RbSeries::first, 0))?;
-    class.define_method("last", method!(RbSeries::last, 0))?;
+    class.define_method("first", method!(RbSeries::first, 1))?;
+    class.define_method("last", method!(RbSeries::last, 1))?;
     class.define_method("approx_n_unique", method!(RbSeries::approx_n_unique, 0))?;
     class.define_method("bitwise_and", method!(RbSeries::bitwise_and, 0))?;
     class.define_method("bitwise_or", method!(RbSeries::bitwise_or, 0))?;

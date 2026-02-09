@@ -1,6 +1,7 @@
 ## 0.25.0 (unreleased)
 
 - Updated Polars to 0.53.0
+- Added `ignore_nulls` option to `first` and `last` methods
 
 ## 0.24.0 (2026-02-04)
 

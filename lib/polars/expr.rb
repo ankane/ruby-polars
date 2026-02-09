@@ -2525,6 +2525,11 @@ module Polars
 
     # Get the first value.
     #
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default `false`).
+    #   If set to `true`, the first non-null value is returned, otherwise `nil` is
+    #   returned if no non-null value exists.
+    #
     # @return [Expr]
     #
     # @example
@@ -2539,11 +2544,16 @@ module Polars
     #   # ╞═════╡
     #   # │ 1   │
     #   # └─────┘
-    def first
-      wrap_expr(_rbexpr.first)
+    def first(ignore_nulls: false)
+      wrap_expr(_rbexpr.first(ignore_nulls))
     end
 
     # Get the last value.
+    #
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default `false`).
+    #   If set to `true`, the last non-null value is returned, otherwise `nil` is
+    #   returned if no non-null value exists.
     #
     # @return [Expr]
     #
@@ -2559,8 +2569,8 @@ module Polars
     #   # ╞═════╡
     #   # │ 2   │
     #   # └─────┘
-    def last
-      wrap_expr(_rbexpr.last)
+    def last(ignore_nulls: false)
+      wrap_expr(_rbexpr.last(ignore_nulls))
     end
 
     # Get the single value.

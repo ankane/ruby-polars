@@ -98,12 +98,22 @@ impl RbSeries {
         scalar_to_rb(rb.enter_polars(|| self_.series.read().sum_reduce()), rb)
     }
 
-    pub fn first(rb: &Ruby, self_: &Self) -> RbResult<Value> {
-        scalar_to_rb(rb.enter_polars_ok(|| self_.series.read().first()), rb)
+    pub fn first(rb: &Ruby, self_: &Self, ignore_nulls: bool) -> RbResult<Value> {
+        let result = if ignore_nulls {
+            rb.enter_polars_ok(|| self_.series.read().first_non_null())
+        } else {
+            rb.enter_polars_ok(|| self_.series.read().first())
+        };
+        scalar_to_rb(result, rb)
     }
 
-    pub fn last(rb: &Ruby, self_: &Self) -> RbResult<Value> {
-        scalar_to_rb(rb.enter_polars_ok(|| self_.series.read().last()), rb)
+    pub fn last(rb: &Ruby, self_: &Self, ignore_nulls: bool) -> RbResult<Value> {
+        let result = if ignore_nulls {
+            rb.enter_polars_ok(|| self_.series.read().last_non_null())
+        } else {
+            rb.enter_polars_ok(|| self_.series.read().last())
+        };
+        scalar_to_rb(result, rb)
     }
 
     pub fn approx_n_unique(rb: &Ruby, self_: &Self) -> RbResult<IdxSize> {
