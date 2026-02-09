@@ -73,14 +73,6 @@ module Polars
     end
 
     def next_batches(n)
-      # chunks = []
-
-      # n.times do
-      #   chunk = self._reader.next
-      #   if !chunk.nil?
-      #     chunks << chunk
-      #   end
-      # end
       chunks = self._reader.take(n)
 
       if chunks.length > 0
