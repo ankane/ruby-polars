@@ -1034,6 +1034,8 @@ module Polars
         target = file
       end
 
+      engine = "in-memory"
+
       lazy.sink_csv(
         target,
         include_bom: include_bom,
@@ -1052,7 +1054,9 @@ module Polars
         quote_style: quote_style,
         storage_options: storage_options,
         credential_provider: credential_provider,
-        retries: retries
+        retries: retries,
+        optimizations: QueryOptFlags._eager,
+        engine: engine
       )
 
       if should_return_buffer
