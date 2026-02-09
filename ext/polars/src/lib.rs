@@ -950,6 +950,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("drop_nulls", method!(RbLazyFrame::drop_nulls, 1))?;
     class.define_method("slice", method!(RbLazyFrame::slice, 2))?;
     class.define_method("tail", method!(RbLazyFrame::tail, 1))?;
+    class.define_method("pivot", method!(RbLazyFrame::pivot, 7))?;
     class.define_method("unpivot", method!(RbLazyFrame::unpivot, 4))?;
     class.define_method("with_row_index", method!(RbLazyFrame::with_row_index, 2))?;
     class.define_method("drop", method!(RbLazyFrame::drop, 1))?;

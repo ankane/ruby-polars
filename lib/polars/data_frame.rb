@@ -4372,6 +4372,7 @@ module Polars
     #   # └─────┴─────┴─────┘
     def pivot(
       on,
+      on_columns: nil,
       index: nil,
       values: nil,
       aggregate_function: nil,
@@ -4379,53 +4380,27 @@ module Polars
       sort_columns: false,
       separator: "_"
     )
-      index = Utils._expand_selectors(self, index)
-      on = Utils._expand_selectors(self, on)
-      if !values.nil?
-        values = Utils._expand_selectors(self, values)
-      end
-
-      if aggregate_function.is_a?(::String)
-        case aggregate_function
-        when "first"
-          aggregate_expr = F.element.first._rbexpr
-        when "sum"
-          aggregate_expr = F.element.sum._rbexpr
-        when "max"
-          aggregate_expr = F.element.max._rbexpr
-        when "min"
-          aggregate_expr = F.element.min._rbexpr
-        when "mean"
-          aggregate_expr = F.element.mean._rbexpr
-        when "median"
-          aggregate_expr = F.element.median._rbexpr
-        when "last"
-          aggregate_expr = F.element.last._rbexpr
-        when "len"
-          aggregate_expr = F.len._rbexpr
-        when "count"
-          warn "`aggregate_function: \"count\"` input for `pivot` is deprecated. Use `aggregate_function: \"len\"` instead."
-          aggregate_expr = F.len._rbexpr
-        else
-          raise ArgumentError, "Argument aggregate fn: '#{aggregate_fn}' was not expected."
+      if on_columns.nil?
+        cols = select(on).unique(maintain_order: true)
+        if sort_columns
+          cols = cols.sort(on)
         end
-      elsif aggregate_function.nil?
-        aggregate_expr = nil
+        on_cols = cols
       else
-        aggregate_expr = aggregate_function._rbexpr
+        on_cols = on_columns
       end
 
-      _from_rbdf(
-        _df.pivot_expr(
-          on,
-          index,
-          values,
-          maintain_order,
-          sort_columns,
-          aggregate_expr,
-          separator
-        )
+      lazy
+      .pivot(
+        on,
+        on_columns: on_cols,
+        index: index,
+        values: values,
+        aggregate_function: aggregate_function,
+        maintain_order: maintain_order,
+        separator: separator
       )
+      .collect(optimizations: QueryOptFlags._eager)
     end
 
     # Unpivot a DataFrame from wide to long format.

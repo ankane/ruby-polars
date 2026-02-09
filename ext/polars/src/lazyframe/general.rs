@@ -878,6 +878,29 @@ impl RbLazyFrame {
         ldf.tail(n).into()
     }
 
+    pub fn pivot(
+        &self,
+        on: &RbSelector,
+        on_columns: &RbDataFrame,
+        index: &RbSelector,
+        values: &RbSelector,
+        agg: &RbExpr,
+        maintain_order: bool,
+        separator: String,
+    ) -> Self {
+        let ldf = self.ldf.read().clone();
+        ldf.pivot(
+            on.inner.clone(),
+            Arc::new(on_columns.df.read().clone()),
+            index.inner.clone(),
+            values.inner.clone(),
+            agg.inner.clone(),
+            maintain_order,
+            separator.into(),
+        )
+        .into()
+    }
+
     pub fn unpivot(
         &self,
         on: Option<&RbSelector>,
