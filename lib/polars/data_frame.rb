@@ -1014,7 +1014,7 @@ module Polars
       quote_style: nil,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2
+      retries: nil
     )
       Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, true)
@@ -1142,7 +1142,7 @@ module Polars
       compat_level: nil,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2
+      retries: nil
     )
       return_bytes = file.nil?
       target = nil
@@ -1248,7 +1248,7 @@ module Polars
       partition_chunk_size_bytes: 4_294_967_296,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       metadata: nil,
       mkdir: false
     )

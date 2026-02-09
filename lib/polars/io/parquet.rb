@@ -80,7 +80,7 @@ module Polars
       low_memory: false,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       include_file_paths: nil,
       missing_columns: "raise",
       allow_missing_columns: nil
@@ -156,14 +156,17 @@ module Polars
       source,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2
+      retries: nil
     )
-      if storage_options
-        raise Todo
-      end
-
       if Utils.pathlike?(source)
         source = Utils.normalize_filepath(source, check_not_directory: false)
+      end
+
+      if !retries.nil?
+        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["max_retries"] = retries
       end
 
       credential_provider_builder = _init_credential_provider_builder(
@@ -172,9 +175,8 @@ module Polars
 
       Plr.read_parquet_metadata(
         source,
-        storage_options&.any? ? storage_options.map { |k, v| [k.to_s, v.to_s] } : nil,
-        credential_provider_builder,
-        retries
+        storage_options,
+        credential_provider_builder
       )
     end
 
@@ -271,7 +273,7 @@ module Polars
       cache: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       include_file_paths: nil,
       missing_columns: "raise",
       allow_missing_columns: nil,
@@ -313,6 +315,13 @@ module Polars
         missing_columns = allow_missing_columns ? "insert" : "raise"
       end
 
+      if !retries.nil?
+        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["max_retries"] = retries
+      end
+
       sources = get_sources(source)
 
       credential_provider_builder =
@@ -343,7 +352,6 @@ module Polars
             cache: cache,
             storage_options: storage_options ? storage_options.map { |k, v| [k.to_s, v.to_s] } : nil,
             credential_provider: credential_provider_builder,
-            retries: retries,
             column_mapping: _column_mapping,
             default_values: _default_values,
             deletion_files: _deletion_files,

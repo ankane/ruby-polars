@@ -22,7 +22,6 @@ module Polars
         cache: true,
         storage_options: nil,
         credential_provider: nil,
-        retries: 2,
         column_mapping: nil,
         default_values: nil,
         deletion_files: nil,
@@ -44,7 +43,6 @@ module Polars
         @cache = cache
         @storage_options = storage_options
         @credential_provider = credential_provider
-        @retries = retries
         @column_mapping = column_mapping
         @default_values = default_values
         @deletion_files = deletion_files

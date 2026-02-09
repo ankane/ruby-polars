@@ -225,7 +225,7 @@ module Polars
       glob: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       file_cache_ttl: nil,
       hive_partitioning: nil,
       hive_schema: nil,
@@ -233,6 +233,20 @@ module Polars
       include_file_paths: nil
     )
       sources = get_sources(source)
+
+      if !retries.nil?
+        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["max_retries"] = retries
+      end
+
+      if !file_cache_ttl.nil?
+        msg = "the `file_cache_ttl` parameter was deprecated in 0.25.0; specify 'file_cache_ttl' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["file_cache_ttl"] = file_cache_ttl
+      end
 
       credential_provider_builder = _init_credential_provider_builder(
         credential_provider, sources, storage_options, "scan_parquet"
@@ -252,8 +266,7 @@ module Polars
             rechunk: rechunk,
             cache: cache,
             storage_options: !storage_options.nil? ? storage_options.to_a : nil,
-            credential_provider: credential_provider_builder,
-            retries: retries
+            credential_provider: credential_provider_builder
           ),
           file_cache_ttl
         )

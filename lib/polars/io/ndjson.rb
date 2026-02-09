@@ -76,7 +76,7 @@ module Polars
       ignore_errors: false,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       file_cache_ttl: nil,
       include_file_paths: nil
     )
@@ -183,7 +183,7 @@ module Polars
       ignore_errors: false,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       file_cache_ttl: nil,
       include_file_paths: nil
     )

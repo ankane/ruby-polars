@@ -1095,7 +1095,7 @@ module Polars
       maintain_order: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       sync_on_close: nil,
       metadata: nil,
       mkdir: false,
@@ -4896,7 +4896,9 @@ module Polars
 
     def _select_engine(engine, path = nil)
       engine = Plr.get_engine_affinity if engine == "auto"
-      engine == "auto" && !path.is_a?(::String) && !path.nil? ? "in-memory" : engine
+      engine = engine == "auto" && !path.is_a?(::String) && !path.nil? ? "in-memory" : engine
+      raise Todo if engine != "auto"
+      engine
     end
 
     def _to_sink_target(path)
