@@ -840,14 +840,16 @@ impl RbLazyFrame {
         subset: Option<RArray>,
         keep: Wrap<UniqueKeepStrategy>,
     ) -> RbResult<Self> {
-        todo!();
-        // let ldf = self.ldf.read().clone();
-        // let subset = subset.map(|e| e.inner.clone());
-        // Ok(match maintain_order {
-        //     true => ldf.unique_stable_generic(subset, keep.0),
-        //     false => ldf.unique_generic(subset, keep.0),
-        // }
-        // .into())
+        let ldf = self.ldf.read().clone();
+        let subset = match subset {
+            Some(e) => Some(e.to_exprs()?),
+            None => None,
+        };
+        Ok(match maintain_order {
+            true => ldf.unique_stable_generic(subset, keep.0),
+            false => ldf.unique_generic(subset, keep.0),
+        }
+        .into())
     }
 
     pub fn drop_nans(&self, subset: Option<&RbSelector>) -> Self {
