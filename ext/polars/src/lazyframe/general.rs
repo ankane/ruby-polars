@@ -122,9 +122,7 @@ impl RbLazyFrame {
         let schema = Option::<Wrap<Schema>>::try_convert(arguments[27])?;
         let cloud_options = OptRbCloudOptions::try_convert(arguments[28])?;
         let credential_provider = Option::<Value>::try_convert(arguments[29])?;
-        let retries = usize::try_convert(arguments[30])?;
-        let file_cache_ttl = Option::<u64>::try_convert(arguments[31])?;
-        let include_file_paths = Option::<String>::try_convert(arguments[32])?;
+        let include_file_paths = Option::<String>::try_convert(arguments[30])?;
         // end arguments
 
         let null_values = null_values.map(|w| w.0);

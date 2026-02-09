@@ -699,6 +699,20 @@ module Polars
         infer_schema_length = 0
       end
 
+      if !retries.nil?
+        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["max_retries"] = retries
+      end
+
+      if !file_cache_ttl.nil?
+        msg = "the `file_cache_ttl` parameter was deprecated in 0.25.0; specify 'file_cache_ttl' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["file_cache_ttl"] = file_cache_ttl
+      end
+
       credential_provider_builder = _init_credential_provider_builder(
         credential_provider, source, storage_options, "scan_csv"
       )
@@ -731,10 +745,8 @@ module Polars
         truncate_ragged_lines: truncate_ragged_lines,
         decimal_comma: decimal_comma,
         glob: glob,
-        retries: retries,
         storage_options: storage_options,
         credential_provider: credential_provider_builder,
-        file_cache_ttl: file_cache_ttl,
         include_file_paths: include_file_paths
       )
     end
@@ -771,8 +783,6 @@ module Polars
       glob: true,
       storage_options: nil,
       credential_provider: nil,
-      retries: nil,
-      file_cache_ttl: nil,
       include_file_paths: nil
     )
       dtype_list = nil
@@ -823,8 +833,6 @@ module Polars
           schema,
           storage_options,
           credential_provider,
-          retries,
-          file_cache_ttl,
           include_file_paths
         )
       Utils.wrap_ldf(rblf)
