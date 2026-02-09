@@ -4196,9 +4196,9 @@ module Polars
     def unique(maintain_order: false, subset: nil, keep: "any")
       selector_subset = nil
       if !subset.nil?
-        selector_subset = Utils.parse_list_into_selector(subset)._rbselector
+        parsed_subset = Utils.parse_into_list_of_expressions(subset, __require_selectors: true)
       end
-      _from_rbldf(_ldf.unique(maintain_order, selector_subset, keep))
+      _from_rbldf(_ldf.unique(maintain_order, parsed_subset, keep))
     end
 
     # Drop all rows that contain one or more NaN values.
