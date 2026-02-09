@@ -4299,6 +4299,10 @@ module Polars
     #   Column of LargeList type.
     # @param more_columns [Array]
     #   Additional names of columns to explode, specified as positional arguments.
+    # @param empty_as_null [Boolean]
+    #   Explode an empty list/array into a `null`.
+    # @param keep_nulls [Boolean]
+    #   Explode a `null` list/array into a `null`.
     #
     # @return [DataFrame]
     #
@@ -4326,8 +4330,19 @@ module Polars
     #   # │ c       ┆ 7       │
     #   # │ c       ┆ 8       │
     #   # └─────────┴─────────┘
-    def explode(columns, *more_columns)
-      lazy.explode(columns, *more_columns).collect(optimizations: QueryOptFlags._eager)
+    def explode(
+      columns,
+      *more_columns,
+      empty_as_null: true,
+      keep_nulls: true
+    )
+      lazy
+      .explode(
+        columns,
+        *more_columns,
+        empty_as_null: empty_as_null,
+        keep_nulls: keep_nulls
+      ).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Create a spreadsheet-style pivot table as a DataFrame.
