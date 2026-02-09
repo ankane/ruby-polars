@@ -1880,6 +1880,11 @@ module Polars
     #
     # @param index [Object]
     #   An expression that leads to a UInt32 index.
+    # @param null_on_oob [Boolean]
+    #   Behavior if an index is out of bounds:
+    #
+    #   - true  -> set the result to null
+    #   - false -> raise an error
     #
     # @return [Expr]
     #

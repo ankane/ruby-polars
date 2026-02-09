@@ -4094,6 +4094,16 @@ module Polars
 
     # Explode lists to long format.
     #
+    # @param columns [Object]
+    #   Column names, expressions, or a selector defining them. The underlying
+    #   columns being exploded must be of the `List` or `Array` data type.
+    # @param more_columns [Array]
+    #   Additional names of columns to explode, specified as positional arguments.
+    # @param empty_as_null [Boolean]
+    #   Explode an empty list/array into a `null`.
+    # @param keep_nulls [Boolean]
+    #   Explode a `null` list/array into a `null`.
+    #
     # @return [LazyFrame]
     #
     # @example

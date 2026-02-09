@@ -4334,6 +4334,8 @@ module Polars
     #
     # @param on [Object]
     #   Columns whose values will be used as the header of the output DataFrame
+    # @param on_columns [Object]
+    #  What value combinations will be considered for the output table.
     # @param index [Object]
     #   One or multiple keys to group by
     # @param values [Object]
