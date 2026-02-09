@@ -684,8 +684,26 @@ module Polars
       file_cache_ttl: nil,
       include_file_paths: nil
     )
-      if new_columns
-        raise Todo
+      if new_columns&.any? && schema_overrides.is_a?(::Array)
+        msg = "expected 'schema_overrides' hash, found #{schema_overrides.inspect}"
+        raise TypeError, msg
+      elsif new_columns&.any?
+        if with_column_names
+          msg = "cannot set both `with_column_names` and `new_columns`; mutually exclusive"
+          raise ArgumentError, msg
+        end
+        if schema_overrides && schema_overrides.is_a?(::Array)
+          schema_overrides = new_columns.zip(schema_overrides).to_h
+        end
+
+        # wrap new column names as a callable
+        with_column_names = lambda do |cols|
+          if cols.length > new_columns.length
+            new_columns + cols[new_columns.length..]
+          else
+            new_columns
+          end
+        end
       end
 
       Utils._check_arg_is_1byte("separator", separator, false)

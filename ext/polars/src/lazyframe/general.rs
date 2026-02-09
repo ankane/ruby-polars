@@ -1,4 +1,6 @@
-use magnus::{IntoValue, RArray, RHash, Ruby, TryConvert, Value, r_hash::ForEach};
+use magnus::{
+    IntoValue, RArray, RHash, Ruby, TryConvert, Value, r_hash::ForEach, value::ReprValue,
+};
 use parking_lot::Mutex;
 use polars::io::RowIndex;
 use polars::lazy::frame::LazyFrame;
@@ -15,7 +17,7 @@ use crate::io::cloud_options::OptRbCloudOptions;
 use crate::io::scan_options::RbScanOptions;
 use crate::io::sink_options::RbSinkOptions;
 use crate::io::sink_output::RbFileSinkDestination;
-use crate::utils::EnterPolarsExt;
+use crate::utils::{EnterPolarsExt, RubyAttach};
 use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
 
 fn rbobject_to_first_path_and_scan_sources(
@@ -159,7 +161,7 @@ impl RbLazyFrame {
             r = r.with_cloud_options(cloud_options);
         }
 
-        let r = r
+        let mut r = r
             .with_infer_schema_length(infer_schema_length)
             .with_separator(separator)
             .with_has_header(has_header)
@@ -187,8 +189,28 @@ impl RbLazyFrame {
             .with_raise_if_empty(raise_if_empty)
             .with_include_file_paths(include_file_paths.map(|x| x.into()));
 
-        if let Some(_lambda) = with_schema_modify {
-            todo!();
+        if let Some(lambda) = with_schema_modify {
+            let f = |schema: Schema| {
+                let iter = schema.iter_names().map(|s| s.as_str());
+                Ruby::attach(|rb| {
+                    let names = rb.ary_from_iter(iter);
+
+                    let out = lambda
+                        .funcall("call", (names,))
+                        .expect("ruby function failed");
+                    let new_names = Vec::<String>::try_convert(out)
+                        .expect("ruby function should return Array[String]");
+                    polars_ensure!(new_names.len() == schema.len(),
+                        ShapeMismatch: "The length of the new names list should be equal to or less than the original column length",
+                    );
+                    Ok(schema
+                        .iter_values()
+                        .zip(new_names)
+                        .map(|(dtype, name)| Field::new(name.into(), dtype.clone()))
+                        .collect())
+                })
+            };
+            r = r.with_schema_modify(f).map_err(RbPolarsErr::from)?
         }
 
         Ok(r.finish().map_err(RbPolarsErr::from)?.into())
