@@ -15,7 +15,7 @@ impl TryConvert for OptRbCloudOptions {
 impl OptRbCloudOptions {
     pub fn extract_opt_cloud_options(
         &self,
-        cloud_scheme: Option<CloudScheme>,
+        _cloud_scheme: Option<CloudScheme>,
         credential_provider: Option<Value>,
     ) -> RbResult<Option<CloudOptions>> {
         if self.0.is_nil() && credential_provider.is_none() {

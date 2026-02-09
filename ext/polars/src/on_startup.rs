@@ -44,10 +44,8 @@ pub(crate) fn register_startup_deps(catch_keyboard_interrupt: bool) {
             let object = Ruby::attach(|rb| Wrap(av).into_value_with(rb));
             Box::new(object) as Box<dyn Any>
         });
-        fn object_array_getter(arr: &dyn Array, idx: usize) -> Option<AnyValue<'_>> {
+        fn object_array_getter(_arr: &dyn Array, _idx: usize) -> Option<AnyValue<'_>> {
             todo!();
-            // let arr = arr.as_any().downcast_ref::<ObjectArray<ObjectValue>>().unwrap();
-            // arr.get(idx).map(|v| AnyValue::Object(v))
         }
 
         let object_size = std::mem::size_of::<ObjectValue>();
