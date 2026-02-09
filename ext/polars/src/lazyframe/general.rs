@@ -1,7 +1,4 @@
-use magnus::{
-    IntoValue, RArray, RHash, Ruby, TryConvert, Value, r_hash::ForEach,
-    try_convert::TryConvertOwned,
-};
+use magnus::{IntoValue, RArray, RHash, Ruby, TryConvert, Value, r_hash::ForEach};
 use polars::io::RowIndex;
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
@@ -9,15 +6,20 @@ use polars_plan::dsl::ScanSources;
 use polars_plan::plans::{HintIR, Sorted};
 use std::num::NonZeroUsize;
 
-use super::{RbLazyFrame, RbOptFlags, SinkTarget};
+use super::{RbLazyFrame, RbOptFlags};
 use crate::conversion::*;
 use crate::expr::ToExprs;
 use crate::expr::selector::RbSelector;
-use crate::io::RbScanOptions;
+use crate::io::cloud_options::OptRbCloudOptions;
+use crate::io::scan_options::RbScanOptions;
+use crate::io::sink_options::RbSinkOptions;
+use crate::io::sink_output::RbFileSinkDestination;
 use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
 
-fn rbobject_to_first_path_and_scan_sources(obj: Value) -> RbResult<(Option<PlPath>, ScanSources)> {
+fn rbobject_to_first_path_and_scan_sources(
+    obj: Value,
+) -> RbResult<(Option<PlRefPath>, ScanSources)> {
     use crate::file::{RubyScanSourceInput, get_ruby_scan_source_input};
     Ok(match get_ruby_scan_source_input(obj, false)? {
         RubyScanSourceInput::Path(path) => (
@@ -43,7 +45,7 @@ impl RbLazyFrame {
         let row_index = Option::<(String, IdxSize)>::try_convert(arguments[9])?;
         let ignore_errors = bool::try_convert(arguments[10])?;
         let include_file_paths = Option::<String>::try_convert(arguments[11])?;
-        let cloud_options = Option::<Vec<(String, String)>>::try_convert(arguments[12])?;
+        let cloud_options = OptRbCloudOptions::try_convert(arguments[12])?;
         let credential_provider = Option::<Value>::try_convert(arguments[13])?;
         let retries = usize::try_convert(arguments[14])?;
         let file_cache_ttl = Option::<u64>::try_convert(arguments[15])?;
@@ -55,26 +57,21 @@ impl RbLazyFrame {
 
         let sources = sources.0;
         let (first_path, sources) = match source {
-            None => (sources.first_path().map(|p| p.into_owned()), sources),
+            None => (sources.first_path().cloned(), sources),
             Some(source) => rbobject_to_first_path_and_scan_sources(source)?,
         };
 
         let mut r = LazyJsonLineReader::new_with_sources(sources);
 
         if let Some(first_path) = first_path {
-            let first_path_url = first_path.to_str();
+            let first_path_url = first_path.as_str();
 
-            let mut cloud_options =
-                parse_cloud_options(first_path_url, cloud_options.unwrap_or_default())?;
-            cloud_options = cloud_options
-                .with_max_retries(retries)
-                .with_credential_provider(credential_provider.map(|_| todo!()));
+            let cloud_options = cloud_options.extract_opt_cloud_options(
+                CloudScheme::from_path(first_path_url),
+                credential_provider,
+            )?;
 
-            if let Some(file_cache_ttl) = file_cache_ttl {
-                cloud_options.file_cache_ttl = file_cache_ttl;
-            }
-
-            r = r.with_cloud_options(Some(cloud_options));
+            r = r.with_cloud_options(cloud_options);
         };
 
         let lf = r
@@ -125,8 +122,8 @@ impl RbLazyFrame {
         let decimal_comma = bool::try_convert(arguments[25])?;
         let glob = bool::try_convert(arguments[26])?;
         let schema = Option::<Wrap<Schema>>::try_convert(arguments[27])?;
-        let cloud_options = Option::<Vec<(String, String)>>::try_convert(arguments[28])?;
-        let _credential_provider = Option::<Value>::try_convert(arguments[29])?;
+        let cloud_options = OptRbCloudOptions::try_convert(arguments[28])?;
+        let credential_provider = Option::<Value>::try_convert(arguments[29])?;
         let retries = usize::try_convert(arguments[30])?;
         let file_cache_ttl = Option::<u64>::try_convert(arguments[31])?;
         let include_file_paths = Option::<String>::try_convert(arguments[32])?;
@@ -150,22 +147,19 @@ impl RbLazyFrame {
 
         let sources = sources.0;
         let (first_path, sources) = match source {
-            None => (sources.first_path().map(|p| p.into_owned()), sources),
+            None => (sources.first_path().cloned(), sources),
             Some(source) => rbobject_to_first_path_and_scan_sources(source)?,
         };
 
         let mut r = LazyCsvReader::new_with_sources(sources);
 
         if let Some(first_path) = first_path {
-            let first_path_url = first_path.to_str();
-
-            let mut cloud_options =
-                parse_cloud_options(first_path_url, cloud_options.unwrap_or_default())?;
-            if let Some(file_cache_ttl) = file_cache_ttl {
-                cloud_options.file_cache_ttl = file_cache_ttl;
-            }
-            cloud_options = cloud_options.with_max_retries(retries);
-            r = r.with_cloud_options(Some(cloud_options));
+            let first_path_url = first_path.as_str();
+            let cloud_options = cloud_options.extract_opt_cloud_options(
+                CloudScheme::from_path(first_path_url),
+                credential_provider,
+            )?;
+            r = r.with_cloud_options(cloud_options);
         }
 
         let r = r
@@ -223,10 +217,10 @@ impl RbLazyFrame {
         };
 
         let sources = sources.0;
-        let first_path = sources.first_path().map(|p| p.into_owned());
+        let first_path = sources.first_path();
 
         let unified_scan_args =
-            scan_options.extract_unified_scan_args(first_path.as_ref().map(|p| p.as_ref()))?;
+            scan_options.extract_unified_scan_args(first_path.and_then(|x| x.scheme()))?;
 
         let lf: LazyFrame = DslBuilder::scan_parquet(sources, options, unified_scan_args)
             .map_err(to_rb_err)?
@@ -238,23 +232,19 @@ impl RbLazyFrame {
 
     pub fn new_from_ipc(
         sources: Wrap<ScanSources>,
+        record_batch_statistics: bool,
         scan_options: RbScanOptions,
-        file_cache_ttl: Option<u64>,
     ) -> RbResult<Self> {
-        let options = IpcScanOptions;
+        let options = IpcScanOptions {
+            record_batch_statistics,
+            checked: Default::default(),
+        };
 
         let sources = sources.0;
-        let first_path = sources.first_path().map(|p| p.into_owned());
+        let first_path = sources.first_path().cloned();
 
-        let mut unified_scan_args =
-            scan_options.extract_unified_scan_args(first_path.as_ref().map(|p| p.as_ref()))?;
-
-        if let Some(file_cache_ttl) = file_cache_ttl {
-            unified_scan_args
-                .cloud_options
-                .get_or_insert_default()
-                .file_cache_ttl = file_cache_ttl;
-        }
+        let unified_scan_args =
+            scan_options.extract_unified_scan_args(first_path.as_ref().and_then(|x| x.scheme()))?;
 
         let lf = LazyFrame::scan_ipc_sources(sources, options, unified_scan_args)
             .map_err(RbPolarsErr::from)?;
@@ -384,7 +374,8 @@ impl RbLazyFrame {
     pub fn sink_parquet(
         rb: &Ruby,
         self_: &Self,
-        target: SinkTarget,
+        target: RbFileSinkDestination,
+        sink_options: RbSinkOptions,
         compression: String,
         compression_level: Option<i32>,
         statistics: Wrap<StatisticsOptions>,
@@ -393,9 +384,8 @@ impl RbLazyFrame {
         cloud_options: Option<Vec<(String, String)>>,
         credential_provider: Option<Value>,
         retries: usize,
-        sink_options: Wrap<SinkOptions>,
         metadata: Wrap<Option<KeyValueMetadata>>,
-        field_overwrites: Vec<Wrap<ParquetFieldOverwrites>>,
+        arrow_schema: Option<Wrap<ArrowSchema>>,
     ) -> RbResult<RbLazyFrame> {
         let compression = parse_parquet_compression(&compression, compression_level)?;
 
@@ -405,174 +395,151 @@ impl RbLazyFrame {
             row_group_size,
             data_page_size,
             key_value_metadata: metadata.0,
-            field_overwrites: field_overwrites.into_iter().map(|f| f.0).collect(),
+            arrow_schema: arrow_schema.map(|x| Arc::new(x.0)),
+            compat_level: None,
         };
 
-        let cloud_options = match target.base_path() {
-            None => None,
-            Some(base_path) => {
-                let cloud_options =
-                    parse_cloud_options(base_path.to_str(), cloud_options.unwrap_or_default())?;
-                Some(
-                    cloud_options
-                        .with_max_retries(retries)
-                        .with_credential_provider(credential_provider.map(|_| todo!())),
-                )
-            }
-        };
+        let target = target.extract_file_sink_destination()?;
+        let unified_sink_args = sink_options.extract_unified_sink_args(target.cloud_scheme())?;
 
         rb.enter_polars(|| {
-            let ldf = self_.ldf.read().clone();
-            match target {
-                SinkTarget::File(target) => {
-                    ldf.sink_parquet(target, options, cloud_options, sink_options.0)
-                }
-            }
+            self_
+                .ldf
+                .read()
+                .clone()
+                .sink(
+                    target,
+                    FileWriteFormat::Parquet(Arc::new(options)),
+                    unified_sink_args,
+                )
+                .into()
         })
         .map(Into::into)
+        .map_err(Into::into)
     }
 
     pub fn sink_ipc(
         rb: &Ruby,
         self_: &Self,
-        target: SinkTarget,
+        target: RbFileSinkDestination,
+        sink_options: RbSinkOptions,
         compression: Wrap<Option<IpcCompression>>,
         compat_level: RbCompatLevel,
-        cloud_options: Option<Vec<(String, String)>>,
-        credential_provider: Option<Value>,
-        retries: usize,
-        sink_options: Wrap<SinkOptions>,
+        record_batch_size: Option<usize>,
+        record_batch_statistics: bool,
     ) -> RbResult<RbLazyFrame> {
         let options = IpcWriterOptions {
             compression: compression.0,
             compat_level: compat_level.0,
-            ..Default::default()
+            record_batch_size,
+            record_batch_statistics,
         };
 
-        let cloud_options = match target.base_path() {
-            None => None,
-            Some(base_path) => {
-                let cloud_options =
-                    parse_cloud_options(base_path.to_str(), cloud_options.unwrap_or_default())?;
-                Some(
-                    cloud_options
-                        .with_max_retries(retries)
-                        .with_credential_provider(credential_provider.map(|_| todo!())),
-                )
-            }
-        };
+        let target = target.extract_file_sink_destination()?;
+        let unified_sink_args = sink_options.extract_unified_sink_args(target.cloud_scheme())?;
 
         rb.enter_polars(|| {
-            let ldf = self_.ldf.read().clone();
-            match target {
-                SinkTarget::File(target) => {
-                    ldf.sink_ipc(target, options, cloud_options, sink_options.0)
-                }
-            }
+            self_
+                .ldf
+                .read()
+                .clone()
+                .sink(target, FileWriteFormat::Ipc(options), unified_sink_args)
+                .into()
         })
         .map(Into::into)
+        .map_err(Into::into)
     }
 
     pub fn sink_csv(rb: &Ruby, self_: &Self, arguments: &[Value]) -> RbResult<RbLazyFrame> {
-        let target = SinkTarget::try_convert(arguments[0])?;
-        let include_bom = bool::try_convert(arguments[1])?;
-        let include_header = bool::try_convert(arguments[2])?;
-        let separator = u8::try_convert(arguments[3])?;
-        let line_terminator = String::try_convert(arguments[4])?;
-        let quote_char = u8::try_convert(arguments[5])?;
-        let batch_size = NonZeroUsize::try_convert(arguments[6])?;
-        let datetime_format = Option::<String>::try_convert(arguments[7])?;
-        let date_format = Option::<String>::try_convert(arguments[8])?;
-        let time_format = Option::<String>::try_convert(arguments[9])?;
-        let float_scientific = Option::<bool>::try_convert(arguments[10])?;
-        let float_precision = Option::<usize>::try_convert(arguments[11])?;
-        let decimal_comma = bool::try_convert(arguments[12])?;
-        let null_value = Option::<String>::try_convert(arguments[13])?;
-        let quote_style = Option::<Wrap<QuoteStyle>>::try_convert(arguments[14])?;
-        let cloud_options = Option::<Vec<(String, String)>>::try_convert(arguments[15])?;
-        let credential_provider = Option::<Value>::try_convert(arguments[16])?;
-        let retries = usize::try_convert(arguments[17])?;
-        let sink_options = Wrap::<SinkOptions>::try_convert(arguments[18])?;
+        let target = RbFileSinkDestination::try_convert(arguments[0])?;
+        let sink_options = RbSinkOptions::try_convert(arguments[1])?;
+        let include_bom = bool::try_convert(arguments[2])?;
+        let compression = String::try_convert(arguments[3])?;
+        let compression_level = Option::<u32>::try_convert(arguments[4])?;
+        let check_extension = bool::try_convert(arguments[5])?;
+        let include_header = bool::try_convert(arguments[6])?;
+        let separator = u8::try_convert(arguments[7])?;
+        let line_terminator = Wrap::<PlSmallStr>::try_convert(arguments[8])?;
+        let quote_char = u8::try_convert(arguments[9])?;
+        let batch_size = NonZeroUsize::try_convert(arguments[10])?;
+        let datetime_format = Option::<Wrap<PlSmallStr>>::try_convert(arguments[11])?;
+        let date_format = Option::<Wrap<PlSmallStr>>::try_convert(arguments[12])?;
+        let time_format = Option::<Wrap<PlSmallStr>>::try_convert(arguments[13])?;
+        let float_scientific = Option::<bool>::try_convert(arguments[14])?;
+        let float_precision = Option::<usize>::try_convert(arguments[15])?;
+        let decimal_comma = bool::try_convert(arguments[16])?;
+        let null_value = Option::<Wrap<PlSmallStr>>::try_convert(arguments[17])?;
+        let quote_style = Option::<Wrap<QuoteStyle>>::try_convert(arguments[18])?;
 
         let quote_style = quote_style.map_or(QuoteStyle::default(), |wrap| wrap.0);
-        let null_value = null_value.unwrap_or(SerializeOptions::default().null);
+        let null_value = null_value
+            .map(|x| x.0)
+            .unwrap_or(SerializeOptions::default().null);
 
         let serialize_options = SerializeOptions {
-            date_format,
-            time_format,
-            datetime_format,
+            date_format: date_format.map(|x| x.0),
+            time_format: time_format.map(|x| x.0),
+            datetime_format: datetime_format.map(|x| x.0),
             float_scientific,
             float_precision,
             decimal_comma,
             separator,
             quote_char,
             null: null_value,
-            line_terminator,
+            line_terminator: line_terminator.0,
             quote_style,
         };
 
         let options = CsvWriterOptions {
             include_bom,
+            compression: ExternalCompression::try_from(&compression, compression_level)
+                .map_err(RbPolarsErr::from)?,
+            check_extension,
             include_header,
             batch_size,
-            serialize_options,
+            serialize_options: serialize_options.into(),
         };
 
-        let cloud_options = match target.base_path() {
-            None => None,
-            Some(base_path) => {
-                let cloud_options =
-                    parse_cloud_options(base_path.to_str(), cloud_options.unwrap_or_default())?;
-                Some(
-                    cloud_options
-                        .with_max_retries(retries)
-                        .with_credential_provider(credential_provider.map(|_| todo!())),
-                )
-            }
-        };
+        let target = target.extract_file_sink_destination()?;
+        let unified_sink_args = sink_options.extract_unified_sink_args(target.cloud_scheme())?;
 
         rb.enter_polars(|| {
-            let ldf = self_.ldf.read().clone();
-            match target {
-                SinkTarget::File(target) => {
-                    ldf.sink_csv(target, options, cloud_options, sink_options.0)
-                }
-            }
+            self_
+                .ldf
+                .read()
+                .clone()
+                .sink(target, FileWriteFormat::Csv(options), unified_sink_args)
+                .into()
         })
         .map(Into::into)
+        .map_err(Into::into)
     }
 
-    pub fn sink_json(
+    pub fn sink_ndjson(
         rb: &Ruby,
         self_: &Self,
-        target: SinkTarget,
-        cloud_options: Option<Vec<(String, String)>>,
-        credential_provider: Option<Value>,
-        retries: usize,
-        sink_options: Wrap<SinkOptions>,
+        target: RbFileSinkDestination,
+        compression: String,
+        compression_level: Option<u32>,
+        check_extension: bool,
+        sink_options: RbSinkOptions,
     ) -> RbResult<RbLazyFrame> {
-        let options = JsonWriterOptions {};
-
-        let cloud_options = match target.base_path() {
-            None => None,
-            Some(base_path) => {
-                let cloud_options =
-                    parse_cloud_options(base_path.to_str(), cloud_options.unwrap_or_default())?;
-                Some(
-                    cloud_options
-                        .with_max_retries(retries)
-                        .with_credential_provider(credential_provider.map(|_| todo!())),
-                )
-            }
+        let options = NDJsonWriterOptions {
+            compression: ExternalCompression::try_from(&compression, compression_level)
+                .map_err(RbPolarsErr::from)?,
+            check_extension,
         };
 
+        let target = target.extract_file_sink_destination()?;
+        let unified_sink_args = sink_options.extract_unified_sink_args(target.cloud_scheme())?;
+
         rb.enter_polars(|| {
-            let ldf = self_.ldf.read().clone();
-            match target {
-                SinkTarget::File(path) => {
-                    ldf.sink_json(path, options, cloud_options, sink_options.0)
-                }
-            }
+            self_
+                .ldf
+                .read()
+                .clone()
+                .sink(target, FileWriteFormat::NDJson(options), unified_sink_args)
+                .into()
         })
         .map(Into::into)
     }
@@ -862,8 +829,18 @@ impl RbLazyFrame {
         out.into()
     }
 
-    pub fn explode(&self, subset: &RbSelector) -> Self {
-        self.ldf.read().clone().explode(subset.inner.clone()).into()
+    pub fn explode(&self, subset: &RbSelector, empty_as_null: bool, keep_nulls: bool) -> Self {
+        self.ldf
+            .read()
+            .clone()
+            .explode(
+                subset.inner.clone(),
+                ExplodeOptions {
+                    empty_as_null,
+                    keep_nulls,
+                },
+            )
+            .into()
     }
 
     pub fn null_count(&self) -> Self {
@@ -874,16 +851,17 @@ impl RbLazyFrame {
     pub fn unique(
         &self,
         maintain_order: bool,
-        subset: Option<&RbSelector>,
+        subset: Option<RArray>,
         keep: Wrap<UniqueKeepStrategy>,
     ) -> RbResult<Self> {
-        let ldf = self.ldf.read().clone();
-        let subset = subset.map(|e| e.inner.clone());
-        Ok(match maintain_order {
-            true => ldf.unique_stable_generic(subset, keep.0),
-            false => ldf.unique_generic(subset, keep.0),
-        }
-        .into())
+        todo!();
+        // let ldf = self.ldf.read().clone();
+        // let subset = subset.map(|e| e.inner.clone());
+        // Ok(match maintain_order {
+        //     true => ldf.unique_stable_generic(subset, keep.0),
+        //     false => ldf.unique_generic(subset, keep.0),
+        // }
+        // .into())
     }
 
     pub fn drop_nans(&self, subset: Option<&RbSelector>) -> Self {
@@ -914,13 +892,13 @@ impl RbLazyFrame {
 
     pub fn unpivot(
         &self,
-        on: &RbSelector,
+        on: Option<&RbSelector>,
         index: &RbSelector,
         value_name: Option<String>,
         variable_name: Option<String>,
     ) -> RbResult<Self> {
         let args = UnpivotArgsDSL {
-            on: on.inner.clone(),
+            on: on.map(|on| on.inner.clone()),
             index: index.inner.clone(),
             value_name: value_name.map(|s| s.into()),
             variable_name: variable_name.map(|s| s.into()),
@@ -1020,8 +998,8 @@ impl RbLazyFrame {
             .iter()
             .map(|c| Sorted {
                 column: PlSmallStr::from_str(c.as_str()),
-                descending: false,
-                nulls_last: false,
+                descending: Some(false),
+                nulls_last: Some(false),
             })
             .collect::<Vec<_>>();
 
@@ -1030,18 +1008,18 @@ impl RbLazyFrame {
                 sorted
                     .iter_mut()
                     .zip(descending)
-                    .for_each(|(s, d)| s.descending = d);
+                    .for_each(|(s, d)| s.descending = Some(d));
             } else if descending[0] {
-                sorted.iter_mut().for_each(|s| s.descending = true);
+                sorted.iter_mut().for_each(|s| s.descending = Some(true));
             }
 
             if nulls_last.len() != 1 {
                 sorted
                     .iter_mut()
                     .zip(nulls_last)
-                    .for_each(|(s, d)| s.nulls_last = d);
+                    .for_each(|(s, d)| s.nulls_last = Some(d));
             } else if nulls_last[0] {
-                sorted.iter_mut().for_each(|s| s.nulls_last = true);
+                sorted.iter_mut().for_each(|s| s.nulls_last = Some(true));
             }
         }
 
@@ -1054,11 +1032,3 @@ impl RbLazyFrame {
         Ok(out.into())
     }
 }
-
-impl TryConvert for Wrap<polars_io::parquet::write::ParquetFieldOverwrites> {
-    fn try_convert(_ob: Value) -> RbResult<Self> {
-        todo!();
-    }
-}
-
-unsafe impl TryConvertOwned for Wrap<polars_io::parquet::write::ParquetFieldOverwrites> {}

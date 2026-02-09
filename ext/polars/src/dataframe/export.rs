@@ -12,40 +12,26 @@ impl RbDataFrame {
         } else {
             idx as usize
         };
-        ruby.ary_from_iter(
-            self_
-                .df
-                .read()
-                .get_columns()
-                .iter()
-                .map(|s| match s.dtype() {
-                    DataType::Object(_) => {
-                        let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
-                        obj.unwrap().to_value()
-                    }
-                    _ => Wrap(s.get(idx).unwrap()).into_value_with(ruby),
-                }),
-        )
+        ruby.ary_from_iter(self_.df.read().columns().iter().map(|s| match s.dtype() {
+            DataType::Object(_) => {
+                let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
+                obj.unwrap().to_value()
+            }
+            _ => Wrap(s.get(idx).unwrap()).into_value_with(ruby),
+        }))
         .as_value()
     }
 
     pub fn row_tuples(ruby: &Ruby, self_: &Self) -> Value {
         let df = &self_.df;
         ruby.ary_from_iter((0..df.read().height()).map(|idx| {
-            ruby.ary_from_iter(
-                self_
-                    .df
-                    .read()
-                    .get_columns()
-                    .iter()
-                    .map(|s| match s.dtype() {
-                        DataType::Object(_) => {
-                            let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
-                            obj.unwrap().to_value()
-                        }
-                        _ => Wrap(s.get(idx).unwrap()).into_value_with(ruby),
-                    }),
-            )
+            ruby.ary_from_iter(self_.df.read().columns().iter().map(|s| match s.dtype() {
+                DataType::Object(_) => {
+                    let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
+                    obj.unwrap().to_value()
+                }
+                _ => Wrap(s.get(idx).unwrap()).into_value_with(ruby),
+            }))
         }))
         .as_value()
     }

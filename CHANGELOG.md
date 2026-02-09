@@ -1,3 +1,7 @@
+## 0.25.0 (unreleased)
+
+- Updated Polars to 0.53.0
+
 ## 0.24.0 (2026-02-04)
 
 - Added support for Ruby 4.0

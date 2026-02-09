@@ -284,18 +284,20 @@ pub fn concat_lf_diagonal(
     Ok(lf.into())
 }
 
-pub fn concat_lf_horizontal(lfs: RArray, parallel: bool) -> RbResult<RbLazyFrame> {
+pub fn concat_lf_horizontal(lfs: RArray, parallel: bool, strict: bool) -> RbResult<RbLazyFrame> {
     let iter = lfs.into_iter();
 
     let lfs = iter.map(get_lf).collect::<RbResult<Vec<_>>>()?;
 
-    let args = UnionArgs {
-        rechunk: false, // No need to rechunk with horizontal concatenation
-        parallel,
-        to_supertypes: false,
-        ..Default::default()
-    };
-    let lf = dsl::functions::concat_lf_horizontal(lfs, args).map_err(RbPolarsErr::from)?;
+    let lf = dsl::functions::concat_lf_horizontal(
+        lfs,
+        HConcatOptions {
+            parallel,
+            strict,
+            broadcast_unit_length: Default::default(),
+        },
+    )
+    .map_err(RbPolarsErr::from)?;
     Ok(lf.into())
 }
 

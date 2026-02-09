@@ -24,6 +24,7 @@ impl RbSeries {
                 DataType::Int32 => ruby.ary_from_iter(series.i32().unwrap()).as_value(),
                 DataType::Int64 => ruby.ary_from_iter(series.i64().unwrap()).as_value(),
                 DataType::Int128 => ruby.ary_from_iter(series.i128().unwrap()).as_value(),
+                DataType::Float16 => todo!(), //ruby.ary_from_iter(series.f16().unwrap()).as_value(),
                 DataType::Float32 => ruby.ary_from_iter(series.f32().unwrap()).as_value(),
                 DataType::Float64 => ruby.ary_from_iter(series.f64().unwrap()).as_value(),
                 DataType::Categorical(_, _) | DataType::Enum(_, _) => {

@@ -49,8 +49,8 @@ module Polars
     end
 
     # @private
-    def self._by_name(names, strict:)
-      _from_rbselector(RbSelector.by_name(names, strict))
+    def self._by_name(names, strict:, expand_patterns:)
+      _from_rbselector(RbSelector.by_name(names, strict, expand_patterns))
     end
 
     # Invert the selector.

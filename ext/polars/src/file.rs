@@ -5,16 +5,14 @@ use std::path::PathBuf;
 
 use magnus::{Error, RString, Ruby, Value, prelude::*, value::Opaque};
 use polars::io::mmap::MmapBytesReader;
-use polars::prelude::PlPath;
-use polars::prelude::file::DynWriteable;
-use polars::prelude::sync_on_close::SyncOnCloseType;
+use polars::prelude::PlRefPath;
+use polars::prelude::file::{Writeable, WriteableTrait};
+use polars_buffer::Buffer;
 use polars_utils::create_file;
-use polars_utils::file::{ClosableFile, WriteClose};
-use polars_utils::mmap::MemSlice;
 
 use crate::error::RbPolarsErr;
 use crate::prelude::resolve_homedir;
-use crate::utils::RubyAttach;
+use crate::utils::{RubyAttach, to_rb_err};
 use crate::{RbErr, RbResult};
 
 pub struct RbFileLikeObject {
@@ -23,23 +21,17 @@ pub struct RbFileLikeObject {
     has_flush: bool,
 }
 
-impl WriteClose for RbFileLikeObject {}
-
-impl DynWriteable for RbFileLikeObject {
-    fn as_dyn_write(&self) -> &(dyn io::Write + Send + 'static) {
-        self as _
-    }
-
-    fn as_mut_dyn_write(&mut self) -> &mut (dyn io::Write + Send + 'static) {
-        self as _
-    }
-
-    fn close(self: Box<Self>) -> io::Result<()> {
+impl WriteableTrait for RbFileLikeObject {
+    fn close(&mut self) -> io::Result<()> {
         Ok(())
     }
 
-    fn sync_on_close(&mut self, _sync_on_close: SyncOnCloseType) -> io::Result<()> {
-        Ok(())
+    fn sync_all(&self) -> std::io::Result<()> {
+        self.flush()
+    }
+
+    fn sync_data(&self) -> std::io::Result<()> {
+        self.flush()
     }
 }
 
@@ -67,7 +59,7 @@ impl RbFileLikeObject {
         }
     }
 
-    pub(crate) fn to_memslice(&self) -> MemSlice {
+    pub(crate) fn to_buffer(&self) -> Buffer<u8> {
         Ruby::attach(|rb| {
             let bytes = rb
                 .get_inner(self.inner)
@@ -75,7 +67,7 @@ impl RbFileLikeObject {
                 .expect("no read method found");
 
             let b = unsafe { bytes.as_slice() }.to_vec();
-            MemSlice::from_vec(b)
+            Buffer::from_vec(b)
         })
     }
 
@@ -115,6 +107,18 @@ impl RbFileLikeObject {
         let expects_str = false;
         let has_flush = object.respond_to("write", false)?;
         Ok(RbFileLikeObject::new(object, expects_str, has_flush))
+    }
+
+    fn flush(&self) -> std::io::Result<()> {
+        if self.has_flush {
+            Ruby::attach(|rb| {
+                rb.get_inner(self.inner)
+                    .funcall::<_, _, Value>("flush", ())
+                    .map_err(rberr_to_io_err)
+            })?;
+        }
+
+        Ok(())
     }
 }
 
@@ -159,15 +163,7 @@ impl Write for RbFileLikeObject {
     }
 
     fn flush(&mut self) -> Result<(), io::Error> {
-        if self.has_flush {
-            Ruby::attach(|rb| {
-                rb.get_inner(self.inner)
-                    .funcall::<_, _, Value>("flush", ())
-                    .map_err(rberr_to_io_err)
-            })?;
-        }
-
-        Ok(())
+        Self::flush(self)
     }
 }
 
@@ -194,12 +190,11 @@ impl Seek for RbFileLikeObject {
 pub trait FileLike: Read + Write + Seek {}
 
 impl FileLike for File {}
-impl FileLike for ClosableFile {}
 impl FileLike for RbFileLikeObject {}
 
 pub enum EitherRustRubyFile {
     Rb(RbFileLikeObject),
-    Rust(ClosableFile),
+    Rust(std::fs::File),
 }
 
 impl EitherRustRubyFile {
@@ -213,24 +208,23 @@ impl EitherRustRubyFile {
     #[allow(dead_code)]
     fn into_scan_source_input(self) -> RubyScanSourceInput {
         match self {
-            EitherRustRubyFile::Rb(f) => RubyScanSourceInput::Buffer(f.to_memslice()),
+            EitherRustRubyFile::Rb(f) => RubyScanSourceInput::Buffer(f.to_buffer()),
             EitherRustRubyFile::Rust(f) => RubyScanSourceInput::File(f),
         }
     }
 
-    pub(crate) fn into_writeable(self) -> Box<dyn DynWriteable> {
+    pub(crate) fn into_writeable(self) -> Writeable {
         match self {
-            Self::Rb(f) => Box::new(f),
-            Self::Rust(f) => Box::new(f),
+            Self::Rb(f) => Writeable::Dyn(Box::new(f)),
+            Self::Rust(f) => Writeable::Local(f),
         }
     }
 }
 
 pub enum RubyScanSourceInput {
-    Buffer(MemSlice),
-    Path(PlPath),
-    #[allow(dead_code)]
-    File(ClosableFile),
+    Buffer(Buffer<u8>),
+    Path(PlRefPath),
+    File(std::fs::File),
 }
 
 pub(crate) fn try_get_rbfile(
@@ -244,17 +238,14 @@ pub(crate) fn try_get_rbfile(
 
 pub fn get_ruby_scan_source_input(rb_f: Value, write: bool) -> RbResult<RubyScanSourceInput> {
     Ruby::attach(|_rb| {
-        if let Ok(s) = String::try_convert(rb_f) {
-            let mut file_path = PlPath::new(&s);
-            if let Some(p) = file_path.as_ref().as_local_path()
-                && p.starts_with("~/")
-            {
-                file_path = PlPath::Local(resolve_homedir(&p).into());
-            }
+        if let Ok(s) = PathBuf::try_convert(rb_f) {
+            let file_path =
+                PlRefPath::try_from_path(resolve_homedir(&s).as_ref()).map_err(to_rb_err)?;
+
             Ok(RubyScanSourceInput::Path(file_path))
         } else {
             let f = RbFileLikeObject::ensure_requirements(rb_f, !write, write, !write)?;
-            Ok(RubyScanSourceInput::Buffer(f.to_memslice()))
+            Ok(RubyScanSourceInput::Buffer(f.to_buffer()))
         }
     })
 }
@@ -273,7 +264,10 @@ pub fn get_either_buffer_or_path(
             } else {
                 polars_utils::open_file(&file_path).map_err(RbPolarsErr::from)?
             };
-            Ok((EitherRustRubyFile::Rust(f.into()), Some(file_path)))
+            Ok((
+                EitherRustRubyFile::Rust(f.into()),
+                Some(file_path.into_owned()),
+            ))
         } else {
             try_get_rbfile(rb, rb_f, write)
         }
@@ -313,7 +307,7 @@ pub fn get_mmap_bytes_reader_and_path<'a>(
         RbReadBytes::Bytes(v) => Ok((Box::new(Cursor::new(unsafe { v.as_slice() })), None)),
         RbReadBytes::Other(v) => match get_either_buffer_or_path(*v, false)? {
             (EitherRustRubyFile::Rust(f), path) => Ok((Box::new(f), path)),
-            (EitherRustRubyFile::Rb(f), path) => Ok((Box::new(Cursor::new(f.to_memslice())), path)),
+            (EitherRustRubyFile::Rb(f), path) => Ok((Box::new(Cursor::new(f.to_buffer())), path)),
         },
     }
 }

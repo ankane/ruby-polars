@@ -363,6 +363,7 @@ impl RbExpr {
         patterns: &RbExpr,
         replace_with: &RbExpr,
         ascii_case_insensitive: bool,
+        leftmost: bool,
     ) -> Self {
         self.inner
             .clone()
@@ -371,6 +372,7 @@ impl RbExpr {
                 patterns.inner.clone(),
                 replace_with.inner.clone(),
                 ascii_case_insensitive,
+                leftmost,
             )
             .into()
     }
@@ -380,11 +382,17 @@ impl RbExpr {
         patterns: &RbExpr,
         ascii_case_insensitive: bool,
         overlapping: bool,
+        leftmost: bool,
     ) -> Self {
         self.inner
             .clone()
             .str()
-            .extract_many(patterns.inner.clone(), ascii_case_insensitive, overlapping)
+            .extract_many(
+                patterns.inner.clone(),
+                ascii_case_insensitive,
+                overlapping,
+                leftmost,
+            )
             .into()
     }
 
@@ -393,11 +401,17 @@ impl RbExpr {
         patterns: &RbExpr,
         ascii_case_insensitive: bool,
         overlapping: bool,
+        leftmost: bool,
     ) -> Self {
         self.inner
             .clone()
             .str()
-            .find_many(patterns.inner.clone(), ascii_case_insensitive, overlapping)
+            .find_many(
+                patterns.inner.clone(),
+                ascii_case_insensitive,
+                overlapping,
+                leftmost,
+            )
             .into()
     }
 

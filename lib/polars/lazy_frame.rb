@@ -1548,7 +1548,7 @@ module Polars
         "mkdir" => mkdir
       }
 
-      ldf_rb = _ldf.sink_json(
+      ldf_rb = _ldf.sink_ndjson(
         path,
         storage_options,
         credential_provider_builder,

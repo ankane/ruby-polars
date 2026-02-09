@@ -2,7 +2,6 @@ use std::hash::BuildHasher;
 
 use either::Either;
 use magnus::{IntoValue, RArray, Ruby, Value, prelude::*};
-use polars::prelude::pivot::{pivot, pivot_stable};
 use polars::prelude::*;
 
 use crate::conversion::*;
@@ -15,7 +14,7 @@ use crate::prelude::strings_to_pl_smallstr;
 use crate::series::ToRbSeries;
 use crate::series::to_series;
 use crate::utils::EnterPolarsExt;
-use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
+use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 
 impl RbDataFrame {
     pub fn init(columns: RArray) -> RbResult<Self> {
@@ -23,7 +22,7 @@ impl RbDataFrame {
         for i in columns.into_iter() {
             cols.push(<&RbSeries>::try_convert(i)?.series.read().clone().into());
         }
-        let df = DataFrame::new(cols).map_err(RbPolarsErr::from)?;
+        let df = DataFrame::new_infer_height(cols).map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
     }
 
@@ -34,7 +33,7 @@ impl RbDataFrame {
     pub fn dtype_strings(&self) -> Vec<String> {
         self.df
             .read()
-            .get_columns()
+            .columns()
             .iter()
             .map(|s| format!("{}", s.dtype()))
             .collect()
@@ -115,7 +114,7 @@ impl RbDataFrame {
     pub fn rechunk(rb: &Ruby, self_: &Self) -> RbResult<Self> {
         rb.enter_polars_df(|| {
             let mut df = self_.df.write().clone();
-            df.as_single_chunk_par();
+            df.rechunk_mut_par();
             Ok(df)
         })
     }
@@ -125,7 +124,7 @@ impl RbDataFrame {
     }
 
     pub fn get_columns(rb: &Ruby, self_: &Self) -> RArray {
-        let cols = self_.df.read().get_columns().to_vec();
+        let cols = self_.df.read().columns().to_vec();
         cols.to_rbseries(rb)
     }
 
@@ -147,13 +146,12 @@ impl RbDataFrame {
     }
 
     pub fn dtypes(ruby: &Ruby, self_: &Self) -> RArray {
-        ruby.ary_from_iter(
-            self_
-                .df
-                .read()
-                .iter()
-                .map(|s| Wrap(s.dtype().clone()).into_value_with(ruby)),
-        )
+        let df = self_.df.read();
+        let iter = df
+            .columns()
+            .iter()
+            .map(|s| Wrap(s.dtype().clone()).into_value_with(ruby));
+        ruby.ary_from_iter(iter)
     }
 
     pub fn n_chunks(&self) -> usize {
@@ -268,7 +266,7 @@ impl RbDataFrame {
     pub fn replace(&self, column: String, new_col: &RbSeries) -> RbResult<()> {
         self.df
             .write()
-            .replace(&column, new_col.series.read().clone())
+            .replace(&column, new_col.clone().series.into_inner().into_column())
             .map_err(RbPolarsErr::from)?;
         Ok(())
     }
@@ -276,7 +274,7 @@ impl RbDataFrame {
     pub fn replace_column(&self, index: usize, new_col: &RbSeries) -> RbResult<()> {
         self.df
             .write()
-            .replace_column(index, new_col.series.read().clone())
+            .replace_column(index, new_col.clone().series.into_inner().into_column())
             .map_err(RbPolarsErr::from)?;
         Ok(())
     }
@@ -284,7 +282,7 @@ impl RbDataFrame {
     pub fn insert_column(&self, index: usize, new_col: &RbSeries) -> RbResult<()> {
         self.df
             .write()
-            .insert_column(index, new_col.series.read().clone())
+            .insert_column(index, new_col.clone().series.into_inner().into_column())
             .map_err(RbPolarsErr::from)?;
         Ok(())
     }
@@ -341,46 +339,21 @@ impl RbDataFrame {
     pub fn unpivot(
         rb: &Ruby,
         self_: &Self,
-        on: Vec<String>,
+        on: Option<Vec<String>>,
         index: Vec<String>,
         value_name: Option<String>,
         variable_name: Option<String>,
     ) -> RbResult<Self> {
-        let args = UnpivotArgsIR {
-            on: strings_to_pl_smallstr(on),
-            index: strings_to_pl_smallstr(index),
-            value_name: value_name.map(|s| s.into()),
-            variable_name: variable_name.map(|s| s.into()),
-        };
+        use polars_ops::unpivot::UnpivotDF;
+        let args = UnpivotArgsIR::new(
+            self_.df.read().get_column_names_owned(),
+            on.map(strings_to_pl_smallstr),
+            strings_to_pl_smallstr(index),
+            value_name.map(|s| s.into()),
+            variable_name.map(|s| s.into()),
+        );
 
         rb.enter_polars_df(|| self_.df.read().unpivot2(args))
-    }
-
-    pub fn pivot_expr(
-        rb: &Ruby,
-        self_: &Self,
-        on: Vec<String>,
-        index: Option<Vec<String>>,
-        values: Option<Vec<String>>,
-        maintain_order: bool,
-        sort_columns: bool,
-        aggregate_expr: Option<&RbExpr>,
-        separator: Option<String>,
-    ) -> RbResult<Self> {
-        let df = self_.df.read().clone(); // Clone to avoid dead lock on re-entrance in aggregate_expr.
-        let fun = if maintain_order { pivot_stable } else { pivot };
-        let agg_expr = aggregate_expr.map(|expr| expr.inner.clone());
-        rb.enter_polars_df(|| {
-            fun(
-                &df,
-                on,
-                index,
-                values,
-                sort_columns,
-                agg_expr,
-                separator.as_deref(),
-            )
-        })
     }
 
     pub fn partition_by(

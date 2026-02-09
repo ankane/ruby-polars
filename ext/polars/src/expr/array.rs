@@ -156,8 +156,15 @@ impl RbExpr {
         self.inner.clone().arr().shift(n.inner.clone()).into()
     }
 
-    pub fn arr_explode(&self) -> Self {
-        self.inner.clone().arr().explode().into()
+    pub fn arr_explode(&self, empty_as_null: bool, keep_nulls: bool) -> Self {
+        self.inner
+            .clone()
+            .arr()
+            .explode(ExplodeOptions {
+                empty_as_null,
+                keep_nulls,
+            })
+            .into()
     }
 
     pub fn arr_eval(&self, expr: &RbExpr, as_list: bool) -> Self {
