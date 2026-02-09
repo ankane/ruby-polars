@@ -928,9 +928,13 @@ module Polars
     #   )
     #   df.write_ndjson
     #   # => "{\"foo\":1,\"bar\":6}\n{\"foo\":2,\"bar\":7}\n{\"foo\":3,\"bar\":8}\n"
-    def write_ndjson(file = nil)
+    def write_ndjson(
+      file = nil,
+      compression: "uncompressed",
+      compression_level: nil,
+      check_extension: true
+    )
       should_return_buffer = false
-      target = nil
       if file.nil?
         target = StringIO.new
         target.set_encoding(Encoding::BINARY)
@@ -941,8 +945,15 @@ module Polars
         target = file
       end
 
+      engine = "in-memory"
+
       lazy.sink_ndjson(
-        target
+        target,
+        compression: compression,
+        compression_level: compression_level,
+        check_extension: check_extension,
+        optimizations: QueryOptFlags._eager,
+        engine: engine
       )
 
       if should_return_buffer
