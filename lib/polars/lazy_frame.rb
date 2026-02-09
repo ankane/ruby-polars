@@ -1142,7 +1142,9 @@ module Polars
       sink_options = {
         "mkdir" => mkdir,
         "maintain_order" => maintain_order,
-        "sync_on_close" => sync_on_close || "none"
+        "sync_on_close" => sync_on_close,
+        "storage_options" => storage_options,
+        "credential_provider" => credential_provider_builder
       }
 
       ldf_rb = _ldf.sink_parquet(
@@ -1268,9 +1270,9 @@ module Polars
       sink_options = {
         "mkdir" => mkdir,
         "maintain_order" => maintain_order,
-        "sync_on_close" => sync_on_close || "none"
-        # "storage_options" => storage_options,
-        # "credential_provider" => credential_provider_builder
+        "sync_on_close" => sync_on_close,
+        "storage_options" => storage_options,
+        "credential_provider" => credential_provider_builder
       }
 
       ldf_rb = _ldf.sink_ipc(
@@ -1437,7 +1439,9 @@ module Polars
       sink_options = {
         "mkdir" => mkdir,
         "maintain_order" => maintain_order,
-        "sync_on_close" => sync_on_close || "none"
+        "sync_on_close" => sync_on_close,
+        "storage_options" => storage_options,
+        "credential_provider" => credential_provider_builder
       }
 
       ldf_rb = _ldf.sink_csv(
@@ -1556,9 +1560,11 @@ module Polars
       target = _to_sink_target(path)
 
       sink_options = {
-        "sync_on_close" => sync_on_close || "none",
+        "mkdir" => mkdir,
         "maintain_order" => maintain_order,
-        "mkdir" => mkdir
+        "sync_on_close" => sync_on_close,
+        "storage_options" => storage_options,
+        "credential_provider" => credential_provider_builder
       }
 
       ldf_rb = _ldf.sink_ndjson(
