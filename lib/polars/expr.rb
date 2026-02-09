@@ -1905,9 +1905,9 @@ module Polars
     #   # │ one   ┆ 98    │
     #   # │ two   ┆ 99    │
     #   # └───────┴───────┘
-    def get(index)
+    def get(index, null_on_oob: false)
       index_lit = Utils.parse_into_expression(index)
-      wrap_expr(_rbexpr.get(index_lit))
+      wrap_expr(_rbexpr.get(index_lit, null_on_oob))
     end
 
     # Shift the values by a given period.
