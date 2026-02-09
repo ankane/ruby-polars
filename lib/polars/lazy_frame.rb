@@ -1230,35 +1230,34 @@ module Polars
       path,
       compression: "uncompressed",
       compat_level: nil,
+      record_batch_size: nil,
       maintain_order: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       sync_on_close: nil,
       mkdir: false,
       lazy: false,
       engine: "auto",
-      optimizations: DEFAULT_QUERY_OPT_FLAGS
+      optimizations: DEFAULT_QUERY_OPT_FLAGS,
+      _record_batch_statistics: false
     )
       engine = _select_engine(engine, path)
 
       _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
 
+      if !retries.nil?
+        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["max_retries"] = retries
+      end
+
       credential_provider_builder = _init_credential_provider_builder.(
         credential_provider, path, storage_options, "sink_ipc"
       )
 
-      if storage_options&.any?
-        storage_options = storage_options.to_a
-      else
-        storage_options = nil
-      end
-
-      sink_options = {
-        "sync_on_close" => sync_on_close || "none",
-        "maintain_order" => maintain_order,
-        "mkdir" => mkdir
-      }
+      target = _to_sink_target(path)
 
       compat_level_rb = nil
       if compat_level.nil?
@@ -1271,14 +1270,21 @@ module Polars
         compression = "uncompressed"
       end
 
+      sink_options = {
+        "mkdir" => mkdir,
+        "maintain_order" => maintain_order,
+        "sync_on_close" => sync_on_close || "none"
+        # "storage_options" => storage_options,
+        # "credential_provider" => credential_provider_builder
+      }
+
       ldf_rb = _ldf.sink_ipc(
-        path,
+        target,
+        sink_options,
         compression,
         compat_level_rb,
-        storage_options,
-        credential_provider_builder,
-        retries,
-        sink_options
+        record_batch_size,
+        _record_batch_statistics
       )
 
       if !lazy
@@ -1388,6 +1394,9 @@ module Polars
     def sink_csv(
       path,
       include_bom: false,
+      compression: "uncompressed",
+      compression_level: nil,
+      check_extension: true,
       include_header: true,
       separator: ",",
       line_terminator: "\n",
@@ -1404,7 +1413,7 @@ module Polars
       maintain_order: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       sync_on_close: nil,
       mkdir: false,
       lazy: false,
@@ -1421,21 +1430,28 @@ module Polars
         credential_provider, path, storage_options, "sink_csv"
       )
 
-      if storage_options&.any?
-        storage_options = storage_options.to_a
-      else
-        storage_options = nil
+      target = _to_sink_target(path)
+
+      if !retries.nil?
+        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["max_retries"] = retries
       end
 
       sink_options = {
-        "sync_on_close" => sync_on_close || "none",
+        "mkdir" => mkdir,
         "maintain_order" => maintain_order,
-        "mkdir" => mkdir
+        "sync_on_close" => sync_on_close || "none"
       }
 
       ldf_rb = _ldf.sink_csv(
-        path,
+        target,
+        sink_options,
         include_bom,
+        compression,
+        compression_level,
+        check_extension,
         include_header,
         separator.ord,
         line_terminator,
@@ -1448,11 +1464,7 @@ module Polars
         float_precision,
         decimal_comma,
         null_value,
-        quote_style,
-        storage_options,
-        credential_provider_builder,
-        retries,
-        sink_options
+        quote_style
       )
 
       if !lazy
