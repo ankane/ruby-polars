@@ -2,6 +2,7 @@
 
 - Updated Polars to 0.53.0
 - Added `ignore_nulls` option to `first` and `last` methods
+- Added `literal` and `strict` options to `split` method for `StringExpr`
 
 ## 0.24.0 (2026-02-04)
 

@@ -346,6 +346,30 @@ impl RbExpr {
         self.inner.clone().str().splitn(by.inner.clone(), n).into()
     }
 
+    pub fn str_split_regex(&self, by: &Self, strict: bool) -> Self {
+        self.str_split_regex_with_strict(by, strict)
+    }
+
+    pub fn str_split_regex_inclusive(&self, by: &Self, strict: bool) -> Self {
+        self.str_split_regex_inclusive_with_strict(by, strict)
+    }
+
+    fn str_split_regex_with_strict(&self, by: &Self, strict: bool) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .split_regex(by.inner.clone(), strict)
+            .into()
+    }
+
+    fn str_split_regex_inclusive_with_strict(&self, by: &Self, strict: bool) -> Self {
+        self.inner
+            .clone()
+            .str()
+            .split_regex_inclusive(by.inner.clone(), strict)
+            .into()
+    }
+
     pub fn str_to_decimal(&self, scale: usize) -> Self {
         self.inner.clone().str().to_decimal(scale).into()
     }

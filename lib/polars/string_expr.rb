@@ -1228,6 +1228,11 @@ module Polars
     #   Substring to split by.
     # @param inclusive [Boolean]
     #   If true, include the split character/string in the results.
+    # @param literal [Boolean]
+    #   Treat `by` as a literal string, not as a regular expression.
+    # @param strict [Boolean]
+    #   Raise an error if the underlying pattern is not a valid regex,
+    #   otherwise mask out with a null value.
     #
     # @return [Expr]
     #
@@ -1245,12 +1250,22 @@ module Polars
     #   # │ ["foo-bar"]           │
     #   # │ ["foo", "bar", "baz"] │
     #   # └───────────────────────┘
-    def split(by, inclusive: false)
-      by = Utils.parse_into_expression(by, str_as_lit: true)
-      if inclusive
-        return Utils.wrap_expr(_rbexpr.str_split_inclusive(by))
+    def split(by, inclusive: false, literal: true, strict: true)
+      by_rbexpr = Utils.parse_into_expression(by, str_as_lit: true)
+
+      if !literal
+        if inclusive
+          return Utils.wrap_expr(
+            _rbexpr.str_split_regex_inclusive(by_rbexpr, strict)
+          )
+        end
+        return Utils.wrap_expr(_rbexpr.str_split_regex(by_rbexpr, strict))
       end
-      Utils.wrap_expr(_rbexpr.str_split(by))
+
+      if inclusive
+        return Utils.wrap_expr(_rbexpr.str_split_inclusive(by_rbexpr))
+      end
+      Utils.wrap_expr(_rbexpr.str_split(by_rbexpr))
     end
 
     # Split the string by a substring using `n` splits.

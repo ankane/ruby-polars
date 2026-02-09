@@ -390,6 +390,11 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbExpr::str_split_exact_inclusive, 2),
     )?;
     class.define_method("str_splitn", method!(RbExpr::str_splitn, 2))?;
+    class.define_method("str_split_regex", method!(RbExpr::str_split_regex, 2))?;
+    class.define_method(
+        "str_split_regex_inclusive",
+        method!(RbExpr::str_split_regex_inclusive, 2),
+    )?;
     class.define_method("str_to_decimal", method!(RbExpr::str_to_decimal, 1))?;
     class.define_method("str_contains_any", method!(RbExpr::str_contains_any, 2))?;
     class.define_method("str_replace_many", method!(RbExpr::str_replace_many, 4))?;
