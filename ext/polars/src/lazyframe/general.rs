@@ -1,4 +1,5 @@
 use magnus::{IntoValue, RArray, RHash, Ruby, TryConvert, Value, r_hash::ForEach};
+use parking_lot::Mutex;
 use polars::io::RowIndex;
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
@@ -364,6 +365,29 @@ impl RbLazyFrame {
         rb.enter_polars_df(|| {
             let ldf = self_.ldf.read().clone();
             ldf.collect_with_engine(engine.0)
+        })
+    }
+
+    pub fn collect_batches(
+        rb: &Ruby,
+        self_: &Self,
+        engine: Wrap<Engine>,
+        maintain_order: bool,
+        chunk_size: Option<NonZeroUsize>,
+        lazy: bool,
+    ) -> RbResult<RbCollectBatches> {
+        rb.enter_polars(|| {
+            let ldf = self_.ldf.read().clone();
+
+            let collect_batches = ldf
+                .clone()
+                .collect_batches(engine.0, maintain_order, chunk_size, lazy)
+                .map_err(RbPolarsErr::from)?;
+
+            RbResult::Ok(RbCollectBatches {
+                inner: Arc::new(Mutex::new(collect_batches)),
+                ldf,
+            })
         })
     }
 
@@ -1038,4 +1062,10 @@ impl RbLazyFrame {
             .map_err(RbPolarsErr::from)?;
         Ok(out.into())
     }
+}
+
+#[magnus::wrap(class = "Polars::RbCollectBatches")]
+pub struct RbCollectBatches {
+    inner: Arc<Mutex<CollectBatches>>,
+    ldf: LazyFrame,
 }

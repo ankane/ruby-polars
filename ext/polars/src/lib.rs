@@ -909,6 +909,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("profile", method!(RbLazyFrame::profile, 0))?;
     class.define_method("collect", method!(RbLazyFrame::collect, 1))?;
+    class.define_method("collect_batches", method!(RbLazyFrame::collect_batches, 4))?;
     class.define_method("sink_parquet", method!(RbLazyFrame::sink_parquet, 9))?;
     class.define_method("sink_ipc", method!(RbLazyFrame::sink_ipc, 6))?;
     class.define_method("sink_csv", method!(RbLazyFrame::sink_csv, -1))?;
@@ -967,6 +968,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "collect_concurrently",
         method!(RbLazyFrame::collect_concurrently, 0),
     )?;
+
+    let _class = module.define_class("RbCollectBatches", ruby.class_object())?;
 
     let class = module.define_class("RbInProcessQuery", ruby.class_object())?;
     class.define_method("cancel", method!(RbInProcessQuery::cancel, 0))?;

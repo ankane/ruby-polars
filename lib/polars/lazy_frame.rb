@@ -1584,6 +1584,57 @@ module Polars
       LazyFrame._from_rbldf(ldf_rb)
     end
 
+    # Evaluate the query in streaming mode and get a generator that returns chunks.
+    #
+    # This allows streaming results that are larger than RAM to be written to disk.
+    #
+    # The query will always be fully executed unless `stop` is called, so you should
+    # call next until all chunks have been seen.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @note
+    #   This method is much slower than native sinks. Only use it if you cannot
+    #   implement your logic otherwise.
+    #
+    # @param chunk_size [Integer]
+    #   The number of rows that are buffered before a chunk is given.
+    # @param maintain_order [Boolean]
+    #   Maintain the order in which data is processed.
+    #   Setting this to `false` will be slightly faster.
+    # @param lazy [Boolean]
+    #   Start the query when first requesting a batch.
+    # @param engine [String]
+    #   Select the engine used to process the query, optional.
+    #   At the moment, if set to `"auto"` (default), the query is run
+    #   using the polars streaming engine. Polars will also
+    #   attempt to use the engine set by the `POLARS_ENGINE_AFFINITY`
+    #   environment variable. If it cannot run the query using the
+    #   selected engine, the query is run using the polars streaming
+    #   engine.
+    # @param optimizations [Object]
+    #   The optimization passes done during query optimization.
+    #
+    # @return [Object]
+    def collect_batches(
+      chunk_size: nil,
+      maintain_order: true,
+      lazy: false,
+      engine: "auto",
+      optimizations: DEFAULT_QUERY_OPT_FLAGS
+    )
+      ldf = _ldf.with_optimizations(optimizations._rboptflags)
+      inner = ldf.collect_batches(
+        engine,
+        maintain_order,
+        chunk_size,
+        lazy
+      )
+      CollectBatches.new(inner)
+    end
+
     # Return lazy representation, i.e. itself.
     #
     # Useful for writing code that expects either a `DataFrame` or
