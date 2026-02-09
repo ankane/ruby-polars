@@ -371,6 +371,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("bin_reinterpret", method!(RbExpr::bin_reinterpret, 2))?;
     class.define_method("bin_size_bytes", method!(RbExpr::bin_size_bytes, 0))?;
+    class.define_method("bin_slice", method!(RbExpr::bin_slice, 2))?;
+    class.define_method("bin_head", method!(RbExpr::bin_head, 1))?;
+    class.define_method("bin_tail", method!(RbExpr::bin_tail, 1))?;
+    class.define_method("bin_get", method!(RbExpr::bin_get, 2))?;
     class.define_method(
         "str_json_path_match",
         method!(RbExpr::str_json_path_match, 1),
