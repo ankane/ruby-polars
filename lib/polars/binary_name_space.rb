@@ -200,5 +200,84 @@ module Polars
     def reinterpret(dtype:, endianness: "little")
       super
     end
+
+    # Slice the binary values.
+    #
+    # @param offset [Object]
+    #   Start index. Negative indexing is supported.
+    # @param length [Object]
+    #   Length of the slice. If set to `nil` (default), the slice is taken to the
+    #   end of the value.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   colors = Polars::Series.new(["\x00\x00\x00".b, "\xff\xff\x00".b, "\x00\x00\xff".b])
+    #   colors.bin.slice(1, 2)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [binary]
+    #   # [
+    #   #         b"\x00\x00"
+    #   #         b"\xff\x00"
+    #   #         b"\x00\xff"
+    #   # ]
+    def slice(offset, length = nil)
+      super
+    end
+
+    # Take the first `n` bytes of the binary values.
+    #
+    # @param n [Object]
+    #   Length of the slice. Negative indexing is supported; see note (2) below.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   (1) A similar method exists for taking the last `n` bytes: `tail`.
+    #   (2) If `n` is negative, it is interpreted as "until the nth byte from the end",
+    #       e.g., `head(-3)` returns all but the last three bytes.
+    #
+    # @example
+    #   colors = Polars::Series.new(["\x00\x00\x00".b, "\xff\xff\x00".b, "\x00\x00\xff".b])
+    #   colors.bin.head(2)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [binary]
+    #   # [
+    #   #         b"\x00\x00"
+    #   #         b"\xff\xff"
+    #   #         b"\x00\x00"
+    #   # ]
+    def head(n = 5)
+      super
+    end
+
+    # Take the last `n` bytes of the binary values.
+    #
+    # @param n [Object]
+    #   Length of the slice. Negative indexing is supported; see note (2) below.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   (1) A similar method exists for taking the first `n` bytes: `head`.
+    #   (2) If `n` is negative, it is interpreted as "starting at the nth byte",
+    #       e.g., `tail(-3)` returns all but the first three bytes.
+    #
+    # @example
+    #   colors = Polars::Series.new(["\x00\x00\x00".b, "\xff\xff\x00".b, "\x00\x00\xff".b])
+    #   colors.bin.tail(2)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [binary]
+    #   # [
+    #   #         b"\x00\x00"
+    #   #         b"\xff\x00"
+    #   #         b"\x00\xff"
+    #   # ]
+    def tail(n = 5)
+      super
+    end
   end
 end

@@ -4,7 +4,8 @@
 - Added `ignore_nulls` option to `first` and `last` methods
 - Added `literal` and `strict` options to `split` method for `StringExpr`
 - Added `mean` method to `ArrayNameSpace`
-- Added `slice`, `head`, `tail`, and `get` methods to `BinaryExpr`
+- Added `slice`, `head`, and `tail` methods to `BinaryExpr` and `BinaryNameSpace`
+- Added `get` method to `BinaryExpr`
 
 ## 0.24.0 (2026-02-04)
 
