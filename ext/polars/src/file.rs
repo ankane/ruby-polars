@@ -264,10 +264,7 @@ pub fn get_either_buffer_or_path(
             } else {
                 polars_utils::open_file(&file_path).map_err(RbPolarsErr::from)?
             };
-            Ok((
-                EitherRustRubyFile::Rust(f),
-                Some(file_path.into_owned()),
-            ))
+            Ok((EitherRustRubyFile::Rust(f), Some(file_path.into_owned())))
         } else {
             try_get_rbfile(rb, rb_f, write)
         }

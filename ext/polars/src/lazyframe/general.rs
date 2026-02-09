@@ -400,15 +400,11 @@ impl RbLazyFrame {
         let unified_sink_args = sink_options.extract_unified_sink_args(target.cloud_scheme())?;
 
         rb.enter_polars(|| {
-            self_
-                .ldf
-                .read()
-                .clone()
-                .sink(
-                    target,
-                    FileWriteFormat::Parquet(Arc::new(options)),
-                    unified_sink_args,
-                )
+            self_.ldf.read().clone().sink(
+                target,
+                FileWriteFormat::Parquet(Arc::new(options)),
+                unified_sink_args,
+            )
         })
         .map(Into::into)
     }
@@ -525,11 +521,11 @@ impl RbLazyFrame {
         let unified_sink_args = sink_options.extract_unified_sink_args(target.cloud_scheme())?;
 
         rb.enter_polars(|| {
-            self_
-                .ldf
-                .read()
-                .clone()
-                .sink(target, FileWriteFormat::NDJson(options), unified_sink_args)
+            self_.ldf.read().clone().sink(
+                target,
+                FileWriteFormat::NDJson(options),
+                unified_sink_args,
+            )
         })
         .map(Into::into)
     }
