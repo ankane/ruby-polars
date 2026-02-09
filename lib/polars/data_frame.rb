@@ -999,6 +999,9 @@ module Polars
     def write_csv(
       file = nil,
       include_bom: false,
+      compression: "uncompressed",
+      compression_level: nil,
+      check_extension: true,
       include_header: true,
       separator: ",",
       line_terminator: "\n",
@@ -1022,38 +1025,17 @@ module Polars
         null_value = nil
       end
 
+      should_return_buffer = false
       if file.nil?
-        buffer = StringIO.new
-        buffer.set_encoding(Encoding::BINARY)
-        lazy.sink_csv(
-          buffer,
-          include_bom: include_bom,
-          include_header: include_header,
-          separator: separator,
-          line_terminator: line_terminator,
-          quote_char: quote_char,
-          batch_size: batch_size,
-          datetime_format: datetime_format,
-          date_format: date_format,
-          time_format: time_format,
-          float_scientific: float_scientific,
-          float_precision: float_precision,
-          decimal_comma: decimal_comma,
-          null_value: null_value,
-          quote_style: quote_style,
-          storage_options: storage_options,
-          credential_provider: credential_provider,
-          retries: retries
-        )
-        return buffer.string.force_encoding(Encoding::UTF_8)
-      end
-
-      if Utils.pathlike?(file)
-        file = Utils.normalize_filepath(file)
+        target = StringIO.new
+        target.set_encoding(Encoding::BINARY)
+        should_return_buffer = true
+      else
+        target = file
       end
 
       lazy.sink_csv(
-        file,
+        target,
         include_bom: include_bom,
         include_header: include_header,
         separator: separator,
@@ -1072,6 +1054,11 @@ module Polars
         credential_provider: credential_provider,
         retries: retries
       )
+
+      if should_return_buffer
+        return target.string.force_encoding(Encoding::UTF_8)
+      end
+
       nil
     end
 
