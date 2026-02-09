@@ -1518,10 +1518,13 @@ module Polars
     #   lf.sink_ndjson("out.ndjson")
     def sink_ndjson(
       path,
+      compression: "uncompressed",
+      compression_level: nil,
+      check_extension: true,
       maintain_order: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       sync_on_close: nil,
       mkdir: false,
       lazy: false,
@@ -1530,17 +1533,20 @@ module Polars
     )
       engine = _select_engine(engine, path)
 
+      if !retries.nil?
+        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["max_retries"] = retries
+      end
+
       _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
 
       credential_provider_builder = _init_credential_provider_builder.(
         credential_provider, path, storage_options, "sink_ndjson"
       )
 
-      if storage_options&.any?
-        storage_options = storage_options.to_a
-      else
-        storage_options = nil
-      end
+      target = _to_sink_target(path)
 
       sink_options = {
         "sync_on_close" => sync_on_close || "none",
@@ -1549,10 +1555,10 @@ module Polars
       }
 
       ldf_rb = _ldf.sink_ndjson(
-        path,
-        storage_options,
-        credential_provider_builder,
-        retries,
+        target,
+        compression,
+        compression_level,
+        check_extension,
         sink_options
       )
 
@@ -4878,6 +4884,14 @@ module Polars
     def _select_engine(engine, path = nil)
       engine = Plr.get_engine_affinity if engine == "auto"
       engine == "auto" && !path.is_a?(::String) && !path.nil? ? "in-memory" : engine
+    end
+
+    def _to_sink_target(path)
+      if Utils.pathlike?(path)
+        Utils.normalize_filepath(path)
+      else
+        path
+      end
     end
   end
 end
