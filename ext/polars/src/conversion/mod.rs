@@ -606,7 +606,7 @@ impl TryConvert for Wrap<ScanSources> {
             }
             RubyScanSourceInput::File(file) => {
                 let mut sources = Vec::with_capacity(num_items);
-                sources.push(file.into());
+                sources.push(file);
                 MutableSources::Files(sources)
             }
             RubyScanSourceInput::Buffer(buffer) => {
@@ -619,7 +619,7 @@ impl TryConvert for Wrap<ScanSources> {
         for source in iter {
             match (&mut sources, source?) {
                 (MutableSources::Paths(v), RubyScanSourceInput::Path(p)) => v.push(p),
-                (MutableSources::Files(v), RubyScanSourceInput::File(f)) => v.push(f.into()),
+                (MutableSources::Files(v), RubyScanSourceInput::File(f)) => v.push(f),
                 (MutableSources::Buffers(v), RubyScanSourceInput::Buffer(f)) => v.push(f),
                 _ => {
                     return Err(RbTypeError::new_err(

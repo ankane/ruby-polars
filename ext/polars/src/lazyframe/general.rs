@@ -26,7 +26,7 @@ fn rbobject_to_first_path_and_scan_sources(
             Some(path.clone()),
             ScanSources::Paths(FromIterator::from_iter([path])),
         ),
-        RubyScanSourceInput::File(file) => (None, ScanSources::Files([file.into()].into())),
+        RubyScanSourceInput::File(file) => (None, ScanSources::Files([file].into())),
         RubyScanSourceInput::Buffer(buff) => (None, ScanSources::Buffers([buff].into())),
     })
 }
@@ -409,10 +409,8 @@ impl RbLazyFrame {
                     FileWriteFormat::Parquet(Arc::new(options)),
                     unified_sink_args,
                 )
-                .into()
         })
         .map(Into::into)
-        .map_err(Into::into)
     }
 
     pub fn sink_ipc(
@@ -441,10 +439,8 @@ impl RbLazyFrame {
                 .read()
                 .clone()
                 .sink(target, FileWriteFormat::Ipc(options), unified_sink_args)
-                .into()
         })
         .map(Into::into)
-        .map_err(Into::into)
     }
 
     pub fn sink_csv(rb: &Ruby, self_: &Self, arguments: &[Value]) -> RbResult<RbLazyFrame> {
@@ -506,10 +502,8 @@ impl RbLazyFrame {
                 .read()
                 .clone()
                 .sink(target, FileWriteFormat::Csv(options), unified_sink_args)
-                .into()
         })
         .map(Into::into)
-        .map_err(Into::into)
     }
 
     pub fn sink_ndjson(
@@ -536,7 +530,6 @@ impl RbLazyFrame {
                 .read()
                 .clone()
                 .sink(target, FileWriteFormat::NDJson(options), unified_sink_args)
-                .into()
         })
         .map(Into::into)
     }
