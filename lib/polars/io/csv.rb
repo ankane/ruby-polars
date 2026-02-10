@@ -356,6 +356,9 @@ module Polars
     # file chunks. After that work will only be done
     # if `next_batches` is called.
     #
+    # @deprecated
+    #   Use `scan_csv().collect_batches` instead.
+    #
     # @param source [Object]
     #   Path to a file or a file-like object.
     # @param has_header [Boolean]
