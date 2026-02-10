@@ -46,7 +46,16 @@ impl RbSeries {
                 DataType::Int128 => ruby
                     .ary_from_iter(series.i128().map_err(RbPolarsErr::from)?)
                     .as_value(),
-                DataType::Float16 => todo!(), //ruby.ary_from_iter(series.f16().map_err(RbPolarsErr::from)?).as_value(),
+                DataType::Float16 => ruby
+                    .ary_from_iter(
+                        series
+                            // TODO improve
+                            .cast(&DataType::Float32)
+                            .map_err(RbPolarsErr::from)?
+                            .f32()
+                            .map_err(RbPolarsErr::from)?,
+                    )
+                    .as_value(),
                 DataType::Float32 => ruby
                     .ary_from_iter(series.f32().map_err(RbPolarsErr::from)?)
                     .as_value(),
