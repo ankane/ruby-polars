@@ -45,9 +45,25 @@ module Polars
     # @param nan_to_null [Boolean]
     #   If the data comes from one or more Numo arrays, can optionally convert input
     #   data NaN values to null instead. This is a no-op for all other input data.
-    def initialize(data = nil, schema: nil, schema_overrides: nil, strict: true, orient: nil, infer_schema_length: N_INFER_DEFAULT, nan_to_null: false)
+    def initialize(
+      data = nil,
+      schema: nil,
+      schema_overrides: nil,
+      strict: true,
+      orient: nil,
+      infer_schema_length: N_INFER_DEFAULT,
+      nan_to_null: false,
+      height: nil
+    )
       if defined?(ActiveRecord) && (data.is_a?(ActiveRecord::Relation) || data.is_a?(ActiveRecord::Result))
         raise ArgumentError, "Use read_database instead"
+      end
+
+      if !height.nil?
+        msg = "the `height` parameter of `DataFrame` is considered unstable."
+        Utils.issue_unstable_warning(msg)
+
+        raise Todo
       end
 
       if data.nil?
