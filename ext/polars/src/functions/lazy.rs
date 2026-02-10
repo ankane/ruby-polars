@@ -130,6 +130,24 @@ pub fn collect_all(
     Ok(ruby.ary_from_iter(dfs.into_iter().map(Into::<RbDataFrame>::into)))
 }
 
+pub fn collect_all_lazy(lfs: RArray, optflags: &RbOptFlags) -> RbResult<RbLazyFrame> {
+    let plans = lfs_to_plans(lfs)?;
+
+    for plan in &plans {
+        if !matches!(plan, DslPlan::Sink { .. }) {
+            return Err(RbValueError::new_err(
+                "all LazyFrames must end with a sink to use 'collect_all(lazy: true)'",
+            ));
+        }
+    }
+
+    Ok(LazyFrame::from_logical_plan(
+        DslPlan::SinkMultiple { inputs: plans },
+        optflags.clone().inner.into_inner(),
+    )
+    .into())
+}
+
 pub fn concat_lf(
     lfs: Value,
     rechunk: bool,

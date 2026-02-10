@@ -5108,8 +5108,12 @@ module Polars
       _from_rbldf(filter_method.(combined_predicate._rbexpr))
     end
 
+    def self._select_engine(engine)
+      engine == "auto" ? Plr.get_engine_affinity : engine
+    end
+
     def _select_engine(engine, path = nil)
-      engine = Plr.get_engine_affinity if engine == "auto"
+      engine = self.class._select_engine(engine)
       raise Todo if !path.is_a?(::String) && !path.nil?
       engine == "auto" && !path.is_a?(::String) && !path.nil? ? "in-memory" : engine
     end
