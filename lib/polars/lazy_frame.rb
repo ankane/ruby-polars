@@ -5108,6 +5108,7 @@ module Polars
       _from_rbldf(filter_method.(combined_predicate._rbexpr))
     end
 
+    # @private
     def self._select_engine(engine)
       engine == "auto" ? Plr.get_engine_affinity : engine
     end

@@ -3167,7 +3167,8 @@ module Polars
         closed,
         label,
         group_by,
-        start_by
+        start_by,
+        nil
       )
     end
 
