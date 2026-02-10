@@ -7,6 +7,7 @@
 - Added `mean` method to `ArrayNameSpace`
 - Added `slice`, `head`, and `tail` methods to `BinaryExpr` and `BinaryNameSpace`
 - Added `get` method to `BinaryExpr`
+- Added `having` method to `GroupBy` and `LazyGroupBy`
 
 ## 0.24.0 (2026-02-04)
 

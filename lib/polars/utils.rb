@@ -168,5 +168,13 @@ module Polars
         parse_into_dtype(input).to_dtype_expr
       end
     end
+
+    def self._chain_predicates(lhs, rhs)
+      if !lhs.nil?
+        raise Todo
+      else
+        _parse_inputs_as_iterable(rhs)
+      end
+    end
   end
 end

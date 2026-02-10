@@ -6,6 +6,45 @@ module Polars
       @lgb = lgb
     end
 
+    # Filter groups with a list of predicates after aggregation.
+    #
+    # Using this method is equivalent to adding the predicates to the aggregation and
+    # filtering afterwards.
+    #
+    # This method can be chained and all conditions will be combined using `&`.
+    #
+    # @param predicates [Array]
+    #   Expressions that evaluate to a boolean value for each group. Typically, this
+    #   requires the use of an aggregation function. Multiple predicates are
+    #   combined using `&`.
+    #
+    # @return [LazyGroupBy]
+    #
+    # @example Only keep groups that contain more than one element.
+    #   ldf = Polars::DataFrame.new(
+    #     {
+    #       "a" => ["a", "b", "a", "b", "c"]
+    #     }
+    #   ).lazy
+    #   ldf.group_by("a").having(
+    #     Polars.len > 1
+    #   ).agg.collect
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ b   │
+    #   # │ a   │
+    #   # └─────┘
+    def having(*predicates)
+      rbexprs = Utils.parse_into_list_of_expressions(*predicates)
+      @lgb = @lgb.having(rbexprs)
+      self
+    end
+
     # Compute aggregations for each group of a group by operation.
     #
     # @param aggs [Array]

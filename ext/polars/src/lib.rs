@@ -990,6 +990,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
 
     let class = module.define_class("RbLazyGroupBy", ruby.class_object())?;
+    class.define_method("having", method!(RbLazyGroupBy::having, 1))?;
     class.define_method("agg", method!(RbLazyGroupBy::agg, 1))?;
     class.define_method("head", method!(RbLazyGroupBy::head, 1))?;
     class.define_method("tail", method!(RbLazyGroupBy::tail, 1))?;
