@@ -21,10 +21,6 @@ impl RbSinkOptions {
         &self,
         cloud_scheme: Option<CloudScheme>,
     ) -> RbResult<UnifiedSinkArgs> {
-        if cloud_scheme.is_some() {
-            todo!();
-        }
-
         let parsed = RHash::try_convert(self.0)?;
 
         if parsed.len() != 5 {
