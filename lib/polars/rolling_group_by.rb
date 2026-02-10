@@ -10,7 +10,8 @@ module Polars
       period,
       offset,
       closed,
-      group_by
+      group_by,
+      predicates
     )
       period = Utils.parse_as_duration_string(period)
       offset = Utils.parse_as_duration_string(offset)
@@ -21,15 +22,34 @@ module Polars
       @offset = offset
       @closed = closed
       @group_by = group_by
+      @predicates = predicates
+    end
+
+    def having(*predicates)
+      RollingGroupBy.new(
+        @df,
+        @time_column,
+        @period,
+        @offset,
+        @closed,
+        @group_by,
+        Utils._chain_predicates(@predicates, predicates)
+      )
     end
 
     def agg(*aggs, **named_aggs)
-      @df.lazy
-        .rolling(
+      group_by =
+        @df.lazy.rolling(
           index_column: @time_column, period: @period, offset: @offset, closed: @closed, group_by: @group_by
         )
-        .agg(*aggs, **named_aggs)
-        .collect(optimizations: QueryOptFlags.none)
+
+      if @predicates&.any?
+        group_by = group_by.having(@predicates)
+      end
+
+      group_by.agg(*aggs, **named_aggs).collect(
+        optimizations: QueryOptFlags.none
+      )
     end
   end
 end

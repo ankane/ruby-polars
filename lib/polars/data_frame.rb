@@ -2890,7 +2890,7 @@ module Polars
       closed: "right",
       group_by: nil
     )
-      RollingGroupBy.new(self, index_column, period, offset, closed, group_by)
+      RollingGroupBy.new(self, index_column, period, offset, closed, group_by, nil)
     end
 
     # Group based on a time value (or index value of type Int32, Int64).
