@@ -174,6 +174,9 @@ impl RbSeries {
                 DataType::BinaryOffset => {
                     unreachable!()
                 }
+                DataType::Extension(_, _) => {
+                    return to_a_recursive(series.ext().unwrap().storage());
+                }
             };
             Ok(rblist.as_value())
         }

@@ -4,6 +4,7 @@ mod bitwise;
 mod categorical;
 pub mod datatype;
 mod datetime;
+mod extension;
 mod general;
 mod list;
 mod meta;

@@ -660,6 +660,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("name_prefix_fields", method!(RbExpr::name_prefix_fields, 1))?;
     class.define_method("name_suffix_fields", method!(RbExpr::name_suffix_fields, 1))?;
 
+    // extension
+    class.define_method("ext_storage", method!(RbExpr::ext_storage, 0))?;
+    class.define_method("ext_to", method!(RbExpr::ext_to, 1))?;
+
     // maybe add to different class
     let class = module.define_module("Plr")?;
     class.define_singleton_method("col", function!(functions::lazy::col, 1))?;

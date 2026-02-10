@@ -290,6 +290,9 @@ impl IntoValue for Wrap<DataType> {
                 let class = pl.const_get::<_, Value>("Null").unwrap();
                 class.funcall("new", ()).unwrap()
             }
+            DataType::Extension(_typ, _storage) => {
+                todo!();
+            }
             DataType::Unknown(UnknownKind::Int(v)) => {
                 Wrap(materialize_dyn_int(v).dtype()).into_value_with(ruby)
             }

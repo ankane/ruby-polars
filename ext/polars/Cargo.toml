@@ -67,6 +67,7 @@ features = [
     "diff",
     "dot_diagram",
     "dot_product",
+    "dtype-extension",
     "dtype-full",
     "dynamic_group_by",
     "ewma",
