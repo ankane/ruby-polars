@@ -73,6 +73,14 @@ class DocsTest < Minitest::Test
     assert_docs Polars::Expr
   end
 
+  def test_extension_expr
+    assert_docs Polars::ExtensionExpr
+  end
+
+  def test_extension_name_space
+    assert_docs Polars::ExtensionNameSpace
+  end
+
   def test_functions
     assert_docs Polars::Functions
   end
@@ -307,7 +315,7 @@ class DocsTest < Minitest::Test
 
   def missing_examples?(method, cls)
     method.tags(:example).empty? &&
-    ![Polars::Config, Polars::IO, Polars::Testing, Polars::DataType, Polars::SQLContext, Polars::DataFramePlot, Polars::SeriesPlot, Polars::Catalog, Polars::DynamicGroupBy, Polars::RollingGroupBy].include?(cls) &&
+    ![Polars::Config, Polars::IO, Polars::Testing, Polars::DataType, Polars::SQLContext, Polars::DataFramePlot, Polars::SeriesPlot, Polars::Catalog, Polars::DynamicGroupBy, Polars::RollingGroupBy, Polars::ExtensionExpr, Polars::ExtensionNameSpace].include?(cls) &&
     method.name.match?(/\A[a-z]/i) &&
     ![:inspect, :plot, :list, :arr, :bin, :cat, :dt, :meta, :name, :str, :struct, :ext, :initialize, :set_random_seed, :col, :select_seq, :with_columns_seq, :eq, :ne, :gt, :ge, :lt, :le, :shrink_to_fit, :flags, :set_sorted, :each, :each_row, :rechunk, :first, :last, :approx_n_unique, :forward_fill, :backward_fill, :repeat_by, :rolling_rank_by, :cache, :is_local, :split, :rolling_cov, :rolling_corr, :escape_regex, :using_string_cache, :quantile, :groups, :collect_all, :collect_batches, :as_expression, :as_selector, :datetime, :time, :duration, :dtype_of].include?(method.name) &&
     !method.name.start_with?("write_") &&
