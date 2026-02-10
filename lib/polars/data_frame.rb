@@ -2796,7 +2796,8 @@ module Polars
         self,
         by,
         **named_by,
-        maintain_order: maintain_order
+        maintain_order: maintain_order,
+        predicates: nil
       )
     end
 
