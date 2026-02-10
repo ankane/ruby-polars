@@ -240,6 +240,13 @@ module Polars
       Utils.wrap_expr(_rbexpr.meta_undo_aliases)
     end
 
+    # Return the original expression.
+    #
+    # @return [Expr]
+    def as_expression
+      Utils.wrap_expr(_rbexpr)
+    end
+
     # Try to turn this expression in a selector.
     #
     # Raises if the underlying expressions is not a column or selector.
