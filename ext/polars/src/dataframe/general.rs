@@ -427,6 +427,7 @@ impl RbDataFrame {
                 apply_lambda_with_primitive_out_type::<UInt64Type>(df, lambda, 0, None)
                     .into_series()
             }
+            Some(DataType::Float16) => todo!(),
             Some(DataType::Float32) => {
                 apply_lambda_with_primitive_out_type::<Float32Type>(df, lambda, 0, None)
                     .into_series()
