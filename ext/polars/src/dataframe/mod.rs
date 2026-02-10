@@ -2,6 +2,7 @@ mod construction;
 mod export;
 mod general;
 mod io;
+mod map;
 mod serde;
 
 use magnus::{DataTypeFunctions, TypedData, gc};
