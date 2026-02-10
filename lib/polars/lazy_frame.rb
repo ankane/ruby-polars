@@ -1149,13 +1149,13 @@ module Polars
 
       target = _to_sink_target(path)
 
-      sink_options = {
-        "mkdir" => mkdir,
-        "maintain_order" => maintain_order,
-        "sync_on_close" => sync_on_close,
-        "storage_options" => storage_options,
-        "credential_provider" => credential_provider_builder
-      }
+      sink_options = SinkOptions.new(
+        mkdir: mkdir,
+        maintain_order: maintain_order,
+        sync_on_close: sync_on_close,
+        storage_options: storage_options,
+        credential_provider: credential_provider_builder
+      )
 
       ldf_rb = _ldf.sink_parquet(
         target,
@@ -1277,13 +1277,13 @@ module Polars
         compression = "uncompressed"
       end
 
-      sink_options = {
-        "mkdir" => mkdir,
-        "maintain_order" => maintain_order,
-        "sync_on_close" => sync_on_close,
-        "storage_options" => storage_options,
-        "credential_provider" => credential_provider_builder
-      }
+      sink_options = SinkOptions.new(
+        mkdir: mkdir,
+        maintain_order: maintain_order,
+        sync_on_close: sync_on_close,
+        storage_options: storage_options,
+        credential_provider: credential_provider_builder
+      )
 
       ldf_rb = _ldf.sink_ipc(
         target,
@@ -1446,13 +1446,13 @@ module Polars
         storage_options["max_retries"] = retries
       end
 
-      sink_options = {
-        "mkdir" => mkdir,
-        "maintain_order" => maintain_order,
-        "sync_on_close" => sync_on_close,
-        "storage_options" => storage_options,
-        "credential_provider" => credential_provider_builder
-      }
+      sink_options = SinkOptions.new(
+        mkdir: mkdir,
+        maintain_order: maintain_order,
+        sync_on_close: sync_on_close,
+        storage_options: storage_options,
+        credential_provider: credential_provider_builder
+      )
 
       ldf_rb = _ldf.sink_csv(
         target,
@@ -1569,13 +1569,13 @@ module Polars
 
       target = _to_sink_target(path)
 
-      sink_options = {
-        "mkdir" => mkdir,
-        "maintain_order" => maintain_order,
-        "sync_on_close" => sync_on_close,
-        "storage_options" => storage_options,
-        "credential_provider" => credential_provider_builder
-      }
+      sink_options = SinkOptions.new(
+        mkdir: mkdir,
+        maintain_order: maintain_order,
+        sync_on_close: sync_on_close,
+        storage_options: storage_options,
+        credential_provider: credential_provider_builder
+      )
 
       ldf_rb = _ldf.sink_ndjson(
         target,

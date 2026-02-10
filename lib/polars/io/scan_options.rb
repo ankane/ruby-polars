@@ -1,5 +1,6 @@
 module Polars
   module IO
+    # @private
     class ScanOptions
       attr_reader :row_index, :pre_slice, :cast_options, :extra_columns, :missing_columns,
         :include_file_paths, :glob, :hidden_file_prefix, :hive_partitioning, :hive_schema, :try_parse_hive_dates,

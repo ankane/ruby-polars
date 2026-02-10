@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use magnus::{RHash, TryConvert, Value};
+use magnus::{TryConvert, Value, value::ReprValue};
 use polars::prelude::sync_on_close::SyncOnCloseType;
 use polars::prelude::{CloudScheme, UnifiedSinkArgs};
 
 use crate::io::cloud_options::OptRbCloudOptions;
-use crate::{RbResult, RbValueError, Wrap};
+use crate::{RbResult, Wrap};
 
 /// Interface to `class SinkOptions` on the Ruby side
 pub struct RbSinkOptions(Value);
@@ -21,38 +21,11 @@ impl RbSinkOptions {
         &self,
         cloud_scheme: Option<CloudScheme>,
     ) -> RbResult<UnifiedSinkArgs> {
-        let parsed = RHash::try_convert(self.0)?;
-
-        if parsed.len() != 5 {
-            return Err(RbValueError::new_err(
-                "`sink_options` must be a hash with the exactly 5 field.",
-            ));
-        }
-
-        let sync_on_close = parsed.get("sync_on_close").ok_or_else(|| {
-            RbValueError::new_err("`sink_options` must contain `sync_on_close` field")
-        })?;
-        let sync_on_close = Option::<Wrap<SyncOnCloseType>>::try_convert(sync_on_close)?;
-
-        let maintain_order = parsed.get("maintain_order").ok_or_else(|| {
-            RbValueError::new_err("`sink_options` must contain `maintain_order` field")
-        })?;
-        let maintain_order = bool::try_convert(maintain_order)?;
-
-        let mkdir = parsed
-            .get("mkdir")
-            .ok_or_else(|| RbValueError::new_err("`sink_options` must contain `mkdir` field"))?;
-        let mkdir = bool::try_convert(mkdir)?;
-
-        let storage_options = parsed.get("storage_options").ok_or_else(|| {
-            RbValueError::new_err("`sink_options` must contain `storage_options` field")
-        })?;
-        let storage_options = OptRbCloudOptions::try_convert(storage_options)?;
-
-        let credential_provider = parsed.get("credential_provider").ok_or_else(|| {
-            RbValueError::new_err("`sink_options` must contain `credential_provider` field")
-        })?;
-        let credential_provider = Option::<Value>::try_convert(credential_provider)?;
+        let mkdir: bool = self.0.funcall("mkdir", ())?;
+        let maintain_order: bool = self.0.funcall("maintain_order", ())?;
+        let sync_on_close: Option<Wrap<SyncOnCloseType>> = self.0.funcall("sync_on_close", ())?;
+        let storage_options: OptRbCloudOptions = self.0.funcall("storage_options", ())?;
+        let credential_provider: Option<Value> = self.0.funcall("credential_provider", ())?;
 
         let cloud_options =
             storage_options.extract_opt_cloud_options(cloud_scheme, credential_provider)?;
