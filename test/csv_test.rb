@@ -106,7 +106,8 @@ class CsvTest < Minitest::Test
 
   def test_read_csv_batched_columns_integer
     df = Polars.read_csv_batched("test/support/data.csv", columns: [1]).next_batches(5).first
-    expected = Polars::DataFrame.new({"b" => ["one", "two", "three"]})
+    # same as Python
+    expected = Polars::DataFrame.new({"literal" => [1]}, schema: {"literal" => Polars::Int32})
     assert_frame expected, df
   end
 
