@@ -1,6 +1,7 @@
 ## 0.25.0 (unreleased)
 
 - Updated Polars to 0.53.0
+- Added `Float16` type
 - Added `compression`, `compression_level`, and `check_extension` options to `write_csv` method
 - Added `ignore_nulls` option to `first` and `last` methods
 - Added `literal` and `strict` options to `split` method for `StringExpr`

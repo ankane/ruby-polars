@@ -401,7 +401,7 @@ Supported types are:
 
 - boolean - `Boolean`
 - decimal - `Decimal`
-- float - `Float32`, `Float64`
+- float - `Float16`, `Float32`, `Float64`
 - integer - `Int8`, `Int16`, `Int32`, `Int64`, `Int128`
 - unsigned integer - `UInt8`, `UInt16`, `UInt32`, `UInt64`, `UInt128`
 - string - `String`, `Categorical`, `Enum`

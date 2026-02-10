@@ -1009,6 +1009,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("new_opt_i128", function!(RbSeries::new_opt_i128, 3))?;
     class.define_singleton_method("new_opt_f32", function!(RbSeries::new_opt_f32, 3))?;
     class.define_singleton_method("new_opt_f64", function!(RbSeries::new_opt_f64, 3))?;
+    class.define_singleton_method("new_opt_f16", function!(RbSeries::new_opt_f16, 3))?;
     class.define_singleton_method(
         "new_from_any_values",
         function!(RbSeries::new_from_any_values, 3),

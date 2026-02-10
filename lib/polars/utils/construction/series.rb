@@ -266,6 +266,7 @@ module Polars
     # TODO move rest
 
     POLARS_TYPE_TO_CONSTRUCTOR = {
+      Float16 => RbSeries.method(:new_opt_f16),
       Float32 => RbSeries.method(:new_opt_f32),
       Float64 => RbSeries.method(:new_opt_f64),
       Int8 => RbSeries.method(:new_opt_i8),
