@@ -4,6 +4,7 @@ use magnus::{RHash, TryConvert, Value};
 use polars::prelude::sync_on_close::SyncOnCloseType;
 use polars::prelude::{CloudScheme, UnifiedSinkArgs};
 
+use crate::io::cloud_options::OptRbCloudOptions;
 use crate::{RbResult, RbValueError, Wrap};
 
 /// Interface to `class SinkOptions` on the Ruby side
@@ -47,8 +48,18 @@ impl RbSinkOptions {
             .ok_or_else(|| RbValueError::new_err("`sink_options` must contain `mkdir` field"))?;
         let mkdir = bool::try_convert(mkdir)?;
 
-        // TODO fix
-        let cloud_options = None;
+        let storage_options = parsed.get("storage_options").ok_or_else(|| {
+            RbValueError::new_err("`sink_options` must contain `storage_options` field")
+        })?;
+        let storage_options = OptRbCloudOptions::try_convert(storage_options)?;
+
+        let credential_provider = parsed.get("credential_provider").ok_or_else(|| {
+            RbValueError::new_err("`sink_options` must contain `credential_provider` field")
+        })?;
+        let credential_provider = Option::<Value>::try_convert(credential_provider)?;
+
+        let cloud_options =
+            storage_options.extract_opt_cloud_options(cloud_scheme, credential_provider)?;
 
         let sync_on_close = sync_on_close.map_or(SyncOnCloseType::default(), |x| x.0);
 
