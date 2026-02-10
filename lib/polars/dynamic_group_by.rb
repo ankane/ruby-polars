@@ -4,6 +4,7 @@ module Polars
   # This has an `.agg` method which allows you to run all polars expressions in a
   # group by context.
   class DynamicGroupBy
+    # @private
     def initialize(
       df,
       index_column,

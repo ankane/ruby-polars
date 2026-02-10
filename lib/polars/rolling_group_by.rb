@@ -4,6 +4,7 @@ module Polars
   # This has an `.agg` method which will allow you to run all polars expressions in a
   # group by context.
   class RollingGroupBy
+    # @private
     def initialize(
       df,
       index_column,
@@ -25,6 +26,19 @@ module Polars
       @predicates = predicates
     end
 
+    # Filter groups with a list of predicates after aggregation.
+    #
+    # Using this method is equivalent to adding the predicates to the aggregation and
+    # filtering afterwards.
+    #
+    # This method can be chained and all conditions will be combined using `&`.
+    #
+    # @param predicates [Array]
+    #   Expressions that evaluate to a boolean value for each group. Typically, this
+    #   requires the use of an aggregation function. Multiple predicates are
+    #   combined using `&`.
+    #
+    # @return [RollingGroupBy]
     def having(*predicates)
       RollingGroupBy.new(
         @df,
@@ -37,6 +51,17 @@ module Polars
       )
     end
 
+    # Compute aggregations for each group of a group by operation.
+    #
+    # @param aggs [Array]
+    #   Aggregations to compute for each group of the group by operation,
+    #   specified as positional arguments.
+    #   Accepts expression input. Strings are parsed as column names.
+    # @param named_aggs [Hash]
+    #   Additional aggregations, specified as keyword arguments.
+    #   The resulting columns will be renamed to the keyword used.
+    #
+    # @return [DataFrame]
     def agg(*aggs, **named_aggs)
       group_by =
         @df.lazy.rolling(
