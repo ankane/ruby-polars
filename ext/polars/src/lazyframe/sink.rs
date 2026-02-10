@@ -8,11 +8,6 @@ use crate::prelude::Wrap;
 use crate::utils::RubyAttach;
 use crate::{RbResult, RbValueError};
 
-#[derive(Clone)]
-pub enum SinkTarget {
-    File(polars_plan::dsl::SinkTarget),
-}
-
 impl TryConvert for Wrap<polars_plan::dsl::SinkTarget> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         if let Ok(v) = String::try_convert(ob) {
@@ -31,14 +26,6 @@ impl TryConvert for Wrap<polars_plan::dsl::SinkTarget> {
                 Arc::new(Mutex::new(Some(writer))),
             ))))
         }
-    }
-}
-
-impl TryConvert for SinkTarget {
-    fn try_convert(ob: Value) -> RbResult<Self> {
-        Ok(Self::File(
-            <Wrap<polars_plan::dsl::SinkTarget>>::try_convert(ob)?.0,
-        ))
     }
 }
 

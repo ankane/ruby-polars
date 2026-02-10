@@ -408,7 +408,7 @@ impl RbLazyFrame {
 
             RbResult::Ok(RbCollectBatches {
                 inner: Arc::new(Mutex::new(collect_batches)),
-                ldf,
+                _ldf: ldf,
             })
         })
     }
@@ -1089,7 +1089,7 @@ impl RbLazyFrame {
 #[magnus::wrap(class = "Polars::RbCollectBatches")]
 pub struct RbCollectBatches {
     inner: Arc<Mutex<CollectBatches>>,
-    ldf: LazyFrame,
+    _ldf: LazyFrame,
 }
 
 impl RbCollectBatches {
