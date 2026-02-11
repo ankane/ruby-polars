@@ -322,21 +322,17 @@ pub fn get_mmap_bytes_reader_and_path<'a>(
     }
 }
 
-#[allow(clippy::type_complexity)]
-static BACKGROUND_RUBY_THREAD_MAILBOX: OnceLock<
-    SyncSender<(
-        Box<dyn FnOnce(&Ruby) -> Box<dyn Any + Send> + Send>,
-        SyncSender<Box<dyn Any + Send>>,
-    )>,
-> = OnceLock::new();
+type BackgroundMessage = (
+    Box<dyn FnOnce(&Ruby) -> Box<dyn Any + Send> + Send>,
+    SyncSender<Box<dyn Any + Send>>,
+);
+
+static BACKGROUND_RUBY_THREAD_MAILBOX: OnceLock<SyncSender<BackgroundMessage>> = OnceLock::new();
 
 // TODO figure out better approach
 fn start_background_ruby_thread(rb: &Ruby) {
     BACKGROUND_RUBY_THREAD_MAILBOX.get_or_init(|| {
-        let (sender, receiver) = sync_channel::<(
-            Box<dyn FnOnce(&Ruby) -> Box<dyn Any + Send> + Send>,
-            SyncSender<Box<dyn Any + Send>>,
-        )>(0);
+        let (sender, receiver) = sync_channel::<BackgroundMessage>(0);
 
         // TODO save reference to thread?
         rb.thread_create_from_fn(move |rb2| {
