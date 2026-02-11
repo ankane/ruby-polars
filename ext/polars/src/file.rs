@@ -4,7 +4,7 @@ use std::io;
 use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
 use std::sync::OnceLock;
-use std::sync::mpsc::{SyncSender, TryRecvError, sync_channel};
+use std::sync::mpsc::{RecvTimeoutError, SyncSender, sync_channel};
 
 use magnus::{Error, RString, Ruby, Value, error::RubyUnavailableError, prelude::*, value::Opaque};
 use polars::io::mmap::MmapBytesReader;
@@ -15,7 +15,7 @@ use polars_utils::create_file;
 
 use crate::error::RbPolarsErr;
 use crate::prelude::resolve_homedir;
-use crate::utils::{RubyAttach, to_rb_err};
+use crate::utils::{EnterPolarsExt, RubyAttach, to_rb_err};
 use crate::{RbErr, RbResult};
 
 pub struct RbFileLikeObject {
@@ -336,22 +336,24 @@ fn start_background_ruby_thread(rb: &Ruby) {
 
         // TODO save reference to thread?
         rb.thread_create_from_fn(move |rb2| {
-            loop {
-                match receiver.try_recv() {
-                    Ok((f, sender2)) => {
-                        sender2.send(f(rb2)).unwrap();
-                    }
-                    Err(TryRecvError::Empty) => {
-                        rb2.thread_sleep(std::time::Duration::from_millis(1))?;
-                    }
-                    Err(TryRecvError::Disconnected) => {
-                        todo!();
+            rb2.detach(|| {
+                loop {
+                    match receiver.recv_timeout(std::time::Duration::from_millis(10)) {
+                        Ok((f, sender2)) => {
+                            Ruby::attach(|rb3| sender2.send(f(rb3)).unwrap());
+                        }
+                        Err(RecvTimeoutError::Timeout) => {
+                            Ruby::attach(|rb3| rb3.thread_schedule());
+                        }
+                        Err(RecvTimeoutError::Disconnected) => {
+                            todo!();
+                        }
                     }
                 }
-            }
 
-            #[allow(unreachable_code)]
-            Ok(())
+                #[allow(unreachable_code)]
+                Ok(())
+            })
         });
 
         sender
