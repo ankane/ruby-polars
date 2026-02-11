@@ -1114,7 +1114,7 @@ module Polars
       engine: "auto",
       optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
-      engine = _select_engine(engine, path)
+      engine = _select_engine(engine)
 
       if statistics == true
         statistics = {
@@ -1249,7 +1249,7 @@ module Polars
       optimizations: DEFAULT_QUERY_OPT_FLAGS,
       _record_batch_statistics: false
     )
-      engine = _select_engine(engine, path)
+      engine = _select_engine(engine)
 
       _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
 
@@ -1429,7 +1429,7 @@ module Polars
     )
       Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, false)
-      engine = _select_engine(engine, path)
+      engine = _select_engine(engine)
 
       _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
 
@@ -1552,7 +1552,7 @@ module Polars
       engine: "auto",
       optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
-      engine = _select_engine(engine, path)
+      engine = _select_engine(engine)
 
       if !retries.nil?
         msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
@@ -5123,10 +5123,8 @@ module Polars
       engine == "auto" ? Plr.get_engine_affinity : engine
     end
 
-    def _select_engine(engine, path = nil)
-      engine = self.class._select_engine(engine)
-      raise Todo if !path.is_a?(::String) && !path.nil?
-      engine == "auto" && !path.is_a?(::String) && !path.nil? ? "in-memory" : engine
+    def _select_engine(engine)
+      self.class._select_engine(engine)
     end
 
     def _to_sink_target(path)
