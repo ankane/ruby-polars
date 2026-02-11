@@ -14,6 +14,8 @@ module Polars
     # @param parallel [Boolean]
     #   Only relevant for LazyFrames. This determines if the concatenated
     #   lazy computations may be executed in parallel.
+    # @param strict [Boolean]
+    #   When how=`horizontal`, require all DataFrames to be the same height, raising an error if not.
     #
     # @return [Object]
     #
@@ -93,7 +95,7 @@ module Polars
     #   # │ 2   ┆ 4    ┆ 5    ┆ null │
     #   # │ 3   ┆ null ┆ 6    ┆ 8    │
     #   # └─────┴──────┴──────┴──────┘
-    def concat(items, rechunk: false, how: "vertical", parallel: true)
+    def concat(items, rechunk: false, how: "vertical", parallel: true, strict: false)
       elems = items.to_a
 
       if elems.empty?
@@ -165,7 +167,7 @@ module Polars
             )
           ).collect(optimizations: QueryOptFlags._eager)
         elsif how == "horizontal"
-          out = Utils.wrap_df(Plr.concat_df_horizontal(elems))
+          out = Utils.wrap_df(Plr.concat_df_horizontal(elems, strict))
         else
           raise ArgumentError, "how must be one of {{'vertical', 'vertical_relaxed', 'diagonal', 'diagonal_relaxed', 'horizontal'}}, got #{how}"
         end
@@ -179,7 +181,7 @@ module Polars
         elsif how == "diagonal_relaxed"
           return Utils.wrap_ldf(Plr.concat_lf_diagonal(elems, rechunk, parallel, true))
         elsif how == "horizontal"
-          return Utils.wrap_ldf(Plr.concat_lf_horizontal(elems, parallel))
+          return Utils.wrap_ldf(Plr.concat_lf_horizontal(elems, parallel, strict))
         else
           raise ArgumentError, "Lazy only allows 'vertical', 'vertical_relaxed', 'diagonal', and 'diagonal_relaxed' concat strategy."
         end
@@ -234,6 +236,8 @@ module Polars
     #     join columns are automatically coalesced, but other column collisions
     #     will raise an error (if you need more control over this you should use
     #     a suitable `join` method directly).
+    # @param strict [Boolean]
+    #   When how=`horizontal`, require all DataFrames to be the same height, raising an error if not.
     #
     # @return [Object]
     #
@@ -298,7 +302,8 @@ module Polars
     #   # └─────┴──────┴──────┘
     def union(
       items,
-      how: "vertical"
+      how: "vertical",
+      strict: false
     )
       elems = items.to_a
 
@@ -336,7 +341,7 @@ module Polars
             )
           ).collect(optimizations: QueryOptFlags._eager)
         elsif how == "horizontal"
-          out = Utils.wrap_df(Plr.concat_df_horizontal(elems))
+          out = Utils.wrap_df(Plr.concat_df_horizontal(elems, strict))
         else
           raise Todo
           msg = "DataFrame `how` must be one of {{#{allowed}}}, got #{how.inspect}"
@@ -366,7 +371,8 @@ module Polars
           return Utils.wrap_ldf(
             Plr.concat_lf_horizontal(
               elems,
-              true
+              true,
+              strict
             )
           )
         else

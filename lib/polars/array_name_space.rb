@@ -74,6 +74,24 @@ module Polars
       super
     end
 
+    # Compute the mean of the values of the sub-arrays.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [[1, 2], [4, 3]], dtype: Polars::Array.new(Polars::Int64, 2))
+    #   s.arr.mean
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         1.5
+    #   #         3.5
+    #   # ]
+    def mean
+      super
+    end
+
     # Compute the std of the values of the sub-arrays.
     #
     # @return [Series]
@@ -573,6 +591,11 @@ module Polars
 
     # Returns a column with a separate row for every array element.
     #
+    # @param empty_as_null [Boolean]
+    #   Explode an empty array into a `null`.
+    # @param keep_nulls [Boolean]
+    #   Explode a `null` array into a `null`.
+    #
     # @return [Series]
     #
     # @example
@@ -589,7 +612,7 @@ module Polars
     #   #         5
     #   #         6
     #   # ]
-    def explode
+    def explode(empty_as_null: true, keep_nulls: true)
       super
     end
 

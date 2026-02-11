@@ -2,19 +2,19 @@ use std::fs::File;
 use std::io;
 use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
+use std::sync::OnceLock;
+use std::sync::mpsc::{SyncSender, sync_channel};
 
-use magnus::{Error, RString, Ruby, Value, prelude::*, value::Opaque};
+use magnus::{Error, RString, Ruby, Value, error::RubyUnavailableError, prelude::*, value::Opaque};
 use polars::io::mmap::MmapBytesReader;
-use polars::prelude::PlPath;
-use polars::prelude::file::DynWriteable;
-use polars::prelude::sync_on_close::SyncOnCloseType;
+use polars::prelude::PlRefPath;
+use polars::prelude::file::{Writeable, WriteableTrait};
+use polars_buffer::Buffer;
 use polars_utils::create_file;
-use polars_utils::file::{ClosableFile, WriteClose};
-use polars_utils::mmap::MemSlice;
 
 use crate::error::RbPolarsErr;
 use crate::prelude::resolve_homedir;
-use crate::utils::RubyAttach;
+use crate::utils::{RubyAttach, to_rb_err};
 use crate::{RbErr, RbResult};
 
 pub struct RbFileLikeObject {
@@ -23,34 +23,28 @@ pub struct RbFileLikeObject {
     has_flush: bool,
 }
 
-impl WriteClose for RbFileLikeObject {}
-
-impl DynWriteable for RbFileLikeObject {
-    fn as_dyn_write(&self) -> &(dyn io::Write + Send + 'static) {
-        self as _
-    }
-
-    fn as_mut_dyn_write(&mut self) -> &mut (dyn io::Write + Send + 'static) {
-        self as _
-    }
-
-    fn close(self: Box<Self>) -> io::Result<()> {
+impl WriteableTrait for RbFileLikeObject {
+    fn close(&mut self) -> io::Result<()> {
         Ok(())
     }
 
-    fn sync_on_close(&mut self, _sync_on_close: SyncOnCloseType) -> io::Result<()> {
-        Ok(())
+    fn sync_all(&self) -> std::io::Result<()> {
+        self.flush()
+    }
+
+    fn sync_data(&self) -> std::io::Result<()> {
+        self.flush()
     }
 }
 
 impl Clone for RbFileLikeObject {
     fn clone(&self) -> Self {
-        Ruby::attach(|_rb| Self {
-            // TODO clone
+        // Skip attach
+        Self {
             inner: self.inner,
             expects_str: self.expects_str,
             has_flush: self.has_flush,
-        })
+        }
     }
 }
 
@@ -67,7 +61,7 @@ impl RbFileLikeObject {
         }
     }
 
-    pub(crate) fn to_memslice(&self) -> MemSlice {
+    pub(crate) fn to_buffer(&self) -> Buffer<u8> {
         Ruby::attach(|rb| {
             let bytes = rb
                 .get_inner(self.inner)
@@ -75,19 +69,14 @@ impl RbFileLikeObject {
                 .expect("no read method found");
 
             let b = unsafe { bytes.as_slice() }.to_vec();
-            MemSlice::from_vec(b)
+            Buffer::from_vec(b)
         })
     }
 
     /// Same as `RbFileLikeObject::new`, but validates that the underlying
     /// ruby object has a `read`, `write`, and `seek` methods in respect to parameters.
     /// Will return a `TypeError` if object does not have `read`, `seek`, and `write` methods.
-    pub fn ensure_requirements(
-        object: Value,
-        read: bool,
-        write: bool,
-        seek: bool,
-    ) -> RbResult<Self> {
+    pub fn ensure_requirements(object: Value, read: bool, write: bool, seek: bool) -> RbResult<()> {
         let ruby = Ruby::get_with(object);
 
         if read && !object.respond_to("read", false)? {
@@ -111,10 +100,19 @@ impl RbFileLikeObject {
             ));
         }
 
-        // TODO fix
-        let expects_str = false;
-        let has_flush = object.respond_to("write", false)?;
-        Ok(RbFileLikeObject::new(object, expects_str, has_flush))
+        Ok(())
+    }
+
+    fn flush(&self) -> std::io::Result<()> {
+        if self.has_flush {
+            Ruby::attach(|rb| {
+                rb.get_inner(self.inner)
+                    .funcall::<_, _, Value>("flush", ())
+                    .map_err(rberr_to_io_err)
+            })?;
+        }
+
+        Ok(())
     }
 }
 
@@ -140,6 +138,16 @@ impl Read for RbFileLikeObject {
 
 impl Write for RbFileLikeObject {
     fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
+        if is_non_ruby_thread() {
+            let (sender, receiver) = sync_channel(0);
+            POLARS_RUBY_SENDER
+                .get()
+                .unwrap()
+                .send((self.clone(), buf.to_vec(), sender))
+                .unwrap();
+            return receiver.recv().unwrap();
+        }
+
         let expects_str = self.expects_str;
 
         Ruby::attach(|rb| {
@@ -159,15 +167,12 @@ impl Write for RbFileLikeObject {
     }
 
     fn flush(&mut self) -> Result<(), io::Error> {
-        if self.has_flush {
-            Ruby::attach(|rb| {
-                rb.get_inner(self.inner)
-                    .funcall::<_, _, Value>("flush", ())
-                    .map_err(rberr_to_io_err)
-            })?;
+        if is_non_ruby_thread() {
+            // handled in write for now
+            return Ok(());
         }
 
-        Ok(())
+        Self::flush(self)
     }
 }
 
@@ -194,12 +199,11 @@ impl Seek for RbFileLikeObject {
 pub trait FileLike: Read + Write + Seek {}
 
 impl FileLike for File {}
-impl FileLike for ClosableFile {}
 impl FileLike for RbFileLikeObject {}
 
 pub enum EitherRustRubyFile {
     Rb(RbFileLikeObject),
-    Rust(ClosableFile),
+    Rust(std::fs::File),
 }
 
 impl EitherRustRubyFile {
@@ -210,51 +214,54 @@ impl EitherRustRubyFile {
         }
     }
 
-    #[allow(dead_code)]
     fn into_scan_source_input(self) -> RubyScanSourceInput {
         match self {
-            EitherRustRubyFile::Rb(f) => RubyScanSourceInput::Buffer(f.to_memslice()),
+            EitherRustRubyFile::Rb(f) => RubyScanSourceInput::Buffer(f.to_buffer()),
             EitherRustRubyFile::Rust(f) => RubyScanSourceInput::File(f),
         }
     }
 
-    pub(crate) fn into_writeable(self) -> Box<dyn DynWriteable> {
+    pub(crate) fn into_writeable(self) -> Writeable {
         match self {
-            Self::Rb(f) => Box::new(f),
-            Self::Rust(f) => Box::new(f),
+            Self::Rb(f) => Writeable::Dyn(Box::new(f)),
+            Self::Rust(f) => Writeable::Local(f),
         }
     }
 }
 
 pub enum RubyScanSourceInput {
-    Buffer(MemSlice),
-    Path(PlPath),
-    #[allow(dead_code)]
-    File(ClosableFile),
+    Buffer(Buffer<u8>),
+    Path(PlRefPath),
+    File(std::fs::File),
 }
 
 pub(crate) fn try_get_rbfile(
-    _rb: &Ruby,
+    rb: &Ruby,
     rb_f: Value,
     write: bool,
 ) -> RbResult<(EitherRustRubyFile, Option<PathBuf>)> {
-    let f = RbFileLikeObject::ensure_requirements(rb_f, !write, write, !write)?;
+    RbFileLikeObject::ensure_requirements(rb_f, !write, write, !write)?;
+    let expects_str = false;
+    let has_flush = rb_f.respond_to("flush", false)?;
+    let f = RbFileLikeObject::new(rb_f, expects_str, has_flush);
+
+    // TODO move
+    if write {
+        start_background_thread(rb);
+    }
+
     Ok((EitherRustRubyFile::Rb(f), None))
 }
 
 pub fn get_ruby_scan_source_input(rb_f: Value, write: bool) -> RbResult<RubyScanSourceInput> {
-    Ruby::attach(|_rb| {
-        if let Ok(s) = String::try_convert(rb_f) {
-            let mut file_path = PlPath::new(&s);
-            if let Some(p) = file_path.as_ref().as_local_path()
-                && p.starts_with("~/")
-            {
-                file_path = PlPath::Local(resolve_homedir(&p).into());
-            }
+    Ruby::attach(|rb| {
+        if let Ok(s) = PathBuf::try_convert(rb_f) {
+            let file_path =
+                PlRefPath::try_from_path(resolve_homedir(&s).as_ref()).map_err(to_rb_err)?;
+
             Ok(RubyScanSourceInput::Path(file_path))
         } else {
-            let f = RbFileLikeObject::ensure_requirements(rb_f, !write, write, !write)?;
-            Ok(RubyScanSourceInput::Buffer(f.to_memslice()))
+            Ok(try_get_rbfile(rb, rb_f, write)?.0.into_scan_source_input())
         }
     })
 }
@@ -273,7 +280,7 @@ pub fn get_either_buffer_or_path(
             } else {
                 polars_utils::open_file(&file_path).map_err(RbPolarsErr::from)?
             };
-            Ok((EitherRustRubyFile::Rust(f.into()), Some(file_path)))
+            Ok((EitherRustRubyFile::Rust(f), Some(file_path.into_owned())))
         } else {
             try_get_rbfile(rb, rb_f, write)
         }
@@ -313,7 +320,55 @@ pub fn get_mmap_bytes_reader_and_path<'a>(
         RbReadBytes::Bytes(v) => Ok((Box::new(Cursor::new(unsafe { v.as_slice() })), None)),
         RbReadBytes::Other(v) => match get_either_buffer_or_path(*v, false)? {
             (EitherRustRubyFile::Rust(f), path) => Ok((Box::new(f), path)),
-            (EitherRustRubyFile::Rb(f), path) => Ok((Box::new(Cursor::new(f.to_memslice())), path)),
+            (EitherRustRubyFile::Rb(f), path) => Ok((Box::new(Cursor::new(f.to_buffer())), path)),
         },
     }
+}
+
+#[allow(clippy::type_complexity)]
+static POLARS_RUBY_SENDER: OnceLock<
+    SyncSender<(
+        RbFileLikeObject,
+        Vec<u8>,
+        SyncSender<Result<usize, io::Error>>,
+    )>,
+> = OnceLock::new();
+
+// TODO figure out better approach
+fn start_background_thread(rb: &Ruby) {
+    POLARS_RUBY_SENDER.get_or_init(|| {
+        let (sender, receiver) = sync_channel::<(
+            RbFileLikeObject,
+            Vec<u8>,
+            SyncSender<Result<usize, io::Error>>,
+        )>(0);
+
+        // TODO save reference to thread?
+        rb.thread_create_from_fn(move |rb2| {
+            loop {
+                match receiver.try_recv() {
+                    Ok((mut f, buf, sender2)) => {
+                        let result = f.write(&buf);
+                        if result.is_ok() {
+                            // flush writes for now
+                            f.flush().unwrap();
+                        }
+                        sender2.send(result).unwrap();
+                    }
+                    Err(_) => {
+                        rb2.thread_sleep(std::time::Duration::from_millis(1))?;
+                    }
+                }
+            }
+
+            #[allow(unreachable_code)]
+            Ok(())
+        });
+
+        sender
+    });
+}
+
+fn is_non_ruby_thread() -> bool {
+    matches!(Ruby::get(), Err(RubyUnavailableError::NonRubyThread))
 }

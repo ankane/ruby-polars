@@ -94,12 +94,12 @@ fn scatter(mut s: Series, idx: &Series, values: &Series) -> PolarsResult<Series>
             std::mem::take(ca).scatter(idx, values)
         }
         DataType::Boolean => {
-            let ca = s.bool()?;
+            let ca: &mut ChunkedArray<BooleanType> = mutable_s.as_mut();
             let values = values.bool()?;
             ca.scatter(idx, values)
         }
         DataType::String => {
-            let ca = s.str()?;
+            let ca: &mut ChunkedArray<StringType> = mutable_s.as_mut();
             let values = values.str()?;
             ca.scatter(idx, values)
         }

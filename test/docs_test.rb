@@ -65,8 +65,20 @@ class DocsTest < Minitest::Test
     assert_docs Polars::DateTimeNameSpace
   end
 
+  def test_dynamic_group_by
+    assert_docs Polars::DynamicGroupBy
+  end
+
   def test_expr
     assert_docs Polars::Expr
+  end
+
+  def test_extension_expr
+    assert_docs Polars::ExtensionExpr
+  end
+
+  def test_extension_name_space
+    assert_docs Polars::ExtensionNameSpace
   end
 
   def test_functions
@@ -103,6 +115,10 @@ class DocsTest < Minitest::Test
 
   def test_name_expr
     assert_docs Polars::NameExpr
+  end
+
+  def test_rolling_group_by
+    assert_docs Polars::RollingGroupBy
   end
 
   def test_schema
@@ -265,7 +281,7 @@ class DocsTest < Minitest::Test
         end
 
         # non-deterministic output
-        next if [:sort, :mode, :duration, :hash_, :hash_rows, :flatten, :value_counts, :agg, :top_k, :bottom_k, :get_categories, :to_physical, :profile].include?(method.name)
+        next if [:sort, :mode, :duration, :hash_, :hash_rows, :flatten, :value_counts, :agg, :top_k, :bottom_k, :get_categories, :to_physical, :profile, :having].include?(method.name)
 
         next if [Polars::GroupBy, Polars::LazyGroupBy].include?(cls) && [:len].include?(method.name)
 
@@ -299,9 +315,9 @@ class DocsTest < Minitest::Test
 
   def missing_examples?(method, cls)
     method.tags(:example).empty? &&
-    ![Polars::Config, Polars::IO, Polars::Testing, Polars::DataType, Polars::SQLContext, Polars::DataFramePlot, Polars::SeriesPlot, Polars::Catalog].include?(cls) &&
+    ![Polars::Config, Polars::IO, Polars::Testing, Polars::DataType, Polars::SQLContext, Polars::DataFramePlot, Polars::SeriesPlot, Polars::Catalog, Polars::DynamicGroupBy, Polars::RollingGroupBy, Polars::ExtensionExpr, Polars::ExtensionNameSpace].include?(cls) &&
     method.name.match?(/\A[a-z]/i) &&
-    ![:inspect, :plot, :list, :arr, :bin, :cat, :dt, :meta, :name, :str, :struct, :initialize, :set_random_seed, :col, :select_seq, :with_columns_seq, :eq, :ne, :gt, :ge, :lt, :le, :shrink_to_fit, :flags, :set_sorted, :each, :each_row, :rechunk, :first, :last, :approx_n_unique, :forward_fill, :backward_fill, :repeat_by, :rolling_rank_by, :cache, :is_local, :split, :rolling_cov, :rolling_corr, :escape_regex, :using_string_cache, :quantile, :groups, :collect_all, :as_selector, :datetime, :time, :duration, :dtype_of].include?(method.name) &&
+    ![:inspect, :plot, :list, :arr, :bin, :cat, :dt, :meta, :name, :str, :struct, :ext, :initialize, :set_random_seed, :col, :select_seq, :with_columns_seq, :eq, :ne, :gt, :ge, :lt, :le, :shrink_to_fit, :flags, :set_sorted, :each, :each_row, :rechunk, :first, :last, :approx_n_unique, :forward_fill, :backward_fill, :repeat_by, :rolling_rank_by, :cache, :is_local, :split, :rolling_cov, :rolling_corr, :escape_regex, :using_string_cache, :quantile, :groups, :collect_all, :collect_batches, :as_expression, :as_selector, :datetime, :time, :duration, :dtype_of].include?(method.name) &&
     !method.name.start_with?("write_") &&
     !method.name.start_with?("bitwise_") &&
     !method.name.start_with?("to_") &&

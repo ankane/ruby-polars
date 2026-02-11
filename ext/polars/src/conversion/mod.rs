@@ -18,19 +18,19 @@ use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
 use polars::frame::row::Row;
 use polars::io::avro::AvroCompression;
-use polars::io::cloud::CloudOptions;
 use polars::prelude::default_values::{
     DefaultFieldValues, IcebergIdentityTransformedPartitionFields,
 };
 use polars::prelude::deletion::DeletionFilesList;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
+use polars_buffer::Buffer;
 use polars_compute::decimal::dec128_verify_prec_scale;
 use polars_core::schema::iceberg::IcebergSchema;
 use polars_core::utils::arrow::array::Array;
 use polars_core::utils::materialize_dyn_int;
 use polars_plan::dsl::ScanSources;
-use polars_utils::mmap::MemSlice;
+use polars_utils::compression::{BrotliLevel, GzipLevel, ZstdLevel};
 use polars_utils::total_ord::{TotalEq, TotalHash};
 
 use crate::file::{RubyScanSourceInput, get_ruby_scan_source_input};
@@ -180,6 +180,10 @@ impl IntoValue for Wrap<DataType> {
                 let class = pl.const_get::<_, Value>("UInt128").unwrap();
                 class.funcall("new", ()).unwrap()
             }
+            DataType::Float16 => {
+                let class = pl.const_get::<_, Value>("Float16").unwrap();
+                class.funcall("new", ()).unwrap()
+            }
             DataType::Float32 => {
                 let class = pl.const_get::<_, Value>("Float32").unwrap();
                 class.funcall("new", ()).unwrap()
@@ -286,6 +290,9 @@ impl IntoValue for Wrap<DataType> {
                 let class = pl.const_get::<_, Value>("Null").unwrap();
                 class.funcall("new", ()).unwrap()
             }
+            DataType::Extension(_typ, _storage) => {
+                todo!();
+            }
             DataType::Unknown(UnknownKind::Int(v)) => {
                 Wrap(materialize_dyn_int(v).dtype()).into_value_with(ruby)
             }
@@ -345,6 +352,7 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::UInt32" => DataType::UInt32,
                 "Polars::UInt64" => DataType::UInt64,
                 "Polars::UInt128" => DataType::UInt128,
+                "Polars::Float16" => DataType::Float16,
                 "Polars::Float32" => DataType::Float32,
                 "Polars::Float64" => DataType::Float64,
                 "Polars::Boolean" => DataType::Boolean,
@@ -389,6 +397,7 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::UInt32" => DataType::UInt32,
                 "Polars::UInt64" => DataType::UInt64,
                 "Polars::UInt128" => DataType::UInt128,
+                "Polars::Float16" => DataType::Float16,
                 "Polars::Float32" => DataType::Float32,
                 "Polars::Float64" => DataType::Float64,
                 "Polars::Boolean" => DataType::Boolean,
@@ -580,9 +589,9 @@ impl TryConvert for Wrap<ScanSources> {
         }
 
         enum MutableSources {
-            Paths(Vec<PlPath>),
+            Paths(Vec<PlRefPath>),
             Files(Vec<File>),
-            Buffers(Vec<MemSlice>),
+            Buffers(Vec<Buffer<u8>>),
         }
 
         let num_items = list.len();
@@ -602,7 +611,7 @@ impl TryConvert for Wrap<ScanSources> {
             }
             RubyScanSourceInput::File(file) => {
                 let mut sources = Vec::with_capacity(num_items);
-                sources.push(file.into());
+                sources.push(file);
                 MutableSources::Files(sources)
             }
             RubyScanSourceInput::Buffer(buffer) => {
@@ -615,7 +624,7 @@ impl TryConvert for Wrap<ScanSources> {
         for source in iter {
             match (&mut sources, source?) {
                 (MutableSources::Paths(v), RubyScanSourceInput::Path(p)) => v.push(p),
-                (MutableSources::Files(v), RubyScanSourceInput::File(f)) => v.push(f.into()),
+                (MutableSources::Files(v), RubyScanSourceInput::File(f)) => v.push(f),
                 (MutableSources::Buffers(v), RubyScanSourceInput::Buffer(f)) => v.push(f),
                 _ => {
                     return Err(RbTypeError::new_err(
@@ -1196,12 +1205,6 @@ impl TryConvert for Wrap<QuoteStyle> {
     }
 }
 
-pub(crate) fn parse_cloud_options(uri: &str, kv: Vec<(String, String)>) -> RbResult<CloudOptions> {
-    let out = CloudOptions::from_untyped_config(CloudScheme::from_uri(uri).as_ref(), kv)
-        .map_err(RbPolarsErr::from)?;
-    Ok(out)
-}
-
 impl TryConvert for Wrap<SetOperation> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match String::try_convert(ob)?.as_str() {
@@ -1382,7 +1385,6 @@ pub fn parse_parquet_compression(
                 })
                 .transpose()?,
         ),
-        "lzo" => ParquetCompression::Lzo,
         "brotli" => ParquetCompression::Brotli(
             compression_level
                 .map(|lvl| {

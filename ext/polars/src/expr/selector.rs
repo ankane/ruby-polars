@@ -70,11 +70,11 @@ impl RbSelector {
 
     pub fn by_dtype(dtypes: Vec<Wrap<DataType>>) -> Self {
         let dtypes = dtypes.into_iter().map(|x| x.0).collect::<Vec<_>>();
-        dsl::dtype_cols(dtypes).as_selector().into()
+        dsl::functions::dtype_cols(dtypes).as_selector().into()
     }
 
-    pub fn by_name(names: Vec<String>, strict: bool) -> Self {
-        dsl::by_name(names, strict).into()
+    pub fn by_name(names: Vec<String>, strict: bool, expand_patterns: bool) -> Self {
+        dsl::functions::by_name(names, strict, expand_patterns).into()
     }
 
     pub fn by_index(indices: Vec<i64>, strict: bool) -> Self {
@@ -204,11 +204,11 @@ impl RbSelector {
     }
 
     pub fn empty() -> Self {
-        dsl::empty().into()
+        dsl::functions::empty().into()
     }
 
     pub fn all() -> Self {
-        dsl::all().into()
+        dsl::functions::all().into()
     }
 
     pub fn hash(&self) -> u64 {

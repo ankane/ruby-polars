@@ -33,12 +33,14 @@ pub fn date_range(
     end: &RbExpr,
     interval: String,
     closed: Wrap<ClosedWindow>,
-) -> RbExpr {
+) -> RbResult<RbExpr> {
     let start = start.inner.clone();
     let end = end.inner.clone();
     let interval = Duration::parse(&interval);
     let closed = closed.0;
-    dsl::date_range(start, end, interval, closed).into()
+    let out = dsl::date_range(Some(start), Some(end), Some(interval), None, closed)
+        .map_err(RbPolarsErr::from)?;
+    Ok(out.into())
 }
 
 pub fn date_ranges(
@@ -46,46 +48,68 @@ pub fn date_ranges(
     end: &RbExpr,
     interval: String,
     closed: Wrap<ClosedWindow>,
-) -> RbExpr {
+) -> RbResult<RbExpr> {
     let start = start.inner.clone();
     let end = end.inner.clone();
     let interval = Duration::parse(&interval);
     let closed = closed.0;
-    dsl::date_ranges(start, end, interval, closed).into()
+    let out = dsl::date_ranges(Some(start), Some(end), Some(interval), None, closed)
+        .map_err(RbPolarsErr::from)?;
+    Ok(out.into())
 }
 
 pub fn datetime_range(
     start: &RbExpr,
     end: &RbExpr,
-    every: String,
+    interval: String,
     closed: Wrap<ClosedWindow>,
     time_unit: Option<Wrap<TimeUnit>>,
     time_zone: Wrap<Option<TimeZone>>,
-) -> RbExpr {
+) -> RbResult<RbExpr> {
     let start = start.inner.clone();
     let end = end.inner.clone();
-    let every = Duration::parse(&every);
+    let interval = Duration::try_parse(&interval).map_err(RbPolarsErr::from)?;
     let closed = closed.0;
     let time_unit = time_unit.map(|x| x.0);
     let time_zone = time_zone.0;
-    dsl::datetime_range(start, end, every, closed, time_unit, time_zone).into()
+    let out = dsl::datetime_range(
+        Some(start),
+        Some(end),
+        Some(interval),
+        None,
+        closed,
+        time_unit,
+        time_zone,
+    )
+    .map_err(RbPolarsErr::from)?;
+    Ok(out.into())
 }
 
 pub fn datetime_ranges(
     start: &RbExpr,
     end: &RbExpr,
-    every: String,
+    interval: String,
     closed: Wrap<ClosedWindow>,
     time_unit: Option<Wrap<TimeUnit>>,
     time_zone: Wrap<Option<TimeZone>>,
-) -> RbExpr {
+) -> RbResult<RbExpr> {
     let start = start.inner.clone();
     let end = end.inner.clone();
-    let every = Duration::parse(&every);
+    let interval = Duration::try_parse(&interval).map_err(RbPolarsErr::from)?;
     let closed = closed.0;
     let time_unit = time_unit.map(|x| x.0);
     let time_zone = time_zone.0;
-    dsl::datetime_ranges(start, end, every, closed, time_unit, time_zone).into()
+    let out = dsl::datetime_ranges(
+        Some(start),
+        Some(end),
+        Some(interval),
+        None,
+        closed,
+        time_unit,
+        time_zone,
+    )
+    .map_err(RbPolarsErr::from)?;
+    Ok(out.into())
 }
 
 pub fn time_range(
@@ -93,12 +117,12 @@ pub fn time_range(
     end: &RbExpr,
     every: String,
     closed: Wrap<ClosedWindow>,
-) -> RbExpr {
+) -> RbResult<RbExpr> {
     let start = start.inner.clone();
     let end = end.inner.clone();
     let every = Duration::parse(&every);
     let closed = closed.0;
-    dsl::time_range(start, end, every, closed).into()
+    Ok(dsl::time_range(start, end, every, closed).into())
 }
 
 pub fn time_ranges(
@@ -106,12 +130,12 @@ pub fn time_ranges(
     end: &RbExpr,
     every: String,
     closed: Wrap<ClosedWindow>,
-) -> RbExpr {
+) -> RbResult<RbExpr> {
     let start = start.inner.clone();
     let end = end.inner.clone();
     let every = Duration::parse(&every);
     let closed = closed.0;
-    dsl::time_ranges(start, end, every, closed).into()
+    Ok(dsl::time_ranges(start, end, every, closed).into())
 }
 
 pub fn linear_spaces(

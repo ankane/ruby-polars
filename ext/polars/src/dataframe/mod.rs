@@ -2,6 +2,7 @@ mod construction;
 mod export;
 mod general;
 mod io;
+mod map;
 mod serde;
 
 use magnus::{DataTypeFunctions, TypedData, gc};
@@ -45,11 +46,10 @@ impl DataTypeFunctions for RbDataFrame {
         // which should refuse to write Object datatype, and therefore be safe,
         // since GC will not have a chance to run
         if let Some(df) = self.df.try_read() {
-            for column in df.get_columns() {
+            for column in df.columns() {
                 if let DataType::Object(_) = column.dtype() {
                     match column {
                         Column::Series(s) => mark_series(marker, s),
-                        Column::Partitioned(s) => mark_series(marker, s.partitions()),
                         Column::Scalar(s) => mark_series(marker, &s.as_single_value_series()),
                     }
                 }

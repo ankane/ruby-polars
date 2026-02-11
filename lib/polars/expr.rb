@@ -1189,6 +1189,9 @@ module Polars
     #
     # Can return multiple Values.
     #
+    # @param maintain_order [Boolean]
+    #   Maintain order of data. This requires more work.
+    #
     # @return [Expr]
     #
     # @example
@@ -1209,8 +1212,8 @@ module Polars
     #   # │ 1   ┆ 1   │
     #   # │ 1   ┆ 2   │
     #   # └─────┴─────┘
-    def mode
-      wrap_expr(_rbexpr.mode)
+    def mode(maintain_order: false)
+      wrap_expr(_rbexpr.mode(maintain_order))
     end
 
     # Cast between data types.
@@ -1877,6 +1880,11 @@ module Polars
     #
     # @param index [Object]
     #   An expression that leads to a UInt32 index.
+    # @param null_on_oob [Boolean]
+    #   Behavior if an index is out of bounds:
+    #
+    #   - true  -> set the result to null
+    #   - false -> raise an error
     #
     # @return [Expr]
     #
@@ -1905,9 +1913,9 @@ module Polars
     #   # │ one   ┆ 98    │
     #   # │ two   ┆ 99    │
     #   # └───────┴───────┘
-    def get(index)
+    def get(index, null_on_oob: false)
       index_lit = Utils.parse_into_expression(index)
-      wrap_expr(_rbexpr.get(index_lit))
+      wrap_expr(_rbexpr.get(index_lit, null_on_oob))
     end
 
     # Shift the values by a given period.
@@ -2517,6 +2525,11 @@ module Polars
 
     # Get the first value.
     #
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default `false`).
+    #   If set to `true`, the first non-null value is returned, otherwise `nil` is
+    #   returned if no non-null value exists.
+    #
     # @return [Expr]
     #
     # @example
@@ -2531,11 +2544,16 @@ module Polars
     #   # ╞═════╡
     #   # │ 1   │
     #   # └─────┘
-    def first
-      wrap_expr(_rbexpr.first)
+    def first(ignore_nulls: false)
+      wrap_expr(_rbexpr.first(ignore_nulls))
     end
 
     # Get the last value.
+    #
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default `false`).
+    #   If set to `true`, the last non-null value is returned, otherwise `nil` is
+    #   returned if no non-null value exists.
     #
     # @return [Expr]
     #
@@ -2551,8 +2569,8 @@ module Polars
     #   # ╞═════╡
     #   # │ 2   │
     #   # └─────┘
-    def last
-      wrap_expr(_rbexpr.last)
+    def last(ignore_nulls: false)
+      wrap_expr(_rbexpr.last(ignore_nulls))
     end
 
     # Get the single value.
@@ -2813,6 +2831,7 @@ module Polars
       offset: nil,
       closed: "right"
     )
+      index_column_rbexpr = Utils.parse_into_expression(index_column)
       if offset.nil?
         offset = Utils.negate_duration_string(Utils.parse_as_duration_string(period))
       end
@@ -2820,7 +2839,7 @@ module Polars
       period = Utils.parse_as_duration_string(period)
       offset = Utils.parse_as_duration_string(offset)
 
-      wrap_expr(_rbexpr.rolling(index_column, period, offset, closed))
+      wrap_expr(_rbexpr.rolling(index_column_rbexpr, period, offset, closed))
     end
 
     # Get mask of unique values.
@@ -3440,6 +3459,11 @@ module Polars
     #
     # @return [Expr]
     #
+    # @deprecated
+    #  `Expr#flatten` is deprecated and will be removed in a future version.
+    #   Use `Expr.list.explode(keep_nulls: false, empty_as_null: false)` instead,
+    #   which provides the behavior you likely expect.
+    #
     # @example
     #  df = Polars::DataFrame.new(
     #    {
@@ -3459,7 +3483,7 @@ module Polars
     #  # │ b     ┆ [2, 3, 4] │
     #  # └───────┴───────────┘
     def flatten
-      wrap_expr(_rbexpr.explode)
+      explode(empty_as_null: true, keep_nulls: true)
     end
 
     # Explode a list or utf8 Series.
@@ -3485,8 +3509,8 @@ module Polars
     #   # │ 5   │
     #   # │ 6   │
     #   # └─────┘
-    def explode
-      wrap_expr(_rbexpr.explode)
+    def explode(empty_as_null: true, keep_nulls: true)
+      wrap_expr(_rbexpr.explode(empty_as_null, keep_nulls))
     end
 
     # Take every nth value in the Series and return as a new Series.
@@ -8336,6 +8360,13 @@ module Polars
     # @return [StructExpr]
     def struct
       StructExpr.new(self)
+    end
+
+    # Create an object namespace of all extension type related expressions.
+    #
+    # @return [ExtensionExpr]
+    def ext
+      ExtensionExpr.new(self)
     end
 
     private

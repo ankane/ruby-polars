@@ -2,6 +2,7 @@ use std::os::raw::c_void;
 use std::panic::AssertUnwindSafe;
 
 use magnus::Ruby;
+use magnus::error::RubyUnavailableError;
 use polars::frame::DataFrame;
 use polars::series::IntoSeries;
 use polars_error::PolarsResult;
@@ -28,6 +29,7 @@ macro_rules! apply_method_all_arrow_series2 {
             DataType::Int32 => $self.i32().unwrap().$method($($args),*),
             DataType::Int64 => $self.i64().unwrap().$method($($args),*),
             DataType::Int128 => $self.i128().unwrap().$method($($args),*),
+            DataType::Float16 => todo!(),
             DataType::Float32 => $self.f32().unwrap().$method($($args),*),
             DataType::Float64 => $self.f64().unwrap().$method($($args),*),
             DataType::Date => $self.date().unwrap().physical().$method($($args),*),
@@ -145,7 +147,7 @@ impl RubyAttach for Ruby {
             && unsafe { ruby_thread_has_gvl_p() } != 0
         {
             f(&rb)
-        } else {
+        } else if !matches!(Ruby::get(), Err(RubyUnavailableError::NonRubyThread)) {
             let mut data = CallbackData {
                 func: Some(f),
                 result: None,
@@ -159,6 +161,8 @@ impl RubyAttach for Ruby {
             }
 
             data.result.unwrap()
+        } else {
+            panic!("Non-Ruby thread");
         }
     }
 }

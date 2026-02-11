@@ -356,6 +356,9 @@ module Polars
     # file chunks. After that work will only be done
     # if `next_batches` is called.
     #
+    # @deprecated
+    #   Use `scan_csv().collect_batches` instead.
+    #
     # @param source [Object]
     #   Path to a file or a file-like object.
     # @param has_header [Boolean]
@@ -680,12 +683,30 @@ module Polars
       glob: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       file_cache_ttl: nil,
       include_file_paths: nil
     )
-      if new_columns
-        raise Todo
+      if new_columns&.any? && schema_overrides.is_a?(::Array)
+        msg = "expected 'schema_overrides' hash, found #{schema_overrides.inspect}"
+        raise TypeError, msg
+      elsif new_columns&.any?
+        if with_column_names
+          msg = "cannot set both `with_column_names` and `new_columns`; mutually exclusive"
+          raise ArgumentError, msg
+        end
+        if schema_overrides && schema_overrides.is_a?(::Array)
+          schema_overrides = new_columns.zip(schema_overrides).to_h
+        end
+
+        # wrap new column names as a callable
+        with_column_names = lambda do |cols|
+          if cols.length > new_columns.length
+            new_columns + cols[new_columns.length..]
+          else
+            new_columns
+          end
+        end
       end
 
       Utils._check_arg_is_1byte("separator", separator, false)
@@ -697,6 +718,20 @@ module Polars
 
       if !infer_schema
         infer_schema_length = 0
+      end
+
+      if !retries.nil?
+        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["max_retries"] = retries
+      end
+
+      if !file_cache_ttl.nil?
+        msg = "the `file_cache_ttl` parameter was deprecated in 0.25.0; specify 'file_cache_ttl' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["file_cache_ttl"] = file_cache_ttl
       end
 
       credential_provider_builder = _init_credential_provider_builder(
@@ -731,10 +766,8 @@ module Polars
         truncate_ragged_lines: truncate_ragged_lines,
         decimal_comma: decimal_comma,
         glob: glob,
-        retries: retries,
         storage_options: storage_options,
         credential_provider: credential_provider_builder,
-        file_cache_ttl: file_cache_ttl,
         include_file_paths: include_file_paths
       )
     end
@@ -771,8 +804,6 @@ module Polars
       glob: true,
       storage_options: nil,
       credential_provider: nil,
-      retries: 2,
-      file_cache_ttl: nil,
       include_file_paths: nil
     )
       dtype_list = nil
@@ -823,8 +854,6 @@ module Polars
           schema,
           storage_options,
           credential_provider,
-          retries,
-          file_cache_ttl,
           include_file_paths
         )
       Utils.wrap_ldf(rblf)

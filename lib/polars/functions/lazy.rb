@@ -48,7 +48,7 @@ module Polars
     #   # │ 3   ┆ 2   ┆ [2.0, 1.0] │
     #   # └─────┴─────┴────────────┘
     def element
-      col("")
+      Utils.wrap_expr(Plr.element)
     end
 
     # Return the number of non-null values in the column.
@@ -1404,7 +1404,7 @@ module Polars
     #   The optimization passes done during query optimization.
     #
     #   This has no effect if `lazy` is set to `true`.
-    # @param engine
+    # @param engine [String]
     #   Select the engine used to process the query, optional.
     #   At the moment, if set to `"auto"` (default), the query is run
     #   using the polars streaming engine. Polars will also
@@ -1412,18 +1412,32 @@ module Polars
     #   environment variable. If it cannot run the query using the
     #   selected engine, the query is run using the polars streaming
     #   engine.
+    # @param lazy [Boolean]
+    #   Return as LazyFrame that can be collected later.
+    #   This is only correct if all inputs sink to disk.
+    #
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
     #
     # @return [Array]
     def collect_all(
       lazy_frames,
       optimizations: DEFAULT_QUERY_OPT_FLAGS,
-      engine: "auto"
+      engine: "auto",
+      lazy: false
     )
-      if engine == "streaming"
-        Utils.issue_unstable_warning("streaming mode is considered unstable.")
+      lfs = lazy_frames.map { |lf| lf._ldf }
+
+      if lazy
+        msg = "the `lazy` parameter of `collect_all` is considered unstable."
+        Utils.issue_unstable_warning(msg)
+
+        ldf = Plr.collect_all_lazy(lfs, optimizations._rboptflags)
+        lf = LazyFrame._from_pyldf(ldf)
+        return lf
       end
 
-      lfs = lazy_frames.map { |lf| lf._ldf }
+      engine = LazyFrame._select_engine(engine)
       out = Plr.collect_all(lfs, engine, optimizations._rboptflags)
 
       # wrap the rbdataframes into dataframe

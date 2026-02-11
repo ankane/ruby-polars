@@ -2,6 +2,7 @@ use std::any::Any;
 use std::sync::Arc;
 use std::sync::OnceLock;
 
+use arrow::array::Array;
 use magnus::{IntoValue, Ruby, Value, prelude::*};
 use polars::prelude::*;
 use polars_core::chunked_array::object::builder::ObjectChunkedBuilder;
@@ -43,6 +44,9 @@ pub(crate) fn register_startup_deps(catch_keyboard_interrupt: bool) {
             let object = Ruby::attach(|rb| Wrap(av).into_value_with(rb));
             Box::new(object) as Box<dyn Any>
         });
+        fn object_array_getter(_arr: &dyn Array, _idx: usize) -> Option<AnyValue<'_>> {
+            todo!();
+        }
 
         let object_size = std::mem::size_of::<ObjectValue>();
         let physical_dtype = ArrowDataType::FixedSizeBinary(object_size);
@@ -51,6 +55,7 @@ pub(crate) fn register_startup_deps(catch_keyboard_interrupt: bool) {
             object_converter,
             rbobject_converter,
             physical_dtype,
+            Arc::new(object_array_getter),
         );
         // Register warning function for `polars_warn!`.
         polars_error::set_warning_function(warning_function);

@@ -105,6 +105,10 @@ pub fn col(name: String) -> RbExpr {
     dsl::col(&name).into()
 }
 
+pub fn element() -> RbExpr {
+    dsl::element().into()
+}
+
 fn lfs_to_plans(lfs: RArray) -> RbResult<Vec<DslPlan>> {
     let lfs = lfs.typecheck::<Obj<RbLazyFrame>>()?;
     Ok(lfs
@@ -124,6 +128,24 @@ pub fn collect_all(
         LazyFrame::collect_all_with_engine(plans, engine.0, optflags.clone().inner.into_inner())
     })?;
     Ok(ruby.ary_from_iter(dfs.into_iter().map(Into::<RbDataFrame>::into)))
+}
+
+pub fn collect_all_lazy(lfs: RArray, optflags: &RbOptFlags) -> RbResult<RbLazyFrame> {
+    let plans = lfs_to_plans(lfs)?;
+
+    for plan in &plans {
+        if !matches!(plan, DslPlan::Sink { .. }) {
+            return Err(RbValueError::new_err(
+                "all LazyFrames must end with a sink to use 'collect_all(lazy: true)'",
+            ));
+        }
+    }
+
+    Ok(LazyFrame::from_logical_plan(
+        DslPlan::SinkMultiple { inputs: plans },
+        optflags.clone().inner.into_inner(),
+    )
+    .into())
 }
 
 pub fn concat_lf(
@@ -284,18 +306,20 @@ pub fn concat_lf_diagonal(
     Ok(lf.into())
 }
 
-pub fn concat_lf_horizontal(lfs: RArray, parallel: bool) -> RbResult<RbLazyFrame> {
+pub fn concat_lf_horizontal(lfs: RArray, parallel: bool, strict: bool) -> RbResult<RbLazyFrame> {
     let iter = lfs.into_iter();
 
     let lfs = iter.map(get_lf).collect::<RbResult<Vec<_>>>()?;
 
-    let args = UnionArgs {
-        rechunk: false, // No need to rechunk with horizontal concatenation
-        parallel,
-        to_supertypes: false,
-        ..Default::default()
-    };
-    let lf = dsl::functions::concat_lf_horizontal(lfs, args).map_err(RbPolarsErr::from)?;
+    let lf = dsl::functions::concat_lf_horizontal(
+        lfs,
+        HConcatOptions {
+            parallel,
+            strict,
+            broadcast_unit_length: Default::default(),
+        },
+    )
+    .map_err(RbPolarsErr::from)?;
     Ok(lf.into())
 }
 

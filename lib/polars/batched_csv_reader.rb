@@ -1,7 +1,7 @@
 module Polars
   # @private
   class BatchedCsvReader
-    attr_accessor :_reader, :new_columns
+    attr_accessor :_reader
 
     def initialize(
       source,
@@ -33,70 +33,52 @@ module Polars
       truncate_ragged_lines: false,
       decimal_comma: false
     )
-      path = Utils.normalize_filepath(source)
+      q = Polars.scan_csv(
+        source,
+        infer_schema_length: infer_schema_length,
+        has_header: has_header,
+        ignore_errors: ignore_errors,
+        n_rows: n_rows,
+        skip_rows: skip_rows,
+        skip_lines: skip_lines,
+        separator: separator,
+        rechunk: rechunk,
+        encoding: encoding,
+        schema_overrides: schema_overrides,
+        low_memory: low_memory,
+        comment_prefix: comment_prefix,
+        quote_char: quote_char,
+        null_values: null_values,
+        missing_utf8_is_empty_string: missing_utf8_is_empty_string,
+        try_parse_dates: try_parse_dates,
+        skip_rows_after_header: skip_rows_after_header,
+        row_index_name: row_index_name,
+        row_index_offset: row_index_offset,
+        eol_char: eol_char,
+        raise_if_empty: raise_if_empty,
+        truncate_ragged_lines: truncate_ragged_lines,
+        decimal_comma: decimal_comma,
+        new_columns: new_columns
+      )
 
-      dtype_list = nil
-      dtype_slice = nil
-      if !schema_overrides.nil?
-        if schema_overrides.is_a?(Hash)
-          dtype_list = []
-          schema_overrides.each do |k, v|
-            dtype_list << [k, Utils.parse_into_dtype(v)]
-          end
-        elsif schema_overrides.is_a?(::Array)
-          dtype_slice = schema_overrides
-        else
-          raise TypeError, "dtype arg should be array or hash"
-        end
+      if !columns.nil?
+        q = q.select(columns)
       end
 
-      processed_null_values = Utils._process_null_values(null_values)
-      projection, columns = Utils.handle_projection_columns(columns)
-
-      self._reader = RbBatchedCsv.new(
-        infer_schema_length,
-        batch_size,
-        has_header,
-        ignore_errors,
-        n_rows,
-        skip_rows,
-        skip_lines,
-        projection,
-        separator,
-        rechunk,
-        columns,
-        encoding,
-        n_threads,
-        path,
-        dtype_list,
-        dtype_slice,
-        low_memory,
-        comment_prefix,
-        quote_char,
-        processed_null_values,
-        missing_utf8_is_empty_string,
-        try_parse_dates,
-        skip_rows_after_header,
-        Utils.parse_row_index_args(row_index_name, row_index_offset),
-        eol_char,
-        raise_if_empty,
-        truncate_ragged_lines,
-        decimal_comma
-      )
-      self.new_columns = new_columns
+      # Trigger empty data.
+      if raise_if_empty
+        q.collect_schema
+      end
+      self._reader = q.collect_batches(chunk_size: batch_size)
     end
 
     def next_batches(n)
-      batches = _reader.next_batches(n)
-      if !batches.nil?
-        if new_columns
-          batches.map { |df| Utils._update_columns(Utils.wrap_df(df), new_columns) }
-        else
-          batches.map { |df| Utils.wrap_df(df) }
-        end
-      else
-        nil
+      chunks = self._reader.take(n)
+
+      if chunks.length > 0
+        return chunks
       end
+      nil
     end
   end
 end

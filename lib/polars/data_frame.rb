@@ -45,9 +45,25 @@ module Polars
     # @param nan_to_null [Boolean]
     #   If the data comes from one or more Numo arrays, can optionally convert input
     #   data NaN values to null instead. This is a no-op for all other input data.
-    def initialize(data = nil, schema: nil, schema_overrides: nil, strict: true, orient: nil, infer_schema_length: N_INFER_DEFAULT, nan_to_null: false)
+    def initialize(
+      data = nil,
+      schema: nil,
+      schema_overrides: nil,
+      strict: true,
+      orient: nil,
+      infer_schema_length: N_INFER_DEFAULT,
+      nan_to_null: false,
+      height: nil
+    )
       if defined?(ActiveRecord) && (data.is_a?(ActiveRecord::Relation) || data.is_a?(ActiveRecord::Result))
         raise ArgumentError, "Use read_database instead"
+      end
+
+      if !height.nil?
+        msg = "the `height` parameter of `DataFrame` is considered unstable."
+        Utils.issue_unstable_warning(msg)
+
+        raise Todo
       end
 
       if data.nil?
@@ -928,9 +944,13 @@ module Polars
     #   )
     #   df.write_ndjson
     #   # => "{\"foo\":1,\"bar\":6}\n{\"foo\":2,\"bar\":7}\n{\"foo\":3,\"bar\":8}\n"
-    def write_ndjson(file = nil)
+    def write_ndjson(
+      file = nil,
+      compression: "uncompressed",
+      compression_level: nil,
+      check_extension: true
+    )
       should_return_buffer = false
-      target = nil
       if file.nil?
         target = StringIO.new
         target.set_encoding(Encoding::BINARY)
@@ -941,8 +961,15 @@ module Polars
         target = file
       end
 
+      engine = "in-memory"
+
       lazy.sink_ndjson(
-        target
+        target,
+        compression: compression,
+        compression_level: compression_level,
+        check_extension: check_extension,
+        optimizations: QueryOptFlags._eager,
+        engine: engine
       )
 
       if should_return_buffer
@@ -999,6 +1026,9 @@ module Polars
     def write_csv(
       file = nil,
       include_bom: false,
+      compression: "uncompressed",
+      compression_level: nil,
+      check_extension: true,
       include_header: true,
       separator: ",",
       line_terminator: "\n",
@@ -1014,7 +1044,7 @@ module Polars
       quote_style: nil,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2
+      retries: nil
     )
       Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, true)
@@ -1022,38 +1052,19 @@ module Polars
         null_value = nil
       end
 
+      should_return_buffer = false
       if file.nil?
-        buffer = StringIO.new
-        buffer.set_encoding(Encoding::BINARY)
-        lazy.sink_csv(
-          buffer,
-          include_bom: include_bom,
-          include_header: include_header,
-          separator: separator,
-          line_terminator: line_terminator,
-          quote_char: quote_char,
-          batch_size: batch_size,
-          datetime_format: datetime_format,
-          date_format: date_format,
-          time_format: time_format,
-          float_scientific: float_scientific,
-          float_precision: float_precision,
-          decimal_comma: decimal_comma,
-          null_value: null_value,
-          quote_style: quote_style,
-          storage_options: storage_options,
-          credential_provider: credential_provider,
-          retries: retries
-        )
-        return buffer.string.force_encoding(Encoding::UTF_8)
+        target = StringIO.new
+        target.set_encoding(Encoding::BINARY)
+        should_return_buffer = true
+      else
+        target = file
       end
 
-      if Utils.pathlike?(file)
-        file = Utils.normalize_filepath(file)
-      end
+      engine = "in-memory"
 
       lazy.sink_csv(
-        file,
+        target,
         include_bom: include_bom,
         include_header: include_header,
         separator: separator,
@@ -1070,8 +1081,15 @@ module Polars
         quote_style: quote_style,
         storage_options: storage_options,
         credential_provider: credential_provider,
-        retries: retries
+        retries: retries,
+        optimizations: QueryOptFlags._eager,
+        engine: engine
       )
+
+      if should_return_buffer
+        return target.string.force_encoding(Encoding::UTF_8)
+      end
+
       nil
     end
 
@@ -1140,12 +1158,12 @@ module Polars
       file,
       compression: "uncompressed",
       compat_level: nil,
+      record_batch_size: nil,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2
+      retries: nil
     )
       return_bytes = file.nil?
-      target = nil
       if file.nil?
         target = StringIO.new
         target.set_encoding(Encoding::BINARY)
@@ -1157,9 +1175,12 @@ module Polars
         target,
         compression: compression,
         compat_level: compat_level,
+        record_batch_size: record_batch_size,
         storage_options: storage_options,
         credential_provider: credential_provider,
-        retries: retries
+        retries: retries,
+        optimizations: QueryOptFlags._eager,
+        engine: "streaming"
       )
       return_bytes ? target.string : nil
     end
@@ -1248,8 +1269,9 @@ module Polars
       partition_chunk_size_bytes: 4_294_967_296,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       metadata: nil,
+      arrow_schema: nil,
       mkdir: false
     )
       if compression.nil?
@@ -1260,6 +1282,7 @@ module Polars
       end
 
       target = file
+      engine = "streaming"
       if !partition_by.nil?
         raise Todo
       end
@@ -1275,7 +1298,10 @@ module Polars
         credential_provider: credential_provider,
         retries: retries,
         metadata: metadata,
-        mkdir: mkdir
+        arrow_schema: arrow_schema,
+        engine: engine,
+        mkdir: mkdir,
+        optimizations: QueryOptFlags._eager
       )
     end
 
@@ -2786,7 +2812,8 @@ module Polars
         self,
         by,
         **named_by,
-        maintain_order: maintain_order
+        maintain_order: maintain_order,
+        predicates: nil
       )
     end
 
@@ -2879,7 +2906,7 @@ module Polars
       closed: "right",
       group_by: nil
     )
-      RollingGroupBy.new(self, index_column, period, offset, closed, group_by)
+      RollingGroupBy.new(self, index_column, period, offset, closed, group_by, nil)
     end
 
     # Group based on a time value (or index value of type Int32, Int64).
@@ -3156,7 +3183,8 @@ module Polars
         closed,
         label,
         group_by,
-        start_by
+        start_by,
+        nil
       )
     end
 
@@ -4299,6 +4327,10 @@ module Polars
     #   Column of LargeList type.
     # @param more_columns [Array]
     #   Additional names of columns to explode, specified as positional arguments.
+    # @param empty_as_null [Boolean]
+    #   Explode an empty list/array into a `null`.
+    # @param keep_nulls [Boolean]
+    #   Explode a `null` list/array into a `null`.
     #
     # @return [DataFrame]
     #
@@ -4326,14 +4358,27 @@ module Polars
     #   # │ c       ┆ 7       │
     #   # │ c       ┆ 8       │
     #   # └─────────┴─────────┘
-    def explode(columns, *more_columns)
-      lazy.explode(columns, *more_columns).collect(optimizations: QueryOptFlags._eager)
+    def explode(
+      columns,
+      *more_columns,
+      empty_as_null: true,
+      keep_nulls: true
+    )
+      lazy
+      .explode(
+        columns,
+        *more_columns,
+        empty_as_null: empty_as_null,
+        keep_nulls: keep_nulls
+      ).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Create a spreadsheet-style pivot table as a DataFrame.
     #
     # @param on [Object]
     #   Columns whose values will be used as the header of the output DataFrame
+    # @param on_columns [Object]
+    #  What value combinations will be considered for the output table.
     # @param index [Object]
     #   One or multiple keys to group by
     # @param values [Object]
@@ -4372,6 +4417,7 @@ module Polars
     #   # └─────┴─────┴─────┘
     def pivot(
       on,
+      on_columns: nil,
       index: nil,
       values: nil,
       aggregate_function: nil,
@@ -4379,53 +4425,27 @@ module Polars
       sort_columns: false,
       separator: "_"
     )
-      index = Utils._expand_selectors(self, index)
-      on = Utils._expand_selectors(self, on)
-      if !values.nil?
-        values = Utils._expand_selectors(self, values)
-      end
-
-      if aggregate_function.is_a?(::String)
-        case aggregate_function
-        when "first"
-          aggregate_expr = F.element.first._rbexpr
-        when "sum"
-          aggregate_expr = F.element.sum._rbexpr
-        when "max"
-          aggregate_expr = F.element.max._rbexpr
-        when "min"
-          aggregate_expr = F.element.min._rbexpr
-        when "mean"
-          aggregate_expr = F.element.mean._rbexpr
-        when "median"
-          aggregate_expr = F.element.median._rbexpr
-        when "last"
-          aggregate_expr = F.element.last._rbexpr
-        when "len"
-          aggregate_expr = F.len._rbexpr
-        when "count"
-          warn "`aggregate_function: \"count\"` input for `pivot` is deprecated. Use `aggregate_function: \"len\"` instead."
-          aggregate_expr = F.len._rbexpr
-        else
-          raise ArgumentError, "Argument aggregate fn: '#{aggregate_fn}' was not expected."
+      if on_columns.nil?
+        cols = select(on).unique(maintain_order: true)
+        if sort_columns
+          cols = cols.sort(on)
         end
-      elsif aggregate_function.nil?
-        aggregate_expr = nil
+        on_cols = cols
       else
-        aggregate_expr = aggregate_function._rbexpr
+        on_cols = on_columns
       end
 
-      _from_rbdf(
-        _df.pivot_expr(
-          on,
-          index,
-          values,
-          maintain_order,
-          sort_columns,
-          aggregate_expr,
-          separator
-        )
+      lazy
+      .pivot(
+        on,
+        on_columns: on_cols,
+        index: index,
+        values: values,
+        aggregate_function: aggregate_function,
+        maintain_order: maintain_order,
+        separator: separator
       )
+      .collect(optimizations: QueryOptFlags._eager)
     end
 
     # Unpivot a DataFrame from wide to long format.

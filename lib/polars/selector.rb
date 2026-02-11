@@ -49,8 +49,8 @@ module Polars
     end
 
     # @private
-    def self._by_name(names, strict:)
-      _from_rbselector(RbSelector.by_name(names, strict))
+    def self._by_name(names, strict:, expand_patterns:)
+      _from_rbselector(RbSelector.by_name(names, strict, expand_patterns))
     end
 
     # Invert the selector.
@@ -193,7 +193,7 @@ module Polars
       elsif exclude_dtypes.any?
         self - Selectors.by_dtype(exclude_dtypes)
       else
-        self - Selectors.by_name(exclude_cols, require_all: false)
+        self - Selector._by_name(exclude_cols, strict: false, expand_patterns: true)
       end
     end
 

@@ -264,5 +264,155 @@ module Polars
         _rbexpr.bin_reinterpret(dtype._rbdatatype_expr, endianness)
       )
     end
+
+    # Slice the binary values.
+    #
+    # @param offset [Object]
+    #     Start index. Negative indexing is supported.
+    # @param length [Object]
+    #   Length of the slice. If set to `nil` (default), the slice is taken to the
+    #   end of the value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   colors = Polars::DataFrame.new(
+    #     {
+    #       "name" => ["black", "yellow", "blue"],
+    #       "code" => ["\x00\x00\x00".b, "\xff\xff\x00".b, "\x00\x00\xff".b]
+    #     }
+    #   )
+    #   colors.with_columns(
+    #     Polars.col("code").bin.slice(1, 2).alias("sliced")
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────┬─────────────────┬─────────────┐
+    #   # │ name   ┆ code            ┆ sliced      │
+    #   # │ ---    ┆ ---             ┆ ---         │
+    #   # │ str    ┆ binary          ┆ binary      │
+    #   # ╞════════╪═════════════════╪═════════════╡
+    #   # │ black  ┆ b"\x00\x00\x00" ┆ b"\x00\x00" │
+    #   # │ yellow ┆ b"\xff\xff\x00" ┆ b"\xff\x00" │
+    #   # │ blue   ┆ b"\x00\x00\xff" ┆ b"\x00\xff" │
+    #   # └────────┴─────────────────┴─────────────┘
+    def slice(offset, length = nil)
+      offset_rbexpr = Utils.parse_into_expression(offset)
+      length_rbexpr = Utils.parse_into_expression(length)
+      Utils.wrap_expr(_rbexpr.bin_slice(offset_rbexpr, length_rbexpr))
+    end
+
+    # Take the first `n` bytes of the binary values.
+    #
+    # @param n [Object]
+    #   Length of the slice (integer or expression). Negative indexing is supported;
+    #   see note (2) below.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   (1) A similar method exists for taking the last `n` bytes: :func:`tail`.
+    #   (2) If `n` is negative, it is interpreted as "until the nth byte from the end",
+    #       e.g., ``head(-3)`` returns all but the last three bytes.
+    #
+    # @example
+    #   colors = Polars::DataFrame.new(
+    #     {
+    #       "name" => ["black", "yellow", "blue"],
+    #       "code" => ["\x00\x00\x00".b, "\xff\xff\x00".b, "\x00\x00\xff".b]
+    #     }
+    #   )
+    #   colors.with_columns(
+    #     Polars.col("code").bin.head(2).alias("head")
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────┬─────────────────┬─────────────┐
+    #   # │ name   ┆ code            ┆ head        │
+    #   # │ ---    ┆ ---             ┆ ---         │
+    #   # │ str    ┆ binary          ┆ binary      │
+    #   # ╞════════╪═════════════════╪═════════════╡
+    #   # │ black  ┆ b"\x00\x00\x00" ┆ b"\x00\x00" │
+    #   # │ yellow ┆ b"\xff\xff\x00" ┆ b"\xff\xff" │
+    #   # │ blue   ┆ b"\x00\x00\xff" ┆ b"\x00\x00" │
+    #   # └────────┴─────────────────┴─────────────┘
+    def head(n = 5)
+      n_rbexpr = Utils.parse_into_expression(n, str_as_lit: false)
+      Utils.wrap_expr(_rbexpr.bin_head(n_rbexpr))
+    end
+
+    # Take the last `n` bytes of the binary values.
+    #
+    # @param n [Object]
+    #   Length of the slice (integer or expression). Negative indexing is supported;
+    #   see note (2) below.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   (1) A similar method exists for taking the first `n` bytes: `head`.
+    #   (2) If `n` is negative, it is interpreted as "starting at the nth byte",
+    #       e.g., ``tail(-3)`` returns all but the first three bytes.
+    #
+    # @example
+    #   colors = Polars::DataFrame.new(
+    #     {
+    #       "name" => ["black", "yellow", "blue"],
+    #       "code" => ["\x00\x00\x00".b, "\xff\xff\x00".b, "\x00\x00\xff".b]
+    #     }
+    #   )
+    #   colors.with_columns(
+    #     Polars.col("code").bin.tail(2).alias("tail")
+    #   )
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌────────┬─────────────────┬─────────────┐
+    #   # │ name   ┆ code            ┆ tail        │
+    #   # │ ---    ┆ ---             ┆ ---         │
+    #   # │ str    ┆ binary          ┆ binary      │
+    #   # ╞════════╪═════════════════╪═════════════╡
+    #   # │ black  ┆ b"\x00\x00\x00" ┆ b"\x00\x00" │
+    #   # │ yellow ┆ b"\xff\xff\x00" ┆ b"\xff\x00" │
+    #   # │ blue   ┆ b"\x00\x00\xff" ┆ b"\x00\xff" │
+    #   # └────────┴─────────────────┴─────────────┘
+    def tail(n = 5)
+      n_rbexpr = Utils.parse_into_expression(n, str_as_lit: false)
+      Utils.wrap_expr(_rbexpr.bin_tail(n_rbexpr))
+    end
+
+    # Get the byte value at the given index.
+    #
+    # For example, index `0` would return the first byte of every binary value
+    # and index `-1` would return the last byte of every binary value.
+    # If an index is out of bounds, it will return a `None`.
+    #
+    # @param index [Object]
+    #   Index to return per binary value
+    # @param null_on_oob [Boolean]
+    #   Behavior if an index is out of bounds:
+    #
+    #   * true -> set as null
+    #   * false -> raise an error
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => ["\x01\x02\x03".b, "".b, "\x04\x05".b]})
+    #   df.with_columns(get: Polars.col("a").bin.get(0, null_on_oob: true))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────────────────┬──────┐
+    #   # │ a               ┆ get  │
+    #   # │ ---             ┆ ---  │
+    #   # │ binary          ┆ u8   │
+    #   # ╞═════════════════╪══════╡
+    #   # │ b"\x01\x02\x03" ┆ 1    │
+    #   # │ b""             ┆ null │
+    #   # │ b"\x04\x05"     ┆ 4    │
+    #   # └─────────────────┴──────┘
+    def get(index, null_on_oob: false)
+      index_rbexpr = Utils.parse_into_expression(index)
+      Utils.wrap_expr(_rbexpr.bin_get(index_rbexpr, null_on_oob))
+    end
   end
 end

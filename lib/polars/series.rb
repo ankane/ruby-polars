@@ -1949,6 +1949,75 @@ module Polars
       super
     end
 
+    # Execute a SQL query against the Series.
+    #
+    # @note
+    #   This functionality is considered **unstable**, although it is close to
+    #   being considered stable. It may be changed at any point without it being
+    #   considered a breaking change.
+    #
+    # @param query [String]
+    #   SQL query to execute.
+    # @param table_name [String]
+    #   Optionally provide an explicit name for the table that represents the
+    #   calling frame (defaults to "self").
+    #
+    # @return [DataFrame]
+    #
+    # @note
+    #   * The calling Series is automatically registered as a table in the SQLContext
+    #     under the name "self". If you want access to the DataFrames, LazyFrames, and
+    #     other Series found in the current globals, use :meth:`pl.sql <polars.sql>`.
+    #   * More control over registration and execution behaviour is available by
+    #     using the :class:`SQLContext` object.
+    #   * The SQL query executes in lazy mode before being collected and returned
+    #     as a DataFrame.
+    #   * It is recommended to name your Series for use with SQL, otherwise the default
+    #     Series name (an empty string) is used; while `""` is valid, it is awkward.
+    #
+    # @example Query the Series using SQL:
+    #   s = Polars::Series.new(
+    #     "dt",
+    #     [Date.new(1999, 12, 31), Date.new(2099, 2, 14), Date.new(2026, 3, 5)]
+    #   )
+    #   s.sql("
+    #     SELECT
+    #       EXTRACT('year',dt) AS y,
+    #       EXTRACT('month',dt) AS m,
+    #       EXTRACT('day',dt) AS d,
+    #     FROM self
+    #     WHERE dt > '2020-01-01'
+    #     ORDER BY dt DESC
+    #   ")
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌──────┬─────┬─────┐
+    #   # │ y    ┆ m   ┆ d   │
+    #   # │ ---  ┆ --- ┆ --- │
+    #   # │ i32  ┆ i8  ┆ i8  │
+    #   # ╞══════╪═════╪═════╡
+    #   # │ 2099 ┆ 2   ┆ 14  │
+    #   # │ 2026 ┆ 3   ┆ 5   │
+    #   # └──────┴─────┴─────┘
+    #
+    # @example While you can refer to an unnamed Series column using the default empty string, it is not recommended:
+    #   s = Polars::Series.new([1, 2, 3])
+    #   s.sql('SELECT "" AS x, "" * 2 AS "2x" FROM self')
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ x   ┆ 2x  │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ i64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 2   │
+    #   # │ 2   ┆ 4   │
+    #   # │ 3   ┆ 6   │
+    #   # └─────┴─────┘
+    def sql(query, table_name: "self")
+      to_frame.sql(query, table_name: table_name)
+    end
+
     # Sort this Series.
     #
     # @param descending [Boolean]
@@ -2668,6 +2737,11 @@ module Polars
     #
     # This means that every item is expanded to a new row.
     #
+    # @param empty_as_null [Boolean]
+    #   Explode an empty list into a `null`.
+    # @param keep_nulls [Boolean]
+    #   Explode a `null` list into a `null`.
+    #
     # @return [Series]
     #
     # @example
@@ -2684,7 +2758,7 @@ module Polars
     #   #         9
     #   #         10
     #   # ]
-    def explode
+    def explode(empty_as_null: true, keep_nulls: true)
       super
     end
 
@@ -3349,6 +3423,9 @@ module Polars
     #
     # Can return multiple Values.
     #
+    # @param maintain_order [Boolean]
+    #   Maintain order of data. This requires more work.
+    #
     # @return [Series]
     #
     # @example
@@ -3360,7 +3437,7 @@ module Polars
     #   # [
     #   #         2
     #   # ]
-    def mode
+    def mode(maintain_order: false)
       super
     end
 
@@ -6120,18 +6197,28 @@ module Polars
     #
     # Returns `nil` if the Series is empty.
     #
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default `false`).
+    #   If set to `true`, the first non-null value is returned, otherwise `nil` is
+    #   returned if no non-null value exists.
+    #
     # @return [Object]
-    def first
-      _s.first
+    def first(ignore_nulls: false)
+      _s.first(ignore_nulls)
     end
 
     # Get the last element of the Series.
     #
     # Returns `nil` if the Series is empty.
     #
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default `false`).
+    #   If set to `true`, the last non-null value is returned, otherwise `nil` is
+    #   returned if no non-null value exists.
+    #
     # @return [Object]
-    def last
-      _s.last
+    def last(ignore_nulls: false)
+      _s.last(ignore_nulls)
     end
 
     # Approximate count of unique values.
@@ -6190,6 +6277,13 @@ module Polars
     # @return [StructNameSpace]
     def struct
       StructNameSpace.new(self)
+    end
+
+    # Create an object namespace of all extension type related methods.
+    #
+    # @return [ExtensionNameSpace]
+    def ext
+      ExtensionNameSpace.new(self)
     end
 
     # Create a plot namespace.
@@ -6352,10 +6446,13 @@ module Polars
       Int16 => "i16",
       Int32 => "i32",
       Int64 => "i64",
+      Int128 => "i128",
       UInt8 => "u8",
       UInt16 => "u16",
       UInt32 => "u32",
       UInt64 => "u64",
+      UInt128 => "u128",
+      Float16 => "f16",
       Float32 => "f32",
       Float64 => "f64",
       Boolean => "bool",

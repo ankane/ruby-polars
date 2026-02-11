@@ -2,6 +2,7 @@ use magnus::encoding::EncodingCapable;
 use magnus::{
     IntoValue, RArray, RHash, RString, Ruby, TryConvert, Value, prelude::*, r_hash::ForEach,
 };
+use num_traits::ToPrimitive;
 use polars::prelude::*;
 use polars_compute::decimal::{DEC128_MAX_PREC, DecimalFmtBuffer, dec128_fits};
 use polars_core::utils::any_values_to_supertype_and_n_dtypes;
@@ -37,6 +38,7 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
         AnyValue::Int32(v) => ruby.into_value(v),
         AnyValue::Int64(v) => ruby.into_value(v),
         AnyValue::Int128(v) => ruby.into_value(v),
+        AnyValue::Float16(v) => ruby.into_value(v.to_f32()),
         AnyValue::Float32(v) => ruby.into_value(v),
         AnyValue::Float64(v) => ruby.into_value(v),
         AnyValue::Null => ruby.qnil().as_value(),
@@ -63,7 +65,7 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
                 .unwrap()
         }
         AnyValue::Time(v) => pl_utils(ruby).funcall("_to_ruby_time", (v,)).unwrap(),
-        AnyValue::Array(v, _) | AnyValue::List(v) => RbSeries::new(v).to_a().as_value(),
+        AnyValue::Array(v, _) | AnyValue::List(v) => RbSeries::new(v).to_a().unwrap().as_value(),
         ref av @ AnyValue::Struct(_, _, flds) => struct_dict(ruby, av._iter_struct_av(), flds),
         AnyValue::StructOwned(payload) => struct_dict(ruby, payload.0.into_iter(), &payload.1),
         AnyValue::Object(v) => {

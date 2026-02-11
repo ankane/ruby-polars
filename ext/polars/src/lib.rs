@@ -1,6 +1,5 @@
 #![allow(clippy::too_many_arguments)]
 
-mod batched_csv;
 mod c_api;
 mod catalog;
 mod conversion;
@@ -25,7 +24,6 @@ mod testing;
 mod timeout;
 mod utils;
 
-use batched_csv::RbBatchedCsv;
 use catalog::unity::RbCatalogClient;
 use conversion::*;
 use dataframe::RbDataFrame;
@@ -37,7 +35,7 @@ use expr::selector::RbSelector;
 use functions::string_cache::RbStringCacheHolder;
 use functions::whenthen::{RbChainedThen, RbChainedWhen, RbThen, RbWhen};
 use interop::arrow::to_rb::{RbArrowArrayStream, RbArrowSchema};
-use lazyframe::{RbInProcessQuery, RbLazyFrame, RbOptFlags};
+use lazyframe::{RbCollectBatches, RbInProcessQuery, RbLazyFrame, RbOptFlags};
 use lazygroupby::RbLazyGroupBy;
 use magnus::{Ruby, function, method, prelude::*};
 use series::RbSeries;
@@ -56,10 +54,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     crate::on_startup::register_startup_deps(true);
 
     let module = ruby.define_module("Polars")?;
-
-    let class = module.define_class("RbBatchedCsv", ruby.class_object())?;
-    class.define_singleton_method("new", function!(RbBatchedCsv::new, -1))?;
-    class.define_method("next_batches", method!(RbBatchedCsv::next_batches, 1))?;
 
     let class = module.define_class("RbDataFrame", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbDataFrame::init, 1))?;
@@ -143,7 +137,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("with_row_index", method!(RbDataFrame::with_row_index, 2))?;
     class.define_method("_clone", method!(RbDataFrame::clone, 0))?;
     class.define_method("unpivot", method!(RbDataFrame::unpivot, 4))?;
-    class.define_method("pivot_expr", method!(RbDataFrame::pivot_expr, 7))?;
     class.define_method("partition_by", method!(RbDataFrame::partition_by, 3))?;
     class.define_method("lazy", method!(RbDataFrame::lazy, 0))?;
     class.define_method("to_dummies", method!(RbDataFrame::to_dummies, 4))?;
@@ -200,8 +193,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arg_unique", method!(RbExpr::arg_unique, 0))?;
     class.define_method("unique", method!(RbExpr::unique, 0))?;
     class.define_method("unique_stable", method!(RbExpr::unique_stable, 0))?;
-    class.define_method("first", method!(RbExpr::first, 0))?;
-    class.define_method("last", method!(RbExpr::last, 0))?;
+    class.define_method("first", method!(RbExpr::first, 1))?;
+    class.define_method("last", method!(RbExpr::last, 1))?;
     class.define_method("item", method!(RbExpr::item, 1))?;
     class.define_method("implode", method!(RbExpr::implode, 0))?;
     class.define_method("quantile", method!(RbExpr::quantile, 2))?;
@@ -230,7 +223,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("index_of", method!(RbExpr::index_of, 1))?;
     class.define_method("search_sorted", method!(RbExpr::search_sorted, 3))?;
     class.define_method("gather", method!(RbExpr::gather, 1))?;
-    class.define_method("get", method!(RbExpr::get, 1))?;
+    class.define_method("get", method!(RbExpr::get, 2))?;
     class.define_method("sort_by", method!(RbExpr::sort_by, 5))?;
     class.define_method("shift", method!(RbExpr::shift, 2))?;
     class.define_method("fill_null", method!(RbExpr::fill_null, 1))?;
@@ -251,7 +244,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("approx_n_unique", method!(RbExpr::approx_n_unique, 0))?;
     class.define_method("is_first_distinct", method!(RbExpr::is_first_distinct, 0))?;
     class.define_method("is_last_distinct", method!(RbExpr::is_last_distinct, 0))?;
-    class.define_method("explode", method!(RbExpr::explode, 0))?;
+    class.define_method("explode", method!(RbExpr::explode, 2))?;
     class.define_method("gather_every", method!(RbExpr::gather_every, 2))?;
     class.define_method("tail", method!(RbExpr::tail, 1))?;
     class.define_method("head", method!(RbExpr::head, 1))?;
@@ -354,7 +347,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arr_slice", method!(RbExpr::arr_slice, 3))?;
     class.define_method("arr_tail", method!(RbExpr::arr_tail, 2))?;
     class.define_method("arr_shift", method!(RbExpr::arr_shift, 1))?;
-    class.define_method("arr_explode", method!(RbExpr::arr_explode, 0))?;
+    class.define_method("arr_explode", method!(RbExpr::arr_explode, 2))?;
     class.define_method("arr_eval", method!(RbExpr::arr_eval, 2))?;
     class.define_method("arr_agg", method!(RbExpr::arr_agg, 1))?;
     class.define_method("binary_contains", method!(RbExpr::bin_contains, 1))?;
@@ -378,6 +371,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("bin_reinterpret", method!(RbExpr::bin_reinterpret, 2))?;
     class.define_method("bin_size_bytes", method!(RbExpr::bin_size_bytes, 0))?;
+    class.define_method("bin_slice", method!(RbExpr::bin_slice, 2))?;
+    class.define_method("bin_head", method!(RbExpr::bin_head, 1))?;
+    class.define_method("bin_tail", method!(RbExpr::bin_tail, 1))?;
+    class.define_method("bin_get", method!(RbExpr::bin_get, 2))?;
     class.define_method(
         "str_json_path_match",
         method!(RbExpr::str_json_path_match, 1),
@@ -397,11 +394,16 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbExpr::str_split_exact_inclusive, 2),
     )?;
     class.define_method("str_splitn", method!(RbExpr::str_splitn, 2))?;
+    class.define_method("str_split_regex", method!(RbExpr::str_split_regex, 2))?;
+    class.define_method(
+        "str_split_regex_inclusive",
+        method!(RbExpr::str_split_regex_inclusive, 2),
+    )?;
     class.define_method("str_to_decimal", method!(RbExpr::str_to_decimal, 1))?;
     class.define_method("str_contains_any", method!(RbExpr::str_contains_any, 2))?;
-    class.define_method("str_replace_many", method!(RbExpr::str_replace_many, 3))?;
-    class.define_method("str_extract_many", method!(RbExpr::str_extract_many, 3))?;
-    class.define_method("str_find_many", method!(RbExpr::str_find_many, 3))?;
+    class.define_method("str_replace_many", method!(RbExpr::str_replace_many, 4))?;
+    class.define_method("str_extract_many", method!(RbExpr::str_extract_many, 4))?;
+    class.define_method("str_find_many", method!(RbExpr::str_find_many, 4))?;
     class.define_method("str_escape_regex", method!(RbExpr::str_escape_regex, 0))?;
     class.define_method("list_len", method!(RbExpr::list_len, 0))?;
     class.define_method("list_contains", method!(RbExpr::list_contains, 2))?;
@@ -472,7 +474,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("map_batches", method!(RbExpr::map_batches, 5))?;
     class.define_method("dot", method!(RbExpr::dot, 1))?;
     class.define_method("reinterpret", method!(RbExpr::reinterpret, 1))?;
-    class.define_method("mode", method!(RbExpr::mode, 0))?;
+    class.define_method("mode", method!(RbExpr::mode, 1))?;
     class.define_method("interpolate", method!(RbExpr::interpolate, 1))?;
     class.define_method("interpolate_by", method!(RbExpr::interpolate_by, 1))?;
     class.define_method("rolling_sum", method!(RbExpr::rolling_sum, 4))?;
@@ -658,9 +660,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("name_prefix_fields", method!(RbExpr::name_prefix_fields, 1))?;
     class.define_method("name_suffix_fields", method!(RbExpr::name_suffix_fields, 1))?;
 
+    // extension
+    class.define_method("ext_storage", method!(RbExpr::ext_storage, 0))?;
+    class.define_method("ext_to", method!(RbExpr::ext_to, 1))?;
+
     // maybe add to different class
     let class = module.define_module("Plr")?;
     class.define_singleton_method("col", function!(functions::lazy::col, 1))?;
+    class.define_singleton_method("element", function!(functions::lazy::element, 0))?;
     class.define_singleton_method("len", function!(functions::lazy::len, 0))?;
     class.define_singleton_method("fold", function!(functions::lazy::fold, 5))?;
     class.define_singleton_method("cum_fold", function!(functions::lazy::cum_fold, 6))?;
@@ -723,7 +730,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_singleton_method(
         "concat_lf_horizontal",
-        function!(functions::lazy::concat_lf_horizontal, 2),
+        function!(functions::lazy::concat_lf_horizontal, 3),
     )?;
     class.define_singleton_method("concat_df", function!(functions::eager::concat_df, 1))?;
     class.define_singleton_method("concat_lf", function!(functions::lazy::concat_lf, 4))?;
@@ -733,7 +740,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_singleton_method(
         "concat_df_horizontal",
-        function!(functions::eager::concat_df_horizontal, 1),
+        function!(functions::eager::concat_df_horizontal, 2),
     )?;
     class.define_singleton_method(
         "concat_series",
@@ -743,13 +750,17 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("ipc_schema", function!(functions::io::read_ipc_schema, 1))?;
     class.define_singleton_method(
         "read_parquet_metadata",
-        function!(functions::io::read_parquet_metadata, 4),
+        function!(functions::io::read_parquet_metadata, 3),
     )?;
     class.define_singleton_method(
         "parquet_schema",
         function!(functions::io::read_parquet_schema, 1),
     )?;
     class.define_singleton_method("collect_all", function!(functions::lazy::collect_all, 3))?;
+    class.define_singleton_method(
+        "collect_all_lazy",
+        function!(functions::lazy::collect_all_lazy, 2),
+    )?;
     class.define_singleton_method("date_range", function!(functions::range::date_range, 4))?;
     class.define_singleton_method("date_ranges", function!(functions::range::date_ranges, 4))?;
     class.define_singleton_method(
@@ -915,10 +926,11 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("profile", method!(RbLazyFrame::profile, 0))?;
     class.define_method("collect", method!(RbLazyFrame::collect, 1))?;
-    class.define_method("sink_parquet", method!(RbLazyFrame::sink_parquet, 12))?;
-    class.define_method("sink_ipc", method!(RbLazyFrame::sink_ipc, 7))?;
+    class.define_method("collect_batches", method!(RbLazyFrame::collect_batches, 4))?;
+    class.define_method("sink_parquet", method!(RbLazyFrame::sink_parquet, 9))?;
+    class.define_method("sink_ipc", method!(RbLazyFrame::sink_ipc, 6))?;
     class.define_method("sink_csv", method!(RbLazyFrame::sink_csv, -1))?;
-    class.define_method("sink_json", method!(RbLazyFrame::sink_json, 5))?;
+    class.define_method("sink_ndjson", method!(RbLazyFrame::sink_ndjson, 5))?;
     class.define_method("filter", method!(RbLazyFrame::filter, 1))?;
     class.define_method("remove", method!(RbLazyFrame::remove, 1))?;
     class.define_method("select", method!(RbLazyFrame::select, 1))?;
@@ -950,13 +962,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("var", method!(RbLazyFrame::var, 1))?;
     class.define_method("median", method!(RbLazyFrame::median, 0))?;
     class.define_method("quantile", method!(RbLazyFrame::quantile, 2))?;
-    class.define_method("explode", method!(RbLazyFrame::explode, 1))?;
+    class.define_method("explode", method!(RbLazyFrame::explode, 3))?;
     class.define_method("null_count", method!(RbLazyFrame::null_count, 0))?;
     class.define_method("unique", method!(RbLazyFrame::unique, 3))?;
     class.define_method("drop_nans", method!(RbLazyFrame::drop_nans, 1))?;
     class.define_method("drop_nulls", method!(RbLazyFrame::drop_nulls, 1))?;
     class.define_method("slice", method!(RbLazyFrame::slice, 2))?;
     class.define_method("tail", method!(RbLazyFrame::tail, 1))?;
+    class.define_method("pivot", method!(RbLazyFrame::pivot, 7))?;
     class.define_method("unpivot", method!(RbLazyFrame::unpivot, 4))?;
     class.define_method("with_row_index", method!(RbLazyFrame::with_row_index, 2))?;
     class.define_method("drop", method!(RbLazyFrame::drop, 1))?;
@@ -973,6 +986,9 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbLazyFrame::collect_concurrently, 0),
     )?;
 
+    let class = module.define_class("RbCollectBatches", ruby.class_object())?;
+    class.define_method("next", method!(RbCollectBatches::next, 0))?;
+
     let class = module.define_class("RbInProcessQuery", ruby.class_object())?;
     class.define_method("cancel", method!(RbInProcessQuery::cancel, 0))?;
     class.define_method("fetch", method!(RbInProcessQuery::fetch, 0))?;
@@ -982,6 +998,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
 
     let class = module.define_class("RbLazyGroupBy", ruby.class_object())?;
+    class.define_method("having", method!(RbLazyGroupBy::having, 1))?;
     class.define_method("agg", method!(RbLazyGroupBy::agg, 1))?;
     class.define_method("head", method!(RbLazyGroupBy::head, 1))?;
     class.define_method("tail", method!(RbLazyGroupBy::tail, 1))?;
@@ -1000,6 +1017,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("new_opt_i128", function!(RbSeries::new_opt_i128, 3))?;
     class.define_singleton_method("new_opt_f32", function!(RbSeries::new_opt_f32, 3))?;
     class.define_singleton_method("new_opt_f64", function!(RbSeries::new_opt_f64, 3))?;
+    class.define_singleton_method("new_opt_f16", function!(RbSeries::new_opt_f16, 3))?;
     class.define_singleton_method(
         "new_from_any_values",
         function!(RbSeries::new_from_any_values, 3),
@@ -1057,8 +1075,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("max", method!(RbSeries::max, 0))?;
     class.define_method("min", method!(RbSeries::min, 0))?;
     class.define_method("sum", method!(RbSeries::sum, 0))?;
-    class.define_method("first", method!(RbSeries::first, 0))?;
-    class.define_method("last", method!(RbSeries::last, 0))?;
+    class.define_method("first", method!(RbSeries::first, 1))?;
+    class.define_method("last", method!(RbSeries::last, 1))?;
     class.define_method("approx_n_unique", method!(RbSeries::approx_n_unique, 0))?;
     class.define_method("bitwise_and", method!(RbSeries::bitwise_and, 0))?;
     class.define_method("bitwise_or", method!(RbSeries::bitwise_or, 0))?;
@@ -1376,7 +1394,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("exclusive_or", method!(RbSelector::exclusive_or, 1))?;
     class.define_method("intersect", method!(RbSelector::intersect, 1))?;
     class.define_singleton_method("by_dtype", function!(RbSelector::by_dtype, 1))?;
-    class.define_singleton_method("by_name", function!(RbSelector::by_name, 2))?;
+    class.define_singleton_method("by_name", function!(RbSelector::by_name, 3))?;
     class.define_singleton_method("by_index", function!(RbSelector::by_index, 2))?;
     class.define_singleton_method("first", function!(RbSelector::first, 1))?;
     class.define_singleton_method("last", function!(RbSelector::last, 1))?;

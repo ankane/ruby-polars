@@ -5,7 +5,16 @@ module Polars
     attr_accessor :_ldf
 
     # Create a new LazyFrame.
-    def initialize(data = nil, schema: nil, schema_overrides: nil, strict: true, orient: nil, infer_schema_length: N_INFER_DEFAULT, nan_to_null: false)
+    def initialize(
+      data = nil,
+      schema: nil,
+      schema_overrides: nil,
+      strict: true,
+      orient: nil,
+      infer_schema_length: N_INFER_DEFAULT,
+      nan_to_null: false,
+      height: nil
+    )
       self._ldf = (
         DataFrame.new(
           data,
@@ -14,7 +23,8 @@ module Polars
           strict: strict,
           orient: orient,
           infer_schema_length: infer_schema_length,
-          nan_to_null: nan_to_null
+          nan_to_null: nan_to_null,
+          height: height
         )
         .lazy
         ._ldf
@@ -1095,16 +1105,16 @@ module Polars
       maintain_order: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       sync_on_close: nil,
       metadata: nil,
       mkdir: false,
       lazy: false,
-      field_overwrites: nil,
+      arrow_schema: nil,
       engine: "auto",
       optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
-      engine = _select_engine(engine, path)
+      engine = _select_engine(engine)
 
       if statistics == true
         statistics = {
@@ -1126,40 +1136,37 @@ module Polars
 
       _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
 
+      if !retries.nil?
+        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["max_retries"] = retries
+      end
+
       credential_provider_builder = _init_credential_provider_builder.(
         credential_provider, path, storage_options, "sink_parquet"
       )
 
-      if storage_options&.any?
-        storage_options = storage_options.to_a
-      else
-        storage_options = nil
-      end
+      target = _to_sink_target(path)
 
-      sink_options = {
-        "sync_on_close" => sync_on_close || "none",
-        "maintain_order" => maintain_order,
-        "mkdir" => mkdir
-      }
-
-      field_overwrites_dicts = []
-      if !field_overwrites.nil?
-        raise Todo
-      end
+      sink_options = SinkOptions.new(
+        mkdir: mkdir,
+        maintain_order: maintain_order,
+        sync_on_close: sync_on_close,
+        storage_options: storage_options,
+        credential_provider: credential_provider_builder
+      )
 
       ldf_rb = _ldf.sink_parquet(
-        path,
+        target,
+        sink_options,
         compression,
         compression_level,
         statistics,
         row_group_size,
         data_page_size,
-        storage_options,
-        credential_provider_builder,
-        retries,
-        sink_options,
         metadata,
-        field_overwrites_dicts
+        arrow_schema
       )
 
       if !lazy
@@ -1230,35 +1237,34 @@ module Polars
       path,
       compression: "uncompressed",
       compat_level: nil,
+      record_batch_size: nil,
       maintain_order: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       sync_on_close: nil,
       mkdir: false,
       lazy: false,
       engine: "auto",
-      optimizations: DEFAULT_QUERY_OPT_FLAGS
+      optimizations: DEFAULT_QUERY_OPT_FLAGS,
+      _record_batch_statistics: false
     )
-      engine = _select_engine(engine, path)
+      engine = _select_engine(engine)
 
       _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
+
+      if !retries.nil?
+        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["max_retries"] = retries
+      end
 
       credential_provider_builder = _init_credential_provider_builder.(
         credential_provider, path, storage_options, "sink_ipc"
       )
 
-      if storage_options&.any?
-        storage_options = storage_options.to_a
-      else
-        storage_options = nil
-      end
-
-      sink_options = {
-        "sync_on_close" => sync_on_close || "none",
-        "maintain_order" => maintain_order,
-        "mkdir" => mkdir
-      }
+      target = _to_sink_target(path)
 
       compat_level_rb = nil
       if compat_level.nil?
@@ -1271,14 +1277,21 @@ module Polars
         compression = "uncompressed"
       end
 
+      sink_options = SinkOptions.new(
+        mkdir: mkdir,
+        maintain_order: maintain_order,
+        sync_on_close: sync_on_close,
+        storage_options: storage_options,
+        credential_provider: credential_provider_builder
+      )
+
       ldf_rb = _ldf.sink_ipc(
-        path,
+        target,
+        sink_options,
         compression,
         compat_level_rb,
-        storage_options,
-        credential_provider_builder,
-        retries,
-        sink_options
+        record_batch_size,
+        _record_batch_statistics
       )
 
       if !lazy
@@ -1388,6 +1401,9 @@ module Polars
     def sink_csv(
       path,
       include_bom: false,
+      compression: "uncompressed",
+      compression_level: nil,
+      check_extension: true,
       include_header: true,
       separator: ",",
       line_terminator: "\n",
@@ -1404,7 +1420,7 @@ module Polars
       maintain_order: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       sync_on_close: nil,
       mkdir: false,
       lazy: false,
@@ -1413,7 +1429,7 @@ module Polars
     )
       Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, false)
-      engine = _select_engine(engine, path)
+      engine = _select_engine(engine)
 
       _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
 
@@ -1421,21 +1437,30 @@ module Polars
         credential_provider, path, storage_options, "sink_csv"
       )
 
-      if storage_options&.any?
-        storage_options = storage_options.to_a
-      else
-        storage_options = nil
+      target = _to_sink_target(path)
+
+      if !retries.nil?
+        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["max_retries"] = retries
       end
 
-      sink_options = {
-        "sync_on_close" => sync_on_close || "none",
-        "maintain_order" => maintain_order,
-        "mkdir" => mkdir
-      }
+      sink_options = SinkOptions.new(
+        mkdir: mkdir,
+        maintain_order: maintain_order,
+        sync_on_close: sync_on_close,
+        storage_options: storage_options,
+        credential_provider: credential_provider_builder
+      )
 
       ldf_rb = _ldf.sink_csv(
-        path,
+        target,
+        sink_options,
         include_bom,
+        compression,
+        compression_level,
+        check_extension,
         include_header,
         separator.ord,
         line_terminator,
@@ -1448,11 +1473,7 @@ module Polars
         float_precision,
         decimal_comma,
         null_value,
-        quote_style,
-        storage_options,
-        credential_provider_builder,
-        retries,
-        sink_options
+        quote_style
       )
 
       if !lazy
@@ -1518,17 +1539,27 @@ module Polars
     #   lf.sink_ndjson("out.ndjson")
     def sink_ndjson(
       path,
+      compression: "uncompressed",
+      compression_level: nil,
+      check_extension: true,
       maintain_order: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       sync_on_close: nil,
       mkdir: false,
       lazy: false,
       engine: "auto",
       optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
-      engine = _select_engine(engine, path)
+      engine = _select_engine(engine)
+
+      if !retries.nil?
+        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["max_retries"] = retries
+      end
 
       _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
 
@@ -1536,23 +1567,21 @@ module Polars
         credential_provider, path, storage_options, "sink_ndjson"
       )
 
-      if storage_options&.any?
-        storage_options = storage_options.to_a
-      else
-        storage_options = nil
-      end
+      target = _to_sink_target(path)
 
-      sink_options = {
-        "sync_on_close" => sync_on_close || "none",
-        "maintain_order" => maintain_order,
-        "mkdir" => mkdir
-      }
+      sink_options = SinkOptions.new(
+        mkdir: mkdir,
+        maintain_order: maintain_order,
+        sync_on_close: sync_on_close,
+        storage_options: storage_options,
+        credential_provider: credential_provider_builder
+      )
 
-      ldf_rb = _ldf.sink_json(
-        path,
-        storage_options,
-        credential_provider_builder,
-        retries,
+      ldf_rb = _ldf.sink_ndjson(
+        target,
+        compression,
+        compression_level,
+        check_extension,
         sink_options
       )
 
@@ -1563,6 +1592,57 @@ module Polars
         return nil
       end
       LazyFrame._from_rbldf(ldf_rb)
+    end
+
+    # Evaluate the query in streaming mode and get a generator that returns chunks.
+    #
+    # This allows streaming results that are larger than RAM to be written to disk.
+    #
+    # The query will always be fully executed unless `stop` is called, so you should
+    # call next until all chunks have been seen.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @note
+    #   This method is much slower than native sinks. Only use it if you cannot
+    #   implement your logic otherwise.
+    #
+    # @param chunk_size [Integer]
+    #   The number of rows that are buffered before a chunk is given.
+    # @param maintain_order [Boolean]
+    #   Maintain the order in which data is processed.
+    #   Setting this to `false` will be slightly faster.
+    # @param lazy [Boolean]
+    #   Start the query when first requesting a batch.
+    # @param engine [String]
+    #   Select the engine used to process the query, optional.
+    #   At the moment, if set to `"auto"` (default), the query is run
+    #   using the polars streaming engine. Polars will also
+    #   attempt to use the engine set by the `POLARS_ENGINE_AFFINITY`
+    #   environment variable. If it cannot run the query using the
+    #   selected engine, the query is run using the polars streaming
+    #   engine.
+    # @param optimizations [Object]
+    #   The optimization passes done during query optimization.
+    #
+    # @return [Object]
+    def collect_batches(
+      chunk_size: nil,
+      maintain_order: true,
+      lazy: false,
+      engine: "auto",
+      optimizations: DEFAULT_QUERY_OPT_FLAGS
+    )
+      ldf = _ldf.with_optimizations(optimizations._rboptflags)
+      inner = ldf.collect_batches(
+        engine,
+        maintain_order,
+        chunk_size,
+        lazy
+      )
+      CollectBatches.new(inner)
     end
 
     # Return lazy representation, i.e. itself.
@@ -4075,6 +4155,16 @@ module Polars
 
     # Explode lists to long format.
     #
+    # @param columns [Object]
+    #   Column names, expressions, or a selector defining them. The underlying
+    #   columns being exploded must be of the `List` or `Array` data type.
+    # @param more_columns [Array]
+    #   Additional names of columns to explode, specified as positional arguments.
+    # @param empty_as_null [Boolean]
+    #   Explode an empty list/array into a `null`.
+    # @param keep_nulls [Boolean]
+    #   Explode a `null` list/array into a `null`.
+    #
     # @return [LazyFrame]
     #
     # @example
@@ -4101,11 +4191,16 @@ module Polars
     #   # │ c       ┆ 7       │
     #   # │ c       ┆ 8       │
     #   # └─────────┴─────────┘
-    def explode(columns, *more_columns)
+    def explode(
+      columns,
+      *more_columns,
+      empty_as_null: true,
+      keep_nulls: true
+    )
       subset = Utils.parse_list_into_selector(columns) | Utils.parse_list_into_selector(
         more_columns
       )
-      _from_rbldf(_ldf.explode(subset._rbselector))
+      _from_rbldf(_ldf.explode(subset._rbselector, empty_as_null, keep_nulls))
     end
 
     # Drop duplicate rows from this DataFrame.
@@ -4170,11 +4265,11 @@ module Polars
     #   # │ 1   ┆ a   ┆ b   │
     #   # └─────┴─────┴─────┘
     def unique(maintain_order: false, subset: nil, keep: "any")
-      selector_subset = nil
+      parsed_subset = nil
       if !subset.nil?
-        selector_subset = Utils.parse_list_into_selector(subset)._rbselector
+        parsed_subset = Utils.parse_into_list_of_expressions(subset, __require_selectors: true)
       end
-      _from_rbldf(_ldf.unique(maintain_order, selector_subset, keep))
+      _from_rbldf(_ldf.unique(maintain_order, parsed_subset, keep))
     end
 
     # Drop all rows that contain one or more NaN values.
@@ -4274,6 +4369,154 @@ module Polars
         selector_subset = Utils.parse_list_into_selector(subset)._rbselector
       end
       _from_rbldf(_ldf.drop_nulls(selector_subset))
+    end
+
+    # Create a spreadsheet-style pivot table as a DataFrame.
+    #
+    # @param on [Object]
+    #   The column(s) whose values will be used as the new columns of the output
+    #   DataFrame.
+    # @param on_columns [Object]
+    #   What value combinations will be considered for the output table.
+    # @param index [Object]
+    #   The column(s) that remain from the input to the output. The output DataFrame will have one row
+    #   for each unique combination of the `index`'s values.
+    #   If nil, all remaining columns not specified on `on` and `values` will be used. At least one
+    #   of `index` and `values` must be specified.
+    # @param values [Object]
+    #   The existing column(s) of values which will be moved under the new columns from index. If an
+    #   aggregation is specified, these are the values on which the aggregation will be computed.
+    #   If nil, all remaining columns not specified on `on` and `index` will be used.
+    #   At least one of `index` and `values` must be specified.
+    # @param aggregate_function [Object]
+    #   Choose from:
+    #
+    #   - nil: no aggregation takes place, will raise error if multiple values are in group.
+    #   - A predefined aggregate function string, one of
+    #     \\\\{'min', 'max', 'first', 'last', 'sum', 'mean', 'median', 'len', 'item'}
+    #   - An expression to do the aggregation. The expression can only access data from the respective
+    #     'values' columns as generated by pivot, through `pl.element()`.
+    # @param maintain_order [Boolean]
+    #   Ensure the values of `index` are sorted by discovery order.
+    # @param separator [String]
+    #   Used as separator/delimiter in generated column names in case of multiple
+    #   `values` columns.
+    #
+    # @return [LazyFrame]
+    #
+    # @note
+    #   In some other frameworks, you might know this operation as `pivot_wider`.
+    #
+    # @example Using `pivot`, we can reshape so we have one row per student, with different subjects as columns, and their `test_1` scores as values:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "name" => ["Cady", "Cady", "Karen", "Karen"],
+    #       "subject" => ["maths", "physics", "maths", "physics"],
+    #       "test_1" => [98, 99, 61, 58],
+    #       "test_2" => [100, 100, 60, 60]
+    #     }
+    #   )
+    #   df.lazy.pivot(
+    #     "subject",
+    #     on_columns: ["maths", "physics"],
+    #     index: "name",
+    #     values: "test_1",
+    #     maintain_order: true
+    #   ).collect
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌───────┬───────┬─────────┐
+    #   # │ name  ┆ maths ┆ physics │
+    #   # │ ---   ┆ ---   ┆ ---     │
+    #   # │ str   ┆ i64   ┆ i64     │
+    #   # ╞═══════╪═══════╪═════════╡
+    #   # │ Cady  ┆ 98    ┆ 99      │
+    #   # │ Karen ┆ 61    ┆ 58      │
+    #   # └───────┴───────┴─────────┘
+    def pivot(
+      on,
+      on_columns:,
+      index: nil,
+      values: nil,
+      aggregate_function: nil,
+      maintain_order: false,
+      separator: "_"
+    )
+      if index.nil? && values.nil?
+        msg = "`pivot` needs either `index or `values` needs to be specified"
+        raise InvalidOperationError, msg
+      end
+
+      on_selector = Utils.parse_list_into_selector(on)
+      if !values.nil?
+        values_selector = Utils.parse_list_into_selector(values)
+      end
+      if !index.nil?
+        index_selector = Utils.parse_list_into_selector(index)
+      end
+
+      if values.nil?
+        values_selector = Polars.cs.all - on_selector - index_selector
+      end
+      if index.nil?
+        index_selector = Polars.cs.all - on_selector - values_selector
+      end
+
+      agg = F.element
+      if aggregate_function.is_a?(::String)
+        if aggregate_function == "first"
+          agg = agg.first
+        elsif aggregate_function == "item"
+          agg = agg.item
+        elsif aggregate_function == "sum"
+          agg = agg.sum
+        elsif aggregate_function == "max"
+          agg = agg.max
+        elsif aggregate_function == "min"
+          agg = agg.min
+        elsif aggregate_function == "mean"
+          agg = agg.mean
+        elsif aggregate_function == "median"
+          agg = agg.median
+        elsif aggregate_function == "last"
+          agg = agg.last
+        elsif aggregate_function == "len"
+          agg = agg.len
+        elsif aggregate_function == "count"
+          Utils.issue_deprecation_warning(
+            "`aggregate_function='count'` input for `pivot` is deprecated." +
+            " Please use `aggregate_function='len'`."
+          )
+          agg = agg.len
+        else
+          msg = "invalid input for `aggregate_function` argument: #{aggregate_function.inspect}"
+          raise ArgumentError, msg
+        end
+      elsif aggregate_function.nil?
+        agg = agg.item(allow_empty: true)
+      else
+        agg = aggregate_function
+      end
+
+      if on_columns.is_a?(DataFrame)
+        on_cols = on_columns
+      elsif on_columns.is_a?(Series)
+        on_cols = on_columns.to_frame
+      else
+        on_cols = Series.new(on_columns).to_frame
+      end
+
+      _from_rbldf(
+        _ldf.pivot(
+          on_selector._rbselector,
+          on_cols._df,
+          index_selector._rbselector,
+          values_selector._rbselector,
+          agg._rbexpr,
+          maintain_order,
+          separator
+        )
+      )
     end
 
     # Unpivot a DataFrame from wide to long format.
@@ -4875,9 +5118,21 @@ module Polars
       _from_rbldf(filter_method.(combined_predicate._rbexpr))
     end
 
-    def _select_engine(engine, path = nil)
-      engine = Plr.get_engine_affinity if engine == "auto"
-      engine == "auto" && !path.is_a?(::String) && !path.nil? ? "in-memory" : engine
+    # @private
+    def self._select_engine(engine)
+      engine == "auto" ? Plr.get_engine_affinity : engine
+    end
+
+    def _select_engine(engine)
+      self.class._select_engine(engine)
+    end
+
+    def _to_sink_target(path)
+      if Utils.pathlike?(path)
+        Utils.normalize_filepath(path)
+      else
+        path
+      end
     end
   end
 end

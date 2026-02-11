@@ -10,6 +10,15 @@ pub struct RbLazyGroupBy {
 }
 
 impl RbLazyGroupBy {
+    pub fn having(&self, predicates: RArray) -> RbResult<RbLazyGroupBy> {
+        let mut lgb = self.lgb.clone().unwrap();
+        let predicates = predicates.to_exprs()?;
+        for predicate in predicates.into_iter() {
+            lgb = lgb.having(predicate);
+        }
+        Ok(RbLazyGroupBy { lgb: Some(lgb) })
+    }
+
     pub fn agg(&self, aggs: RArray) -> RbResult<RbLazyFrame> {
         let lgb = self.lgb.clone().unwrap();
         let aggs = aggs.to_exprs()?;

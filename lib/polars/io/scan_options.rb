@@ -1,5 +1,6 @@
 module Polars
   module IO
+    # @private
     class ScanOptions
       attr_reader :row_index, :pre_slice, :cast_options, :extra_columns, :missing_columns,
         :include_file_paths, :glob, :hidden_file_prefix, :hive_partitioning, :hive_schema, :try_parse_hive_dates,
@@ -22,7 +23,6 @@ module Polars
         cache: true,
         storage_options: nil,
         credential_provider: nil,
-        retries: 2,
         column_mapping: nil,
         default_values: nil,
         deletion_files: nil,
@@ -44,7 +44,6 @@ module Polars
         @cache = cache
         @storage_options = storage_options
         @credential_provider = credential_provider
-        @retries = retries
         @column_mapping = column_mapping
         @default_values = default_values
         @deletion_files = deletion_files

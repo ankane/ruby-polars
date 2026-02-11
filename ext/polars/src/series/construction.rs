@@ -1,5 +1,6 @@
-use magnus::{RArray, RString, prelude::*};
-use polars_core::prelude::*;
+use magnus::{RArray, RString, Value, prelude::*};
+use num_traits::AsPrimitive;
+use polars::prelude::*;
 
 use crate::any_value::rb_object_to_any_value;
 use crate::conversion::{Wrap, slice_extract_wrapped, vec_extract_wrapped};
@@ -35,11 +36,10 @@ impl RbSeries {
     }
 }
 
-fn new_primitive<T>(name: &str, values: RArray, _strict: bool) -> RbResult<RbSeries>
+fn new_primitive<T, F>(name: &str, values: RArray, _strict: bool, extract: F) -> RbResult<RbSeries>
 where
     T: PolarsNumericType,
-    ChunkedArray<T>: IntoSeries,
-    T::Native: magnus::TryConvert,
+    F: Fn(Value) -> RbResult<T::Native>,
 {
     let len = values.len();
     let mut builder = PrimitiveChunkedBuilder::<T>::new(name.into(), len);
@@ -49,7 +49,7 @@ where
         if value.is_nil() {
             builder.append_null()
         } else {
-            let v = <T::Native>::try_convert(value)?;
+            let v = extract(value)?;
             builder.append_value(v)
         }
     }
@@ -64,7 +64,7 @@ macro_rules! init_method_opt {
     ($name:ident, $type:ty, $native: ty) => {
         impl RbSeries {
             pub fn $name(name: String, obj: RArray, strict: bool) -> RbResult<Self> {
-                new_primitive::<$type>(&name, obj, strict)
+                new_primitive::<$type, _>(&name, obj, strict, |v| <$native>::try_convert(v))
             }
         }
     };
@@ -82,6 +82,14 @@ init_method_opt!(new_opt_i64, Int64Type, i64);
 init_method_opt!(new_opt_i128, Int128Type, i128);
 init_method_opt!(new_opt_f32, Float32Type, f32);
 init_method_opt!(new_opt_f64, Float64Type, f64);
+
+impl RbSeries {
+    pub fn new_opt_f16(name: String, values: RArray, _strict: bool) -> RbResult<Self> {
+        new_primitive::<Float16Type, _>(&name, values, false, |v| {
+            Ok(AsPrimitive::<pf16>::as_(f64::try_convert(v)?))
+        })
+    }
+}
 
 fn vec_wrap_any_value<'s>(arr: RArray) -> RbResult<Vec<Wrap<AnyValue<'s>>>> {
     let mut val = Vec::with_capacity(arr.len());

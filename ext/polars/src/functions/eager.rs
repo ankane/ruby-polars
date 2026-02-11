@@ -59,11 +59,12 @@ pub fn concat_df_diagonal(seq: RArray) -> RbResult<RbDataFrame> {
     Ok(df.into())
 }
 
-pub fn concat_df_horizontal(seq: RArray) -> RbResult<RbDataFrame> {
+pub fn concat_df_horizontal(seq: RArray, strict: bool) -> RbResult<RbDataFrame> {
     let mut dfs = Vec::new();
     for item in seq.into_iter() {
         dfs.push(get_df(item)?);
     }
-    let df = functions::concat_df_horizontal(&dfs, true).map_err(RbPolarsErr::from)?;
+    let df =
+        functions::concat_df_horizontal(&dfs, true, strict, false).map_err(RbPolarsErr::from)?;
     Ok(df.into())
 }

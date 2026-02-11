@@ -5,10 +5,10 @@ mod serde;
 mod sink;
 
 pub use exitable::RbInProcessQuery;
+pub use general::RbCollectBatches;
 use magnus::{TryConvert, Value};
 use parking_lot::RwLock;
 use polars::prelude::{Engine, LazyFrame, OptFlags};
-pub use sink::SinkTarget;
 
 use crate::prelude::Wrap;
 use crate::{RbResult, RbValueError};

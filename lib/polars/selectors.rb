@@ -593,7 +593,7 @@ module Polars
         end
       end
 
-      Selector._by_name(all_names, strict: require_all)
+      Selector._by_name(all_names, strict: require_all, expand_patterns: false)
     end
 
     # Select all enum columns.

@@ -33,6 +33,9 @@ module Polars
     #
     # Always returns false.
     #
+    # @deprecated
+    #   `cat.is_local` is deprecated; Categoricals no longer have a local scope.
+    #
     # @return [Boolean]
     def is_local
       _s.cat_is_local
@@ -47,9 +50,8 @@ module Polars
 
     # Indicate whether the Series uses lexical ordering.
     #
-    # @note
-    #   This functionality is considered **unstable**. It may be changed
-    #   at any point without it being considered a breaking change.
+    # @deprecated
+    #   `cat.uses_lexical_ordering` is deprecated; Categoricals are now always ordered lexically.
     #
     # @return [Boolean]
     #

@@ -76,7 +76,7 @@ module Polars
       ignore_errors: false,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       file_cache_ttl: nil,
       include_file_paths: nil
     )
@@ -183,7 +183,7 @@ module Polars
       ignore_errors: false,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       file_cache_ttl: nil,
       include_file_paths: nil
     )
@@ -205,15 +205,23 @@ module Polars
         raise ArgumentError, msg
       end
 
+      if !retries.nil?
+        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["max_retries"] = retries
+      end
+
+      if !file_cache_ttl.nil?
+        msg = "the `file_cache_ttl` parameter was deprecated in 0.25.0; specify 'file_cache_ttl' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["file_cache_ttl"] = file_cache_ttl
+      end
+
       credential_provider_builder = _init_credential_provider_builder(
         credential_provider, source, storage_options, "scan_ndjson"
       )
-
-      if storage_options&.any?
-        storage_options = storage_options.map { |k, v| [k.to_s, v.to_s] }
-      else
-        storage_options = nil
-      end
 
       rblf =
         RbLazyFrame.new_from_ndjson(
@@ -230,9 +238,7 @@ module Polars
           ignore_errors,
           include_file_paths,
           storage_options,
-          credential_provider_builder,
-          retries,
-          file_cache_ttl
+          credential_provider_builder
         )
       Utils.wrap_ldf(rblf)
     end

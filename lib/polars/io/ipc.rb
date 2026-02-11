@@ -225,14 +225,29 @@ module Polars
       glob: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: 2,
+      retries: nil,
       file_cache_ttl: nil,
       hive_partitioning: nil,
       hive_schema: nil,
       try_parse_hive_dates: true,
-      include_file_paths: nil
+      include_file_paths: nil,
+      _record_batch_statistics: false
     )
       sources = get_sources(source)
+
+      if !retries.nil?
+        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["max_retries"] = retries
+      end
+
+      if !file_cache_ttl.nil?
+        msg = "the `file_cache_ttl` parameter was deprecated in 0.25.0; specify 'file_cache_ttl' in `storage_options` instead."
+        Utils.issue_deprecation_warning(msg)
+        storage_options = storage_options || {}
+        storage_options["file_cache_ttl"] = file_cache_ttl
+      end
 
       credential_provider_builder = _init_credential_provider_builder(
         credential_provider, sources, storage_options, "scan_parquet"
@@ -241,6 +256,7 @@ module Polars
       rblf =
         RbLazyFrame.new_from_ipc(
           sources,
+          _record_batch_statistics,
           ScanOptions.new(
             row_index: !row_index_name.nil? ? [row_index_name, row_index_offset] : nil,
             pre_slice: !n_rows.nil? ? [0, n_rows] : nil,
@@ -252,10 +268,8 @@ module Polars
             rechunk: rechunk,
             cache: cache,
             storage_options: !storage_options.nil? ? storage_options.to_a : nil,
-            credential_provider: credential_provider_builder,
-            retries: retries
-          ),
-          file_cache_ttl
+            credential_provider: credential_provider_builder
+          )
         )
       Utils.wrap_ldf(rblf)
     end

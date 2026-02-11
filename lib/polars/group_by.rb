@@ -2,11 +2,12 @@ module Polars
   # Starts a new GroupBy operation.
   class GroupBy
     # @private
-    def initialize(df, by, maintain_order:, **named_by)
+    def initialize(df, by, maintain_order:, predicates:, **named_by)
       @df = df
       @by = by
       @named_by = named_by
       @maintain_order = maintain_order
+      @predicates = predicates
     end
 
     # Allows iteration over the groups of the group by operation.
@@ -107,6 +108,47 @@ module Polars
     #   _dataframe_class._from_rbdf(_df.group_by_apply(by, f))
     # end
 
+    # Filter groups with a list of predicates after aggregation.
+    #
+    # Using this method is equivalent to adding the predicates to the aggregation and
+    # filtering afterwards.
+    #
+    # This method can be chained and all conditions will be combined using `&`.
+    #
+    # @param predicates [Array]
+    #   Expressions that evaluate to a boolean value for each group. Typically, this
+    #   requires the use of an aggregation function. Multiple predicates are
+    #   combined using `&`.
+    #
+    # @return [GroupBy]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => ["a", "b", "a", "b", "c"]
+    #     }
+    #   )
+    #   df.group_by("a").having(Polars.len > 1).agg
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ b   │
+    #   # │ a   │
+    #   # └─────┘
+    def having(*predicates)
+      GroupBy.new(
+        @df,
+        *@by,
+        maintain_order: @maintain_order,
+        predicates: Utils._chain_predicates(@predicates, predicates),
+        **@named_by
+      )
+    end
+
     # Compute aggregations for each group of a group by operation.
     #
     # @param aggs [Array]
@@ -202,8 +244,7 @@ module Polars
     #   # │ b   ┆ 5     ┆ 10.0           │
     #   # └─────┴───────┴────────────────┘
     def agg(*aggs, **named_aggs)
-      @df.lazy
-        .group_by(@by, **@named_by, maintain_order: @maintain_order)
+      _lgb
         .agg(*aggs, **named_aggs)
         .collect(optimizations: QueryOptFlags.none)
     end
@@ -253,10 +294,7 @@ module Polars
     #   # │ c       ┆ 2   │
     #   # └─────────┴─────┘
     def head(n = 5)
-      @df.lazy
-        .group_by(@by, **@named_by, maintain_order: @maintain_order)
-        .head(n)
-        .collect(optimizations: QueryOptFlags._eager)
+      _lgb.head(n).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Get the last `n` rows of each group.
@@ -304,10 +342,7 @@ module Polars
     #   # │ c       ┆ 4   │
     #   # └─────────┴─────┘
     def tail(n = 5)
-      @df.lazy
-        .group_by(@by, **@named_by, maintain_order: @maintain_order)
-        .tail(n)
-        .collect(optimizations: QueryOptFlags.none)
+      _lgb.tail(n).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Aggregate the groups into Series.
@@ -374,6 +409,11 @@ module Polars
 
     # Aggregate the first values in the group.
     #
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default `false`).
+    #   If set to `true`, the first non-null value for each aggregation is returned,
+    #   otherwise `nil` is returned if no non-null value exists.
+    #
     # @return [DataFrame]
     #
     # @example
@@ -397,11 +437,16 @@ module Polars
     #   # │ Orange ┆ 2   ┆ 0.5  ┆ true  │
     #   # │ Banana ┆ 4   ┆ 13.0 ┆ false │
     #   # └────────┴─────┴──────┴───────┘
-    def first
-      agg(Polars.all.first)
+    def first(ignore_nulls: false)
+      agg(F.all.first(ignore_nulls: ignore_nulls))
     end
 
     # Aggregate the last values in the group.
+    #
+    # @param ignore_nulls [Boolean]
+    #   Ignore null values (default `false`).
+    #   If set to `true`, the last non-null value for each aggregation is returned,
+    #   otherwise `nil` is returned if no non-null value exists.
     #
     # @return [DataFrame]
     #
@@ -426,8 +471,8 @@ module Polars
     #   # │ Orange ┆ 2   ┆ 0.5  ┆ true  │
     #   # │ Banana ┆ 5   ┆ 14.0 ┆ true  │
     #   # └────────┴─────┴──────┴───────┘
-    def last
-      agg(Polars.all.last)
+    def last(ignore_nulls: false)
+      agg(F.all.last(ignore_nulls: ignore_nulls))
     end
 
     # Reduce the groups to the sum.
@@ -660,6 +705,18 @@ module Polars
     #   # └────────┴─────┴──────┘
     def median
       agg(Polars.all.median)
+    end
+
+    private
+
+    def _lgb
+      group_by = @df.lazy.group_by(
+        *@by, **@named_by, maintain_order: @maintain_order
+      )
+      if @predicates&.any?
+        return group_by.having(@predicates)
+      end
+      group_by
     end
   end
 end

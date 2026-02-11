@@ -5,7 +5,8 @@ module Polars
       str_as_lit: false,
       list_as_series: false,
       structify: false,
-      dtype: nil
+      dtype: nil,
+      require_selector: false
     )
       if input.is_a?(Expr)
         expr = input
@@ -14,17 +15,22 @@ module Polars
         end
       elsif (input.is_a?(::String) || input.is_a?(Symbol)) && !str_as_lit
         expr = F.col(input)
-      elsif input.is_a?(::Array) && list_as_series
-        expr = F.lit(Series.new(input), dtype: dtype)
       else
-        expr = F.lit(input, dtype: dtype)
+        if require_selector
+          msg = "cannot turn #{input.inspect} into selector"
+          raise TypeError, msg
+        elsif input.is_a?(::Array) && list_as_series
+          expr = F.lit(Series.new(input), dtype: dtype)
+        else
+          expr = F.lit(input, dtype: dtype)
+        end
       end
 
       expr._rbexpr
     end
 
-    def self.parse_into_list_of_expressions(*inputs, __structify: false, **named_inputs)
-      exprs = _parse_positional_inputs(inputs, structify: __structify)
+    def self.parse_into_list_of_expressions(*inputs, __structify: false, __require_selectors: false, **named_inputs)
+      exprs = _parse_positional_inputs(inputs, structify: __structify, require_selectors: __require_selectors)
       if named_inputs.any?
         named_exprs = _parse_named_inputs(named_inputs, structify: __structify)
         exprs.concat(named_exprs)
@@ -73,9 +79,9 @@ module Polars
       end
     end
 
-    def self._parse_positional_inputs(inputs, structify: false)
+    def self._parse_positional_inputs(inputs, structify: false, require_selectors: false)
       inputs_iter = _parse_inputs_as_iterable(inputs)
-      inputs_iter.map { |e| parse_into_expression(e, structify: structify) }
+      inputs_iter.map { |e| parse_into_expression(e, structify: structify, require_selector: require_selectors) }
     end
 
     def self._parse_inputs_as_iterable(inputs)

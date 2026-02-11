@@ -65,4 +65,28 @@ impl RbExpr {
     pub fn bin_size_bytes(&self) -> Self {
         self.inner.clone().binary().size_bytes().into()
     }
+
+    pub fn bin_slice(&self, offset: &RbExpr, length: &RbExpr) -> Self {
+        self.inner
+            .clone()
+            .binary()
+            .slice(offset.inner.clone(), length.inner.clone())
+            .into()
+    }
+
+    pub fn bin_head(&self, n: &RbExpr) -> Self {
+        self.inner.clone().binary().head(n.inner.clone()).into()
+    }
+
+    pub fn bin_tail(&self, n: &RbExpr) -> Self {
+        self.inner.clone().binary().tail(n.inner.clone()).into()
+    }
+
+    pub fn bin_get(&self, index: &RbExpr, null_on_oob: bool) -> Self {
+        self.inner
+            .clone()
+            .binary()
+            .get(index.inner.clone(), null_on_oob)
+            .into()
+    }
 }

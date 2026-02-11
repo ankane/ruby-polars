@@ -155,12 +155,20 @@ impl RbExpr {
         self.inner.clone().unique_stable().into()
     }
 
-    pub fn first(&self) -> Self {
-        self.inner.clone().first().into()
+    pub fn first(&self, ignore_nulls: bool) -> Self {
+        if ignore_nulls {
+            self.inner.clone().first_non_null().into()
+        } else {
+            self.inner.clone().first().into()
+        }
     }
 
-    pub fn last(&self) -> Self {
-        self.inner.clone().last().into()
+    pub fn last(&self, ignore_nulls: bool) -> Self {
+        if ignore_nulls {
+            self.inner.clone().last_non_null().into()
+        } else {
+            self.inner.clone().last().into()
+        }
     }
 
     pub fn item(&self, allow_empty: bool) -> Self {
@@ -355,8 +363,11 @@ impl RbExpr {
         self.inner.clone().gather(idx.inner.clone()).into()
     }
 
-    pub fn get(&self, idx: &Self) -> Self {
-        self.inner.clone().get(idx.inner.clone()).into()
+    pub fn get(&self, idx: &Self, null_on_oob: bool) -> Self {
+        self.inner
+            .clone()
+            .get(idx.inner.clone(), null_on_oob)
+            .into()
     }
 
     pub fn sort_by(
@@ -464,8 +475,14 @@ impl RbExpr {
         self.inner.clone().is_last_distinct().into()
     }
 
-    pub fn explode(&self) -> Self {
-        self.inner.clone().explode().into()
+    pub fn explode(&self, empty_as_null: bool, keep_nulls: bool) -> Self {
+        self.inner
+            .clone()
+            .explode(ExplodeOptions {
+                empty_as_null,
+                keep_nulls,
+            })
+            .into()
     }
 
     pub fn gather_every(&self, n: usize, offset: usize) -> Self {
@@ -628,19 +645,20 @@ impl RbExpr {
 
     pub fn rolling(
         &self,
-        index_column: String,
+        index_column: &RbExpr,
         period: String,
         offset: String,
         closed: Wrap<ClosedWindow>,
     ) -> RbResult<Self> {
-        let options = RollingGroupOptions {
-            index_column: index_column.into(),
-            period: Duration::try_parse(&period).map_err(RbPolarsErr::from)?,
-            offset: Duration::try_parse(&offset).map_err(RbPolarsErr::from)?,
-            closed_window: closed.0,
-        };
+        let period = Duration::try_parse(&period).map_err(RbPolarsErr::from)?;
+        let offset = Duration::try_parse(&offset).map_err(RbPolarsErr::from)?;
+        let closed = closed.0;
 
-        Ok(self.inner.clone().rolling(options).into())
+        Ok(self
+            .inner
+            .clone()
+            .rolling(index_column.inner.clone(), period, offset, closed)
+            .into())
     }
 
     pub fn and_(&self, expr: &Self) -> Self {
@@ -724,8 +742,8 @@ impl RbExpr {
         self.inner.clone().reinterpret(signed).into()
     }
 
-    pub fn mode(&self) -> Self {
-        self.inner.clone().mode().into()
+    pub fn mode(&self, maintain_order: bool) -> Self {
+        self.inner.clone().mode(maintain_order).into()
     }
 
     pub fn interpolate(&self, method: Wrap<InterpolationMethod>) -> Self {

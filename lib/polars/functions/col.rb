@@ -8,7 +8,7 @@ module Polars
         if Utils.strlike?(name)
           names_str = [name]
           names_str.concat(more_names)
-          return Selector._by_name(names_str.map(&:to_s), strict: true).as_expr
+          return Selector._by_name(names_str.map(&:to_s), strict: true, expand_patterns: true).as_expr
         elsif Utils.is_polars_dtype(name)
           dtypes = [name]
           dtypes.concat(more_names)
@@ -32,7 +32,7 @@ module Polars
 
         item = names[0]
         if Utils.strlike?(item)
-          Selector._by_name(names.map(&:to_s), strict: true).as_expr
+          Selector._by_name(names.map(&:to_s), strict: true, expand_patterns: true).as_expr
         elsif Utils.is_polars_dtype(item)
           Selector._by_dtype(names).as_expr
         else
