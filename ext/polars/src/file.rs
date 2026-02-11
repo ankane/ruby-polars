@@ -147,15 +147,14 @@ impl Write for RbFileLikeObject {
         if is_non_ruby_thread() {
             let buf2 = buf.to_vec();
             let mut self2 = self.clone();
-            let f = move |_rb: &Ruby| -> Result<usize, io::Error> {
+            return run_in_background(move |_rb| {
                 let result = self2.write(&buf2);
                 if result.is_ok() {
                     // flush writes for now
                     self2.flush().unwrap();
                 }
                 result
-            };
-            return run_in_background(f);
+            });
         }
 
         let expects_str = self.expects_str;
