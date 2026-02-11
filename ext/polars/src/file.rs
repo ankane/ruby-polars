@@ -1,3 +1,4 @@
+use std::any::Any;
 use std::fs::File;
 use std::io;
 use std::io::{Cursor, Read, Seek, SeekFrom, Write};
@@ -145,7 +146,7 @@ impl Write for RbFileLikeObject {
                 .unwrap()
                 .send((self.clone(), buf.to_vec(), sender))
                 .unwrap();
-            return receiver.recv().unwrap();
+            return *receiver.recv().unwrap().downcast().unwrap();
         }
 
         let expects_str = self.expects_str;
@@ -327,21 +328,14 @@ pub fn get_mmap_bytes_reader_and_path<'a>(
 
 #[allow(clippy::type_complexity)]
 static POLARS_RUBY_SENDER: OnceLock<
-    SyncSender<(
-        RbFileLikeObject,
-        Vec<u8>,
-        SyncSender<Result<usize, io::Error>>,
-    )>,
+    SyncSender<(RbFileLikeObject, Vec<u8>, SyncSender<Box<dyn Any + Send>>)>,
 > = OnceLock::new();
 
 // TODO figure out better approach
 fn start_background_thread(rb: &Ruby) {
     POLARS_RUBY_SENDER.get_or_init(|| {
-        let (sender, receiver) = sync_channel::<(
-            RbFileLikeObject,
-            Vec<u8>,
-            SyncSender<Result<usize, io::Error>>,
-        )>(0);
+        let (sender, receiver) =
+            sync_channel::<(RbFileLikeObject, Vec<u8>, SyncSender<Box<dyn Any + Send>>)>(0);
 
         // TODO save reference to thread?
         rb.thread_create_from_fn(move |rb2| {
@@ -353,7 +347,7 @@ fn start_background_thread(rb: &Ruby) {
                             // flush writes for now
                             f.flush().unwrap();
                         }
-                        sender2.send(result).unwrap();
+                        sender2.send(Box::new(result)).unwrap();
                     }
                     Err(_) => {
                         rb2.thread_sleep(std::time::Duration::from_millis(1))?;
