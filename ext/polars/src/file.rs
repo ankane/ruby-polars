@@ -145,8 +145,8 @@ impl Read for RbFileLikeObject {
 impl Write for RbFileLikeObject {
     fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
         if is_non_ruby_thread() {
-            let buf2 = buf.to_vec();
             let mut self2 = self.clone();
+            let buf2 = buf.to_vec();
             return run_in_ruby_thread(move |_rb| self2.write(&buf2));
         }
 
