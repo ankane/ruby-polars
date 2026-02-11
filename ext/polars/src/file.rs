@@ -244,7 +244,7 @@ pub(crate) fn try_get_rbfile(
 
     // TODO move
     if write {
-        start_background_thread(rb);
+        start_background_ruby_thread(rb);
     }
 
     Ok((EitherRustRubyFile::Rb(f), None))
@@ -323,7 +323,7 @@ pub fn get_mmap_bytes_reader_and_path<'a>(
 }
 
 #[allow(clippy::type_complexity)]
-static BACKGROUND_SENDER: OnceLock<
+static BACKGROUND_RUBY_THREAD_MAILBOX: OnceLock<
     SyncSender<(
         Box<dyn FnOnce(&Ruby) -> Box<dyn Any + Send> + Send>,
         SyncSender<Box<dyn Any + Send>>,
@@ -331,8 +331,8 @@ static BACKGROUND_SENDER: OnceLock<
 > = OnceLock::new();
 
 // TODO figure out better approach
-fn start_background_thread(rb: &Ruby) {
-    BACKGROUND_SENDER.get_or_init(|| {
+fn start_background_ruby_thread(rb: &Ruby) {
+    BACKGROUND_RUBY_THREAD_MAILBOX.get_or_init(|| {
         let (sender, receiver) = sync_channel::<(
             Box<dyn FnOnce(&Ruby) -> Box<dyn Any + Send> + Send>,
             SyncSender<Box<dyn Any + Send>>,
@@ -366,7 +366,7 @@ where
 {
     let f2 = move |rb: &Ruby| -> Box<dyn Any + Send> { Box::new(f(rb)) };
     let (sender, receiver) = sync_channel(0);
-    BACKGROUND_SENDER
+    BACKGROUND_RUBY_THREAD_MAILBOX
         .get()
         .unwrap()
         .send((Box::new(f2), sender))
