@@ -74,12 +74,7 @@ impl RbFileLikeObject {
     /// Same as `RbFileLikeObject::new`, but validates that the underlying
     /// ruby object has a `read`, `write`, and `seek` methods in respect to parameters.
     /// Will return a `TypeError` if object does not have `read`, `seek`, and `write` methods.
-    pub fn ensure_requirements(
-        object: Value,
-        read: bool,
-        write: bool,
-        seek: bool,
-    ) -> RbResult<Self> {
+    pub fn ensure_requirements(object: Value, read: bool, write: bool, seek: bool) -> RbResult<()> {
         let ruby = Ruby::get_with(object);
 
         if read && !object.respond_to("read", false)? {
@@ -103,10 +98,7 @@ impl RbFileLikeObject {
             ));
         }
 
-        // TODO fix
-        let expects_str = false;
-        let has_flush = object.respond_to("write", false)?;
-        Ok(RbFileLikeObject::new(object, expects_str, has_flush))
+        Ok(())
     }
 
     fn flush(&self) -> std::io::Result<()> {
@@ -231,7 +223,10 @@ pub(crate) fn try_get_rbfile(
     rb_f: Value,
     write: bool,
 ) -> RbResult<(EitherRustRubyFile, Option<PathBuf>)> {
-    let f = RbFileLikeObject::ensure_requirements(rb_f, !write, write, !write)?;
+    RbFileLikeObject::ensure_requirements(rb_f, !write, write, !write)?;
+    let expects_str = false;
+    let has_flush = rb_f.respond_to("flush", false)?;
+    let f = RbFileLikeObject::new(rb_f, expects_str, has_flush);
     Ok((EitherRustRubyFile::Rb(f), None))
 }
 
