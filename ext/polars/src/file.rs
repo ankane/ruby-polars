@@ -106,6 +106,11 @@ impl RbFileLikeObject {
 
     fn flush(&self) -> std::io::Result<()> {
         if self.has_flush {
+            if is_non_ruby_thread() {
+                // handled in write for now
+                return Ok(());
+            }
+
             Ruby::attach(|rb| {
                 rb.get_inner(self.inner)
                     .funcall::<_, _, Value>("flush", ())
@@ -178,11 +183,6 @@ impl Write for RbFileLikeObject {
     }
 
     fn flush(&mut self) -> Result<(), io::Error> {
-        if is_non_ruby_thread() {
-            // handled in write for now
-            return Ok(());
-        }
-
         Self::flush(self)
     }
 }
@@ -357,8 +357,7 @@ fn start_background_thread(rb: &Ruby) {
             loop {
                 match receiver.try_recv() {
                     Ok((f, sender2)) => {
-                        let result = f(rb2);
-                        sender2.send(result).unwrap();
+                        sender2.send(f(rb2)).unwrap();
                     }
                     Err(_) => {
                         rb2.thread_sleep(std::time::Duration::from_millis(1))?;
