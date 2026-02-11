@@ -147,21 +147,15 @@ impl Write for RbFileLikeObject {
         if is_non_ruby_thread() {
             let buf2 = buf.to_vec();
             let mut self2 = self.clone();
-            let f = move |_rb: &Ruby| -> Box<dyn Any + Send> {
+            let f = move |_rb: &Ruby| -> Result<usize, io::Error> {
                 let result = self2.write(&buf2);
                 if result.is_ok() {
                     // flush writes for now
                     self2.flush().unwrap();
                 }
-                Box::new(result)
+                result
             };
-            let (sender, receiver) = sync_channel(0);
-            POLARS_RUBY_SENDER
-                .get()
-                .unwrap()
-                .send((Box::new(f), sender))
-                .unwrap();
-            return *receiver.recv().unwrap().downcast().unwrap();
+            return run_in_background(f);
         }
 
         let expects_str = self.expects_str;
@@ -371,6 +365,21 @@ fn start_background_thread(rb: &Ruby) {
 
         sender
     });
+}
+
+fn run_in_background<T, F>(f: F) -> T
+where
+    T: Send + 'static,
+    F: FnOnce(&Ruby) -> T + Send + 'static,
+{
+    let f2 = move |rb: &Ruby| -> Box<dyn Any + Send> { Box::new(f(rb)) };
+    let (sender, receiver) = sync_channel(0);
+    POLARS_RUBY_SENDER
+        .get()
+        .unwrap()
+        .send((Box::new(f2), sender))
+        .unwrap();
+    *receiver.recv().unwrap().downcast().unwrap()
 }
 
 fn is_non_ruby_thread() -> bool {
