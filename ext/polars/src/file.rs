@@ -140,11 +140,21 @@ impl Read for RbFileLikeObject {
 impl Write for RbFileLikeObject {
     fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
         if is_non_ruby_thread() {
+            let buf2 = buf.to_vec();
+            let mut self2 = self.clone();
+            let f = move |_rb: &Ruby| {
+                let result = self2.write(&buf2);
+                if result.is_ok() {
+                    // flush writes for now
+                    self2.flush().unwrap();
+                }
+                result
+            };
             let (sender, receiver) = sync_channel(0);
             POLARS_RUBY_SENDER
                 .get()
                 .unwrap()
-                .send((self.clone(), buf.to_vec(), sender))
+                .send((Box::new(f), sender))
                 .unwrap();
             return *receiver.recv().unwrap().downcast().unwrap();
         }
@@ -328,25 +338,26 @@ pub fn get_mmap_bytes_reader_and_path<'a>(
 
 #[allow(clippy::type_complexity)]
 static POLARS_RUBY_SENDER: OnceLock<
-    SyncSender<(RbFileLikeObject, Vec<u8>, SyncSender<Box<dyn Any + Send>>)>,
+    SyncSender<(
+        Box<dyn FnOnce(&Ruby) -> Result<usize, io::Error> + Send>,
+        SyncSender<Box<dyn Any + Send>>,
+    )>,
 > = OnceLock::new();
 
 // TODO figure out better approach
 fn start_background_thread(rb: &Ruby) {
     POLARS_RUBY_SENDER.get_or_init(|| {
-        let (sender, receiver) =
-            sync_channel::<(RbFileLikeObject, Vec<u8>, SyncSender<Box<dyn Any + Send>>)>(0);
+        let (sender, receiver) = sync_channel::<(
+            Box<dyn FnOnce(&Ruby) -> Result<usize, io::Error> + Send>,
+            SyncSender<Box<dyn Any + Send>>,
+        )>(0);
 
         // TODO save reference to thread?
         rb.thread_create_from_fn(move |rb2| {
             loop {
                 match receiver.try_recv() {
-                    Ok((mut f, buf, sender2)) => {
-                        let result = f.write(&buf);
-                        if result.is_ok() {
-                            // flush writes for now
-                            f.flush().unwrap();
-                        }
+                    Ok((f, sender2)) => {
+                        let result = f(rb2);
                         sender2.send(Box::new(result)).unwrap();
                     }
                     Err(_) => {
