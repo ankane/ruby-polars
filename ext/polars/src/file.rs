@@ -2,8 +2,10 @@ use std::fs::File;
 use std::io;
 use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
+use std::sync::OnceLock;
+use std::sync::mpsc::{SyncSender, sync_channel};
 
-use magnus::{Error, RString, Ruby, Value, prelude::*, value::Opaque};
+use magnus::{Error, RString, Ruby, Value, error::RubyUnavailableError, prelude::*, value::Opaque};
 use polars::io::mmap::MmapBytesReader;
 use polars::prelude::PlRefPath;
 use polars::prelude::file::{Writeable, WriteableTrait};
@@ -37,12 +39,12 @@ impl WriteableTrait for RbFileLikeObject {
 
 impl Clone for RbFileLikeObject {
     fn clone(&self) -> Self {
-        Ruby::attach(|_rb| Self {
-            // TODO clone
+        // Skip attach
+        Self {
             inner: self.inner,
             expects_str: self.expects_str,
             has_flush: self.has_flush,
-        })
+        }
     }
 }
 
@@ -136,6 +138,16 @@ impl Read for RbFileLikeObject {
 
 impl Write for RbFileLikeObject {
     fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
+        if is_non_ruby_thread() {
+            let (sender, receiver) = sync_channel(0);
+            POLARS_RUBY_SENDER
+                .get()
+                .unwrap()
+                .send((self.clone(), buf.to_vec(), sender))
+                .unwrap();
+            return receiver.recv().unwrap();
+        }
+
         let expects_str = self.expects_str;
 
         Ruby::attach(|rb| {
@@ -155,6 +167,11 @@ impl Write for RbFileLikeObject {
     }
 
     fn flush(&mut self) -> Result<(), io::Error> {
+        if is_non_ruby_thread() {
+            // handled in write for now
+            return Ok(());
+        }
+
         Self::flush(self)
     }
 }
@@ -219,7 +236,7 @@ pub enum RubyScanSourceInput {
 }
 
 pub(crate) fn try_get_rbfile(
-    _rb: &Ruby,
+    rb: &Ruby,
     rb_f: Value,
     write: bool,
 ) -> RbResult<(EitherRustRubyFile, Option<PathBuf>)> {
@@ -227,6 +244,12 @@ pub(crate) fn try_get_rbfile(
     let expects_str = false;
     let has_flush = rb_f.respond_to("flush", false)?;
     let f = RbFileLikeObject::new(rb_f, expects_str, has_flush);
+
+    // TODO move
+    if write {
+        start_background_thread(rb);
+    }
+
     Ok((EitherRustRubyFile::Rb(f), None))
 }
 
@@ -300,4 +323,52 @@ pub fn get_mmap_bytes_reader_and_path<'a>(
             (EitherRustRubyFile::Rb(f), path) => Ok((Box::new(Cursor::new(f.to_buffer())), path)),
         },
     }
+}
+
+#[allow(clippy::type_complexity)]
+static POLARS_RUBY_SENDER: OnceLock<
+    SyncSender<(
+        RbFileLikeObject,
+        Vec<u8>,
+        SyncSender<Result<usize, io::Error>>,
+    )>,
+> = OnceLock::new();
+
+// TODO figure out better approach
+fn start_background_thread(rb: &Ruby) {
+    POLARS_RUBY_SENDER.get_or_init(|| {
+        let (sender, receiver) = sync_channel::<(
+            RbFileLikeObject,
+            Vec<u8>,
+            SyncSender<Result<usize, io::Error>>,
+        )>(0);
+
+        // TODO save reference to thread?
+        rb.thread_create_from_fn(move |rb2| {
+            loop {
+                match receiver.try_recv() {
+                    Ok((mut f, buf, sender2)) => {
+                        let result = f.write(&buf);
+                        if result.is_ok() {
+                            // flush writes for now
+                            f.flush().unwrap();
+                        }
+                        sender2.send(result).unwrap();
+                    }
+                    Err(_) => {
+                        rb2.thread_sleep(std::time::Duration::from_millis(1))?;
+                    }
+                }
+            }
+
+            #[allow(unreachable_code)]
+            Ok(())
+        });
+
+        sender
+    });
+}
+
+fn is_non_ruby_thread() -> bool {
+    matches!(Ruby::get(), Err(RubyUnavailableError::NonRubyThread))
 }
