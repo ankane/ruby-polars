@@ -107,8 +107,8 @@ impl RbFileLikeObject {
     fn flush(&self) -> std::io::Result<()> {
         if self.has_flush {
             if is_non_ruby_thread() {
-                // handled in write for now
-                return Ok(());
+                let self2 = self.clone();
+                return run_in_ruby_thread(move |_rb| self2.flush());
             }
 
             Ruby::attach(|rb| {
@@ -147,14 +147,7 @@ impl Write for RbFileLikeObject {
         if is_non_ruby_thread() {
             let buf2 = buf.to_vec();
             let mut self2 = self.clone();
-            return run_in_background(move |_rb| {
-                let result = self2.write(&buf2);
-                if result.is_ok() {
-                    // flush writes for now
-                    self2.flush().unwrap();
-                }
-                result
-            });
+            return run_in_ruby_thread(move |_rb| self2.write(&buf2));
         }
 
         let expects_str = self.expects_str;
@@ -330,7 +323,7 @@ pub fn get_mmap_bytes_reader_and_path<'a>(
 }
 
 #[allow(clippy::type_complexity)]
-static POLARS_RUBY_SENDER: OnceLock<
+static BACKGROUND_SENDER: OnceLock<
     SyncSender<(
         Box<dyn FnOnce(&Ruby) -> Box<dyn Any + Send> + Send>,
         SyncSender<Box<dyn Any + Send>>,
@@ -339,7 +332,7 @@ static POLARS_RUBY_SENDER: OnceLock<
 
 // TODO figure out better approach
 fn start_background_thread(rb: &Ruby) {
-    POLARS_RUBY_SENDER.get_or_init(|| {
+    BACKGROUND_SENDER.get_or_init(|| {
         let (sender, receiver) = sync_channel::<(
             Box<dyn FnOnce(&Ruby) -> Box<dyn Any + Send> + Send>,
             SyncSender<Box<dyn Any + Send>>,
@@ -366,14 +359,14 @@ fn start_background_thread(rb: &Ruby) {
     });
 }
 
-fn run_in_background<T, F>(f: F) -> T
+fn run_in_ruby_thread<T, F>(f: F) -> T
 where
     T: Send + 'static,
     F: FnOnce(&Ruby) -> T + Send + 'static,
 {
     let f2 = move |rb: &Ruby| -> Box<dyn Any + Send> { Box::new(f(rb)) };
     let (sender, receiver) = sync_channel(0);
-    POLARS_RUBY_SENDER
+    BACKGROUND_SENDER
         .get()
         .unwrap()
         .send((Box::new(f2), sender))
