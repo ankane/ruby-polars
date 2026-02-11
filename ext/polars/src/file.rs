@@ -142,13 +142,13 @@ impl Write for RbFileLikeObject {
         if is_non_ruby_thread() {
             let buf2 = buf.to_vec();
             let mut self2 = self.clone();
-            let f = move |_rb: &Ruby| {
+            let f = move |_rb: &Ruby| -> Box<dyn Any + Send> {
                 let result = self2.write(&buf2);
                 if result.is_ok() {
                     // flush writes for now
                     self2.flush().unwrap();
                 }
-                result
+                Box::new(result)
             };
             let (sender, receiver) = sync_channel(0);
             POLARS_RUBY_SENDER
@@ -339,7 +339,7 @@ pub fn get_mmap_bytes_reader_and_path<'a>(
 #[allow(clippy::type_complexity)]
 static POLARS_RUBY_SENDER: OnceLock<
     SyncSender<(
-        Box<dyn FnOnce(&Ruby) -> Result<usize, io::Error> + Send>,
+        Box<dyn FnOnce(&Ruby) -> Box<dyn Any + Send> + Send>,
         SyncSender<Box<dyn Any + Send>>,
     )>,
 > = OnceLock::new();
@@ -348,7 +348,7 @@ static POLARS_RUBY_SENDER: OnceLock<
 fn start_background_thread(rb: &Ruby) {
     POLARS_RUBY_SENDER.get_or_init(|| {
         let (sender, receiver) = sync_channel::<(
-            Box<dyn FnOnce(&Ruby) -> Result<usize, io::Error> + Send>,
+            Box<dyn FnOnce(&Ruby) -> Box<dyn Any + Send> + Send>,
             SyncSender<Box<dyn Any + Send>>,
         )>(0);
 
@@ -358,7 +358,7 @@ fn start_background_thread(rb: &Ruby) {
                 match receiver.try_recv() {
                     Ok((f, sender2)) => {
                         let result = f(rb2);
-                        sender2.send(Box::new(result)).unwrap();
+                        sender2.send(result).unwrap();
                     }
                     Err(_) => {
                         rb2.thread_sleep(std::time::Duration::from_millis(1))?;
