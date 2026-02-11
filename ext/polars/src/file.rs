@@ -205,7 +205,6 @@ impl EitherRustRubyFile {
         }
     }
 
-    #[allow(dead_code)]
     fn into_scan_source_input(self) -> RubyScanSourceInput {
         match self {
             EitherRustRubyFile::Rb(f) => RubyScanSourceInput::Buffer(f.to_buffer()),
@@ -237,15 +236,14 @@ pub(crate) fn try_get_rbfile(
 }
 
 pub fn get_ruby_scan_source_input(rb_f: Value, write: bool) -> RbResult<RubyScanSourceInput> {
-    Ruby::attach(|_rb| {
+    Ruby::attach(|rb| {
         if let Ok(s) = PathBuf::try_convert(rb_f) {
             let file_path =
                 PlRefPath::try_from_path(resolve_homedir(&s).as_ref()).map_err(to_rb_err)?;
 
             Ok(RubyScanSourceInput::Path(file_path))
         } else {
-            let f = RbFileLikeObject::ensure_requirements(rb_f, !write, write, !write)?;
-            Ok(RubyScanSourceInput::Buffer(f.to_buffer()))
+            Ok(try_get_rbfile(rb, rb_f, write)?.0.into_scan_source_input())
         }
     })
 }
