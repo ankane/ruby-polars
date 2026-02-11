@@ -4,7 +4,7 @@ use std::io;
 use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
 use std::sync::OnceLock;
-use std::sync::mpsc::{SyncSender, sync_channel};
+use std::sync::mpsc::{SyncSender, TryRecvError, sync_channel};
 
 use magnus::{Error, RString, Ruby, Value, error::RubyUnavailableError, prelude::*, value::Opaque};
 use polars::io::mmap::MmapBytesReader;
@@ -341,8 +341,11 @@ fn start_background_ruby_thread(rb: &Ruby) {
                     Ok((f, sender2)) => {
                         sender2.send(f(rb2)).unwrap();
                     }
-                    Err(_) => {
+                    Err(TryRecvError::Empty) => {
                         rb2.thread_sleep(std::time::Duration::from_millis(1))?;
+                    }
+                    Err(TryRecvError::Disconnected) => {
+                        todo!();
                     }
                 }
             }
