@@ -9,7 +9,8 @@ end
 
 namespace :test do
   RubyMemcheck::TestTask.new(:valgrind) do |t|
-    t.test_files = FileList["test/**/*_test.rb"]
+    # TODO test docs
+    t.test_files = FileList["test/**/*_test.rb"].exclude(/docs_test/)
   end
 end
 

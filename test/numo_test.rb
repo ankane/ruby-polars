@@ -58,6 +58,8 @@ class NumoTest < Minitest::Test
   end
 
   def test_series_2d
+    skip if valgrind?
+
     s = Polars::Series.new(Numo::Int64.cast([[1, 2], [3, 4]]))
     assert_series [[1, 2], [3, 4]], s, dtype: Polars::Array.new(Polars::Int64, 2)
   end

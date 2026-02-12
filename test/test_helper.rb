@@ -27,6 +27,10 @@ class Minitest::Test
     ENV["STRESS"]
   end
 
+  def valgrind?
+    ENV["RUBY_MEMCHECK_RUNNING"]
+  end
+
   def assert_series(exp, act, dtype: nil, **options)
     assert_kind_of Polars::Series, act
     if exp.is_a?(Polars::Series)

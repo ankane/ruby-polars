@@ -11,7 +11,7 @@ gem "pg", require: false
 gem "mysql2", require: false, platform: :ruby
 gem "trilogy", require: false, platform: :ruby
 gem "sqlite3", require: false
-gem "ruby_memcheck", require: false
+gem "ruby_memcheck"
 
 # TODO remove when numo-narray > 0.9.2.1 is released
 if Gem.win_platform?
