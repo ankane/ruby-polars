@@ -58,6 +58,7 @@ class NumoTest < Minitest::Test
   end
 
   def test_series_2d
+    # https://github.com/ruby-numo/numo-narray/issues/219
     skip if valgrind?
 
     s = Polars::Series.new(Numo::Int64.cast([[1, 2], [3, 4]]))
