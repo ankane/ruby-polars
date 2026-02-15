@@ -10,7 +10,7 @@
 - Added `slice`, `head`, and `tail` methods to `BinaryExpr` and `BinaryNameSpace`
 - Added `get` method to `BinaryExpr`
 - Added `having` method to `GroupBy` and `LazyGroupBy`
-- Changed `each` method for `GroupBy` to always return array keys
+- Changed `each` method for `GroupBy` to always return `Array` keys
 
 ## 0.24.0 (2026-02-04)
 
