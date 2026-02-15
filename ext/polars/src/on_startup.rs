@@ -14,6 +14,7 @@ use polars_error::PolarsWarning;
 use polars_error::signals::register_polars_keyboard_interrupt_hook;
 
 use crate::Wrap;
+use crate::file::{is_non_ruby_thread, run_in_ruby_thread};
 use crate::map::lazy::call_lambda_with_series;
 use crate::map::ruby_udf;
 use crate::prelude::ObjectValue;
@@ -25,6 +26,13 @@ fn ruby_function_caller_series(
     output_dtype: Option<DataType>,
     lambda: Opaque<Value>,
 ) -> PolarsResult<Column> {
+    if is_non_ruby_thread() {
+        let s2 = s.to_vec();
+        return run_in_ruby_thread(move |_rb| {
+            ruby_function_caller_series(&s2, output_dtype, lambda)
+        });
+    }
+
     Ruby::attach(|rb| call_lambda_with_series(rb, s, output_dtype, lambda))
 }
 

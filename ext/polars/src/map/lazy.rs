@@ -84,10 +84,7 @@ pub(crate) fn call_lambda_with_series(
 
     // Set return_dtype in kwargs
     let dict = rb.hash_new();
-    let output_dtype = match output_dtype {
-        None => None,
-        Some(dt) => Some(Wrap(dt)),
-    };
+    let output_dtype = output_dtype.map(Wrap);
     dict.aset("return_dtype", output_dtype).unwrap();
 
     let series_objects = rb.ary_from_iter(

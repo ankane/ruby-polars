@@ -330,7 +330,7 @@ type BackgroundMessage = (
 static BACKGROUND_RUBY_THREAD_MAILBOX: OnceLock<SyncSender<BackgroundMessage>> = OnceLock::new();
 
 // TODO figure out better approach
-fn start_background_ruby_thread(rb: &Ruby) {
+pub(crate) fn start_background_ruby_thread(rb: &Ruby) {
     BACKGROUND_RUBY_THREAD_MAILBOX.get_or_init(|| {
         let (sender, receiver) = sync_channel::<BackgroundMessage>(0);
 
@@ -360,7 +360,7 @@ fn start_background_ruby_thread(rb: &Ruby) {
     });
 }
 
-fn run_in_ruby_thread<T, F>(f: F) -> T
+pub(crate) fn run_in_ruby_thread<T, F>(f: F) -> T
 where
     T: Send + 'static,
     F: FnOnce(&Ruby) -> T + Send + 'static,
@@ -375,6 +375,6 @@ where
     *receiver.recv().unwrap().downcast().unwrap()
 }
 
-fn is_non_ruby_thread() -> bool {
+pub(crate) fn is_non_ruby_thread() -> bool {
     matches!(Ruby::get(), Err(RubyUnavailableError::NonRubyThread))
 }

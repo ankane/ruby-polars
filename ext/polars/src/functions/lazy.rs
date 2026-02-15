@@ -8,6 +8,7 @@ use polars::prelude::*;
 use crate::conversion::{Wrap, get_lf, get_rbseq};
 use crate::expr::ToExprs;
 use crate::expr::datatype::RbDataTypeExpr;
+use crate::file::start_background_ruby_thread;
 use crate::lazyframe::RbOptFlags;
 use crate::map::lazy::binary_lambda;
 use crate::utils::{EnterPolarsExt, RubyAttach};
@@ -430,12 +431,15 @@ pub fn lit(value: Value, allow_object: bool, is_scalar: bool) -> RbResult<RbExpr
 }
 
 pub fn map_expr(
+    rb: &Ruby,
     rbexpr: RArray,
     lambda: Value,
     output_type: Option<&RbDataTypeExpr>,
     is_elementwise: bool,
     returns_scalar: bool,
 ) -> RbResult<RbExpr> {
+    start_background_ruby_thread(rb);
+
     map::lazy::map_expr(rbexpr, lambda, output_type, is_elementwise, returns_scalar)
 }
 
