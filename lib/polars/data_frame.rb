@@ -2735,6 +2735,92 @@ module Polars
       function.(self, *args, **kwargs, &block)
     end
 
+    # Apply eager functions to columns of a DataFrame.
+    #
+    # Users should always prefer :meth:`with_columns` unless they are using
+    # expressions that are only possible on `Series` and not on `Expr`. This is almost
+    # never the case, except for a very select few functions that cannot know the
+    # output datatype without looking at the data.
+    #
+    # @param column_names [Object]
+    #   The columns to apply the UDF to.
+    # @param args [Array]
+    #   Arguments to pass to the UDF.
+    # @param kwargs [Hash]
+    #   Keyword arguments to pass to the UDF.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4], "b" => ["10", "20", "30", "40"]})
+    #   df.map_columns("a") { |s| s.shrink_dtype }
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i8  ┆ str │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 10  │
+    #   # │ 2   ┆ 20  │
+    #   # │ 3   ┆ 30  │
+    #   # │ 4   ┆ 40  │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => ['{"x":"a"}', nil, '{"x":"b"}', nil],
+    #       "b" => ['{"a":1, "b": true}', nil, '{"a":2, "b": false}', nil]
+    #     }
+    #   )
+    #   df.map_columns(["a", "b"]) { |s| s.str.json_decode }
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌───────────┬───────────┐
+    #   # │ a         ┆ b         │
+    #   # │ ---       ┆ ---       │
+    #   # │ struct[1] ┆ struct[2] │
+    #   # ╞═══════════╪═══════════╡
+    #   # │ {"a"}     ┆ {1,true}  │
+    #   # │ null      ┆ null      │
+    #   # │ {"b"}     ┆ {2,false} │
+    #   # │ null      ┆ null      │
+    #   # └───────────┴───────────┘
+    #
+    # @example
+    #   df.map_columns(Polars.cs.all) { |s| s.str.json_decode }
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌───────────┬───────────┐
+    #   # │ a         ┆ b         │
+    #   # │ ---       ┆ ---       │
+    #   # │ struct[1] ┆ struct[2] │
+    #   # ╞═══════════╪═══════════╡
+    #   # │ {"a"}     ┆ {1,true}  │
+    #   # │ null      ┆ null      │
+    #   # │ {"b"}     ┆ {2,false} │
+    #   # │ null      ┆ null      │
+    #   # └───────────┴───────────┘
+    def map_columns(
+      column_names,
+      *args,
+      **kwargs,
+      &function
+    )
+      if column_names.is_a?(Selector) || column_names.is_a?(Expr)
+        c_names = Array(Utils.expand_selector(self, column_names))
+      elsif Utils.strlike?(column_names)
+        c_names = [column_names]
+      else
+        c_names = Array(column_names)
+      end
+
+      with_columns(
+        c_names.map { |c| function.call(self[c], *args, **kwargs) }
+      )
+    end
+
     # Add a column at index 0 that counts the rows.
     #
     # @param name [String]
