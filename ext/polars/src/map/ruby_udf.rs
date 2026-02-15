@@ -1,14 +1,21 @@
 use std::sync::{Arc, OnceLock};
 
-use magnus::{Value, value::Opaque};
-use polars_core::datatypes::Field;
+use magnus::{Ruby, Value, value::Opaque, value::ReprValue};
+use polars_core::datatypes::{DataType, Field};
 use polars_core::error::*;
 use polars_core::frame::column::Column;
 use polars_core::schema::Schema;
+use polars_plan::dsl::udf::try_infer_udf_output_dtype;
 use polars_plan::prelude::*;
 use polars_utils::pl_str::PlSmallStr;
 
-#[allow(unused)]
+use crate::utils::RubyAttach;
+
+#[allow(clippy::type_complexity)]
+pub static mut CALL_COLUMNS_UDF_RUBY: Option<
+    fn(s: &[Column], output_dtype: Option<DataType>, lambda: Opaque<Value>) -> PolarsResult<Column>,
+> = None;
+
 pub struct RubyUdfExpression {
     ruby_function: Opaque<Value>,
     output_type: Option<DataTypeExpr>,
@@ -36,31 +43,80 @@ impl RubyUdfExpression {
 }
 
 impl ColumnsUdf for RubyUdfExpression {
-    #[allow(unused)]
     fn call_udf(&self, s: &mut [Column]) -> PolarsResult<Column> {
-        todo!();
+        let func = unsafe { CALL_COLUMNS_UDF_RUBY.unwrap() };
+        let field = self
+            .materialized_field
+            .get()
+            .expect("should have been materialized at this point");
+        let mut out = func(
+            s,
+            self.materialized_field.get().map(|f| f.dtype.clone()),
+            self.ruby_function,
+        )?;
+
+        let must_cast = out.dtype().matches_schema_type(field.dtype()).map_err(|_| {
+            polars_err!(
+                SchemaMismatch: "expected output type '{:?}', got '{:?}'; set `return_dtype` to the proper datatype",
+                field.dtype(), out.dtype(),
+            )
+        })?;
+        if must_cast {
+            out = out.cast(field.dtype())?;
+        }
+
+        Ok(out)
     }
 }
 
 impl AnonymousColumnsUdf for RubyUdfExpression {
-    #[allow(unused)]
     fn as_column_udf(self: Arc<Self>) -> Arc<dyn ColumnsUdf> {
         self as _
     }
 
-    #[allow(unused)]
     fn deep_clone(self: Arc<Self>) -> Arc<dyn AnonymousColumnsUdf> {
+        Arc::new(Self {
+            ruby_function: Ruby::attach(|rb| {
+                // TODO fix
+                rb.get_inner(self.ruby_function)
+                    .funcall::<_, _, Value>("dup", ())
+            })
+            .unwrap()
+            .into(),
+            output_type: self.output_type.clone(),
+            materialized_field: OnceLock::new(),
+            is_elementwise: self.is_elementwise,
+            returns_scalar: self.returns_scalar,
+        }) as _
+    }
+
+    fn try_serialize(&self, _buf: &mut Vec<u8>) -> PolarsResult<()> {
         todo!();
     }
 
-    #[allow(unused)]
-    fn try_serialize(&self, buf: &mut Vec<u8>) -> PolarsResult<()> {
-        todo!();
-    }
-
-    #[allow(unused)]
     fn get_field(&self, input_schema: &Schema, fields: &[Field]) -> PolarsResult<Field> {
-        todo!();
+        let field = match self.materialized_field.get() {
+            Some(f) => f.clone(),
+            None => {
+                let dtype = match self.output_type.as_ref() {
+                    None => {
+                        let func = unsafe { CALL_COLUMNS_UDF_RUBY.unwrap() };
+                        let f = |s: &[Column]| func(s, None, self.ruby_function);
+                        try_infer_udf_output_dtype(&f as _, fields)?
+                    }
+                    Some(output_type) => output_type
+                        .clone()
+                        .into_datatype_with_self(input_schema, fields[0].dtype())?,
+                };
+
+                // Take the name of first field, just like `map_field`.
+                let name = fields[0].name();
+                let f = Field::new(name.clone(), dtype);
+                self.materialized_field.get_or_init(|| f.clone());
+                f
+            }
+        };
+        Ok(field)
     }
 }
 

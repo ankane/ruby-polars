@@ -1,9 +1,10 @@
+#![allow(unsafe_op_in_unsafe_fn)]
 use std::any::Any;
 use std::sync::Arc;
 use std::sync::OnceLock;
 
 use arrow::array::Array;
-use magnus::{IntoValue, Ruby, Value, prelude::*};
+use magnus::{IntoValue, Ruby, Value, prelude::*, value::Opaque};
 use polars::prelude::*;
 use polars_core::chunked_array::object::builder::ObjectChunkedBuilder;
 use polars_core::chunked_array::object::registry;
@@ -13,9 +14,19 @@ use polars_error::PolarsWarning;
 use polars_error::signals::register_polars_keyboard_interrupt_hook;
 
 use crate::Wrap;
+use crate::map::lazy::call_lambda_with_series;
+use crate::map::ruby_udf;
 use crate::prelude::ObjectValue;
 use crate::rb_modules::pl_utils;
 use crate::utils::RubyAttach;
+
+fn ruby_function_caller_series(
+    s: &[Column],
+    output_dtype: Option<DataType>,
+    lambda: Opaque<Value>,
+) -> PolarsResult<Column> {
+    Ruby::attach(|rb| call_lambda_with_series(rb, s, output_dtype, lambda))
+}
 
 fn warning_function(msg: &str, _warning: PolarsWarning) {
     Ruby::attach(|rb| {
@@ -27,7 +38,7 @@ fn warning_function(msg: &str, _warning: PolarsWarning) {
 
 static POLARS_REGISTRY_INIT_LOCK: OnceLock<()> = OnceLock::new();
 
-pub(crate) fn register_startup_deps(catch_keyboard_interrupt: bool) {
+pub unsafe fn register_startup_deps(catch_keyboard_interrupt: bool) {
     POLARS_REGISTRY_INIT_LOCK.get_or_init(|| {
         let object_builder = Box::new(|name: PlSmallStr, capacity: usize| {
             Box::new(ObjectChunkedBuilder::<ObjectValue>::new(name, capacity))
@@ -57,6 +68,9 @@ pub(crate) fn register_startup_deps(catch_keyboard_interrupt: bool) {
             physical_dtype,
             Arc::new(object_array_getter),
         );
+
+        // Register SERIES UDF.
+        ruby_udf::CALL_COLUMNS_UDF_RUBY = Some(ruby_function_caller_series);
         // Register warning function for `polars_warn!`.
         polars_error::set_warning_function(warning_function);
 

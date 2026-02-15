@@ -1,4 +1,4 @@
-use magnus::{RArray, Ruby, Value, prelude::*};
+use magnus::{RArray, Ruby, Value, prelude::*, value::Opaque};
 use polars::prelude::*;
 
 use crate::expr::ToExprs;
@@ -71,6 +71,16 @@ pub fn binary_lambda(lambda: Value, a: Series, b: Series) -> PolarsResult<Option
     // Finally get the actual Series
     let binding = rbseries.series.read();
     Ok(Some(binding.clone()))
+}
+
+#[allow(unused_variables)]
+pub(crate) fn call_lambda_with_series(
+    rb: &Ruby,
+    s: &[Column],
+    output_dtype: Option<DataType>,
+    lambda: Opaque<Value>,
+) -> PolarsResult<Column> {
+    todo!();
 }
 
 pub fn map_expr(
