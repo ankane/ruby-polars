@@ -3049,9 +3049,6 @@ module Polars
       ).to_series
     end
 
-    # def view
-    # end
-
     # Convert this Series to a Numo array. This operation clones data but is completely safe.
     #
     # @return [Numo::NArray]
@@ -4594,9 +4591,6 @@ module Polars
     )
       super
     end
-
-    # def rolling_apply
-    # end
 
     # Compute a rolling median based on another series.
     #

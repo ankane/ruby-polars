@@ -170,9 +170,6 @@ module Polars
 
     # clone handled by initialize_copy
 
-    # def [](item)
-    # end
-
     # Returns a string representing the LazyFrame.
     #
     # @return [String]

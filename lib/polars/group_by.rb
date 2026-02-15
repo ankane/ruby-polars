@@ -67,47 +67,6 @@ module Polars
       end
     end
 
-    # Apply a custom/user-defined function (UDF) over the groups as a sub-DataFrame.
-    #
-    # Implementing logic using a Ruby function is almost always _significantly_
-    # slower and more memory intensive than implementing the same logic using
-    # the native expression API because:
-
-    # - The native expression engine runs in Rust; UDFs run in Ruby.
-    # - Use of Ruby UDFs forces the DataFrame to be materialized in memory.
-    # - Polars-native expressions can be parallelised (UDFs cannot).
-    # - Polars-native expressions can be logically optimised (UDFs cannot).
-    #
-    # Wherever possible you should strongly prefer the native expression API
-    # to achieve the best performance.
-    #
-    # @return [DataFrame]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "id" => [0, 1, 2, 3, 4],
-    #       "color" => ["red", "green", "green", "red", "red"],
-    #       "shape" => ["square", "triangle", "square", "triangle", "square"]
-    #     }
-    #   )
-    #   df.group_by("color").apply { |group_df| group_df.sample(2) }
-    #   # =>
-    #   # shape: (4, 3)
-    #   # ┌─────┬───────┬──────────┐
-    #   # │ id  ┆ color ┆ shape    │
-    #   # │ --- ┆ ---   ┆ ---      │
-    #   # │ i64 ┆ str   ┆ str      │
-    #   # ╞═════╪═══════╪══════════╡
-    #   # │ 1   ┆ green ┆ triangle │
-    #   # │ 2   ┆ green ┆ square   │
-    #   # │ 4   ┆ red   ┆ square   │
-    #   # │ 3   ┆ red   ┆ triangle │
-    #   # └─────┴───────┴──────────┘
-    # def apply(&f)
-    #   _dataframe_class._from_rbdf(_df.group_by_apply(by, f))
-    # end
-
     # Filter groups with a list of predicates after aggregation.
     #
     # Using this method is equivalent to adding the predicates to the aggregation and
