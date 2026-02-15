@@ -17,5 +17,16 @@ module Polars
 
       DataTypeExpr._from_rbdatatype_expr(RbDataTypeExpr.of_expr(e._rbexpr))
     end
+
+    # Get the dtype of `self` in `map_elements` and `map_batches`.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @return [DataTypeExpr]
+    def self_dtype
+      DataTypeExpr._from_rbdatatype_expr(RbDataTypeExpr.self_dtype)
+    end
   end
 end

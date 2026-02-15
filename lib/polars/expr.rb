@@ -3380,24 +3380,24 @@ module Polars
     # Wherever possible you should strongly prefer the native expression API
     # to achieve the best performance.
     #
-    # @param return_dtype [Symbol]
+    # @param return_dtype [Object]
     #   Dtype of the output Series.
     #   If not set, polars will assume that
     #   the dtype remains unchanged.
     #
     # @return [Expr]
     #
-    # @example
+    # @example The function is applied to each element of column `'a'`:
     #   df = Polars::DataFrame.new(
     #     {
     #       "a" => [1, 2, 3, 1],
     #       "b" => ["a", "b", "c", "c"]
     #     }
     #   )
-    #
-    # @example In a selection context, the function is applied by row.
     #   df.with_columns(
-    #     Polars.col("a").map_elements { |x| x * 2 }.alias("a_times_2")
+    #     Polars.col("a")
+    #     .map_elements(return_dtype: Polars.self_dtype) { |x| x * 2 }
+    #     .alias("a_times_2")
     #   )
     #   # =>
     #   # shape: (4, 3)
@@ -3411,43 +3411,33 @@ module Polars
     #   # │ 3   ┆ c   ┆ 6         │
     #   # │ 1   ┆ c   ┆ 2         │
     #   # └─────┴─────┴───────────┘
-    #
-    # @example In a GroupBy context the function is applied by group:
-    #   df.lazy
-    #     .group_by("b", maintain_order: true)
-    #     .agg(
-    #       [
-    #         Polars.col("a").map_elements { |x| x.sum }
-    #       ]
-    #     )
-    #     .collect
-    #   # =>
-    #   # shape: (3, 2)
-    #   # ┌─────┬─────┐
-    #   # │ b   ┆ a   │
-    #   # │ --- ┆ --- │
-    #   # │ str ┆ i64 │
-    #   # ╞═════╪═════╡
-    #   # │ a   ┆ 1   │
-    #   # │ b   ┆ 2   │
-    #   # │ c   ┆ 4   │
-    #   # └─────┴─────┘
-    # def map_elements(
-    #   return_dtype: nil,
-    #   skip_nulls: true,
-    #   pass_name: false,
-    #   strategy: "thread_local",
-    #   &f
-    # )
-    #   if pass_name
-    #     raise Todo
-    #   else
-    #     wrap_f = lambda do |x|
-    #       x.map_elements(return_dtype: return_dtype, skip_nulls: skip_nulls, &f)
-    #     end
-    #   end
-    #   map_batches(agg_list: true, return_dtype: return_dtype, &wrap_f)
-    # end
+    def map_elements(
+      return_dtype: nil,
+      skip_nulls: true,
+      pass_name: false,
+      strategy: "thread_local",
+      returns_scalar: false,
+      &function
+    )
+      if pass_name
+        raise Todo
+      else
+        wrap_f = lambda do |x|
+          x.map_elements(return_dtype: return_dtype, skip_nulls: skip_nulls, &function)
+        end
+      end
+
+      if strategy == "thread_local"
+        map_batches(
+          return_dtype: return_dtype,
+          returns_scalar: false,
+          is_elementwise: true,
+          &wrap_f
+        )
+      else
+        raise Todo
+      end
+    end
 
     # Explode a list or utf8 Series. This means that every item is expanded to a new
     # row.

@@ -954,8 +954,11 @@ module Polars
         end
 
       _map_batches_wrapper = lambda do |sl, *args, **kwargs|
+        return_dtype = kwargs[:return_dtype]
         slp = sl.map { |s| Utils.wrap_s(s) }
-        rv = function.(slp)
+
+        rv = function.(slp, *args, **kwargs)
+
         if rv.is_a?(Series)
           rv._s
         elsif returns_scalar

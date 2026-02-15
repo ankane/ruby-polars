@@ -1385,6 +1385,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     let class = module.define_class("RbDataTypeExpr", ruby.class_object())?;
     class.define_singleton_method("from_dtype", function!(RbDataTypeExpr::from_dtype, 1))?;
     class.define_singleton_method("of_expr", function!(RbDataTypeExpr::of_expr, 1))?;
+    class.define_singleton_method("self_dtype", function!(RbDataTypeExpr::self_dtype, 0))?;
     class.define_method("collect_dtype", method!(RbDataTypeExpr::collect_dtype, 1))?;
 
     // selector
