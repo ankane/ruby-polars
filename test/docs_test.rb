@@ -230,7 +230,7 @@ class DocsTest < Minitest::Test
     todo |= cls == Polars::NameExpr && method.name == :map
     todo |= cls == Polars::Functions && [:fold, :cum_fold, :cum_sum_horizontal].include?(method.name)
     todo |= cls == Polars::Expr && method.name == :deserialize
-    todo |= cls == Polars::LazyFrame && [:deserialize, :serialize].include?(method.name)
+    todo |= cls == Polars::LazyFrame && [:deserialize, :serialize, :map_batches].include?(method.name)
     todo |= cls == Polars::MetaExpr && method.name == :serialize
 
     if missing_examples?(method, cls)

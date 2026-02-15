@@ -3,7 +3,7 @@ use polars::prelude::*;
 
 use crate::expr::ToExprs;
 use crate::expr::datatype::RbDataTypeExpr;
-use crate::map::ruby_udf::{RubyUdfExpression, map_many_ruby};
+use crate::map::ruby_udf::{RubyUdfExpression, RubyUdfExt};
 use crate::rb_modules::*;
 use crate::{RbExpr, RbResult, RbSeries, Wrap};
 
@@ -108,5 +108,5 @@ pub fn map_expr(
     let output_type = output_type.map(|v| v.inner.clone());
     let func = RubyUdfExpression::new(lambda, output_type, is_elementwise, returns_scalar);
     let exprs = rbexpr.to_exprs()?;
-    Ok(map_many_ruby(exprs, func).into())
+    Ok(Expr::map_many_ruby(exprs, func).into())
 }

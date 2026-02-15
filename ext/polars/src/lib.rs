@@ -972,6 +972,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("pivot", method!(RbLazyFrame::pivot, 7))?;
     class.define_method("unpivot", method!(RbLazyFrame::unpivot, 4))?;
     class.define_method("with_row_index", method!(RbLazyFrame::with_row_index, 2))?;
+    class.define_method("map_batches", method!(RbLazyFrame::map_batches, 7))?;
     class.define_method("drop", method!(RbLazyFrame::drop, 1))?;
     class.define_method("cast", method!(RbLazyFrame::cast, 2))?;
     class.define_method("cast_all", method!(RbLazyFrame::cast_all, 2))?;

@@ -4591,8 +4591,105 @@ module Polars
       )
     end
 
-    # def map
-    # end
+    # Apply a custom function.
+    #
+    # It is important that the function returns a Polars DataFrame.
+    #
+    # @param predicate_pushdown [Boolean]
+    #   Allow predicate pushdown optimization to pass this node.
+    # @param projection_pushdown [Boolean]
+    #   Allow projection pushdown optimization to pass this node.
+    # @param slice_pushdown [Boolean]
+    #   Allow slice pushdown optimization to pass this node.
+    # @param no_optimizations [Boolean]
+    #   Turn off all optimizations past this point.
+    # @param schema [Object]
+    #   Output schema of the function, if set to `nil` we assume that the schema
+    #   will remain unchanged by the applied function.
+    # @param validate_output_schema [Boolean]
+    #   It is paramount that polars' schema is correct. This flag will ensure that
+    #   the output schema of this function will be checked with the expected schema.
+    #   Setting this to `false` will not do this check, but may lead to hard to
+    #   debug bugs.
+    # @param streamable [Boolean]
+    #   Whether the function that is given is eligible to be running with the
+    #   streaming engine. That means that the function must produce the same result
+    #   when it is executed in batches or when it is be executed on the full
+    #   dataset.
+    #
+    # @return [LazyFrame]
+    #
+    # @note
+    #   The `schema` of a `LazyFrame` must always be correct. It is up to the caller
+    #   of this function to ensure that this invariant is upheld.
+    #
+    # @note
+    #   It is important that the optimization flags are correct. If the custom function
+    #   for instance does an aggregation of a column, `predicate_pushdown` should not
+    #   be allowed, as this prunes rows and will influence your aggregation results.
+    #
+    # @note
+    #   A UDF passed to `map_batches` must be pure, meaning that it cannot modify or
+    #   depend on state other than its arguments.
+    #
+    # @example
+    #   lf = (
+    #     Polars::LazyFrame.new(
+    #       {
+    #         "a": Polars.int_range(-100_000, 0, eager: true),
+    #         "b": Polars.int_range(0, 100_000, eager: true)
+    #       }
+    #     )
+    #     .map_batches(streamable: true) { |x| 2 * x }
+    #     .collect(engine: "streaming")
+    #   )
+    #   # =>
+    #   # shape: (100_000, 2)
+    #   # ┌─────────┬────────┐
+    #   # │ a       ┆ b      │
+    #   # │ ---     ┆ ---    │
+    #   # │ i64     ┆ i64    │
+    #   # ╞═════════╪════════╡
+    #   # │ -200000 ┆ 0      │
+    #   # │ -199998 ┆ 2      │
+    #   # │ -199996 ┆ 4      │
+    #   # │ -199994 ┆ 6      │
+    #   # │ …       ┆ …      │
+    #   # │ -8      ┆ 199992 │
+    #   # │ -6      ┆ 199994 │
+    #   # │ -4      ┆ 199996 │
+    #   # │ -2      ┆ 199998 │
+    #   # └─────────┴────────┘
+    def map_batches(
+      predicate_pushdown: true,
+      projection_pushdown: true,
+      slice_pushdown: true,
+      no_optimizations: false,
+      schema: nil,
+      validate_output_schema: true,
+      streamable: false,
+      &function
+    )
+      raise Todo
+
+      if no_optimizations
+        predicate_pushdown = false
+        projection_pushdown = false
+        slice_pushdown = false
+      end
+
+      _from_rbldf(
+        _ldf.map_batches(
+          function,
+          predicate_pushdown,
+          projection_pushdown,
+          slice_pushdown,
+          streamable,
+          schema,
+          validate_output_schema,
+        )
+      )
+    end
 
     # Interpolate intermediate values. The interpolation method is linear.
     #

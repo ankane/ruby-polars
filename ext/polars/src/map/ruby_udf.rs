@@ -1,8 +1,8 @@
 use std::sync::{Arc, OnceLock};
 
 use magnus::{Ruby, Value, value::Opaque, value::ReprValue};
+use polars::prelude::*;
 use polars_core::datatypes::{DataType, Field};
-use polars_core::error::*;
 use polars_core::frame::column::Column;
 use polars_core::schema::Schema;
 use polars_plan::dsl::udf::try_infer_udf_output_dtype;
@@ -120,26 +120,62 @@ impl AnonymousColumnsUdf for RubyUdfExpression {
     }
 }
 
-pub fn map_many_ruby(exprs: Vec<Expr>, func: RubyUdfExpression) -> Expr {
-    const NAME: &str = "ruby_udf";
+pub trait RubyUdfExt {
+    #[allow(unused)]
+    fn map_ruby(self, func: RubyUdfExpression) -> Expr;
 
-    let returns_scalar = func.returns_scalar;
+    fn map_many_ruby(exprs: Vec<Expr>, func: RubyUdfExpression) -> Expr;
+}
 
-    let mut flags = FunctionFlags::default() | FunctionFlags::OPTIONAL_RE_ENTRANT;
-    if func.is_elementwise {
-        flags.set_elementwise();
+impl RubyUdfExt for Expr {
+    fn map_ruby(self, func: RubyUdfExpression) -> Expr {
+        Self::map_many_ruby(vec![self], func)
     }
-    if returns_scalar {
-        flags |= FunctionFlags::RETURNS_SCALAR;
-    }
 
-    Expr::AnonymousFunction {
-        input: exprs,
-        function: new_column_udf(func),
-        options: FunctionOptions {
-            flags,
-            ..Default::default()
-        },
-        fmt_str: Box::new(PlSmallStr::from(NAME)),
+    fn map_many_ruby(exprs: Vec<Expr>, func: RubyUdfExpression) -> Expr {
+        const NAME: &str = "ruby_udf";
+
+        let returns_scalar = func.returns_scalar;
+
+        let mut flags = FunctionFlags::default() | FunctionFlags::OPTIONAL_RE_ENTRANT;
+        if func.is_elementwise {
+            flags.set_elementwise();
+        }
+        if returns_scalar {
+            flags |= FunctionFlags::RETURNS_SCALAR;
+        }
+
+        Expr::AnonymousFunction {
+            input: exprs,
+            function: new_column_udf(func),
+            options: FunctionOptions {
+                flags,
+                ..Default::default()
+            },
+            fmt_str: Box::new(PlSmallStr::from(NAME)),
+        }
+    }
+}
+
+pub trait RubyUdfLazyFrameExt {
+    fn map_ruby(
+        self,
+        function: Opaque<Value>,
+        optimizations: AllowedOptimizations,
+        schema: Option<SchemaRef>,
+        validate_output: bool,
+    ) -> LazyFrame;
+}
+
+impl RubyUdfLazyFrameExt for LazyFrame {
+    #[allow(unused)]
+    fn map_ruby(
+        self,
+        function: Opaque<Value>,
+        optimizations: AllowedOptimizations,
+        schema: Option<SchemaRef>,
+        validate_output: bool,
+    ) -> LazyFrame {
+        todo!();
     }
 }

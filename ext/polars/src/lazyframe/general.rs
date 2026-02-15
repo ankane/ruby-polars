@@ -17,6 +17,7 @@ use crate::io::cloud_options::OptRbCloudOptions;
 use crate::io::scan_options::RbScanOptions;
 use crate::io::sink_options::RbSinkOptions;
 use crate::io::sink_output::RbFileSinkDestination;
+use crate::map::ruby_udf::RubyUdfLazyFrameExt;
 use crate::utils::{EnterPolarsExt, RubyAttach};
 use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
 
@@ -964,6 +965,34 @@ impl RbLazyFrame {
     pub fn with_row_index(&self, name: String, offset: Option<IdxSize>) -> Self {
         let ldf = self.ldf.read().clone();
         ldf.with_row_index(&name, offset).into()
+    }
+
+    pub fn map_batches(
+        &self,
+        function: Value,
+        predicate_pushdown: bool,
+        projection_pushdown: bool,
+        slice_pushdown: bool,
+        streamable: bool,
+        schema: Option<Wrap<Schema>>,
+        validate_output: bool,
+    ) -> Self {
+        let mut opt = OptFlags::default();
+        opt.set(OptFlags::PREDICATE_PUSHDOWN, predicate_pushdown);
+        opt.set(OptFlags::PROJECTION_PUSHDOWN, projection_pushdown);
+        opt.set(OptFlags::SLICE_PUSHDOWN, slice_pushdown);
+        opt.set(OptFlags::NEW_STREAMING, streamable);
+
+        self.ldf
+            .read()
+            .clone()
+            .map_ruby(
+                function.into(),
+                opt,
+                schema.map(|s| Arc::new(s.0)),
+                validate_output,
+            )
+            .into()
     }
 
     pub fn drop(&self, columns: &RbSelector) -> Self {
