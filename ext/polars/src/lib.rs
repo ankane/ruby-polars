@@ -1007,6 +1007,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("agg", method!(RbLazyGroupBy::agg, 1))?;
     class.define_method("head", method!(RbLazyGroupBy::head, 1))?;
     class.define_method("tail", method!(RbLazyGroupBy::tail, 1))?;
+    class.define_method("map_groups", method!(RbLazyGroupBy::map_groups, 2))?;
 
     let class = module.define_class("RbSeries", ruby.class_object())?;
     class.define_singleton_method("new_opt_bool", function!(RbSeries::new_opt_bool, 3))?;

@@ -76,5 +76,45 @@ module Polars
         optimizations: QueryOptFlags.none
       )
     end
+
+    # Apply a custom/user-defined function (UDF) over the groups as a new DataFrame.
+    #
+    # Using this is considered an anti-pattern as it will be very slow because:
+    #
+    # - it forces the engine to materialize the whole `DataFrames` for the groups.
+    # - it is not parallelized.
+    # - it blocks optimizations as the passed python function is opaque to the
+    #   optimizer.
+    #
+    # The idiomatic way to apply custom functions over multiple columns is using:
+    #
+    # `Polars.struct([my_columns]).map_elements { |struct_series| ... }`
+    #
+    # @param schema [Object]
+    #   Schema of the output function. This has to be known statically. If the
+    #   given schema is incorrect, this is a bug in the caller's query and may
+    #   lead to errors. If set to None, polars assumes the schema is unchanged.
+    #
+    # @return [DataFrame]
+    def map_groups(
+      schema,
+      &function
+    )
+      if @predicates&.any?
+        msg = "cannot call `map_groups` when filtering groups with `having`"
+        raise TypeError, msg
+      end
+
+      @df.lazy
+        .rolling(
+          index_column: @time_column,
+          period: @period,
+          offset: @offset,
+          closed: @closed,
+          group_by: @group_by
+        )
+        .map_groups(schema, &function)
+        .collect(optimizations: QueryOptFlags.none)
+    end
   end
 end

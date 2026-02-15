@@ -150,6 +150,67 @@ module Polars
       Utils.wrap_ldf(@lgb.agg(rbexprs))
     end
 
+    # Apply a custom/user-defined function (UDF) over the groups as a new DataFrame.
+    #
+    # @note
+    #   This method is much slower than the native expressions API.
+    #   Only use it if you cannot implement your logic otherwise.
+    #
+    # Using this is considered an anti-pattern as it will be very slow because:
+    #
+    # - it forces the engine to materialize the whole `DataFrames` for the groups.
+    # - it is not parallelized
+    # - it blocks optimizations as the passed python function is opaque to the
+    #   optimizer
+    #
+    # The idiomatic way to apply custom functions over multiple columns is using:
+    #
+    # `Polars.struct([my_columns]).apply { |struct_series| ... }`
+    #
+    # @param schema [Object]
+    #   Schema of the output function. This has to be known statically. If the
+    #   given schema is incorrect, this is a bug in the caller's query and may
+    #   lead to errors. If set to None, polars assumes the schema is unchanged.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "id" => [0, 1, 2, 3, 4],
+    #       "color" => ["red", "green", "green", "red", "red"],
+    #       "shape" => ["square", "triangle", "square", "triangle", "square"]
+    #     }
+    #   )
+    #   (
+    #     df.lazy
+    #       .group_by("color")
+    #       .map_groups(nil) { |group_df| group_df.sample(n: 2) }
+    #       .collect
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬───────┬──────────┐
+    #   # │ id  ┆ color ┆ shape    │
+    #   # │ --- ┆ ---   ┆ ---      │
+    #   # │ i64 ┆ str   ┆ str      │
+    #   # ╞═════╪═══════╪══════════╡
+    #   # │ 1   ┆ green ┆ triangle │
+    #   # │ 2   ┆ green ┆ square   │
+    #   # │ 4   ┆ red   ┆ square   │
+    #   # │ 3   ┆ red   ┆ triangle │
+    #   # └─────┴───────┴──────────┘
+    def map_groups(
+      schema,
+      &function
+    )
+      raise Todo
+
+      Utils.wrap_ldf(
+        @lgb.map_groups(schema) { |df| function.(Utils.wrap_df(df)) }
+      )
+    end
+
     # Get the first `n` rows of each group.
     #
     # @param n [Integer]
