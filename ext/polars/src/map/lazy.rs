@@ -1,4 +1,4 @@
-use magnus::{RArray, Ruby, Value, prelude::*, value::Opaque};
+use magnus::{KwArgs, RArray, Ruby, Value, prelude::*, value::Opaque};
 use polars::prelude::*;
 
 use crate::expr::ToExprs;
@@ -85,17 +85,17 @@ pub(crate) fn call_lambda_with_series(
     // Set return_dtype in kwargs
     let dict = rb.hash_new();
     let output_dtype = output_dtype.map(Wrap);
-    dict.aset("return_dtype", output_dtype).unwrap();
+    dict.aset(rb.sym_new("return_dtype"), output_dtype).unwrap();
 
     let series_objects = rb.ary_from_iter(
         s.iter()
             .map(|c| RbSeries::new(c.as_materialized_series().clone())),
     );
 
-    let result = lambda.funcall::<_, _, &RbSeries>("call", (series_objects, dict));
-    Ok(result
+    let result = lambda.funcall::<_, _, &RbSeries>("call", (series_objects, KwArgs(dict)));
+    result
         .map(|s| s.clone().series.into_inner().into_column())
-        .unwrap())
+        .map_err(|e| PolarsError::ComputeError(e.to_string().into()))
 }
 
 pub fn map_expr(

@@ -223,7 +223,7 @@ class DocsTest < Minitest::Test
     return if [:log].include?(method.name)
 
     # TODO fix
-    return if [:combine, :map_elements].include?(method.name)
+    return if [:combine].include?(method.name)
 
     # todos
     todo = [:cum_reduce, :reduce, :show_graph, :from_numo].include?(method.name)

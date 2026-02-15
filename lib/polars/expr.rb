@@ -3422,7 +3422,8 @@ module Polars
       if pass_name
         raise Todo
       else
-        wrap_f = lambda do |x|
+        wrap_f = lambda do |x, **kwargs|
+          return_dtype = kwargs[:return_dtype]
           x.map_elements(return_dtype: return_dtype, skip_nulls: skip_nulls, &function)
         end
       end
@@ -3434,8 +3435,11 @@ module Polars
           is_elementwise: true,
           &wrap_f
         )
-      else
+      elsif strategy == "threading"
         raise Todo
+      else
+        msg = "strategy #{strategy.inspect} is not supported"
+        raise ArgumentError, msg
       end
     end
 
