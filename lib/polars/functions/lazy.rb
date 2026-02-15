@@ -980,6 +980,71 @@ module Polars
       )
     end
 
+    # Apply a custom/user-defined function (UDF) in a GroupBy context.
+    #
+    # @note
+    #   This method is much slower than the native expressions API.
+    #   Only use it if you cannot implement your logic otherwise.
+    #
+    # @param exprs [Object]
+    #     Expression(s) representing the input Series to the function.
+    # @param return_dtype [Object]
+    #     Datatype of the output Series.
+    #
+    #     It is recommended to set this whenever possible. If this is `nil`, it tries
+    #     to infer the datatype by calling the function with dummy data and looking at
+    #     the output.
+    # @param is_elementwise [Boolean]
+    #     Set to true if the operations is elementwise for better performance
+    #     and optimization.
+    #
+    #     An elementwise operations has unit or equal length for all inputs
+    #     and can be ran sequentially on slices without results being affected.
+    # @param returns_scalar [Boolean]
+    #     If the function returns a single scalar as output.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "group" => [1, 1, 2],
+    #       "a" => [1, 3, 3],
+    #       "b" => [5, 6, 7]
+    #     }
+    #   )
+    #   (
+    #     df.group_by("group").agg(
+    #       Polars.map_groups(["a", "b"], return_dtype: Polars::Float64) { |list_of_series| list_of_series[0] / list_of_series[0].sum + list_of_series[1] }
+    #       .alias("my_custom_aggregation")
+    #     )
+    #   ).sort("group")
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌───────┬───────────────────────┐
+    #   # │ group ┆ my_custom_aggregation │
+    #   # │ ---   ┆ ---                   │
+    #   # │ i64   ┆ list[f64]             │
+    #   # ╞═══════╪═══════════════════════╡
+    #   # │ 1     ┆ [5.25, 6.75]          │
+    #   # │ 2     ┆ [8.0]                 │
+    #   # └───────┴───────────────────────┘
+    def map_groups(
+      exprs,
+      return_dtype: nil,
+      is_elementwise: false,
+      returns_scalar: false,
+      &function
+    )
+      map_batches(
+        exprs,
+        return_dtype: return_dtype,
+        is_elementwise: is_elementwise,
+        returns_scalar: returns_scalar,
+        &function
+      )
+    end
+
     # Accumulate over multiple columns horizontally/row wise with a left fold.
     #
     # @return [Expr]
