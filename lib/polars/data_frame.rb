@@ -2769,7 +2769,7 @@ module Polars
 
     # Start a group by operation.
     #
-    # @param by [Object]
+    # @param by [Array]
     #   Column(s) to group by.
     # @param maintain_order [Boolean]
     #   Make sure that the order of the groups remain consistent. This is more
@@ -2781,15 +2781,15 @@ module Polars
     #
     # @return [GroupBy]
     #
-    # @example
+    # @example Group by one column and call `agg` to compute the grouped sum of another column.
     #   df = Polars::DataFrame.new(
     #     {
-    #       "a" => ["a", "b", "a", "b", "b", "c"],
-    #       "b" => [1, 2, 3, 4, 5, 6],
-    #       "c" => [6, 5, 4, 3, 2, 1]
+    #       "a" => ["a", "b", "a", "b", "c"],
+    #       "b" => [1, 2, 1, 3, 3],
+    #       "c" => [5, 4, 3, 2, 1]
     #     }
     #   )
-    #   df.group_by("a").agg(Polars.col("b").sum).sort("a")
+    #   df.group_by("a").agg(Polars.col("b").sum)
     #   # =>
     #   # shape: (3, 2)
     #   # ┌─────┬─────┐
@@ -2797,11 +2797,59 @@ module Polars
     #   # │ --- ┆ --- │
     #   # │ str ┆ i64 │
     #   # ╞═════╪═════╡
-    #   # │ a   ┆ 4   │
-    #   # │ b   ┆ 11  │
-    #   # │ c   ┆ 6   │
+    #   # │ a   ┆ 2   │
+    #   # │ b   ┆ 5   │
+    #   # │ c   ┆ 3   │
     #   # └─────┴─────┘
-    def group_by(by, maintain_order: false, **named_by)
+    #
+    # @example Set `maintain_order: true` to ensure the order of the groups is consistent with the input.
+    #   df.group_by("a", maintain_order: true).agg(Polars.col("c"))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬───────────┐
+    #   # │ a   ┆ c         │
+    #   # │ --- ┆ ---       │
+    #   # │ str ┆ list[i64] │
+    #   # ╞═════╪═══════════╡
+    #   # │ a   ┆ [5, 3]    │
+    #   # │ b   ┆ [4, 2]    │
+    #   # │ c   ┆ [1]       │
+    #   # └─────┴───────────┘
+    #
+    # @example Group by multiple columns by passing a list of column names.
+    #   df.group_by(["a", "b"]).agg(Polars.max("c"))
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ a   ┆ b   ┆ c   │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ i64 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ a   ┆ 1   ┆ 5   │
+    #   # │ b   ┆ 2   ┆ 4   │
+    #   # │ b   ┆ 3   ┆ 2   │
+    #   # │ c   ┆ 3   ┆ 1   │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example Or use positional arguments to group by multiple columns in the same way. Expressions are also accepted.
+    #   df.group_by("a", Polars.col("b") / 2).agg(Polars.col("c").mean)
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ a   ┆ b   ┆ c   │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ str ┆ i64 ┆ f64 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ a   ┆ 0   ┆ 4.0 │
+    #   # │ b   ┆ 1   ┆ 3.0 │
+    #   # │ c   ┆ 1   ┆ 1.0 │
+    #   # └─────┴─────┴─────┘
+    #
+    # @example The `GroupBy` object returned by this method is iterable, returning the name and data of each group.
+    #   df.group_by("a").each do |name, data|
+    #      # ...
+    #   end
+    def group_by(*by, maintain_order: false, **named_by)
       named_by.each do |_, value|
         if !(value.is_a?(::String) || value.is_a?(Expr) || value.is_a?(Series))
           msg = "Expected Polars expression or object convertible to one, got #{value.class.name}."
@@ -2810,7 +2858,7 @@ module Polars
       end
       GroupBy.new(
         self,
-        by,
+        *by,
         **named_by,
         maintain_order: maintain_order,
         predicates: nil
