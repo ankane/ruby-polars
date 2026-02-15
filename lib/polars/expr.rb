@@ -439,6 +439,54 @@ module Polars
       meta.as_selector.exclude(columns, *more_columns).as_expr
     end
 
+    # Offers a structured way to apply a sequence of user-defined functions (UDFs).
+    #
+    # @param function [Object]
+    #   Callable; will receive the expression as the first parameter,
+    #   followed by any given args/kwargs.
+    # @param args [Array]
+    #   Arguments to pass to the UDF.
+    # @param kwargs [Hash]
+    #   Keyword arguments to pass to the UDF.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   extract_number = lambda do |expr|
+    #     # Extract the digits from a string.
+    #     expr.str.extract("\d+", group_index: 0).cast(Polars::Int64)
+    #   end
+    #
+    #   scale_negative_even = lambda do |expr, n: 1|
+    #     # Set even numbers negative, and scale by a user-supplied value.
+    #     expr = Polars.when(expr % 2 == 0).then(-expr).otherwise(expr)
+    #     expr * n
+    #   end
+    #
+    #   df = Polars::DataFrame.new({"val" => ["a: 1", "b: 2", "c: 3", "d: 4"]})
+    #   df.with_columns(
+    #     udfs: Polars.col("val").pipe(extract_number).pipe(scale_negative_even, n: 5)
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌──────┬──────┐
+    #   # │ val  ┆ udfs │
+    #   # │ ---  ┆ ---  │
+    #   # │ str  ┆ i64  │
+    #   # ╞══════╪══════╡
+    #   # │ a: 1 ┆ 5    │
+    #   # │ b: 2 ┆ -10  │
+    #   # │ c: 3 ┆ 15   │
+    #   # │ d: 4 ┆ -20  │
+    #   # └──────┴──────┘
+    def pipe(
+      function,
+      *args,
+      **kwargs
+    )
+      function.(self, *args, **kwargs)
+    end
+
     # Negate a boolean expression.
     #
     # @return [Expr]
