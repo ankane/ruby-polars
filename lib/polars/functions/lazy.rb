@@ -944,8 +944,6 @@ module Polars
       returns_scalar: false,
       &function
     )
-      raise Todo
-
       rbexprs = Utils.parse_into_list_of_expressions(exprs)
 
       return_dtype_expr =
@@ -955,12 +953,23 @@ module Polars
           nil
         end
 
+      _map_batches_wrapper = lambda do |sl, *args, **kwargs|
+        slp = sl.map { |s| Utils.wrap_s(s) }
+        rv = function.(slp)
+        if rv.is_a?(Series)
+          rv._s
+        elsif returns_scalar
+          Series.new([rv], dtype: return_dtype)._s
+        else
+          msg = "`map` with `returns_scalar: false` must return a Series; found #{rv.inspect}.\n\nIf `returns_scalar` is set to `true`, a returned value can be a scalar value."
+          raise TypeError, msg
+        end
+      end
+
       Utils.wrap_expr(
         Plr.map_expr(
           rbexprs,
-          function,
-          # TODO
-          # _map_batches_wrapper(function, returns_scalar: returns_scalar),
+          _map_batches_wrapper,
           return_dtype_expr,
           is_elementwise,
           returns_scalar

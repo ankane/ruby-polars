@@ -5,7 +5,7 @@ use crate::expr::ToExprs;
 use crate::expr::datatype::RbDataTypeExpr;
 use crate::map::ruby_udf::{RubyUdfExpression, map_many_ruby};
 use crate::rb_modules::*;
-use crate::{RbExpr, RbResult, RbSeries};
+use crate::{RbExpr, RbResult, RbSeries, Wrap};
 
 fn to_series(v: Value, name: &str) -> PolarsResult<Series> {
     let ruby = Ruby::get_with(v);
@@ -80,7 +80,25 @@ pub(crate) fn call_lambda_with_series(
     output_dtype: Option<DataType>,
     lambda: Opaque<Value>,
 ) -> PolarsResult<Column> {
-    todo!();
+    let lambda = rb.get_inner(lambda);
+
+    // Set return_dtype in kwargs
+    let dict = rb.hash_new();
+    let output_dtype = match output_dtype {
+        None => None,
+        Some(dt) => Some(Wrap(dt)),
+    };
+    dict.aset("return_dtype", output_dtype).unwrap();
+
+    let series_objects = rb.ary_from_iter(
+        s.iter()
+            .map(|c| RbSeries::new(c.as_materialized_series().clone())),
+    );
+
+    let result = lambda.funcall::<_, _, &RbSeries>("call", (series_objects, dict));
+    Ok(result
+        .map(|s| s.clone().series.into_inner().into_column())
+        .unwrap())
 }
 
 pub fn map_expr(
