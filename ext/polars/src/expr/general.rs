@@ -1,6 +1,6 @@
 use std::ops::Neg;
 
-use magnus::{RArray, Value};
+use magnus::RArray;
 use polars::lazy::dsl;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
@@ -11,7 +11,6 @@ use super::datatype::RbDataTypeExpr;
 use super::selector::RbSelector;
 use crate::conversion::{Wrap, parse_fill_null_strategy};
 use crate::expr::ToExprs;
-use crate::map::lazy::map_single;
 use crate::{RbExpr, RbPolarsErr, RbResult};
 
 impl RbExpr {
@@ -714,24 +713,6 @@ impl RbExpr {
 
     pub fn product(&self) -> Self {
         self.inner.clone().product().into()
-    }
-
-    pub fn map_batches(
-        &self,
-        lambda: Value,
-        output_type: Option<Wrap<DataType>>,
-        agg_list: bool,
-        is_elementwise: bool,
-        returns_scalar: bool,
-    ) -> Self {
-        map_single(
-            self,
-            lambda,
-            output_type,
-            agg_list,
-            is_elementwise,
-            returns_scalar,
-        )
     }
 
     pub fn dot(&self, other: &Self) -> Self {

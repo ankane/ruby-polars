@@ -11,7 +11,7 @@ use crate::expr::datatype::RbDataTypeExpr;
 use crate::lazyframe::RbOptFlags;
 use crate::map::lazy::binary_lambda;
 use crate::utils::{EnterPolarsExt, RubyAttach};
-use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError};
+use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError, map};
 
 macro_rules! set_unwrapped_or_0 {
     ($($var:ident),+ $(,)?) => {
@@ -427,6 +427,16 @@ pub fn lit(value: Value, allow_object: bool, is_scalar: bool) -> RbResult<RbExpr
             value.to_string()
         )))
     }
+}
+
+pub fn map_expr(
+    rbexpr: RArray,
+    lambda: Value,
+    output_type: Option<&RbDataTypeExpr>,
+    is_elementwise: bool,
+    returns_scalar: bool,
+) -> RbResult<RbExpr> {
+    map::lazy::map_expr(rbexpr, lambda, output_type, is_elementwise, returns_scalar)
 }
 
 pub fn pearson_corr(a: &RbExpr, b: &RbExpr) -> RbExpr {

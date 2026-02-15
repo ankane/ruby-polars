@@ -471,7 +471,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("dt_round", method!(RbExpr::dt_round, 1))?;
     class.define_method("dt_replace", method!(RbExpr::dt_replace, 8))?;
     class.define_method("dt_combine", method!(RbExpr::dt_combine, 2))?;
-    class.define_method("map_batches", method!(RbExpr::map_batches, 5))?;
     class.define_method("dot", method!(RbExpr::dot, 1))?;
     class.define_method("reinterpret", method!(RbExpr::reinterpret, 1))?;
     class.define_method("mode", method!(RbExpr::mode, 1))?;
@@ -677,6 +676,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("int_range", function!(functions::range::int_range, 4))?;
     class.define_singleton_method("int_ranges", function!(functions::range::int_ranges, 4))?;
     class.define_singleton_method("repeat", function!(functions::lazy::repeat, 3))?;
+    class.define_singleton_method("map_expr", function!(functions::lazy::map_expr, 5))?;
     class.define_singleton_method("pearson_corr", function!(functions::lazy::pearson_corr, 2))?;
     class.define_singleton_method(
         "spearman_rank_corr",

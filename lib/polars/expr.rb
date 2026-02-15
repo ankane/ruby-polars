@@ -3308,20 +3308,16 @@ module Polars
 
     # Apply a custom Ruby function to a Series or array of Series.
     #
-    # The output of this custom function must be a Series.
-    # If you want to apply a custom function elementwise over single values, see
-    # {#apply}. A use case for `map` is when you want to transform an
-    # expression with a third-party library.
-    #
-    # Read more in [the book](https://pola-rs.github.io/polars-book/user-guide/dsl/custom_functions.html).
-    #
-    # @param return_dtype [Symbol]
+    # @param return_dtype [Object]
     #   Dtype of the output Series.
-    # @param agg_list [Boolean]
-    #   Aggregate list.
     # @param is_elementwise [Boolean]
     #   If set to true this can run in the streaming engine, but may yield
     #   incorrect results in group-by. Ensure you know what you are doing!
+    # @param returns_scalar [Boolean]
+    #   If the function returns a scalar, by default it will be wrapped in
+    #   a list in the output, since the assumption is that the function
+    #   always returns something Series-like. If you want to keep the
+    #   result as a scalar, set this argument to True.
     #
     # @return [Expr]
     #
@@ -3332,7 +3328,7 @@ module Polars
     #       "cosine" => [1.0, 0.0, -1.0, 0.0]
     #     }
     #   )
-    #   df.select(Polars.all.map { |x| x.to_numpy.argmax })
+    #   df.select(Polars.all.map_batches(returns_scalar: true) { |x| x.to_numo.argmax })
     #   # =>
     #   # shape: (1, 2)
     #   # ┌──────┬────────┐
@@ -3342,22 +3338,24 @@ module Polars
     #   # ╞══════╪════════╡
     #   # │ 1    ┆ 0      │
     #   # └──────┴────────┘
-    # def map_batches(return_dtype: nil, agg_list: false, is_elementwise: false, returns_scalar: false, &f)
-    #   if !return_dtype.nil?
-    #     return_dtype = Utils.parse_into_dtype(return_dtype)
-    #   end
-    #   wrap_expr(
-    #     _rbexpr.map_batches(
-    #       _map_batches_wrapper,
-    #       f,
-    #       return_dtype,
-    #       agg_list,
-    #       is_elementwise,
-    #       returns_scalar
-    #     )
-    #   )
-    # end
-    # alias_method :map, :map_batches
+    def map_batches(
+      return_dtype: nil,
+      is_elementwise: false,
+      returns_scalar: false,
+      &function
+    )
+      _wrap = lambda do |sl, *args, **kwargs|
+        function.(sl[0], *args, **kwargs)
+      end
+
+      F.map_batches(
+        [self],
+        return_dtype: return_dtype,
+        is_elementwise: is_elementwise,
+        returns_scalar: returns_scalar,
+        &_wrap
+      )
+    end
 
     # Apply a custom/user-defined function (UDF) in a GroupBy or Projection context.
     #
@@ -3450,7 +3448,6 @@ module Polars
     #   end
     #   map_batches(agg_list: true, return_dtype: return_dtype, &wrap_f)
     # end
-    # alias_method :apply, :map_elements
 
     # Explode a list or utf8 Series. This means that every item is expanded to a new
     # row.

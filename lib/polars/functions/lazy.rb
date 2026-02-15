@@ -874,11 +874,99 @@ module Polars
       end
     end
 
-    # def map
-    # end
+    # Map a custom function over multiple columns/expressions.
+    #
+    # Produces a single Series result.
+    #
+    # @note
+    #   This method is much slower than the native expressions API.
+    #   Only use it if you cannot implement your logic otherwise.
+    #
+    # @param exprs [Array]
+    #   Expression(s) representing the input Series to the function.
+    # @param return_dtype [Object]
+    #   Datatype of the output Series.
+    #
+    #   It is recommended to set this whenever possible. If this is `nil`, it tries
+    #   to infer the datatype by calling the function with dummy data and looking at
+    #   the output.
+    # @param is_elementwise [Boolean]
+    #   Set to true if the operations is elementwise for better performance
+    #   and optimization.
+    #
+    #   An elementwise operations has unit or equal length for all inputs
+    #   and can be ran sequentially on slices without results being affected.
+    # @param returns_scalar [Boolean]
+    #   If the function returns a scalar, by default it will be wrapped in
+    #   a list in the output, since the assumption is that the function
+    #   always returns something Series-like. If you want to keep the
+    #   result as a scalar, set this argument to True.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   A UDF passed to `map_batches` must be pure, meaning that it cannot modify
+    #   or depend on state other than its arguments. We may call the function
+    #   with arbitrary input data.
+    #
+    # @example
+    #   test_func = lambda do |a, b, c|
+    #     a + b + c
+    #   end
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [1, 2, 3, 4],
+    #       "b" => [4, 5, 6, 7]
+    #     }
+    #   )
+    #
+    #   df.with_columns(
+    #     (
+    #       Polars.struct(["a", "b"]).map_batches { |x| test_func.(x.struct.field("a"), x.struct.field("b"), 1) }
+    #     ).alias("a+b+c")
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬─────┬───────┐
+    #   # │ a   ┆ b   ┆ a+b+c │
+    #   # │ --- ┆ --- ┆ ---   │
+    #   # │ i64 ┆ i64 ┆ i64   │
+    #   # ╞═════╪═════╪═══════╡
+    #   # │ 1   ┆ 4   ┆ 6     │
+    #   # │ 2   ┆ 5   ┆ 8     │
+    #   # │ 3   ┆ 6   ┆ 10    │
+    #   # │ 4   ┆ 7   ┆ 12    │
+    #   # └─────┴─────┴───────┘
+    def map_batches(
+      exprs,
+      return_dtype: nil,
+      is_elementwise: false,
+      returns_scalar: false,
+      &function
+    )
+      raise Todo
 
-    # def apply
-    # end
+      rbexprs = Utils.parse_into_list_of_expressions(exprs)
+
+      return_dtype_expr =
+        if !return_dtype.nil?
+          Utils.parse_into_datatype_expr(return_dtype)._rbdatatype_expr
+        else
+          nil
+        end
+
+      Utils.wrap_expr(
+        Plr.map_expr(
+          rbexprs,
+          function,
+          # TODO
+          # _map_batches_wrapper(function, returns_scalar: returns_scalar),
+          return_dtype_expr,
+          is_elementwise,
+          returns_scalar
+        )
+      )
+    end
 
     # Accumulate over multiple columns horizontally/row wise with a left fold.
     #

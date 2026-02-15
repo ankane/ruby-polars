@@ -1,8 +1,11 @@
-use magnus::{Ruby, Value, prelude::*};
+use magnus::{RArray, Ruby, Value, prelude::*};
 use polars::prelude::*;
 
+use crate::expr::ToExprs;
+use crate::expr::datatype::RbDataTypeExpr;
+use crate::map::ruby_udf::{RubyUdfExpression, map_many_ruby};
 use crate::rb_modules::*;
-use crate::{RbExpr, RbSeries, Wrap};
+use crate::{RbExpr, RbResult, RbSeries};
 
 fn to_series(v: Value, name: &str) -> PolarsResult<Series> {
     let ruby = Ruby::get_with(v);
@@ -70,13 +73,15 @@ pub fn binary_lambda(lambda: Value, a: Series, b: Series) -> PolarsResult<Option
     Ok(Some(binding.clone()))
 }
 
-pub fn map_single(
-    _rbexpr: &RbExpr,
-    _lambda: Value,
-    _output_type: Option<Wrap<DataType>>,
-    _agg_list: bool,
-    _is_elementwise: bool,
-    _returns_scalar: bool,
-) -> RbExpr {
-    todo!();
+pub fn map_expr(
+    rbexpr: RArray,
+    lambda: Value,
+    output_type: Option<&RbDataTypeExpr>,
+    is_elementwise: bool,
+    returns_scalar: bool,
+) -> RbResult<RbExpr> {
+    let output_type = output_type.map(|v| v.inner.clone());
+    let func = RubyUdfExpression::new(lambda, output_type, is_elementwise, returns_scalar);
+    let exprs = rbexpr.to_exprs()?;
+    Ok(map_many_ruby(exprs, func).into())
 }
