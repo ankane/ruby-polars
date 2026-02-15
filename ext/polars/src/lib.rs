@@ -135,6 +135,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("is_duplicated", method!(RbDataFrame::is_duplicated, 0))?;
     class.define_method("equals", method!(RbDataFrame::equals, 2))?;
     class.define_method("with_row_index", method!(RbDataFrame::with_row_index, 2))?;
+    class.define_method(
+        "group_by_map_groups",
+        method!(RbDataFrame::group_by_map_groups, 3),
+    )?;
     class.define_method("_clone", method!(RbDataFrame::clone, 0))?;
     class.define_method("unpivot", method!(RbDataFrame::unpivot, 4))?;
     class.define_method("partition_by", method!(RbDataFrame::partition_by, 3))?;

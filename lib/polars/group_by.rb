@@ -2,7 +2,7 @@ module Polars
   # Starts a new GroupBy operation.
   class GroupBy
     # @private
-    def initialize(df, by, maintain_order:, predicates:, **named_by)
+    def initialize(df, *by, maintain_order:, predicates:, **named_by)
       @df = df
       @by = by
       @named_by = named_by
@@ -18,7 +18,7 @@ module Polars
     #   df = Polars::DataFrame.new({"foo" => ["a", "a", "b"], "bar" => [1, 2, 3]})
     #   df.group_by("foo", maintain_order: true).each.to_h
     #   # =>
-    #   # {"a"=>shape: (2, 2)
+    #   # {["a"]=>shape: (2, 2)
     #   # ┌─────┬─────┐
     #   # │ foo ┆ bar │
     #   # │ --- ┆ --- │
@@ -26,7 +26,7 @@ module Polars
     #   # ╞═════╪═════╡
     #   # │ a   ┆ 1   │
     #   # │ a   ┆ 2   │
-    #   # └─────┴─────┘, "b"=>shape: (1, 2)
+    #   # └─────┴─────┘, ["b"]=>shape: (1, 2)
     #   # ┌─────┬─────┐
     #   # │ foo ┆ bar │
     #   # │ --- ┆ --- │
@@ -247,6 +247,68 @@ module Polars
       _lgb
         .agg(*aggs, **named_aggs)
         .collect(optimizations: QueryOptFlags.none)
+    end
+
+    # Apply a custom/user-defined function (UDF) over the groups as a sub-DataFrame.
+    #
+    # @note
+    #   This method is much slower than the native expressions API.
+    #   Only use it if you cannot implement your logic otherwise.
+    #
+    # Implementing logic using a Ruby function is almost always *significantly*
+    # slower and more memory intensive than implementing the same logic using
+    # the native expression API because:
+    #
+    # - The native expression engine runs in Rust; UDFs run in Ruby.
+    # - Use of Ruby UDFs forces the DataFrame to be materialized in memory.
+    # - Polars-native expressions can be parallelised (UDFs cannot).
+    # - Polars-native expressions can be logically optimised (UDFs cannot).
+    #
+    # Wherever possible you should strongly prefer the native expression API
+    # to achieve the best performance.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "id" => [0, 1, 2, 3, 4],
+    #       "color" => ["red", "green", "green", "red", "red"],
+    #       "shape" => ["square", "triangle", "square", "triangle", "square"]
+    #     }
+    #   )
+    #   df.group_by("color").map_groups { |group_df| group_df.sample(n: 2) }
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬───────┬──────────┐
+    #   # │ id  ┆ color ┆ shape    │
+    #   # │ --- ┆ ---   ┆ ---      │
+    #   # │ i64 ┆ str   ┆ str      │
+    #   # ╞═════╪═══════╪══════════╡
+    #   # │ 1   ┆ green ┆ triangle │
+    #   # │ 2   ┆ green ┆ square   │
+    #   # │ 4   ┆ red   ┆ square   │
+    #   # │ 3   ┆ red   ┆ triangle │
+    #   # └─────┴───────┴──────────┘
+    def map_groups(&function)
+      if @predicates&.any?
+        msg = "cannot call `map_groups` when filtering groups with `having`"
+        raise TypeError, msg
+      end
+      if @named_by&.any?
+        msg = "cannot call `map_groups` when grouping by named expressions"
+        raise TypeError, msg
+      end
+      if !@by.all? { |c| Utils.strlike?(c) }
+        msg = "cannot call `map_groups` when grouping by an expression"
+        raise TypeError, msg
+      end
+
+      by_strs = @by.map(&:to_s)
+
+      @df.class._from_rbdf(
+        @df._df.group_by_map_groups(by_strs, function, @maintain_order)
+      )
     end
 
     # Get the first `n` rows of each group.

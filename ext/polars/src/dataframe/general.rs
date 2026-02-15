@@ -1,15 +1,16 @@
 use std::hash::BuildHasher;
 
 use either::Either;
-use magnus::{IntoValue, RArray, Ruby, Value, prelude::*};
+use magnus::{IntoValue, RArray, Ruby, Value, prelude::*, value::Opaque};
 use polars::prelude::*;
 
 use crate::conversion::*;
 use crate::exceptions::RbIndexError;
 use crate::prelude::strings_to_pl_smallstr;
+use crate::rb_modules::pl_utils;
 use crate::series::ToRbSeries;
 use crate::series::to_series;
-use crate::utils::EnterPolarsExt;
+use crate::utils::{EnterPolarsExt, RubyAttach};
 use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 
 impl RbDataFrame {
@@ -326,6 +327,48 @@ impl RbDataFrame {
         offset: Option<IdxSize>,
     ) -> RbResult<Self> {
         rb.enter_polars_df(|| self_.df.read().with_row_index(name.into(), offset))
+    }
+
+    pub fn group_by_map_groups(
+        rb: &Ruby,
+        self_: &Self,
+        by: Vec<String>,
+        lambda: Value,
+        maintain_order: bool,
+    ) -> RbResult<Self> {
+        rb.enter_polars_df(|| {
+            let df = self_.df.read().clone(); // Clone so we can't deadlock on re-entrance from lambda.
+            let gb = if maintain_order {
+                df.group_by_stable(by.iter().map(|x| &**x))
+            } else {
+                df.group_by(by.iter().map(|x| &**x))
+            }?;
+
+            let lambda = Opaque::from(lambda);
+            let function = move |df: DataFrame| {
+                Ruby::attach(|rb| {
+                    let lambda = rb.get_inner(lambda);
+
+                    let rbpolars = pl_utils(rb);
+                    let rbdf = RbDataFrame::new(df);
+                    let ruby_df_wrapper: Value =
+                        rbpolars.funcall("wrap_df", (rbdf,)).unwrap();
+
+                    // Call the lambda and get a Ruby-side DataFrame wrapper.
+                    let result_df_wrapper: Value = match lambda.funcall("call", (ruby_df_wrapper,)) {
+                        Ok(rbobj) => rbobj,
+                        Err(e) => panic!("UDF failed: {}", e),
+                    };
+                    let rbdf: &RbDataFrame = result_df_wrapper.funcall("_df", ()).expect(
+                        "Could not get DataFrame attribute '_df'. Make sure that you return a DataFrame object.",
+                    );
+
+                    Ok(rbdf.clone().df.into_inner())
+                })
+            };
+
+            gb.apply(function)
+        })
     }
 
     pub fn clone(&self) -> Self {

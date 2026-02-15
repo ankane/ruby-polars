@@ -281,7 +281,7 @@ class DocsTest < Minitest::Test
         end
 
         # non-deterministic output
-        next if [:sort, :mode, :duration, :hash_, :hash_rows, :flatten, :value_counts, :agg, :top_k, :bottom_k, :get_categories, :to_physical, :profile, :having].include?(method.name)
+        next if [:sort, :mode, :duration, :hash_, :hash_rows, :flatten, :value_counts, :agg, :top_k, :bottom_k, :get_categories, :to_physical, :profile, :having, :map_groups].include?(method.name)
 
         next if [Polars::GroupBy, Polars::LazyGroupBy].include?(cls) && [:len].include?(method.name)
 
