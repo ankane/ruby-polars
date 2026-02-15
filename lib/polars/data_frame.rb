@@ -6492,10 +6492,6 @@ module Polars
       lazy.unnest(columns, *more_columns, separator: separator).collect(optimizations: QueryOptFlags._eager)
     end
 
-    # Requires NumPy
-    # def corr
-    # end
-
     # Take two sorted DataFrames and merge them by the sorted key.
     #
     # The output of this operation will also be sorted.

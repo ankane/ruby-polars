@@ -4548,7 +4548,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"foo" => [1, 1, 2]})
-    #   df.select(Polars.col("foo").cumsum.inspect_("value is: %s").alias("bar"))
+    #   df.select(Polars.col("foo").cum_sum.inspect_("value is: %s").alias("bar"))
     #   # =>
     #   # value is: shape: (3,)
     #   # Series: 'foo' [i64]
@@ -4567,14 +4567,14 @@ module Polars
     #   # │ 2   │
     #   # │ 4   │
     #   # └─────┘
-    # def inspect_(fmt = "%s")
-    #   inspect = lambda do |s|
-    #     puts(fmt % [s])
-    #     s
-    #   end
+    def inspect_(fmt = "%s")
+      inspect = lambda do |s|
+        puts(fmt % [s])
+        s
+      end
 
-    #   map(return_dtype: nil, agg_list: true, &inspect)
-    # end
+      map_batches(return_dtype: F.dtype_of(self), &inspect)
+    end
 
     # Fill nulls with linear interpolation over missing values.
     #
