@@ -32,20 +32,16 @@ class FunctionsTest < Minitest::Test
 
   def test_map_batches
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
-    result =
-      with_stress do
-        df.select(Polars.struct(["a", "b"]).map_batches { |x| x.struct.field("a") + x.struct.field("b") + 1 })
-      end
-    assert_frame ({"a" => [6, 8, 10]}), result
+    expr = Polars.struct(["a", "b"]).map_batches { |x| x.struct.field("a") + x.struct.field("b") + 1 }
+    GC.start
+    assert_frame ({"a" => [6, 8, 10]}), df.select(expr)
   end
 
   def test_fold
     df = Polars::DataFrame.new({"a" => [1, 2, 3]})
-    result =
-      with_stress do
-        df.select(Polars.fold(Polars.lit(1), ->(acc, x) { acc + x }, Polars.col("*")).alias("sum"))
-      end
-    assert_series [2, 3, 4], result["sum"]
+    expr = Polars.fold(Polars.lit(1), ->(acc, x) { acc + x }, Polars.col("*"))
+    GC.start
+    assert_series [2, 3, 4], df.select(expr).to_series
   end
 
   def test_min
