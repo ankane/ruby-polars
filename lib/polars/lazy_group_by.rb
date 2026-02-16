@@ -204,10 +204,8 @@ module Polars
       schema,
       &function
     )
-      raise Todo
-
       Utils.wrap_ldf(
-        @lgb.map_groups(schema) { |df| function.(Utils.wrap_df(df)) }
+        @lgb.map_groups(->(df) { function.(Utils.wrap_df(df))._df }, schema)
       )
     end
 

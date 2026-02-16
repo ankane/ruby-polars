@@ -230,7 +230,6 @@ class DocsTest < Minitest::Test
     todo |= cls == Polars::Expr && method.name == :deserialize
     todo |= cls == Polars::LazyFrame && [:deserialize, :serialize, :map_batches].include?(method.name)
     todo |= cls == Polars::MetaExpr && method.name == :serialize
-    todo |= cls == Polars::LazyGroupBy && method.name == :map_groups
 
     if missing_examples?(method, cls)
       warn "Missing examples (#{method})"
