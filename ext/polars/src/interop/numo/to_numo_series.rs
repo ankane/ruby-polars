@@ -2,10 +2,10 @@ use magnus::Value;
 use num_traits::{Float, NumCast};
 use polars_core::prelude::*;
 
-use super::numo_rs::{Element, RbArray1};
 use crate::RbResult;
 use crate::error::RbPolarsErr;
 use crate::raise_err;
+use crate::ruby::numo_rs::{Element, RbArray1};
 use crate::series::RbSeries;
 
 impl RbSeries {
