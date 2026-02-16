@@ -10,8 +10,8 @@ use polars_core::utils::any_values_to_supertype_and_n_dtypes;
 use super::datetime::datetime_to_rb_object;
 use super::{ObjectValue, Wrap, struct_dict};
 
-use crate::exceptions::RbOverflowError;
 use crate::rb_modules::pl_utils;
+use crate::ruby::exceptions::RbOverflowError;
 use crate::{RbErr, RbPolarsErr, RbResult, RbSeries, RbValueError};
 
 impl IntoValue for Wrap<AnyValue<'_>> {

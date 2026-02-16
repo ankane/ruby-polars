@@ -5,8 +5,8 @@ use polars_core::chunked_array::cast::CastOptions;
 use polars_core::utils::flatten::flatten_series;
 
 use crate::conversion::*;
-use crate::exceptions::{RbIndexError, RbRuntimeError, RbValueError};
 use crate::prelude::*;
+use crate::ruby::exceptions::{RbIndexError, RbRuntimeError, RbValueError};
 use crate::utils::{EnterPolarsExt, RubyAttach};
 use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
 

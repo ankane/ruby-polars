@@ -29,7 +29,6 @@ use catalog::unity::RbCatalogClient;
 use conversion::*;
 use dataframe::RbDataFrame;
 use error::RbPolarsErr;
-use exceptions::{RbTypeError, RbValueError};
 use expr::RbExpr;
 use expr::datatype::RbDataTypeExpr;
 use expr::selector::RbSelector;
@@ -39,6 +38,7 @@ use interop::arrow::to_rb::{RbArrowArrayStream, RbArrowSchema};
 use lazyframe::{RbCollectBatches, RbInProcessQuery, RbLazyFrame, RbOptFlags};
 use lazygroupby::RbLazyGroupBy;
 use magnus::{Ruby, function, method, prelude::*};
+use ruby::exceptions::{RbTypeError, RbValueError};
 use series::RbSeries;
 use sql::RbSQLContext;
 

@@ -8,7 +8,7 @@ use polars::prelude::*;
 use super::RbSeries;
 
 use crate::RbResult;
-use crate::exceptions::RbValueError;
+use crate::ruby::exceptions::RbValueError;
 
 pub(crate) fn import_schema_rbcapsule(schema_capsule: Value) -> RbResult<arrow::datatypes::Field> {
     let capsule_pointer: usize = schema_capsule.funcall("to_i", ())?;

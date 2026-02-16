@@ -5,9 +5,9 @@ use magnus::{IntoValue, RArray, Ruby, Value, prelude::*, value::Opaque};
 use polars::prelude::*;
 
 use crate::conversion::*;
-use crate::exceptions::RbIndexError;
 use crate::prelude::strings_to_pl_smallstr;
 use crate::rb_modules::pl_utils;
+use crate::ruby::exceptions::RbIndexError;
 use crate::series::ToRbSeries;
 use crate::series::to_series;
 use crate::utils::{EnterPolarsExt, RubyAttach};
