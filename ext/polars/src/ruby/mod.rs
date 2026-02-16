@@ -1,4 +1,5 @@
 pub mod background_thread;
+pub mod error;
 pub mod exceptions;
 pub mod gvl;
 pub mod numo_rs;

@@ -20,6 +20,7 @@ use crate::map::lazy::call_lambda_with_series;
 use crate::prelude::ObjectValue;
 use crate::rb_modules::pl_utils;
 use crate::ruby::background_thread::{is_non_ruby_thread, run_in_ruby_thread};
+use crate::ruby::error::to_pl_err;
 use crate::ruby::gvl::RubyAttach;
 use crate::ruby::ruby_convert_registry::{FromRubyConvertRegistry, RubyConvertRegistry};
 use crate::ruby::ruby_udf;
@@ -49,14 +50,16 @@ fn ruby_function_caller_df(df: DataFrame, lambda: Opaque<Value>) -> PolarsResult
         // create a RbSeries struct/object for Ruby
         let rbdf = RbDataFrame::new(df);
         // Wrap this RbSeries object in the Ruby side Series wrapper
-        let ruby_df_wrapper: Value = rbpolars.funcall("wrap_df", (rbdf,)).unwrap();
+        let ruby_df_wrapper: Value = rbpolars.funcall("wrap_df", (rbdf,)).map_err(to_pl_err)?;
 
         // call the lambda and get a Ruby side df wrapper
-        let result_df_wrapper: Value = lambda.funcall("call", (ruby_df_wrapper,)).unwrap();
+        let result_df_wrapper: Value = lambda
+            .funcall("call", (ruby_df_wrapper,))
+            .map_err(to_pl_err)?;
 
         // unpack the wrapper in a RbDataFrame
         let rbdf: &RbDataFrame = result_df_wrapper.funcall("_df", ()).map_err(|_| {
-            let rbtype = unsafe { result_df_wrapper.classname() }.into_owned();
+            let rbtype = unsafe { result_df_wrapper.classname() };
             PolarsError::ComputeError(
                 format!("Expected 'LazyFrame.map' to return a 'DataFrame', got a '{rbtype}'",)
                     .into(),

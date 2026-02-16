@@ -41,7 +41,6 @@ macro_rules! apply_all_polars_dtypes {
 }
 
 /// Boilerplate for `|e| RbPolarsErr::from(e).into()`
-#[allow(unused)]
 pub(crate) fn to_rb_err<E: Into<RbPolarsErr>>(e: E) -> RbErr {
     e.into().into()
 }

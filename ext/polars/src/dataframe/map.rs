@@ -5,6 +5,7 @@ use polars_core::utils::CustomIterTools;
 use super::*;
 use crate::error::RbPolarsErr;
 use crate::prelude::*;
+use crate::ruby::error::to_pl_err;
 use crate::series::construction::series_from_objects;
 use crate::{RbResult, RbSeries, raise_err};
 
@@ -126,7 +127,7 @@ fn collect_lambda_ret_with_rows_output(
 
     let mut row_buf = Row::default();
     let mut row_iter = ret_iter.map(|retval| {
-        let retval = retval.unwrap();
+        let retval = retval.map_err(to_pl_err)?;
         if retval.is_nil() {
             Ok(&null_row)
         } else {
