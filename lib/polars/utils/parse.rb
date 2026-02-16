@@ -98,7 +98,7 @@ module Polars
 
     def self._parse_named_inputs(named_inputs, structify: false)
       named_inputs.map do |name, input|
-        parse_into_expression(input, structify: structify)._alias(name.to_s)
+        parse_into_expression(input, structify: structify).alias(name.to_s)
       end
     end
 

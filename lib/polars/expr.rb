@@ -398,7 +398,7 @@ module Polars
     #   # │ 3   ┆ null │
     #   # └─────┴──────┘
     def alias(name)
-      wrap_expr(_rbexpr._alias(name))
+      wrap_expr(_rbexpr.alias(name))
     end
 
     # Exclude certain columns from a wildcard/regex selection.

@@ -97,7 +97,7 @@ module Polars
     def count(*columns)
       if columns.empty?
         warn "`Polars.count` is deprecated. Use `Polars.length` instead."
-        return Utils.wrap_expr(Plr.len._alias("count"))
+        return Utils.wrap_expr(Plr.len.alias("count"))
       end
 
       col(*columns).count
@@ -1250,7 +1250,7 @@ module Polars
           returns_scalar,
           rt,
           include_init
-        )._alias("cum_fold")
+        ).alias("cum_fold")
       )
     end
 

@@ -179,7 +179,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("gt_eq", method!(RbExpr::gt_eq, 1))?;
     class.define_method("lt_eq", method!(RbExpr::lt_eq, 1))?;
     class.define_method("lt", method!(RbExpr::lt, 1))?;
-    class.define_method("_alias", method!(RbExpr::alias, 1))?;
+    class.define_method("alias", method!(RbExpr::alias, 1))?;
     class.define_method("not_", method!(RbExpr::not_, 0))?;
     class.define_method("is_null", method!(RbExpr::is_null, 0))?;
     class.define_method("is_not_null", method!(RbExpr::is_not_null, 0))?;
