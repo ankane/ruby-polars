@@ -1,4 +1,5 @@
-use magnus::{RArray, RString, Value, prelude::*};
+use arrow::bitmap::BitmapBuilder;
+use magnus::{RArray, RString, Ruby, Value, prelude::*};
 use num_traits::AsPrimitive;
 use polars::prelude::*;
 
@@ -6,6 +7,21 @@ use crate::any_value::rb_object_to_any_value;
 use crate::conversion::{Wrap, slice_extract_wrapped, vec_extract_wrapped};
 use crate::prelude::ObjectValue;
 use crate::{RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
+
+pub fn series_from_objects(rb: &Ruby, name: PlSmallStr, objects: Vec<ObjectValue>) -> Series {
+    let mut validity = BitmapBuilder::with_capacity(objects.len());
+    for v in &objects {
+        let is_valid = !rb.get_inner(v.inner).is_nil();
+        // SAFETY: we can ensure that validity has correct capacity.
+        unsafe { validity.push_unchecked(is_valid) };
+    }
+    ObjectChunked::<ObjectValue>::new_from_vec_and_validity(
+        name,
+        objects,
+        validity.into_opt_validity(),
+    )
+    .into_series()
+}
 
 impl RbSeries {
     pub fn new_opt_bool(name: String, obj: RArray, strict: bool) -> RbResult<RbSeries> {

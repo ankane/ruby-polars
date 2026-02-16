@@ -1,9 +1,10 @@
-use magnus::{Ruby, Value};
+use magnus::{IntoValue, Ruby, Value, value::Opaque, value::ReprValue};
 
 use super::RbSeries;
 use crate::map::series::ApplyLambdaGeneric;
 use crate::prelude::*;
 use crate::ruby::gvl::RubyAttach;
+use crate::series::construction::series_from_objects;
 use crate::{RbPolarsErr, RbResult};
 use crate::{apply_all_polars_dtypes, raise_err};
 
@@ -42,15 +43,14 @@ impl RbSeries {
             let s = match &return_dtype {
                 Some(DataType::Object(_)) => {
                     // If the return dtype is Object we should not go through AnyValue.
-                    // call_and_collect_objects(
-                    //     rb,
-                    //     series.name().clone(),
-                    //     function,
-                    //     series.len(),
-                    //     series.iter().map(|av| av.null_to_none().map(Wrap)),
-                    //     skip_nulls,
-                    // )
-                    todo!()
+                    call_and_collect_objects(
+                        rb,
+                        series.name().clone(),
+                        function,
+                        series.len(),
+                        series.iter().map(|av| av.null_to_none().map(Wrap)),
+                        skip_nulls,
+                    )
                 }
                 Some(return_dtype) => {
                     apply_all_polars_dtypes!(
@@ -67,4 +67,36 @@ impl RbSeries {
             s.map(RbSeries::from)
         })
     }
+}
+
+fn call_and_collect_objects<T, I>(
+    rb: &Ruby,
+    name: PlSmallStr,
+    lambda: Value,
+    len: usize,
+    iter: I,
+    skip_nulls: bool,
+) -> RbResult<Series>
+where
+    T: IntoValue,
+    I: Iterator<Item = Option<T>>,
+{
+    let mut objects = Vec::with_capacity(len);
+    for opt_val in iter {
+        let arg = match opt_val {
+            None if skip_nulls => {
+                objects.push(ObjectValue {
+                    inner: Opaque::from(rb.qnil().into_value_with(rb)),
+                });
+                continue;
+            }
+            None => rb.qnil().into_value_with(rb),
+            Some(val) => val.into_value_with(rb),
+        };
+        let out: Value = lambda.funcall("call", (arg,))?;
+        objects.push(ObjectValue {
+            inner: Opaque::from(out),
+        });
+    }
+    Ok(series_from_objects(rb, name, objects))
 }
