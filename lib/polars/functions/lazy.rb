@@ -1117,11 +1117,16 @@ module Polars
         rt = Utils.parse_into_datatype_expr(return_dtype)._rbdatatype_expr
       end
 
+      _wrap_acc_lambda = lambda do |t|
+        a, b = t
+        function.(Utils.wrap_s(a), Utils.wrap_s(b))._s
+      end
+
       exprs = Utils.parse_into_list_of_expressions(exprs)
       Utils.wrap_expr(
         Plr.fold(
           acc,
-          function,
+          _wrap_acc_lambda,
           exprs,
           returns_scalar,
           rt

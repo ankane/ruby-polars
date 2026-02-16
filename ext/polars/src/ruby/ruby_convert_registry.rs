@@ -10,8 +10,8 @@ pub type FromRuby = Arc<dyn Fn(Opaque<Value>) -> RbResult<Box<dyn Any>> + Send +
 pub type ToRuby = Arc<dyn for<'a> Fn(&'a dyn Any) -> RbResult<Value> + Send + Sync>;
 
 #[derive(Clone)]
-#[allow(unused)]
 pub struct FromRubyConvertRegistry {
+    #[allow(unused)]
     pub file_provider_result: FromRuby,
     pub series: FromRuby,
     pub df: FromRuby,
@@ -20,7 +20,6 @@ pub struct FromRubyConvertRegistry {
 }
 
 #[derive(Clone)]
-#[allow(unused)]
 pub struct ToRubyConvertRegistry {
     pub df: ToRuby,
     pub series: ToRuby,
@@ -29,7 +28,6 @@ pub struct ToRubyConvertRegistry {
 }
 
 #[derive(Clone)]
-#[allow(unused)]
 pub struct RubyConvertRegistry {
     pub from_rb: FromRubyConvertRegistry,
     pub to_rb: ToRubyConvertRegistry,
@@ -38,7 +36,6 @@ pub struct RubyConvertRegistry {
 static RUBY_CONVERT_REGISTRY: LazyLock<RwLock<Option<RubyConvertRegistry>>> =
     LazyLock::new(Default::default);
 
-#[allow(unused)]
 pub fn get_ruby_convert_registry() -> RubyConvertRegistry {
     RUBY_CONVERT_REGISTRY
         .deref()
