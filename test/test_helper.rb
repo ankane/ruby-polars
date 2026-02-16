@@ -17,10 +17,15 @@ class Minitest::Test
   end
 
   def with_stress(value = true)
-    GC.stress = value if stress?
-    yield
-  ensure
-    GC.stress = !value if stress?
+    return yield if !stress?
+
+    previous_value = GC.stress
+    begin
+      GC.stress = value
+      yield
+    rescue
+      GC.stress = previous_value
+    end
   end
 
   def stress?
