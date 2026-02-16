@@ -5,7 +5,7 @@ use polars_core::utils::CustomIterTools;
 use super::*;
 use crate::error::RbPolarsErr;
 use crate::prelude::*;
-use crate::ruby::error::to_pl_err;
+use crate::ruby::utils::to_pl_err;
 use crate::series::construction::series_from_objects;
 use crate::{RbResult, RbSeries, raise_err};
 

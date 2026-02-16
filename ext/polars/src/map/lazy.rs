@@ -3,8 +3,8 @@ use polars::prelude::*;
 
 use crate::expr::ToExprs;
 use crate::expr::datatype::RbDataTypeExpr;
-use crate::ruby::error::to_pl_err;
 use crate::ruby::ruby_udf::{RubyUdfExpression, RubyUdfExt};
+use crate::ruby::utils::to_pl_err;
 use crate::{RbExpr, RbResult, RbSeries, Wrap};
 
 pub(crate) fn call_lambda_with_series(
