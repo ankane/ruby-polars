@@ -1,3 +1,4 @@
+pub mod background_thread;
 pub mod exceptions;
 pub mod gvl;
 pub mod plan_callback;
