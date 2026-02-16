@@ -1,7 +1,7 @@
 mod aggregation;
 mod arithmetic;
 mod comparison;
-mod construction;
+pub(crate) mod construction;
 mod export;
 mod general;
 mod import;
