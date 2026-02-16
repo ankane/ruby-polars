@@ -91,7 +91,7 @@ pub(crate) fn get_series(obj: Value) -> RbResult<Series> {
 }
 
 pub(crate) fn to_series(rb: &Ruby, s: RbSeries) -> Value {
-    let series = pl_series(&rb);
+    let series = pl_series(rb);
     series
         .funcall::<_, _, Value>("_from_rbseries", (s,))
         .unwrap()
