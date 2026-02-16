@@ -6,7 +6,7 @@ use crate::map::series::{ApplyLambda, call_lambda_and_extract};
 use crate::prelude::*;
 use crate::ruby::gvl::RubyAttach;
 use crate::{RbPolarsErr, RbResult};
-use crate::{apply_method_all_arrow_series2, raise_err};
+use crate::{apply_all_polars_dtypes, raise_err};
 
 impl RbSeries {
     pub fn map_elements(
@@ -48,7 +48,7 @@ impl RbSeries {
                         todo!()
                     }
                     _ => {
-                        apply_method_all_arrow_series2!(
+                        apply_all_polars_dtypes!(
                             $self,
                             $method,
                             $($args),*

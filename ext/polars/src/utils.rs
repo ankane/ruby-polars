@@ -12,7 +12,7 @@ use crate::timeout::{cancel_polars_timeout, schedule_polars_timeout};
 use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
 
 #[macro_export]
-macro_rules! apply_method_all_arrow_series2 {
+macro_rules! apply_all_polars_dtypes {
     ($self:expr, $method:ident, $($args:expr),*) => {
         match $self.dtype() {
             DataType::Boolean => $self.bool().unwrap().$method($($args),*),
