@@ -4553,9 +4553,9 @@ module Polars
     #   # value is: shape: (3,)
     #   # Series: 'foo' [i64]
     #   # [
-    #   #     1
-    #   #     2
-    #   #     4
+    #   #         1
+    #   #         2
+    #   #         4
     #   # ]
     #   # shape: (3, 1)
     #   # ┌─────┐

@@ -225,9 +225,6 @@ class DocsTest < Minitest::Test
     # TODO fix
     return if [:combine, :cum_reduce].include?(method.name)
 
-    # TODO fix
-    return if cls == Polars::Expr && [:inspect_].include?(method.name)
-
     # todos
     todo = [:show_graph, :from_numo].include?(method.name)
     todo |= cls == Polars::Expr && method.name == :deserialize
@@ -260,6 +257,9 @@ class DocsTest < Minitest::Test
           with_stress(method.name != :estimated_size) do
             if cls == Polars::Config
               capture_io { instance_eval(code) }[0].chomp
+            elsif cls == Polars::Expr && method.name == :inspect_
+              out = nil
+              capture_io { out = instance_eval(code).inspect }[0].chomp + "\n" + out
             elsif method.tags(:deprecated).any?
               # TODO improve
               out = nil
