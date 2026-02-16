@@ -78,9 +78,6 @@ module Polars
     #   # │ 1         ┆ x         ┆ 3   ┆ z   │
     #   # └───────────┴───────────┴─────┴─────┘
     def map(&function)
-      # need to mark function for GC
-      raise Todo
-
       Utils.wrap_expr(_rbexpr.name_map(function))
     end
 
