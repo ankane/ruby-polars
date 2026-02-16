@@ -16,12 +16,11 @@ pub trait PlanCallbackOut: Sized {
     fn from_rbany(rbany: Value, rb: &Ruby) -> RbResult<Self>;
 }
 
-#[allow(unused)]
 mod _ruby {
     use std::sync::Arc;
 
     use crate::RbResult;
-    use magnus::{IntoValue, Ruby, TryConvert, Value, value::ReprValue};
+    use magnus::{IntoValue, RArray, Ruby, TryConvert, Value, value::ReprValue};
     use polars_utils::pl_str::PlSmallStr;
 
     macro_rules! impl_rbcb_type {
@@ -34,7 +33,7 @@ mod _ruby {
             }
 
             impl super::PlanCallbackOut for $type {
-                fn from_rbany(rbany: Value, rb: &Ruby) -> RbResult<Self> {
+                fn from_rbany(rbany: Value, _rb: &Ruby) -> RbResult<Self> {
                     Self::try_convert(rbany)
                 }
             }
@@ -52,7 +51,7 @@ mod _ruby {
             }
 
             impl super::PlanCallbackOut for $type {
-                fn from_rbany(rbany: Value, rb: &Ruby) -> RbResult<Self> {
+                fn from_rbany(rbany: Value, _rb: &Ruby) -> RbResult<Self> {
                     <$transformed>::try_convert(rbany).map(Into::into)
                 }
             }
@@ -86,7 +85,7 @@ mod _ruby {
     impl<T: super::PlanCallbackArgs> super::PlanCallbackArgs for Option<T> {
         fn into_rbany(self, rb: &Ruby) -> RbResult<Value> {
             match self {
-                None => Ok(rb.qnil().into_value_with(rb)),
+                None => Ok(rb.qnil().as_value()),
                 Some(v) => v.into_rbany(rb),
             }
         }
@@ -110,7 +109,7 @@ mod _ruby {
         fn into_rbany(self, rb: &Ruby) -> RbResult<Value> {
             Ok(rb
                 .ary_new_from_values(&[self.0.into_rbany(rb)?, self.1.into_rbany(rb)?])
-                .into_value_with(rb))
+                .as_value())
         }
     }
 
@@ -120,7 +119,12 @@ mod _ruby {
         U: super::PlanCallbackOut,
     {
         fn from_rbany(rbany: Value, rb: &Ruby) -> RbResult<Self> {
-            todo!()
+            // TODO remove unwrap
+            let tuple = RArray::try_convert(rbany)?;
+            Ok((
+                T::from_rbany(tuple.entry(0)?, rb)?,
+                U::from_rbany(tuple.entry(1)?, rb)?,
+            ))
         }
     }
 
@@ -147,7 +151,8 @@ mod _ruby {
 
     impl<T: super::PlanCallbackArgs + Clone> super::PlanCallbackArgs for Vec<T> {
         fn into_rbany(self, rb: &Ruby) -> RbResult<Value> {
-            todo!()
+            rb.ary_try_from_iter(self.into_iter().map(|v| v.into_rbany(rb)))
+                .map(|v| v.as_value())
         }
     }
 
