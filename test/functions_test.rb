@@ -30,6 +30,15 @@ class FunctionsTest < Minitest::Test
     assert_frame ({"a" => [1, 2, 3]}), Polars.collect_all([lf])[0]
   end
 
+  def test_fold
+    df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    result =
+      with_stress do
+        df.select(Polars.fold(Polars.lit(1), ->(acc, x) { acc + x }, Polars.col("*")).alias("sum"))
+      end
+    assert_series [2, 3, 4], result["sum"]
+  end
+
   def test_min
     df = Polars::DataFrame.new({"a" => [1, 5, 3], "b" => [4, 2, 6]})
     assert_frame ({"a" => [1]}), df.select(Polars.min("a"))

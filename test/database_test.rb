@@ -250,10 +250,6 @@ class DatabaseTest < Minitest::Test
   end
 
   def create_users
-    with_stress(false) { _create_users }
-  end
-
-  def _create_users
     # round time since Postgres only stores microseconds
     now = postgresql? ? Time.now.round(6) : Time.now
     # TODO fix nil
