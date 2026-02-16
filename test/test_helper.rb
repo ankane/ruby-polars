@@ -27,6 +27,12 @@ class Minitest::Test
     ENV["STRESS"]
   end
 
+  def require(name)
+    with_stress(false) do
+      super
+    end
+  end
+
   def assert_series(exp, act, dtype: nil, **options)
     assert_kind_of Polars::Series, act
     if exp.is_a?(Polars::Series)
