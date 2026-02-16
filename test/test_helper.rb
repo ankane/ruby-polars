@@ -21,7 +21,7 @@ class Minitest::Test
     begin
       GC.stress = value
       yield
-    rescue
+    ensure
       GC.stress = previous_value
     end
   end
