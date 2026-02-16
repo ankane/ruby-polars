@@ -4,7 +4,7 @@ use super::RbSeries;
 use crate::map::check_nested_object;
 use crate::map::series::{ApplyLambda, call_lambda_and_extract};
 use crate::prelude::*;
-use crate::utils::RubyAttach;
+use crate::ruby::gvl::RubyAttach;
 use crate::{RbPolarsErr, RbResult};
 use crate::{apply_method_all_arrow_series2, raise_err};
 

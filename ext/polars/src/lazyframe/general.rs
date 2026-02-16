@@ -18,7 +18,8 @@ use crate::io::scan_options::RbScanOptions;
 use crate::io::sink_options::RbSinkOptions;
 use crate::io::sink_output::RbFileSinkDestination;
 use crate::map::ruby_udf::RubyUdfLazyFrameExt;
-use crate::utils::{EnterPolarsExt, RubyAttach};
+use crate::ruby::gvl::RubyAttach;
+use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
 
 fn rbobject_to_first_path_and_scan_sources(

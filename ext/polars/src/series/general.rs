@@ -7,7 +7,8 @@ use polars_core::utils::flatten::flatten_series;
 use crate::conversion::*;
 use crate::prelude::*;
 use crate::ruby::exceptions::{RbIndexError, RbRuntimeError, RbValueError};
-use crate::utils::{EnterPolarsExt, RubyAttach};
+use crate::ruby::gvl::RubyAttach;
+use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
 
 impl RbSeries {

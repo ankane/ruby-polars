@@ -8,9 +8,10 @@ use crate::conversion::*;
 use crate::prelude::strings_to_pl_smallstr;
 use crate::rb_modules::pl_utils;
 use crate::ruby::exceptions::RbIndexError;
+use crate::ruby::gvl::RubyAttach;
 use crate::series::ToRbSeries;
 use crate::series::to_series;
-use crate::utils::{EnterPolarsExt, RubyAttach};
+use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries};
 
 impl RbDataFrame {

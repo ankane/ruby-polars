@@ -21,9 +21,9 @@ use crate::map::lazy::call_lambda_with_series;
 use crate::map::ruby_udf;
 use crate::prelude::ObjectValue;
 use crate::rb_modules::pl_utils;
+use crate::ruby::gvl::RubyAttach;
 use crate::ruby::ruby_convert_registry::{FromRubyConvertRegistry, RubyConvertRegistry};
 use crate::series::RbSeries;
-use crate::utils::RubyAttach;
 
 fn ruby_function_caller_series(
     s: &[Column],

@@ -3,7 +3,7 @@ use polars::prelude::*;
 use polars_utils::format_pl_smallstr;
 
 use crate::RbExpr;
-use crate::utils::RubyAttach;
+use crate::ruby::gvl::RubyAttach;
 
 impl RbExpr {
     pub fn name_keep(&self) -> Self {

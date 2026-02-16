@@ -9,7 +9,7 @@ use polars_plan::dsl::udf::try_infer_udf_output_dtype;
 use polars_plan::prelude::*;
 use polars_utils::pl_str::PlSmallStr;
 
-use crate::utils::RubyAttach;
+use crate::ruby::gvl::RubyAttach;
 
 #[allow(clippy::type_complexity)]
 pub static mut CALL_COLUMNS_UDF_RUBY: Option<

@@ -15,7 +15,8 @@ use polars_utils::create_file;
 
 use crate::error::RbPolarsErr;
 use crate::prelude::resolve_homedir;
-use crate::utils::{EnterPolarsExt, RubyAttach, to_rb_err};
+use crate::ruby::gvl::{RubyAttach, RubyDetach};
+use crate::utils::to_rb_err;
 use crate::{RbErr, RbResult};
 
 pub struct RbFileLikeObject {
