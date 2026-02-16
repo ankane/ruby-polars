@@ -48,14 +48,12 @@ impl RubyAttach for Ruby {
 pub trait RubyDetach {
     fn detach<T, F>(self, f: F) -> T
     where
-        Self: Sized,
         F: FnOnce() -> T;
 }
 
 impl RubyDetach for &Ruby {
     fn detach<T, F>(self, f: F) -> T
     where
-        Self: Sized,
         F: FnOnce() -> T,
     {
         if std::env::var("POLARS_GVL").is_ok() {
