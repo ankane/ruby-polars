@@ -226,7 +226,7 @@ class DocsTest < Minitest::Test
     return if [:combine, :cum_reduce].include?(method.name)
 
     # TODO fix
-    return if cls == Polars::Expr && [:pipe, :inspect_].include?(method.name)
+    return if cls == Polars::Expr && [:inspect_].include?(method.name)
 
     # todos
     todo = [:show_graph, :from_numo].include?(method.name)

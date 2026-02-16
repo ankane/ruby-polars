@@ -454,7 +454,7 @@ module Polars
     # @example
     #   extract_number = lambda do |expr|
     #     # Extract the digits from a string.
-    #     expr.str.extract("\d+", group_index: 0).cast(Polars::Int64)
+    #     expr.str.extract('\d+', group_index: 0).cast(Polars::Int64)
     #   end
     #
     #   scale_negative_even = lambda do |expr, n: 1|
