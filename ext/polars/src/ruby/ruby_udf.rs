@@ -10,6 +10,7 @@ use polars_plan::prelude::*;
 use polars_utils::pl_str::PlSmallStr;
 
 use crate::ruby::gvl::RubyAttach;
+use crate::ruby::utils::BoxOpaque;
 
 #[allow(clippy::type_complexity)]
 pub static mut CALL_COLUMNS_UDF_RUBY: Option<
@@ -22,7 +23,7 @@ pub static mut CALL_DF_UDF_RUBY: Option<
 > = None;
 
 pub struct RubyUdfExpression {
-    ruby_function: Box<Opaque<Value>>,
+    ruby_function: BoxOpaque,
     output_type: Option<DataTypeExpr>,
     materialized_field: OnceLock<Field>,
     is_elementwise: bool,
@@ -36,13 +37,9 @@ impl RubyUdfExpression {
         is_elementwise: bool,
         returns_scalar: bool,
     ) -> Self {
-        // TODO unregister
-        let boxed = Box::new(lambda.into());
-        magnus::gc::register_address(&*boxed);
-
         let output_type = output_type.map(Into::into);
         Self {
-            ruby_function: boxed,
+            ruby_function: BoxOpaque::new(lambda),
             output_type,
             materialized_field: OnceLock::new(),
             is_elementwise,
@@ -61,7 +58,7 @@ impl ColumnsUdf for RubyUdfExpression {
         let mut out = func(
             s,
             self.materialized_field.get().map(|f| f.dtype.clone()),
-            *self.ruby_function,
+            *self.ruby_function.0,
         )?;
 
         let must_cast = out.dtype().matches_schema_type(field.dtype()).map_err(|_| {
@@ -84,18 +81,15 @@ impl AnonymousColumnsUdf for RubyUdfExpression {
     }
 
     fn deep_clone(self: Arc<Self>) -> Arc<dyn AnonymousColumnsUdf> {
-        let ruby_function = Ruby::attach(|rb| {
-            // TODO fix
-            rb.get_inner(*self.ruby_function)
-                .funcall::<_, _, Value>("dup", ())
-        })
-        .unwrap();
-        let boxed = Box::new(ruby_function.into());
-        // TODO unregister
-        magnus::gc::register_address(&*boxed);
-
         Arc::new(Self {
-            ruby_function: boxed,
+            ruby_function: BoxOpaque::new(
+                Ruby::attach(|rb| {
+                    // TODO fix
+                    rb.get_inner(*self.ruby_function.0)
+                        .funcall::<_, _, Value>("dup", ())
+                })
+                .unwrap(),
+            ),
             output_type: self.output_type.clone(),
             materialized_field: OnceLock::new(),
             is_elementwise: self.is_elementwise,
@@ -114,7 +108,7 @@ impl AnonymousColumnsUdf for RubyUdfExpression {
                 let dtype = match self.output_type.as_ref() {
                     None => {
                         let func = unsafe { CALL_COLUMNS_UDF_RUBY.unwrap() };
-                        let f = |s: &[Column]| func(s, None, *self.ruby_function);
+                        let f = |s: &[Column]| func(s, None, *self.ruby_function.0);
                         try_infer_udf_output_dtype(&f as _, fields)?
                     }
                     Some(output_type) => output_type
