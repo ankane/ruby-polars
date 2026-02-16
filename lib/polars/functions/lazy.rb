@@ -1114,17 +1114,11 @@ module Polars
         rt = Utils.parse_into_datatype_expr(return_dtype)._rbdatatype_expr
       end
 
-      # TODO move
-      _wrap_acc_lambda = lambda do |t|
-        a, b = t
-        function.(Utils.wrap_s(a), Utils.wrap_s(b))._s
-      end
-
       exprs = Utils.parse_into_list_of_expressions(exprs)
       Utils.wrap_expr(
         Plr.fold(
           acc,
-          _wrap_acc_lambda,
+          _wrap_acc_lambda(function),
           exprs,
           returns_scalar,
           rt
@@ -1176,9 +1170,6 @@ module Polars
       returns_scalar: false,
       return_dtype: nil
     )
-      # need to mark function for GC
-      raise Todo
-
       if exprs.is_a?(Expr)
         exprs = [exprs]
       end
@@ -1191,7 +1182,7 @@ module Polars
       rbexprs = Utils.parse_into_list_of_expressions(exprs)
       Utils.wrap_expr(
         Plr.reduce(
-          _wrap_acc_lamba(function),
+          _wrap_acc_lambda(function),
           rbexprs,
           returns_scalar,
           rt
@@ -1266,17 +1257,11 @@ module Polars
         rt = Utils.parse_into_datatype_expr(return_dtype)._rbdatatype_expr
       end
 
-      # TODO move
-      _wrap_acc_lambda = lambda do |t|
-        a, b = t
-        function.(Utils.wrap_s(a), Utils.wrap_s(b))._s
-      end
-
       exprs = Utils.parse_into_list_of_expressions(exprs)
       Utils.wrap_expr(
         Plr.cum_fold(
           acc,
-          _wrap_acc_lambda,
+          _wrap_acc_lambda(function),
           exprs,
           returns_scalar,
           rt,
@@ -1330,9 +1315,6 @@ module Polars
       returns_scalar: false,
       return_dtype: nil
     )
-      # need to mark function for GC
-      raise Todo
-
       if exprs.is_a?(Expr)
         exprs = [exprs]
       end
@@ -1345,7 +1327,7 @@ module Polars
       rbexprs = Utils.parse_into_list_of_expressions(exprs)
       Utils.wrap_expr(
         Plr.cum_reduce(
-          _wrap_acc_lamba(function),
+          _wrap_acc_lambda(function),
           rbexprs,
           returns_scalar,
           rt
@@ -1941,8 +1923,11 @@ module Polars
 
     private
 
-    def _wrap_acc_lamba(function)
-      raise Todo
+    def _wrap_acc_lambda(function)
+      lambda do |t|
+        a, b = t
+        function.(Utils.wrap_s(a), Utils.wrap_s(b))._s
+      end
     end
   end
 end

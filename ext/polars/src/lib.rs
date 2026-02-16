@@ -684,6 +684,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("repeat", function!(functions::lazy::repeat, 3))?;
     class.define_singleton_method("map_expr", function!(functions::lazy::map_expr, 5))?;
     class.define_singleton_method("pearson_corr", function!(functions::lazy::pearson_corr, 2))?;
+    class.define_singleton_method("reduce", function!(functions::lazy::reduce, 4))?;
     class.define_singleton_method(
         "spearman_rank_corr",
         function!(functions::lazy::spearman_rank_corr, 3),

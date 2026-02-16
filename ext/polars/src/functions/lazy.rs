@@ -438,6 +438,23 @@ pub fn pearson_corr(a: &RbExpr, b: &RbExpr) -> RbExpr {
     dsl::pearson_corr(a.inner.clone(), b.inner.clone()).into()
 }
 
+pub fn reduce(
+    lambda: Value,
+    exprs: RArray,
+    returns_scalar: bool,
+    return_dtype: Option<&RbDataTypeExpr>,
+) -> RbResult<RbExpr> {
+    let exprs = exprs.to_exprs()?;
+    let func = PlanCallback::new_ruby(Opaque::from(lambda));
+    Ok(dsl::reduce_exprs(
+        func,
+        exprs,
+        returns_scalar,
+        return_dtype.map(|v| v.inner.clone()),
+    )
+    .into())
+}
+
 pub fn repeat(value: &RbExpr, n: &RbExpr, dtype: Option<Wrap<DataType>>) -> RbResult<RbExpr> {
     let mut value = value.inner.clone();
     let n = n.inner.clone();

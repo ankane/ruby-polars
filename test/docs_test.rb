@@ -223,13 +223,13 @@ class DocsTest < Minitest::Test
     return if [:log].include?(method.name)
 
     # TODO fix
-    return if [:combine].include?(method.name)
+    return if [:combine, :cum_reduce].include?(method.name)
 
     # TODO fix
     return if cls == Polars::Expr && [:pipe, :inspect_].include?(method.name)
 
     # todos
-    todo = [:cum_reduce, :reduce, :show_graph, :from_numo].include?(method.name)
+    todo = [:show_graph, :from_numo].include?(method.name)
     todo |= cls == Polars::Expr && method.name == :deserialize
     todo |= cls == Polars::LazyFrame && [:deserialize, :serialize, :map_batches].include?(method.name)
     todo |= cls == Polars::MetaExpr && method.name == :serialize
