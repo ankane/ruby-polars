@@ -1,6 +1,5 @@
 pub mod dataframe;
 pub mod lazy;
-pub mod ruby_udf;
 pub mod series;
 
 use magnus::{RHash, Ruby, Value, prelude::*};
