@@ -10,7 +10,7 @@ use crate::expr::ToExprs;
 use crate::expr::datatype::RbDataTypeExpr;
 use crate::file::start_background_ruby_thread;
 use crate::lazyframe::RbOptFlags;
-use crate::plan_callback::PlanCallbackExt;
+use crate::ruby::plan_callback::PlanCallbackExt;
 use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError, map};
 

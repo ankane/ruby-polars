@@ -21,7 +21,7 @@ use crate::map::lazy::call_lambda_with_series;
 use crate::map::ruby_udf;
 use crate::prelude::ObjectValue;
 use crate::rb_modules::pl_utils;
-use crate::ruby_convert_registry::{FromRubyConvertRegistry, RubyConvertRegistry};
+use crate::ruby::ruby_convert_registry::{FromRubyConvertRegistry, RubyConvertRegistry};
 use crate::series::RbSeries;
 use crate::utils::RubyAttach;
 
@@ -97,7 +97,7 @@ pub unsafe fn register_startup_deps(catch_keyboard_interrupt: bool) {
             todo!();
         }
 
-        crate::ruby_convert_registry::register_converters(RubyConvertRegistry {
+        crate::ruby::ruby_convert_registry::register_converters(RubyConvertRegistry {
             from_rb: FromRubyConvertRegistry {
                 file_provider_result: Arc::new(|_rb_f| Ruby::attach(|_rb| todo!())),
                 series: Arc::new(|rb_f| {
@@ -139,7 +139,7 @@ pub unsafe fn register_startup_deps(catch_keyboard_interrupt: bool) {
                     })
                 }),
             },
-            to_rb: crate::ruby_convert_registry::ToRubyConvertRegistry {
+            to_rb: crate::ruby::ruby_convert_registry::ToRubyConvertRegistry {
                 df: Arc::new(|df| {
                     Ruby::attach(|rb| {
                         Ok(
