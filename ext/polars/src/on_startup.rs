@@ -14,6 +14,7 @@ use polars_error::PolarsWarning;
 use polars_error::signals::register_polars_keyboard_interrupt_hook;
 
 use crate::Wrap;
+use crate::dataframe::RbDataFrame;
 use crate::file::{is_non_ruby_thread, run_in_ruby_thread};
 use crate::map::lazy::call_lambda_with_series;
 use crate::map::ruby_udf;
@@ -34,6 +35,32 @@ fn ruby_function_caller_series(
     }
 
     Ruby::attach(|rb| call_lambda_with_series(rb, s, output_dtype, lambda))
+}
+
+fn ruby_function_caller_df(df: DataFrame, lambda: Opaque<Value>) -> PolarsResult<DataFrame> {
+    Ruby::attach(|rb| {
+        let lambda = rb.get_inner(lambda);
+
+        let rbpolars = pl_utils(rb);
+
+        // create a RbSeries struct/object for Ruby
+        let rbdf = RbDataFrame::new(df);
+        // Wrap this RbSeries object in the Ruby side Series wrapper
+        let ruby_df_wrapper: Value = rbpolars.funcall("wrap_df", (rbdf,)).unwrap();
+
+        // call the lambda and get a Ruby side df wrapper
+        let result_df_wrapper: Value = lambda.funcall("call", (ruby_df_wrapper,)).unwrap();
+
+        // unpack the wrapper in a RbDataFrame
+        let rbdf: &RbDataFrame = result_df_wrapper.funcall("_df", ()).map_err(|_| {
+            let rbtype = unsafe { result_df_wrapper.classname() }.into_owned();
+            PolarsError::ComputeError(
+                format!("Expected 'LazyFrame.map' to return a 'DataFrame', got a '{rbtype}'",)
+                    .into(),
+            )
+        })?;
+        Ok(rbdf.clone().df.into_inner())
+    })
 }
 
 fn warning_function(msg: &str, _warning: PolarsWarning) {
@@ -79,6 +106,8 @@ pub unsafe fn register_startup_deps(catch_keyboard_interrupt: bool) {
 
         // Register SERIES UDF.
         ruby_udf::CALL_COLUMNS_UDF_RUBY = Some(ruby_function_caller_series);
+        // Register DATAFRAME UDF.
+        ruby_udf::CALL_DF_UDF_RUBY = Some(ruby_function_caller_df);
         // Register warning function for `polars_warn!`.
         polars_error::set_warning_function(warning_function);
 

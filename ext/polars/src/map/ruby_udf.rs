@@ -16,6 +16,11 @@ pub static mut CALL_COLUMNS_UDF_RUBY: Option<
     fn(s: &[Column], output_dtype: Option<DataType>, lambda: Opaque<Value>) -> PolarsResult<Column>,
 > = None;
 
+#[allow(clippy::type_complexity)]
+pub static mut CALL_DF_UDF_RUBY: Option<
+    fn(s: DataFrame, lambda: Opaque<Value>) -> PolarsResult<DataFrame>,
+> = None;
+
 pub struct RubyUdfExpression {
     ruby_function: Opaque<Value>,
     output_type: Option<DataTypeExpr>,
