@@ -1104,9 +1104,6 @@ module Polars
       returns_scalar: false,
       return_dtype: nil
     )
-      # need to mark function for GC
-      raise Todo
-
       acc = Utils.parse_into_expression(acc, str_as_lit: true)
       if exprs.is_a?(Expr)
         exprs = [exprs]
@@ -1117,6 +1114,7 @@ module Polars
         rt = Utils.parse_into_datatype_expr(return_dtype)._rbdatatype_expr
       end
 
+      # TODO move
       _wrap_acc_lambda = lambda do |t|
         a, b = t
         function.(Utils.wrap_s(a), Utils.wrap_s(b))._s
@@ -1226,7 +1224,7 @@ module Polars
     #
     # @note
     #   If you simply want the first encountered expression as accumulator,
-    #   consider using `cumreduce`.
+    #   consider using `cum_reduce`.
     #
     # @example
     #   df = Polars::DataFrame.new(
@@ -1258,9 +1256,6 @@ module Polars
       return_dtype: nil,
       include_init: false
     )
-      # need to mark function for GC
-      raise Todo
-
       acc = Utils.parse_into_expression(acc, str_as_lit: true)
       if exprs.is_a?(Expr)
         exprs = [exprs]
@@ -1271,11 +1266,17 @@ module Polars
         rt = Utils.parse_into_datatype_expr(return_dtype)._rbdatatype_expr
       end
 
+      # TODO move
+      _wrap_acc_lambda = lambda do |t|
+        a, b = t
+        function.(Utils.wrap_s(a), Utils.wrap_s(b))._s
+      end
+
       exprs = Utils.parse_into_list_of_expressions(exprs)
       Utils.wrap_expr(
         Plr.cum_fold(
           acc,
-          function,
+          _wrap_acc_lambda,
           exprs,
           returns_scalar,
           rt,

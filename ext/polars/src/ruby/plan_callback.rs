@@ -171,10 +171,14 @@ impl<Args: PlanCallbackArgs, Out: PlanCallbackOut> PlanCallbackExt<Args, Out>
     for PlanCallback<Args, Out>
 {
     fn new_ruby(rbfn: Opaque<Value>) -> Self {
+        let boxed = Box::new(rbfn);
+        // TODO unregister
+        magnus::gc::register_address(&*boxed);
+
         let f = move |args: Args| {
             Ruby::attach(|rb| {
                 let out = Out::from_rbany(
-                    rb.get_inner(rbfn)
+                    rb.get_inner(*boxed)
                         .funcall("call", (args.into_rbany(rb).map_err(to_pl_err)?,))
                         .map_err(to_pl_err)?,
                     rb,
