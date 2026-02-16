@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
-use magnus::{Ruby, Value, value::Opaque, value::ReprValue};
+use magnus::{Ruby, Value, value::ReprValue};
 use polars_plan::dsl::SpecialEq;
 use polars_plan::prelude::PlanCallback;
 
 use crate::RbResult;
 use crate::ruby::gvl::RubyAttach;
 use crate::ruby::ruby_function::RubyFunction;
-use crate::ruby::utils::to_pl_err;
+use crate::ruby::utils::{BoxOpaque, to_pl_err};
 
 pub trait PlanCallbackArgs {
     fn into_rbany(self, rb: &Ruby) -> RbResult<Value>;
@@ -172,14 +172,12 @@ impl<Args: PlanCallbackArgs, Out: PlanCallbackOut> PlanCallbackExt<Args, Out>
     for PlanCallback<Args, Out>
 {
     fn new_ruby(rbfn: RubyFunction) -> Self {
-        let boxed = Box::new(Opaque::from(rbfn.0));
-        // TODO unregister
-        magnus::gc::register_address(&*boxed);
+        let boxed = BoxOpaque::new(rbfn.0);
 
         let f = move |args: Args| {
             Ruby::attach(|rb| {
                 let out = Out::from_rbany(
-                    rb.get_inner(*boxed)
+                    rb.get_inner(*boxed.0)
                         .funcall("call", (args.into_rbany(rb).map_err(to_pl_err)?,))
                         .map_err(to_pl_err)?,
                     rb,
