@@ -30,6 +30,15 @@ class FunctionsTest < Minitest::Test
     assert_frame ({"a" => [1, 2, 3]}), Polars.collect_all([lf])[0]
   end
 
+  def test_map_batches
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
+    result =
+      with_stress do
+        df.select(Polars.struct(["a", "b"]).map_batches { |x| x.struct.field("a") + x.struct.field("b") + 1 })
+      end
+    assert_frame ({"a" => [6, 8, 10]}), result
+  end
+
   def test_fold
     df = Polars::DataFrame.new({"a" => [1, 2, 3]})
     result =
