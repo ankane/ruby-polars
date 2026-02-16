@@ -254,7 +254,7 @@ class DocsTest < Minitest::Test
       begin
         # just final output
         output =
-          with_stress(stress? && method.name != :estimated_size) do
+          with_stress(method.name != :estimated_size) do
             if cls == Polars::Config
               capture_io { instance_eval(code) }[0].chomp
             elsif cls == Polars::Expr && method.name == :inspect_

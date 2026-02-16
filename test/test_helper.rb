@@ -17,6 +17,8 @@ class Minitest::Test
   end
 
   def with_stress(value = true)
+    return yield unless stress?
+
     previous_value = GC.stress
     begin
       GC.stress = value
