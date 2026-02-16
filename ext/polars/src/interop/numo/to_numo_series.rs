@@ -5,7 +5,7 @@ use polars_core::prelude::*;
 use crate::RbResult;
 use crate::error::RbPolarsErr;
 use crate::raise_err;
-use crate::ruby::numo_rs::{Element, RbArray1};
+use crate::ruby::numo::{Element, RbArray1};
 use crate::series::RbSeries;
 
 impl RbSeries {

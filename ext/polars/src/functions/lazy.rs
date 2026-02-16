@@ -9,8 +9,8 @@ use crate::conversion::{Wrap, get_lf, get_rbseq};
 use crate::expr::ToExprs;
 use crate::expr::datatype::RbDataTypeExpr;
 use crate::lazyframe::RbOptFlags;
-use crate::ruby::background_thread::start_background_ruby_thread;
 use crate::ruby::plan_callback::PlanCallbackExt;
+use crate::ruby::thread::start_background_ruby_thread;
 use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError, map};
 

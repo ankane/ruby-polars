@@ -1,9 +1,9 @@
-pub mod background_thread;
 pub mod error;
 pub mod exceptions;
 pub mod gvl;
-pub mod numo_rs;
+pub mod numo;
 pub mod plan_callback;
 pub mod rb_modules;
 pub mod ruby_convert_registry;
 pub mod ruby_udf;
+pub mod thread;

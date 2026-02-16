@@ -19,11 +19,11 @@ use crate::lazyframe::RbLazyFrame;
 use crate::map::lazy::call_lambda_with_series;
 use crate::prelude::ObjectValue;
 use crate::rb_modules::pl_utils;
-use crate::ruby::background_thread::{is_non_ruby_thread, run_in_ruby_thread};
 use crate::ruby::error::to_pl_err;
 use crate::ruby::gvl::RubyAttach;
 use crate::ruby::ruby_convert_registry::{FromRubyConvertRegistry, RubyConvertRegistry};
 use crate::ruby::ruby_udf;
+use crate::ruby::thread::{is_non_ruby_thread, run_in_ruby_thread};
 use crate::series::RbSeries;
 
 fn ruby_function_caller_series(
