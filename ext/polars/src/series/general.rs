@@ -1,4 +1,4 @@
-use magnus::{IntoValue, RArray, Ruby, Value, value::ReprValue};
+use magnus::{IntoValue, RArray, Ruby, Value, value::Opaque, value::ReprValue};
 use polars::prelude::*;
 use polars::series::IsSorted;
 use polars_core::chunked_array::cast::CastOptions;
@@ -8,6 +8,7 @@ use crate::conversion::*;
 use crate::prelude::*;
 use crate::ruby::exceptions::{RbIndexError, RbRuntimeError, RbValueError};
 use crate::ruby::gvl::RubyAttach;
+use crate::ruby::plan_callback::PlanCallbackExt;
 use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
 
@@ -440,6 +441,34 @@ impl RbSeries {
             let ca = s.str()?;
             ca.to_decimal_infer(inference_length)
         })
+    }
+
+    pub fn list_to_struct(
+        rb: &Ruby,
+        self_: &Self,
+        width_strat: Wrap<ListToStructWidthStrategy>,
+        name_gen: Option<Value>,
+    ) -> RbResult<Self> {
+        rb.enter_polars(|| {
+            let get_index_name =
+                name_gen.map(|f| PlanCallback::<usize, String>::new_ruby(Opaque::from(f)));
+            let get_index_name = get_index_name.map(|f| {
+                NameGenerator(Arc::new(move |i| f.call(i).map(PlSmallStr::from)) as Arc<_>)
+            });
+            self_
+                .series
+                .read()
+                .list()?
+                .to_struct(&ListToStructArgs::InferWidth {
+                    infer_field_strategy: width_strat.0,
+                    get_index_name,
+                    max_fields: None,
+                })
+                .map(IntoSeries::into_series)
+        })
+        .map(Into::into)
+        .map_err(RbPolarsErr::from)
+        .map_err(RbErr::from)
     }
 
     pub fn str_json_decode(

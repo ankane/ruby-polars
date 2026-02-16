@@ -805,6 +805,16 @@ module Polars
     #
     # @example Convert list to struct with field name assignment by index from a list of names:
     #   s1 = Polars::Series.new("n", [[0, 1, 2], [0, 1]])
+    #   s2 = s1.list.to_struct
+    #   s2.struct.fields
+    #   # => ["field_0", "field_1", "field_2"]
+    #
+    # @example Convert list to struct with field name assignment by function/index:
+    #   s3 = s1.list.to_struct(fields: ->(idx) { "n%02d" % idx })
+    #   s3.struct.fields
+    #   # => ["n00", "n01", "n02"]
+    #
+    # @example Convert list to struct with field name assignment by index from a list of names:
     #   s1.list.to_struct(fields: ["one", "two", "three"]).struct.unnest
     #   # =>
     #   # shape: (2, 3)

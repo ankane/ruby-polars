@@ -1126,6 +1126,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "str_to_decimal_infer",
         method!(RbSeries::str_to_decimal_infer, 1),
     )?;
+    class.define_method("list_to_struct", method!(RbSeries::list_to_struct, 2))?;
     class.define_method("str_json_decode", method!(RbSeries::str_json_decode, 1))?;
     class.define_method("to_s", method!(RbSeries::as_str, 0))?;
     class.define_method("len", method!(RbSeries::len, 0))?;
