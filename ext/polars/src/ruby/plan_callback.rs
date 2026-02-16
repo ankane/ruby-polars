@@ -21,7 +21,7 @@ mod _ruby {
     use std::sync::Arc;
 
     use crate::RbResult;
-    use magnus::{IntoValue, Ruby, Value, value::ReprValue};
+    use magnus::{IntoValue, Ruby, TryConvert, Value, value::ReprValue};
     use polars_utils::pl_str::PlSmallStr;
 
     macro_rules! impl_rbcb_type {
@@ -29,13 +29,13 @@ mod _ruby {
             $(
             impl super::PlanCallbackArgs for $type {
                 fn into_rbany(self, rb: &Ruby) -> RbResult<Value> {
-                    todo!()
+                    Ok(self.into_value_with(rb))
                 }
             }
 
             impl super::PlanCallbackOut for $type {
                 fn from_rbany(rbany: Value, rb: &Ruby) -> RbResult<Self> {
-                    todo!()
+                    Self::try_convert(rbany)
                 }
             }
             )+
@@ -47,13 +47,13 @@ mod _ruby {
             $(
             impl super::PlanCallbackArgs for $type {
                 fn into_rbany(self, rb: &Ruby) -> RbResult<Value> {
-                    todo!()
+                    Ok(<$transformed>::from(self).into_value_with(rb))
                 }
             }
 
             impl super::PlanCallbackOut for $type {
                 fn from_rbany(rbany: Value, rb: &Ruby) -> RbResult<Self> {
-                    todo!()
+                    <$transformed>::try_convert(rbany).map(Into::into)
                 }
             }
             )+

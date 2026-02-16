@@ -661,6 +661,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("name_to_lowercase", method!(RbExpr::name_to_lowercase, 0))?;
     class.define_method("name_to_uppercase", method!(RbExpr::name_to_uppercase, 0))?;
     class.define_method("name_replace", method!(RbExpr::name_replace, 3))?;
+    class.define_method("name_map_fields", method!(RbExpr::name_map_fields, 1))?;
     class.define_method("name_prefix_fields", method!(RbExpr::name_prefix_fields, 1))?;
     class.define_method("name_suffix_fields", method!(RbExpr::name_suffix_fields, 1))?;
 

@@ -1,9 +1,10 @@
-use magnus::{Ruby, block::Proc, value::Opaque};
+use magnus::{Ruby, Value, block::Proc, value::Opaque};
 use polars::prelude::*;
 use polars_utils::format_pl_smallstr;
 
 use crate::RbExpr;
 use crate::ruby::gvl::RubyAttach;
+use crate::ruby::plan_callback::PlanCallbackExt;
 
 impl RbExpr {
     pub fn name_keep(&self) -> Self {
@@ -48,6 +49,14 @@ impl RbExpr {
             .clone()
             .name()
             .replace(&pattern, &value, literal)
+            .into()
+    }
+
+    pub fn name_map_fields(&self, name_mapper: Value) -> Self {
+        self.inner
+            .clone()
+            .name()
+            .map_fields(PlanCallback::new_ruby(Opaque::from(name_mapper)))
             .into()
     }
 

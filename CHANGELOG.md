@@ -4,6 +4,7 @@
 - Added `Float16` type
 - Added `map_groups` method
 - Added `map_columns` method to `DataFrame`
+- Added `map_fields` method to `NameExpr`
 - Added `compression`, `compression_level`, and `check_extension` options to `write_csv` method
 - Added `ignore_nulls` option to `first` and `last` methods
 - Added `literal` and `strict` options to `split` method for `StringExpr`

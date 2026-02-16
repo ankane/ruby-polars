@@ -198,6 +198,21 @@ module Polars
       Utils.wrap_expr(_rbexpr.name_to_uppercase)
     end
 
+    # Rename fields of a struct by mapping a function over the field name(s).
+    #
+    # @note
+    #   This only takes effect for struct columns.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => {"a" => 1, "b" => 2}})
+    #   df.select(Polars.col("x").name.map_fields  { |x| x.upcase }).schema
+    #   # => Polars::Schema({"x"=>Polars::Struct({"A"=>Polars::Int64, "B"=>Polars::Int64})})
+    def map_fields(&function)
+      Utils.wrap_expr(_rbexpr.name_map_fields(function))
+    end
+
     # Add a prefix to all field names of a struct.
     #
     # @note
