@@ -169,7 +169,10 @@ class DocsTest < Minitest::Test
     @@once ||= begin
       require "yard"
 
-      YARD.parse || true
+      with_stress(false) do
+        YARD.parse
+      end
+      true
     end
 
     in_temp_dir do
