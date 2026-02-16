@@ -12,11 +12,11 @@ type BackgroundMessage = (
     SyncSender<Box<dyn Any + Send>>,
 );
 
-static BACKGROUND_RUBY_THREAD_MAILBOX: OnceLock<SyncSender<BackgroundMessage>> = OnceLock::new();
+static BACKGROUND_THREAD_MAILBOX: OnceLock<SyncSender<BackgroundMessage>> = OnceLock::new();
 
 // TODO figure out better approach
 pub(crate) fn start_background_ruby_thread(rb: &Ruby) {
-    BACKGROUND_RUBY_THREAD_MAILBOX.get_or_init(|| {
+    BACKGROUND_THREAD_MAILBOX.get_or_init(|| {
         let (sender, receiver) = sync_channel::<BackgroundMessage>(0);
 
         // TODO save reference to thread?
@@ -52,7 +52,7 @@ where
 {
     let f2 = move |rb: &Ruby| -> Box<dyn Any + Send> { Box::new(f(rb)) };
     let (sender, receiver) = sync_channel(0);
-    BACKGROUND_RUBY_THREAD_MAILBOX
+    BACKGROUND_THREAD_MAILBOX
         .get()
         .unwrap()
         .send((Box::new(f2), sender))
