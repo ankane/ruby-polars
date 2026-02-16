@@ -2,12 +2,11 @@ require_relative "test_helper"
 
 class DatabaseTest < Minitest::Test
   def setup
+    skip if stress? # slow
+
     skip unless active_support?
 
     require_relative "support/active_record"
-
-    # load before GC.stress
-    @@once ||= ActiveSupport::TimeZone["Eastern Time (US & Canada)"] if stress?
 
     User.delete_all
     ActiveRecord::Base.connection_pool.with_connection do |connection|
