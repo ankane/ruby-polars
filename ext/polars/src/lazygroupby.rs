@@ -1,12 +1,13 @@
 use std::sync::Arc;
 
-use magnus::{RArray, Value};
+use magnus::{RArray, Value, value::Opaque};
 use polars::lazy::frame::{LazyFrame, LazyGroupBy};
-use polars::prelude::Schema;
+use polars::prelude::{PlanCallback, Schema};
 
 use crate::conversion::Wrap;
 use crate::error::RbPolarsErr;
 use crate::expr::ToExprs;
+use crate::ruby::plan_callback::PlanCallbackExt;
 use crate::{RbLazyFrame, RbResult};
 
 #[magnus::wrap(class = "Polars::RbLazyGroupBy")]
@@ -40,7 +41,6 @@ impl RbLazyGroupBy {
         lgb.tail(Some(n)).into()
     }
 
-    #[allow(unused)]
     pub fn map_groups(&self, lambda: Value, schema: Option<Wrap<Schema>>) -> RbResult<RbLazyFrame> {
         let lgb = self.lgb.clone().unwrap();
         let schema = match schema {
@@ -50,9 +50,8 @@ impl RbLazyGroupBy {
                 .map_err(RbPolarsErr::from)?,
         };
 
-        let function = lambda;
+        let function = Opaque::from(lambda);
 
-        todo!();
-        // Ok(lgb.apply(PlanCallback::new_ruby(function), schema).into())
+        Ok(lgb.apply(PlanCallback::new_ruby(function), schema).into())
     }
 }
