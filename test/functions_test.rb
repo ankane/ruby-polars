@@ -39,7 +39,7 @@ class FunctionsTest < Minitest::Test
 
   def test_fold
     df = Polars::DataFrame.new({"a" => [1, 2, 3]})
-    expr = Polars.fold(Polars.lit(1), ->(acc, x) { acc + x }, Polars.col("*"))
+    expr = Polars.fold(Polars.lit(1), Polars.col("*")) { |acc, x| acc + x }
     GC.start
     assert_series [2, 3, 4], df.select(expr).to_series
   end

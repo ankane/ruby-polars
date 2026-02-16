@@ -1042,9 +1042,7 @@ module Polars
     #    }
     #   )
     #   df.select(
-    #     Polars.fold(
-    #       Polars.lit(1), ->(acc, x) { acc + x }, Polars.col("*")
-    #     ).alias("sum")
+    #     Polars.fold(Polars.lit(1), Polars.col("*")) { |acc, x| acc + x }.alias("sum")
     #   )
     #   # =>
     #   # shape: (3, 1)
@@ -1066,11 +1064,7 @@ module Polars
     #     }
     #   )
     #   df.filter(
-    #     Polars.fold(
-    #       Polars.lit(true),
-    #       ->(acc, x) { acc & x },
-    #       Polars.col("*") > 1
-    #     )
+    #     Polars.fold(Polars.lit(true), Polars.col("*") > 1) { |acc, x| acc & x }
     #   )
     #   # =>
     #   # shape: (1, 2)
@@ -1083,10 +1077,10 @@ module Polars
     #   # └─────┴─────┘
     def fold(
       acc,
-      function,
       exprs,
       returns_scalar: false,
-      return_dtype: nil
+      return_dtype: nil,
+      &function
     )
       acc = Utils.parse_into_expression(acc, str_as_lit: true)
       if exprs.is_a?(Expr)
@@ -1112,9 +1106,6 @@ module Polars
 
     # Accumulate over multiple columns horizontally/ row wise with a left fold.
     #
-    # @param function [Object]
-    #   Function to apply over the accumulator and the value.
-    #   Fn(acc, value) -> new_value
     # @param exprs [Object]
     #   Expressions to aggregate over. May also be a wildcard expression.
     # @param returns_scalar [Boolean]
@@ -1135,7 +1126,7 @@ module Polars
     #     }
     #   )
     #   df.select(
-    #     Polars.reduce(function: ->(acc, x) { acc + x }, exprs: Polars.col("*")).alias("sum")
+    #     Polars.reduce(Polars.col("*")) { |acc, x| acc + x }.alias("sum")
     #   )
     #   # =>
     #   # shape: (3, 1)
@@ -1149,10 +1140,10 @@ module Polars
     #   # │ 5   │
     #   # └─────┘
     def reduce(
-      function:,
-      exprs:,
+      exprs,
       returns_scalar: false,
-      return_dtype: nil
+      return_dtype: nil,
+      &function
     )
       if exprs.is_a?(Expr)
         exprs = [exprs]
@@ -1181,9 +1172,6 @@ module Polars
     # @param acc [Object]
     #   Accumulator Expression. This is the value that will be initialized when the fold
     #   starts. For a sum this could for instance be lit(0).
-    # @param function [Object]
-    #   Function to apply over the accumulator and the value.
-    #   Fn(acc, value) -> new_value
     # @param exprs [Object]
     #   Expressions to aggregate over. May also be a wildcard expression.
     # @param returns_scalar [Boolean]
@@ -1210,7 +1198,7 @@ module Polars
     #     }
     #   )
     #   df.with_columns(
-    #     Polars.cum_fold(Polars.lit(1), ->(acc, x) { acc + x }, Polars.all)
+    #     Polars.cum_fold(Polars.lit(1), Polars.all) { |acc, x| acc + x }
     #   )
     #   # =>
     #   # shape: (3, 4)
@@ -1225,11 +1213,11 @@ module Polars
     #   # └─────┴─────┴─────┴───────────┘
     def cum_fold(
       acc,
-      function,
       exprs,
       returns_scalar: false,
       return_dtype: nil,
-      include_init: false
+      include_init: false,
+      &function
     )
       acc = Utils.parse_into_expression(acc, str_as_lit: true)
       if exprs.is_a?(Expr)
@@ -1258,9 +1246,6 @@ module Polars
     #
     # Every cumulative result is added as a separate field in a Struct column.
     #
-    # @param function [Object]
-    #   Function to apply over the accumulator and the value.
-    #   Fn(acc, value) -> new_value
     # @param exprs [Object]
     #   Expressions to aggregate over. May also be a wildcard expression.
     # @param returns_scalar [Boolean]
@@ -1281,7 +1266,7 @@ module Polars
     #       "c" => [5, 6, 7]
     #     }
     #   )
-    #   df.with_columns(Polars.cum_reduce(function: ->(acc, x) { acc + x }, exprs: Polars.all))
+    #   df.with_columns(Polars.cum_reduce(Polars.all) { |acc, x| acc + x })
     #   # =>
     #   # shape: (3, 4)
     #   # ┌─────┬─────┬─────┬────────────┐
@@ -1294,10 +1279,10 @@ module Polars
     #   # │ 3   ┆ 5   ┆ 7   ┆ {3,8,15}   │
     #   # └─────┴─────┴─────┴────────────┘
     def cum_reduce(
-      function:,
-      exprs:,
+      exprs,
       returns_scalar: false,
-      return_dtype: nil
+      return_dtype: nil,
+      &function
     )
       if exprs.is_a?(Expr)
         exprs = [exprs]
