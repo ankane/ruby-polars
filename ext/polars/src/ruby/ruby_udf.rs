@@ -163,26 +163,3 @@ impl RubyUdfExt for Expr {
         }
     }
 }
-
-pub trait RubyUdfLazyFrameExt {
-    fn map_ruby(
-        self,
-        function: Opaque<Value>,
-        optimizations: AllowedOptimizations,
-        schema: Option<SchemaRef>,
-        validate_output: bool,
-    ) -> LazyFrame;
-}
-
-impl RubyUdfLazyFrameExt for LazyFrame {
-    #[allow(unused)]
-    fn map_ruby(
-        self,
-        function: Opaque<Value>,
-        optimizations: AllowedOptimizations,
-        schema: Option<SchemaRef>,
-        validate_output: bool,
-    ) -> LazyFrame {
-        todo!();
-    }
-}

@@ -1,5 +1,6 @@
 pub mod exceptions;
 pub mod gvl;
+pub mod lazy;
 pub mod numo;
 pub mod plan_callback;
 pub mod rb_modules;
