@@ -16,6 +16,7 @@ mod lazygroupby;
 mod map;
 mod object;
 mod on_startup;
+mod plan_callback;
 mod prelude;
 pub(crate) mod rb_modules;
 mod ruby_convert_registry;

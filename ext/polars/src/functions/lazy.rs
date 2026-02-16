@@ -4,13 +4,13 @@ use magnus::{
 };
 use polars::lazy::dsl;
 use polars::prelude::*;
-use polars_plan::prelude::{PlanCallbackArgs, PlanCallbackOut};
 
 use crate::conversion::{Wrap, get_lf, get_rbseq};
 use crate::expr::ToExprs;
 use crate::expr::datatype::RbDataTypeExpr;
 use crate::file::start_background_ruby_thread;
 use crate::lazyframe::RbOptFlags;
+use crate::plan_callback::PlanCallbackExt;
 use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError, map};
 
@@ -466,24 +466,4 @@ pub fn spearman_rank_corr(a: &RbExpr, b: &RbExpr, propagate_nans: bool) -> RbExp
 pub fn sql_expr(sql: String) -> RbResult<RbExpr> {
     let expr = polars::sql::sql_expr(sql).map_err(RbPolarsErr::from)?;
     Ok(expr.into())
-}
-
-trait PlanCallbackExt<Args, Out> {
-    fn new_ruby(rbfn: Opaque<Value>) -> Self;
-}
-
-impl<Args: PlanCallbackArgs, Out: PlanCallbackOut> PlanCallbackExt<Args, Out>
-    for PlanCallback<Args, Out>
-{
-    fn new_ruby(_rbfn: Opaque<Value>) -> Self {
-        todo!();
-        // let f = move |_args| {
-        //     Ruby::attach(|_rb| {
-        //         rb.get_inner(rbfn)
-        //             .funcall("call", (args,))
-        //             .map_err(|e| PolarsError::ComputeError(e.to_string().into()))
-        //     })
-        // };
-        // Self::Rust(SpecialEq::new(Arc::new(f) as _))
-    }
 }
