@@ -130,7 +130,7 @@ fn collect_lambda_ret_with_rows_output(
         if retval.is_nil() {
             Ok(&null_row)
         } else {
-            let tuple = RArray::try_convert(retval).map_err(|_| polars_err!(ComputeError: format!("expected tuple, got {}", unsafe { retval.classname() }.into_owned())))?;
+            let tuple = RArray::try_convert(retval).map_err(|_| polars_err!(ComputeError: format!("expected tuple, got {}", unsafe { retval.classname() })))?;
             row_buf.0.clear();
             for v in tuple {
                 let v = Wrap::<AnyValue>::try_convert(v).unwrap().0;
