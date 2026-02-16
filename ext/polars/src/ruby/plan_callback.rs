@@ -6,6 +6,7 @@ use polars_plan::prelude::PlanCallback;
 
 use crate::RbResult;
 use crate::ruby::gvl::RubyAttach;
+use crate::ruby::ruby_function::RubyFunction;
 use crate::ruby::utils::to_pl_err;
 
 pub trait PlanCallbackArgs {
@@ -164,14 +165,14 @@ mod _ruby {
 }
 
 pub(crate) trait PlanCallbackExt<Args, Out> {
-    fn new_ruby(rbfn: Opaque<Value>) -> Self;
+    fn new_ruby(rbfn: RubyFunction) -> Self;
 }
 
 impl<Args: PlanCallbackArgs, Out: PlanCallbackOut> PlanCallbackExt<Args, Out>
     for PlanCallback<Args, Out>
 {
-    fn new_ruby(rbfn: Opaque<Value>) -> Self {
-        let boxed = Box::new(rbfn);
+    fn new_ruby(rbfn: RubyFunction) -> Self {
+        let boxed = Box::new(Opaque::from(rbfn.0));
         // TODO unregister
         magnus::gc::register_address(&*boxed);
 

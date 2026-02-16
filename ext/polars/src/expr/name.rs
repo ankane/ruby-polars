@@ -1,8 +1,9 @@
-use magnus::{Value, value::Opaque};
+use magnus::Value;
 use polars::prelude::*;
 
 use crate::RbExpr;
 use crate::ruby::plan_callback::PlanCallbackExt;
+use crate::ruby::ruby_function::RubyObject;
 
 impl RbExpr {
     pub fn name_keep(&self) -> Self {
@@ -13,7 +14,7 @@ impl RbExpr {
         self.inner
             .clone()
             .name()
-            .map(PlanCallback::new_ruby(Opaque::from(lambda)))
+            .map(PlanCallback::new_ruby(RubyObject(lambda)))
             .into()
     }
 
@@ -45,7 +46,7 @@ impl RbExpr {
         self.inner
             .clone()
             .name()
-            .map_fields(PlanCallback::new_ruby(Opaque::from(name_mapper)))
+            .map_fields(PlanCallback::new_ruby(RubyObject(name_mapper)))
             .into()
     }
 

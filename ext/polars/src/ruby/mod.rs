@@ -4,6 +4,7 @@ pub mod numo;
 pub mod plan_callback;
 pub mod rb_modules;
 pub mod ruby_convert_registry;
+pub mod ruby_function;
 pub mod ruby_udf;
 pub mod thread;
 pub mod utils;

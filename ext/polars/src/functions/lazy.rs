@@ -1,7 +1,5 @@
 use magnus::encoding::EncodingCapable;
-use magnus::{
-    Float, Integer, RArray, RString, Ruby, Value, prelude::*, typed_data::Obj, value::Opaque,
-};
+use magnus::{Float, Integer, RArray, RString, Ruby, Value, prelude::*, typed_data::Obj};
 use polars::lazy::dsl;
 use polars::prelude::*;
 
@@ -10,6 +8,7 @@ use crate::expr::ToExprs;
 use crate::expr::datatype::RbDataTypeExpr;
 use crate::lazyframe::RbOptFlags;
 use crate::ruby::plan_callback::PlanCallbackExt;
+use crate::ruby::ruby_function::RubyObject;
 use crate::ruby::thread::start_background_ruby_thread;
 use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError, map};
@@ -215,7 +214,7 @@ pub fn cum_fold(
     include_init: bool,
 ) -> RbResult<RbExpr> {
     let exprs = exprs.to_exprs()?;
-    let func = PlanCallback::new_ruby(Opaque::from(lambda));
+    let func = PlanCallback::new_ruby(RubyObject(lambda));
     Ok(dsl::cum_fold_exprs(
         acc.inner.clone(),
         func,
@@ -234,7 +233,7 @@ pub fn cum_reduce(
     return_dtype: Option<&RbDataTypeExpr>,
 ) -> RbResult<RbExpr> {
     let exprs = exprs.to_exprs()?;
-    let func = PlanCallback::new_ruby(Opaque::from(lambda));
+    let func = PlanCallback::new_ruby(RubyObject(lambda));
     Ok(dsl::cum_reduce_exprs(
         func,
         exprs,
@@ -361,7 +360,7 @@ pub fn fold(
     return_dtype: Option<&RbDataTypeExpr>,
 ) -> RbResult<RbExpr> {
     let exprs = exprs.to_exprs()?;
-    let func = PlanCallback::new_ruby(Opaque::from(lambda));
+    let func = PlanCallback::new_ruby(RubyObject(lambda));
     Ok(dsl::fold_exprs(
         acc.inner.clone(),
         func,
@@ -445,7 +444,7 @@ pub fn reduce(
     return_dtype: Option<&RbDataTypeExpr>,
 ) -> RbResult<RbExpr> {
     let exprs = exprs.to_exprs()?;
-    let func = PlanCallback::new_ruby(Opaque::from(lambda));
+    let func = PlanCallback::new_ruby(RubyObject(lambda));
     Ok(dsl::reduce_exprs(
         func,
         exprs,

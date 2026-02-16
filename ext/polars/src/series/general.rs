@@ -1,4 +1,4 @@
-use magnus::{IntoValue, RArray, Ruby, Value, value::Opaque, value::ReprValue};
+use magnus::{IntoValue, RArray, Ruby, Value, value::ReprValue};
 use polars::prelude::*;
 use polars::series::IsSorted;
 use polars_core::chunked_array::cast::CastOptions;
@@ -9,6 +9,7 @@ use crate::prelude::*;
 use crate::ruby::exceptions::{RbIndexError, RbRuntimeError, RbValueError};
 use crate::ruby::gvl::RubyAttach;
 use crate::ruby::plan_callback::PlanCallbackExt;
+use crate::ruby::ruby_function::RubyObject;
 use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
 
@@ -451,7 +452,7 @@ impl RbSeries {
     ) -> RbResult<Self> {
         rb.enter_polars(|| {
             let get_index_name =
-                name_gen.map(|f| PlanCallback::<usize, String>::new_ruby(Opaque::from(f)));
+                name_gen.map(|f| PlanCallback::<usize, String>::new_ruby(RubyObject(f)));
             let get_index_name = get_index_name.map(|f| {
                 NameGenerator(Arc::new(move |i| f.call(i).map(PlSmallStr::from)) as Arc<_>)
             });
