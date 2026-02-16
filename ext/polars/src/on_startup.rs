@@ -16,10 +16,13 @@ use polars_error::signals::register_polars_keyboard_interrupt_hook;
 use crate::Wrap;
 use crate::dataframe::RbDataFrame;
 use crate::file::{is_non_ruby_thread, run_in_ruby_thread};
+use crate::lazyframe::RbLazyFrame;
 use crate::map::lazy::call_lambda_with_series;
 use crate::map::ruby_udf;
 use crate::prelude::ObjectValue;
 use crate::rb_modules::pl_utils;
+use crate::ruby_convert_registry::{FromRubyConvertRegistry, RubyConvertRegistry};
+use crate::series::RbSeries;
 use crate::utils::RubyAttach;
 
 fn ruby_function_caller_series(
@@ -93,6 +96,80 @@ pub unsafe fn register_startup_deps(catch_keyboard_interrupt: bool) {
         fn object_array_getter(_arr: &dyn Array, _idx: usize) -> Option<AnyValue<'_>> {
             todo!();
         }
+
+        crate::ruby_convert_registry::register_converters(RubyConvertRegistry {
+            from_rb: FromRubyConvertRegistry {
+                file_provider_result: Arc::new(|_rb_f| Ruby::attach(|_rb| todo!())),
+                series: Arc::new(|rb_f| {
+                    Ruby::attach(|rb| {
+                        Ok(Box::new(
+                            <&RbSeries>::try_convert(rb.get_inner(rb_f))?
+                                .clone()
+                                .series
+                                .into_inner(),
+                        ) as _)
+                    })
+                }),
+                df: Arc::new(|rb_f| {
+                    Ruby::attach(|rb| {
+                        Ok(Box::new(
+                            <&RbDataFrame>::try_convert(rb.get_inner(rb_f))?
+                                .clone()
+                                .df
+                                .into_inner(),
+                        ) as _)
+                    })
+                }),
+                dsl_plan: Arc::new(|rb_f| {
+                    Ruby::attach(|rb| {
+                        Ok(Box::new(
+                            <&RbLazyFrame>::try_convert(rb.get_inner(rb_f))?
+                                .clone()
+                                .ldf
+                                .into_inner()
+                                .logical_plan,
+                        ) as _)
+                    })
+                }),
+                schema: Arc::new(|rb_f| {
+                    Ruby::attach(|rb| {
+                        Ok(Box::new(
+                            Wrap::<polars_core::schema::Schema>::try_convert(rb.get_inner(rb_f))?.0,
+                        ) as _)
+                    })
+                }),
+            },
+            to_rb: crate::ruby_convert_registry::ToRubyConvertRegistry {
+                df: Arc::new(|df| {
+                    Ruby::attach(|rb| {
+                        Ok(
+                            RbDataFrame::new(df.downcast_ref::<DataFrame>().unwrap().clone())
+                                .into_value_with(rb),
+                        )
+                    })
+                }),
+                series: Arc::new(|series| {
+                    Ruby::attach(|rb| {
+                        Ok(
+                            RbSeries::new(series.downcast_ref::<Series>().unwrap().clone())
+                                .into_value_with(rb),
+                        )
+                    })
+                }),
+                dsl_plan: Arc::new(|dsl_plan| {
+                    Ruby::attach(|rb| {
+                        Ok(RbLazyFrame::from(LazyFrame::from(
+                            dsl_plan
+                                .downcast_ref::<polars_plan::dsl::DslPlan>()
+                                .unwrap()
+                                .clone(),
+                        ))
+                        .into_value_with(rb))
+                    })
+                }),
+                schema: Arc::new(|_schema| Ruby::attach(|_rb| todo!())),
+            },
+        });
 
         let object_size = std::mem::size_of::<ObjectValue>();
         let physical_dtype = ArrowDataType::FixedSizeBinary(object_size);

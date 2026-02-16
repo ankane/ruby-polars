@@ -18,6 +18,7 @@ mod object;
 mod on_startup;
 mod prelude;
 pub(crate) mod rb_modules;
+mod ruby_convert_registry;
 mod series;
 mod sql;
 mod testing;
