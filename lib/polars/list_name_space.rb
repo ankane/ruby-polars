@@ -826,8 +826,7 @@ module Polars
         )
       end
 
-      raise Todo
-      # Utils.wrap_s(_s.list_to_struct(n_field_strategy, fields))
+      Utils.wrap_s(_s.list_to_struct(n_field_strategy, fields))
     end
 
     # Run any polars expression against the lists' elements.
