@@ -174,6 +174,7 @@ impl<Args: PlanCallbackArgs, Out: PlanCallbackOut> PlanCallbackExt<Args, Out>
     fn new_ruby(rbfn: RubyFunction) -> Self {
         let boxed = BoxOpaque::new(rbfn.0);
 
+        // TODO handle non-Ruby threads
         let f = move |args: Args| {
             Ruby::attach(|rb| {
                 let out = Out::from_rbany(
