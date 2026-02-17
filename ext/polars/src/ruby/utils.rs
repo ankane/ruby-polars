@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use magnus::{Error, Value, gc, value::Opaque};
 use polars::error::PolarsError;
 
@@ -5,13 +7,12 @@ pub(crate) fn to_pl_err(e: Error) -> PolarsError {
     PolarsError::ComputeError(e.to_string().into())
 }
 
-// TODO register address on clone or use Arc?
 #[derive(Clone)]
-pub struct BoxOpaque(pub Box<Opaque<Value>>);
+pub struct BoxOpaque(pub Arc<Opaque<Value>>);
 
 impl BoxOpaque {
     pub fn new(v: Value) -> Self {
-        let boxed = Box::new(Opaque::from(v));
+        let boxed = Arc::new(Opaque::from(v));
         gc::register_address(&*boxed);
         Self(boxed)
     }
