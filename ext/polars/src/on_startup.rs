@@ -33,9 +33,7 @@ fn ruby_function_caller_series(
 ) -> PolarsResult<Column> {
     if is_non_ruby_thread() {
         let s2 = s.to_vec();
-        return run_in_ruby_thread(move |_rb| {
-            ruby_function_caller_series(&s2, output_dtype, lambda)
-        });
+        return run_in_ruby_thread(move || ruby_function_caller_series(&s2, output_dtype, lambda));
     }
 
     Ruby::attach(|rb| call_lambda_with_series(rb, s, output_dtype, lambda))

@@ -107,7 +107,7 @@ impl RbFileLikeObject {
         if self.has_flush {
             if is_non_ruby_thread() {
                 let self2 = self.clone();
-                return run_in_ruby_thread(move |_rb| self2.flush());
+                return run_in_ruby_thread(move || self2.flush());
             }
 
             Ruby::attach(|rb| {
@@ -146,7 +146,7 @@ impl Write for RbFileLikeObject {
         if is_non_ruby_thread() {
             let mut self2 = self.clone();
             let buf2 = buf.to_vec();
-            return run_in_ruby_thread(move |_rb| self2.write(&buf2));
+            return run_in_ruby_thread(move || self2.write(&buf2));
         }
 
         let expects_str = self.expects_str;

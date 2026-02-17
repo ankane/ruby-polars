@@ -35,7 +35,7 @@ impl RubyUdfLazyFrameExt for LazyFrame {
         let f = move |df| {
             if is_non_ruby_thread() {
                 let udf = udf.clone();
-                return run_in_ruby_thread(move |_rb| f(df, *udf.0));
+                return run_in_ruby_thread(move || f(df, *udf.0));
             }
             f(df, *udf.0)
         };

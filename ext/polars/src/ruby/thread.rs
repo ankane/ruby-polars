@@ -8,7 +8,7 @@ use magnus::error::RubyUnavailableError;
 use crate::ruby::gvl::GvlExt;
 
 type BackgroundMessage = (
-    Box<dyn FnOnce(&Ruby) -> Box<dyn Any + Send> + Send>,
+    Box<dyn FnOnce() -> Box<dyn Any + Send> + Send>,
     SyncSender<Box<dyn Any + Send>>,
 );
 
@@ -25,7 +25,7 @@ pub(crate) fn start_background_ruby_thread(rb: &Ruby) {
                 loop {
                     match receiver.recv_timeout(std::time::Duration::from_millis(10)) {
                         Ok((f, sender2)) => {
-                            Ruby::attach(|rb3| sender2.send(f(rb3)).unwrap());
+                            sender2.send(f()).unwrap();
                         }
                         Err(RecvTimeoutError::Timeout) => {
                             Ruby::attach(|rb3| rb3.thread_schedule());
@@ -48,9 +48,9 @@ pub(crate) fn start_background_ruby_thread(rb: &Ruby) {
 pub(crate) fn run_in_ruby_thread<T, F>(func: F) -> T
 where
     T: Send + 'static,
-    F: FnOnce(&Ruby) -> T + Send + 'static,
+    F: FnOnce() -> T + Send + 'static,
 {
-    let func2 = move |rb: &Ruby| -> Box<dyn Any + Send> { Box::new(func(rb)) };
+    let func2 = move || -> Box<dyn Any + Send> { Box::new(func()) };
     let (sender, receiver) = sync_channel(0);
     BACKGROUND_THREAD_MAILBOX
         .get()
