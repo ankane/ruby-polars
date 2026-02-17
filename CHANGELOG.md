@@ -2,17 +2,34 @@
 
 - Updated Polars to 0.53.0
 - Added `Float16` type
-- Added `map_groups` method
+- Changed `each` method for `GroupBy` to always return `Array` keys
+
+Added methods
+
+- Added `self_dtype` method to `Polars`
+- Added `map_batches` method to `Polars`, `Expr`, and `LazyFrame`
+- Added `map_groups` method to `Polars`, `GroupBy`, `DynamicGroupBy`, `RollingGroupBy`, and `LazyGroupBy`
 - Added `map_columns` method to `DataFrame`
-- Added `map_fields` method to `NameExpr`
-- Added `compression`, `compression_level`, and `check_extension` options to `write_csv` method
-- Added `ignore_nulls` option to `first` and `last` methods
-- Added `literal` and `strict` options to `split` method for `StringExpr`
+- Added `map_elements` and `pipe` methods to `Expr`
+- Added `pivot` method to `LazyFrame`
+- Added `sql` method to `Series`
+- Added `having` method to `GroupBy`, `DynamicGroupBy`, `RollingGroupBy`, and `LazyGroupBy`
 - Added `mean` method to `ArrayNameSpace`
 - Added `slice`, `head`, and `tail` methods to `BinaryExpr` and `BinaryNameSpace`
 - Added `get` method to `BinaryExpr`
-- Added `having` method to `GroupBy` and `LazyGroupBy`
-- Changed `each` method for `GroupBy` to always return `Array` keys
+- Added `as_expression` method to `MetaExpr`
+- Added `map_fields` method to `NameExpr`
+
+Added options
+
+- Added `compression`, `compression_level`, and `check_extension` options to `write_csv` method
+- Added `empty_as_null` and `keep_nulls` options to `explode` method
+- Added `ignore_nulls` option to `first` and `last` methods
+- Added `leftmost` option to `find_many`, `extract_many`, and `replace_many` methods
+- Added `maintain_order` option to `mode` method
+- Added `strict` option to `concat` and `union` methods for `Polars`
+- Added `null_on_oob` option to `get` method for `Expr`
+- Added `literal` and `strict` options to `split` method for `StringExpr`
 
 ## 0.24.0 (2026-02-04)
 
