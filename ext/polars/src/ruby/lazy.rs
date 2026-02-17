@@ -1,4 +1,4 @@
-use magnus::Ruby;
+use magnus::{Ruby, Value, value::Opaque};
 use polars::prelude::{AllowedOptimizations, DataFrame, LazyFrame, SchemaRef};
 
 use crate::ruby::ruby_function::RubyFunction;
@@ -27,17 +27,17 @@ impl RubyUdfLazyFrameExt for LazyFrame {
         start_background_ruby_thread(&Ruby::get_with(function.0));
 
         let boxed = BoxOpaque::new(function.0);
-        let function = move |df: DataFrame, boxed: &BoxOpaque| {
+        let function = move |df: DataFrame, lambda: Opaque<Value>| {
             let func = unsafe { CALL_DF_UDF_RUBY.unwrap() };
-            func(df, *boxed.0)
+            func(df, lambda)
         };
         let function = move |df| {
             if is_non_ruby_thread() {
                 let boxed = boxed.clone();
-                return run_in_ruby_thread(move |_rb| function(df, &boxed));
+                return run_in_ruby_thread(move |_rb| function(df, *boxed.0));
             }
 
-            function(df, &boxed)
+            function(df, *boxed.0)
         };
         let schema = None;
         self.map(function, optimizations, schema, Some("RUBY UDF"))

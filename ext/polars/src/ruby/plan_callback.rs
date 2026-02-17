@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use magnus::{Ruby, Value, value::ReprValue};
+use magnus::{Ruby, Value, value::Opaque, value::ReprValue};
 use polars_plan::dsl::SpecialEq;
 use polars_plan::prelude::PlanCallback;
 
@@ -176,10 +176,10 @@ impl<Args: PlanCallbackArgs + Send + 'static, Out: PlanCallbackOut + Send + 'sta
         start_background_ruby_thread(&Ruby::get_with(rbfn.0));
 
         let boxed = BoxOpaque::new(rbfn.0);
-        let f = move |args: Args, boxed: &BoxOpaque| {
+        let f = move |args: Args, lambda: Opaque<Value>| {
             Ruby::attach(|rb| {
                 let out = Out::from_rbany(
-                    rb.get_inner(*boxed.0)
+                    rb.get_inner(lambda)
                         .funcall("call", (args.into_rbany(rb).map_err(to_pl_err)?,))
                         .map_err(to_pl_err)?,
                     rb,
@@ -191,10 +191,10 @@ impl<Args: PlanCallbackArgs + Send + 'static, Out: PlanCallbackOut + Send + 'sta
         let f = move |args: Args| {
             if is_non_ruby_thread() {
                 let boxed = boxed.clone();
-                return run_in_ruby_thread(move |_rb| f(args, &boxed));
+                return run_in_ruby_thread(move |_rb| f(args, *boxed.0));
             }
 
-            f(args, &boxed)
+            f(args, *boxed.0)
         };
         Self::Rust(SpecialEq::new(Arc::new(f) as _))
     }
