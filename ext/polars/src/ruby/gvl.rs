@@ -12,7 +12,7 @@ pub trait GvlExt {
 
     fn detach<T, F>(&self, func: F) -> T
     where
-        F: FnOnce() -> T + Send,
+        F: Send + FnOnce() -> T,
         T: Send;
 }
 
