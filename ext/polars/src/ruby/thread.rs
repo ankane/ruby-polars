@@ -5,7 +5,7 @@ use std::sync::mpsc::{RecvTimeoutError, SyncSender, sync_channel};
 use magnus::Ruby;
 use magnus::error::RubyUnavailableError;
 
-use crate::ruby::gvl::{RubyAttach, RubyDetach};
+use crate::ruby::gvl::GvlExt;
 
 type BackgroundMessage = (
     Box<dyn FnOnce(&Ruby) -> Box<dyn Any + Send> + Send>,

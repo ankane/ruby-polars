@@ -3,7 +3,7 @@ use magnus::{IntoValue, Ruby, Value, value::Opaque, value::ReprValue};
 use super::RbSeries;
 use crate::map::series::ApplyLambdaGeneric;
 use crate::prelude::*;
-use crate::ruby::gvl::RubyAttach;
+use crate::ruby::gvl::GvlExt;
 use crate::series::construction::series_from_objects;
 use crate::{RbPolarsErr, RbResult};
 use crate::{apply_all_polars_dtypes, raise_err};

@@ -7,7 +7,7 @@ use polars_core::utils::flatten::flatten_series;
 use crate::conversion::*;
 use crate::prelude::*;
 use crate::ruby::exceptions::{RbIndexError, RbRuntimeError, RbValueError};
-use crate::ruby::gvl::RubyAttach;
+use crate::ruby::gvl::GvlExt;
 use crate::ruby::plan_callback::PlanCallbackExt;
 use crate::ruby::ruby_function::RubyObject;
 use crate::utils::EnterPolarsExt;

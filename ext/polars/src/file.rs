@@ -12,7 +12,7 @@ use polars_utils::create_file;
 
 use crate::error::RbPolarsErr;
 use crate::prelude::resolve_homedir;
-use crate::ruby::gvl::RubyAttach;
+use crate::ruby::gvl::GvlExt;
 use crate::ruby::thread::{is_non_ruby_thread, run_in_ruby_thread, start_background_ruby_thread};
 use crate::utils::to_rb_err;
 use crate::{RbErr, RbResult};

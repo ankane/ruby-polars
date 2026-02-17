@@ -9,7 +9,7 @@ use polars_plan::dsl::udf::try_infer_udf_output_dtype;
 use polars_plan::prelude::*;
 use polars_utils::pl_str::PlSmallStr;
 
-use crate::ruby::gvl::RubyAttach;
+use crate::ruby::gvl::GvlExt;
 use crate::ruby::utils::ArcValue;
 
 #[allow(clippy::type_complexity)]

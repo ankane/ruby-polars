@@ -7,7 +7,7 @@ use polars_error::PolarsResult;
 use polars_error::signals::{KeyboardInterrupt, catch_keyboard_interrupt};
 
 use crate::ruby::exceptions::RbKeyboardInterrupt;
-use crate::ruby::gvl::RubyDetach;
+use crate::ruby::gvl::GvlExt;
 use crate::timeout::{cancel_polars_timeout, schedule_polars_timeout};
 use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
 

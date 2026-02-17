@@ -11,7 +11,7 @@ use polars_io::catalog::unity::schema::parse_type_json_str;
 use polars_io::pl_async;
 
 use crate::rb_modules::polars;
-use crate::ruby::gvl::RubyDetach;
+use crate::ruby::gvl::GvlExt;
 use crate::utils::EnterPolarsExt;
 use crate::utils::to_rb_err;
 use crate::{RbResult, RbValueError, Wrap};

@@ -4,17 +4,21 @@ use magnus::Ruby;
 use magnus::error::RubyUnavailableError;
 use rb_sys::{rb_thread_call_with_gvl, rb_thread_call_without_gvl};
 
-pub trait RubyAttach {
+pub trait GvlExt {
     fn attach<T, F>(f: F) -> T
     where
         F: FnOnce(&Ruby) -> T;
+
+    fn detach<T, F>(&self, f: F) -> T
+    where
+        F: FnOnce() -> T;
 }
 
 unsafe extern "C" {
     fn ruby_thread_has_gvl_p() -> std::ffi::c_int;
 }
 
-impl RubyAttach for Ruby {
+impl GvlExt for Ruby {
     fn attach<T, F>(f: F) -> T
     where
         F: FnOnce(&Ruby) -> T,
@@ -43,16 +47,8 @@ impl RubyAttach for Ruby {
             panic!("Non-Ruby thread");
         }
     }
-}
 
-pub trait RubyDetach {
-    fn detach<T, F>(self, f: F) -> T
-    where
-        F: FnOnce() -> T;
-}
-
-impl RubyDetach for &Ruby {
-    fn detach<T, F>(self, f: F) -> T
+    fn detach<T, F>(&self, f: F) -> T
     where
         F: FnOnce() -> T,
     {

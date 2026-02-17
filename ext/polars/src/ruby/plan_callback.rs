@@ -5,7 +5,7 @@ use polars_plan::dsl::SpecialEq;
 use polars_plan::prelude::PlanCallback;
 
 use crate::RbResult;
-use crate::ruby::gvl::RubyAttach;
+use crate::ruby::gvl::GvlExt;
 use crate::ruby::ruby_function::RubyFunction;
 use crate::ruby::thread::{is_non_ruby_thread, run_in_ruby_thread, start_background_ruby_thread};
 use crate::ruby::utils::{ArcValue, to_pl_err};

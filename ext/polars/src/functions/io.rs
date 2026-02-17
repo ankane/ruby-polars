@@ -7,7 +7,7 @@ use polars::prelude::CloudScheme;
 use crate::conversion::Wrap;
 use crate::file::{EitherRustRubyFile, get_either_file};
 use crate::io::cloud_options::OptRbCloudOptions;
-use crate::ruby::gvl::RubyDetach;
+use crate::ruby::gvl::GvlExt;
 use crate::{RbPolarsErr, RbResult};
 
 pub fn read_ipc_schema(rb: &Ruby, rb_f: Value) -> RbResult<RHash> {

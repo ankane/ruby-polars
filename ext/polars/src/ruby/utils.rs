@@ -3,7 +3,7 @@ use std::sync::Arc;
 use magnus::{Error, Ruby, Value, gc, value::Opaque};
 use polars::error::PolarsError;
 
-use crate::ruby::gvl::RubyAttach;
+use crate::ruby::gvl::GvlExt;
 
 pub(crate) fn to_pl_err(e: Error) -> PolarsError {
     PolarsError::ComputeError(e.to_string().into())

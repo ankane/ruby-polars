@@ -17,7 +17,7 @@ use crate::io::cloud_options::OptRbCloudOptions;
 use crate::io::scan_options::RbScanOptions;
 use crate::io::sink_options::RbSinkOptions;
 use crate::io::sink_output::RbFileSinkDestination;
-use crate::ruby::gvl::RubyAttach;
+use crate::ruby::gvl::GvlExt;
 use crate::ruby::lazy::RubyUdfLazyFrameExt;
 use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};

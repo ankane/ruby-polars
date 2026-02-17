@@ -5,7 +5,7 @@ use polars::prelude::sync_on_close::SyncOnCloseType;
 use polars::prelude::{PlRefPath, SpecialEq};
 
 use crate::prelude::Wrap;
-use crate::ruby::gvl::RubyAttach;
+use crate::ruby::gvl::GvlExt;
 use crate::{RbResult, RbValueError};
 
 impl TryConvert for Wrap<polars_plan::dsl::SinkTarget> {
