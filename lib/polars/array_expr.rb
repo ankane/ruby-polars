@@ -855,7 +855,7 @@ module Polars
     #   # => ["field_0", "field_1", "field_2"]
     #
     # @example Convert array to struct with field name assignment by function/index:
-    #   s3 = s1.arr.to_struct(fields: ->(idx) { "n%02d" % idx})
+    #   s3 = s1.arr.to_struct(fields: ->(idx) { "n%02d" % idx })
     #   s3.struct.fields
     #   # => ["n00", "n01", "n02"]
     #
@@ -872,7 +872,6 @@ module Polars
     #   # │ 3   ┆ 4   ┆ 5     │
     #   # └─────┴─────┴───────┘
     def to_struct(fields: nil)
-      raise Todo if fields
       if fields.is_a?(Enumerable)
         field_names = fields.to_a
         rbexpr = _rbexpr.arr_to_struct(nil)

@@ -5,6 +5,8 @@ pub(crate) fn to_pl_err(e: Error) -> PolarsError {
     PolarsError::ComputeError(e.to_string().into())
 }
 
+// TODO register address on clone or use Arc?
+#[derive(Clone)]
 pub struct BoxOpaque(pub Box<Opaque<Value>>);
 
 impl BoxOpaque {

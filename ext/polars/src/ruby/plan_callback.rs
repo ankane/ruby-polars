@@ -7,6 +7,7 @@ use polars_plan::prelude::PlanCallback;
 use crate::RbResult;
 use crate::ruby::gvl::RubyAttach;
 use crate::ruby::ruby_function::RubyFunction;
+use crate::ruby::thread::{is_non_ruby_thread, run_in_ruby_thread, start_background_ruby_thread};
 use crate::ruby::utils::{BoxOpaque, to_pl_err};
 
 pub trait PlanCallbackArgs {
@@ -168,14 +169,32 @@ pub(crate) trait PlanCallbackExt<Args, Out> {
     fn new_ruby(rbfn: RubyFunction) -> Self;
 }
 
-impl<Args: PlanCallbackArgs, Out: PlanCallbackOut> PlanCallbackExt<Args, Out>
-    for PlanCallback<Args, Out>
+impl<Args: PlanCallbackArgs + Send + 'static, Out: PlanCallbackOut + Send + 'static>
+    PlanCallbackExt<Args, Out> for PlanCallback<Args, Out>
 {
     fn new_ruby(rbfn: RubyFunction) -> Self {
         let boxed = BoxOpaque::new(rbfn.0);
 
-        // TODO handle non-Ruby threads
+        start_background_ruby_thread(&Ruby::get().unwrap());
+
         let f = move |args: Args| {
+            if is_non_ruby_thread() {
+                let boxed = boxed.clone();
+                // TODO DRY
+                return run_in_ruby_thread(move |_rb| {
+                    Ruby::attach(|rb| {
+                        let out = Out::from_rbany(
+                            rb.get_inner(*boxed.0)
+                                .funcall("call", (args.into_rbany(rb).map_err(to_pl_err)?,))
+                                .map_err(to_pl_err)?,
+                            rb,
+                        )
+                        .map_err(to_pl_err)?;
+                        Ok(out)
+                    })
+                });
+            }
+
             Ruby::attach(|rb| {
                 let out = Out::from_rbany(
                     rb.get_inner(*boxed.0)
