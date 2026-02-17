@@ -177,24 +177,7 @@ impl<Args: PlanCallbackArgs + Send + 'static, Out: PlanCallbackOut + Send + 'sta
 
         start_background_ruby_thread(&Ruby::get().unwrap());
 
-        let f = move |args: Args| {
-            if is_non_ruby_thread() {
-                let boxed = boxed.clone();
-                // TODO DRY
-                return run_in_ruby_thread(move |_rb| {
-                    Ruby::attach(|rb| {
-                        let out = Out::from_rbany(
-                            rb.get_inner(*boxed.0)
-                                .funcall("call", (args.into_rbany(rb).map_err(to_pl_err)?,))
-                                .map_err(to_pl_err)?,
-                            rb,
-                        )
-                        .map_err(to_pl_err)?;
-                        Ok(out)
-                    })
-                });
-            }
-
+        let f = move |args: Args, boxed: &BoxOpaque| {
             Ruby::attach(|rb| {
                 let out = Out::from_rbany(
                     rb.get_inner(*boxed.0)
@@ -205,6 +188,14 @@ impl<Args: PlanCallbackArgs + Send + 'static, Out: PlanCallbackOut + Send + 'sta
                 .map_err(to_pl_err)?;
                 Ok(out)
             })
+        };
+        let f = move |args: Args| {
+            if is_non_ruby_thread() {
+                let boxed = boxed.clone();
+                return run_in_ruby_thread(move |_rb| f(args, &boxed));
+            }
+
+            f(args, &boxed)
         };
         Self::Rust(SpecialEq::new(Arc::new(f) as _))
     }
