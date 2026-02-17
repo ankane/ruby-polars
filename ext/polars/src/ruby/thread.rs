@@ -45,17 +45,17 @@ pub(crate) fn start_background_ruby_thread(rb: &Ruby) {
     });
 }
 
-pub(crate) fn run_in_ruby_thread<T, F>(f: F) -> T
+pub(crate) fn run_in_ruby_thread<T, F>(func: F) -> T
 where
     T: Send + 'static,
     F: FnOnce(&Ruby) -> T + Send + 'static,
 {
-    let f2 = move |rb: &Ruby| -> Box<dyn Any + Send> { Box::new(f(rb)) };
+    let func2 = move |rb: &Ruby| -> Box<dyn Any + Send> { Box::new(func(rb)) };
     let (sender, receiver) = sync_channel(0);
     BACKGROUND_THREAD_MAILBOX
         .get()
         .unwrap()
-        .send((Box::new(f2), sender))
+        .send((Box::new(func2), sender))
         .unwrap();
     *receiver.recv().unwrap().downcast().unwrap()
 }
