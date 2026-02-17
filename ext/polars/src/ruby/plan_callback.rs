@@ -173,9 +173,6 @@ impl<Args: PlanCallbackArgs + Send + 'static, Out: PlanCallbackOut + Send + 'sta
     PlanCallbackExt<Args, Out> for PlanCallback<Args, Out>
 {
     fn new_ruby(rbfn: RubyFunction) -> Self {
-        start_background_ruby_thread(&Ruby::get_with(rbfn.0));
-
-        let boxed = BoxOpaque::new(rbfn.0);
         let f = move |args: Args, lambda: Opaque<Value>| {
             Ruby::attach(|rb| {
                 let out = Out::from_rbany(
@@ -188,14 +185,18 @@ impl<Args: PlanCallbackArgs + Send + 'static, Out: PlanCallbackOut + Send + 'sta
                 Ok(out)
             })
         };
+
+        // handle non-Ruby threads
+        start_background_ruby_thread(&Ruby::get_with(rbfn.0));
+        let boxed = BoxOpaque::new(rbfn.0);
         let f = move |args: Args| {
             if is_non_ruby_thread() {
                 let boxed = boxed.clone();
                 return run_in_ruby_thread(move |_rb| f(args, *boxed.0));
             }
-
             f(args, *boxed.0)
         };
+
         Self::Rust(SpecialEq::new(Arc::new(f) as _))
     }
 }

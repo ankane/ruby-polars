@@ -24,22 +24,23 @@ impl RubyUdfLazyFrameExt for LazyFrame {
         _schema: Option<SchemaRef>,
         _validate_output: bool,
     ) -> LazyFrame {
-        start_background_ruby_thread(&Ruby::get_with(function.0));
-
-        let boxed = BoxOpaque::new(function.0);
-        let function = move |df: DataFrame, lambda: Opaque<Value>| {
+        let f = move |df: DataFrame, lambda: Opaque<Value>| {
             let func = unsafe { CALL_DF_UDF_RUBY.unwrap() };
             func(df, lambda)
         };
-        let function = move |df| {
+
+        // handle non-Ruby threads
+        start_background_ruby_thread(&Ruby::get_with(function.0));
+        let boxed = BoxOpaque::new(function.0);
+        let f = move |df| {
             if is_non_ruby_thread() {
                 let boxed = boxed.clone();
-                return run_in_ruby_thread(move |_rb| function(df, *boxed.0));
+                return run_in_ruby_thread(move |_rb| f(df, *boxed.0));
             }
-
-            function(df, *boxed.0)
+            f(df, *boxed.0)
         };
+
         let schema = None;
-        self.map(function, optimizations, schema, Some("RUBY UDF"))
+        self.map(f, optimizations, schema, Some("RUBY UDF"))
     }
 }
