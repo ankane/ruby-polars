@@ -5,11 +5,11 @@ use magnus::error::RubyUnavailableError;
 use rb_sys::{rb_thread_call_with_gvl, rb_thread_call_without_gvl};
 
 pub trait GvlExt {
-    fn attach<T, F>(f: F) -> T
+    fn attach<T, F>(func: F) -> T
     where
         F: FnOnce(&Ruby) -> T;
 
-    fn detach<T, F>(&self, f: F) -> T
+    fn detach<T, F>(&self, func: F) -> T
     where
         F: FnOnce() -> T;
 }
@@ -19,7 +19,7 @@ unsafe extern "C" {
 }
 
 impl GvlExt for Ruby {
-    fn attach<T, F>(f: F) -> T
+    fn attach<T, F>(func: F) -> T
     where
         F: FnOnce(&Ruby) -> T,
     {
@@ -28,10 +28,10 @@ impl GvlExt for Ruby {
         if let Ok(rb) = Ruby::get()
             && unsafe { ruby_thread_has_gvl_p() } != 0
         {
-            f(&rb)
+            func(&rb)
         } else if !matches!(Ruby::get(), Err(RubyUnavailableError::NonRubyThread)) {
             let mut data = CallbackData {
-                func: Some(f),
+                func: Some(func),
                 result: None,
             };
 
@@ -48,15 +48,15 @@ impl GvlExt for Ruby {
         }
     }
 
-    fn detach<T, F>(&self, f: F) -> T
+    fn detach<T, F>(&self, func: F) -> T
     where
         F: FnOnce() -> T,
     {
         if std::env::var("POLARS_GVL").is_ok() {
-            f()
+            func()
         } else {
             let mut data = CallbackData {
-                func: Some(f),
+                func: Some(func),
                 result: None,
             };
 
