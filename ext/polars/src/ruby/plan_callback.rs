@@ -121,7 +121,6 @@ mod _ruby {
         U: super::PlanCallbackOut,
     {
         fn from_rbany(rbany: Value, rb: &Ruby) -> RbResult<Self> {
-            // TODO remove unwrap
             let tuple = RArray::try_convert(rbany)?;
             Ok((
                 T::from_rbany(tuple.entry(0)?, rb)?,
