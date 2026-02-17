@@ -103,4 +103,11 @@ class LazyFrameTest < Minitest::Test
     assert_frame ({"a" => [1, 2], "b" => [nil, "two"]}), lf.fill_null(2).collect
     assert_frame ({"a" => [1, nil], "b" => ["one", "two"]}), lf.fill_null("one").collect
   end
+
+  def test_map_batches
+    lf = Polars::LazyFrame.new({"a" => [1, 2, 3]})
+    lf2 = lf.map_batches { |x| x * 2 }
+    GC.start
+    assert_frame ({"a" => [2, 4, 6]}), lf2.collect
+  end
 end

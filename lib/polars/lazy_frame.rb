@@ -4637,7 +4637,7 @@ module Polars
     #         "b": Polars.int_range(0, 100_000, eager: true)
     #       }
     #     )
-    #     .map_batches(streamable: true) { |x| 2 * x }
+    #     .map_batches(streamable: true) { |x| x * 2 }
     #     .collect(engine: "streaming")
     #   )
     #   # =>
@@ -4651,7 +4651,9 @@ module Polars
     #   # │ -199998 ┆ 2      │
     #   # │ -199996 ┆ 4      │
     #   # │ -199994 ┆ 6      │
+    #   # │ -199992 ┆ 8      │
     #   # │ …       ┆ …      │
+    #   # │ -10     ┆ 199990 │
     #   # │ -8      ┆ 199992 │
     #   # │ -6      ┆ 199994 │
     #   # │ -4      ┆ 199996 │
@@ -4667,7 +4669,7 @@ module Polars
       streamable: false,
       &function
     )
-      raise Todo
+      raise Todo if !schema.nil?
 
       if no_optimizations
         predicate_pushdown = false

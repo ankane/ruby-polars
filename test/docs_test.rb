@@ -228,7 +228,7 @@ class DocsTest < Minitest::Test
     # todos
     todo = [:show_graph, :from_numo].include?(method.name)
     todo |= cls == Polars::Expr && method.name == :deserialize
-    todo |= cls == Polars::LazyFrame && [:deserialize, :serialize, :map_batches].include?(method.name)
+    todo |= cls == Polars::LazyFrame && [:deserialize, :serialize].include?(method.name)
     todo |= cls == Polars::MetaExpr && method.name == :serialize
 
     if missing_examples?(method, cls)
