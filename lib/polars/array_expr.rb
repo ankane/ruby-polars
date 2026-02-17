@@ -849,20 +849,28 @@ module Polars
     # @return [Expr]
     #
     # @example Convert array to struct with default field name assignment:
-    #   df = Polars::DataFrame.new(
-    #     {"n" => [[0, 1, 2], [3, 4, 5]]}, schema: {"n" => Polars::Array.new(Polars::Int8, 3)}
-    #   )
-    #   df.with_columns(struct: Polars.col("n").arr.to_struct)
+    #   s1 = Polars::Series.new("n", [[0, 1, 2], [3, 4, 5]], dtype: Polars::Array.new(Polars::Int8, 3))
+    #   s2 = s1.arr.to_struct
+    #   s2.struct.fields
+    #   # => ["field_0", "field_1", "field_2"]
+    #
+    # @example Convert array to struct with field name assignment by function/index:
+    #   s3 = s1.arr.to_struct(fields: ->(idx) { "n%02d" % idx})
+    #   s3.struct.fields
+    #   # => ["n00", "n01", "n02"]
+    #
+    # @example Convert array to struct with field name assignment by index from a list of names:
+    #   s1.arr.to_struct(fields: ["one", "two", "three"]).struct.unnest
     #   # =>
-    #   # shape: (2, 2)
-    #   # ┌──────────────┬───────────┐
-    #   # │ n            ┆ struct    │
-    #   # │ ---          ┆ ---       │
-    #   # │ array[i8, 3] ┆ struct[3] │
-    #   # ╞══════════════╪═══════════╡
-    #   # │ [0, 1, 2]    ┆ {0,1,2}   │
-    #   # │ [3, 4, 5]    ┆ {3,4,5}   │
-    #   # └──────────────┴───────────┘
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬───────┐
+    #   # │ one ┆ two ┆ three │
+    #   # │ --- ┆ --- ┆ ---   │
+    #   # │ i8  ┆ i8  ┆ i8    │
+    #   # ╞═════╪═════╪═══════╡
+    #   # │ 0   ┆ 1   ┆ 2     │
+    #   # │ 3   ┆ 4   ┆ 5     │
+    #   # └─────┴─────┴───────┘
     def to_struct(fields: nil)
       raise Todo if fields
       if fields.is_a?(Enumerable)

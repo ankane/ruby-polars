@@ -1,6 +1,8 @@
 use magnus::Value;
 use polars::prelude::*;
 
+use crate::ruby::plan_callback::PlanCallbackExt;
+use crate::ruby::ruby_function::RubyObject;
 use crate::{RbExpr, RbPolarsErr, RbResult};
 
 impl RbExpr {
@@ -117,10 +119,8 @@ impl RbExpr {
     }
 
     pub fn arr_to_struct(&self, name_gen: Option<Value>) -> Self {
-        if name_gen.is_some() {
-            todo!();
-        }
-        self.inner.clone().arr().to_struct(None).into()
+        let name_gen = name_gen.map(|o| PlanCallback::new_ruby(RubyObject(o)));
+        self.inner.clone().arr().to_struct(name_gen).into()
     }
 
     pub fn arr_slice(

@@ -676,20 +676,9 @@ module Polars
     # @example Convert array to struct with default field name assignment:
     #   s1 = Polars::Series.new("n", [[0, 1, 2], [3, 4, 5]], dtype: Polars::Array.new(Polars::Int8, 3))
     #   s2 = s1.arr.to_struct
-    #   # =>
-    #   # shape: (2,)
-    #   # Series: 'n' [struct[3]]
-    #   # [
-    #   #         {0,1,2}
-    #   #         {3,4,5}
-    #   # ]
-    #
-    # @example
     #   s2.struct.fields
     #   # => ["field_0", "field_1", "field_2"]
-    def to_struct(
-      fields: nil
-    )
+    def to_struct(fields: nil)
       s = Utils.wrap_s(_s)
       s.to_frame.select(F.col(s.name).arr.to_struct(fields: fields)).to_series
     end
