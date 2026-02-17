@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use magnus::value::{Lazy, ReprValue};
 use magnus::{IntoValue, Module, RClass, RHash, RModule, Ruby, Value};
-use polars::prelude::{PlHashMap, PlSmallStr, Schema};
+use polars::prelude::{PlHashMap, PlSmallStr, PolarsError, Schema};
 use polars_io::catalog::unity::client::{CatalogClient, CatalogClientBuilder};
 use polars_io::catalog::unity::models::{
     CatalogInfo, ColumnInfo, DataSourceFormat, NamespaceInfo, TableInfo, TableType,
@@ -277,16 +277,12 @@ impl RbCatalogClient {
                         &table_name,
                         schema.as_ref().map(|x| &x.0),
                         &TableType::from_str(&table_type)
-                            // TODO fix
-                            // .map_err(|e| RbValueError::new_err(e.to_string()))?,
-                            .unwrap(),
+                            .map_err(|e| PolarsError::ComputeError(e.to_string().into()))?,
                         data_source_format
                             .as_deref()
                             .map(DataSourceFormat::from_str)
                             .transpose()
-                            // TODO fix
-                            // .map_err(|e| RbValueError::new_err(e.to_string()))?
-                            .unwrap()
+                            .map_err(|e| PolarsError::ComputeError(e.to_string().into()))?
                             .as_ref(),
                         comment.as_deref(),
                         storage_root.as_deref(),
