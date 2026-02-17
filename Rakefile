@@ -1,9 +1,22 @@
 require "bundler/gem_tasks"
 require "rake/testtask"
 require "rake/extensiontask"
+require "ruby_memcheck"
 
 Rake::TestTask.new do |t|
   t.test_files = FileList["test/**/*_test.rb"].exclude(/docs_test/)
+end
+
+namespace :test do
+  RubyMemcheck::TestTask.new(:valgrind) do |t|
+    t.test_files = FileList["test/**/*_test.rb"].exclude(/docs_test/)
+  end
+
+  namespace :docs do
+    RubyMemcheck::TestTask.new(:valgrind) do |t|
+      t.pattern = "test/docs_test.rb"
+    end
+  end
 end
 
 task default: :test

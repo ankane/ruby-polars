@@ -225,6 +225,9 @@ class DocsTest < Minitest::Test
     # TODO fix
     return if [:combine].include?(method.name)
 
+    # TODO different output
+    return if valgrind? && [:describe, :max, :min, :rolling_quantile_by, :round_sig_figs].include?(method.name)
+
     # todos
     todo = [:show_graph, :from_numo].include?(method.name)
     todo |= cls == Polars::Expr && method.name == :deserialize

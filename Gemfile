@@ -12,6 +12,7 @@ gem "pg", require: false
 gem "mysql2", require: false, platform: :ruby
 gem "trilogy", require: false, platform: :ruby
 gem "sqlite3", require: false
+gem "ruby_memcheck"
 
 if ENV["TEST_DELTA"]
   gem "deltalake-rb", ">= 0.1.4"
