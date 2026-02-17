@@ -30,7 +30,7 @@ impl RubyUdfLazyFrameExt for LazyFrame {
         };
 
         // handle non-Ruby threads
-        start_background_ruby_thread(&Ruby::get_with(function.0));
+        start_background_ruby_thread(&Ruby::get().unwrap());
         let udf = ArcValue::new(function.0);
         let f = move |df| {
             if is_non_ruby_thread() {

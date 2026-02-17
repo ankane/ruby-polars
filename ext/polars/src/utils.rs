@@ -48,23 +48,25 @@ pub(crate) fn to_rb_err<E: Into<RbPolarsErr>>(e: E) -> RbErr {
 pub trait EnterPolarsExt {
     fn enter_polars<T, E, F>(self, f: F) -> RbResult<T>
     where
-        F: FnOnce() -> Result<T, E>,
-        E: Into<RbPolarsErr>;
+        F: Send + FnOnce() -> Result<T, E>,
+        T: Send,
+        E: Send + Into<RbPolarsErr>;
 
     #[inline(always)]
     fn enter_polars_ok<T, F>(self, f: F) -> RbResult<T>
     where
         Self: Sized,
-        F: FnOnce() -> T,
+        F: Send + FnOnce() -> T,
+        T: Send,
     {
-        self.enter_polars(move || RbResult::Ok(f()))
+        self.enter_polars(move || PolarsResult::Ok(f()))
     }
 
     #[inline(always)]
     fn enter_polars_df<F>(self, f: F) -> RbResult<RbDataFrame>
     where
         Self: Sized,
-        F: FnOnce() -> PolarsResult<DataFrame>,
+        F: Send + FnOnce() -> PolarsResult<DataFrame>,
     {
         self.enter_polars(f).map(RbDataFrame::new)
     }
@@ -73,8 +75,8 @@ pub trait EnterPolarsExt {
     fn enter_polars_series<T, F>(self, f: F) -> RbResult<RbSeries>
     where
         Self: Sized,
-        T: IntoSeries,
-        F: FnOnce() -> PolarsResult<T>,
+        T: Send + IntoSeries,
+        F: Send + FnOnce() -> PolarsResult<T>,
     {
         self.enter_polars(f).map(|s| RbSeries::new(s.into_series()))
     }
@@ -83,8 +85,9 @@ pub trait EnterPolarsExt {
 impl EnterPolarsExt for &Ruby {
     fn enter_polars<T, E, F>(self, f: F) -> RbResult<T>
     where
-        F: FnOnce() -> Result<T, E>,
-        E: Into<RbPolarsErr>,
+        F: Send + FnOnce() -> Result<T, E>,
+        T: Send,
+        E: Send + Into<RbPolarsErr>,
     {
         let timeout = schedule_polars_timeout();
         let ret = self.detach(|| catch_keyboard_interrupt(AssertUnwindSafe(f)));

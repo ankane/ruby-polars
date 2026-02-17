@@ -13,8 +13,8 @@ pub(crate) fn to_pl_err(e: Error) -> PolarsError {
 pub struct ArcValue(pub Arc<Opaque<Value>>);
 
 impl ArcValue {
-    pub fn new(value: Value) -> Self {
-        let ob = Arc::new(Opaque::from(value));
+    pub fn new(value: Opaque<Value>) -> Self {
+        let ob = Arc::new(value);
         gc::register_address(&*ob);
         Self(ob)
     }

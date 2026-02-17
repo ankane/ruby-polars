@@ -421,15 +421,9 @@ impl RbSeries {
     }
 
     pub fn shrink_dtype(rb: &Ruby, self_: &Self) -> RbResult<Self> {
-        rb.enter_polars(|| {
-            self_
-                .series
-                .read()
-                .shrink_type()
-                .map(Into::into)
-                .map_err(RbPolarsErr::from)
-                .map_err(RbErr::from)
-        })
+        rb.enter_polars(|| self_.series.read().shrink_type().map(Into::into))
+            .map_err(RbPolarsErr::from)
+            .map_err(RbErr::from)
     }
 
     pub fn str_to_decimal_infer(
@@ -450,9 +444,9 @@ impl RbSeries {
         width_strat: Wrap<ListToStructWidthStrategy>,
         name_gen: Option<Value>,
     ) -> RbResult<Self> {
+        let name_gen = name_gen.map(RubyObject::from);
         rb.enter_polars(|| {
-            let get_index_name =
-                name_gen.map(|f| PlanCallback::<usize, String>::new_ruby(RubyObject(f)));
+            let get_index_name = name_gen.map(PlanCallback::<usize, String>::new_ruby);
             let get_index_name = get_index_name.map(|f| {
                 NameGenerator(Arc::new(move |i| f.call(i).map(PlSmallStr::from)) as Arc<_>)
             });

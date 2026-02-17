@@ -119,7 +119,7 @@ impl RbExpr {
     }
 
     pub fn arr_to_struct(&self, name_gen: Option<Value>) -> Self {
-        let name_gen = name_gen.map(|o| PlanCallback::new_ruby(RubyObject(o)));
+        let name_gen = name_gen.map(|o| PlanCallback::new_ruby(RubyObject::from(o)));
         self.inner.clone().arr().to_struct(name_gen).into()
     }
 

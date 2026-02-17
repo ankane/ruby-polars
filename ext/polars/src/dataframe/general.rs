@@ -337,6 +337,7 @@ impl RbDataFrame {
         lambda: Value,
         maintain_order: bool,
     ) -> RbResult<Self> {
+        let lambda = Opaque::from(lambda);
         rb.enter_polars_df(|| {
             let df = self_.df.read().clone(); // Clone so we can't deadlock on re-entrance from lambda.
             let gb = if maintain_order {
@@ -345,7 +346,6 @@ impl RbDataFrame {
                 df.group_by(by.iter().map(|x| &**x))
             }?;
 
-            let lambda = Opaque::from(lambda);
             let function = move |df: DataFrame| {
                 Ruby::attach(|rb| {
                     let lambda = rb.get_inner(lambda);

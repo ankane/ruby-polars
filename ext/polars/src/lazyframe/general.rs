@@ -403,12 +403,11 @@ impl RbLazyFrame {
         rb.enter_polars(|| {
             let ldf = self_.ldf.read().clone();
 
-            let collect_batches = ldf
-                .clone()
-                .collect_batches(engine.0, maintain_order, chunk_size, lazy)
-                .map_err(RbPolarsErr::from)?;
+            let collect_batches =
+                ldf.clone()
+                    .collect_batches(engine.0, maintain_order, chunk_size, lazy)?;
 
-            RbResult::Ok(RbCollectBatches {
+            PolarsResult::Ok(RbCollectBatches {
                 inner: Arc::new(Mutex::new(collect_batches)),
                 _ldf: ldf,
             })

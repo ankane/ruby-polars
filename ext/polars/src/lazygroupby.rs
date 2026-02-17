@@ -51,7 +51,7 @@ impl RbLazyGroupBy {
                 .map_err(RbPolarsErr::from)?,
         };
 
-        let function = RubyObject(lambda);
+        let function = RubyObject::from(lambda);
 
         Ok(lgb.apply(PlanCallback::new_ruby(function), schema).into())
     }

@@ -1,12 +1,11 @@
-use magnus::Value;
+use magnus::{Value, value::Opaque};
 
-#[derive(Debug)]
-pub struct RubyObject(pub Value);
+pub struct RubyObject(pub Opaque<Value>);
 
 pub type RubyFunction = RubyObject;
 
 impl From<Value> for RubyObject {
     fn from(value: Value) -> Self {
-        Self(value)
+        Self(value.into())
     }
 }

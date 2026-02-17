@@ -1,101 +1,155 @@
 use arrow::array::Array;
 use polars::prelude::*;
 
-use crate::error::RbPolarsErr;
 use crate::utils::EnterPolarsExt;
-use crate::{RbErr, RbResult, RbSeries, Ruby};
+use crate::{RbResult, RbSeries, Ruby};
 
 impl RbSeries {
     pub fn scatter(rb: &Ruby, self_: &Self, idx: &RbSeries, values: &RbSeries) -> RbResult<()> {
         rb.enter_polars(|| {
-            let mut s = self_.series.write();
-            match scatter(s.clone(), &idx.series.read(), &values.series.read()) {
+            // We take the value because we want a ref count of 1 so that we can
+            // have mutable access cheaply via _get_inner_mut().
+            let mut lock = self_.series.write();
+            let s = std::mem::take(&mut *lock);
+            let result = scatter(
+                s,
+                &idx.clone().series.into_inner(),
+                &values.clone().series.into_inner(),
+            );
+            match result {
                 Ok(out) => {
-                    *s = out;
+                    *lock = out;
                     Ok(())
                 }
-                Err(e) => Err(RbErr::from(RbPolarsErr::from(e))),
+                Err((s, e)) => {
+                    *lock = s; // Restore original series.
+                    Err(e)
+                }
             }
         })
     }
 }
 
-fn scatter(mut s: Series, idx: &Series, values: &Series) -> PolarsResult<Series> {
+fn scatter(s: Series, idx: &Series, values: &Series) -> Result<Series, (Series, PolarsError)> {
     let logical_dtype = s.dtype().clone();
-    let idx = idx.cast(&IDX_DTYPE)?;
-    let idx = idx.rechunk();
-    let idx = idx.idx().unwrap();
-    let idx = idx.downcast_iter().next().unwrap();
+    let converted_values;
+    let values = if logical_dtype.is_categorical() || logical_dtype.is_enum() {
+        if matches!(
+            values.dtype(),
+            DataType::Categorical(_, _) | DataType::Enum(_, _) | DataType::String | DataType::Null
+        ) {
+            converted_values = values.strict_cast(&logical_dtype);
+            match converted_values {
+                Ok(ref values) => values,
+                Err(err) => return Err((s, err)),
+            }
+        } else {
+            return Err((
+                s,
+                polars_err!(InvalidOperation: "invalid values dtype '{}' for scattering into dtype '{}'", values.dtype(), logical_dtype),
+            ));
+        }
+    } else if logical_dtype.is_decimal() {
+        if values.dtype().is_numeric() {
+            converted_values = values.strict_cast(&logical_dtype);
+            match converted_values {
+                Ok(ref values) => values,
+                Err(err) => return Err((s, err)),
+            }
+        } else {
+            return Err((
+                s,
+                polars_err!(InvalidOperation: "invalid values dtype '{}' for scattering into dtype '{}'", values.dtype(), logical_dtype),
+            ));
+        }
+    } else {
+        values
+    };
 
-    if idx.null_count() > 0 {
-        return Err(PolarsError::ComputeError(
-            "index values should not be null".into(),
+    let null_on_oob = false;
+    let idx = match polars_ops::prelude::convert_and_bound_index(idx, s.len(), null_on_oob) {
+        Ok(idx) => idx,
+        Err(err) => return Err((s, err)),
+    };
+    let idx = idx.rechunk();
+    let idx = idx.downcast_as_array();
+    if idx.has_nulls() {
+        return Err((
+            s,
+            PolarsError::ComputeError("index values should not be null".into()),
         ));
     }
-
     let idx = idx.values().as_slice();
 
-    let values = values.to_physical_repr().cast(&s.dtype().to_physical())?;
+    let mut values = match values.to_physical_repr().cast(&s.dtype().to_physical()) {
+        Ok(values) => values,
+        Err(err) => return Err((s, err)),
+    };
 
-    // do not shadow, otherwise s is not dropped immediately
-    // and we want to have mutable access
-    s = s.to_physical_repr().into_owned();
+    // Broadcast values input.
+    if values.len() == 1 && idx.len() > 1 {
+        values = values.new_from_index(0, idx.len());
+    }
+
+    let mut phys = s.to_physical_repr().into_owned();
+    drop(s); // Reduce refcount to make use of in-place mutation of possible.
+    let ret = scatter_impl(&mut phys, &logical_dtype, idx, &values);
+    match ret {
+        Ok(s) => Ok(unsafe { s.from_physical_unchecked(&logical_dtype).unwrap() }),
+        Err(e) => Err((
+            unsafe { phys.from_physical_unchecked(&logical_dtype).unwrap() },
+            e,
+        )),
+    }
+}
+
+macro_rules! with_match_physical_numeric_polars_type {(
+    $key_type:expr, | $_:tt $T:ident | $($body:tt)*
+) => ({
+    macro_rules! __with_ty__ {( $_ $T:ident ) => ( $($body)* )}
+    use polars_core::datatypes::DataType::*;
+    match $key_type {
+        Int8 => __with_ty__! { Int8Type },
+        Int16 => __with_ty__! { Int16Type },
+        Int32 => __with_ty__! { Int32Type },
+        Int64 => __with_ty__! { Int64Type },
+        Int128 => __with_ty__! { Int128Type },
+        UInt8 => __with_ty__! { UInt8Type },
+        UInt16 => __with_ty__! { UInt16Type },
+        UInt32 => __with_ty__! { UInt32Type },
+        UInt64 => __with_ty__! { UInt64Type },
+        UInt128 => __with_ty__! { UInt128Type },
+        Float16 => __with_ty__! { Float16Type },
+        Float32 => __with_ty__! { Float32Type },
+        Float64 => __with_ty__! { Float64Type },
+        dt => panic!("not implemented for dtype {:?}", dt),
+    }
+})}
+
+fn scatter_impl(
+    s: &mut Series,
+    logical_dtype: &DataType,
+    idx: &[IdxSize],
+    values: &Series,
+) -> PolarsResult<Series> {
     let mutable_s = s._get_inner_mut();
 
-    let s = match logical_dtype.to_physical() {
-        DataType::Int8 => {
-            let ca: &mut ChunkedArray<Int8Type> = mutable_s.as_mut();
-            let values = values.i8()?;
-            std::mem::take(ca).scatter(idx, values)
-        }
-        DataType::Int16 => {
-            let ca: &mut ChunkedArray<Int16Type> = mutable_s.as_mut();
-            let values = values.i16()?;
-            std::mem::take(ca).scatter(idx, values)
-        }
-        DataType::Int32 => {
-            let ca: &mut ChunkedArray<Int32Type> = mutable_s.as_mut();
-            let values = values.i32()?;
-            std::mem::take(ca).scatter(idx, values)
-        }
-        DataType::Int64 => {
-            let ca: &mut ChunkedArray<Int64Type> = mutable_s.as_mut();
-            let values = values.i64()?;
-            std::mem::take(ca).scatter(idx, values)
-        }
-        DataType::UInt8 => {
-            let ca: &mut ChunkedArray<UInt8Type> = mutable_s.as_mut();
-            let values = values.u8()?;
-            std::mem::take(ca).scatter(idx, values)
-        }
-        DataType::UInt16 => {
-            let ca: &mut ChunkedArray<UInt16Type> = mutable_s.as_mut();
-            let values = values.u16()?;
-            std::mem::take(ca).scatter(idx, values)
-        }
-        DataType::UInt32 => {
-            let ca: &mut ChunkedArray<UInt32Type> = mutable_s.as_mut();
-            let values = values.u32()?;
-            std::mem::take(ca).scatter(idx, values)
-        }
-        DataType::UInt64 => {
-            let ca: &mut ChunkedArray<UInt64Type> = mutable_s.as_mut();
-            let values = values.u64()?;
-            std::mem::take(ca).scatter(idx, values)
-        }
-        DataType::Float32 => {
-            let ca: &mut ChunkedArray<Float32Type> = mutable_s.as_mut();
-            let values = values.f32()?;
-            std::mem::take(ca).scatter(idx, values)
-        }
-        DataType::Float64 => {
-            let ca: &mut ChunkedArray<Float64Type> = mutable_s.as_mut();
-            let values = values.f64()?;
-            std::mem::take(ca).scatter(idx, values)
+    match mutable_s.dtype() {
+        dt if dt.is_primitive_numeric() => {
+            with_match_physical_numeric_polars_type!(dt, |$T| {
+                let ca: &mut ChunkedArray<$T> = mutable_s.as_mut();
+                let values: &ChunkedArray<$T> = values.as_ref().as_ref();
+                ca.scatter(idx, values)
+            })
         }
         DataType::Boolean => {
             let ca: &mut ChunkedArray<BooleanType> = mutable_s.as_mut();
             let values = values.bool()?;
+            ca.scatter(idx, values)
+        }
+        DataType::Binary => {
+            let ca: &mut ChunkedArray<BinaryType> = mutable_s.as_mut();
+            let values = values.binary()?;
             ca.scatter(idx, values)
         }
         DataType::String => {
@@ -103,8 +157,8 @@ fn scatter(mut s: Series, idx: &Series, values: &Series) -> PolarsResult<Series>
             let values = values.str()?;
             ca.scatter(idx, values)
         }
-        _ => panic!("not yet implemented for dtype: {logical_dtype}"),
-    };
-
-    s.and_then(|s| s.cast(&logical_dtype))
+        _ => Err(PolarsError::ComputeError(
+            format!("not yet implemented for dtype: {logical_dtype}").into(),
+        )),
+    }
 }

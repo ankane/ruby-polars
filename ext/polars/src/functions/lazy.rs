@@ -214,7 +214,7 @@ pub fn cum_fold(
     include_init: bool,
 ) -> RbResult<RbExpr> {
     let exprs = exprs.to_exprs()?;
-    let func = PlanCallback::new_ruby(RubyObject(lambda));
+    let func = PlanCallback::new_ruby(RubyObject::from(lambda));
     Ok(dsl::cum_fold_exprs(
         acc.inner.clone(),
         func,
@@ -233,7 +233,7 @@ pub fn cum_reduce(
     return_dtype: Option<&RbDataTypeExpr>,
 ) -> RbResult<RbExpr> {
     let exprs = exprs.to_exprs()?;
-    let func = PlanCallback::new_ruby(RubyObject(lambda));
+    let func = PlanCallback::new_ruby(RubyObject::from(lambda));
     Ok(dsl::cum_reduce_exprs(
         func,
         exprs,
@@ -360,7 +360,7 @@ pub fn fold(
     return_dtype: Option<&RbDataTypeExpr>,
 ) -> RbResult<RbExpr> {
     let exprs = exprs.to_exprs()?;
-    let func = PlanCallback::new_ruby(RubyObject(lambda));
+    let func = PlanCallback::new_ruby(RubyObject::from(lambda));
     Ok(dsl::fold_exprs(
         acc.inner.clone(),
         func,
@@ -444,7 +444,7 @@ pub fn reduce(
     return_dtype: Option<&RbDataTypeExpr>,
 ) -> RbResult<RbExpr> {
     let exprs = exprs.to_exprs()?;
-    let func = PlanCallback::new_ruby(RubyObject(lambda));
+    let func = PlanCallback::new_ruby(RubyObject::from(lambda));
     Ok(dsl::reduce_exprs(
         func,
         exprs,

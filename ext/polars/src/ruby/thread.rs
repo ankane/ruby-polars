@@ -21,7 +21,7 @@ pub(crate) fn start_background_ruby_thread(rb: &Ruby) {
 
         // TODO save reference to thread?
         rb.thread_create_from_fn(move |rb2| {
-            rb2.detach(|| {
+            rb2.detach(move || {
                 loop {
                     match receiver.recv_timeout(std::time::Duration::from_millis(10)) {
                         Ok((f, sender2)) => {

@@ -14,7 +14,7 @@ impl RbExpr {
         self.inner
             .clone()
             .name()
-            .map(PlanCallback::new_ruby(RubyObject(lambda)))
+            .map(PlanCallback::new_ruby(RubyObject::from(lambda)))
             .into()
     }
 
@@ -46,7 +46,7 @@ impl RbExpr {
         self.inner
             .clone()
             .name()
-            .map_fields(PlanCallback::new_ruby(RubyObject(name_mapper)))
+            .map_fields(PlanCallback::new_ruby(RubyObject::from(name_mapper)))
             .into()
     }
 
