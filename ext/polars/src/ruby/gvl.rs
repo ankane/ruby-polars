@@ -1,4 +1,5 @@
-use std::os::raw::c_void;
+use std::ffi::c_void;
+use std::ptr::null_mut;
 
 use magnus::Ruby;
 use magnus::error::RubyUnavailableError;
@@ -65,7 +66,7 @@ impl GvlExt for Ruby {
                     Some(call_without_gvl::<F, T>),
                     &mut data as *mut _ as *mut c_void,
                     None,
-                    std::ptr::null_mut(),
+                    null_mut(),
                 );
             }
 
@@ -86,7 +87,7 @@ where
     let data = unsafe { &mut *(data as *mut CallbackData<F, T>) };
     let func = data.func.take().unwrap();
     data.result = Some(func());
-    std::ptr::null_mut()
+    null_mut()
 }
 
 extern "C" fn call_with_gvl<F, T>(data: *mut c_void) -> *mut c_void
@@ -97,5 +98,5 @@ where
     let data = unsafe { &mut *(data as *mut CallbackData<F, T>) };
     let func = data.func.take().unwrap();
     data.result = Some(func(&rb));
-    std::ptr::null_mut()
+    null_mut()
 }
