@@ -1,7 +1,9 @@
 use std::sync::Arc;
 
-use magnus::{Error, Value, gc, value::Opaque};
+use magnus::{Error, Ruby, Value, gc, value::Opaque};
 use polars::error::PolarsError;
+
+use crate::ruby::gvl::RubyAttach;
 
 pub(crate) fn to_pl_err(e: Error) -> PolarsError {
     PolarsError::ComputeError(e.to_string().into())
@@ -20,6 +22,7 @@ impl ArcValue {
 
 impl Drop for ArcValue {
     fn drop(&mut self) {
-        gc::unregister_address(&*self.0);
+        // TODO use rb.gc_register_address
+        Ruby::attach(|_| gc::unregister_address(&*self.0));
     }
 }
