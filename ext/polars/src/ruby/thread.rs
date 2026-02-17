@@ -37,8 +37,8 @@ pub(crate) fn start_background_ruby_thread(rb: &Ruby) {
                 }
 
                 #[allow(unreachable_code)]
-                Ok(())
-            })
+                ()
+            });
         });
 
         sender

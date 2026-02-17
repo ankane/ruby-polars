@@ -14,7 +14,7 @@ use crate::rb_modules::polars;
 use crate::ruby::gvl::GvlExt;
 use crate::utils::EnterPolarsExt;
 use crate::utils::to_rb_err;
-use crate::{RbResult, RbValueError, Wrap};
+use crate::{RbResult, Wrap};
 
 macro_rules! rbdict_insert_keys {
     ($dict:expr, {$a:expr}) => {
@@ -268,29 +268,33 @@ impl RbCatalogClient {
         storage_root: Option<String>,
         properties: Vec<(String, String)>,
     ) -> RbResult<Value> {
-        let table_info = rb.detach(|| {
-            pl_async::get_runtime()
-                .block_in_place_on(
+        let table_info = rb
+            .detach(|| {
+                pl_async::get_runtime().block_in_place_on(
                     self_.client().create_table(
                         &catalog_name,
                         &namespace,
                         &table_name,
                         schema.as_ref().map(|x| &x.0),
                         &TableType::from_str(&table_type)
-                            .map_err(|e| RbValueError::new_err(e.to_string()))?,
+                            // TODO fix
+                            // .map_err(|e| RbValueError::new_err(e.to_string()))?,
+                            .unwrap(),
                         data_source_format
                             .as_deref()
                             .map(DataSourceFormat::from_str)
                             .transpose()
-                            .map_err(|e| RbValueError::new_err(e.to_string()))?
+                            // TODO fix
+                            // .map_err(|e| RbValueError::new_err(e.to_string()))?
+                            .unwrap()
                             .as_ref(),
                         comment.as_deref(),
                         storage_root.as_deref(),
                         &mut properties.iter().map(|(a, b)| (a.as_str(), b.as_str())),
                     ),
                 )
-                .map_err(to_rb_err)
-        })?;
+            })
+            .map_err(to_rb_err)?;
 
         table_info_to_rbobject(rb, table_info)
     }

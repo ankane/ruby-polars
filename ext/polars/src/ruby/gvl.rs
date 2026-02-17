@@ -12,7 +12,8 @@ pub trait GvlExt {
 
     fn detach<T, F>(&self, func: F) -> T
     where
-        F: FnOnce() -> T + Send;
+        F: FnOnce() -> T + Send,
+        T: Send;
 }
 
 unsafe extern "C" {
@@ -52,6 +53,7 @@ impl GvlExt for Ruby {
     fn detach<T, F>(&self, func: F) -> T
     where
         F: Send + FnOnce() -> T,
+        T: Send,
     {
         if std::env::var("POLARS_GVL").is_ok() {
             func()
