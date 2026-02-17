@@ -10,7 +10,7 @@ use polars_plan::prelude::*;
 use polars_utils::pl_str::PlSmallStr;
 
 use crate::ruby::gvl::RubyAttach;
-use crate::ruby::utils::BoxOpaque;
+use crate::ruby::utils::RubyUdfValue;
 
 #[allow(clippy::type_complexity)]
 pub static mut CALL_COLUMNS_UDF_RUBY: Option<
@@ -23,7 +23,7 @@ pub static mut CALL_DF_UDF_RUBY: Option<
 > = None;
 
 pub struct RubyUdfExpression {
-    ruby_function: BoxOpaque,
+    ruby_function: RubyUdfValue,
     output_type: Option<DataTypeExpr>,
     materialized_field: OnceLock<Field>,
     is_elementwise: bool,
@@ -39,7 +39,7 @@ impl RubyUdfExpression {
     ) -> Self {
         let output_type = output_type.map(Into::into);
         Self {
-            ruby_function: BoxOpaque::new(lambda),
+            ruby_function: RubyUdfValue::new(lambda),
             output_type,
             materialized_field: OnceLock::new(),
             is_elementwise,
@@ -82,7 +82,7 @@ impl AnonymousColumnsUdf for RubyUdfExpression {
 
     fn deep_clone(self: Arc<Self>) -> Arc<dyn AnonymousColumnsUdf> {
         Arc::new(Self {
-            ruby_function: BoxOpaque::new(
+            ruby_function: RubyUdfValue::new(
                 Ruby::attach(|rb| {
                     // TODO fix
                     rb.get_inner(*self.ruby_function.0)

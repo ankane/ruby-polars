@@ -8,17 +8,17 @@ pub(crate) fn to_pl_err(e: Error) -> PolarsError {
 }
 
 #[derive(Clone)]
-pub struct BoxOpaque(pub Arc<Opaque<Value>>);
+pub struct RubyUdfValue(pub Arc<Opaque<Value>>);
 
-impl BoxOpaque {
-    pub fn new(v: Value) -> Self {
-        let boxed = Arc::new(Opaque::from(v));
-        gc::register_address(&*boxed);
-        Self(boxed)
+impl RubyUdfValue {
+    pub fn new(value: Value) -> Self {
+        let ob = Arc::new(Opaque::from(value));
+        gc::register_address(&*ob);
+        Self(ob)
     }
 }
 
-impl Drop for BoxOpaque {
+impl Drop for RubyUdfValue {
     fn drop(&mut self) {
         gc::unregister_address(&*self.0);
     }

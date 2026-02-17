@@ -8,7 +8,7 @@ use crate::RbResult;
 use crate::ruby::gvl::RubyAttach;
 use crate::ruby::ruby_function::RubyFunction;
 use crate::ruby::thread::{is_non_ruby_thread, run_in_ruby_thread, start_background_ruby_thread};
-use crate::ruby::utils::{BoxOpaque, to_pl_err};
+use crate::ruby::utils::{RubyUdfValue, to_pl_err};
 
 pub trait PlanCallbackArgs {
     fn into_rbany(self, rb: &Ruby) -> RbResult<Value>;
@@ -187,13 +187,13 @@ impl<Args: PlanCallbackArgs + Send + 'static, Out: PlanCallbackOut + Send + 'sta
 
         // handle non-Ruby threads
         start_background_ruby_thread(&Ruby::get_with(rbfn.0));
-        let boxed = BoxOpaque::new(rbfn.0);
+        let udf = RubyUdfValue::new(rbfn.0);
         let f = move |args: Args| {
             if is_non_ruby_thread() {
-                let boxed = boxed.clone();
-                return run_in_ruby_thread(move |_rb| f(args, *boxed.0));
+                let udf = udf.clone();
+                return run_in_ruby_thread(move |_rb| f(args, *udf.0));
             }
-            f(args, *boxed.0)
+            f(args, *udf.0)
         };
 
         Self::Rust(SpecialEq::new(Arc::new(f) as _))
