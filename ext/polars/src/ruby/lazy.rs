@@ -24,10 +24,9 @@ impl RubyUdfLazyFrameExt for LazyFrame {
         _schema: Option<SchemaRef>,
         _validate_output: bool,
     ) -> LazyFrame {
+        start_background_ruby_thread(&Ruby::get_with(function.0));
+
         let boxed = BoxOpaque::new(function.0);
-
-        start_background_ruby_thread(&Ruby::get().unwrap());
-
         let function = move |df: DataFrame, boxed: &BoxOpaque| {
             let func = unsafe { CALL_DF_UDF_RUBY.unwrap() };
             func(df, *boxed.0)

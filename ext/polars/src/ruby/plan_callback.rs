@@ -173,10 +173,9 @@ impl<Args: PlanCallbackArgs + Send + 'static, Out: PlanCallbackOut + Send + 'sta
     PlanCallbackExt<Args, Out> for PlanCallback<Args, Out>
 {
     fn new_ruby(rbfn: RubyFunction) -> Self {
+        start_background_ruby_thread(&Ruby::get_with(rbfn.0));
+
         let boxed = BoxOpaque::new(rbfn.0);
-
-        start_background_ruby_thread(&Ruby::get().unwrap());
-
         let f = move |args: Args, boxed: &BoxOpaque| {
             Ruby::attach(|rb| {
                 let out = Out::from_rbany(
