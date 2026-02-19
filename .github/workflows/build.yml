@@ -26,7 +26,7 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
       # https://github.com/oxidize-rb/rb-sys/issues/268
-      - if: ${{ startsWith(matrix.os, 'windows') }}
+      - if: ${{ runner.os == 'Windows') }}
         run: echo "RUST_TARGET=x86_64-pc-windows-gnu" >> "$env:GITHUB_ENV"
       - run: bundle exec rake compile
       - run: bundle exec rake test
