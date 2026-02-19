@@ -1,4 +1,4 @@
-## 0.25.0 (unreleased)
+## 0.25.0 (2026-02-18)
 
 - Updated Polars to 0.53.0
 - Added `Float16` type
