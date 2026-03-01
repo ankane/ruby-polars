@@ -20,5 +20,6 @@ module Polars
     end
   end
 
+  # @private
   SinkOptions = IO::SinkOptions
 end

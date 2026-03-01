@@ -242,5 +242,6 @@ module Polars
     end
   end
 
+  # @private
   DEFAULT_QUERY_OPT_FLAGS = QueryOptFlags.new
 end
