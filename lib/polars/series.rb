@@ -973,6 +973,29 @@ module Polars
       _s.min
     end
 
+    # Get the minimum value in this Series, ordered by an expression.
+    #
+    # If the by expression has multiple values equal to the minimum it is not
+    # defined which value will be chosen.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param by [Object]
+    #   Column used to determine the smallest element.
+    #   Accepts expression input. Strings are parsed as column names.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [-2.0, Float::NAN, 1.0])
+    #   s.min_by(Polars.col("a").abs)
+    #   # => 1.0
+    def min_by(by)
+      to_frame.select_seq(F.col(name).min_by(by)).item
+    end
+
     # Get the maximum value in this Series.
     #
     # @return [Object]
@@ -983,6 +1006,29 @@ module Polars
     #   # => 3
     def max
       _s.max
+    end
+
+    # Get the maximum value in this Series, ordered by an expression.
+    #
+    # If the by expression has multiple values equal to the maximum it is not
+    # defined which value will be chosen.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param by [Object]
+    #   Column used to determine the largest element.
+    #   Accepts expression input. Strings are parsed as column names.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [-2.0, Float::NAN, 1.0])
+    #   s.max_by(Polars.col("a").abs)
+    #   # => -2.0
+    def max_by(by)
+      to_frame.select_seq(F.col(name).max_by(by)).item
     end
 
     # Get maximum value, but propagate/poison encountered NaN values.
