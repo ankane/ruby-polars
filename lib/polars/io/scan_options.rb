@@ -42,7 +42,7 @@ module Polars
         @try_parse_hive_dates = try_parse_hive_dates
         @rechunk = rechunk
         @cache = cache
-        @storage_options = storage_options
+        @storage_options = storage_options.to_h
         @credential_provider = credential_provider
         @column_mapping = column_mapping
         @default_values = default_values

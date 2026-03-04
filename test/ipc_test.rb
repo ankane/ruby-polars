@@ -19,7 +19,7 @@ class IpcTest < Minitest::Test
   end
 
   def test_scan_ipc
-    df = Polars.scan_ipc("test/support/data.arrow")
+    df = Polars.scan_ipc("test/support/data.arrow", storage_options: {})
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_frame expected, df.collect
   end

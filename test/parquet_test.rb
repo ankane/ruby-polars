@@ -45,7 +45,7 @@ class ParquetTest < Minitest::Test
   end
 
   def test_scan_parquet
-    df = Polars.scan_parquet("test/support/data.parquet")
+    df = Polars.scan_parquet("test/support/data.parquet", storage_options: {})
     expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_frame expected, df.collect
   end
