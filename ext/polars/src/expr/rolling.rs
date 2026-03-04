@@ -1,6 +1,9 @@
+use magnus::Value;
 use polars::prelude::*;
 
 use crate::conversion::Wrap;
+use crate::ruby::plan_callback::PlanCallbackExt;
+use crate::ruby::ruby_function::RubyObject;
 use crate::{RbExpr, RbPolarsErr, RbResult};
 
 impl RbExpr {
@@ -405,5 +408,26 @@ impl RbExpr {
         };
 
         self.inner.clone().rolling_kurtosis(options).into()
+    }
+
+    pub fn rolling_map(
+        &self,
+        lambda: Value,
+        window_size: usize,
+        weights: Option<Vec<f64>>,
+        min_periods: Option<usize>,
+        center: bool,
+    ) -> Self {
+        let min_periods = min_periods.unwrap_or(window_size);
+        let options = RollingOptionsFixedWindow {
+            window_size,
+            weights,
+            min_periods,
+            center,
+            ..Default::default()
+        };
+        let function = PlanCallback::new_ruby(RubyObject::from(lambda));
+
+        self.inner.clone().rolling_map(function, options).into()
     }
 }

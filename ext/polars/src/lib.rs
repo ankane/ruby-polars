@@ -506,6 +506,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("rolling_rank_by", method!(RbExpr::rolling_rank_by, 6))?;
     class.define_method("rolling_skew", method!(RbExpr::rolling_skew, 4))?;
     class.define_method("rolling_kurtosis", method!(RbExpr::rolling_kurtosis, 5))?;
+    class.define_method("rolling_map", method!(RbExpr::rolling_map, 5))?;
     class.define_method("lower_bound", method!(RbExpr::lower_bound, 0))?;
     class.define_method("upper_bound", method!(RbExpr::upper_bound, 0))?;
     class.define_method("list_max", method!(RbExpr::list_max, 0))?;

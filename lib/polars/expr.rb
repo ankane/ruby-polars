@@ -6550,6 +6550,67 @@ module Polars
       )
     end
 
+    # Compute a custom rolling window function.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param window_size [Integer]
+    #   The length of the window in number of elements.
+    # @param weights [Object]
+    #   An optional slice with the same length as the window that will be multiplied
+    #   elementwise with the values in the window.
+    # @param min_samples [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If set to `nil` (default), it will be set equal to `window_size`.
+    # @param center [Boolean]
+    #   Set the labels at the center of the window.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [11.0, 2.0, 9.0, Float::NAN, 8.0]})
+    #   df.select(Polars.col("a").rolling_map(3) { |v| v.drop_nans.sum })
+    #   # =>
+    #   # shape: (5, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ f64  │
+    #   # ╞══════╡
+    #   # │ null │
+    #   # │ null │
+    #   # │ 22.0 │
+    #   # │ 11.0 │
+    #   # │ 17.0 │
+    #   # └──────┘
+    def rolling_map(
+      window_size,
+      weights: nil,
+      min_samples: nil,
+      center: false,
+      &function
+    )
+      if min_samples.nil?
+        min_samples = window_size
+      end
+
+      _wrap = lambda do |rbs|
+        s = Utils.wrap_s(rbs)
+        rv = function.(s)
+        if rv.is_a?(Series)
+          rv._s
+        else
+          Series.new([rv])._s
+        end
+      end
+
+      wrap_expr(
+        _rbexpr.rolling_map(_wrap, window_size, weights, min_samples, center)
+      )
+    end
+
     # Compute absolute values.
     #
     # @return [Expr]
