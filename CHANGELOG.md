@@ -1,3 +1,7 @@
+## 0.25.1 (unreleased)
+
+- Fixed `storage_options` option for `scan_parquet` and `scan_ipc` methods
+
 ## 0.25.0 (2026-02-18)
 
 - Updated Polars to 0.53.0

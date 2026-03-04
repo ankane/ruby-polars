@@ -350,7 +350,7 @@ module Polars
             try_parse_hive_dates: try_parse_hive_dates,
             rechunk: rechunk,
             cache: cache,
-            storage_options: storage_options ? storage_options.map { |k, v| [k.to_s, v.to_s] } : nil,
+            storage_options: storage_options,
             credential_provider: credential_provider_builder,
             column_mapping: _column_mapping,
             default_values: _default_values,

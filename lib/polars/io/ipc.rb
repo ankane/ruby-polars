@@ -267,7 +267,7 @@ module Polars
             try_parse_hive_dates: try_parse_hive_dates,
             rechunk: rechunk,
             cache: cache,
-            storage_options: !storage_options.nil? ? storage_options.to_a : nil,
+            storage_options: storage_options,
             credential_provider: credential_provider_builder
           )
         )
