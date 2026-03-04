@@ -189,6 +189,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("is_not_nan", method!(RbExpr::is_not_nan, 0))?;
     class.define_method("min", method!(RbExpr::min, 0))?;
     class.define_method("max", method!(RbExpr::max, 0))?;
+    class.define_method("min_by", method!(RbExpr::min_by, 1))?;
+    class.define_method("max_by", method!(RbExpr::max_by, 1))?;
     class.define_method("nan_max", method!(RbExpr::nan_max, 0))?;
     class.define_method("nan_min", method!(RbExpr::nan_min, 0))?;
     class.define_method("mean", method!(RbExpr::mean, 0))?;

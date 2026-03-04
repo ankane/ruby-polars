@@ -2266,6 +2266,38 @@ module Polars
       wrap_expr(_rbexpr.max)
     end
 
+    # Get maximum value, ordered by another expression.
+    #
+    # If the by expression has multiple values equal to the maximum it is not
+    # defined which value will be chosen.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param by [Object]
+    #   Column used to determine the largest element.
+    #   Accepts expression input. Strings are parsed as column names.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [-1.0, Float::NAN, 1.0], "b" => ["x", "y", "z"]})
+    #   df.select(Polars.col("b").max_by("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ b   │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ z   │
+    #   # └─────┘
+    def max_by(by)
+      by_rbexpr = Utils.parse_into_expression(by)
+      wrap_expr(_rbexpr.max_by(by_rbexpr))
+    end
+
     # Get minimum value.
     #
     # @return [Expr]
@@ -2284,6 +2316,38 @@ module Polars
     #   # └──────┘
     def min
       wrap_expr(_rbexpr.min)
+    end
+
+    # Get minimum value, ordered by another expression.
+    #
+    # If the by expression has multiple values equal to the minimum it is not
+    # defined which value will be chosen.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param by [Object]
+    #   Column used to determine the smallest element.
+    #   Accepts expression input. Strings are parsed as column names.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [-1.0, Float::NAN, 1.0], "b" => ["x", "y", "z"]})
+    #   df.select(Polars.col("b").min_by("a"))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌─────┐
+    #   # │ b   │
+    #   # │ --- │
+    #   # │ str │
+    #   # ╞═════╡
+    #   # │ x   │
+    #   # └─────┘
+    def min_by(by)
+      by_rbexpr = Utils.parse_into_expression(by)
+      wrap_expr(_rbexpr.min_by(by_rbexpr))
     end
 
     # Get maximum value, but propagate/poison encountered NaN values.

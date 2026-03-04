@@ -118,6 +118,14 @@ impl RbExpr {
         self.inner.clone().max().into()
     }
 
+    pub fn min_by(&self, by: &Self) -> Self {
+        self.inner.clone().min_by(by.inner.clone()).into()
+    }
+
+    pub fn max_by(&self, by: &Self) -> Self {
+        self.inner.clone().max_by(by.inner.clone()).into()
+    }
+
     pub fn nan_max(&self) -> Self {
         self.inner.clone().nan_max().into()
     }
