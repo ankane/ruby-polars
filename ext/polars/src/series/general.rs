@@ -10,7 +10,6 @@ use crate::ruby::exceptions::{RbIndexError, RbRuntimeError, RbValueError};
 use crate::ruby::gvl::GvlExt;
 use crate::ruby::plan_callback::PlanCallbackExt;
 use crate::ruby::ruby_function::RubyObject;
-use crate::ruby::thread::start_background_ruby_thread;
 use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
 
@@ -445,10 +444,10 @@ impl RbSeries {
         width_strat: Wrap<ListToStructWidthStrategy>,
         name_gen: Option<Value>,
     ) -> RbResult<Self> {
-        start_background_ruby_thread(rb);
         let name_gen = name_gen.map(RubyObject::from);
+        // ensure new_ruby is called with GVL
+        let get_index_name = name_gen.map(PlanCallback::<usize, String>::new_ruby);
         rb.enter_polars(|| {
-            let get_index_name = name_gen.map(PlanCallback::<usize, String>::new_ruby);
             let get_index_name = get_index_name.map(|f| {
                 NameGenerator(Arc::new(move |i| f.call(i).map(PlSmallStr::from)) as Arc<_>)
             });
