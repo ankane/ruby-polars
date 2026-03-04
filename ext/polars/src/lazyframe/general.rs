@@ -19,7 +19,7 @@ use crate::io::sink_options::RbSinkOptions;
 use crate::io::sink_output::RbFileSinkDestination;
 use crate::ruby::gvl::GvlExt;
 use crate::ruby::lazy::RubyUdfLazyFrameExt;
-use crate::utils::EnterPolarsExt;
+use crate::utils::{EnterPolarsExt, to_rb_err};
 use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
 
 fn rbobject_to_first_path_and_scan_sources(
@@ -269,6 +269,25 @@ impl RbLazyFrame {
 
         let lf = LazyFrame::scan_ipc_sources(sources, options, unified_scan_args)
             .map_err(RbPolarsErr::from)?;
+        Ok(lf.into())
+    }
+
+    pub fn new_from_scan_lines(
+        sources: Wrap<ScanSources>,
+        scan_options: RbScanOptions,
+        name: String,
+    ) -> RbResult<Self> {
+        let sources = sources.0;
+        let first_path = sources.first_path();
+
+        let unified_scan_args =
+            scan_options.extract_unified_scan_args(first_path.and_then(|x| x.scheme()))?;
+
+        let dsl: DslPlan = DslBuilder::scan_lines(sources, unified_scan_args, (&*name).into())
+            .map_err(to_rb_err)?
+            .build();
+        let lf: LazyFrame = dsl.into();
+
         Ok(lf.into())
     }
 
