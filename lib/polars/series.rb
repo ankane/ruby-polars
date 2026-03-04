@@ -4638,6 +4638,48 @@ module Polars
       super
     end
 
+    # Compute a custom rolling window function.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param window_size [Integer]
+    #   The length of the window in number of elements.
+    # @param weights [Object]
+    #   An optional slice with the same length as the window that will be multiplied
+    #   elementwise with the values in the window.
+    # @param min_samples [Integer]
+    #   The number of values in the window that should be non-null before computing
+    #   a result. If set to `nil` (default), it will be set equal to `window_size`.
+    # @param center [Boolean]
+    #   Set the labels at the center of the window.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([11.0, 2.0, 9.0, Float::NAN, 8.0])
+    #   s.rolling_map(3) { |v| v.drop_nans.sum }
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         null
+    #   #         null
+    #   #         22.0
+    #   #         11.0
+    #   #         17.0
+    #   # ]
+    def rolling_map(
+      window_size,
+      weights: nil,
+      min_samples: nil,
+      center: false,
+      &function
+    )
+      super
+    end
+
     # Compute a rolling median based on another series.
     #
     # @note
