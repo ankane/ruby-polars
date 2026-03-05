@@ -54,6 +54,10 @@ class FunctionsTest < Minitest::Test
     assert_equal "\\^hello\\$", Polars.escape_regex("^hello$")
   end
 
+  def test_struct_with_fields
+    assert_kind_of Polars::DataTypeExpr, Polars.struct_with_fields({"a" => Polars::Int64})
+  end
+
   def test_show_versions
     stdout, _ = capture_io do
       Polars.show_versions

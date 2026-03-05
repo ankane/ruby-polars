@@ -1,5 +1,5 @@
-use magnus::{IntoValue, Ruby, Value};
-use polars::prelude::{DataType, DataTypeExpr, Schema};
+use magnus::{IntoValue, RArray, Ruby, TryConvert, Value};
+use polars::prelude::{DataType, DataTypeExpr, PlSmallStr, Schema};
 
 use crate::prelude::Wrap;
 use crate::{RbExpr, RbPolarsErr, RbResult};
@@ -37,5 +37,14 @@ impl RbDataTypeExpr {
             .into_datatype(&schema.0)
             .map_err(RbPolarsErr::from)?;
         Ok(Wrap(dtype).into_value_with(ruby))
+    }
+
+    pub fn struct_with_fields(rb_fields: RArray) -> RbResult<Self> {
+        let mut fields = Vec::new();
+        for v in rb_fields.into_iter() {
+            let (name, dt_expr) = <(String, &RbDataTypeExpr)>::try_convert(v)?;
+            fields.push((PlSmallStr::from_string(name), dt_expr.inner.clone()));
+        }
+        Ok(DataTypeExpr::StructWithFields(fields).into())
     }
 }

@@ -28,5 +28,35 @@ module Polars
     def self_dtype
       DataTypeExpr._from_rbdatatype_expr(RbDataTypeExpr.self_dtype)
     end
+
+    # Create a new datatype expression that represents a Struct datatype.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @return [DataTypeExpr]
+    def struct_with_fields(
+      mapping
+    )
+      preprocess = lambda do |dtype_expr|
+        if dtype_expr.is_a?(DataType)
+          dtype_expr.to_dtype_expr._rbdatatype_expr
+        elsif dtype_expr < DataType
+          dtype_expr.to_dtype_expr._rbdatatype_expr
+        elsif dtype_expr.is_a?(DataTypeExpr)
+          dtype_expr._rbdatatype_expr
+        else
+          msg = "mapping item must be a datatype or datatype expression; found #{dtype_expr.inspect}"
+          raise TypeError, msg
+        end
+      end
+
+      fields = mapping.map { |name, dtype_expr| [name.to_s, preprocess.(dtype_expr)]  }
+
+      DataTypeExpr._from_rbdatatype_expr(
+        RbDataTypeExpr.struct_with_fields(fields)
+      )
+    end
   end
 end

@@ -1412,6 +1412,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("of_expr", function!(RbDataTypeExpr::of_expr, 1))?;
     class.define_singleton_method("self_dtype", function!(RbDataTypeExpr::self_dtype, 0))?;
     class.define_method("collect_dtype", method!(RbDataTypeExpr::collect_dtype, 1))?;
+    class.define_singleton_method(
+        "struct_with_fields",
+        function!(RbDataTypeExpr::struct_with_fields, 1),
+    )?;
 
     // selector
     let class = module.define_class("RbSelector", ruby.class_object())?;
