@@ -138,6 +138,19 @@ pub fn time_ranges(
     Ok(dsl::time_ranges(start, end, every, closed).into())
 }
 
+pub fn linear_space(
+    start: &RbExpr,
+    end: &RbExpr,
+    num_samples: &RbExpr,
+    closed: Wrap<ClosedInterval>,
+) -> RbResult<RbExpr> {
+    let start = start.inner.clone();
+    let end = end.inner.clone();
+    let num_samples = num_samples.inner.clone();
+    let closed = closed.0;
+    Ok(dsl::linear_space(start, end, num_samples, closed).into())
+}
+
 pub fn linear_spaces(
     start: &RbExpr,
     end: &RbExpr,
