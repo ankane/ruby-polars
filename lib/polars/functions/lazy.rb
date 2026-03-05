@@ -1568,6 +1568,25 @@ module Polars
       result
     end
 
+    # Explain multiple LazyFrames as if passed to `collect_all`.
+    #
+    # Common Subplan Elimination is applied on the combined plan, meaning
+    # that diverging queries will run only once.
+    #
+    # @param lazy_frames [Array]
+    #   A list of LazyFrames to collect.
+    # @param optimizations [Object]
+    #   The optimization passes done during query optimization.
+    #
+    # @return [String]
+    def explain_all(
+      lazy_frames,
+      optimizations: DEFAULT_QUERY_OPT_FLAGS
+    )
+      lfs = lazy_frames.map { |lf| lf._ldf }
+      Plr.explain_all(lfs, optimizations._rboptflags)
+    end
+
     # Run polars expressions without a context.
     #
     # This is syntactic sugar for running `df.select` on an empty DataFrame.

@@ -1,5 +1,6 @@
 ## 0.25.1 (unreleased)
 
+- Added `explain_all` method to `Polars`
 - Fixed `storage_options` option for `scan_parquet` and `scan_ipc` methods
 
 ## 0.25.0 (2026-02-18)

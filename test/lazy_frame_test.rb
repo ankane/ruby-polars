@@ -77,6 +77,11 @@ class LazyFrameTest < Minitest::Test
     assert_match "PROJECT", df.select("a").explain(format: "tree", optimized: true)
   end
 
+  def test_explain_all
+    df = Polars::DataFrame.new({"a" => [1, 2, 3]}).lazy
+    assert_match "PROJECT", Polars.explain_all([df.select("a")])
+  end
+
   def test_collect_background
     df = Polars::DataFrame.new({"a" => [1, 2, 3]})
     assert_frame df, df.lazy.collect(background: true).fetch_blocking

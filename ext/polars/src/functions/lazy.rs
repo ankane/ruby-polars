@@ -130,6 +130,13 @@ pub fn collect_all(
     Ok(ruby.ary_from_iter(dfs.into_iter().map(Into::<RbDataFrame>::into)))
 }
 
+pub fn explain_all(rb: &Ruby, lfs: RArray, optflags: &RbOptFlags) -> RbResult<String> {
+    let plans = lfs_to_plans(lfs)?;
+    let explained =
+        rb.enter_polars(|| LazyFrame::explain_all(plans, optflags.clone().inner.into_inner()))?;
+    Ok(explained)
+}
+
 pub fn collect_all_lazy(lfs: RArray, optflags: &RbOptFlags) -> RbResult<RbLazyFrame> {
     let plans = lfs_to_plans(lfs)?;
 
