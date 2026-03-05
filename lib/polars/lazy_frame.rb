@@ -1228,6 +1228,134 @@ module Polars
       LazyFrame._from_rbldf(ldf_rb)
     end
 
+    # Sink DataFrame as delta table.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param target [Object]
+    #   URI of a table or a DeltaTable object.
+    # @param mode ['error', 'append', 'overwrite', 'ignore', 'merge']
+    #   How to handle existing data.
+    #
+    #   - If 'error', throw an error if the table already exists (default).
+    #   - If 'append', will add new data.
+    #   - If 'overwrite', will replace table with new data.
+    #   - If 'ignore', will not write anything if table already exists.
+    #   - If 'merge', return a `TableMerger` object to merge data from the DataFrame
+    #     with the existing data.
+    # @param storage_options [Object]
+    #     Extra options for the storage backends supported by `deltalake`.
+    #     For cloud storages, this may include configurations for authentication etc.
+    #
+    #     - See a list of supported storage options for S3 [here](https://docs.rs/object_store/latest/object_store/aws/enum.AmazonS3ConfigKey.html#variants).
+    #     - See a list of supported storage options for GCS [here](https://docs.rs/object_store/latest/object_store/gcp/enum.GoogleConfigKey.html#variants).
+    #     - See a list of supported storage options for Azure [here](https://docs.rs/object_store/latest/object_store/azure/enum.AzureConfigKey.html#variants).
+    # @param credential_provider [Object]
+    #   Provide a function that can be called to provide cloud storage
+    #   credentials. The function is expected to return a dictionary of
+    #   credential keys along with an optional credential expiry time.
+    # @param delta_write_options [Hash]
+    #   Additional keyword arguments while writing a Delta lake Table.
+    #   See a list of supported write options [here](https://delta-io.github.io/delta-rs/api/delta_writer/#deltalake.write_deltalake).
+    # @param delta_merge_options [Hash]
+    #   Keyword arguments which are required to `MERGE` a Delta lake Table.
+    #   See a list of supported merge options [here](https://delta-io.github.io/delta-rs/api/delta_table/#deltalake.DeltaTable.merge).
+    # @param engine [String]
+    #   Select the engine used to process the query, optional.
+    #   At the moment, if set to `"auto"` (default), the query is run
+    #   using the polars streaming engine. Polars will also
+    #   attempt to use the engine set by the `POLARS_ENGINE_AFFINITY`
+    #   environment variable. If it cannot run the query using the
+    #   selected engine, the query is run using the polars streaming
+    #   engine.
+    # @param optimizations [Object]
+    #   The optimization passes done during query optimization.
+    #
+    # @return [Object]
+    def sink_delta(
+      target,
+      mode: "error",
+      storage_options: nil,
+      credential_provider: "auto",
+      delta_write_options: nil,
+      delta_merge_options: nil,
+      optimizations: DEFAULT_QUERY_OPT_FLAGS
+    )
+      Polars.send(:_check_if_delta_available)
+
+      # TODO
+      # _check_for_unsupported_types(collect_schema.dtypes)
+
+      if Utils.pathlike?(target)
+        target = Polars.send(:_resolve_delta_lake_uri, target.to_s, strict: false)
+      end
+
+      _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
+
+      if !target.is_a?(DeltaLake::Table)
+        credential_provider_builder = _init_credential_provider_builder.(
+          credential_provider, target, storage_options, "sink_delta"
+        )
+      elsif !credential_provider.nil? && credential_provider != "auto"
+        msg = "cannot use credential_provider when passing a DeltaTable object"
+        raise ArgumentError, msg
+      else
+        credential_provider_builder = nil
+      end
+
+      credential_provider_creds = {}
+
+      if credential_provider_builder
+        raise Todo
+      end
+
+      # We aren't calling into polars-native write functions so we just update
+      # the storage_options here.
+      storage_options =
+        if !storage_options.nil? || !credential_provider_builder.nil?
+          (storage_options || {}).merge(credential_provider_creds)
+        else
+          nil
+        end
+
+      stream = collect_batches(
+        engine: "streaming",
+        maintain_order: true,
+        chunk_size: nil,
+        lazy: true,
+        optimizations: optimizations
+      )
+
+      if mode == "merge"
+        if delta_merge_options.nil?
+          msg = "you need to pass delta_merge_options with at least a given predicate for `MERGE` to work."
+          raise ArgumentError, msg
+        end
+        if target.is_a?(::String)
+          dt = DeltaLake::Table.new(target, storage_options: storage_options)
+        else
+          dt = target
+        end
+
+        dt.merge(stream, **delta_merge_options)
+      else
+        if delta_write_options.nil?
+          delta_write_options = {}
+        end
+
+        DeltaLake.write(
+          target,
+          stream,
+          mode: mode,
+          storage_options: storage_options,
+          **delta_write_options
+        )
+        nil
+      end
+    end
+
     # Evaluate the query in streaming mode and write to an IPC file.
     #
     # This allows streaming results that are larger than RAM to be written to disk.

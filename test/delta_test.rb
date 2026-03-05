@@ -104,4 +104,13 @@ class DeltaTest < Minitest::Test
     expected = Polars::DataFrame.new({"a" => [2, 3, 1], "b" => ["four", "five", "one"]})
     assert_equal expected, Polars.read_delta(path)
   end
+
+  def test_sink_delta
+    skip "TODO: fix"
+
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    path = temp_path
+    assert_nil df.lazy.sink_delta(path)
+    assert_equal df, Polars.read_delta(path)
+  end
 end
