@@ -168,7 +168,17 @@ pub unsafe fn register_startup_deps(catch_keyboard_interrupt: bool) {
                         .into_value_with(rb))
                     })
                 }),
-                schema: Arc::new(|_schema| Ruby::attach(|_rb| todo!())),
+                schema: Arc::new(|schema| {
+                    Ruby::attach(|rb| {
+                        Ok(Wrap(
+                            schema
+                                .downcast_ref::<polars_core::schema::Schema>()
+                                .unwrap()
+                                .clone(),
+                        )
+                        .into_value_with(rb))
+                    })
+                }),
             },
         });
 

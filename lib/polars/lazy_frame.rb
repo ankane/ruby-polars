@@ -262,6 +262,59 @@ module Polars
       function.(self, *args, **kwargs, &block)
     end
 
+    # Allows to alter the lazy frame during the plan stage with the resolved schema.
+    #
+    # In contrast to `pipe`, this method does not execute `function` immediately but
+    # only during the plan stage. This allows to use the resolved schema of the input
+    # to dynamically alter the lazy frame. This also means that any exceptions raised
+    # by `function` will only be emitted during the plan stage.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed at any
+    #   point without it being considered a breaking change.
+    #
+    # @param function [Object]
+    #   Callable; will receive the frame as the first parameter and the resolved
+    #   schema as the second parameter.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   cast_to_float_if_necessary = lambda do |lf, schema|
+    #     required_casts =
+    #       schema.filter_map do |name, dtype|
+    #         Polars.col(name).cast(Polars::Float64) if !dtype.float?
+    #       end
+    #     lf.with_columns(required_casts)
+    #   end
+    #   lf = Polars::LazyFrame.new(
+    #     {"a" => [1.0, 2.0], "b" => ["1.0", "2.5"], "c" => [2.0, 3.0]},
+    #     schema: {"a" => Polars::Float64, "b" => Polars::String, "c" => Polars::Float32}
+    #   )
+    #   lf.pipe_with_schema(cast_to_float_if_necessary).collect
+    #   # =>
+    #   # shape: (2, 3)
+    #   # ┌─────┬─────┬─────┐
+    #   # │ a   ┆ b   ┆ c   │
+    #   # │ --- ┆ --- ┆ --- │
+    #   # │ f64 ┆ f64 ┆ f32 │
+    #   # ╞═════╪═════╪═════╡
+    #   # │ 1.0 ┆ 1.0 ┆ 2.0 │
+    #   # │ 2.0 ┆ 2.5 ┆ 3.0 │
+    #   # └─────┴─────┴─────┘
+    def pipe_with_schema(function)
+      wrapper = lambda do |lf_and_schema|
+        # The last index is because we return a list for multiple inputs
+        # to make `pipe_with_schemas` (plural) work, but we don't use that
+        function.(
+          _from_rbldf(lf_and_schema[0][0]),
+          lf_and_schema[1][0]
+        )._ldf
+      end
+
+      _from_rbldf(_ldf.pipe_with_schema(wrapper))
+    end
+
     # Creates a summary of statistics for a LazyFrame, returning a DataFrame.
     #
     # @param percentiles [Array]

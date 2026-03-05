@@ -935,6 +935,13 @@ impl RbLazyFrame {
             .into())
     }
 
+    pub fn pipe_with_schema(&self, callback: Value) -> Self {
+        let ldf = self.ldf.read().clone();
+        let function = RubyObject::from(callback);
+        ldf.pipe_with_schema(PlanCallback::new_ruby(function))
+            .into()
+    }
+
     pub fn rename(&self, existing: Vec<String>, new: Vec<String>, strict: bool) -> Self {
         let ldf = self.ldf.read().clone();
         ldf.rename(existing, new, strict).into()

@@ -650,6 +650,16 @@ impl TryConvert for Wrap<ScanSources> {
     }
 }
 
+impl IntoValue for Wrap<Schema> {
+    fn into_value_with(self, ruby: &Ruby) -> Value {
+        let dict = ruby.hash_new();
+        for (k, v) in self.0.iter() {
+            dict.aset(k.as_str(), Wrap(v.clone())).unwrap();
+        }
+        dict.as_value()
+    }
+}
+
 #[derive(Clone)]
 pub struct ObjectValue {
     pub inner: Opaque<Value>,
