@@ -19,6 +19,8 @@ use crate::io::sink_options::RbSinkOptions;
 use crate::io::sink_output::RbFileSinkDestination;
 use crate::ruby::gvl::GvlExt;
 use crate::ruby::lazy::RubyUdfLazyFrameExt;
+use crate::ruby::plan_callback::PlanCallbackExt;
+use crate::ruby::ruby_function::RubyObject;
 use crate::utils::{EnterPolarsExt, to_rb_err};
 use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
 
@@ -590,6 +592,20 @@ impl RbLazyFrame {
             )
         })
         .map(Into::into)
+    }
+
+    pub fn sink_batches(
+        rb: &Ruby,
+        self_: &Self,
+        function: Value,
+        maintain_order: bool,
+        chunk_size: Option<NonZeroUsize>,
+    ) -> RbResult<RbLazyFrame> {
+        let ldf = self_.ldf.read().clone();
+        // ensure new_ruby is called with GVL
+        let callback = PlanCallback::new_ruby(RubyObject::from(function));
+        rb.enter_polars(|| ldf.sink_batches(callback, maintain_order, chunk_size))
+            .map(Into::into)
     }
 
     pub fn filter(&self, predicate: &RbExpr) -> Self {

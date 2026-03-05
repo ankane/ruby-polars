@@ -180,4 +180,11 @@ class CsvTest < Minitest::Test
     assert_equal ["column_1", "column_2"], df.columns
     assert_equal 4, df.height
   end
+
+  def test_sink_batches
+    lf = Polars.scan_csv("test/support/data.csv")
+    batches = []
+    assert_nil lf.sink_batches { |df| batches << df }
+    assert_equal [lf.collect], batches
+  end
 end

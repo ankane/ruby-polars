@@ -1591,6 +1591,71 @@ module Polars
       LazyFrame._from_rbldf(ldf_rb)
     end
 
+    # Evaluate the query and call a user-defined function for every ready batch.
+    #
+    # This allows streaming results that are larger than RAM in certain cases.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @note
+    #   This method is much slower than native sinks. Only use it if you cannot
+    #   implement your logic otherwise.
+    #
+    # @param chunk_size [Integer]
+    #   The number of rows that are buffered before the callback is called.
+    # @param maintain_order [Boolean]
+    #   Maintain the order in which data is processed.
+    #   Setting this to `false` will be slightly faster.
+    # @param lazy [Boolean]
+    #   Wait to start execution until `collect` is called.
+    # @param engine [String]
+    #   Select the engine used to process the query, optional.
+    #   At the moment, if set to `"auto"` (default), the query is run
+    #   using the polars streaming engine. Polars will also
+    #   attempt to use the engine set by the `POLARS_ENGINE_AFFINITY`
+    #   environment variable. If it cannot run the query using the
+    #   selected engine, the query is run using the polars streaming
+    #   engine.
+    # @param optimizations [Object]
+    #   The optimization passes done during query optimization.
+    #
+    #   This has no effect if `lazy` is set to `True`.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   lf = Polars.scan_csv("/path/to/my_larger_than_ram_file.csv")
+    #   lf.sink_batches { |df| p df }
+    def sink_batches(
+      chunk_size: nil,
+      maintain_order: true,
+      lazy: false,
+      engine: "auto",
+      optimizations: DEFAULT_QUERY_OPT_FLAGS,
+      &function
+    )
+      _wrap = lambda do |rbdf|
+        df = Utils.wrap_df(rbdf)
+        !!function.(df)
+      end
+
+      ldf = _ldf.sink_batches(
+        _wrap,
+        maintain_order,
+        chunk_size
+      )
+
+      if !lazy
+        ldf = ldf.with_optimizations(optimizations._rboptflags)
+        lf = LazyFrame._from_rbldf(ldf)
+        lf.collect(engine: engine)
+        return nil
+      end
+      LazyFrame._from_rbldf(ldf)
+    end
+
     # Evaluate the query in streaming mode and get a generator that returns chunks.
     #
     # This allows streaming results that are larger than RAM to be written to disk.

@@ -945,6 +945,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("sink_ipc", method!(RbLazyFrame::sink_ipc, 6))?;
     class.define_method("sink_csv", method!(RbLazyFrame::sink_csv, -1))?;
     class.define_method("sink_ndjson", method!(RbLazyFrame::sink_ndjson, 5))?;
+    class.define_method("sink_batches", method!(RbLazyFrame::sink_batches, 3))?;
     class.define_method("filter", method!(RbLazyFrame::filter, 1))?;
     class.define_method("remove", method!(RbLazyFrame::remove, 1))?;
     class.define_method("select", method!(RbLazyFrame::select, 1))?;
