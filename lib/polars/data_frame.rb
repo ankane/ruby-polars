@@ -6687,6 +6687,76 @@ module Polars
       .collect(optimizations: QueryOptFlags._eager)
     end
 
+    # Match or evolve the schema of a LazyFrame into a specific schema.
+    #
+    # By default, match_to_schema returns an error if the input schema does not
+    # exactly match the target schema. It also allows columns to be freely reordered,
+    # with additional coercion rules available through optional parameters.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param schema [Object]
+    #   Target schema to match or evolve to.
+    # @param missing_columns [Object]
+    #   Raise of insert missing columns from the input with respect to the `schema`.
+    #
+    #   This can also be an expression per column with what to insert if it is
+    #   missing.
+    # @param missing_struct_fields [Object]
+    #   Raise of insert missing struct fields from the input with respect to the
+    #   `schema`.
+    # @param extra_columns [Object]
+    #   Raise of ignore extra columns from the input with respect to the `schema`.
+    # @param extra_struct_fields [Object]
+    #   Raise of ignore extra struct fields from the input with respect to the
+    #   `schema`.
+    # @param integer_cast [Object]
+    #   Forbid of upcast for integer columns from the input to the respective column
+    #   in `schema`.
+    # @param float_cast [Object]
+    #   Forbid of upcast for float columns from the input to the respective column
+    #   in `schema`.
+    #
+    # @return [DataFrame]
+    #
+    # @example Ensuring the schema matches
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["A", "B", "C"]})
+    #   df.match_to_schema({"a" => Polars::Int64, "b" => Polars::String})
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ str │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ A   │
+    #   # │ 2   ┆ B   │
+    #   # │ 3   ┆ C   │
+    #   # └─────┴─────┘
+    def match_to_schema(
+      schema,
+      missing_columns: "raise",
+      missing_struct_fields: "raise",
+      extra_columns: "raise",
+      extra_struct_fields: "raise",
+      integer_cast: "forbid",
+      float_cast: "forbid"
+    )
+      lazy
+      .match_to_schema(
+        schema,
+        missing_columns: missing_columns,
+        missing_struct_fields: missing_struct_fields,
+        extra_columns: extra_columns,
+        extra_struct_fields: extra_struct_fields,
+        integer_cast: integer_cast,
+        float_cast: float_cast
+      )
+      .collect(optimizations: QueryOptFlags._eager)
+    end
+
     private
 
     def initialize_copy(other)
