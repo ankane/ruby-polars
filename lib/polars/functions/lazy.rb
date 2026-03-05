@@ -1890,6 +1890,79 @@ module Polars
       end
     end
 
+    # Generates a sequence of integers.
+    #
+    # The length of the returned sequence will match the context length, and the
+    # datatype will match the one returned by `get_index_dtype()`.
+    #
+    # If you would like to generate sequences with custom offsets / length /
+    # step size / datatypes, it is recommended to use `int_range` instead.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param name [String]
+    #   Name of the returned column.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => ["A", "A", "B", "B", "B"]})
+    #   df.with_columns(Polars.row_index, Polars.row_index("another_index"))
+    #   # =>
+    #   # shape: (5, 3)
+    #   # ┌─────┬───────┬───────────────┐
+    #   # │ x   ┆ index ┆ another_index │
+    #   # │ --- ┆ ---   ┆ ---           │
+    #   # │ str ┆ u32   ┆ u32           │
+    #   # ╞═════╪═══════╪═══════════════╡
+    #   # │ A   ┆ 0     ┆ 0             │
+    #   # │ A   ┆ 1     ┆ 1             │
+    #   # │ B   ┆ 2     ┆ 2             │
+    #   # │ B   ┆ 3     ┆ 3             │
+    #   # │ B   ┆ 4     ┆ 4             │
+    #   # └─────┴───────┴───────────────┘
+    #
+    # @example
+    #   df.group_by("x").agg(Polars.row_index).sort("x")
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬───────────┐
+    #   # │ x   ┆ index     │
+    #   # │ --- ┆ ---       │
+    #   # │ str ┆ list[u32] │
+    #   # ╞═════╪═══════════╡
+    #   # │ A   ┆ [0, 1]    │
+    #   # │ B   ┆ [0, 1, 2] │
+    #   # └─────┴───────────┘
+    #
+    # @example
+    #   df.select(Polars.row_index)
+    #   # =>
+    #   # shape: (5, 1)
+    #   # ┌───────┐
+    #   # │ index │
+    #   # │ ---   │
+    #   # │ u32   │
+    #   # ╞═══════╡
+    #   # │ 0     │
+    #   # │ 1     │
+    #   # │ 2     │
+    #   # │ 3     │
+    #   # │ 4     │
+    #   # └───────┘
+    def row_index(name = "index")
+      # Notes
+      # * Dispatching to `int_range` means that we cannot accept an offset
+      #   parameter, as unlike `DataFrame.with_row_index`, `int_range` will simply
+      #   truncate instead of raising an error.
+      F.int_range(
+        F.len,
+        dtype: get_index_type
+      ).alias(name)
+    end
+
     private
 
     def _wrap_acc_lambda(function)
