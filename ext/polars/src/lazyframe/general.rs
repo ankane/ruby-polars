@@ -1,3 +1,4 @@
+use arrow::ffi::export_iterator;
 use magnus::{
     IntoValue, RArray, RHash, Ruby, TryConvert, Value, r_hash::ForEach, value::ReprValue,
 };
@@ -22,7 +23,10 @@ use crate::ruby::lazy::RubyUdfLazyFrameExt;
 use crate::ruby::plan_callback::PlanCallbackExt;
 use crate::ruby::ruby_function::RubyObject;
 use crate::utils::{EnterPolarsExt, to_rb_err};
-use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbTypeError, RbValueError};
+use crate::{
+    RbArrowArrayStream, RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbTypeError,
+    RbValueError,
+};
 
 fn rbobject_to_first_path_and_scan_sources(
     obj: Value,
@@ -430,7 +434,7 @@ impl RbLazyFrame {
 
             PolarsResult::Ok(RbCollectBatches {
                 inner: Arc::new(Mutex::new(collect_batches)),
-                _ldf: ldf,
+                ldf,
             })
         })
     }
@@ -1274,12 +1278,63 @@ impl RbLazyFrame {
 #[magnus::wrap(class = "Polars::RbCollectBatches")]
 pub struct RbCollectBatches {
     inner: Arc<Mutex<CollectBatches>>,
-    _ldf: LazyFrame,
+    ldf: LazyFrame,
 }
 
 impl RbCollectBatches {
     pub fn next(rb: &Ruby, slf: &Self) -> RbResult<Option<RbDataFrame>> {
         let inner = Arc::clone(&slf.inner);
         rb.enter_polars(|| PolarsResult::Ok(inner.lock().next().transpose()?.map(RbDataFrame::new)))
+    }
+
+    pub fn __arrow_c_stream__(rb: &Ruby, self_: &Self) -> RbResult<Value> {
+        let mut ldf = self_.ldf.clone();
+        let schema = ldf
+            .collect_schema()
+            .map_err(RbPolarsErr::from)?
+            .to_arrow(CompatLevel::newest());
+
+        let dtype = ArrowDataType::Struct(schema.into_iter_values().collect());
+
+        let iter = Box::new(ArrowStreamIterator::new(self_.inner.clone(), dtype.clone()));
+        let field = ArrowField::new(PlSmallStr::EMPTY, dtype, false);
+        let stream = export_iterator(iter, field);
+        Ok(RbArrowArrayStream { stream }.into_value_with(rb))
+    }
+}
+
+pub struct ArrowStreamIterator {
+    inner: Arc<Mutex<CollectBatches>>,
+    dtype: ArrowDataType,
+}
+
+impl ArrowStreamIterator {
+    fn new(inner: Arc<Mutex<CollectBatches>>, schema: ArrowDataType) -> Self {
+        Self {
+            inner,
+            dtype: schema,
+        }
+    }
+}
+
+impl Iterator for ArrowStreamIterator {
+    type Item = PolarsResult<ArrayRef>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = self.inner.lock().next();
+        match next {
+            None => None,
+            Some(Err(err)) => Some(Err(err)),
+            Some(Ok(df)) => {
+                let height = df.height();
+                let arrays = df.rechunk_into_arrow(CompatLevel::newest());
+                Some(Ok(Box::new(arrow::array::StructArray::new(
+                    self.dtype.clone(),
+                    height,
+                    arrays,
+                    None,
+                ))))
+            }
+        }
     }
 }

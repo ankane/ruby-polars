@@ -106,8 +106,6 @@ class DeltaTest < Minitest::Test
   end
 
   def test_sink_delta
-    skip "TODO: fix"
-
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     path = temp_path
     assert_nil df.lazy.sink_delta(path)

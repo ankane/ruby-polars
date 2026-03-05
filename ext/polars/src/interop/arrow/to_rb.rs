@@ -11,7 +11,7 @@ use crate::RbResult;
 
 #[magnus::wrap(class = "Polars::ArrowArrayStream")]
 pub struct RbArrowArrayStream {
-    stream: ffi::ArrowArrayStream,
+    pub(crate) stream: ffi::ArrowArrayStream,
 }
 
 impl RbArrowArrayStream {

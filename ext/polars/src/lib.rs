@@ -1011,6 +1011,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     let class = module.define_class("RbCollectBatches", ruby.class_object())?;
     class.define_method("next", method!(RbCollectBatches::next, 0))?;
+    class.define_method(
+        "arrow_c_stream",
+        method!(RbCollectBatches::__arrow_c_stream__, 0),
+    )?;
 
     let class = module.define_class("RbInProcessQuery", ruby.class_object())?;
     class.define_method("cancel", method!(RbInProcessQuery::cancel, 0))?;

@@ -14,5 +14,9 @@ module Polars
         yield DataFrame._from_rbdf(rbdf)
       end
     end
+
+    def arrow_c_stream
+      @inner.arrow_c_stream
+    end
   end
 end
