@@ -1262,18 +1262,17 @@ module Polars
     # @param delta_merge_options [Hash]
     #   Keyword arguments which are required to `MERGE` a Delta lake Table.
     #   See a list of supported merge options [here](https://delta-io.github.io/delta-rs/api/delta_table/#deltalake.DeltaTable.merge).
-    # @param engine [String]
-    #   Select the engine used to process the query, optional.
-    #   At the moment, if set to `"auto"` (default), the query is run
-    #   using the polars streaming engine. Polars will also
-    #   attempt to use the engine set by the `POLARS_ENGINE_AFFINITY`
-    #   environment variable. If it cannot run the query using the
-    #   selected engine, the query is run using the polars streaming
-    #   engine.
     # @param optimizations [Object]
     #   The optimization passes done during query optimization.
     #
     # @return [Object]
+    #
+    # @example Sink a large than fits into memory dataset to a Delta Lake table.
+    #   lf = Polars.scan_parquet(
+    #     "/path/to/my_larger_than_ram_file.parquet"
+    #   )
+    #   table_path = "/path/to/delta-table/"
+    #   lf.sink_delta(table_path)
     def sink_delta(
       target,
       mode: "error",
