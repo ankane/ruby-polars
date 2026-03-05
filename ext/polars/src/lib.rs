@@ -965,6 +965,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "with_columns_seq",
         method!(RbLazyFrame::with_columns_seq, 1),
     )?;
+    class.define_method("match_to_schema", method!(RbLazyFrame::match_to_schema, 7))?;
     class.define_method("rename", method!(RbLazyFrame::rename, 3))?;
     class.define_method("reverse", method!(RbLazyFrame::reverse, 0))?;
     class.define_method("shift", method!(RbLazyFrame::shift, 2))?;

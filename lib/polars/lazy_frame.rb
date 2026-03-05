@@ -5191,6 +5191,181 @@ module Polars
       _from_rbldf(_ldf.count)
     end
 
+    # Match or evolve the schema of a LazyFrame into a specific schema.
+    #
+    # By default, match_to_schema returns an error if the input schema does not
+    # exactly match the target schema. It also allows columns to be freely reordered,
+    # with additional coercion rules available through optional parameters.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param schema [Object]
+    #   Target schema to match or evolve to.
+    # @param missing_columns [Object]
+    #   Raise of insert missing columns from the input with respect to the `schema`.
+    #
+    #   This can also be an expression per column with what to insert if it is
+    #   missing.
+    # @param missing_struct_fields [Object]
+    #   Raise of insert missing struct fields from the input with respect to the
+    #   `schema`.
+    # @param extra_columns [Object]
+    #   Raise of ignore extra columns from the input with respect to the `schema`.
+    # @param extra_struct_fields [Object]
+    #   Raise of ignore extra struct fields from the input with respect to the
+    #   `schema`.
+    # @param integer_cast [Object]
+    #   Forbid of upcast for integer columns from the input to the respective column
+    #   in `schema`.
+    # @param float_cast [Object]
+    #   Forbid of upcast for float columns from the input to the respective column
+    #   in `schema`.
+    #
+    # @return [LazyFrame]
+    #
+    # @example Ensuring the schema matches
+    #   lf = Polars::LazyFrame.new({"a" => [1, 2, 3], "b" => ["A", "B", "C"]})
+    #   lf.match_to_schema({"a" => Polars::Int64, "b" => Polars::String}).collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ str │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ A   │
+    #   # │ 2   ┆ B   │
+    #   # │ 3   ┆ C   │
+    #   # └─────┴─────┘
+    #
+    # @example Adding missing columns
+    #   Polars::LazyFrame.new({"a" => [1, 2, 3]})
+    #   .match_to_schema(
+    #       {"a" => Polars::Int64, "b" => Polars::String},
+    #       missing_columns: "insert"
+    #   )
+    #   .collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬──────┐
+    #   # │ a   ┆ b    │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ str  │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ null │
+    #   # │ 2   ┆ null │
+    #   # │ 3   ┆ null │
+    #   # └─────┴──────┘
+    #
+    # @example
+    #   Polars::LazyFrame.new({"a" => [1, 2, 3]})
+    #   .match_to_schema(
+    #     {"a" => Polars::Int64, "b" => Polars::String},
+    #     missing_columns: {"b" => Polars.col("a").cast(Polars::String)}
+    #   )
+    #   .collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ str │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 1   │
+    #   # │ 2   ┆ 2   │
+    #   # │ 3   ┆ 3   │
+    #   # └─────┴─────┘
+    #
+    # @example Removing extra columns
+    #   Polars::LazyFrame.new({"a" => [1, 2, 3], "b" => ["A", "B", "C"]})
+    #   .match_to_schema(
+    #     {"a" => Polars::Int64},
+    #     extra_columns: "ignore"
+    #   )
+    #   .collect
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌─────┐
+    #   # │ a   │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 1   │
+    #   # │ 2   │
+    #   # │ 3   │
+    #   # └─────┘
+    #
+    # @example Upcasting integers and floats
+    #   Polars::LazyFrame.new(
+    #     {"a" => [1, 2, 3], "b" => [1.0, 2.0, 3.0]},
+    #     schema: {"a" => Polars::Int32, "b" => Polars::Float32}
+    #   )
+    #   .match_to_schema(
+    #     {"a" => Polars::Int64, "b" => Polars::Float64},
+    #     integer_cast: "upcast",
+    #     float_cast: "upcast"
+    #   )
+    #   .collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ f64 │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ 1.0 │
+    #   # │ 2   ┆ 2.0 │
+    #   # │ 3   ┆ 3.0 │
+    #   # └─────┴─────┘
+    def match_to_schema(
+      schema,
+      missing_columns: "raise",
+      missing_struct_fields: "raise",
+      extra_columns: "raise",
+      extra_struct_fields: "raise",
+      integer_cast: "forbid",
+      float_cast: "forbid"
+    )
+      prepare_missing_columns = lambda do |value|
+        if value.is_a?(Expr)
+          value._rbexpr
+        else
+          value
+        end
+      end
+
+      if schema.is_a?(Hash)
+        schema_prep = Schema.new(schema)
+      else
+        schema_prep = schema
+      end
+
+      if missing_columns.is_a?(Hash)
+        missing_columns_rbexpr =
+          missing_columns.to_h do |key, value|
+            [key.to_s, prepare_missing_columns.(value)]
+          end
+      elsif missing_columns.is_a?(Expr)
+        missing_columns_rbexpr = prepare_missing_columns.(missing_columns)
+      else
+        missing_columns_rbexpr = missing_columns
+      end
+
+      LazyFrame._from_rbldf(
+        _ldf.match_to_schema(
+          schema_prep,
+          missing_columns_rbexpr,
+          missing_struct_fields,
+          extra_columns,
+          extra_struct_fields,
+          integer_cast,
+          float_cast
+        )
+      )
+    end
+
     private
 
     def initialize_copy(other)

@@ -22,7 +22,7 @@ use crate::ruby::lazy::RubyUdfLazyFrameExt;
 use crate::ruby::plan_callback::PlanCallbackExt;
 use crate::ruby::ruby_function::RubyObject;
 use crate::utils::{EnterPolarsExt, to_rb_err};
-use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbValueError};
+use crate::{RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbTypeError, RbValueError};
 
 fn rbobject_to_first_path_and_scan_sources(
     obj: Value,
@@ -819,6 +819,120 @@ impl RbLazyFrame {
     pub fn with_columns_seq(&self, exprs: RArray) -> RbResult<Self> {
         let ldf = self.ldf.read().clone();
         Ok(ldf.with_columns_seq(exprs.to_exprs()?).into())
+    }
+
+    pub fn match_to_schema(
+        &self,
+        schema: Wrap<Schema>,
+        missing_columns: Value,
+        missing_struct_fields: Value,
+        extra_columns: Wrap<ExtraColumnsPolicy>,
+        extra_struct_fields: Value,
+        integer_cast: Value,
+        float_cast: Value,
+    ) -> RbResult<Self> {
+        fn parse_missing_columns(
+            schema: &Schema,
+            missing_columns: Value,
+        ) -> RbResult<Vec<MissingColumnsPolicyOrExpr>> {
+            let mut out = Vec::with_capacity(schema.len());
+            if let Ok(policy) = Wrap::<MissingColumnsPolicyOrExpr>::try_convert(missing_columns) {
+                out.extend(std::iter::repeat_n(policy.0, schema.len()));
+            } else if let Ok(dict) = RHash::try_convert(missing_columns) {
+                out.extend(std::iter::repeat_n(
+                    MissingColumnsPolicyOrExpr::Raise,
+                    schema.len(),
+                ));
+                dict.foreach(|key: String, value: Wrap<MissingColumnsPolicyOrExpr>| {
+                    out[schema.try_index_of(&key).map_err(to_rb_err)?] = value.0;
+                    Ok(ForEach::Continue)
+                })?;
+            } else {
+                return Err(RbTypeError::new_err("Invalid value for `missing_columns`"));
+            }
+            Ok(out)
+        }
+        fn parse_missing_struct_fields(
+            schema: &Schema,
+            missing_struct_fields: Value,
+        ) -> RbResult<Vec<MissingColumnsPolicy>> {
+            let mut out = Vec::with_capacity(schema.len());
+            if let Ok(policy) = Wrap::<MissingColumnsPolicy>::try_convert(missing_struct_fields) {
+                out.extend(std::iter::repeat_n(policy.0, schema.len()));
+            } else if let Ok(dict) = RHash::try_convert(missing_struct_fields) {
+                out.extend(std::iter::repeat_n(
+                    MissingColumnsPolicy::Raise,
+                    schema.len(),
+                ));
+                dict.foreach(|key: String, value: Wrap<MissingColumnsPolicy>| {
+                    out[schema.try_index_of(&key).map_err(to_rb_err)?] = value.0;
+                    Ok(ForEach::Continue)
+                })?;
+            } else {
+                return Err(RbTypeError::new_err(
+                    "Invalid value for `missing_struct_fields`",
+                ));
+            }
+            Ok(out)
+        }
+        fn parse_extra_struct_fields(
+            schema: &Schema,
+            extra_struct_fields: Value,
+        ) -> RbResult<Vec<ExtraColumnsPolicy>> {
+            let mut out = Vec::with_capacity(schema.len());
+            if let Ok(policy) = Wrap::<ExtraColumnsPolicy>::try_convert(extra_struct_fields) {
+                out.extend(std::iter::repeat_n(policy.0, schema.len()));
+            } else if let Ok(dict) = RHash::try_convert(extra_struct_fields) {
+                out.extend(std::iter::repeat_n(ExtraColumnsPolicy::Raise, schema.len()));
+                dict.foreach(|key: String, value: Wrap<ExtraColumnsPolicy>| {
+                    out[schema.try_index_of(&key).map_err(to_rb_err)?] = value.0;
+                    Ok(ForEach::Continue)
+                })?;
+            } else {
+                return Err(RbTypeError::new_err(
+                    "Invalid value for `extra_struct_fields`",
+                ));
+            }
+            Ok(out)
+        }
+        fn parse_cast(schema: &Schema, cast: Value) -> RbResult<Vec<UpcastOrForbid>> {
+            let mut out = Vec::with_capacity(schema.len());
+            if let Ok(policy) = Wrap::<UpcastOrForbid>::try_convert(cast) {
+                out.extend(std::iter::repeat_n(policy.0, schema.len()));
+            } else if let Ok(dict) = RHash::try_convert(cast) {
+                out.extend(std::iter::repeat_n(UpcastOrForbid::Forbid, schema.len()));
+                dict.foreach(|key: String, value: Wrap<UpcastOrForbid>| {
+                    out[schema.try_index_of(&key).map_err(to_rb_err)?] = value.0;
+                    Ok(ForEach::Continue)
+                })?;
+            } else {
+                return Err(RbTypeError::new_err(
+                    "Invalid value for `integer_cast` / `float_cast`",
+                ));
+            }
+            Ok(out)
+        }
+
+        let missing_columns = parse_missing_columns(&schema.0, missing_columns)?;
+        let missing_struct_fields = parse_missing_struct_fields(&schema.0, missing_struct_fields)?;
+        let extra_struct_fields = parse_extra_struct_fields(&schema.0, extra_struct_fields)?;
+        let integer_cast = parse_cast(&schema.0, integer_cast)?;
+        let float_cast = parse_cast(&schema.0, float_cast)?;
+
+        let per_column = (0..schema.0.len())
+            .map(|i| MatchToSchemaPerColumn {
+                missing_columns: missing_columns[i].clone(),
+                missing_struct_fields: missing_struct_fields[i],
+                extra_struct_fields: extra_struct_fields[i],
+                integer_cast: integer_cast[i],
+                float_cast: float_cast[i],
+            })
+            .collect();
+
+        let ldf = self.ldf.read().clone();
+        Ok(ldf
+            .match_to_schema(Arc::new(schema.0), per_column, extra_columns.0)
+            .into())
     }
 
     pub fn rename(&self, existing: Vec<String>, new: Vec<String>, strict: bool) -> Self {

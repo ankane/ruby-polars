@@ -37,7 +37,9 @@ use crate::file::{RubyScanSourceInput, get_ruby_scan_source_input};
 use crate::object::OBJECT_NAME;
 use crate::rb_modules::pl_series;
 use crate::utils::to_rb_err;
-use crate::{RbDataFrame, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
+use crate::{
+    RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError,
+};
 
 pub(crate) fn slice_extract_wrapped<T>(slice: &[Wrap<T>]) -> &[T] {
     // Safety:
@@ -1491,6 +1493,21 @@ impl TryConvert for Wrap<Option<TimeZone>> {
 
 unsafe impl TryConvertOwned for Wrap<Option<TimeZone>> {}
 
+impl TryConvert for Wrap<UpcastOrForbid> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "upcast" => UpcastOrForbid::Upcast,
+            "forbid" => UpcastOrForbid::Forbid,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "cast parameter must be one of {{'upcast', 'forbid'}}, got {v}",
+                )));
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<ExtraColumnsPolicy> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match String::try_convert(ob)?.as_str() {
@@ -1514,6 +1531,27 @@ impl TryConvert for Wrap<MissingColumnsPolicy> {
             v => {
                 return Err(RbValueError::new_err(format!(
                     "missing column/field parameter must be one of {{'insert', 'raise'}}, got {v}",
+                )));
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
+impl TryConvert for Wrap<MissingColumnsPolicyOrExpr> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        if let Ok(rbexpr) = <&RbExpr>::try_convert(ob) {
+            return Ok(Wrap(MissingColumnsPolicyOrExpr::InsertWith(
+                rbexpr.inner.clone(),
+            )));
+        }
+
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "insert" => MissingColumnsPolicyOrExpr::Insert,
+            "raise" => MissingColumnsPolicyOrExpr::Raise,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "missing column/field parameter must be one of {{'insert', 'raise', expression}}, got {v}",
                 )));
             }
         };
