@@ -1,7 +1,4 @@
-use std::sync::Arc;
-
 use magnus::{Ruby, Value, value::Opaque, value::ReprValue};
-use polars_plan::dsl::SpecialEq;
 use polars_plan::prelude::PlanCallback;
 
 use crate::RbResult;
@@ -196,6 +193,6 @@ impl<Args: PlanCallbackArgs + Send + 'static, Out: PlanCallbackOut + Send + 'sta
             f(args, *udf.0)
         };
 
-        Self::Rust(SpecialEq::new(Arc::new(f) as _))
+        Self::new(f)
     }
 }
