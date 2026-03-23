@@ -77,6 +77,22 @@ class SeriesTest < Minitest::Test
     assert_series [1, nil, 3], s.struct["f1"], dtype: Polars::Int64
   end
 
+  def test_new_struct_different_keys
+    s = Polars::Series.new([{"f1" => 1}, nil, {"f2" => 3.5}])
+    # same behavior as Python
+    assert_series [{"f1" => 1}, nil, {"f1" => nil}], s, dtype: Polars::Struct
+    assert_equal({"f1" => Polars::Int64}, s.dtype.to_schema)
+    assert_series [1, nil, nil], s.struct["f1"], dtype: Polars::Int64
+  end
+
+  def test_new_struct_different_keys_dtype
+    s = Polars::Series.new([{"f1" => 1}, nil, {"f2" => 3.5}], dtype: Polars::Struct)
+    assert_series [{"f1" => 1, "f2" => nil}, nil, {"f1" => nil, "f2" => 3.5}], s, dtype: Polars::Struct
+    assert_equal({"f1" => Polars::Int64, "f2" => Polars::Float64}, s.dtype.to_schema)
+    assert_series [1, nil, nil], s.struct["f1"], dtype: Polars::Int64
+    assert_series [nil, nil, 3.5], s.struct["f2"], dtype: Polars::Float64
+  end
+
   def test_new_struct_nested
     data = [
       {"a" => {"b" => {"c" => 1}}},
