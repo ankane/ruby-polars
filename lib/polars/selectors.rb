@@ -806,7 +806,7 @@ module Polars
     # @example Select all struct columns:
     #   df = Polars::DataFrame.new(
     #     {
-    #       "foo" => [{"a": "xx", "b": "z"}, {"a": "x", "b": "y"}],
+    #       "foo" => [{"a" => "xx", "b" => "z"}, {"a" => "x", "b" => "y"}],
     #       "bar" => [123, 456],
     #       "baz" => [2.0, 5.5]
     #     }

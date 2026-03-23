@@ -64,10 +64,17 @@ class SeriesTest < Minitest::Test
   end
 
   def test_new_struct
-    s = Polars::Series.new([{"f1" => 1}, {"f1" => 2}])
-    assert_series [{"f1" => 1}, {"f1" => 2}], s, dtype: Polars::Struct
+    s = Polars::Series.new([{"f1" => 1}, nil, {"f1" => 3}])
+    assert_series [{"f1" => 1}, nil, {"f1" => 3}], s, dtype: Polars::Struct
     assert_equal({"f1" => Polars::Int64}, s.dtype.to_schema)
-    assert_series [1, 2], s.struct["f1"], dtype: Polars::Int64
+    assert_series [1, nil, 3], s.struct["f1"], dtype: Polars::Int64
+  end
+
+  def test_new_struct_symbol_keys
+    s = Polars::Series.new([{f1: 1}, nil, {f1: 3}])
+    assert_series [{"f1" => 1}, nil, {"f1" => 3}], s, dtype: Polars::Struct
+    assert_equal({"f1" => Polars::Int64}, s.dtype.to_schema)
+    assert_series [1, nil, 3], s.struct["f1"], dtype: Polars::Int64
   end
 
   def test_new_struct_nested

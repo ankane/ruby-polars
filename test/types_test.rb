@@ -179,13 +179,13 @@ class TypesTest < Minitest::Test
   end
 
   def test_series_dtype_struct
-    s = Polars::Series.new([{"a" => 1}, {"a" => 2}], dtype: Polars::Struct)
-    assert_series [{"a" => 1}, {"a" => 2}], s, dtype: Polars::Struct
+    s = Polars::Series.new([{"a" => 1}, nil, {"a" => 3}], dtype: Polars::Struct)
+    assert_series [{"a" => 1}, nil, {"a" => 3}], s, dtype: Polars::Struct
   end
 
   def test_series_dtype_struct_fields
-    s = Polars::Series.new([{"a" => 1}, {"a" => 2}], dtype: Polars::Struct.new([Polars::Field.new("a", Polars::Int64)]))
-    assert_series [{"a" => 1}, {"a" => 2}], s, dtype: Polars::Struct.new([Polars::Field.new("a", Polars::Int64)])
+    s = Polars::Series.new([{"a" => 1}, nil, {"a" => 3}], dtype: Polars::Struct.new([Polars::Field.new("a", Polars::Int64)]))
+    assert_series [{"a" => 1}, nil, {"a" => 3}], s, dtype: Polars::Struct.new([Polars::Field.new("a", Polars::Int64)])
   end
 
   def test_series_dtype_object

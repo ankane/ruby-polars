@@ -2,6 +2,7 @@
 
 - Added `explain_all` method to `Polars`
 - Fixed `storage_options` option for `scan_parquet` and `scan_ipc` methods
+- Fixed `Struct` construction with `nil` values
 
 ## 0.25.0 (2026-02-18)
 

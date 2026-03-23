@@ -4,9 +4,10 @@ use num_traits::AsPrimitive;
 use polars::prelude::*;
 
 use crate::any_value::rb_object_to_any_value;
-use crate::conversion::{Wrap, slice_extract_wrapped, vec_extract_wrapped};
+use crate::conversion::Wrap;
 use crate::prelude::ObjectValue;
-use crate::{RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError};
+use crate::ruby::gvl::GvlExt;
+use crate::{RbResult, RbSeries, RbTypeError, RbValueError};
 
 pub fn series_from_objects(rb: &Ruby, name: PlSmallStr, objects: Vec<ObjectValue>) -> Series {
     let mut validity = BitmapBuilder::with_capacity(objects.len());
@@ -107,21 +108,26 @@ impl RbSeries {
     }
 }
 
-fn vec_wrap_any_value<'s>(arr: RArray) -> RbResult<Vec<Wrap<AnyValue<'s>>>> {
-    let mut val = Vec::with_capacity(arr.len());
-    for v in arr.into_iter() {
-        val.push(Wrap::<AnyValue<'s>>::try_convert(v)?);
-    }
-    Ok(val)
+fn convert_to_avs(
+    values: RArray,
+    strict: bool,
+    allow_object: bool,
+) -> RbResult<Vec<AnyValue<'static>>> {
+    values
+        .into_iter()
+        .map(|v| rb_object_to_any_value(v, strict, allow_object))
+        .collect()
 }
 
 impl RbSeries {
     pub fn new_from_any_values(name: String, values: RArray, strict: bool) -> RbResult<Self> {
-        let any_values_result = vec_wrap_any_value(values);
-        // from anyvalues is fallible
+        let any_values_result = values
+            .into_iter()
+            .map(|v| rb_object_to_any_value(v, strict, true))
+            .collect::<RbResult<Vec<AnyValue>>>();
+
         let result = any_values_result.and_then(|avs| {
-            let avs = slice_extract_wrapped(&avs);
-            let s = Series::from_any_values(name.clone().into(), avs, strict).map_err(|e| {
+            let s = Series::from_any_values(name.clone().into(), avs.as_slice(), strict).map_err(|e| {
                 RbTypeError::new_err(format!(
                     "{e}\n\nHint: Try setting `strict: false` to allow passing data with mixed types."
                 ))
@@ -131,7 +137,7 @@ impl RbSeries {
 
         // Fall back to Object type for non-strict construction.
         if !strict && result.is_err() {
-            return Self::new_object(name, values, strict);
+            return Ruby::attach(|rb| Self::new_object(rb, name, values, strict));
         }
 
         result
@@ -143,21 +149,13 @@ impl RbSeries {
         dtype: Wrap<DataType>,
         strict: bool,
     ) -> RbResult<Self> {
-        let any_values = values
-            .into_iter()
-            .map(|v| rb_object_to_any_value(v, strict))
-            .collect::<RbResult<Vec<AnyValue>>>()?;
-        let s = Series::from_any_values_and_dtype(
-            name.into(),
-            any_values.as_slice(),
-            &dtype.0,
-            strict,
-        )
-        .map_err(|e| {
-            RbTypeError::new_err(format!(
-                "{e}\n\nHint: Try setting `strict: false` to allow passing data with mixed types."
-            ))
-        })?;
+        let avs = convert_to_avs(values, strict, false)?;
+        let s = Series::from_any_values_and_dtype(name.into(), avs.as_slice(), &dtype.0, strict)
+            .map_err(|e| {
+                RbTypeError::new_err(format!(
+                    "{e}\n\nHint: Try setting `strict: false` to allow passing data with mixed types."
+                ))
+            })?;
         Ok(s.into())
     }
 
@@ -204,7 +202,7 @@ impl RbSeries {
         Ok(Series::new_null(name.into(), len).into())
     }
 
-    pub fn new_object(name: String, val: RArray, _strict: bool) -> RbResult<Self> {
+    pub fn new_object(_rb: &Ruby, name: String, val: RArray, _strict: bool) -> RbResult<Self> {
         let val = val
             .into_iter()
             .map(ObjectValue::from)
@@ -233,29 +231,12 @@ impl RbSeries {
     }
 
     pub fn new_array(
-        width: usize,
-        inner: Option<Wrap<DataType>>,
         name: String,
-        val: RArray,
-        _strict: bool,
+        values: RArray,
+        strict: bool,
+        dtype: Wrap<DataType>,
     ) -> RbResult<Self> {
-        let val = vec_wrap_any_value(val)?;
-        let val = vec_extract_wrapped(val);
-        let out = Series::new(name.into(), &val);
-        match out.dtype() {
-            DataType::List(list_inner) => {
-                let out = out
-                    .cast(&DataType::Array(
-                        Box::new(inner.map(|dt| dt.0).unwrap_or(*list_inner.clone())),
-                        width,
-                    ))
-                    .map_err(RbPolarsErr::from)?;
-                Ok(out.into())
-            }
-            _ => Err(RbValueError::new_err(
-                "could not create Array from input".to_string(),
-            )),
-        }
+        Self::new_from_any_values_and_dtype(name, values, dtype, strict)
     }
 
     pub fn new_decimal(name: String, values: RArray, strict: bool) -> RbResult<Self> {

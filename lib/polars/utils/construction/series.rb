@@ -21,11 +21,6 @@ module Polars
       rb_temporal_types << ActiveSupport::TimeWithZone if defined?(ActiveSupport::TimeWithZone)
 
       value = get_first_non_none(values)
-      if !value.nil?
-        if value.is_a?(Hash) && dtype != Object
-          return DataFrame.new(values).to_struct(name)._s
-        end
-      end
 
       if !dtype.nil? && is_polars_dtype(dtype) && !dtype.nested? && dtype != Unknown && ruby_dtype.nil?
         constructor = polars_type_to_constructor(dtype)
@@ -76,7 +71,7 @@ module Polars
         end
 
         return sequence_to_rbdf(
-          values.map { |v| v.nil? ? empty : v },
+          data,
           schema: struct_schema,
           orient: "row",
         ).to_struct(name, invalid)
@@ -184,6 +179,11 @@ module Polars
           else
             rb_type_to_constructor(value.class)
           end
+
+        if constructor == RbSeries.method(:new_object)
+          srs = RbSeries.new_from_any_values(name, values, strict)
+          return srs
+        end
 
         _construct_series_with_fallbacks(constructor, name, values, dtype, strict: strict)
       end
@@ -293,52 +293,32 @@ module Polars
       Null => RbSeries.method(:new_null)
     }
 
-    SYM_TYPE_TO_CONSTRUCTOR = {
-      f32: RbSeries.method(:new_opt_f32),
-      f64: RbSeries.method(:new_opt_f64),
-      i8: RbSeries.method(:new_opt_i8),
-      i16: RbSeries.method(:new_opt_i16),
-      i32: RbSeries.method(:new_opt_i32),
-      i64: RbSeries.method(:new_opt_i64),
-      i128: RbSeries.method(:new_opt_i128),
-      u8: RbSeries.method(:new_opt_u8),
-      u16: RbSeries.method(:new_opt_u16),
-      u32: RbSeries.method(:new_opt_u32),
-      u64: RbSeries.method(:new_opt_u64),
-      u128: RbSeries.method(:new_opt_u128),
-      bool: RbSeries.method(:new_opt_bool),
-      str: RbSeries.method(:new_str)
-    }
-
     def self.polars_type_to_constructor(dtype)
       if dtype.is_a?(Array)
-        lambda do |name, values, strict|
-          RbSeries.new_array(dtype.width, dtype.inner, name, values, strict)
+        return lambda do |name, values, strict|
+          RbSeries.new_array(name, values, strict, dtype)
         end
-      elsif dtype.is_a?(Class) && dtype < DataType
-        POLARS_TYPE_TO_CONSTRUCTOR.fetch(dtype)
-      elsif dtype.is_a?(DataType)
-        POLARS_TYPE_TO_CONSTRUCTOR.fetch(dtype.class)
-      else
-        SYM_TYPE_TO_CONSTRUCTOR.fetch(dtype.to_sym)
       end
-    rescue KeyError
-      raise ArgumentError, "Cannot construct RbSeries for type #{dtype}."
+
+      begin
+        base_type = dtype.base_type
+        POLARS_TYPE_TO_CONSTRUCTOR.fetch(base_type)
+      rescue KeyError
+        raise ArgumentError, "Cannot construct RbSeries for type #{dtype}."
+      end
     end
 
     RB_TYPE_TO_CONSTRUCTOR = {
       Float => RbSeries.method(:new_opt_f64),
-      Integer => RbSeries.method(:new_opt_i64),
       TrueClass => RbSeries.method(:new_opt_bool),
       FalseClass => RbSeries.method(:new_opt_bool),
-      BigDecimal => RbSeries.method(:new_decimal),
-      NilClass => RbSeries.method(:new_null)
+      Integer => RbSeries.method(:new_opt_i64),
+      String => RbSeries.method(:new_str),
+      BigDecimal => RbSeries.method(:new_decimal)
     }
 
     def self.rb_type_to_constructor(dtype)
-      RB_TYPE_TO_CONSTRUCTOR.fetch(dtype)
-    rescue KeyError
-      RbSeries.method(:new_object)
+      RB_TYPE_TO_CONSTRUCTOR.fetch(dtype, RbSeries.method(:new_object))
     end
 
     def self.numo_values_and_dtype(values)

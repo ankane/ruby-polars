@@ -1,5 +1,6 @@
 use std::hash::BuildHasher;
 
+use arrow::bitmap::MutableBitmap;
 use either::Either;
 use magnus::{IntoValue, RArray, Ruby, Value, prelude::*, value::Opaque};
 use polars::prelude::*;
@@ -503,10 +504,26 @@ impl RbDataFrame {
         })
     }
 
-    pub fn to_struct(rb: &Ruby, self_: &Self, name: String) -> RbResult<RbSeries> {
+    pub fn to_struct(
+        rb: &Ruby,
+        self_: &Self,
+        name: String,
+        invalid_indices: Vec<usize>,
+    ) -> RbResult<RbSeries> {
         rb.enter_polars_series(|| {
-            let ca = self_.df.read().clone().into_struct(name.into());
-            Ok(ca)
+            let mut ca = self_.df.read().clone().into_struct(name.into());
+
+            if !invalid_indices.is_empty() {
+                let mut validity = MutableBitmap::with_capacity(ca.len());
+                validity.extend_constant(ca.len(), true);
+                for i in invalid_indices {
+                    validity.set(i, false);
+                }
+                ca.rechunk_mut();
+                Ok(ca.with_outer_validity(Some(validity.freeze())))
+            } else {
+                Ok(ca)
+            }
         })
     }
 

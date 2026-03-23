@@ -151,7 +151,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("hash_rows", method!(RbDataFrame::hash_rows, 4))?;
     class.define_method("transpose", method!(RbDataFrame::transpose, 2))?;
     class.define_method("upsample", method!(RbDataFrame::upsample, 4))?;
-    class.define_method("to_struct", method!(RbDataFrame::to_struct, 1))?;
+    class.define_method("to_struct", method!(RbDataFrame::to_struct, 2))?;
     class.define_method("clear", method!(RbDataFrame::clear, 0))?;
     class.define_method(
         "serialize_binary",
@@ -1059,7 +1059,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("new_null", function!(RbSeries::new_null, 3))?;
     class.define_singleton_method("new_object", function!(RbSeries::new_object, 3))?;
     class.define_singleton_method("new_series_list", function!(RbSeries::new_series_list, 3))?;
-    class.define_singleton_method("new_array", function!(RbSeries::new_array, 5))?;
+    class.define_singleton_method("new_array", function!(RbSeries::new_array, 4))?;
     class.define_singleton_method("new_decimal", function!(RbSeries::new_decimal, 3))?;
     class.define_singleton_method(
         "from_arrow_c_stream",

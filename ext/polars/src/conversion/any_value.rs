@@ -1,8 +1,10 @@
 use magnus::encoding::EncodingCapable;
 use magnus::{
-    IntoValue, RArray, RHash, RString, Ruby, TryConvert, Value, prelude::*, r_hash::ForEach,
+    IntoValue, RArray, RHash, RString, Ruby, Symbol, TryConvert, Value, prelude::*,
+    r_hash::ForEach, value::Opaque,
 };
 use num_traits::ToPrimitive;
+use polars::chunked_array::object::PolarsObjectSafe;
 use polars::prelude::*;
 use polars_compute::decimal::{DEC128_MAX_PREC, DecimalFmtBuffer, dec128_fits};
 use polars_core::utils::any_values_to_supertype_and_n_dtypes;
@@ -22,7 +24,7 @@ impl IntoValue for Wrap<AnyValue<'_>> {
 
 impl TryConvert for Wrap<AnyValue<'_>> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        rb_object_to_any_value(ob, true).map(Wrap)
+        rb_object_to_any_value(ob, true, true).map(Wrap)
     }
 }
 
@@ -88,7 +90,11 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
     }
 }
 
-pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<AnyValue<'s>> {
+pub(crate) fn rb_object_to_any_value<'s>(
+    ob: Value,
+    strict: bool,
+    allow_object: bool,
+) -> RbResult<AnyValue<'s>> {
     // Conversion functions.
     fn get_null(_ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
         Ok(AnyValue::Null)
@@ -174,7 +180,12 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
         let len = dict.len();
         let mut keys = Vec::with_capacity(len);
         let mut vals = Vec::with_capacity(len);
-        dict.foreach(|key: String, val: Wrap<AnyValue>| {
+        dict.foreach(|key: Value, val: Wrap<AnyValue>| {
+            let key = if let Some(s) = Symbol::from_value(key) {
+                s.name()?.to_string()
+            } else {
+                String::try_convert(key)?
+            };
             let val = val.0;
             let dtype = DataType::from(&val);
             keys.push(Field::new(key.into(), dtype));
@@ -182,6 +193,14 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
             Ok(ForEach::Continue)
         })?;
         Ok(AnyValue::StructOwned(Box::new((vals, keys))))
+    }
+
+    fn get_object(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
+        // This is slow, but hey don't use objects.
+        let v = &ObjectValue {
+            inner: Opaque::from(ob),
+        };
+        Ok(AnyValue::ObjectOwned(OwnedObject(v.to_boxed())))
     }
 
     fn get_date(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
@@ -263,6 +282,10 @@ pub(crate) fn rb_object_to_any_value<'s>(ob: Value, strict: bool) -> RbResult<An
     } else if ob.is_kind_of(crate::ruby::rb_modules::bigdecimal(&ruby)) {
         get_decimal(ob, strict)
     } else {
-        Err(RbValueError::new_err(format!("Cannot convert {ob}")))
+        if allow_object {
+            get_object(ob, strict)
+        } else {
+            Err(RbValueError::new_err(format!("Cannot convert {ob}")))
+        }
     }
 }
