@@ -22,7 +22,7 @@ module Polars
 
       value = get_first_non_none(values)
       if !value.nil?
-        if value.is_a?(Hash) && dtype != Object
+        if value.is_a?(Hash) && dtype != Object && dtype != Struct
           return DataFrame.new(values).to_struct(name)._s
         end
       end
@@ -61,14 +61,12 @@ module Polars
         return rbseries
 
       elsif dtype == Struct
-        struct_schema = dtype.is_a?(Struct) ? dtype.to_schema : nil
+        struct_schema = dtype.is_a?(Struct) ? dtype.to_schema.transform_keys(&:to_s) : nil
         empty = {}
 
         data = []
-        invalid = []
-        values.each_with_index do |v, i|
+        values.each do |v|
           if v.nil?
-            invalid << i
             data << empty
           else
             data << v
@@ -76,10 +74,10 @@ module Polars
         end
 
         return sequence_to_rbdf(
-          values.map { |v| v.nil? ? empty : v },
+          data,
           schema: struct_schema,
           orient: "row",
-        ).to_struct(name, invalid)
+        ).to_struct(name)
       end
 
       if ruby_dtype.nil?

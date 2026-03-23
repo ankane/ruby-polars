@@ -27,6 +27,48 @@ class DatabaseTest < Minitest::Test
     assert_result df, users
   end
 
+  def test_read_database_json
+    now = postgresql? ? Time.now.round(6) : Time.now
+
+    # create 100 users with empty settings
+    100.times do |i|
+      User.create!(
+        name: "User #{i}",
+        number: i,
+        inexact: i + 0.5,
+        active: i % 2 == 0,
+        joined_at: now + i,
+        joined_on: Date.today + i,
+        bin: "bin".b,
+        dec: BigDecimal("1.5"),
+        txt: "txt",
+        joined_time: now,
+        settings: mysql? ? "{}" : {}
+      )
+    end
+
+    settings = { isAdmin: true }
+    User.create!(
+      name: "User 100",
+      number: 100,
+      inexact: 100.5,
+      active: true,
+      joined_at: now + 100,
+      joined_on: Date.today + 100,
+      bin: "bin".b,
+      dec: BigDecimal("1.5"),
+      txt: "txt",
+      joined_time: now,
+      settings: mysql? ? settings.to_json : settings
+    )
+
+    settings_schema = Polars::Struct.new({ isAdmin: Polars::Boolean })
+
+    df = Polars.read_database("SELECT settings FROM users ORDER BY id", schema_overrides: {settings: settings_schema})
+    assert_equal Polars::Struct, df["settings"].dtype
+    assert_equal [{"isAdmin" => nil}, {"isAdmin" => true}], df["settings"].unique.to_a.sort_by { |h| h["isAdmin"] ? 1 : 0 }
+  end
+
   def test_read_database_string
     users = create_users
     df = Polars.read_database("SELECT * FROM users ORDER BY id")
@@ -232,8 +274,7 @@ class DatabaseTest < Minitest::Test
       assert_equal Polars::Datetime, schema["joined_at"]
       assert_equal Polars::Decimal, schema["dec"]
       assert_equal Polars::Time, schema["joined_time"]
-      # TODO fix for null
-      # assert_equal Polars::Struct, schema["settings"]
+      assert_equal Polars::Struct, schema["settings"]
     elsif mysql?
       assert_equal Polars::Int64, schema["active"]
       assert_equal Polars::Datetime, schema["joined_at"]
@@ -252,7 +293,6 @@ class DatabaseTest < Minitest::Test
   def create_users
     # round time since Postgres only stores microseconds
     now = postgresql? ? Time.now.round(6) : Time.now
-    # TODO fix nil
     settings = [{"hello" => "world"}, {}, {}]
     3.times do |i|
       User.create!(
