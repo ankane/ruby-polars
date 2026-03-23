@@ -210,11 +210,11 @@ class DatabaseTest < Minitest::Test
     elsif mysql?
       assert_series users.map(&:active).map { |v| v ? 1 : 0 }, df["active"]
       assert_series users.map(&:joined_on), df["joined_on"]
-      assert_series ['{"hello": "world"}'.b, nil, '{}'.b], df["settings"]
+      assert_series [%!{"hello": "world"}!.b, nil, %!{}!.b], df["settings"]
     else
       assert_series users.map(&:active).map { |v| v ? 1 : 0 }, df["active"]
       assert_series users.map(&:joined_on).map(&:to_s), df["joined_on"]
-      assert_series ['{"hello":"world"}', nil, '{}'], df["settings"]
+      assert_series [%!{"hello":"world"}!, nil, %!{}!], df["settings"]
     end
 
     assert_schema df
