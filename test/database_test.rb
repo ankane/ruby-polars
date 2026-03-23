@@ -202,17 +202,19 @@ class DatabaseTest < Minitest::Test
     assert_series users.map(&:dec), df["dec"]
     assert_series users.map(&:txt), df["txt"]
     assert_series users.map(&:joined_time), df["joined_time"]
-    assert_series [{"hello" => "world"}, nil, {"hello" => nil}], df["settings"]
 
     if postgresql? || (sqlite? && ar_version >= 8.1)
       assert_series users.map(&:active), df["active"]
       assert_series users.map(&:joined_on), df["joined_on"]
+      assert_series [{"hello" => "world"}, nil, {"hello" => nil}], df["settings"]
     elsif mysql?
       assert_series users.map(&:active).map { |v| v ? 1 : 0 }, df["active"]
       assert_series users.map(&:joined_on), df["joined_on"]
+      assert_series ['{"hello": "world"}'.b, nil, '{}'.b], df["settings"]
     else
       assert_series users.map(&:active).map { |v| v ? 1 : 0 }, df["active"]
       assert_series users.map(&:joined_on).map(&:to_s), df["joined_on"]
+      assert_series ['{"hello":"world"}', nil, '{}'], df["settings"]
     end
 
     assert_schema df
@@ -239,7 +241,7 @@ class DatabaseTest < Minitest::Test
       assert_equal Polars::Datetime, schema["joined_at"]
       assert_equal Polars::Decimal, schema["dec"]
       assert_equal Polars::Datetime, schema["joined_time"]
-      # assert_equal Polars::String, schema["settings"]
+      assert_equal Polars::Binary, schema["settings"]
     else
       assert_equal Polars::Int64, schema["active"]
       assert_equal Polars::String, schema["joined_at"]
@@ -265,7 +267,7 @@ class DatabaseTest < Minitest::Test
         dec: BigDecimal("1.5"),
         txt: "txt",
         joined_time: now,
-        settings: mysql? ? settings[i].to_json : settings[i]
+        settings: settings[i]
       )
     end
     # reload for time column
