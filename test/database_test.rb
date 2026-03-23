@@ -202,6 +202,7 @@ class DatabaseTest < Minitest::Test
     assert_series users.map(&:dec), df["dec"]
     assert_series users.map(&:txt), df["txt"]
     assert_series users.map(&:joined_time), df["joined_time"]
+    assert_series [{"hello" => "world"}, nil, {"hello" => nil}], df["settings"]
 
     if postgresql? || (sqlite? && ar_version >= 8.1)
       assert_series users.map(&:active), df["active"]
@@ -232,8 +233,7 @@ class DatabaseTest < Minitest::Test
       assert_equal Polars::Datetime, schema["joined_at"]
       assert_equal Polars::Decimal, schema["dec"]
       assert_equal Polars::Time, schema["joined_time"]
-      # TODO fix for null
-      # assert_equal Polars::Struct, schema["settings"]
+      assert_equal Polars::Struct, schema["settings"]
     elsif mysql?
       assert_equal Polars::Int64, schema["active"]
       assert_equal Polars::Datetime, schema["joined_at"]
@@ -252,8 +252,7 @@ class DatabaseTest < Minitest::Test
   def create_users
     # round time since Postgres only stores microseconds
     now = postgresql? ? Time.now.round(6) : Time.now
-    # TODO fix nil
-    settings = [{"hello" => "world"}, {}, {}]
+    settings = [{"hello" => "world"}, nil, {}]
     3.times do |i|
       User.create!(
         name: "User #{i}",
