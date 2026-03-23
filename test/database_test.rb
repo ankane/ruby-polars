@@ -206,15 +206,15 @@ class DatabaseTest < Minitest::Test
     if postgresql? || (sqlite? && ar_version >= 8.1)
       assert_series users.map(&:active), df["active"]
       assert_series users.map(&:joined_on), df["joined_on"]
-      assert_series [{"hello" => "world"}, nil, {"hello" => nil}], df["settings"]
+      assert_series [{"hello" => "world", "other" => nil}, nil, {"hello" => nil, "other" => "value"}], df["settings"]
     elsif mysql?
       assert_series users.map(&:active).map { |v| v ? 1 : 0 }, df["active"]
       assert_series users.map(&:joined_on), df["joined_on"]
-      assert_series [%!{"hello": "world"}!.b, nil, %!{}!.b], df["settings"]
+      assert_series [%!{"hello": "world"}!.b, nil, %!{"other": "value"}!.b], df["settings"]
     else
       assert_series users.map(&:active).map { |v| v ? 1 : 0 }, df["active"]
       assert_series users.map(&:joined_on).map(&:to_s), df["joined_on"]
-      assert_series [%!{"hello":"world"}!, nil, %!{}!], df["settings"]
+      assert_series [%!{"hello":"world"}!, nil, %!{"other":"value"}!], df["settings"]
     end
 
     assert_schema df
@@ -254,7 +254,7 @@ class DatabaseTest < Minitest::Test
   def create_users
     # round time since Postgres only stores microseconds
     now = postgresql? ? Time.now.round(6) : Time.now
-    settings = [{"hello" => "world"}, nil, {}]
+    settings = [{"hello" => "world"}, nil, {"other" => "value"}]
     3.times do |i|
       User.create!(
         name: "User #{i}",
