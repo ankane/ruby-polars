@@ -40,6 +40,12 @@ class LazyFrameTest < Minitest::Test
     df.unnest("t_struct").collect
   end
 
+  def test_unpivot
+    lf = Polars::LazyFrame.new({"a" => [1, 2, 3]})
+    assert_frame ({"variable" => ["a", "a", "a"], "value" => [1, 2, 3]}), lf.unpivot.sort("value").collect
+    assert lf.unpivot([]).collect.is_empty
+  end
+
   def test_serialize
     df = Polars::DataFrame.new(
       {

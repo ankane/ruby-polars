@@ -602,6 +602,12 @@ class DataFrameTest < Minitest::Test
     df.pivot("subject", index: "name")
   end
 
+  def test_unpivot
+    df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    assert_frame ({"variable" => ["a", "a", "a"], "value" => [1, 2, 3]}), df.unpivot.sort("value")
+    assert df.unpivot([]).is_empty
+  end
+
   def test_sample
     df = Polars::DataFrame.new({a: [1, 2, 3, 4]})
     assert_equal 2, df.sample(fraction: 0.5).height
