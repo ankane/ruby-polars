@@ -1,3 +1,7 @@
+## 0.25.2 (unreleased)
+
+- Fixed `unpivot` method when `on` option is `nil`
+
 ## 0.25.1 (2026-03-23)
 
 - Added `explain_all` method to `Polars`
