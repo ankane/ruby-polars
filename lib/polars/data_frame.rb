@@ -4593,7 +4593,8 @@ module Polars
     #
     # @param on [Object]
     #   Column(s) or selector(s) to use as values variables; if `on`
-    #   is empty all columns that are not in `index` will be used.
+    #   is empty no columns will be used. If set to `nil` (default)
+    #   all columns that are not in `index` will be used.
     # @param index [Object]
     #   Column(s) or selector(s) to use as identifier variables.
     # @param variable_name [Object]
@@ -4627,7 +4628,7 @@ module Polars
     #   # │ z   ┆ c        ┆ 6     │
     #   # └─────┴──────────┴───────┘
     def unpivot(on = nil, index: nil, variable_name: nil, value_name: nil)
-      on = on.nil? ? [] : Utils._expand_selectors(self, on)
+      on = on.nil? ? nil : Utils._expand_selectors(self, on)
       index = index.nil? ? [] : Utils._expand_selectors(self, index)
 
       _from_rbdf(_df.unpivot(on, index, value_name, variable_name))

@@ -4772,7 +4772,8 @@ module Polars
     #
     # @param on [Object]
     #   Column(s) or selector(s) to use as values variables; if `on`
-    #   is empty all columns that are not in `index` will be used.
+    #   is empty no columns will be used. If set to `nil` (default)
+    #   all columns that are not in `index` will be used.
     # @param index [Object]
     #   Column(s) or selector(s) to use as identifier variables.
     # @param variable_name [String]
@@ -4820,12 +4821,12 @@ module Polars
         warn "The `streamable` parameter for `LazyFrame.unpivot` is deprecated"
       end
 
-      selector_on = on.nil? ? Selectors.empty : Utils.parse_list_into_selector(on)
+      selector_on = on.nil? ? nil : Utils.parse_list_into_selector(on)._rbselector
       selector_index = index.nil? ? Selectors.empty : Utils.parse_list_into_selector(index)
 
       _from_rbldf(
         _ldf.unpivot(
-          selector_on._rbselector,
+          selector_on,
           selector_index._rbselector,
           value_name,
           variable_name
