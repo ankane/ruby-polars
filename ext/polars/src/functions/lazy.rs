@@ -392,11 +392,11 @@ pub fn lit(rb: &Ruby, value: Value, allow_object: bool, is_scalar: bool) -> RbRe
     } else if let Some(float) = Float::from_value(value) {
         let val = f64::try_convert(float.as_value())?;
         Ok(Expr::Literal(LiteralValue::Dyn(DynLiteralValue::Float(val))).into())
-    } else if let Some(v) = RString::from_value(value) {
-        if v.enc_get() == ruby.utf8_encindex() {
-            Ok(dsl::lit(v.to_string()?).into())
+    } else if let Some(rbstr) = RString::from_value(value) {
+        if rbstr.enc_get() == ruby.utf8_encindex() {
+            Ok(dsl::lit(rbstr.to_string()?).into())
         } else {
-            Ok(dsl::lit(unsafe { v.as_slice() }).into())
+            Ok(dsl::lit(unsafe { rbstr.as_slice() }).into())
         }
     } else if let Ok(series) = Obj::<RbSeries>::try_convert(value) {
         let s = series.series.read();
