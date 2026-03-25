@@ -1,5 +1,8 @@
 use magnus::encoding::EncodingCapable;
-use magnus::{Float, Integer, RArray, RString, Ruby, Value, prelude::*, typed_data::Obj};
+use magnus::{
+    Float, Integer, RArray, RString, Ruby, Value, prelude::*, typed_data::Obj, value::Qfalse,
+    value::Qtrue,
+};
 use polars::lazy::dsl;
 use polars::prelude::*;
 use polars_plan::plans::DynLiteralValue;
@@ -382,8 +385,10 @@ pub fn fold(
 
 pub fn lit(rb: &Ruby, value: Value, allow_object: bool, is_scalar: bool) -> RbResult<RbExpr> {
     let ruby = Ruby::get_with(value);
-    if value.is_kind_of(ruby.class_true_class()) || value.is_kind_of(ruby.class_false_class()) {
-        Ok(dsl::lit(bool::try_convert(value)?).into())
+    if let Some(_) = Qtrue::from_value(value) {
+        Ok(dsl::lit(true).into())
+    } else if let Some(_) = Qfalse::from_value(value) {
+        Ok(dsl::lit(false).into())
     } else if let Some(int) = Integer::from_value(value) {
         let v = i128::try_convert(int.as_value())
             .map_err(|e| polars_err!(InvalidOperation: "integer too large for Polars: {e}"))
