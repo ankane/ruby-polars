@@ -385,9 +385,9 @@ pub fn fold(
 
 pub fn lit(rb: &Ruby, value: Value, allow_object: bool, is_scalar: bool) -> RbResult<RbExpr> {
     let ruby = Ruby::get_with(value);
-    if let Some(_) = Qtrue::from_value(value) {
+    if Qtrue::from_value(value).is_some() {
         Ok(dsl::lit(true).into())
-    } else if let Some(_) = Qfalse::from_value(value) {
+    } else if Qfalse::from_value(value).is_some() {
         Ok(dsl::lit(false).into())
     } else if let Some(int) = Integer::from_value(value) {
         let v = i128::try_convert(int.as_value())
@@ -403,8 +403,8 @@ pub fn lit(rb: &Ruby, value: Value, allow_object: bool, is_scalar: bool) -> RbRe
         } else {
             Ok(dsl::lit(unsafe { rbstr.as_slice() }).into())
         }
-    } else if let Ok(series) = Obj::<RbSeries>::try_convert(value) {
-        let s = series.series.read();
+    } else if let Ok(series) = <&RbSeries>::try_convert(value) {
+        let s = series.clone().series.into_inner();
         if is_scalar {
             let av = s
                 .get(0)
@@ -412,7 +412,7 @@ pub fn lit(rb: &Ruby, value: Value, allow_object: bool, is_scalar: bool) -> RbRe
             let av = av.into_static();
             Ok(dsl::lit(Scalar::new(s.dtype().clone(), av)).into())
         } else {
-            Ok(dsl::lit(s.clone()).into())
+            Ok(dsl::lit(s).into())
         }
     } else if value.is_nil() {
         Ok(dsl::lit(Null {}).into())
