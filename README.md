@@ -32,9 +32,7 @@ You can follow [Polars tutorials](https://docs.pola.rs/user-guide/getting-starte
 - [DataFrame](https://www.rubydoc.info/gems/polars-df/Polars/DataFrame)
 - [LazyFrame](https://www.rubydoc.info/gems/polars-df/Polars/LazyFrame)
 
-## Examples
-
-### Creating DataFrames
+## Creating DataFrames
 
 From a CSV
 
