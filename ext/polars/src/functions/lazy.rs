@@ -3,6 +3,7 @@ use magnus::{Float, Integer, RArray, RString, Ruby, Value, prelude::*, typed_dat
 use polars::lazy::dsl;
 use polars::prelude::*;
 
+use crate::conversion::any_value::rb_object_to_any_value;
 use crate::conversion::{Wrap, get_lf, get_rbseq};
 use crate::expr::ToExprs;
 use crate::expr::datatype::RbDataTypeExpr;
@@ -378,7 +379,7 @@ pub fn fold(
     .into())
 }
 
-pub fn lit(value: Value, allow_object: bool, is_scalar: bool) -> RbResult<RbExpr> {
+pub fn lit(rb: &Ruby, value: Value, allow_object: bool, is_scalar: bool) -> RbResult<RbExpr> {
     let ruby = Ruby::get_with(value);
     if value.is_kind_of(ruby.class_true_class()) || value.is_kind_of(ruby.class_false_class()) {
         Ok(dsl::lit(bool::try_convert(value)?).into())
@@ -417,13 +418,40 @@ pub fn lit(value: Value, allow_object: bool, is_scalar: bool) -> RbResult<RbExpr
         }
     } else if value.is_nil() {
         Ok(dsl::lit(Null {}).into())
-    } else if allow_object {
-        todo!()
     } else {
-        Err(RbValueError::new_err(format!(
-            "could not convert value {:?} as a Literal",
-            value.to_string()
-        )))
+        let raise = || {
+            // TODO uncomment
+            // RbTypeError::new_err(format!(
+            //     "cannot create expression literal for value of type {}.\
+            //         \n\nHint: Pass `allow_object: true` to accept any value and create a literal of type Object.",
+            //     unsafe { value.classname() },
+            // ))
+            RbValueError::new_err(format!(
+                "could not convert value {:?} as a Literal",
+                value.to_string()
+            ))
+        };
+
+        let av = rb_object_to_any_value(value, true, allow_object).map_err(|_| raise())?;
+        match av {
+            AnyValue::ObjectOwned(_) => {
+                // Check again for object allowance as for cached addresses this is not checked.
+                if allow_object {
+                    let s = RbSeries::new_object(
+                        rb,
+                        "".to_string(),
+                        rb.ary_new_from_values(&[value]),
+                        false,
+                    )?
+                    .series
+                    .into_inner();
+                    Ok(dsl::lit(s).into())
+                } else {
+                    Err(raise())
+                }
+            }
+            _ => Ok(Expr::Literal(LiteralValue::from(av)).into()),
+        }
     }
 }
 
