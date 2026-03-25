@@ -2,6 +2,7 @@ use magnus::encoding::EncodingCapable;
 use magnus::{Float, Integer, RArray, RString, Ruby, Value, prelude::*, typed_data::Obj};
 use polars::lazy::dsl;
 use polars::prelude::*;
+use polars_plan::plans::DynLiteralValue;
 
 use crate::conversion::any_value::rb_object_to_any_value;
 use crate::conversion::{Wrap, get_lf, get_rbseq};
@@ -383,22 +384,14 @@ pub fn lit(rb: &Ruby, value: Value, allow_object: bool, is_scalar: bool) -> RbRe
     let ruby = Ruby::get_with(value);
     if value.is_kind_of(ruby.class_true_class()) || value.is_kind_of(ruby.class_false_class()) {
         Ok(dsl::lit(bool::try_convert(value)?).into())
-    } else if let Some(v) = Integer::from_value(value) {
-        match v.to_i64() {
-            Ok(val) => {
-                if val > 0 && val < i32::MAX as i64 || val < 0 && val > i32::MIN as i64 {
-                    Ok(dsl::lit(val as i32).into())
-                } else {
-                    Ok(dsl::lit(val).into())
-                }
-            }
-            _ => {
-                let val = v.to_u64()?;
-                Ok(dsl::lit(val).into())
-            }
-        }
-    } else if let Some(v) = Float::from_value(value) {
-        Ok(dsl::lit(v.to_f64()).into())
+    } else if let Some(int) = Integer::from_value(value) {
+        let v = i128::try_convert(int.as_value())
+            .map_err(|e| polars_err!(InvalidOperation: "integer too large for Polars: {e}"))
+            .map_err(RbPolarsErr::from)?;
+        Ok(Expr::Literal(LiteralValue::Dyn(DynLiteralValue::Int(v))).into())
+    } else if let Some(float) = Float::from_value(value) {
+        let val = f64::try_convert(float.as_value())?;
+        Ok(Expr::Literal(LiteralValue::Dyn(DynLiteralValue::Float(val))).into())
     } else if let Some(v) = RString::from_value(value) {
         if v.enc_get() == ruby.utf8_encindex() {
             Ok(dsl::lit(v.to_string()?).into())
