@@ -7112,7 +7112,7 @@ module Polars
     end
 
     def _select_rows_by_slice(df, key)
-      return Slice.new(df).apply(key)
+      Slice.new(df).apply(key)
     end
 
     def _select_rows_by_index(df, key)

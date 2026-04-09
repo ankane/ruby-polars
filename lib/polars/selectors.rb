@@ -264,7 +264,7 @@ module Polars
       re_alpha = ascii_only ? "a-zA-Z" : "\\p{Alphabetic}"
       re_digit = ascii_only ? "0-9" : "\\d"
       re_space = ignore_spaces ? " " : ""
-      return Selector._from_rbselector(
+      Selector._from_rbselector(
         RbSelector.matches("^[#{re_alpha}#{re_digit}#{re_space}]+$")
       )
     end
