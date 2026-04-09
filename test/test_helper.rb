@@ -14,6 +14,8 @@ class Minitest::Test
 
   def teardown
     GC.stress = false if stress?
+
+    FileUtils.remove_entry(@temp_dir) if @temp_dir
   end
 
   def with_stress(value = true)
@@ -60,10 +62,12 @@ class Minitest::Test
   end
 
   def temp_path
-    require "securerandom"
+    File.join(temp_dir, "file")
+  end
 
-    # TODO clean up
-    File.join(Dir.tmpdir, SecureRandom.alphanumeric(20))
+  # cleaned up in teardown
+  def temp_dir
+    @temp_dir ||= Dir.mktmpdir
   end
 
   def in_temp_dir
