@@ -18,4 +18,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "bigdecimal"
   spec.add_dependency "rb_sys"
+  spec.add_dependency "tzinfo", "~> 2.0"
 end
