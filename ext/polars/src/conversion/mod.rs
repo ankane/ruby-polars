@@ -264,9 +264,8 @@ impl TryIntoValue for Wrap<DataType> {
                 let field_class = pl.const_get::<_, Value>("Field")?;
                 let iter = fields.iter().map(|fld| {
                     let name = fld.name().as_str();
-                    // TODO remove unwrap
-                    let dtype = Wrap(fld.dtype().clone()).try_into_value_with(ruby).unwrap();
-                    field_class.funcall::<_, _, Value>("new", (name, dtype))
+                    let dtype = Wrap(fld.dtype().clone()).try_into_value_with(ruby);
+                    dtype.and_then(|dt| field_class.funcall::<_, _, Value>("new", (name, dt)))
                 });
                 let fields = ruby.ary_try_from_iter(iter)?;
                 let struct_class = pl.const_get::<_, Value>("Struct")?;
