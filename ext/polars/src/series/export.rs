@@ -72,8 +72,9 @@ impl RbSeries {
                     for i in 0..series.len() {
                         let obj: Option<&ObjectValue> = series.get_object(i).map(|any| any.into());
                         match obj {
-                            Some(val) => v.push(val.to_value()).unwrap(),
-                            None => v.push(ruby.qnil()).unwrap(),
+                            // TODO remove clone
+                            Some(val) => v.push(val.clone().into_value_with(ruby))?,
+                            None => v.push(ruby.qnil())?,
                         };
                     }
                     v.as_value()

@@ -16,7 +16,8 @@ impl RbDataFrame {
         ruby.ary_try_from_iter(self_.df.read().columns().iter().map(|s| match s.dtype() {
             DataType::Object(_) => {
                 let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
-                Ok(obj.unwrap().to_value())
+                // TODO remove unwrap and clone
+                obj.unwrap().clone().try_into_value_with(ruby)
             }
             _ => Wrap(s.get(idx).unwrap()).try_into_value_with(ruby),
         }))
@@ -29,7 +30,8 @@ impl RbDataFrame {
             ruby.ary_try_from_iter(self_.df.read().columns().iter().map(|s| match s.dtype() {
                 DataType::Object(_) => {
                     let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
-                    Ok(obj.unwrap().to_value())
+                    // TODO remove unwrap and clone
+                    obj.unwrap().clone().try_into_value_with(ruby)
                 }
                 _ => Wrap(s.get(idx).unwrap()).try_into_value_with(ruby),
             }))

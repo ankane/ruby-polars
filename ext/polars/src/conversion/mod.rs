@@ -36,6 +36,7 @@ use polars_utils::total_ord::{TotalEq, TotalHash};
 use crate::file::{RubyScanSourceInput, get_ruby_scan_source_input};
 use crate::object::OBJECT_NAME;
 use crate::rb_modules::pl_series;
+use crate::ruby::gvl::GvlExt;
 use crate::ruby::utils::TryIntoValue;
 use crate::utils::to_rb_err;
 use crate::{
@@ -644,18 +645,17 @@ pub struct ObjectValue {
 
 impl Debug for ObjectValue {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ObjectValue")
-            .field("inner", &self.to_value())
-            .finish()
+        write!(f, "{}", self)
     }
 }
 
 impl Hash for ObjectValue {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        let h = self
-            .to_value()
-            .funcall::<_, _, isize>("hash", ())
-            .expect("should be hashable");
+        let h = Ruby::attach(|rb| {
+            rb.get_inner(self.inner)
+                .funcall::<_, _, isize>("hash", ())
+                .expect("should be hashable")
+        });
         state.write_isize(h)
     }
 }
@@ -664,7 +664,11 @@ impl Eq for ObjectValue {}
 
 impl PartialEq for ObjectValue {
     fn eq(&self, other: &Self) -> bool {
-        self.to_value().eql(other.to_value()).unwrap_or(false)
+        Ruby::attach(|ruby| {
+            ruby.get_inner(self.inner)
+                .eql(ruby.get_inner(other.inner))
+                .unwrap_or(false)
+        })
     }
 }
 
@@ -685,7 +689,10 @@ impl TotalHash for ObjectValue {
 
 impl Display for ObjectValue {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_value())
+        Ruby::attach(|rb| {
+            let v = rb.get_inner(self.inner);
+            write!(f, "{}", v)
+        })
     }
 }
 
@@ -710,12 +717,6 @@ impl TryConvert for ObjectValue {
 impl From<&dyn PolarsObjectSafe> for &ObjectValue {
     fn from(val: &dyn PolarsObjectSafe) -> Self {
         unsafe { &*(val as *const dyn PolarsObjectSafe as *const ObjectValue) }
-    }
-}
-
-impl ObjectValue {
-    pub fn to_value(&self) -> Value {
-        self.clone().into_value_with(&Ruby::get().unwrap())
     }
 }
 
