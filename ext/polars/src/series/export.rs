@@ -136,7 +136,7 @@ impl RbSeries {
                 }
                 DataType::Duration(_) => {
                     let ca = series.duration().map_err(RbPolarsErr::from)?;
-                    return Ok(Wrap(ca).into_value_with(ruby));
+                    return Wrap(ca).try_into_value_with(ruby);
                 }
                 DataType::Binary => {
                     let ca = series.binary().map_err(RbPolarsErr::from)?;

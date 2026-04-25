@@ -74,18 +74,16 @@ impl TryIntoValue for Wrap<&StructChunked> {
     }
 }
 
-impl IntoValue for Wrap<&DurationChunked> {
-    fn into_value_with(self, ruby: &Ruby) -> Value {
+impl TryIntoValue for Wrap<&DurationChunked> {
+    fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value> {
         let utils = pl_utils(ruby);
         let time_unit = Wrap(self.0.time_unit()).into_value_with(ruby);
         let iter = self.0.physical().into_iter().map(|opt_v| {
-            opt_v.map(|v| {
-                utils
-                    .funcall::<_, _, Value>("_to_ruby_duration", (v, time_unit))
-                    .unwrap()
-            })
+            opt_v
+                .map(|v| utils.funcall::<_, _, Value>("_to_ruby_duration", (v, time_unit)))
+                .transpose()
         });
-        ruby.ary_from_iter(iter).as_value()
+        ruby.ary_try_from_iter(iter).map(|v| v.as_value())
     }
 }
 
