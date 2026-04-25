@@ -1183,15 +1183,12 @@ impl RbLazyFrame {
         let schema = rb.enter_polars(|| self_.ldf.write().collect_schema())?;
 
         let schema_dict = rb.hash_new();
-        schema.iter_fields().for_each(|fld| {
-            // TODO remove unwraps
-            schema_dict
-                .aset::<String, Value>(
-                    fld.name().to_string(),
-                    Wrap(fld.dtype().clone()).try_into_value_with(rb).unwrap(),
-                )
-                .unwrap();
-        });
+        for fld in schema.iter_fields() {
+            schema_dict.aset::<String, Value>(
+                fld.name().to_string(),
+                Wrap(fld.dtype().clone()).try_into_value_with(rb)?,
+            )?;
+        }
         Ok(schema_dict)
     }
 
