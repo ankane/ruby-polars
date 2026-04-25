@@ -1184,7 +1184,7 @@ impl RbLazyFrame {
 
         let schema_dict = rb.hash_new();
         for fld in schema.iter_fields() {
-            schema_dict.aset::<String, Value>(
+            schema_dict.aset(
                 fld.name().to_string(),
                 Wrap(fld.dtype().clone()).try_into_value_with(rb)?,
             )?;
