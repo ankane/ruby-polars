@@ -67,7 +67,9 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
                 .unwrap()
         }
         AnyValue::Time(v) => pl_utils(ruby).funcall("_to_ruby_time", (v,)).unwrap(),
-        AnyValue::Array(v, _) | AnyValue::List(v) => RbSeries::new(v).to_a().unwrap().as_value(),
+        AnyValue::Array(v, _) | AnyValue::List(v) => {
+            RbSeries::to_a(ruby, &RbSeries::new(v)).unwrap()
+        }
         ref av @ AnyValue::Struct(_, _, flds) => struct_dict(ruby, av._iter_struct_av(), flds),
         AnyValue::StructOwned(payload) => struct_dict(ruby, payload.0.into_iter(), &payload.1),
         AnyValue::Object(v) => {

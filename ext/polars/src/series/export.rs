@@ -8,11 +8,10 @@ use crate::{RbPolarsErr, RbResult, RbSeries};
 impl RbSeries {
     /// Convert this Series to a Ruby array.
     /// This operation copies data.
-    pub fn to_a(&self) -> RbResult<Value> {
-        let series = &self.series.read();
+    pub fn to_a(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
+        let series = &self_.series.read();
 
-        fn to_a_recursive(series: &Series) -> RbResult<Value> {
-            let ruby = Ruby::get().unwrap();
+        fn to_a_recursive(ruby: &Ruby, series: &Series) -> RbResult<Value> {
             let rblist = match series.dtype() {
                 DataType::Boolean => ruby
                     .ary_from_iter(series.bool().map_err(RbPolarsErr::from)?)
@@ -88,7 +87,7 @@ impl RbSeries {
                                 v.push(ruby.qnil()).unwrap();
                             }
                             Some(s) => {
-                                let rblst = to_a_recursive(s.as_ref())?;
+                                let rblst = to_a_recursive(ruby, s.as_ref())?;
                                 v.push(rblst)?;
                             }
                         }
@@ -104,7 +103,7 @@ impl RbSeries {
                                 v.push(ruby.qnil()).unwrap();
                             }
                             Some(s) => {
-                                let rblst = to_a_recursive(s.as_ref())?;
+                                let rblst = to_a_recursive(ruby, s.as_ref())?;
                                 v.push(rblst)?;
                             }
                         }
@@ -113,35 +112,35 @@ impl RbSeries {
                 }
                 DataType::Date => {
                     let ca = series.date().map_err(RbPolarsErr::from)?;
-                    return Ok(Wrap(ca).into_value_with(&ruby));
+                    return Wrap(ca).try_into_value_with(ruby);
                 }
                 DataType::Time => {
                     let ca = series.time().map_err(RbPolarsErr::from)?;
-                    return Ok(Wrap(ca).into_value_with(&ruby));
+                    return Wrap(ca).try_into_value_with(ruby);
                 }
                 DataType::Datetime(_, _) => {
                     let ca = series.datetime().map_err(RbPolarsErr::from)?;
-                    return Ok(Wrap(ca).into_value_with(&ruby));
+                    return Ok(Wrap(ca).into_value_with(ruby));
                 }
                 DataType::Decimal(_, _) => {
                     let ca = series.decimal().map_err(RbPolarsErr::from)?;
-                    return Wrap(ca).try_into_value_with(&ruby);
+                    return Wrap(ca).try_into_value_with(ruby);
                 }
                 DataType::String => {
                     let ca = series.str().map_err(RbPolarsErr::from)?;
-                    return Ok(Wrap(ca).into_value_with(&ruby));
+                    return Ok(Wrap(ca).into_value_with(ruby));
                 }
                 DataType::Struct(_) => {
                     let ca = series.struct_().map_err(RbPolarsErr::from)?;
-                    return Ok(Wrap(ca).into_value_with(&ruby));
+                    return Ok(Wrap(ca).into_value_with(ruby));
                 }
                 DataType::Duration(_) => {
                     let ca = series.duration().map_err(RbPolarsErr::from)?;
-                    return Ok(Wrap(ca).into_value_with(&ruby));
+                    return Ok(Wrap(ca).into_value_with(ruby));
                 }
                 DataType::Binary => {
                     let ca = series.binary().map_err(RbPolarsErr::from)?;
-                    return Ok(Wrap(ca).into_value_with(&ruby));
+                    return Ok(Wrap(ca).into_value_with(ruby));
                 }
                 DataType::Null => {
                     let null: Option<u8> = None;
@@ -164,10 +163,7 @@ impl RbSeries {
                     }
                     impl ExactSizeIterator for NullIter {}
 
-                    Ruby::get()
-                        .unwrap()
-                        .ary_from_iter(NullIter { iter, n })
-                        .as_value()
+                    ruby.ary_from_iter(NullIter { iter, n }).as_value()
                 }
                 DataType::Unknown(_) => {
                     panic!("to_a not implemented for unknown")
@@ -176,12 +172,12 @@ impl RbSeries {
                     unreachable!()
                 }
                 DataType::Extension(_, _) => {
-                    return to_a_recursive(series.ext().unwrap().storage());
+                    return to_a_recursive(ruby, series.ext().unwrap().storage());
                 }
             };
             Ok(rblist.as_value())
         }
 
-        to_a_recursive(series)
+        to_a_recursive(ruby, series)
     }
 }

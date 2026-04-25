@@ -108,23 +108,27 @@ impl IntoValue for Wrap<&DatetimeChunked> {
     }
 }
 
-impl IntoValue for Wrap<&TimeChunked> {
-    fn into_value_with(self, ruby: &Ruby) -> Value {
+impl TryIntoValue for Wrap<&TimeChunked> {
+    fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value> {
         let utils = pl_utils(ruby);
         let iter = self.0.physical().into_iter().map(|opt_v| {
-            opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_time", (v,)).unwrap())
+            opt_v
+                .map(|v| utils.funcall::<_, _, Value>("_to_ruby_time", (v,)))
+                .transpose()
         });
-        ruby.ary_from_iter(iter).as_value()
+        ruby.ary_try_from_iter(iter).map(|v| v.as_value())
     }
 }
 
-impl IntoValue for Wrap<&DateChunked> {
-    fn into_value_with(self, ruby: &Ruby) -> Value {
+impl TryIntoValue for Wrap<&DateChunked> {
+    fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value> {
         let utils = pl_utils(ruby);
         let iter = self.0.physical().into_iter().map(|opt_v| {
-            opt_v.map(|v| utils.funcall::<_, _, Value>("_to_ruby_date", (v,)).unwrap())
+            opt_v
+                .map(|v| utils.funcall::<_, _, Value>("_to_ruby_date", (v,)))
+                .transpose()
         });
-        ruby.ary_from_iter(iter).as_value()
+        ruby.ary_try_from_iter(iter).map(|v| v.as_value())
     }
 }
 
