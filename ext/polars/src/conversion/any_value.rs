@@ -240,7 +240,7 @@ pub(crate) fn rb_object_to_any_value<'s>(
             }
         }
 
-        let (sign, digits, _, exp): (i8, String, i32, i32) = ob.funcall("split", ()).unwrap();
+        let (sign, digits, _, exp): (i8, String, i32, i32) = ob.funcall("split", ())?;
         let (mut v, scale) = abs_decimal_from_digits(digits, exp).ok_or_else(|| {
             RbErr::from(RbPolarsErr::Other(
                 "BigDecimal is too large to fit in Decimal128".into(),
