@@ -145,14 +145,13 @@ impl RbDataFrame {
         Ok(())
     }
 
-    pub fn dtypes(ruby: &Ruby, self_: &Self) -> RArray {
+    pub fn dtypes(ruby: &Ruby, self_: &Self) -> RbResult<RArray> {
         let df = self_.df.read();
         let iter = df
             .columns()
             .iter()
-            // TODO remove unwrap
-            .map(|s| Wrap(s.dtype().clone()).try_into_value_with(ruby).unwrap());
-        ruby.ary_from_iter(iter)
+            .map(|s| Wrap(s.dtype().clone()).try_into_value_with(ruby));
+        ruby.ary_try_from_iter(iter)
     }
 
     pub fn n_chunks(&self) -> usize {
