@@ -91,6 +91,11 @@ module Polars
     end
 
     def self._to_ruby_decimal(prec, value)
+      unless defined?(::BigDecimal)
+        # TODO improve error message
+        require "bigdecimal"
+      end
+
       BigDecimal(value, prec)
     end
   end

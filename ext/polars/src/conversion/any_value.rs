@@ -279,7 +279,10 @@ pub(crate) fn rb_object_to_any_value<'s>(
         get_datetime(ob, strict)
     } else if ob.is_kind_of(crate::ruby::rb_modules::date(&ruby)) {
         get_date(ob, strict)
-    } else if ob.is_kind_of(crate::ruby::rb_modules::bigdecimal(&ruby)) {
+    } else if crate::ruby::rb_modules::bigdecimal(&ruby)
+        .map(|cls| ob.is_kind_of(cls))
+        .unwrap_or(false)
+    {
         get_decimal(ob, strict)
     } else {
         if allow_object {

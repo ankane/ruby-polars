@@ -313,12 +313,17 @@ module Polars
       TrueClass => RbSeries.method(:new_opt_bool),
       FalseClass => RbSeries.method(:new_opt_bool),
       Integer => RbSeries.method(:new_opt_i64),
-      String => RbSeries.method(:new_str),
-      BigDecimal => RbSeries.method(:new_decimal)
+      ::String => RbSeries.method(:new_str)
     }
 
     def self.rb_type_to_constructor(dtype)
-      RB_TYPE_TO_CONSTRUCTOR.fetch(dtype, RbSeries.method(:new_object))
+      RB_TYPE_TO_CONSTRUCTOR.fetch(dtype) do
+        if defined?(::BigDecimal) && dtype == ::BigDecimal
+          RbSeries.method(:new_decimal)
+        else
+          RbSeries.method(:new_object)
+        end
+      end
     end
 
     def self.numo_values_and_dtype(values)
