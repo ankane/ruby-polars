@@ -1353,12 +1353,9 @@ pub fn parse_fill_null_strategy(
         "zero" => FillNullStrategy::Zero,
         "one" => FillNullStrategy::One,
         e => {
-            return Err(magnus::Error::new(
-                Ruby::get().unwrap().exception_runtime_error(),
-                format!(
-                    "strategy must be one of {{'forward', 'backward', 'min', 'max', 'mean', 'zero', 'one'}}, got {e}",
-                ),
-            ));
+            return Err(RbValueError::new_err(format!(
+                "`strategy` must be one of {{'forward', 'backward', 'min', 'max', 'mean', 'zero', 'one'}}, got {e}",
+            )));
         }
     };
     Ok(parsed)
