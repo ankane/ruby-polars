@@ -128,7 +128,7 @@ pub(crate) fn rb_object_to_any_value<'s>(
 
     fn get_str(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
         let ruby = Ruby::get_with(ob);
-        let v = RString::from_value(ob).unwrap();
+        let v = RString::try_convert(ob)?;
         if v.enc_get() == ruby.utf8_encindex() {
             Ok(AnyValue::StringOwned(v.to_string()?.into()))
         } else {
@@ -137,7 +137,7 @@ pub(crate) fn rb_object_to_any_value<'s>(
     }
 
     fn get_list(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
-        let v = RArray::from_value(ob).unwrap();
+        let v = RArray::try_convert(ob)?;
         if v.is_empty() {
             Ok(AnyValue::List(Series::new_empty(
                 PlSmallStr::EMPTY,
