@@ -98,7 +98,7 @@ pub fn read_parquet_schema(rb_f: Value) -> RbResult<RHash> {
 }
 
 fn fields_to_rbdict(schema: &ArrowSchema, dict: &RHash) -> RbResult<()> {
-    let ruby = &Ruby::get().unwrap();
+    let ruby = &Ruby::get_with(*dict);
     for field in schema.iter_values() {
         let dt = Wrap(polars::prelude::DataType::from_arrow_field(field));
         dict.aset(field.name.as_str(), dt.try_into_value_with(ruby)?)?;
