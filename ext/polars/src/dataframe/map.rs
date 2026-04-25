@@ -31,9 +31,8 @@ impl RbDataFrame {
             let iter = iters
                 .iter_mut()
                 .map(|it| Wrap(it.next().unwrap()).try_into_value_with(rb));
-            // TODO remove unwrap
-            let tpl = rb.ary_try_from_iter(iter).unwrap();
-            lambda.funcall::<_, _, Value>("call", (tpl,))
+            rb.ary_try_from_iter(iter)
+                .and_then(|tpl| lambda.funcall::<_, _, Value>("call", (tpl,)))
         });
 
         // Simple case: return type set.
