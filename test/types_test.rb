@@ -75,16 +75,12 @@ class TypesTest < Minitest::Test
   end
 
   def test_series_dtype_decimal
-    require "bigdecimal"
-
     s = Polars::Series.new([BigDecimal("12.3456"), nil, BigDecimal("-0.000078")], dtype: Polars::Decimal)
     assert_series [BigDecimal("12.3456"), nil, BigDecimal("-0.000078")], s, dtype: Polars::Decimal
     assert_equal BigDecimal("12.3456"), s[0]
   end
 
   def test_series_dtype_decimal_precision_scale
-    require "bigdecimal"
-
     s = Polars::Series.new([1.5, nil, 3.5], dtype: Polars::Decimal)
     assert_series [BigDecimal("1.5"), nil, BigDecimal("3.5")], s, dtype: Polars::Decimal.new(2, 1)
   end
@@ -279,8 +275,6 @@ class TypesTest < Minitest::Test
   end
 
   def assert_bigdecimal(v, exp, scale)
-    require "bigdecimal"
-
     b = BigDecimal(v)
 
     s = Polars::Series.new([b])

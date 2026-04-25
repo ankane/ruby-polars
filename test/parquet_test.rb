@@ -158,8 +158,6 @@ class ParquetTest < Minitest::Test
   end
 
   def test_decimals
-    require "bigdecimal"
-
     Polars::Config.activate_decimals
     df = Polars::DataFrame.new({"a" => [BigDecimal("1"), BigDecimal("2"), BigDecimal("3")]})
     path = temp_path

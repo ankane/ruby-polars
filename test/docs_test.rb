@@ -243,8 +243,6 @@ class DocsTest < Minitest::Test
       require "active_support/core_ext/date_time"
     elsif cls == Polars::DateTimeNameSpace
       require "active_support/core_ext/date"
-    elsif cls == Polars::Selectors && method.name == :decimal
-      require "bigdecimal"
     end
 
     puts "#{cls}##{method.name}" if stress?
