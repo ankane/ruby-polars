@@ -17,7 +17,7 @@ pub fn init_polars_schema_from_arrow_c_schema(
     polars_schema: RHash,
     schema_object: Value,
 ) -> RbResult<()> {
-    let ruby = &Ruby::get().unwrap();
+    let ruby = &Ruby::get_with(polars_schema);
     let schema_capsule = schema_object.funcall("arrow_c_schema", ())?;
 
     let field = import_schema_rbcapsule(schema_capsule)?;
