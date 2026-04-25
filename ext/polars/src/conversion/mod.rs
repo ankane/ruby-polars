@@ -390,13 +390,12 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::String" => DataType::String,
                 "Polars::Binary" => DataType::Binary,
                 "Polars::Categorical" => {
-                    let categories: Value = ob.funcall("categories", ()).unwrap();
-                    let rb_categories: &RbCategories =
-                        categories.funcall("_categories", ()).unwrap();
+                    let categories: Value = ob.funcall("categories", ())?;
+                    let rb_categories: &RbCategories = categories.funcall("_categories", ())?;
                     DataType::from_categories(rb_categories.categories().clone())
                 }
                 "Polars::Enum" => {
-                    let categories: Value = ob.funcall("categories", ()).unwrap();
+                    let categories: Value = ob.funcall("categories", ())?;
                     let s = get_series(categories)?;
                     let ca = s.str().map_err(RbPolarsErr::from)?;
                     let categories = ca.downcast_iter().next().unwrap().clone();
@@ -408,7 +407,7 @@ impl TryConvert for Wrap<DataType> {
                 "Polars::Date" => DataType::Date,
                 "Polars::Time" => DataType::Time,
                 "Polars::Datetime" => {
-                    let time_unit: Value = ob.funcall("time_unit", ()).unwrap();
+                    let time_unit: Value = ob.funcall("time_unit", ())?;
                     let time_unit = Wrap::<TimeUnit>::try_convert(time_unit)?.0;
                     let time_zone: Option<String> = ob.funcall("time_zone", ())?;
                     DataType::Datetime(
@@ -417,7 +416,7 @@ impl TryConvert for Wrap<DataType> {
                     )
                 }
                 "Polars::Duration" => {
-                    let time_unit: Value = ob.funcall("time_unit", ()).unwrap();
+                    let time_unit: Value = ob.funcall("time_unit", ())?;
                     let time_unit = Wrap::<TimeUnit>::try_convert(time_unit)?.0;
                     DataType::Duration(time_unit)
                 }
@@ -428,13 +427,13 @@ impl TryConvert for Wrap<DataType> {
                     DataType::Decimal(precision, scale)
                 }
                 "Polars::List" => {
-                    let inner: Value = ob.funcall("inner", ()).unwrap();
+                    let inner: Value = ob.funcall("inner", ())?;
                     let inner = Wrap::<DataType>::try_convert(inner)?;
                     DataType::List(Box::new(inner.0))
                 }
                 "Polars::Array" => {
-                    let inner: Value = ob.funcall("inner", ()).unwrap();
-                    let size: Value = ob.funcall("size", ()).unwrap();
+                    let inner: Value = ob.funcall("inner", ())?;
+                    let size: Value = ob.funcall("size", ())?;
                     let inner = Wrap::<DataType>::try_convert(inner)?;
                     let size = usize::try_convert(size)?;
                     DataType::Array(Box::new(inner.0), size)
