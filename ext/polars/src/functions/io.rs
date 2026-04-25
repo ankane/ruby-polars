@@ -8,6 +8,7 @@ use crate::conversion::Wrap;
 use crate::file::{EitherRustRubyFile, get_either_file};
 use crate::io::cloud_options::OptRbCloudOptions;
 use crate::ruby::gvl::GvlExt;
+use crate::ruby::utils::TryIntoValue;
 use crate::{RbPolarsErr, RbResult};
 
 pub fn read_ipc_schema(rb: &Ruby, rb_f: Value) -> RbResult<RHash> {
@@ -97,9 +98,10 @@ pub fn read_parquet_schema(rb_f: Value) -> RbResult<RHash> {
 }
 
 fn fields_to_rbdict(schema: &ArrowSchema, dict: &RHash) -> RbResult<()> {
+    let ruby = &Ruby::get().unwrap();
     for field in schema.iter_values() {
         let dt = Wrap(polars::prelude::DataType::from_arrow_field(field));
-        dict.aset(field.name.as_str(), dt)?;
+        dict.aset(field.name.as_str(), dt.try_into_value_with(ruby)?)?;
     }
     Ok(())
 }

@@ -157,8 +157,8 @@ impl RbSeries {
         self.series.write().rename(name.into());
     }
 
-    pub fn dtype(rb: &Ruby, self_: &Self) -> Value {
-        Wrap(self_.series.read().dtype().clone()).into_value_with(rb)
+    pub fn dtype(rb: &Ruby, self_: &Self) -> RbResult<Value> {
+        Wrap(self_.series.read().dtype().clone()).try_into_value_with(rb)
     }
 
     pub fn set_sorted_flag(&self, descending: bool) -> Self {

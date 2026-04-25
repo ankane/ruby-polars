@@ -4,7 +4,7 @@ use polars::prelude::*;
 use crate::expr::ToExprs;
 use crate::expr::datatype::RbDataTypeExpr;
 use crate::ruby::ruby_udf::{RubyUdfExpression, RubyUdfExt};
-use crate::ruby::utils::to_pl_err;
+use crate::ruby::utils::{TryIntoValue, to_pl_err};
 use crate::{RbExpr, RbResult, RbSeries, Wrap};
 
 pub(crate) fn call_lambda_with_series(
@@ -17,7 +17,10 @@ pub(crate) fn call_lambda_with_series(
 
     // Set return_dtype in kwargs
     let dict = rb.hash_new();
-    let output_dtype = output_dtype.map(Wrap);
+    let output_dtype = output_dtype
+        .map(|v| Wrap(v).try_into_value_with(rb))
+        .transpose()
+        .map_err(to_pl_err)?;
     dict.aset(rb.sym_new("return_dtype"), output_dtype)
         .map_err(to_pl_err)?;
 

@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use magnus::value::{Lazy, ReprValue};
-use magnus::{IntoValue, Module, RClass, RHash, RModule, Ruby, Value};
+use magnus::{Module, RClass, RHash, RModule, Ruby, Value};
 use polars::prelude::{PlHashMap, PlSmallStr, PolarsError, Schema};
 use polars_io::catalog::unity::client::{CatalogClient, CatalogClientBuilder};
 use polars_io::catalog::unity::models::{
@@ -12,6 +12,7 @@ use polars_io::pl_async;
 
 use crate::rb_modules::polars;
 use crate::ruby::gvl::GvlExt;
+use crate::ruby::utils::TryIntoValue;
 use crate::utils::EnterPolarsExt;
 use crate::utils::to_rb_err;
 use crate::{RbResult, Wrap};
@@ -313,7 +314,7 @@ impl RbCatalogClient {
     }
 
     pub fn type_json_to_polars_type(rb: &Ruby, type_json: String) -> RbResult<Value> {
-        Ok(Wrap(parse_type_json_str(&type_json).map_err(to_rb_err)?).into_value_with(rb))
+        Wrap(parse_type_json_str(&type_json).map_err(to_rb_err)?).try_into_value_with(rb)
     }
 }
 

@@ -83,8 +83,7 @@ pub(crate) fn get_series(obj: Value) -> RbResult<Series> {
 
 pub(crate) fn to_series(rb: &Ruby, s: RbSeries) -> RbResult<Value> {
     let series = pl_series(rb);
-    series
-        .funcall::<_, _, Value>("_from_rbseries", (s,))
+    series.funcall::<_, _, Value>("_from_rbseries", (s,))
 }
 
 impl TryConvert for Wrap<PlSmallStr> {
@@ -134,126 +133,117 @@ impl TryIntoValue for Wrap<Series> {
     }
 }
 
-impl IntoValue for Wrap<DataType> {
-    fn into_value_with(self, ruby: &Ruby) -> Value {
+impl TryIntoValue for Wrap<DataType> {
+    fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value> {
         let pl = crate::rb_modules::polars(ruby);
 
         match self.0 {
             DataType::Int8 => {
-                let class = pl.const_get::<_, Value>("Int8").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("Int8")?;
+                class.funcall("new", ())
             }
             DataType::Int16 => {
-                let class = pl.const_get::<_, Value>("Int16").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("Int16")?;
+                class.funcall("new", ())
             }
             DataType::Int32 => {
-                let class = pl.const_get::<_, Value>("Int32").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("Int32")?;
+                class.funcall("new", ())
             }
             DataType::Int64 => {
-                let class = pl.const_get::<_, Value>("Int64").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("Int64")?;
+                class.funcall("new", ())
             }
             DataType::Int128 => {
-                let class = pl.const_get::<_, Value>("Int128").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("Int128")?;
+                class.funcall("new", ())
             }
             DataType::UInt8 => {
-                let class = pl.const_get::<_, Value>("UInt8").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("UInt8")?;
+                class.funcall("new", ())
             }
             DataType::UInt16 => {
-                let class = pl.const_get::<_, Value>("UInt16").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("UInt16")?;
+                class.funcall("new", ())
             }
             DataType::UInt32 => {
-                let class = pl.const_get::<_, Value>("UInt32").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("UInt32")?;
+                class.funcall("new", ())
             }
             DataType::UInt64 => {
-                let class = pl.const_get::<_, Value>("UInt64").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("UInt64")?;
+                class.funcall("new", ())
             }
             DataType::UInt128 => {
-                let class = pl.const_get::<_, Value>("UInt128").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("UInt128")?;
+                class.funcall("new", ())
             }
             DataType::Float16 => {
-                let class = pl.const_get::<_, Value>("Float16").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("Float16")?;
+                class.funcall("new", ())
             }
             DataType::Float32 => {
-                let class = pl.const_get::<_, Value>("Float32").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("Float32")?;
+                class.funcall("new", ())
             }
             DataType::Float64 | DataType::Unknown(UnknownKind::Float) => {
-                let class = pl.const_get::<_, Value>("Float64").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("Float64")?;
+                class.funcall("new", ())
             }
             DataType::Decimal(precision, scale) => {
-                let class = pl.const_get::<_, Value>("Decimal").unwrap();
-                class
-                    .funcall::<_, _, Value>("new", (precision, scale))
-                    .unwrap()
+                let class = pl.const_get::<_, Value>("Decimal")?;
+                class.funcall::<_, _, Value>("new", (precision, scale))
             }
             DataType::Boolean => {
-                let class = pl.const_get::<_, Value>("Boolean").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("Boolean")?;
+                class.funcall("new", ())
             }
             DataType::String | DataType::Unknown(UnknownKind::Str) => {
-                let class = pl.const_get::<_, Value>("String").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("String")?;
+                class.funcall("new", ())
             }
             DataType::Binary => {
-                let class = pl.const_get::<_, Value>("Binary").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("Binary")?;
+                class.funcall("new", ())
             }
             DataType::Array(inner, size) => {
-                let class = pl.const_get::<_, Value>("Array").unwrap();
-                let inner = Wrap(*inner);
+                let class = pl.const_get::<_, Value>("Array")?;
+                let inner = Wrap(*inner).try_into_value_with(ruby)?;
                 let args = (inner, size);
-                class.funcall::<_, _, Value>("new", args).unwrap()
+                class.funcall::<_, _, Value>("new", args)
             }
             DataType::List(inner) => {
-                let class = pl.const_get::<_, Value>("List").unwrap();
-                let inner = Wrap(*inner);
-                class.funcall::<_, _, Value>("new", (inner,)).unwrap()
+                let class = pl.const_get::<_, Value>("List")?;
+                let inner = Wrap(*inner).try_into_value_with(ruby)?;
+                class.funcall::<_, _, Value>("new", (inner,))
             }
             DataType::Date => {
-                let class = pl.const_get::<_, Value>("Date").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("Date")?;
+                class.funcall("new", ())
             }
             DataType::Datetime(tu, tz) => {
-                let datetime_class = pl.const_get::<_, Value>("Datetime").unwrap();
-                datetime_class
-                    .funcall::<_, _, Value>(
-                        "new",
-                        (tu.to_ascii(), tz.as_deref().map(|x| x.as_str())),
-                    )
-                    .unwrap()
+                let datetime_class = pl.const_get::<_, Value>("Datetime")?;
+                datetime_class.funcall::<_, _, Value>(
+                    "new",
+                    (tu.to_ascii(), tz.as_deref().map(|x| x.as_str())),
+                )
             }
             DataType::Duration(tu) => {
-                let duration_class = pl.const_get::<_, Value>("Duration").unwrap();
-                duration_class
-                    .funcall::<_, _, Value>("new", (tu.to_ascii(),))
-                    .unwrap()
+                let duration_class = pl.const_get::<_, Value>("Duration")?;
+                duration_class.funcall::<_, _, Value>("new", (tu.to_ascii(),))
             }
             DataType::Object(_) => {
-                let class = pl.const_get::<_, Value>("Object").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("Object")?;
+                class.funcall("new", ())
             }
             DataType::Categorical(cats, _) => {
-                let categories_class = pl.const_get::<_, Value>("Categories").unwrap();
-                let categorical_class = pl.const_get::<_, Value>("Categorical").unwrap();
+                let categories_class = pl.const_get::<_, Value>("Categories")?;
+                let categorical_class = pl.const_get::<_, Value>("Categorical")?;
                 let categories: Value = categories_class
-                    .funcall("_from_rb_categories", (RbCategories::from(cats.clone()),))
-                    .unwrap();
+                    .funcall("_from_rb_categories", (RbCategories::from(cats.clone()),))?;
                 let kwargs = ruby.hash_new();
-                kwargs
-                    .aset(ruby.to_symbol("categories"), categories)
-                    .unwrap();
-                categorical_class.funcall("new", (kwargs,)).unwrap()
+                kwargs.aset(ruby.to_symbol("categories"), categories)?;
+                categorical_class.funcall("new", (kwargs,))
             }
             DataType::Enum(_, mapping) => {
                 let categories = unsafe {
@@ -262,42 +252,39 @@ impl IntoValue for Wrap<DataType> {
                         vec![mapping.to_arrow(true)],
                     )
                 };
-                let class = pl.const_get::<_, Value>("Enum").unwrap();
-                let series = to_series(ruby, categories.into_series().into()).unwrap();
-                class.funcall::<_, _, Value>("new", (series,)).unwrap()
+                let class = pl.const_get::<_, Value>("Enum")?;
+                let series = to_series(ruby, categories.into_series().into())?;
+                class.funcall::<_, _, Value>("new", (series,))
             }
             DataType::Time => {
-                let class = pl.const_get::<_, Value>("Time").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("Time")?;
+                class.funcall("new", ())
             }
             DataType::Struct(fields) => {
-                let field_class = pl.const_get::<_, Value>("Field").unwrap();
+                let field_class = pl.const_get::<_, Value>("Field")?;
                 let iter = fields.iter().map(|fld| {
                     let name = fld.name().as_str();
-                    let dtype = Wrap(fld.dtype().clone());
-                    field_class
-                        .funcall::<_, _, Value>("new", (name, dtype))
-                        .unwrap()
+                    // TODO remove unwrap
+                    let dtype = Wrap(fld.dtype().clone()).try_into_value_with(ruby).unwrap();
+                    field_class.funcall::<_, _, Value>("new", (name, dtype))
                 });
-                let fields = ruby.ary_from_iter(iter);
-                let struct_class = pl.const_get::<_, Value>("Struct").unwrap();
-                struct_class
-                    .funcall::<_, _, Value>("new", (fields,))
-                    .unwrap()
+                let fields = ruby.ary_try_from_iter(iter)?;
+                let struct_class = pl.const_get::<_, Value>("Struct")?;
+                struct_class.funcall::<_, _, Value>("new", (fields,))
             }
             DataType::Null => {
-                let class = pl.const_get::<_, Value>("Null").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("Null")?;
+                class.funcall("new", ())
             }
             DataType::Extension(_typ, _storage) => {
                 todo!();
             }
             DataType::Unknown(UnknownKind::Int(v)) => {
-                Wrap(materialize_dyn_int(v).dtype()).into_value_with(ruby)
+                Wrap(materialize_dyn_int(v).dtype()).try_into_value_with(ruby)
             }
             DataType::Unknown(_) => {
-                let class = pl.const_get::<_, Value>("Unknown").unwrap();
-                class.funcall("new", ()).unwrap()
+                let class = pl.const_get::<_, Value>("Unknown")?;
+                class.funcall("new", ())
             }
             DataType::BinaryOffset => {
                 unimplemented!()
@@ -646,7 +633,12 @@ impl IntoValue for Wrap<Schema> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
         let dict = ruby.hash_new();
         for (k, v) in self.0.iter() {
-            dict.aset(k.as_str(), Wrap(v.clone())).unwrap();
+            // TODO remove unwraps
+            dict.aset(
+                k.as_str(),
+                Wrap(v.clone()).try_into_value_with(ruby).unwrap(),
+            )
+            .unwrap();
         }
         dict.as_value()
     }

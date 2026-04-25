@@ -22,6 +22,7 @@ use crate::ruby::gvl::GvlExt;
 use crate::ruby::lazy::RubyUdfLazyFrameExt;
 use crate::ruby::plan_callback::PlanCallbackExt;
 use crate::ruby::ruby_function::RubyObject;
+use crate::ruby::utils::TryIntoValue;
 use crate::utils::{EnterPolarsExt, to_rb_err};
 use crate::{
     RbArrowArrayStream, RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbTypeError,
@@ -1183,10 +1184,11 @@ impl RbLazyFrame {
 
         let schema_dict = rb.hash_new();
         schema.iter_fields().for_each(|fld| {
+            // TODO remove unwraps
             schema_dict
                 .aset::<String, Value>(
                     fld.name().to_string(),
-                    Wrap(fld.dtype().clone()).into_value_with(rb),
+                    Wrap(fld.dtype().clone()).try_into_value_with(rb).unwrap(),
                 )
                 .unwrap();
         });

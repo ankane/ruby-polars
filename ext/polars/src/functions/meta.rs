@@ -1,14 +1,15 @@
-use magnus::{IntoValue, Ruby, Value};
+use magnus::{Ruby, Value};
 use polars_core;
 use polars_core::POOL;
 use polars_core::fmt::FloatFmt;
 use polars_core::prelude::IDX_DTYPE;
 
 use crate::conversion::Wrap;
+use crate::ruby::utils::TryIntoValue;
 use crate::{RbResult, RbValueError};
 
-pub fn get_index_type(ruby: &Ruby) -> Value {
-    Wrap(IDX_DTYPE).into_value_with(ruby)
+pub fn get_index_type(ruby: &Ruby) -> RbResult<Value> {
+    Wrap(IDX_DTYPE).try_into_value_with(ruby)
 }
 
 pub fn thread_pool_size() -> usize {

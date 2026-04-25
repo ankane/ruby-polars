@@ -2,7 +2,7 @@ use std::hash::BuildHasher;
 
 use arrow::bitmap::MutableBitmap;
 use either::Either;
-use magnus::{IntoValue, RArray, Ruby, Value, prelude::*, value::Opaque};
+use magnus::{RArray, Ruby, Value, prelude::*, value::Opaque};
 use polars::prelude::*;
 
 use crate::conversion::*;
@@ -10,6 +10,7 @@ use crate::prelude::strings_to_pl_smallstr;
 use crate::rb_modules::pl_utils;
 use crate::ruby::exceptions::RbIndexError;
 use crate::ruby::gvl::GvlExt;
+use crate::ruby::utils::TryIntoValue;
 use crate::series::ToRbSeries;
 use crate::series::to_series;
 use crate::utils::EnterPolarsExt;
@@ -149,7 +150,8 @@ impl RbDataFrame {
         let iter = df
             .columns()
             .iter()
-            .map(|s| Wrap(s.dtype().clone()).into_value_with(ruby));
+            // TODO remove unwrap
+            .map(|s| Wrap(s.dtype().clone()).try_into_value_with(ruby).unwrap());
         ruby.ary_from_iter(iter)
     }
 
