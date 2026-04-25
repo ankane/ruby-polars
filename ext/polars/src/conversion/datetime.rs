@@ -43,21 +43,21 @@ pub fn datetime_to_rb_object(
             if utc_datetime.year() >= 2100 {
                 // chrono-tz does not support dates after 2100
                 // https://github.com/chronotope/chrono-tz/issues/135
-                pl_utils(&ruby).funcall("_to_ruby_datetime", (v, tu.to_ascii(), time_zone.as_str()))
+                pl_utils(ruby).funcall("_to_ruby_datetime", (v, tu.to_ascii(), time_zone.as_str()))
             } else {
                 let datetime = utc_datetime.with_timezone(&tz);
-                Ok(datetime.fixed_offset().into_value_with(&ruby))
+                Ok(datetime.fixed_offset().into_value_with(ruby))
             }
         } else if let Ok(tz) = FixedOffset::from_str(time_zone) {
             let naive_datetime = timestamp_to_naive_datetime(v, tu);
             let datetime = tz.from_utc_datetime(&naive_datetime);
-            Ok(datetime.into_value_with(&ruby))
+            Ok(datetime.into_value_with(ruby))
         } else {
             Err(RbPolarsErr::Other(format!("Could not parse timezone: {time_zone}")).into())
         }
     } else {
         Ok(timestamp_to_naive_datetime(v, tu)
             .and_utc()
-            .into_value_with(&ruby))
+            .into_value_with(ruby))
     }
 }
