@@ -130,7 +130,8 @@ impl IntoValue for Wrap<&DateChunked> {
 
 impl TryIntoValue for Wrap<&DecimalChunked> {
     fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value> {
-        decimal_to_rbobject_iter(ruby, self.0).map(|v| v.as_value())
+        let iter = decimal_to_rbobject_iter(ruby, self.0)?;
+        Ok(iter.as_value())
     }
 }
 
@@ -138,14 +139,13 @@ pub(crate) fn decimal_to_rbobject_iter(ruby: &Ruby, ca: &DecimalChunked) -> RbRe
     let utils = pl_utils(ruby);
     let rb_precision = ca.precision().into_value_with(ruby);
     let mut buf = DecimalFmtBuffer::new();
-    let iter = ca.physical().into_iter().map(|opt_v| match opt_v {
-        None => Ok(None),
-        Some(v) => {
-            let s = buf.format_dec128(v, ca.scale(), false, false);
-            utils
-                .funcall::<_, _, Value>("_to_ruby_decimal", (rb_precision, s))
-                .map(Some)
-        }
+    let iter = ca.physical().iter().map(move |opt_v| {
+        opt_v
+            .map(|v| {
+                let s = buf.format_dec128(v, ca.scale(), false, false);
+                utils.funcall::<_, _, Value>("_to_ruby_decimal", (rb_precision, s))
+            })
+            .transpose()
     });
     ruby.ary_try_from_iter(iter)
 }
