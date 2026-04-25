@@ -81,11 +81,10 @@ pub(crate) fn get_series(obj: Value) -> RbResult<Series> {
     Ok(rbs.series.read().clone())
 }
 
-pub(crate) fn to_series(rb: &Ruby, s: RbSeries) -> Value {
+pub(crate) fn to_series(rb: &Ruby, s: RbSeries) -> RbResult<Value> {
     let series = pl_series(rb);
     series
         .funcall::<_, _, Value>("_from_rbseries", (s,))
-        .unwrap()
 }
 
 impl TryConvert for Wrap<PlSmallStr> {
@@ -129,8 +128,8 @@ fn struct_dict<'a>(
     Ok(dict.as_value())
 }
 
-impl IntoValue for Wrap<Series> {
-    fn into_value_with(self, ruby: &Ruby) -> Value {
+impl TryIntoValue for Wrap<Series> {
+    fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value> {
         to_series(ruby, RbSeries::new(self.0))
     }
 }
@@ -264,7 +263,7 @@ impl IntoValue for Wrap<DataType> {
                     )
                 };
                 let class = pl.const_get::<_, Value>("Enum").unwrap();
-                let series = to_series(ruby, categories.into_series().into());
+                let series = to_series(ruby, categories.into_series().into()).unwrap();
                 class.funcall::<_, _, Value>("new", (series,)).unwrap()
             }
             DataType::Time => {
