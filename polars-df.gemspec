@@ -16,6 +16,7 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = ">= 3.3"
 
+  # TODO make bigdecimal optional in 0.26
   spec.add_dependency "bigdecimal"
   spec.add_dependency "rb_sys"
 end
