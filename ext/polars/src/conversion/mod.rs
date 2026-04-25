@@ -36,6 +36,7 @@ use polars_utils::total_ord::{TotalEq, TotalHash};
 use crate::file::{RubyScanSourceInput, get_ruby_scan_source_input};
 use crate::object::OBJECT_NAME;
 use crate::rb_modules::pl_series;
+use crate::ruby::utils::TryIntoValue;
 use crate::utils::to_rb_err;
 use crate::{
     RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError,
@@ -119,7 +120,12 @@ impl TryConvert for Wrap<NullValues> {
 fn struct_dict<'a>(ruby: &Ruby, vals: impl Iterator<Item = AnyValue<'a>>, flds: &[Field]) -> Value {
     let dict = ruby.hash_new();
     for (fld, val) in flds.iter().zip(vals) {
-        dict.aset(fld.name().as_str(), Wrap(val)).unwrap()
+        // TODO remove unwrap
+        dict.aset(
+            fld.name().as_str(),
+            Wrap(val).try_into_value_with(ruby).unwrap(),
+        )
+        .unwrap()
     }
     dict.as_value()
 }

@@ -1,9 +1,10 @@
-use magnus::{IntoValue, Ruby, Value, prelude::*};
+use magnus::{Ruby, Value, prelude::*};
 
 use super::*;
 use crate::RbResult;
 use crate::conversion::{ObjectValue, Wrap};
 use crate::interop::arrow::to_rb::dataframe_to_stream;
+use crate::ruby::utils::TryIntoValue;
 
 impl RbDataFrame {
     pub fn row_tuple(ruby: &Ruby, self_: &Self, idx: i64) -> Value {
@@ -17,7 +18,8 @@ impl RbDataFrame {
                 let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
                 obj.unwrap().to_value()
             }
-            _ => Wrap(s.get(idx).unwrap()).into_value_with(ruby),
+            // TODO remove unwrap
+            _ => Wrap(s.get(idx).unwrap()).try_into_value_with(ruby).unwrap(),
         }))
         .as_value()
     }
@@ -30,7 +32,8 @@ impl RbDataFrame {
                     let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
                     obj.unwrap().to_value()
                 }
-                _ => Wrap(s.get(idx).unwrap()).into_value_with(ruby),
+                // TODO remove unwrap
+                _ => Wrap(s.get(idx).unwrap()).try_into_value_with(ruby).unwrap(),
             }))
         }))
         .as_value()

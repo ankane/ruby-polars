@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use magnus::{Error, Ruby, Value, gc, value::Opaque};
+use magnus::{Error, IntoValue, Ruby, Value, gc, value::Opaque};
 use polars::error::PolarsError;
 
 use crate::RbResult;
@@ -30,4 +30,10 @@ impl Drop for ArcValue {
 
 pub trait TryIntoValue {
     fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value>;
+}
+
+impl<T: IntoValue> TryIntoValue for T {
+    fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value> {
+        Ok(self.into_value_with(ruby))
+    }
 }

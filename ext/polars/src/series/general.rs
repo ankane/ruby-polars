@@ -10,6 +10,7 @@ use crate::ruby::exceptions::{RbIndexError, RbRuntimeError, RbValueError};
 use crate::ruby::gvl::GvlExt;
 use crate::ruby::plan_callback::PlanCallbackExt;
 use crate::ruby::ruby_function::RubyObject;
+use crate::ruby::utils::TryIntoValue;
 use crate::utils::EnterPolarsExt;
 use crate::{RbDataFrame, RbErr, RbPolarsErr, RbResult, RbSeries};
 
@@ -112,7 +113,7 @@ impl RbSeries {
                 let rbseries = RbSeries::new(s);
                 rb_modules::pl_utils(ruby).funcall("wrap_s", (rbseries,))
             }
-            _ => Ok(Wrap(av).into_value_with(ruby)),
+            _ => Wrap(av).try_into_value_with(ruby),
         }
     }
 

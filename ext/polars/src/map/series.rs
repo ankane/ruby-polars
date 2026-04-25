@@ -4,6 +4,7 @@ use super::*;
 use crate::Wrap;
 use crate::error::RbPolarsErr;
 use crate::prelude::ObjectValue;
+use crate::ruby::utils::TryIntoValue;
 
 pub trait ApplyLambdaGeneric {
     fn apply_generic(&self, rb: &Ruby, lambda: Value, skip_nulls: bool) -> RbResult<Series>;
@@ -25,7 +26,7 @@ fn call_and_collect_anyvalues<T, I>(
     skip_nulls: bool,
 ) -> RbResult<Vec<AnyValue<'static>>>
 where
-    T: IntoValue,
+    T: TryIntoValue,
     I: Iterator<Item = Option<T>>,
 {
     let mut avs = Vec::with_capacity(len);
@@ -36,7 +37,7 @@ where
                 continue;
             }
             None => rb.qnil().into_value_with(rb),
-            Some(val) => val.into_value_with(rb),
+            Some(val) => val.try_into_value_with(rb)?,
         };
         let av: Option<Wrap<AnyValue>> = lambda.funcall("call", (arg,))?;
         avs.push(av.map(|w| w.0).unwrap_or(AnyValue::Null));

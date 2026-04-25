@@ -4,6 +4,7 @@ use super::RbSeries;
 use crate::map::series::ApplyLambdaGeneric;
 use crate::prelude::*;
 use crate::ruby::gvl::GvlExt;
+use crate::ruby::utils::TryIntoValue;
 use crate::series::construction::series_from_objects;
 use crate::{RbPolarsErr, RbResult};
 use crate::{apply_all_polars_dtypes, raise_err};
@@ -78,7 +79,7 @@ fn call_and_collect_objects<T, I>(
     skip_nulls: bool,
 ) -> RbResult<Series>
 where
-    T: IntoValue,
+    T: TryIntoValue,
     I: Iterator<Item = Option<T>>,
 {
     let mut objects = Vec::with_capacity(len);
@@ -91,7 +92,7 @@ where
                 continue;
             }
             None => rb.qnil().into_value_with(rb),
-            Some(val) => val.into_value_with(rb),
+            Some(val) => val.try_into_value_with(rb)?,
         };
         let out: Value = lambda.funcall("call", (arg,))?;
         objects.push(ObjectValue {

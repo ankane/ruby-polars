@@ -5,7 +5,7 @@ use polars_core::utils::CustomIterTools;
 use super::*;
 use crate::error::RbPolarsErr;
 use crate::prelude::*;
-use crate::ruby::utils::to_pl_err;
+use crate::ruby::utils::{TryIntoValue, to_pl_err};
 use crate::series::construction::series_from_objects;
 use crate::{RbResult, RbSeries, raise_err};
 
@@ -28,8 +28,11 @@ impl RbDataFrame {
         drop(df); // Release lock before calling lambda.
 
         let lambda_result_iter = (0..height).map(move |_| {
-            let iter = iters.iter_mut().map(|it| Wrap(it.next().unwrap()));
-            let tpl = rb.ary_from_iter(iter);
+            let iter = iters
+                .iter_mut()
+                .map(|it| Wrap(it.next().unwrap()).try_into_value_with(rb));
+            // TODO remove unwrap
+            let tpl = rb.ary_try_from_iter(iter).unwrap();
             lambda.funcall::<_, _, Value>("call", (tpl,))
         });
 

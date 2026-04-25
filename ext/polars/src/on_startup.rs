@@ -23,7 +23,7 @@ use crate::ruby::gvl::GvlExt;
 use crate::ruby::ruby_convert_registry::{FromRubyConvertRegistry, RubyConvertRegistry};
 use crate::ruby::ruby_udf;
 use crate::ruby::thread::{is_non_ruby_thread, run_in_ruby_thread};
-use crate::ruby::utils::to_pl_err;
+use crate::ruby::utils::{TryIntoValue, to_pl_err};
 use crate::series::RbSeries;
 
 fn ruby_function_caller_series(
@@ -86,12 +86,14 @@ pub unsafe fn register_startup_deps(catch_keyboard_interrupt: bool) {
 
         let object_converter = Arc::new(|av: AnyValue| {
             let object = Ruby::attach(|rb| ObjectValue {
-                inner: Wrap(av).into_value_with(rb).into(),
+                // TODO remove unwrap
+                inner: Wrap(av).try_into_value_with(rb).unwrap().into(),
             });
             Box::new(object) as Box<dyn Any>
         });
         let rbobject_converter = Arc::new(|av: AnyValue| {
-            let object = Ruby::attach(|rb| Wrap(av).into_value_with(rb));
+            // TODO remove unwrap
+            let object = Ruby::attach(|rb| Wrap(av).try_into_value_with(rb).unwrap());
             Box::new(object) as Box<dyn Any>
         });
         fn object_array_getter(_arr: &dyn Array, _idx: usize) -> Option<AnyValue<'_>> {

@@ -14,12 +14,12 @@ use super::{ObjectValue, Wrap, struct_dict};
 
 use crate::rb_modules::pl_utils;
 use crate::ruby::exceptions::RbOverflowError;
+use crate::ruby::utils::TryIntoValue;
 use crate::{RbErr, RbPolarsErr, RbResult, RbSeries, RbValueError};
 
-impl IntoValue for Wrap<AnyValue<'_>> {
-    fn into_value_with(self, ruby: &Ruby) -> Value {
-        // TODO remove unwrap
-        any_value_into_rb_object(self.0, ruby).unwrap()
+impl TryIntoValue for Wrap<AnyValue<'_>> {
+    fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value> {
+        any_value_into_rb_object(self.0, ruby)
     }
 }
 

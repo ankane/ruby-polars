@@ -3,11 +3,12 @@ use magnus::{IntoValue, Ruby, Value};
 use polars::prelude::*;
 
 use crate::prelude::*;
+use crate::ruby::utils::TryIntoValue;
 use crate::utils::EnterPolarsExt;
 use crate::{RbResult, RbSeries};
 
 fn scalar_to_rb(scalar: RbResult<Scalar>, rb: &Ruby) -> RbResult<Value> {
-    Ok(Wrap(scalar?.as_any_value()).into_value_with(rb))
+    Wrap(scalar?.as_any_value()).try_into_value_with(rb)
 }
 
 impl RbSeries {
