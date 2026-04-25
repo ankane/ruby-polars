@@ -7,36 +7,34 @@ use crate::interop::arrow::to_rb::dataframe_to_stream;
 use crate::ruby::utils::TryIntoValue;
 
 impl RbDataFrame {
-    pub fn row_tuple(ruby: &Ruby, self_: &Self, idx: i64) -> Value {
+    pub fn row_tuple(ruby: &Ruby, self_: &Self, idx: i64) -> RbResult<Value> {
         let idx = if idx < 0 {
             (self_.df.read().height() as i64 + idx) as usize
         } else {
             idx as usize
         };
-        ruby.ary_from_iter(self_.df.read().columns().iter().map(|s| match s.dtype() {
+        ruby.ary_try_from_iter(self_.df.read().columns().iter().map(|s| match s.dtype() {
             DataType::Object(_) => {
                 let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
-                obj.unwrap().to_value()
+                Ok(obj.unwrap().to_value())
             }
-            // TODO remove unwrap
-            _ => Wrap(s.get(idx).unwrap()).try_into_value_with(ruby).unwrap(),
+            _ => Wrap(s.get(idx).unwrap()).try_into_value_with(ruby),
         }))
-        .as_value()
+        .map(|v| v.as_value())
     }
 
-    pub fn row_tuples(ruby: &Ruby, self_: &Self) -> Value {
+    pub fn row_tuples(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
         let df = &self_.df;
-        ruby.ary_from_iter((0..df.read().height()).map(|idx| {
-            ruby.ary_from_iter(self_.df.read().columns().iter().map(|s| match s.dtype() {
+        ruby.ary_try_from_iter((0..df.read().height()).map(|idx| {
+            ruby.ary_try_from_iter(self_.df.read().columns().iter().map(|s| match s.dtype() {
                 DataType::Object(_) => {
                     let obj: Option<&ObjectValue> = s.get_object(idx).map(|any| any.into());
-                    obj.unwrap().to_value()
+                    Ok(obj.unwrap().to_value())
                 }
-                // TODO remove unwrap
-                _ => Wrap(s.get(idx).unwrap()).try_into_value_with(ruby).unwrap(),
+                _ => Wrap(s.get(idx).unwrap()).try_into_value_with(ruby),
             }))
         }))
-        .as_value()
+        .map(|v| v.as_value())
     }
 
     pub fn __arrow_c_stream__(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
