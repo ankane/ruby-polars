@@ -75,6 +75,11 @@ module Polars
         end
       return utc_time if time_zone.nil?
 
+      unless defined?(::TZInfo)
+        # TODO improve error message
+        require "tzinfo"
+      end
+
       utc_time.getlocal(::TZInfo::Timezone.get(time_zone))
     end
 

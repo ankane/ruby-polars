@@ -89,15 +89,16 @@ impl IntoValue for Wrap<&DurationChunked> {
     }
 }
 
-impl IntoValue for Wrap<&DatetimeChunked> {
-    fn into_value_with(self, ruby: &Ruby) -> Value {
+impl TryIntoValue for Wrap<&DatetimeChunked> {
+    fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value> {
         let time_zone = self.0.time_zone().as_ref();
         let time_unit = self.0.time_unit();
-        let iter =
-            self.0.physical().iter().map(|opt_v| {
-                opt_v.map(|v| datetime_to_rb_object(v, time_unit, time_zone).unwrap())
-            });
-        ruby.ary_from_iter(iter).as_value()
+        let iter = self.0.physical().iter().map(|opt_v| {
+            opt_v
+                .map(|v| datetime_to_rb_object(v, time_unit, time_zone))
+                .transpose()
+        });
+        ruby.ary_try_from_iter(iter).map(|v| v.as_value())
     }
 }
 

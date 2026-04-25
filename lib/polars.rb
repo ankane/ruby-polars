@@ -9,7 +9,6 @@ end
 require "bigdecimal"
 require "date"
 require "stringio"
-require "tzinfo"
 
 # modules
 require_relative "polars/expr_dispatch"

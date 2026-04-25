@@ -120,7 +120,7 @@ impl RbSeries {
                 }
                 DataType::Datetime(_, _) => {
                     let ca = series.datetime().map_err(RbPolarsErr::from)?;
-                    return Ok(Wrap(ca).into_value_with(ruby));
+                    return Wrap(ca).try_into_value_with(ruby);
                 }
                 DataType::Decimal(_, _) => {
                     let ca = series.decimal().map_err(RbPolarsErr::from)?;
