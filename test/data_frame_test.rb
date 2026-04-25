@@ -364,6 +364,15 @@ class DataFrameTest < Minitest::Test
     assert df.describe
   end
 
+  def test_describe_tz_aware_datetime
+    df = Polars::DataFrame.new({
+      "a" => [1, 2, 3],
+      "ts" => Polars::Series.new("ts", [Time.utc(2026, 1, 1), Time.utc(2026, 1, 2), Time.utc(2026, 1, 3)])
+        .cast(Polars::Datetime.new("ms", "Europe/London"))
+    })
+    assert df.describe
+  end
+
   def test_sort
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     assert_frame ({"a" => [1, 3, 2], "b" => ["one", "three", "two"]}), df.sort("b")

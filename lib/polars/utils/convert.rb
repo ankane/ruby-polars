@@ -63,19 +63,19 @@ module Polars
     end
 
     def self._to_ruby_datetime(value, time_unit = "ns", time_zone = nil)
-      if time_zone.nil? || time_zone == "" || time_zone == "UTC"
+      utc_time =
         if time_unit == "ns"
-          ::Time.at(value / 1000000000, value % 1000000000, :nsec).utc
+          ::Time.at(value / 1_000_000_000, value % 1_000_000_000, :nsec).utc
         elsif time_unit == "us"
-          ::Time.at(value / 1000000, value % 1000000, :usec).utc
+          ::Time.at(value / 1_000_000, value % 1_000_000, :usec).utc
         elsif time_unit == "ms"
-          ::Time.at(value / 1000, value % 1000, :millisecond).utc
+          ::Time.at(value / 1_000, value % 1_000, :millisecond).utc
         else
           raise ArgumentError, "time_unit must be one of {{'ns', 'us', 'ms'}}, got #{time_unit}"
         end
-      else
-        raise Todo
-      end
+      return utc_time if time_zone.nil?
+
+      utc_time.getlocal(::TZInfo::Timezone.get(time_zone))
     end
 
     def self._to_ruby_duration(value, time_unit = "ns")

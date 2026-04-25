@@ -2165,6 +2165,7 @@ dependencies = [
  "ahash",
  "bytes",
  "chrono",
+ "chrono-tz",
  "either",
  "magnus",
  "mimalloc",

@@ -55,10 +55,10 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> Value {
         },
         AnyValue::Date(v) => pl_utils(ruby).funcall("_to_ruby_date", (v,)).unwrap(),
         AnyValue::Datetime(v, time_unit, time_zone) => {
-            datetime_to_rb_object(v, time_unit, time_zone)
+            datetime_to_rb_object(v, time_unit, time_zone).unwrap()
         }
         AnyValue::DatetimeOwned(v, time_unit, time_zone) => {
-            datetime_to_rb_object(v, time_unit, time_zone.as_ref().map(AsRef::as_ref))
+            datetime_to_rb_object(v, time_unit, time_zone.as_ref().map(AsRef::as_ref)).unwrap()
         }
         AnyValue::Duration(v, time_unit) => {
             let time_unit = time_unit.to_ascii();

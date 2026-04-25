@@ -126,9 +126,23 @@ class TypesTest < Minitest::Test
 
   def test_series_dtype_datetime_time_zone
     s = Polars::Series.new([Time.utc(2020, 1, 1)], dtype: Polars::Datetime.new("us", "Europe/Amsterdam"))
-    assert_equal Polars::Datetime.new("us", "Europe/Amsterdam"), s.dtype
-    # TODO fix
-    # assert_series [Time.utc(2020, 1, 1)], s, dtype: Polars::Datetime.new("us", "Europe/Amsterdam")
+    assert_series [Time.utc(2020, 1, 1)], s, dtype: Polars::Datetime.new("us", "Europe/Amsterdam")
+  end
+
+  def test_series_dtype_datetime_time_zone_dst
+    s = Polars::Series.new([Time.utc(2024, 7, 1)], dtype: Polars::Datetime.new("us", "Europe/London"))
+    assert_series [Time.utc(2024, 7, 1)], s, dtype: Polars::Datetime.new("us", "Europe/London")
+  end
+
+  def test_series_dtype_datetime_fixed_offset
+    s = Polars::Series.new([Time.utc(2024, 1, 1)], dtype: Polars::Datetime.new("us", "+09:00"))
+    assert_series [Time.utc(2024, 1, 1)], s, dtype: Polars::Datetime.new("us", "Etc/GMT-9")
+  end
+
+  # chrono-tz has no data past 2100; falls back to Ruby-side TZInfo.
+  def test_series_dtype_datetime_time_zone_post_2100
+    s = Polars::Series.new([Time.utc(2150, 1, 1)], dtype: Polars::Datetime.new("us", "America/New_York"))
+    assert_series [Time.utc(2150, 1, 1)], s, dtype: Polars::Datetime.new("us", "America/New_York")
   end
 
   def test_series_dtype_duration

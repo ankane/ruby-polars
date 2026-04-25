@@ -2,6 +2,7 @@ use magnus::{IntoValue, RArray, RString, Ruby, TryConvert, Value, prelude::*};
 use polars::prelude::*;
 use polars_compute::decimal::DecimalFmtBuffer;
 
+use super::datetime::datetime_to_rb_object;
 use super::{Wrap, get_rbseq, struct_dict};
 
 use crate::RbResult;
@@ -90,20 +91,12 @@ impl IntoValue for Wrap<&DurationChunked> {
 
 impl IntoValue for Wrap<&DatetimeChunked> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
-        let utils = pl_utils(ruby);
-        let time_unit = Wrap(self.0.time_unit()).into_value_with(ruby);
-        let time_zone = self
-            .0
-            .time_zone()
-            .as_deref()
-            .map(|v| v.into_value_with(ruby));
-        let iter = self.0.physical().into_iter().map(|opt_v| {
-            opt_v.map(|v| {
-                utils
-                    .funcall::<_, _, Value>("_to_ruby_datetime", (v, time_unit, time_zone))
-                    .unwrap()
-            })
-        });
+        let time_zone = self.0.time_zone().as_ref();
+        let time_unit = self.0.time_unit();
+        let iter =
+            self.0.physical().iter().map(|opt_v| {
+                opt_v.map(|v| datetime_to_rb_object(v, time_unit, time_zone).unwrap())
+            });
         ruby.ary_from_iter(iter).as_value()
     }
 }
