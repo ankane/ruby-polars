@@ -31,8 +31,12 @@ pub fn timestamp_to_naive_datetime(since_epoch: i64, time_unit: TimeUnit) -> Nai
     DateTime::UNIX_EPOCH.naive_utc() + elapsed_offset_to_timedelta(since_epoch, time_unit)
 }
 
-pub fn datetime_to_rb_object(v: i64, tu: TimeUnit, tz: Option<&TimeZone>) -> RbResult<Value> {
-    let ruby = Ruby::get().unwrap();
+pub fn datetime_to_rb_object(
+    ruby: &Ruby,
+    v: i64,
+    tu: TimeUnit,
+    tz: Option<&TimeZone>,
+) -> RbResult<Value> {
     if let Some(time_zone) = tz {
         if let Ok(tz) = Tz::from_str(time_zone) {
             let utc_datetime = DateTime::UNIX_EPOCH + elapsed_offset_to_timedelta(v, tu);

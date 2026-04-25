@@ -93,7 +93,7 @@ impl TryIntoValue for Wrap<&DatetimeChunked> {
         let time_unit = self.0.time_unit();
         let iter = self.0.physical().iter().map(|opt_v| {
             opt_v
-                .map(|v| datetime_to_rb_object(v, time_unit, time_zone))
+                .map(|v| datetime_to_rb_object(ruby, v, time_unit, time_zone))
                 .transpose()
         });
         ruby.ary_try_from_iter(iter).map(|v| v.as_value())
