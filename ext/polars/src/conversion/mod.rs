@@ -117,17 +117,16 @@ impl TryConvert for Wrap<NullValues> {
     }
 }
 
-fn struct_dict<'a>(ruby: &Ruby, vals: impl Iterator<Item = AnyValue<'a>>, flds: &[Field]) -> Value {
+fn struct_dict<'a>(
+    ruby: &Ruby,
+    vals: impl Iterator<Item = AnyValue<'a>>,
+    flds: &[Field],
+) -> RbResult<Value> {
     let dict = ruby.hash_new();
     for (fld, val) in flds.iter().zip(vals) {
-        // TODO remove unwrap
-        dict.aset(
-            fld.name().as_str(),
-            Wrap(val).try_into_value_with(ruby).unwrap(),
-        )
-        .unwrap()
+        dict.aset(fld.name().as_str(), Wrap(val).try_into_value_with(ruby)?)?;
     }
-    dict.as_value()
+    Ok(dict.as_value())
 }
 
 impl IntoValue for Wrap<Series> {

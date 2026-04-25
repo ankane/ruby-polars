@@ -67,8 +67,8 @@ pub(crate) fn any_value_into_rb_object(av: AnyValue, ruby: &Ruby) -> RbResult<Va
         }
         AnyValue::Time(v) => pl_utils(ruby).funcall("_to_ruby_time", (v,))?,
         AnyValue::Array(v, _) | AnyValue::List(v) => RbSeries::to_a(ruby, &RbSeries::new(v))?,
-        ref av @ AnyValue::Struct(_, _, flds) => struct_dict(ruby, av._iter_struct_av(), flds),
-        AnyValue::StructOwned(payload) => struct_dict(ruby, payload.0.into_iter(), &payload.1),
+        ref av @ AnyValue::Struct(_, _, flds) => struct_dict(ruby, av._iter_struct_av(), flds)?,
+        AnyValue::StructOwned(payload) => struct_dict(ruby, payload.0.into_iter(), &payload.1)?,
         AnyValue::Object(v) => {
             let object = v.as_any().downcast_ref::<ObjectValue>().unwrap();
             object.to_value()

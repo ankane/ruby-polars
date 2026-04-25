@@ -58,19 +58,19 @@ impl IntoValue for Wrap<&BinaryChunked> {
     }
 }
 
-impl IntoValue for Wrap<&StructChunked> {
-    fn into_value_with(self, ruby: &Ruby) -> Value {
+impl TryIntoValue for Wrap<&StructChunked> {
+    fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value> {
         let s = self.0.clone().into_series();
         // todo! iterate its chunks and flatten.
         // make series::iter() accept a chunk index.
         let s = s.rechunk();
         let iter = s.iter().map(|av| match av {
             AnyValue::Struct(_, _, flds) => struct_dict(ruby, av._iter_struct_av(), flds),
-            AnyValue::Null => ruby.qnil().as_value(),
+            AnyValue::Null => Ok(ruby.qnil().as_value()),
             _ => unreachable!(),
         });
 
-        ruby.ary_from_iter(iter).as_value()
+        ruby.ary_try_from_iter(iter).map(|v| v.as_value())
     }
 }
 

@@ -132,7 +132,7 @@ impl RbSeries {
                 }
                 DataType::Struct(_) => {
                     let ca = series.struct_().map_err(RbPolarsErr::from)?;
-                    return Ok(Wrap(ca).into_value_with(ruby));
+                    return Wrap(ca).try_into_value_with(ruby);
                 }
                 DataType::Duration(_) => {
                     let ca = series.duration().map_err(RbPolarsErr::from)?;
