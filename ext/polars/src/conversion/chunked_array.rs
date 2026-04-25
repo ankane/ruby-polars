@@ -1,4 +1,4 @@
-use magnus::{IntoValue, RString, Ruby, TryConvert, Value, prelude::*};
+use magnus::{IntoValue, RArray, RString, Ruby, TryConvert, Value, prelude::*};
 use polars::prelude::*;
 use polars_compute::decimal::DecimalFmtBuffer;
 
@@ -6,6 +6,7 @@ use super::{Wrap, get_rbseq, struct_dict};
 
 use crate::RbResult;
 use crate::rb_modules::pl_utils;
+use crate::ruby::utils::TryIntoValue;
 
 impl TryConvert for Wrap<StringChunked> {
     fn try_convert(obj: Value) -> RbResult<Self> {
@@ -127,19 +128,24 @@ impl IntoValue for Wrap<&DateChunked> {
     }
 }
 
-impl IntoValue for Wrap<&DecimalChunked> {
-    fn into_value_with(self, ruby: &Ruby) -> Value {
-        let utils = pl_utils(ruby);
-        let rb_precision = self.0.precision().into_value_with(ruby);
-        let mut buf = DecimalFmtBuffer::new();
-        let iter = self.0.physical().into_iter().map(|opt_v| {
-            opt_v.map(|v| {
-                let s = buf.format_dec128(v, self.0.scale(), false, false);
-                utils
-                    .funcall::<_, _, Value>("_to_ruby_decimal", (rb_precision, s))
-                    .unwrap()
-            })
-        });
-        ruby.ary_from_iter(iter).as_value()
+impl TryIntoValue for Wrap<&DecimalChunked> {
+    fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value> {
+        decimal_to_rbobject_iter(ruby, self.0).map(|v| v.as_value())
     }
+}
+
+pub(crate) fn decimal_to_rbobject_iter(ruby: &Ruby, ca: &DecimalChunked) -> RbResult<RArray> {
+    let utils = pl_utils(ruby);
+    let rb_precision = ca.precision().into_value_with(ruby);
+    let mut buf = DecimalFmtBuffer::new();
+    let iter = ca.physical().into_iter().map(|opt_v| match opt_v {
+        None => Ok(None),
+        Some(v) => {
+            let s = buf.format_dec128(v, ca.scale(), false, false);
+            utils
+                .funcall::<_, _, Value>("_to_ruby_decimal", (rb_precision, s))
+                .map(Some)
+        }
+    });
+    ruby.ary_try_from_iter(iter)
 }

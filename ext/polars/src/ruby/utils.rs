@@ -3,6 +3,7 @@ use std::sync::Arc;
 use magnus::{Error, Ruby, Value, gc, value::Opaque};
 use polars::error::PolarsError;
 
+use crate::RbResult;
 use crate::ruby::gvl::GvlExt;
 
 pub(crate) fn to_pl_err(e: Error) -> PolarsError {
@@ -25,4 +26,8 @@ impl Drop for ArcValue {
         // TODO use rb.gc_register_address
         Ruby::attach(|_| gc::unregister_address(&*self.0));
     }
+}
+
+pub trait TryIntoValue {
+    fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value>;
 }

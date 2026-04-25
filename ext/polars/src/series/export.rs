@@ -2,6 +2,7 @@ use magnus::{IntoValue, Ruby, Value, value::ReprValue};
 use polars_core::prelude::*;
 
 use crate::prelude::*;
+use crate::ruby::utils::TryIntoValue;
 use crate::{RbPolarsErr, RbResult, RbSeries};
 
 impl RbSeries {
@@ -124,7 +125,7 @@ impl RbSeries {
                 }
                 DataType::Decimal(_, _) => {
                     let ca = series.decimal().map_err(RbPolarsErr::from)?;
-                    return Ok(Wrap(ca).into_value_with(&ruby));
+                    return Wrap(ca).try_into_value_with(&ruby);
                 }
                 DataType::String => {
                     let ca = series.str().map_err(RbPolarsErr::from)?;
