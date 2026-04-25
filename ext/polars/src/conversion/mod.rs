@@ -629,18 +629,13 @@ impl TryConvert for Wrap<ScanSources> {
     }
 }
 
-impl IntoValue for Wrap<Schema> {
-    fn into_value_with(self, ruby: &Ruby) -> Value {
+impl TryIntoValue for Wrap<Schema> {
+    fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value> {
         let dict = ruby.hash_new();
         for (k, v) in self.0.iter() {
-            // TODO remove unwraps
-            dict.aset(
-                k.as_str(),
-                Wrap(v.clone()).try_into_value_with(ruby).unwrap(),
-            )
-            .unwrap();
+            dict.aset(k.as_str(), Wrap(v.clone()).try_into_value_with(ruby)?)?;
         }
-        dict.as_value()
+        Ok(dict.as_value())
     }
 }
 
