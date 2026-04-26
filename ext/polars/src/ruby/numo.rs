@@ -40,14 +40,13 @@ where
 pub struct RbArray1<T>(T);
 
 impl<T: Element> RbArray1<T> {
-    pub fn from_iter<I>(values: I) -> RbResult<Value>
+    pub fn from_iter<I>(rb: &Ruby, values: I) -> RbResult<Value>
     where
         I: IntoIterator<Item = T>,
     {
-        let ruby = Ruby::get().unwrap();
-        ruby.class_object()
+        rb.class_object()
             .const_get::<_, RModule>("Numo")?
             .const_get::<_, RClass>(T::class_name())?
-            .funcall("cast", (ruby.ary_from_iter(values),))
+            .funcall("cast", (rb.ary_from_iter(values),))
     }
 }
