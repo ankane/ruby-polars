@@ -487,7 +487,7 @@ pub fn reduce(
     .into())
 }
 
-pub fn repeat(value: &RbExpr, n: &RbExpr, dtype: Option<Wrap<DataType>>) -> RbResult<RbExpr> {
+pub fn repeat(value: &RbExpr, n: &RbExpr, dtype: Option<Wrap<DataType>>) -> RbExpr {
     let mut value = value.inner.clone();
     let n = n.inner.clone();
 
@@ -495,6 +495,7 @@ pub fn repeat(value: &RbExpr, n: &RbExpr, dtype: Option<Wrap<DataType>>) -> RbRe
         value = value.cast(dtype.0);
     }
 
+    // TODO remove in 0.26
     if let Expr::Literal(lv) = &value {
         let av = lv.to_any_value().unwrap();
         // Integer inputs that fit in Int32 are parsed as such
@@ -505,7 +506,8 @@ pub fn repeat(value: &RbExpr, n: &RbExpr, dtype: Option<Wrap<DataType>>) -> RbRe
             }
         }
     }
-    Ok(dsl::repeat(value, n).into())
+
+    dsl::repeat(value, n).into()
 }
 
 pub fn spearman_rank_corr(a: &RbExpr, b: &RbExpr, propagate_nans: bool) -> RbExpr {
