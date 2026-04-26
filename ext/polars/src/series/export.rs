@@ -125,7 +125,7 @@ impl RbSeries {
                 }
                 DataType::String => {
                     let ca = series.str().map_err(RbPolarsErr::from)?;
-                    return Ok(Wrap(ca).into_value_with(ruby));
+                    return Wrap(ca).try_into_value_with(ruby);
                 }
                 DataType::Struct(_) => {
                     let ca = series.struct_().map_err(RbPolarsErr::from)?;
@@ -137,7 +137,7 @@ impl RbSeries {
                 }
                 DataType::Binary => {
                     let ca = series.binary().map_err(RbPolarsErr::from)?;
-                    return Ok(Wrap(ca).into_value_with(ruby));
+                    return Wrap(ca).try_into_value_with(ruby);
                 }
                 DataType::Null => {
                     let null: Option<u8> = None;
