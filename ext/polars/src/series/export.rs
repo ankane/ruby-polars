@@ -71,11 +71,7 @@ impl RbSeries {
                     let v = ruby.ary_new_capa(series.len());
                     for i in 0..series.len() {
                         let obj: Option<&ObjectValue> = series.get_object(i).map(|any| any.into());
-                        match obj {
-                            // TODO remove clone
-                            Some(val) => v.push(val.clone().into_value_with(ruby))?,
-                            None => v.push(ruby.qnil())?,
-                        };
+                        v.push(obj.cloned().into_value_with(ruby))?;
                     }
                     v.as_value()
                 }
