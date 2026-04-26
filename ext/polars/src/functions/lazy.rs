@@ -418,7 +418,7 @@ pub fn lit(rb: &Ruby, value: Value, allow_object: bool, is_scalar: bool) -> RbRe
         Ok(dsl::lit(Null {}).into())
     } else {
         let raise = || {
-            // TODO uncomment
+            // TODO uncomment in 0.26
             // RbTypeError::new_err(format!(
             //     "cannot create expression literal for value of type {}.\
             //         \n\nHint: Pass `allow_object: true` to accept any value and create a literal of type Object.",
