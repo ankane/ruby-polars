@@ -5,6 +5,7 @@ use std::sync::OnceLock;
 
 use arrow::array::Array;
 use magnus::{IntoValue, Ruby, Value, prelude::*, value::Opaque};
+use polars::chunked_array::object::ObjectArray;
 use polars::prelude::*;
 use polars_core::chunked_array::object::builder::ObjectChunkedBuilder;
 use polars_core::chunked_array::object::registry;
@@ -94,8 +95,12 @@ pub unsafe fn register_startup_deps(catch_keyboard_interrupt: bool) {
             let object = Ruby::attach(|rb| Wrap(av).try_into_value_with(rb).unwrap());
             Box::new(object) as Box<dyn Any>
         });
-        fn object_array_getter(_arr: &dyn Array, _idx: usize) -> Option<AnyValue<'_>> {
-            todo!();
+        fn object_array_getter(arr: &dyn Array, idx: usize) -> Option<AnyValue<'_>> {
+            let arr = arr
+                .as_any()
+                .downcast_ref::<ObjectArray<ObjectValue>>()
+                .unwrap();
+            arr.get(idx).map(|v| AnyValue::Object(v))
         }
 
         crate::ruby::ruby_convert_registry::register_converters(RubyConvertRegistry {
