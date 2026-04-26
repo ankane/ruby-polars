@@ -26,7 +26,7 @@ macro_rules! apply_all_polars_dtypes {
             DataType::Int32 => $self.i32().unwrap().$method($($args),*),
             DataType::Int64 => $self.i64().unwrap().$method($($args),*),
             DataType::Int128 => $self.i128().unwrap().$method($($args),*),
-            DataType::Float16 => todo!(),
+            DataType::Float16 => $self.cast(&DataType::Float32).unwrap().f32().unwrap().$method($($args),*),
             DataType::Float32 => $self.f32().unwrap().$method($($args),*),
             DataType::Float64 => $self.f64().unwrap().$method($($args),*),
             DataType::String => $self.str().unwrap().$method($($args),*),
