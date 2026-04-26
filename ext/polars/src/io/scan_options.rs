@@ -11,9 +11,9 @@ use polars_io::{HiveOptions, RowIndex};
 use polars_utils::IdxSize;
 use polars_utils::slice_enum::Slice;
 
-use crate::RbResult;
 use crate::io::cloud_options::OptRbCloudOptions;
 use crate::prelude::Wrap;
+use crate::{RbDataFrame, RbResult};
 
 /// Interface to `class ScanOptions` on the Ruby side
 pub struct RbScanOptions(Value);
@@ -25,8 +25,11 @@ impl TryConvert for RbScanOptions {
 }
 
 impl TryConvert for Wrap<TableStatistics> {
-    fn try_convert(_ob: Value) -> RbResult<Self> {
-        todo!();
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let attr: Value = ob.funcall("_df", ())?;
+        Ok(Wrap(TableStatistics(Arc::new(
+            <&RbDataFrame>::try_convert(attr)?.clone().df.into_inner(),
+        ))))
     }
 }
 
