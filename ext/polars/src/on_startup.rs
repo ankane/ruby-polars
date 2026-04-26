@@ -86,13 +86,11 @@ pub unsafe fn register_startup_deps(catch_keyboard_interrupt: bool) {
 
         let object_converter = Arc::new(|av: AnyValue| {
             let object = Ruby::attach(|rb| ObjectValue {
-                // TODO remove unwrap
                 inner: Wrap(av).try_into_value_with(rb).unwrap().into(),
             });
             Box::new(object) as Box<dyn Any>
         });
         let rbobject_converter = Arc::new(|av: AnyValue| {
-            // TODO remove unwrap
             let object = Ruby::attach(|rb| Wrap(av).try_into_value_with(rb).unwrap());
             Box::new(object) as Box<dyn Any>
         });
