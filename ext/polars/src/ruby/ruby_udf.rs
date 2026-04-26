@@ -82,15 +82,13 @@ impl AnonymousColumnsUdf for RubyUdfExpression {
 
     fn deep_clone(self: Arc<Self>) -> Arc<dyn AnonymousColumnsUdf> {
         Arc::new(Self {
-            ruby_function: ArcValue::new(
-                Ruby::attach(|rb| {
-                    // TODO fix
-                    rb.get_inner(*self.ruby_function.0)
-                        .funcall::<_, _, Value>("dup", ())
-                        .map(Opaque::from)
-                })
-                .unwrap(),
-            ),
+            ruby_function: ArcValue::new(Ruby::attach(|rb| {
+                // TODO fix
+                rb.get_inner(*self.ruby_function.0)
+                    .funcall::<_, _, Value>("dup", ())
+                    .map(Opaque::from)
+                    .unwrap()
+            })),
             output_type: self.output_type.clone(),
             materialized_field: OnceLock::new(),
             is_elementwise: self.is_elementwise,
