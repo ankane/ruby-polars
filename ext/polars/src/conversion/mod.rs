@@ -728,9 +728,9 @@ impl IntoValue for ObjectValue {
 
 impl Default for ObjectValue {
     fn default() -> Self {
-        ObjectValue {
-            inner: Ruby::get().unwrap().qnil().as_value().into(),
-        }
+        Ruby::attach(|rb| ObjectValue {
+            inner: rb.qnil().as_value().into(),
+        })
     }
 }
 
