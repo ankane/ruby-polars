@@ -1,7 +1,7 @@
 ## 0.25.2 (unreleased)
 
-- Fixed `unpivot` method when `on` option is `nil`
 - Added support for non-UTC time zones when converting datetime values to Ruby
+- Fixed `unpivot` method when `on` option is `nil`
 
 ## 0.25.1 (2026-03-23)
 
