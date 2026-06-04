@@ -819,6 +819,12 @@ impl RbLazyFrame {
             .into())
     }
 
+    pub fn gather(&self, idxs: &Self, null_on_oob: bool) -> Self {
+        let ldf = self.ldf.read().clone();
+        let idxs = idxs.clone().ldf.into_inner();
+        ldf.gather(idxs, null_on_oob).into()
+    }
+
     pub fn with_column(&self, expr: &RbExpr) -> Self {
         let ldf = self.ldf.read().clone();
         ldf.with_column(expr.inner.clone()).into()

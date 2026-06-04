@@ -3481,6 +3481,78 @@ module Polars
       )
     end
 
+    # Selects rows from this LazyFrame at the given indices.
+    #
+    # @note
+    #   This functionality is experimental. It may be
+    #   changed at any point without it being considered a breaking change.
+    #
+    # @param indices [Object]
+    #   The indices of the rows to select.
+    #
+    #   Due to the lack of a `LazySeries` it's permitted to pass a single-width
+    #   `LazyFrame` as indices as well.
+    # @param null_on_oob [Boolean]
+    #   If true when an index is out-of-bounds a null row will be generated
+    #   instead of raising an error.
+    #
+    # @return [LazyFrame]
+    #
+    # @example
+    #   lf = Polars::LazyFrame.new({"x" => [2, 1, 0], "s" => ["foo", "bar", "baz"]})
+    #   lf.gather([2, 0, 0]).collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ x   ┆ s   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ str │
+    #   # ╞═════╪═════╡
+    #   # │ 0   ┆ baz │
+    #   # │ 2   ┆ foo │
+    #   # │ 2   ┆ foo │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   lf.gather([0, 10, 1], null_on_oob: true).collect
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌──────┬──────┐
+    #   # │ x    ┆ s    │
+    #   # │ ---  ┆ ---  │
+    #   # │ i64  ┆ str  │
+    #   # ╞══════╪══════╡
+    #   # │ 2    ┆ foo  │
+    #   # │ null ┆ null │
+    #   # │ 1    ┆ bar  │
+    #   # └──────┴──────┘
+    #
+    # @example
+    #   idxs = Polars::LazyFrame.new({"i" => [1, 10, 0], "b" => [true, false, true]})
+    #   lf.gather(idxs.filter(Polars.col("b")).select(Polars.col("i"))).collect
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ x   ┆ s   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ str │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ bar │
+    #   # │ 2   ┆ foo │
+    #   # └─────┴─────┘
+    def gather(indices, null_on_oob: false)
+      if !indices.is_a?(LazyFrame)
+        if indices.is_a?(::Array)
+          indices_expr = F.lit(Series.new("", indices, dtype: Int64))
+        else
+          indices_expr = wrap_expr(Utils.parse_into_expression(indices))
+        end
+        indices = select(indices_expr)
+      end
+
+      _from_rbldf(_ldf.gather(indices._ldf, null_on_oob))
+    end
+
     # Add or overwrite multiple columns in a DataFrame.
     #
     # @param exprs [Object]

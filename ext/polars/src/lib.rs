@@ -944,6 +944,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("join_asof", method!(RbLazyFrame::join_asof, 14))?;
     class.define_method("join", method!(RbLazyFrame::join, 11))?;
     class.define_method("join_where", method!(RbLazyFrame::join_where, 3))?;
+    class.define_method("gather", method!(RbLazyFrame::gather, 2))?;
     class.define_method("with_column", method!(RbLazyFrame::with_column, 1))?;
     class.define_method("with_columns", method!(RbLazyFrame::with_columns, 1))?;
     class.define_method(
