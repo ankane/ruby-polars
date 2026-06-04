@@ -307,7 +307,7 @@ class DocsTest < Minitest::Test
           expected = expected.reverse.join("\n")
           output = output.gsub("\t", "        ")
           assert_equal expected, output, "Example output (#{method.name})"
-        elsif !([:initialize, :lit, :plot, :enable_string_cache, :disable_string_cache, :tree_format, :explain, :lazy].include?(method.name) || method.name.start_with?("write_") || cls == Polars::Selectors || lines.last.include?(" = "))
+        elsif !([:initialize, :lit, :plot, :tree_format, :explain, :lazy].include?(method.name) || method.name.start_with?("write_") || cls == Polars::Selectors || lines.last.include?(" = "))
           warn "Missing example output (#{cls}##{method.name})"
         end
       rescue => e
@@ -321,7 +321,7 @@ class DocsTest < Minitest::Test
     method.tags(:example).empty? &&
     ![Polars::Config, Polars::IO, Polars::Testing, Polars::DataType, Polars::SQLContext, Polars::DataFramePlot, Polars::SeriesPlot, Polars::Catalog, Polars::DynamicGroupBy, Polars::RollingGroupBy, Polars::ExtensionExpr, Polars::ExtensionNameSpace].include?(cls) &&
     method.name.match?(/\A[a-z]/i) &&
-    ![:inspect, :plot, :list, :arr, :bin, :cat, :dt, :meta, :name, :str, :struct, :ext, :initialize, :set_random_seed, :col, :select_seq, :with_columns_seq, :eq, :ne, :gt, :ge, :lt, :le, :shrink_to_fit, :flags, :set_sorted, :each, :each_row, :rechunk, :first, :last, :approx_n_unique, :forward_fill, :backward_fill, :repeat_by, :rolling_rank_by, :cache, :is_local, :split, :rolling_cov, :rolling_corr, :escape_regex, :using_string_cache, :quantile, :groups, :collect_all, :collect_batches, :as_expression, :as_selector, :datetime, :time, :duration, :dtype_of, :self_dtype, :explain_all, :struct_with_fields].include?(method.name) &&
+    ![:inspect, :plot, :list, :arr, :bin, :cat, :dt, :meta, :name, :str, :struct, :ext, :initialize, :set_random_seed, :col, :select_seq, :with_columns_seq, :eq, :ne, :gt, :ge, :lt, :le, :shrink_to_fit, :flags, :set_sorted, :each, :each_row, :rechunk, :first, :last, :approx_n_unique, :forward_fill, :backward_fill, :repeat_by, :rolling_rank_by, :cache, :is_local, :split, :rolling_cov, :rolling_corr, :escape_regex, :using_string_cache, :quantile, :groups, :collect_all, :collect_batches, :as_expression, :as_selector, :datetime, :time, :duration, :dtype_of, :self_dtype, :explain_all, :struct_with_fields, :enable_string_cache, :disable_string_cache].include?(method.name) &&
     !method.name.start_with?("write_") &&
     !method.name.start_with?("bitwise_") &&
     !method.name.start_with?("to_") &&

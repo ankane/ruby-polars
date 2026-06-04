@@ -36,7 +36,6 @@ use error::RbPolarsErr;
 use expr::RbExpr;
 use expr::datatype::RbDataTypeExpr;
 use expr::selector::RbSelector;
-use functions::string_cache::RbStringCacheHolder;
 use functions::whenthen::{RbChainedThen, RbChainedWhen, RbThen, RbWhen};
 use interop::arrow::to_rb::{RbArrowArrayStream, RbArrowSchema};
 use lazyframe::{RbCollectBatches, RbInProcessQuery, RbLazyFrame, RbOptFlags};
@@ -798,18 +797,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         function!(functions::meta::thread_pool_size, 0),
     )?;
     class.define_singleton_method(
-        "enable_string_cache",
-        function!(functions::string_cache::enable_string_cache, 0),
-    )?;
-    class.define_singleton_method(
-        "disable_string_cache",
-        function!(functions::string_cache::disable_string_cache, 0),
-    )?;
-    class.define_singleton_method(
-        "using_string_cache",
-        function!(functions::string_cache::using_string_cache, 0),
-    )?;
-    class.define_singleton_method(
         "set_float_fmt",
         function!(functions::meta::set_float_fmt, 1),
     )?;
@@ -1351,10 +1338,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("get_tables", method!(RbSQLContext::get_tables, 0))?;
     class.define_method("register", method!(RbSQLContext::register, 2))?;
     class.define_method("unregister", method!(RbSQLContext::unregister, 1))?;
-
-    // string cache
-    let class = module.define_class("RbStringCacheHolder", ruby.class_object())?;
-    class.define_singleton_method("hold", function!(RbStringCacheHolder::hold, 0))?;
 
     // arrow array stream
     let class = module.define_class("ArrowArrayStream", ruby.class_object())?;
