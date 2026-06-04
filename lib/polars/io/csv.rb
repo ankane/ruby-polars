@@ -663,7 +663,7 @@ module Polars
       null_values: nil,
       missing_utf8_is_empty_string: false,
       ignore_errors: false,
-      cache: true,
+      cache: nil,
       with_column_names: nil,
       infer_schema: true,
       infer_schema_length: N_INFER_DEFAULT,

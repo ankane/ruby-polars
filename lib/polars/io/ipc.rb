@@ -218,7 +218,7 @@ module Polars
     def scan_ipc(
       source,
       n_rows: nil,
-      cache: true,
+      cache: nil,
       rechunk: false,
       row_index_name: nil,
       row_index_offset: 0,
