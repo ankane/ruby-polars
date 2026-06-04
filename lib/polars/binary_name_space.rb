@@ -226,6 +226,38 @@ module Polars
       super
     end
 
+    # Get the byte value at the given index.
+    #
+    # For example, index `0` would return the first byte of every binary value
+    # and index `-1` would return the last byte of every binary value.
+    # The behavior if an index is out of bounds is determined by the argument
+    # `null_on_oob`.
+    #
+    # @param index [Object]
+    #   Index to return per binary value
+    # @param null_on_oob [Boolean]
+    #   Behavior if an index is out of bounds:
+    #
+    #   * true -> set as null
+    #   * false -> raise an error
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", ["\x01\x02\x03".b, "".b, "\x04\x05".b])
+    #   s.bin.get(0, null_on_oob: true)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [u8]
+    #   # [
+    #   #         1
+    #   #         null
+    #   #         4
+    #   # ]
+    def get(index, null_on_oob: false)
+      super
+    end
+
     # Take the first `n` bytes of the binary values.
     #
     # @param n [Object]
