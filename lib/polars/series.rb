@@ -2391,6 +2391,11 @@ module Polars
     #
     # @param indices [Array]
     #   Index location used for selection.
+    # @param null_on_oob [Boolean]
+    #   Behavior if an index is out of bounds:
+    #
+    #   - true  -> set the result to null
+    #   - false -> raise an error
     #
     # @return [Series]
     #
@@ -2404,7 +2409,7 @@ module Polars
     #   #         2
     #   #         4
     #   # ]
-    def gather(indices)
+    def gather(indices, null_on_oob: false)
       super
     end
 
