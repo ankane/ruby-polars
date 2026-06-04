@@ -6550,14 +6550,17 @@ module Polars
     #   Column that is sorted.
     # @param descending [Boolean]
     #   Whether the column is sorted in descending order.
+    # @param nulls_last [Boolean]
+    #   Whether the nulls are at the end.
     #
     # @return [DataFrame]
     def set_sorted(
       column,
-      descending: false
+      descending: false,
+      nulls_last: false
     )
       lazy
-        .set_sorted(column, descending: descending)
+        .set_sorted(column, descending: descending, nulls_last: nulls_last)
         .collect(optimizations: QueryOptFlags._eager)
     end
 
