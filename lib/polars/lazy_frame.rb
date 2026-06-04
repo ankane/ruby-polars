@@ -1162,7 +1162,8 @@ module Polars
       lazy: false,
       arrow_schema: nil,
       engine: "auto",
-      optimizations: DEFAULT_QUERY_OPT_FLAGS
+      optimizations: DEFAULT_QUERY_OPT_FLAGS,
+      _sinked_paths_callback: nil
     )
       engine = _select_engine(engine)
 
@@ -1204,7 +1205,8 @@ module Polars
         maintain_order: maintain_order,
         sync_on_close: sync_on_close,
         storage_options: storage_options,
-        credential_provider: credential_provider_builder
+        credential_provider: credential_provider_builder,
+        sinked_paths_callback: _sinked_paths_callback
       )
 
       ldf_rb = _ldf.sink_parquet(
