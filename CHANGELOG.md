@@ -10,6 +10,7 @@
 - Added `dtype` option to `reinterpret` method
 - Added `nulls_last` option to `set_sorted` method
 - Added support for non-UTC time zones when converting datetime values to Ruby
+- Made `bigdecimal` optional
 - Fixed `unpivot` method when `on` option is `nil`
 
 Changed defaults

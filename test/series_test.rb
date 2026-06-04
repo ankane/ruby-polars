@@ -144,11 +144,15 @@ class SeriesTest < Minitest::Test
   end
 
   def test_new_bigdecimal
+    require "bigdecimal"
+
     s = Polars::Series.new([BigDecimal("1"), nil, BigDecimal("3")])
     assert_series [BigDecimal("1"), nil, BigDecimal("3")], s, dtype: Polars::Decimal
   end
 
   def test_new_bigdecimal_too_large
+    require "bigdecimal"
+
     error = assert_raises do
       Polars::Series.new([BigDecimal("-99999999999999999999.9999999999999999999")])
     end

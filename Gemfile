@@ -8,6 +8,7 @@ gem "minitest"
 gem "activerecord"
 gem "numo-narray-alt"
 gem "vega"
+gem "bigdecimal", require: false
 gem "pg", require: false
 gem "mysql2", require: false, platform: :ruby
 gem "trilogy", require: false, platform: :ruby
