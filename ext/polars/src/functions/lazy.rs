@@ -12,11 +12,12 @@ use crate::conversion::{Wrap, get_lf, get_rbseq};
 use crate::expr::ToExprs;
 use crate::expr::datatype::RbDataTypeExpr;
 use crate::lazyframe::RbOptFlags;
+use crate::ruby::exceptions::{RbTypeError, RbValueError};
 use crate::ruby::plan_callback::PlanCallbackExt;
 use crate::ruby::ruby_function::RubyObject;
 use crate::ruby::thread::start_background_ruby_thread;
 use crate::utils::EnterPolarsExt;
-use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbValueError, map};
+use crate::{RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, map};
 
 macro_rules! set_unwrapped_or_0 {
     ($($var:ident),+ $(,)?) => {
@@ -418,15 +419,10 @@ pub fn lit(rb: &Ruby, value: Value, allow_object: bool, is_scalar: bool) -> RbRe
         Ok(dsl::lit(Null {}).into())
     } else {
         let raise = || {
-            // TODO uncomment in 0.26
-            // RbTypeError::new_err(format!(
-            //     "cannot create expression literal for value of type {}.\
-            //         \n\nHint: Pass `allow_object: true` to accept any value and create a literal of type Object.",
-            //     unsafe { value.classname() },
-            // ))
-            RbValueError::new_err(format!(
-                "could not convert value {:?} as a Literal",
-                value.to_string()
+            RbTypeError::new_err(format!(
+                "cannot create expression literal for value of type {}.\
+                    \n\nHint: Pass `allow_object: true` to accept any value and create a literal of type Object.",
+                unsafe { value.classname() },
             ))
         };
 
@@ -493,18 +489,6 @@ pub fn repeat(value: &RbExpr, n: &RbExpr, dtype: Option<Wrap<DataType>>) -> RbEx
 
     if let Some(dtype) = dtype {
         value = value.cast(dtype.0);
-    }
-
-    // TODO remove in 0.26
-    if let Expr::Literal(lv) = &value {
-        let av = lv.to_any_value().unwrap();
-        // Integer inputs that fit in Int32 are parsed as such
-        if let DataType::Int64 = av.dtype() {
-            let int_value = av.try_extract::<i64>().unwrap();
-            if int_value >= i32::MIN as i64 && int_value <= i32::MAX as i64 {
-                value = value.cast(DataType::Int32);
-            }
-        }
     }
 
     dsl::repeat(value, n).into()

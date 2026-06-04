@@ -19,10 +19,10 @@ class FunctionsTest < Minitest::Test
     assert_lit "dyn int: 1640995200000000000.strict_cast(Datetime('ns'))", Polars.lit(Time.utc(2022, 1, 1))
     assert_lit "dyn int: 1640995200000000000.strict_cast(Datetime('ns'))", Polars.lit(DateTime.new(2022, 1, 1))
 
-    error = assert_raises(ArgumentError) do
+    error = assert_raises(TypeError) do
       Polars.lit(Object.new)
     end
-    assert_match "could not convert value", error.message
+    assert_match "cannot create expression literal for value", error.message
   end
 
   def test_collect_all
