@@ -1204,6 +1204,49 @@ module Polars
       wrap_expr(_rbexpr.round_sig_figs(digits))
     end
 
+    # Truncate numeric data toward zero to `decimals` number of decimal places.
+    #
+    # @param decimals [Integer]
+    #   Number of decimal places to truncate to.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   Truncation discards the fractional part beyond the given number of decimals.
+    #   For example, when rounding to 0 decimals 0.25, -0.25, 0.99, and -0.99 will
+    #   all round to 0. When rounding to 1 decimal 1.9999 rounds to 1.9 and -1.9999
+    #   rounds to -1.9. There is no tiebreak behaviour at midpoint values as there
+    #   is with :meth:`round` so 0.5 and -0.5 will also round to 0 when decimals=1.
+    #
+    # @note
+    #   This method performs numeric truncation. For truncating temporal
+    #   data (dates/datetimes), use :func:`Expr.dt.truncate` instead.
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"n" => [-9.9999, 0.12345, 1.0251, 8.8765]})
+    #   df.with_columns(
+    #     t0: Polars.col("n").truncate(0),
+    #     t1: Polars.col("n").truncate(1),
+    #     t2: Polars.col("n").truncate(2),
+    #     t3: Polars.col("n").truncate(3),
+    #     t4: Polars.col("n").truncate(4)
+    #   )
+    #   # =>
+    #   # shape: (4, 6)
+    #   # ┌─────────┬──────┬──────┬───────┬────────┬─────────┐
+    #   # │ n       ┆ t0   ┆ t1   ┆ t2    ┆ t3     ┆ t4      │
+    #   # │ ---     ┆ ---  ┆ ---  ┆ ---   ┆ ---    ┆ ---     │
+    #   # │ f64     ┆ f64  ┆ f64  ┆ f64   ┆ f64    ┆ f64     │
+    #   # ╞═════════╪══════╪══════╪═══════╪════════╪═════════╡
+    #   # │ -9.9999 ┆ -9.0 ┆ -9.9 ┆ -9.99 ┆ -9.999 ┆ -9.9999 │
+    #   # │ 0.12345 ┆ 0.0  ┆ 0.1  ┆ 0.12  ┆ 0.123  ┆ 0.1234  │
+    #   # │ 1.0251  ┆ 1.0  ┆ 1.0  ┆ 1.02  ┆ 1.025  ┆ 1.025   │
+    #   # │ 8.8765  ┆ 8.0  ┆ 8.8  ┆ 8.87  ┆ 8.876  ┆ 8.8765  │
+    #   # └─────────┴──────┴──────┴───────┴────────┴─────────┘
+    def truncate(decimals = 0)
+      Utils.wrap_expr(_rbexpr.truncate(decimals))
+    end
+
     # Compute the dot/inner product between two Expressions.
     #
     # @param other [Expr]

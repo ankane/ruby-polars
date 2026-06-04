@@ -3391,6 +3391,51 @@ module Polars
       super
     end
 
+    # Truncate numeric data toward zero to `decimals` number of decimal places.
+    #
+    # @param decimals [Integer]
+    #   Number of decimal places to truncate to.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   Truncation discards the fractional part beyond the given number of decimals.
+    #   For example, when rounding to 0 decimals 0.25, -0.25, 0.99, and -0.99 will
+    #   all round to 0. When rounding to 1 decimal 1.9999 rounds to 1.9 and -1.9999
+    #   rounds to -1.9. There is no tiebreak behaviour at midpoint values as there
+    #   is with :meth:`round` so 0.5 and -0.5 will also round to 0 when decimals=1.
+    #
+    # @note
+    #   This method performs numeric truncation. For truncating temporal
+    #   data (dates/datetimes), use :func:`Series.dt.truncate` instead.
+    #
+    # @example
+    #   s = Polars::Series.new("a", [1.12345, 2.56789, 3.991234])
+    #   s.truncate(2)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         1.12
+    #   #         2.56
+    #   #         3.99
+    #   # ]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [-1.78, 2.56, -3.99])
+    #   s.truncate(0)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         -1.0
+    #   #         2.0
+    #   #         -3.0
+    #   # ]
+    def truncate(decimals = 0)
+      super
+    end
+
     # Round underlying floating point data by `decimals` digits.
     #
     # The default rounding mode is "half to even" (also known as "bankers' rounding").

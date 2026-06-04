@@ -264,6 +264,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("rechunk", method!(RbExpr::rechunk, 0))?;
     class.define_method("round", method!(RbExpr::round, 2))?;
     class.define_method("round_sig_figs", method!(RbExpr::round_sig_figs, 1))?;
+    class.define_method("truncate", method!(RbExpr::truncate, 1))?;
     class.define_method("floor", method!(RbExpr::floor, 0))?;
     class.define_method("ceil", method!(RbExpr::ceil, 0))?;
     class.define_method("clip", method!(RbExpr::clip, 2))?;

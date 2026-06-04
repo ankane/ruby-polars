@@ -533,6 +533,10 @@ impl RbExpr {
         self.clone().inner.round_sig_figs(digits).into()
     }
 
+    pub fn truncate(&self, decimals: u32) -> Self {
+        self.inner.clone().truncate(decimals).into()
+    }
+
     pub fn floor(&self) -> Self {
         self.inner.clone().floor().into()
     }
