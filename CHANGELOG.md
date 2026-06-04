@@ -7,6 +7,7 @@
 
 Changed defaults
 
+- Changed default `normalize` for `entropy` method from `false` to `true` for `Series`
 - Changed default `delimiter` for `join` method from `-` to empty string for `StringExpr` and `StringNameSpace`
 
 ## 0.25.1 (2026-03-23)

@@ -1515,13 +1515,7 @@ module Polars
     #   b = Polars::Series.new([0.65, 0.10, 0.25])
     #   b.entropy(normalize: true)
     #   # => 0.8568409950394724
-    def entropy(base: Math::E, normalize: nil)
-      # TODO update
-      if normalize.nil?
-        warn "The default `normalize` for `entropy` method will change from `false` to `true` in a future version"
-        normalize = false
-      end
-
+    def entropy(base: Math::E, normalize: true)
       Polars.select(Polars.lit(self).entropy(base: base, normalize: normalize)).to_series[0]
     end
 
