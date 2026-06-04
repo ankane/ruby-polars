@@ -3,6 +3,12 @@
 - Updated Polars to 0.54.3
 - Added `truncate` method to `Series` and `Expr`
 - Added `gather` method to `DataFrame` and `LazyFrame`
+- Added `is_empty` method to `Expr`
+- Added `get` method to `BinaryNameSpace`
+- Added `maintain_order` option to `implode` and `merge_sorted` methods
+- Added `column_naming` option to `pivot` method
+- Added `dtype` option to `reinterpret` method
+- Added `nulls_last` option to `set_sorted` method
 - Added support for non-UTC time zones when converting datetime values to Ruby
 - Fixed `unpivot` method when `on` option is `nil`
 
