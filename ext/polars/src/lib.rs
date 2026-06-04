@@ -1119,6 +1119,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("slice", method!(RbSeries::slice, 2))?;
     class.define_method("any", method!(RbSeries::any, 1))?;
     class.define_method("all", method!(RbSeries::all, 1))?;
+    class.define_method("is_empty", method!(RbSeries::is_empty, 1))?;
     class.define_method("arg_min", method!(RbSeries::arg_min, 0))?;
     class.define_method("arg_max", method!(RbSeries::arg_max, 0))?;
     class.define_method(

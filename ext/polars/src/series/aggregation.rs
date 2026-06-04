@@ -36,6 +36,17 @@ impl RbSeries {
         })
     }
 
+    pub fn is_empty(rb: &Ruby, self_: &Self, ignore_nulls: bool) -> RbResult<bool> {
+        rb.enter_polars(|| {
+            let s = self_.series.read();
+            PolarsResult::Ok(if ignore_nulls {
+                s.is_full_null()
+            } else {
+                s.is_empty()
+            })
+        })
+    }
+
     pub fn arg_max(rb: &Ruby, self_: &Self) -> RbResult<Option<usize>> {
         rb.enter_polars_ok(|| self_.series.read().arg_max())
     }

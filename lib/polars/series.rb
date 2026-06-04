@@ -2446,14 +2446,23 @@ module Polars
 
     # Check if the Series is empty.
     #
+    # @param ignore_nulls [Boolean]
+    #   If true a series containing only nulls will also be considered empty.
+    #   The default is false.
+    #
     # @return [Boolean]
     #
     # @example
     #   s = Polars::Series.new("a", [])
     #   s.is_empty
     #   # => true
-    def is_empty
-      len == 0
+    def is_empty(ignore_nulls: false)
+      if ignore_nulls
+        msg = "the `ignore_nulls` parameter of `Series.is_empty()` is considered unstable."
+        Utils.issue_unstable_warning(msg)
+      end
+
+      _s.is_empty(ignore_nulls: ignore_nulls)
     end
     alias_method :empty?, :is_empty
 
