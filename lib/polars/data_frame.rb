@@ -3808,6 +3808,57 @@ module Polars
       .collect(optimizations: QueryOptFlags._eager)
     end
 
+    # Selects rows from this DataFrame at the given indices.
+    #
+    # @note
+    #   This functionality is experimental. It may be
+    #   changed at any point without it being considered a breaking change.
+    #
+    # @param indices [Object]
+    #   The indices of the rows to select.
+    # @param null_on_oob [Boolean]
+    #   If true when an index is out-of-bounds a null row will be generated
+    #   instead of raising an error.
+    #
+    # @return [DataFrame]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => [2, 1, 0], "s" => ["foo", "bar", "baz"]})
+    #   df.gather([2, 0, 0])
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ x   ┆ s   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ str │
+    #   # ╞═════╪═════╡
+    #   # │ 0   ┆ baz │
+    #   # │ 2   ┆ foo │
+    #   # │ 2   ┆ foo │
+    #   # └─────┴─────┘
+    #
+    # @example
+    #   df.gather([0, 10, 1], null_on_oob: true)
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌──────┬──────┐
+    #   # │ x    ┆ s    │
+    #   # │ ---  ┆ ---  │
+    #   # │ i64  ┆ str  │
+    #   # ╞══════╪══════╡
+    #   # │ 2    ┆ foo  │
+    #   # │ null ┆ null │
+    #   # │ 1    ┆ bar  │
+    #   # └──────┴──────┘
+    def gather(
+      indices,
+      null_on_oob: false
+    )
+      lazy
+      .gather(indices, null_on_oob: null_on_oob)
+      .collect(optimizations: QueryOptFlags._eager)
+    end
+
     # Apply a custom/user-defined function (UDF) over the rows of the DataFrame.
     #
     # The UDF will receive each row as a tuple of values: `udf(row)`.

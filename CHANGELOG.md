@@ -2,7 +2,7 @@
 
 - Updated Polars to 0.54.3
 - Added `truncate` method to `Series` and `Expr`
-- Added `gather` method to `LazyFrame`
+- Added `gather` method to `DataFrame` and `LazyFrame`
 - Added support for non-UTC time zones when converting datetime values to Ruby
 - Fixed `unpivot` method when `on` option is `nil`
 
