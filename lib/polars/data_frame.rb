@@ -6489,7 +6489,7 @@ module Polars
     #   # │ foo    ┆ 1   ┆ a   ┆ true ┆ [1, 2]    ┆ baz   │
     #   # │ bar    ┆ 2   ┆ b   ┆ null ┆ [3]       ┆ womp  │
     #   # └────────┴─────┴─────┴──────┴───────────┴───────┘
-    def unnest(columns, *more_columns, separator: nil)
+    def unnest(columns = nil, *more_columns, separator: nil)
       lazy.unnest(columns, *more_columns, separator: separator).collect(optimizations: QueryOptFlags._eager)
     end
 
