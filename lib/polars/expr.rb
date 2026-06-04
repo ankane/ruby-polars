@@ -7414,17 +7414,11 @@ module Polars
     #   # └─────┘
     def sample(
       fraction: nil,
-      with_replacement: nil,
+      with_replacement: false,
       shuffle: false,
       seed: nil,
       n: nil
     )
-      # TODO update
-      if with_replacement.nil?
-        warn "The default `with_replacement` for `sample` method will change from `true` to `false` in a future version"
-        with_replacement = true
-      end
-
       if !n.nil? && !fraction.nil?
         raise ArgumentError, "cannot specify both `n` and `fraction`"
       end
