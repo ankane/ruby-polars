@@ -129,7 +129,7 @@ module Polars
     #   # =>
     #   # shape: (2, 1)
     #   # ┌───────┐
-    #   # │ lines │
+    #   # │ line  │
     #   # │ ---   │
     #   # │ str   │
     #   # ╞═══════╡
@@ -138,7 +138,7 @@ module Polars
     #   # └───────┘
     def scan_lines(
       source,
-      name: "lines",
+      name: "line",
       n_rows: nil,
       row_index_name: nil,
       row_index_offset: 0,
