@@ -141,6 +141,9 @@ module Polars
     #
     # @param columns [Array]
     #   One or more column names.
+    # @param maintain_order [Boolean]
+    #   Whether to preserve the order of elements in the list. Setting this
+    #   to `false` can improve performance, especially within `group_by`.
     #
     # @return [Expr]
     #
@@ -174,8 +177,8 @@ module Polars
     #   # ╞═══════════╪═══════════════════════╡
     #   # │ [9, 8, 7] ┆ ["foo", "bar", "foo"] │
     #   # └───────────┴───────────────────────┘
-    def implode(*columns)
-      col(*columns).implode
+    def implode(*columns, maintain_order: true)
+      col(*columns).implode(maintain_order: maintain_order)
     end
 
     # Get the standard deviation.
