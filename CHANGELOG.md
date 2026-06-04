@@ -1,6 +1,6 @@
 ## 0.26.0 (unreleased)
 
-- Updated Polars to 0.54.3
+- Updated Polars to 0.54.4
 - Added `truncate` method to `Series` and `Expr`
 - Added `gather` method to `DataFrame` and `LazyFrame`
 - Added `is_empty` method to `Expr`

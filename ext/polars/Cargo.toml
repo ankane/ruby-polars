@@ -13,7 +13,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 ahash = "0.8"
-arrow = { package = "polars-arrow", version = "=0.54.3" }
+arrow = { package = "polars-arrow", version = "=0.54.4" }
 bytes = "1"
 chrono = "0.4"
 chrono-tz = "0.10"
@@ -21,26 +21,26 @@ either = "1.8"
 magnus = { version = "0.8", features = ["chrono"] }
 num-traits = "0.2"
 parking_lot = "0.12"
-polars-buffer = "=0.54.3"
-polars-compute = "=0.54.3"
-polars-config = "=0.54.3"
-polars-core = "=0.54.3"
-polars-dtype = "=0.54.3"
-polars-error = "=0.54.3"
-polars-io = "=0.54.3"
-polars-lazy = { version = "=0.54.3", features = ["catalog"] }
-polars-ops = "=0.54.3"
-polars-plan = "=0.54.3"
-polars-parquet = "=0.54.3"
-polars-testing = "=0.54.3"
-polars-utils = "=0.54.3"
+polars-buffer = "=0.54.4"
+polars-compute = "=0.54.4"
+polars-config = "=0.54.4"
+polars-core = "=0.54.4"
+polars-dtype = "=0.54.4"
+polars-error = "=0.54.4"
+polars-io = "=0.54.4"
+polars-lazy = { version = "=0.54.4", features = ["catalog"] }
+polars-ops = "=0.54.4"
+polars-plan = "=0.54.4"
+polars-parquet = "=0.54.4"
+polars-testing = "=0.54.4"
+polars-utils = "=0.54.4"
 rayon = "1.9"
 rb-sys = "0.9"
 regex = "1"
 serde_json = "1"
 
 [dependencies.polars]
-version = "=0.54.3"
+version = "=0.54.4"
 features = [
     "abs",
     "approx_unique",
