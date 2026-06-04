@@ -25,6 +25,10 @@ mod testing;
 mod timeout;
 mod utils;
 
+use crate::conversion::Wrap;
+
+pub type RbDataType = Wrap<polars_core::datatypes::DataType>;
+
 use catalog::unity::RbCatalogClient;
 use conversion::*;
 use dataframe::RbDataFrame;
@@ -203,7 +207,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("first", method!(RbExpr::first, 1))?;
     class.define_method("last", method!(RbExpr::last, 1))?;
     class.define_method("item", method!(RbExpr::item, 1))?;
-    class.define_method("implode", method!(RbExpr::implode, 0))?;
+    class.define_method("implode", method!(RbExpr::implode, 1))?;
     class.define_method("quantile", method!(RbExpr::quantile, 2))?;
     class.define_method("cut", method!(RbExpr::cut, 4))?;
     class.define_method("qcut", method!(RbExpr::qcut, 5))?;
@@ -229,7 +233,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arg_min", method!(RbExpr::arg_min, 0))?;
     class.define_method("index_of", method!(RbExpr::index_of, 1))?;
     class.define_method("search_sorted", method!(RbExpr::search_sorted, 3))?;
-    class.define_method("gather", method!(RbExpr::gather, 1))?;
+    class.define_method("gather", method!(RbExpr::gather, 2))?;
     class.define_method("get", method!(RbExpr::get, 2))?;
     class.define_method("sort_by", method!(RbExpr::sort_by, 5))?;
     class.define_method("shift", method!(RbExpr::shift, 2))?;
@@ -337,13 +341,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arr_var", method!(RbExpr::arr_var, 1))?;
     class.define_method("arr_mean", method!(RbExpr::arr_mean, 0))?;
     class.define_method("arr_median", method!(RbExpr::arr_median, 0))?;
-    class.define_method("arr_unique", method!(RbExpr::arr_unique, 1))?;
-    class.define_method("arr_n_unique", method!(RbExpr::arr_n_unique, 0))?;
     class.define_method("arr_to_list", method!(RbExpr::arr_to_list, 0))?;
-    class.define_method("arr_all", method!(RbExpr::arr_all, 0))?;
-    class.define_method("arr_any", method!(RbExpr::arr_any, 0))?;
     class.define_method("arr_sort", method!(RbExpr::arr_sort, 2))?;
-    class.define_method("arr_reverse", method!(RbExpr::arr_reverse, 0))?;
     class.define_method("arr_arg_min", method!(RbExpr::arr_arg_min, 0))?;
     class.define_method("arr_arg_max", method!(RbExpr::arr_arg_max, 0))?;
     class.define_method("arr_get", method!(RbExpr::arr_get, 2))?;
@@ -479,7 +478,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("dt_replace", method!(RbExpr::dt_replace, 8))?;
     class.define_method("dt_combine", method!(RbExpr::dt_combine, 2))?;
     class.define_method("dot", method!(RbExpr::dot, 1))?;
-    class.define_method("reinterpret", method!(RbExpr::reinterpret, 1))?;
+    class.define_method("reinterpret", method!(RbExpr::reinterpret, 2))?;
     class.define_method("mode", method!(RbExpr::mode, 1))?;
     class.define_method("interpolate", method!(RbExpr::interpolate, 1))?;
     class.define_method("interpolate_by", method!(RbExpr::interpolate_by, 1))?;
@@ -527,16 +526,11 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("list_var", method!(RbExpr::list_var, 1))?;
     class.define_method("list_tail", method!(RbExpr::list_tail, 1))?;
     class.define_method("list_sort", method!(RbExpr::list_sort, 2))?;
-    class.define_method("list_reverse", method!(RbExpr::list_reverse, 0))?;
-    class.define_method("list_n_unique", method!(RbExpr::list_n_unique, 0))?;
-    class.define_method("list_unique", method!(RbExpr::list_unique, 1))?;
     class.define_method("list_set_operation", method!(RbExpr::list_set_operation, 2))?;
     class.define_method("list_get", method!(RbExpr::list_get, 2))?;
     class.define_method("list_join", method!(RbExpr::list_join, 2))?;
     class.define_method("list_arg_min", method!(RbExpr::list_arg_min, 0))?;
     class.define_method("list_arg_max", method!(RbExpr::list_arg_max, 0))?;
-    class.define_method("list_all", method!(RbExpr::list_all, 0))?;
-    class.define_method("list_any", method!(RbExpr::list_any, 0))?;
     class.define_method("list_diff", method!(RbExpr::list_diff, 2))?;
     class.define_method("list_shift", method!(RbExpr::list_shift, 1))?;
     class.define_method("list_slice", method!(RbExpr::list_slice, 2))?;
@@ -593,7 +587,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("exp", method!(RbExpr::exp, 0))?;
     class.define_method("entropy", method!(RbExpr::entropy, 2))?;
     class.define_method("_hash", method!(RbExpr::hash, 4))?;
-    class.define_method("set_sorted_flag", method!(RbExpr::set_sorted_flag, 1))?;
+    class.define_method("set_sorted_flag", method!(RbExpr::set_sorted_flag, 2))?;
     class.define_method("replace", method!(RbExpr::replace, 2))?;
     class.define_method("replace_strict", method!(RbExpr::replace_strict, 4))?;
     class.define_method("hist", method!(RbExpr::hist, 4))?;
@@ -991,7 +985,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("drop_nulls", method!(RbLazyFrame::drop_nulls, 1))?;
     class.define_method("slice", method!(RbLazyFrame::slice, 2))?;
     class.define_method("tail", method!(RbLazyFrame::tail, 1))?;
-    class.define_method("pivot", method!(RbLazyFrame::pivot, 7))?;
+    class.define_method("pivot", method!(RbLazyFrame::pivot, 8))?;
     class.define_method("unpivot", method!(RbLazyFrame::unpivot, 4))?;
     class.define_method("with_row_index", method!(RbLazyFrame::with_row_index, 2))?;
     class.define_method("map_batches", method!(RbLazyFrame::map_batches, 7))?;
@@ -1002,7 +996,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("collect_schema", method!(RbLazyFrame::collect_schema, 0))?;
     class.define_method("unnest", method!(RbLazyFrame::unnest, 2))?;
     class.define_method("count", method!(RbLazyFrame::count, 0))?;
-    class.define_method("merge_sorted", method!(RbLazyFrame::merge_sorted, 2))?;
+    class.define_method("merge_sorted", method!(RbLazyFrame::merge_sorted, 3))?;
     class.define_method("hint_sorted", method!(RbLazyFrame::hint_sorted, 3))?;
     class.define_method(
         "collect_concurrently",

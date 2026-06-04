@@ -11,6 +11,13 @@ module Polars
 
     # Evaluate whether all boolean values in a list are true.
     #
+    # @param ignore_nulls [Boolean]
+    #   * If set to `true` (default), null values are ignored. If there
+    #     are no non-null values, the output is `true`.
+    #   * If set to `false`, [Kleene logic](https://en.wikipedia.org/wiki/Three-valued_logic) is used to deal with nulls:
+    #     if the column contains any null values and no `false` values,
+    #     the output is null.
+    #
     # @return [Expr]
     #
     # @example
@@ -32,11 +39,18 @@ module Polars
     #   # │ []             ┆ true  │
     #   # │ null           ┆ null  │
     #   # └────────────────┴───────┘
-    def all
-      Utils.wrap_expr(_rbexpr.list_all)
+    def all(ignore_nulls: true)
+      agg(F.element.all(ignore_nulls: ignore_nulls))
     end
 
     # Evaluate whether any boolean value in a list is true.
+    #
+    # @param ignore_nulls [Boolean]
+    #   * If set to `true` (default), null values are ignored. If there
+    #     are no non-null values, the output is `false`.
+    #   * If set to `false`, [Kleene logic](https://en.wikipedia.org/wiki/Three-valued_logic) is used to deal with nulls:
+    #     if the column contains any null values and no `true` values,
+    #     the output is null.
     #
     # @return [Expr]
     #
@@ -59,8 +73,8 @@ module Polars
     #   # │ []             ┆ false │
     #   # │ null           ┆ null  │
     #   # └────────────────┴───────┘
-    def any
-      Utils.wrap_expr(_rbexpr.list_any)
+    def any(ignore_nulls: true)
+      agg(F.element.any(ignore_nulls: ignore_nulls))
     end
 
     # Get the length of the arrays as `:u32`.
@@ -367,7 +381,7 @@ module Polars
     #   # │ [2, 1, 9] │
     #   # └───────────┘
     def reverse
-      Utils.wrap_expr(_rbexpr.list_reverse)
+      eval(F.element.reverse)
     end
 
     # Get the unique/distinct values in the list.
@@ -391,7 +405,7 @@ module Polars
     #   # │ [1, 2]    │
     #   # └───────────┘
     def unique(maintain_order: false)
-      Utils.wrap_expr(_rbexpr.list_unique(maintain_order))
+      eval(F.element.unique(maintain_order: maintain_order))
     end
 
     # Count the number of unique values in every sub-lists.
@@ -416,7 +430,7 @@ module Polars
     #   # │ [2, 3, 4] ┆ 3        │
     #   # └───────────┴──────────┘
     def n_unique
-      Utils.wrap_expr(_rbexpr.list_n_unique)
+      agg(F.element.n_unique)
     end
 
     # Concat the arrays in a Series dtype List in linear time.

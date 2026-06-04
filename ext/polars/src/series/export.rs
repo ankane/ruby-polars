@@ -14,37 +14,37 @@ impl RbSeries {
         fn to_a_recursive(ruby: &Ruby, series: &Series) -> RbResult<Value> {
             let rblist = match series.dtype() {
                 DataType::Boolean => ruby
-                    .ary_from_iter(series.bool().map_err(RbPolarsErr::from)?)
+                    .ary_from_iter(series.bool().map_err(RbPolarsErr::from)?.iter())
                     .as_value(),
                 DataType::UInt8 => ruby
-                    .ary_from_iter(series.u8().map_err(RbPolarsErr::from)?)
+                    .ary_from_iter(series.u8().map_err(RbPolarsErr::from)?.iter())
                     .as_value(),
                 DataType::UInt16 => ruby
-                    .ary_from_iter(series.u16().map_err(RbPolarsErr::from)?)
+                    .ary_from_iter(series.u16().map_err(RbPolarsErr::from)?.iter())
                     .as_value(),
                 DataType::UInt32 => ruby
-                    .ary_from_iter(series.u32().map_err(RbPolarsErr::from)?)
+                    .ary_from_iter(series.u32().map_err(RbPolarsErr::from)?.iter())
                     .as_value(),
                 DataType::UInt64 => ruby
-                    .ary_from_iter(series.u64().map_err(RbPolarsErr::from)?)
+                    .ary_from_iter(series.u64().map_err(RbPolarsErr::from)?.iter())
                     .as_value(),
                 DataType::UInt128 => ruby
-                    .ary_from_iter(series.u128().map_err(RbPolarsErr::from)?)
+                    .ary_from_iter(series.u128().map_err(RbPolarsErr::from)?.iter())
                     .as_value(),
                 DataType::Int8 => ruby
-                    .ary_from_iter(series.i8().map_err(RbPolarsErr::from)?)
+                    .ary_from_iter(series.i8().map_err(RbPolarsErr::from)?.iter())
                     .as_value(),
                 DataType::Int16 => ruby
-                    .ary_from_iter(series.i16().map_err(RbPolarsErr::from)?)
+                    .ary_from_iter(series.i16().map_err(RbPolarsErr::from)?.iter())
                     .as_value(),
                 DataType::Int32 => ruby
-                    .ary_from_iter(series.i32().map_err(RbPolarsErr::from)?)
+                    .ary_from_iter(series.i32().map_err(RbPolarsErr::from)?.iter())
                     .as_value(),
                 DataType::Int64 => ruby
-                    .ary_from_iter(series.i64().map_err(RbPolarsErr::from)?)
+                    .ary_from_iter(series.i64().map_err(RbPolarsErr::from)?.iter())
                     .as_value(),
                 DataType::Int128 => ruby
-                    .ary_from_iter(series.i128().map_err(RbPolarsErr::from)?)
+                    .ary_from_iter(series.i128().map_err(RbPolarsErr::from)?.iter())
                     .as_value(),
                 DataType::Float16 => ruby
                     .ary_from_iter(
@@ -53,14 +53,15 @@ impl RbSeries {
                             .cast(&DataType::Float32)
                             .map_err(RbPolarsErr::from)?
                             .f32()
-                            .map_err(RbPolarsErr::from)?,
+                            .map_err(RbPolarsErr::from)?
+                            .iter(),
                     )
                     .as_value(),
                 DataType::Float32 => ruby
-                    .ary_from_iter(series.f32().map_err(RbPolarsErr::from)?)
+                    .ary_from_iter(series.f32().map_err(RbPolarsErr::from)?.iter())
                     .as_value(),
                 DataType::Float64 => ruby
-                    .ary_from_iter(series.f64().map_err(RbPolarsErr::from)?)
+                    .ary_from_iter(series.f64().map_err(RbPolarsErr::from)?.iter())
                     .as_value(),
                 DataType::Categorical(_, _) | DataType::Enum(_, _) => {
                     with_match_categorical_physical_type!(series.dtype().cat_physical().unwrap(), |$C| {

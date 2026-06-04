@@ -1,5 +1,6 @@
-## 0.25.2 (unreleased)
+## 0.26.0 (unreleased)
 
+- Updated Polars to 0.54.3
 - Added support for non-UTC time zones when converting datetime values to Ruby
 - Fixed `unpivot` method when `on` option is `nil`
 

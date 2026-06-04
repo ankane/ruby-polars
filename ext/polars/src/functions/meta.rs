@@ -1,8 +1,8 @@
 use magnus::{Ruby, Value};
 use polars_core;
-use polars_core::POOL;
 use polars_core::fmt::FloatFmt;
 use polars_core::prelude::IDX_DTYPE;
+use polars_core::runtime::RAYON;
 
 use crate::conversion::Wrap;
 use crate::ruby::utils::TryIntoValue;
@@ -13,7 +13,7 @@ pub fn get_index_type(ruby: &Ruby) -> RbResult<Value> {
 }
 
 pub fn thread_pool_size() -> usize {
-    POOL.current_num_threads()
+    RAYON.current_num_threads()
 }
 
 pub fn set_float_fmt(fmt: String) -> RbResult<()> {

@@ -37,7 +37,8 @@ fn series_to_numo_with_copy(rb: &Ruby, s: &Series) -> RbResult<Value> {
         Boolean => boolean_series_to_numo(rb, s),
         String => {
             let ca = s.str().unwrap();
-            RbArray1::from_iter(rb, ca)
+            let values = ca.iter();
+            RbArray1::from_iter(rb, values)
         }
         dt => {
             raise_err!(
@@ -73,7 +74,7 @@ where
 fn boolean_series_to_numo(rb: &Ruby, s: &Series) -> RbResult<Value> {
     let ca = s.bool().unwrap();
     if s.null_count() == 0 {
-        let values = ca.into_no_null_iter();
+        let values = ca.no_null_iter();
         RbArray1::<bool>::from_iter(rb, values)
     } else {
         let values = ca.iter();

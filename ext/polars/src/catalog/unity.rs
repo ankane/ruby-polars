@@ -3,12 +3,12 @@ use std::str::FromStr;
 use magnus::value::{Lazy, ReprValue};
 use magnus::{Module, RClass, RHash, RModule, Ruby, Value};
 use polars::prelude::{PlHashMap, PlSmallStr, PolarsError, Schema};
+use polars_core::runtime::ASYNC;
 use polars_io::catalog::unity::client::{CatalogClient, CatalogClientBuilder};
 use polars_io::catalog::unity::models::{
     CatalogInfo, ColumnInfo, DataSourceFormat, NamespaceInfo, TableInfo, TableType,
 };
 use polars_io::catalog::unity::schema::parse_type_json_str;
-use polars_io::pl_async;
 
 use crate::rb_modules::polars;
 use crate::ruby::gvl::GvlExt;
@@ -89,9 +89,7 @@ impl RbCatalogClient {
     }
 
     pub fn list_catalogs(rb: &Ruby, self_: &Self) -> RbResult<Value> {
-        let v = rb.enter_polars(|| {
-            pl_async::get_runtime().block_in_place_on(self_.client().list_catalogs())
-        })?;
+        let v = rb.enter_polars(|| ASYNC.block_in_place_on(self_.client().list_catalogs()))?;
 
         let mut opt_err = None;
 
@@ -112,7 +110,7 @@ impl RbCatalogClient {
 
     pub fn list_namespaces(rb: &Ruby, self_: &Self, catalog_name: String) -> RbResult<Value> {
         let v = rb.enter_polars(|| {
-            pl_async::get_runtime().block_in_place_on(self_.client().list_namespaces(&catalog_name))
+            ASYNC.block_in_place_on(self_.client().list_namespaces(&catalog_name))
         })?;
 
         let mut opt_err = None;
@@ -140,8 +138,7 @@ impl RbCatalogClient {
         namespace: String,
     ) -> RbResult<Value> {
         let v = rb.enter_polars(|| {
-            pl_async::get_runtime()
-                .block_in_place_on(self_.client().list_tables(&catalog_name, &namespace))
+            ASYNC.block_in_place_on(self_.client().list_tables(&catalog_name, &namespace))
         })?;
 
         let mut opt_err = None;
@@ -173,7 +170,7 @@ impl RbCatalogClient {
     ) -> RbResult<Value> {
         let table_info = rb
             .enter_polars(|| {
-                pl_async::get_runtime().block_in_place_on(self_.client().get_table_info(
+                ASYNC.block_in_place_on(self_.client().get_table_info(
                     &table_name,
                     &catalog_name,
                     &namespace,
@@ -193,7 +190,7 @@ impl RbCatalogClient {
     ) -> RbResult<Value> {
         let catalog_info = rb
             .detach(|| {
-                pl_async::get_runtime().block_in_place_on(self_.client().create_catalog(
+                ASYNC.block_in_place_on(self_.client().create_catalog(
                     &catalog_name,
                     comment.as_deref(),
                     storage_root.as_deref(),
@@ -210,11 +207,8 @@ impl RbCatalogClient {
         catalog_name: String,
         force: bool,
     ) -> RbResult<()> {
-        rb.detach(|| {
-            pl_async::get_runtime()
-                .block_in_place_on(self_.client().delete_catalog(&catalog_name, force))
-        })
-        .map_err(to_rb_err)
+        rb.detach(|| ASYNC.block_in_place_on(self_.client().delete_catalog(&catalog_name, force)))
+            .map_err(to_rb_err)
     }
 
     pub fn create_namespace(
@@ -227,7 +221,7 @@ impl RbCatalogClient {
     ) -> RbResult<Value> {
         let namespace_info = rb
             .detach(|| {
-                pl_async::get_runtime().block_in_place_on(self_.client().create_namespace(
+                ASYNC.block_in_place_on(self_.client().create_namespace(
                     &catalog_name,
                     &namespace,
                     comment.as_deref(),
@@ -247,7 +241,7 @@ impl RbCatalogClient {
         force: bool,
     ) -> RbResult<()> {
         rb.detach(|| {
-            pl_async::get_runtime().block_in_place_on(self_.client().delete_namespace(
+            ASYNC.block_in_place_on(self_.client().delete_namespace(
                 &catalog_name,
                 &namespace,
                 force,
@@ -271,7 +265,7 @@ impl RbCatalogClient {
     ) -> RbResult<Value> {
         let table_info = rb
             .detach(|| {
-                pl_async::get_runtime().block_in_place_on(
+                ASYNC.block_in_place_on(
                     self_.client().create_table(
                         &catalog_name,
                         &namespace,
@@ -304,7 +298,7 @@ impl RbCatalogClient {
         table_name: String,
     ) -> RbResult<()> {
         rb.detach(|| {
-            pl_async::get_runtime().block_in_place_on(self_.client().delete_table(
+            ASYNC.block_in_place_on(self_.client().delete_table(
                 &catalog_name,
                 &namespace,
                 &table_name,

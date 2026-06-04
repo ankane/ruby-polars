@@ -26,6 +26,7 @@ impl RbSinkOptions {
         let sync_on_close: Option<Wrap<SyncOnCloseType>> = self.0.funcall("sync_on_close", ())?;
         let storage_options: OptRbCloudOptions = self.0.funcall("storage_options", ())?;
         let credential_provider: Option<Value> = self.0.funcall("credential_provider", ())?;
+        let sinked_paths_callback = None; // TODO
 
         let cloud_options =
             storage_options.extract_opt_cloud_options(cloud_scheme, credential_provider)?;
@@ -37,6 +38,7 @@ impl RbSinkOptions {
             maintain_order,
             sync_on_close,
             cloud_options: cloud_options.map(Arc::new),
+            sinked_paths_callback,
         };
 
         Ok(unified_sink_args)

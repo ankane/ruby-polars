@@ -377,7 +377,9 @@ module Polars
     #   # │ [1, 2]    │
     #   # └───────────┘
     def unique(maintain_order: false)
-      Utils.wrap_expr(_rbexpr.arr_unique(maintain_order))
+      eval(
+        F.element.unique(maintain_order: maintain_order), as_list: true
+      )
     end
 
     # Count the number of unique values in every sub-arrays.
@@ -403,7 +405,7 @@ module Polars
     #   # │ [2, 3, 4]     ┆ 3        │
     #   # └───────────────┴──────────┘
     def n_unique
-      Utils.wrap_expr(_rbexpr.arr_n_unique)
+      agg(F.element.n_unique)
     end
 
     # Convert an Array column into a List column with the same inner data type.
@@ -431,6 +433,13 @@ module Polars
     end
 
     # Evaluate whether any boolean value is true for every subarray.
+    #
+    # @param ignore_nulls [Boolean]
+    #   * If set to `true` (default), null values are ignored. If there
+    #     are no non-null values, the output is `false`.
+    #   * If set to `false`, [Kleene logic](https://en.wikipedia.org/wiki/Three-valued_logic) is used to deal with nulls:
+    #     if the column contains any null values and no `true` values,
+    #     the output is null.
     #
     # @return [Expr]
     #
@@ -461,11 +470,18 @@ module Polars
     #   # │ [null, null]   ┆ false │
     #   # │ null           ┆ null  │
     #   # └────────────────┴───────┘
-    def any
-      Utils.wrap_expr(_rbexpr.arr_any)
+    def any(ignore_nulls: true)
+      agg(F.element.any(ignore_nulls: ignore_nulls))
     end
 
     # Evaluate whether all boolean values are true for every subarray.
+    #
+    # @param ignore_nulls [Boolean]
+    #   * If set to `true` (default), null values are ignored. If there
+    #     are no non-null values, the output is `true`.
+    #   * If set to `false`, [Kleene logic](https://en.wikipedia.org/wiki/Three-valued_logic) is used to deal with nulls:
+    #     if the column contains any null values and no `false` values,
+    #     the output is null.
     #
     # @return [Expr]
     #
@@ -496,8 +512,8 @@ module Polars
     #   # │ [null, null]   ┆ true  │
     #   # │ null           ┆ null  │
     #   # └────────────────┴───────┘
-    def all
-      Utils.wrap_expr(_rbexpr.arr_all)
+    def all(ignore_nulls: true)
+      agg(F.element.all(ignore_nulls: ignore_nulls))
     end
 
     # Sort the arrays in this column.
@@ -567,7 +583,7 @@ module Polars
     #   # │ [9, 1, 2]     ┆ [2, 1, 9]     │
     #   # └───────────────┴───────────────┘
     def reverse
-      Utils.wrap_expr(_rbexpr.arr_reverse)
+      eval(F.element.reverse)
     end
 
     # Retrieve the index of the minimal value in every sub-array.

@@ -4643,6 +4643,8 @@ module Polars
     # @param separator [String]
     #   Used as separator/delimiter in generated column names in case of multiple
     #   `values` columns.
+    # @param column_naming ['auto', 'combine']
+    #   How resulting column names will be constructed.
     #
     # @return [LazyFrame]
     #
@@ -4682,7 +4684,8 @@ module Polars
       values: nil,
       aggregate_function: nil,
       maintain_order: false,
-      separator: "_"
+      separator: "_",
+      column_naming: "auto"
     )
       if index.nil? && values.nil?
         msg = "`pivot` needs either `index or `values` needs to be specified"
@@ -4756,7 +4759,8 @@ module Polars
           values_selector._rbselector,
           agg._rbexpr,
           maintain_order,
-          separator
+          separator,
+          column_naming
         )
       )
     end
@@ -5040,6 +5044,10 @@ module Polars
     #   Other DataFrame that must be merged
     # @param key [String]
     #   Key that is sorted.
+    # @param maintain_order [Boolean]
+    #   If `true`, the output is guaranteed to have left-biased ordering
+    #   for equal keys: rows from the left frame appear before rows from
+    #   the right frame when their keys are equal.
     #
     # @return [LazyFrame]
     #
@@ -5066,8 +5074,8 @@ module Polars
     #   # │ steve  ┆ 42  │
     #   # │ elise  ┆ 44  │
     #   # └────────┴─────┘
-    def merge_sorted(other, key)
-      _from_rbldf(_ldf.merge_sorted(other._ldf, key))
+    def merge_sorted(other, key, maintain_order: false)
+      _from_rbldf(_ldf.merge_sorted(other._ldf, key, maintain_order))
     end
 
     # Flag a column as sorted.

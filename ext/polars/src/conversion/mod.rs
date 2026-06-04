@@ -16,6 +16,7 @@ use magnus::{
 use polars::chunked_array::object::PolarsObjectSafe;
 use polars::chunked_array::ops::{FillNullLimit, FillNullStrategy};
 use polars::datatypes::AnyValue;
+use polars::frame::PivotColumnNaming;
 use polars::frame::row::Row;
 use polars::io::avro::AvroCompression;
 use polars::prelude::default_values::{
@@ -1115,6 +1116,21 @@ impl TryConvert for Wrap<SearchSortedSide> {
     }
 }
 
+impl TryConvert for Wrap<PivotColumnNaming> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let parsed = match String::try_convert(ob)?.as_str() {
+            "auto" => PivotColumnNaming::Auto,
+            "combine" => PivotColumnNaming::Combine,
+            v => {
+                return Err(RbValueError::new_err(format!(
+                    "`column_naming` must be one of {{'auto', 'combine'}}, got {v}",
+                )));
+            }
+        };
+        Ok(Wrap(parsed))
+    }
+}
+
 impl TryConvert for Wrap<ClosedInterval> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let parsed = match String::try_convert(ob)?.as_str() {
@@ -1224,15 +1240,25 @@ impl TryConvert for Wrap<CastColumnsPolicy> {
             return Ok(out);
         }
 
-        let integer_upcast = match &*ob.funcall::<_, _, String>("integer_cast", ())? {
-            "upcast" => true,
-            "forbid" => false,
-            v => {
-                return Err(RbValueError::new_err(format!(
-                    "unknown option for integer_cast: {v}"
-                )));
+        let mut integer_upcast = false;
+        let mut integer_to_float_cast = false;
+
+        let integer_cast_object: Value = ob.funcall("integer_cast", ())?;
+
+        parse_multiple_options("integer_cast", integer_cast_object, |v| {
+            match v {
+                "upcast" => integer_upcast = true,
+                "allow-float" => integer_to_float_cast = true,
+                "forbid" => {}
+                v => {
+                    return Err(RbValueError::new_err(format!(
+                        "unknown option for integer_cast: {v}"
+                    )));
+                }
             }
-        };
+
+            Ok(())
+        })?;
 
         let mut float_upcast = false;
         let mut float_downcast = false;
@@ -1308,6 +1334,7 @@ impl TryConvert for Wrap<CastColumnsPolicy> {
 
         return Ok(Wrap(CastColumnsPolicy {
             integer_upcast,
+            integer_to_float_cast,
             float_upcast,
             float_downcast,
             datetime_nanoseconds_downcast,

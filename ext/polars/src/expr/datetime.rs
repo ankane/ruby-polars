@@ -8,13 +8,13 @@ impl RbExpr {
         &self,
         n: &RbExpr,
         week_mask: [bool; 7],
-        holidays: Vec<i32>,
+        holidays: &RbExpr,
         roll: Wrap<Roll>,
     ) -> Self {
         self.inner
             .clone()
             .dt()
-            .add_business_days(n.inner.clone(), week_mask, holidays, roll.0)
+            .add_business_days(n.inner.clone(), week_mask, holidays.inner.clone(), roll.0)
             .into()
     }
 
@@ -133,11 +133,11 @@ impl RbExpr {
         self.clone().inner.dt().year().into()
     }
 
-    pub fn dt_is_business_day(&self, week_mask: [bool; 7], holidays: Vec<i32>) -> Self {
+    pub fn dt_is_business_day(&self, week_mask: [bool; 7], holidays: &RbExpr) -> Self {
         self.inner
             .clone()
             .dt()
-            .is_business_day(week_mask, holidays)
+            .is_business_day(week_mask, holidays.inner.clone())
             .into()
     }
 

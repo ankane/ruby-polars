@@ -7,7 +7,7 @@ class ListNameSpaceTest < Minitest::Test
     error = assert_raises(Polars::ComputeError) do
       s.list.get(1)
     end
-    assert_equal "get index is out of bounds", error.message
+    assert_match "get index is out of bounds", error.message
 
     s.list.get(1, null_on_oob: true)
   end

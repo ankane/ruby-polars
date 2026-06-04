@@ -81,13 +81,13 @@ module Polars
     )
       start_rbexpr = Utils.parse_into_expression(start)
       end_rbexpr = Utils.parse_into_expression(stop)
-      unix_epoch = ::Date.new(1970, 1, 1)
+      holidays_rbexpr = Utils._holidays_to_expr(holidays)
       Utils.wrap_expr(
         Plr.business_day_count(
           start_rbexpr,
           end_rbexpr,
           week_mask,
-          holidays.map { |holiday| holiday - unix_epoch }
+          holidays_rbexpr
         )
       )
     end

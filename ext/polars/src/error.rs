@@ -63,7 +63,7 @@ impl From<RbPolarsErr> for Error {
                 PolarsError::StructFieldNotFound(name) => {
                     StructFieldNotFoundError::new_err(name.to_string())
                 }
-                PolarsError::Context { .. } => {
+                PolarsError::Context { .. } | PolarsError::ExprContext { .. } => {
                     let tmp = RbPolarsErr::Polars(err.context_trace());
                     RbErr::from(tmp)
                 }

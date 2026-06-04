@@ -7,14 +7,6 @@ use crate::conversion::Wrap;
 use crate::{RbExpr, RbResult};
 
 impl RbExpr {
-    pub fn list_all(&self) -> Self {
-        self.inner.clone().list().all().into()
-    }
-
-    pub fn list_any(&self) -> Self {
-        self.inner.clone().list().any().into()
-    }
-
     pub fn list_arg_max(&self) -> Self {
         self.inner.clone().list().arg_max().into()
     }
@@ -101,10 +93,6 @@ impl RbExpr {
 
     pub fn list_min(&self) -> Self {
         self.inner.clone().list().min().into()
-    }
-
-    pub fn list_reverse(&self) -> Self {
-        self.inner.clone().list().reverse().into()
     }
 
     pub fn list_shift(&self, periods: &RbExpr) -> Self {
@@ -211,20 +199,6 @@ impl RbExpr {
                     .collect::<RbResult<Arc<[_]>>>()?,
             )
             .into())
-    }
-
-    pub fn list_n_unique(&self) -> Self {
-        self.inner.clone().list().n_unique().into()
-    }
-
-    pub fn list_unique(&self, maintain_order: bool) -> Self {
-        let e = self.inner.clone();
-
-        if maintain_order {
-            e.list().unique_stable().into()
-        } else {
-            e.list().unique().into()
-        }
     }
 
     pub fn list_set_operation(&self, other: &RbExpr, operation: Wrap<SetOperation>) -> Self {

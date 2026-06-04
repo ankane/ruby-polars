@@ -6505,6 +6505,10 @@ module Polars
     #   Other DataFrame that must be merged
     # @param key [String]
     #   Key that is sorted.
+    # @param maintain_order [Boolean]
+    #   If `true`, the output is guaranteed to have left-biased ordering
+    #   for equal keys: rows from the left frame appear before rows from
+    #   the right frame when their keys are equal.
     #
     # @return [DataFrame]
     #
@@ -6531,8 +6535,8 @@ module Polars
     #   # │ steve  ┆ 42  │
     #   # │ elise  ┆ 44  │
     #   # └────────┴─────┘
-    def merge_sorted(other, key)
-      lazy.merge_sorted(other.lazy, key).collect(optimizations: QueryOptFlags._eager)
+    def merge_sorted(other, key, maintain_order: false)
+      lazy.merge_sorted(other.lazy, key, maintain_order: maintain_order).collect(optimizations: QueryOptFlags._eager)
     end
 
     # Flag a column as sorted.

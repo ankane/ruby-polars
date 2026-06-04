@@ -131,5 +131,12 @@ module Polars
 
       Plr.all_horizontal(predicates)
     end
+
+    def self._holidays_to_expr(holidays)
+      if !(holidays.is_a?(Expr) || holidays.is_a?(Series))
+        holidays = Series.new("", [holidays], strict: false, dtype: List.new(Date))
+      end
+      parse_into_expression(holidays, dtype: Date)
+    end
   end
 end

@@ -1184,7 +1184,7 @@ module Polars
     #   s.cut([-1, 1], labels: ["a", "b", "c"])
     #   # =>
     #   # shape: (5,)
-    #   # Series: 'foo' [cat]
+    #   # Series: 'foo' [enum]
     #   # [
     #   #         "a"
     #   #         "a"
@@ -1201,7 +1201,7 @@ module Polars
     #   # ┌─────┬─────────────┬────────────┐
     #   # │ foo ┆ break_point ┆ category   │
     #   # │ --- ┆ ---         ┆ ---        │
-    #   # │ i64 ┆ f64         ┆ cat        │
+    #   # │ i64 ┆ f64         ┆ enum       │
     #   # ╞═════╪═════════════╪════════════╡
     #   # │ -2  ┆ -1.0        ┆ (-inf, -1] │
     #   # │ -1  ┆ -1.0        ┆ (-inf, -1] │
@@ -5185,8 +5185,8 @@ module Polars
     #   # shape: (2,)
     #   # Series: 'a' [i64]
     #   # [
-    #   #         5
     #   #         2
+    #   #         5
     #   # ]
     def sample(
       n: nil,

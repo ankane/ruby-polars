@@ -50,11 +50,12 @@ module Polars
       roll: "raise"
     )
       n_rbexpr = Utils.parse_into_expression(n)
+      holidays_rbexpr = Utils._holidays_to_expr([])
       Utils.wrap_expr(
         _rbexpr.dt_add_business_days(
           n_rbexpr,
           week_mask,
-          [],
+          holidays_rbexpr,
           roll
         )
       )
@@ -599,10 +600,11 @@ module Polars
     def is_business_day(
       week_mask: [true, true, true, true, true, false, false]
     )
+      holidays_rbexpr = Utils._holidays_to_expr([])
       Utils.wrap_expr(
         _rbexpr.dt_is_business_day(
           week_mask,
-          []
+          holidays_rbexpr
         )
       )
     end

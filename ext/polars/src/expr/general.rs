@@ -5,13 +5,13 @@ use polars::lazy::dsl;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
 use polars_core::chunked_array::cast::CastOptions;
-use polars_core::series::IsSorted;
+use polars_plan::plans::AExprSorted;
 
 use super::datatype::RbDataTypeExpr;
 use super::selector::RbSelector;
 use crate::conversion::{Wrap, parse_fill_null_strategy};
 use crate::expr::ToExprs;
-use crate::{RbExpr, RbPolarsErr, RbResult};
+use crate::{RbDataType, RbExpr, RbPolarsErr, RbResult};
 
 impl RbExpr {
     pub fn add(&self, rhs: &Self) -> RbResult<Self> {
@@ -182,8 +182,8 @@ impl RbExpr {
         self.inner.clone().item(allow_empty).into()
     }
 
-    pub fn implode(&self) -> Self {
-        self.inner.clone().implode().into()
+    pub fn implode(&self, maintain_order: bool) -> Self {
+        self.inner.clone().implode(maintain_order).into()
     }
 
     pub fn quantile(&self, quantile: &Self, interpolation: Wrap<QuantileMethod>) -> Self {
@@ -366,8 +366,11 @@ impl RbExpr {
             .into()
     }
 
-    pub fn gather(&self, idx: &Self) -> Self {
-        self.inner.clone().gather(idx.inner.clone()).into()
+    pub fn gather(&self, idx: &Self, null_on_oob: bool) -> Self {
+        self.inner
+            .clone()
+            .gather(idx.inner.clone(), null_on_oob)
+            .into()
     }
 
     pub fn get(&self, idx: &Self, null_on_oob: bool) -> Self {
@@ -727,8 +730,11 @@ impl RbExpr {
         self.inner.clone().dot(other.inner.clone()).into()
     }
 
-    pub fn reinterpret(&self, signed: bool) -> Self {
-        self.inner.clone().reinterpret(signed).into()
+    pub fn reinterpret(&self, signed: Option<bool>, dtype: Option<RbDataType>) -> Self {
+        self.inner
+            .clone()
+            .reinterpret(signed, dtype.map(|dt| dt.0))
+            .into()
     }
 
     pub fn mode(&self, maintain_order: bool) -> Self {
@@ -924,13 +930,11 @@ impl RbExpr {
         self.inner.clone().hash(seed, seed_1, seed_2, seed_3).into()
     }
 
-    pub fn set_sorted_flag(&self, descending: bool) -> Self {
-        let is_sorted = if descending {
-            IsSorted::Descending
-        } else {
-            IsSorted::Ascending
-        };
-        self.inner.clone().set_sorted_flag(is_sorted).into()
+    pub fn set_sorted_flag(&self, descending: bool, nulls_last: bool) -> Self {
+        let sortedness = AExprSorted::default()
+            .with_desc(Some(descending))
+            .with_nulls_last(Some(nulls_last));
+        self.inner.clone().set_sorted_flag(sortedness).into()
     }
 
     pub fn replace(&self, old: &Self, new: &Self) -> Self {

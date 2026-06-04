@@ -1887,6 +1887,11 @@ module Polars
     #
     # @param indices [Expr]
     #   An expression that leads to a `:u32` dtyped Series.
+    # @param null_on_oob [Boolean]
+    #   Behavior if an index is out of bounds:
+    #
+    #   - true  -> set the result to null
+    #   - false -> raise an error
     #
     # @return [Expr]
     #
@@ -1915,13 +1920,13 @@ module Polars
     #   # │ one   ┆ [2, 98]   │
     #   # │ two   ┆ [4, 99]   │
     #   # └───────┴───────────┘
-    def gather(indices)
+    def gather(indices, null_on_oob: false)
       if indices.is_a?(::Array)
         indices_lit_rbexpr = Polars.lit(Series.new("", indices, dtype: Int64))._rbexpr
       else
         indices_lit_rbexpr = Utils.parse_into_expression(indices)
       end
-      wrap_expr(_rbexpr.gather(indices_lit_rbexpr))
+      wrap_expr(_rbexpr.gather(indices_lit_rbexpr, null_on_oob))
     end
 
     # Return a single value by index.
@@ -3195,17 +3200,17 @@ module Polars
     #   )
     #   # =>
     #   # shape: (5, 2)
-    #   # ┌─────┬─────┐
-    #   # │ foo ┆ cut │
-    #   # │ --- ┆ --- │
-    #   # │ i64 ┆ cat │
-    #   # ╞═════╪═════╡
-    #   # │ -2  ┆ a   │
-    #   # │ -1  ┆ a   │
-    #   # │ 0   ┆ b   │
-    #   # │ 1   ┆ b   │
-    #   # │ 2   ┆ c   │
-    #   # └─────┴─────┘
+    #   # ┌─────┬──────┐
+    #   # │ foo ┆ cut  │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ enum │
+    #   # ╞═════╪══════╡
+    #   # │ -2  ┆ a    │
+    #   # │ -1  ┆ a    │
+    #   # │ 0   ┆ b    │
+    #   # │ 1   ┆ b    │
+    #   # │ 2   ┆ c    │
+    #   # └─────┴──────┘
     #
     # @example Add both the category and the breakpoint.
     #   df.with_columns(
@@ -3216,7 +3221,7 @@ module Polars
     #   # ┌─────┬────────────┬────────────┐
     #   # │ foo ┆ breakpoint ┆ category   │
     #   # │ --- ┆ ---        ┆ ---        │
-    #   # │ i64 ┆ f64        ┆ cat        │
+    #   # │ i64 ┆ f64        ┆ enum       │
     #   # ╞═════╪════════════╪════════════╡
     #   # │ -2  ┆ -1.0       ┆ (-inf, -1] │
     #   # │ -1  ┆ -1.0       ┆ (-inf, -1] │
@@ -4596,14 +4601,19 @@ module Polars
     #   # │ 1             ┆ 1        │
     #   # │ 2             ┆ 2        │
     #   # └───────────────┴──────────┘
-    def reinterpret(signed: nil)
-      # TODO update
+    def reinterpret(signed: nil, dtype: nil)
+      # TODO remove
       if signed.nil?
         warn "The default `signed` for `reinterpret` method will change from `false` to `true` in a future version"
         signed = false
       end
 
-      wrap_expr(_rbexpr.reinterpret(signed))
+      if signed.nil? == dtype.nil?
+        msg = "reinterpret requires exactly one of `signed` or `dtype` to be specified"
+        raise ArgumentError, msg
+      end
+
+      wrap_expr(_rbexpr.reinterpret(signed, dtype))
     end
 
     # Print the value that this expression evaluates to and pass on the value.
@@ -7823,6 +7833,8 @@ module Polars
     #
     # @param descending [Boolean]
     #   Whether the `Series` order is descending.
+    # @param nulls_last [Boolean]
+    #   Whether the nulls are at the end.
     #
     # @return [Expr]
     #
@@ -7842,11 +7854,15 @@ module Polars
     #   # ╞════════╡
     #   # │ 3      │
     #   # └────────┘
-    def set_sorted(descending: false)
-      wrap_expr(_rbexpr.set_sorted_flag(descending))
+    def set_sorted(descending: false, nulls_last: false)
+      wrap_expr(_rbexpr.set_sorted_flag(descending, nulls_last))
     end
 
     # Aggregate to list.
+    #
+    # @param maintain_order [Boolean]
+    #   Whether to preserve the order of elements in the list. Setting this
+    #   to `false` can improve performance, especially within `group_by`.
     #
     # @return [Expr]
     #
@@ -7867,8 +7883,8 @@ module Polars
     #   # ╞═══════════╪═══════════╡
     #   # │ [1, 2, 3] ┆ [4, 5, 6] │
     #   # └───────────┴───────────┘
-    def implode
-      wrap_expr(_rbexpr.implode)
+    def implode(maintain_order: true)
+      wrap_expr(_rbexpr.implode(maintain_order))
     end
 
     # Bin values into buckets and count their occurrences.

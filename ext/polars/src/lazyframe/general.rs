@@ -3,9 +3,11 @@ use magnus::{
     IntoValue, RArray, RHash, Ruby, TryConvert, Value, r_hash::ForEach, value::ReprValue,
 };
 use parking_lot::Mutex;
+use polars::frame::PivotColumnNaming;
 use polars::io::RowIndex;
 use polars::lazy::frame::LazyFrame;
 use polars::prelude::*;
+use polars_core::query_result::QueryResult;
 use polars_plan::dsl::ScanSources;
 use polars_plan::plans::{HintIR, Sorted};
 use std::num::NonZeroUsize;
@@ -414,7 +416,11 @@ impl RbLazyFrame {
     pub fn collect(rb: &Ruby, self_: &Self, engine: Wrap<Engine>) -> RbResult<RbDataFrame> {
         rb.enter_polars_df(|| {
             let ldf = self_.ldf.read().clone();
-            ldf.collect_with_engine(engine.0)
+            ldf.collect_with_engine(engine.0).map(|r| match r {
+                QueryResult::Single(df) => df,
+                // TODO: Should return query results
+                QueryResult::Multiple(_) => DataFrame::empty(),
+            })
         })
     }
 
@@ -1091,6 +1097,7 @@ impl RbLazyFrame {
         agg: &RbExpr,
         maintain_order: bool,
         separator: String,
+        column_naming: Wrap<PivotColumnNaming>,
     ) -> Self {
         let ldf = self.ldf.read().clone();
         ldf.pivot(
@@ -1101,6 +1108,7 @@ impl RbLazyFrame {
             agg.inner.clone(),
             maintain_order,
             separator.into(),
+            column_naming.0,
         )
         .into()
     }
@@ -1142,7 +1150,7 @@ impl RbLazyFrame {
         opt.set(OptFlags::PREDICATE_PUSHDOWN, predicate_pushdown);
         opt.set(OptFlags::PROJECTION_PUSHDOWN, projection_pushdown);
         opt.set(OptFlags::SLICE_PUSHDOWN, slice_pushdown);
-        opt.set(OptFlags::NEW_STREAMING, streamable);
+        opt.set(OptFlags::STREAMING, streamable);
 
         self.ldf
             .read()
@@ -1208,12 +1216,12 @@ impl RbLazyFrame {
         ldf.count().into()
     }
 
-    pub fn merge_sorted(&self, other: &Self, key: String) -> RbResult<Self> {
+    pub fn merge_sorted(&self, other: &Self, key: String, maintain_order: bool) -> RbResult<Self> {
         let out = self
             .ldf
             .read()
             .clone()
-            .merge_sorted(other.ldf.read().clone(), &key)
+            .merge_sorted(other.ldf.read().clone(), &key, maintain_order)
             .map_err(RbPolarsErr::from)?;
         Ok(out.into())
     }

@@ -43,7 +43,7 @@ impl TryConvert for Wrap<BinaryChunked> {
 
 impl IntoValue for Wrap<&StringChunked> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
-        let iter = self.0.into_iter();
+        let iter = self.0.iter();
         ruby.ary_from_iter(iter).as_value()
     }
 }
@@ -52,7 +52,7 @@ impl IntoValue for Wrap<&BinaryChunked> {
     fn into_value_with(self, ruby: &Ruby) -> Value {
         let iter = self
             .0
-            .into_iter()
+            .iter()
             .map(|opt_bytes| opt_bytes.map(|v| ruby.str_from_slice(v)));
         ruby.ary_from_iter(iter).as_value()
     }
@@ -78,7 +78,7 @@ impl TryIntoValue for Wrap<&DurationChunked> {
     fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value> {
         let utils = pl_utils(ruby);
         let time_unit = Wrap(self.0.time_unit()).into_value_with(ruby);
-        let iter = self.0.physical().into_iter().map(|opt_v| {
+        let iter = self.0.physical().iter().map(|opt_v| {
             opt_v
                 .map(|v| utils.funcall::<_, _, Value>("_to_ruby_duration", (v, time_unit)))
                 .transpose()
@@ -103,7 +103,7 @@ impl TryIntoValue for Wrap<&DatetimeChunked> {
 impl TryIntoValue for Wrap<&TimeChunked> {
     fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value> {
         let utils = pl_utils(ruby);
-        let iter = self.0.physical().into_iter().map(|opt_v| {
+        let iter = self.0.physical().iter().map(|opt_v| {
             opt_v
                 .map(|v| utils.funcall::<_, _, Value>("_to_ruby_time", (v,)))
                 .transpose()
@@ -115,7 +115,7 @@ impl TryIntoValue for Wrap<&TimeChunked> {
 impl TryIntoValue for Wrap<&DateChunked> {
     fn try_into_value_with(self, ruby: &Ruby) -> RbResult<Value> {
         let utils = pl_utils(ruby);
-        let iter = self.0.physical().into_iter().map(|opt_v| {
+        let iter = self.0.physical().iter().map(|opt_v| {
             opt_v
                 .map(|v| utils.funcall::<_, _, Value>("_to_ruby_date", (v,)))
                 .transpose()

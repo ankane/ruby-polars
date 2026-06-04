@@ -102,6 +102,9 @@ pub unsafe fn register_startup_deps(catch_keyboard_interrupt: bool) {
                 .unwrap();
             arr.get(idx).map(|v| AnyValue::Object(v))
         }
+        fn with_gil(f: &mut dyn FnMut()) {
+            Ruby::attach(|_| f())
+        }
 
         crate::ruby::ruby_convert_registry::register_converters(RubyConvertRegistry {
             from_rb: FromRubyConvertRegistry {
@@ -195,6 +198,7 @@ pub unsafe fn register_startup_deps(catch_keyboard_interrupt: bool) {
             rbobject_converter,
             physical_dtype,
             Arc::new(object_array_getter),
+            Arc::new(with_gil),
         );
 
         // Register SERIES UDF.
