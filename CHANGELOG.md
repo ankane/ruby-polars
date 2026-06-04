@@ -5,6 +5,10 @@
 - Added support for non-UTC time zones when converting datetime values to Ruby
 - Fixed `unpivot` method when `on` option is `nil`
 
+Changed defaults
+
+- Changed default `delimiter` for `join` method from `-` to empty string for `StringExpr` and `StringNameSpace`
+
 ## 0.25.1 (2026-03-23)
 
 - Added `explain_all` method to `Polars`

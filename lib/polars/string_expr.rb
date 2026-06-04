@@ -378,13 +378,7 @@ module Polars
     #   # ╞══════╡
     #   # │ null │
     #   # └──────┘
-    def join(delimiter = nil, ignore_nulls: true)
-      # TODO update
-      if delimiter.nil?
-        warn "The default `delimiter` for `join` method will change from `-` to empty string in a future version"
-        delimiter = "-"
-      end
-
+    def join(delimiter = "", ignore_nulls: true)
       Utils.wrap_expr(_rbexpr.str_join(delimiter, ignore_nulls))
     end
 
