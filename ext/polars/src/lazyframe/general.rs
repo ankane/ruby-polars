@@ -137,6 +137,7 @@ impl RbLazyFrame {
         let cloud_options = OptRbCloudOptions::try_convert(arguments[28])?;
         let credential_provider = Option::<Value>::try_convert(arguments[29])?;
         let include_file_paths = Option::<String>::try_convert(arguments[30])?;
+        let missing_columns = Option::<Wrap<MissingColumnsPolicy>>::try_convert(arguments[31])?;
         // end arguments
 
         let null_values = null_values.map(|w| w.0);
@@ -198,7 +199,8 @@ impl RbLazyFrame {
             .with_decimal_comma(decimal_comma)
             .with_glob(glob)
             .with_raise_if_empty(raise_if_empty)
-            .with_include_file_paths(include_file_paths.map(|x| x.into()));
+            .with_include_file_paths(include_file_paths.map(|x| x.into()))
+            .with_missing_columns_policy(missing_columns.map(|x| x.0));
 
         if let Some(lambda) = with_schema_modify {
             let f = |schema: Schema| {

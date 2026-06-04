@@ -648,6 +648,12 @@ module Polars
     #   (which defaults to 1 hour) if not given.
     # @param include_file_paths [String]
     #   Include the path of the source file(s) as a column with this name.
+    # @param missing_columns ['insert', 'raise']
+    #   Configuration for behavior when columns defined in the schema are
+    #   missing from the data:
+    #
+    #   * `"insert"`: Insert the missing columns with NULL values.
+    #   * `"raise"`: Raise an error.
     #
     # @return [LazyFrame]
     def scan_csv(
@@ -685,7 +691,8 @@ module Polars
       credential_provider: "auto",
       retries: nil,
       file_cache_ttl: nil,
-      include_file_paths: nil
+      include_file_paths: nil,
+      missing_columns: nil
     )
       if new_columns&.any? && schema_overrides.is_a?(::Array)
         msg = "expected 'schema_overrides' hash, found #{schema_overrides.inspect}"
@@ -734,6 +741,11 @@ module Polars
         storage_options["file_cache_ttl"] = file_cache_ttl
       end
 
+      if !missing_columns.nil?
+        msg = "The `missing_columns` parameter of `scan_csv` is considered unstable."
+        Utils.issue_unstable_warning(msg)
+      end
+
       credential_provider_builder = _init_credential_provider_builder(
         credential_provider, source, storage_options, "scan_csv"
       )
@@ -768,7 +780,8 @@ module Polars
         glob: glob,
         storage_options: storage_options,
         credential_provider: credential_provider_builder,
-        include_file_paths: include_file_paths
+        include_file_paths: include_file_paths,
+        missing_columns: missing_columns
       )
     end
 
@@ -804,7 +817,8 @@ module Polars
       glob: true,
       storage_options: nil,
       credential_provider: nil,
-      include_file_paths: nil
+      include_file_paths: nil,
+      missing_columns: nil
     )
       dtype_list = nil
       if !schema_overrides.nil?
@@ -820,6 +834,13 @@ module Polars
         source = nil
       else
         sources = []
+      end
+
+      # TODO: This is a hack. We conditionally set `missing_columns` to mimic
+      # existing behavior. This should be removed once the workaround is no
+      # longer needed.
+      if missing_columns.nil? && !schema.nil? && has_header
+        missing_columns = "insert"
       end
 
       rblf =
@@ -854,7 +875,8 @@ module Polars
           schema,
           storage_options,
           credential_provider,
-          include_file_paths
+          include_file_paths,
+          missing_columns
         )
       Utils.wrap_ldf(rblf)
     end
