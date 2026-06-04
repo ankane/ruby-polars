@@ -565,6 +565,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("extend_constant", method!(RbExpr::extend_constant, 2))?;
     class.define_method("any", method!(RbExpr::any, 1))?;
     class.define_method("all", method!(RbExpr::all, 1))?;
+    class.define_method("is_empty", method!(RbExpr::is_empty, 1))?;
     class.define_method(
         "struct_field_by_name",
         method!(RbExpr::struct_field_by_name, 1),

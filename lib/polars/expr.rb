@@ -252,6 +252,38 @@ module Polars
       wrap_expr(_rbexpr.all(ignore_nulls))
     end
 
+    # Return whether the column is empty.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param ignore_nulls [Boolean]
+    #   If true a column containing only nulls will also be considered empty.
+    #   The default is false.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => [nil, nil]})
+    #   df.select(
+    #     a: Polars.col("x").is_empty,
+    #     b: Polars.col("x").drop_nulls.is_empty,
+    #     c: Polars.col("x").is_empty(ignore_nulls: true)
+    #   )
+    #   # =>
+    #   # shape: (1, 3)
+    #   # ┌───────┬──────┬──────┐
+    #   # │ a     ┆ b    ┆ c    │
+    #   # │ ---   ┆ ---  ┆ ---  │
+    #   # │ bool  ┆ bool ┆ bool │
+    #   # ╞═══════╪══════╪══════╡
+    #   # │ false ┆ true ┆ true │
+    #   # └───────┴──────┴──────┘
+    def is_empty(ignore_nulls: false)
+      wrap_expr(_rbexpr.is_empty(ignore_nulls))
+    end
+
     # Return indices where expression evaluates `true`.
     #
     # @return [Expr]

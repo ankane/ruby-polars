@@ -914,6 +914,10 @@ impl RbExpr {
         self.inner.clone().all(drop_nulls).into()
     }
 
+    pub fn is_empty(&self, ignore_nulls: bool) -> Self {
+        self.inner.clone().is_empty(ignore_nulls).into()
+    }
+
     pub fn log(&self, base: &RbExpr) -> Self {
         self.inner.clone().log(base.inner.clone()).into()
     }
