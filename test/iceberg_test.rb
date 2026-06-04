@@ -20,6 +20,6 @@ class IcebergTest < Minitest::Test
   private
 
   def catalog
-    @catalog ||= Iceberg::RestCatalog.new(uri: "http://localhost:8181")
+    @catalog ||= Iceberg::RestCatalog.new(uri: ENV.fetch("ICEBERG_CATALOG_URI", "http://localhost:8181"))
   end
 end
