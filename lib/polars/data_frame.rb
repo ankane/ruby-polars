@@ -4527,6 +4527,8 @@ module Polars
     # @param separator [String]
     #   Used as separator/delimiter in generated column names in case of multiple
     #   `values` columns.
+    # @param column_naming ['auto', 'combine']
+    #   How resulting column names will be constructed.
     #
     # @return [DataFrame]
     #
@@ -4557,7 +4559,8 @@ module Polars
       aggregate_function: nil,
       maintain_order: true,
       sort_columns: false,
-      separator: "_"
+      separator: "_",
+      column_naming: "auto"
     )
       if on_columns.nil?
         cols = select(on).unique(maintain_order: true)
@@ -4577,7 +4580,8 @@ module Polars
         values: values,
         aggregate_function: aggregate_function,
         maintain_order: maintain_order,
-        separator: separator
+        separator: separator,
+        column_naming: column_naming
       )
       .collect(optimizations: QueryOptFlags._eager)
     end
