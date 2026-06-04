@@ -1,4 +1,4 @@
-## 0.26.0 (unreleased)
+## 0.26.0 (2026-06-04)
 
 - Updated Polars to 0.54.4
 - Added `truncate` method to `Series` and `Expr`
