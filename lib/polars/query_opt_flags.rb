@@ -18,7 +18,8 @@ module Polars
       cluster_with_columns: nil,
       collapse_joins: nil,
       check_order_observe: nil,
-      fast_projection: nil
+      fast_projection: nil,
+      sort_collapse: nil
     )
       self._rboptflags = RbOptFlags.default
       update(
@@ -31,7 +32,8 @@ module Polars
         cluster_with_columns: cluster_with_columns,
         collapse_joins: collapse_joins,
         check_order_observe: check_order_observe,
-        fast_projection: fast_projection
+        fast_projection: fast_projection,
+        sort_collapse: sort_collapse
       )
     end
 
@@ -46,7 +48,8 @@ module Polars
       cluster_with_columns: nil,
       collapse_joins: nil,
       check_order_observe: nil,
-      fast_projection: nil
+      fast_projection: nil,
+      sort_collapse: nil
     )
       optflags = QueryOptFlags.new
       optflags.no_optimizations
@@ -60,7 +63,8 @@ module Polars
         cluster_with_columns: cluster_with_columns,
         collapse_joins: collapse_joins,
         check_order_observe: check_order_observe,
-        fast_projection: fast_projection
+        fast_projection: fast_projection,
+        sort_collapse: sort_collapse
       )
     end
 
@@ -74,7 +78,8 @@ module Polars
       cluster_with_columns: nil,
       collapse_joins: nil,
       check_order_observe: nil,
-      fast_projection: nil
+      fast_projection: nil,
+      sort_collapse: nil
     )
       if !predicate_pushdown.nil?
         self.predicate_pushdown = predicate_pushdown
@@ -111,6 +116,9 @@ module Polars
       end
       if !fast_projection.nil?
         self.fast_projection = fast_projection
+      end
+      if !sort_collapse.nil?
+        self.sort_collapse = sort_collapse
       end
 
       self
@@ -209,6 +217,15 @@ module Polars
 
     def fast_projection=(value)
       _rboptflags.fast_projection = value
+    end
+
+    # Collapse sequential sort nodes into a single sort node.
+    def sort_collapse
+      _rboptflags.sort_collapse
+    end
+
+    def sort_collapse=(value)
+      _rboptflags.sort_collapse = value
     end
 
     def to_s
