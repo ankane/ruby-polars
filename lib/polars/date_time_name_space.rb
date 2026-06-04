@@ -31,6 +31,8 @@ module Polars
     #   Which days of the week to count. The default is Monday to Friday.
     #   If you wanted to count only Monday to Thursday, you would pass
     #   `[true, true, true, true, false, false, false]`.
+    # @param holidays [Object]
+    #   Holidays to exclude from the count.
     # roll
     #   What to do when the start date lands on a non-business day. Options are:
     #
@@ -75,6 +77,7 @@ module Polars
     def add_business_days(
       n,
       week_mask: [true, true, true, true, true, false, false],
+      holidays: [],
       roll: "raise"
     )
       super
@@ -263,6 +266,8 @@ module Polars
     #   Which days of the week to count. The default is Monday to Friday.
     #   If you wanted to count only Monday to Thursday, you would pass
     #   `[true, true, true, true, false, false, false]`.
+    # @param holidays [Object]
+    #   Holidays to exclude from the count.
     #
     # @return [Series]
     #
@@ -288,7 +293,8 @@ module Polars
     #   #         false
     #   # ]
     def is_business_day(
-      week_mask: [true, true, true, true, true, false, false]
+      week_mask: [true, true, true, true, true, false, false],
+      holidays: []
     )
       super
     end

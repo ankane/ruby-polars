@@ -22,6 +22,8 @@ module Polars
     #   Which days of the week to count. The default is Monday to Friday.
     #   If you wanted to count only Monday to Thursday, you would pass
     #   `[true, true, true, true, false, false, false]`.
+    # @param holidays [Object]
+    #   Holidays to exclude from the count.
     # @param roll
     #   What to do when the start date lands on a non-business day. Options are:
     #
@@ -44,13 +46,62 @@ module Polars
     #   # │ 2020-01-01 ┆ 2020-01-08 │
     #   # │ 2020-01-02 ┆ 2020-01-09 │
     #   # └────────────┴────────────┘
+    #
+    # @example You can pass a custom weekend - for example, if you only take Sunday off:
+    #   week_mask = [true, true, true, true, true, true, false]
+    #   df.with_columns(
+    #     result: Polars.col("start").dt.add_business_days(5, week_mask: week_mask)
+    #   )
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────────┬────────────┐
+    #   # │ start      ┆ result     │
+    #   # │ ---        ┆ ---        │
+    #   # │ date       ┆ date       │
+    #   # ╞════════════╪════════════╡
+    #   # │ 2020-01-01 ┆ 2020-01-07 │
+    #   # │ 2020-01-02 ┆ 2020-01-08 │
+    #   # └────────────┴────────────┘
+    #
+    # @example You can also pass a list of holidays:
+    #   holidays = [Date.new(2020, 1, 3), Date.new(2020, 1, 6)]
+    #   df.with_columns(
+    #     result: Polars.col("start").dt.add_business_days(5, holidays: holidays)
+    #   )
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────────┬────────────┐
+    #   # │ start      ┆ result     │
+    #   # │ ---        ┆ ---        │
+    #   # │ date       ┆ date       │
+    #   # ╞════════════╪════════════╡
+    #   # │ 2020-01-01 ┆ 2020-01-10 │
+    #   # │ 2020-01-02 ┆ 2020-01-13 │
+    #   # └────────────┴────────────┘
+    #
+    # @example Roll all dates forwards to the next business day:
+    #   df = Polars::DataFrame.new({"start" => [Date.new(2020, 1, 5), Date.new(2020, 1, 6)]})
+    #   df.with_columns(
+    #     rolled_forwards: Polars.col("start").dt.add_business_days(0, roll: "forward")
+    #   )
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────────┬─────────────────┐
+    #   # │ start      ┆ rolled_forwards │
+    #   # │ ---        ┆ ---             │
+    #   # │ date       ┆ date            │
+    #   # ╞════════════╪═════════════════╡
+    #   # │ 2020-01-05 ┆ 2020-01-06      │
+    #   # │ 2020-01-06 ┆ 2020-01-06      │
+    #   # └────────────┴─────────────────┘
     def add_business_days(
       n,
       week_mask: [true, true, true, true, true, false, false],
+      holidays: [],
       roll: "raise"
     )
       n_rbexpr = Utils.parse_into_expression(n)
-      holidays_rbexpr = Utils._holidays_to_expr([])
+      holidays_rbexpr = Utils._holidays_to_expr(holidays)
       Utils.wrap_expr(
         _rbexpr.dt_add_business_days(
           n_rbexpr,
@@ -581,6 +632,8 @@ module Polars
     #   Which days of the week to count. The default is Monday to Friday.
     #   If you wanted to count only Monday to Thursday, you would pass
     #   `[true, true, true, true, false, false, false]`.
+    # @param holidays [Object]
+    #   Holidays to exclude from the count.
     #
     # @return [Expr]
     #
@@ -597,10 +650,43 @@ module Polars
     #   # │ 2020-01-03 ┆ true            │
     #   # │ 2020-01-05 ┆ false           │
     #   # └────────────┴─────────────────┘
+    #
+    # @example You can pass a custom weekend - for example, if you only take Sunday off:
+    #   week_mask = [true, true, true, true, true, true, false]
+    #   df.with_columns(
+    #     is_business_day: Polars.col("start").dt.is_business_day(week_mask: week_mask)
+    #   )
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────────┬─────────────────┐
+    #   # │ start      ┆ is_business_day │
+    #   # │ ---        ┆ ---             │
+    #   # │ date       ┆ bool            │
+    #   # ╞════════════╪═════════════════╡
+    #   # │ 2020-01-03 ┆ true            │
+    #   # │ 2020-01-05 ┆ false           │
+    #   # └────────────┴─────────────────┘
+    #
+    # @example You can also pass a list of holidays:
+    #   holidays = [Date.new(2020, 1, 3), Date.new(2020, 1, 6)]
+    #   df.with_columns(
+    #     is_business_day: Polars.col("start").dt.is_business_day(holidays: holidays)
+    #   )
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌────────────┬─────────────────┐
+    #   # │ start      ┆ is_business_day │
+    #   # │ ---        ┆ ---             │
+    #   # │ date       ┆ bool            │
+    #   # ╞════════════╪═════════════════╡
+    #   # │ 2020-01-03 ┆ false           │
+    #   # │ 2020-01-05 ┆ false           │
+    #   # └────────────┴─────────────────┘
     def is_business_day(
-      week_mask: [true, true, true, true, true, false, false]
+      week_mask: [true, true, true, true, true, false, false],
+      holidays: []
     )
-      holidays_rbexpr = Utils._holidays_to_expr([])
+      holidays_rbexpr = Utils._holidays_to_expr(holidays)
       Utils.wrap_expr(
         _rbexpr.dt_is_business_day(
           week_mask,

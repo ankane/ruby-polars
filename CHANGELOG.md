@@ -6,6 +6,7 @@
 - Added `is_empty` method to `Expr`
 - Added `get` method to `BinaryNameSpace`
 - Added `maintain_order` option to `implode` and `merge_sorted` methods
+- Added `holidays` option to `add_business_days` and `is_business_day` methods
 - Added `column_naming` option to `pivot` method
 - Added `dtype` option to `reinterpret` method
 - Added `nulls_last` option to `set_sorted` method
