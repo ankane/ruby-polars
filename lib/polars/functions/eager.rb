@@ -399,6 +399,85 @@ module Polars
       out
     end
 
+    # Merge multiple sorted DataFrames or LazyFrames by the sorted key.
+    #
+    # The output of this operation will also be sorted.
+    # It is the callers responsibility that the frames
+    # are sorted in ascending order by that key otherwise
+    # the output will not make sense.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param items [Array]
+    #   DataFrames or LazyFrames to merge.
+    # @param key [String]
+    #   Key that is sorted.
+    # @param maintain_order [Boolean]
+    #   If `true`, the output is guaranteed to have left-biased ordering
+    #   for equal keys: rows from the left frame appear before rows from
+    #   the right frame when their keys are equal.
+    #
+    # @return [Object]
+    #
+    # @example
+    #   df0 = Polars::DataFrame.new(
+    #     {"name" => ["steve", "elise", "bob"], "age" => [42, 44, 18]}
+    #   ).sort("age")
+    #   df1 = Polars::DataFrame.new(
+    #     {"name" => ["anna", "megan", "steve", "thomas"], "age" => [21, 33, 17, 20]}
+    #   ).sort("age")
+    #   df2 = Polars::DataFrame.new({"name" => ["ida", "maya"], "age" => [37, 27]}).sort("age")
+    #   Polars.merge_sorted([df0, df1, df2], "age")
+    #   # =>
+    #   # shape: (9, 2)
+    #   # ┌────────┬─────┐
+    #   # │ name   ┆ age │
+    #   # │ ---    ┆ --- │
+    #   # │ str    ┆ i64 │
+    #   # ╞════════╪═════╡
+    #   # │ steve  ┆ 17  │
+    #   # │ bob    ┆ 18  │
+    #   # │ thomas ┆ 20  │
+    #   # │ anna   ┆ 21  │
+    #   # │ maya   ┆ 27  │
+    #   # │ megan  ┆ 33  │
+    #   # │ ida    ┆ 37  │
+    #   # │ steve  ┆ 42  │
+    #   # │ elise  ┆ 44  │
+    #   # └────────┴─────┘
+    def merge_sorted(
+      items,
+      key,
+      maintain_order: false
+    )
+      elems = items.to_a
+
+      if elems.empty?
+        msg = "cannot merge_sort empty list"
+        raise ArgumentError, msg
+      end
+      if elems.length == 1 && (elems[0].is_a?(DataFrame) || elems[0].is_a?(LazyFrame))
+        return elems[0]
+      end
+
+      if !Utils.is_non_empty_sequence_of(elems, DataFrame) && !Utils.is_non_empty_sequence_of(elems, LazyFrame)
+        msg = "merge_sorted is not supported for #{elems[0].inspect}"
+        raise TypeError, msg
+      end
+
+      frames = elems.map { |df| df.lazy }
+
+      reduce_fn = lambda do |x, y|
+        x.merge_sorted(y, key, maintain_order: maintain_order)
+      end
+
+      lf = Utils.reduce_balanced(reduce_fn, frames)
+      eager = elems[0].is_a?(DataFrame)
+      eager ? lf.collect : lf
+    end
+
     # Align an array of frames using the unique values from one or more columns as a key.
     #
     # Frames that do not contain the given key values have rows injected (with nulls

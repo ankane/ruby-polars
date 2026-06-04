@@ -31,6 +31,11 @@ module Polars
       val.is_a?(::Array) || (include_series && val.is_a?(Series))
     end
 
+    # Check if an object is a sequence of `tp`, only sniffing the first element.
+    def self.is_non_empty_sequence_of(obj, tp)
+      !obj.empty? && obj[0].is_a?(tp)
+    end
+
     def self.is_str_sequence(val, allow_str: false)
       if allow_str == false && val.is_a?(::String)
         false
