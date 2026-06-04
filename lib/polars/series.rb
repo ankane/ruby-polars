@@ -4380,7 +4380,7 @@ module Polars
     def rolling_sum_by(
       by,
       window_size,
-      min_samples: 1,
+      min_samples: 0,
       closed: "right"
     )
       super

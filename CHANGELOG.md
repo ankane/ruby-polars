@@ -7,6 +7,7 @@
 
 Changed defaults
 
+- Changed default `min_samples` for `rolling_sum_by` method from `1` to `0`
 - Changed default `base` for `entropy` method from `2` to `Math::E` for `Expr`
 - Changed default `normalize` for `entropy` method from `false` to `true` for `Series`
 - Changed default `delimiter` for `join` method from `-` to empty string for `StringExpr` and `StringNameSpace`

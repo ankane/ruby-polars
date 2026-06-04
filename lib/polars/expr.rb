@@ -5228,7 +5228,7 @@ module Polars
     def rolling_sum_by(
       by,
       window_size,
-      min_samples: 1,
+      min_samples: 0,
       closed: "right"
     )
       window_size = _prepare_rolling_by_window_args(window_size)
