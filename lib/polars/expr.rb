@@ -7814,13 +7814,7 @@ module Polars
     #   # ╞═══════════╡
     #   # │ -6.754888 │
     #   # └───────────┘
-    def entropy(base: nil, normalize: true)
-      # TODO update (including param docs)
-      if base.nil?
-        warn "The default `base` for `entropy` method will change from `2` to `Math::E` in a future version"
-        base = 2
-      end
-
+    def entropy(base: Math::E, normalize: true)
       wrap_expr(_rbexpr.entropy(base, normalize))
     end
 
