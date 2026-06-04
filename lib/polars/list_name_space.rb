@@ -12,6 +12,13 @@ module Polars
 
     # Evaluate whether all boolean values in a list are true.
     #
+    # @param ignore_nulls [Boolean]
+    #   * If set to `true` (default), null values are ignored. If there
+    #     are no non-null values, the output is `true`.
+    #   * If set to `false`, [Kleene logic](https://en.wikipedia.org/wiki/Three-valued_logic) is used to deal with nulls:
+    #     if the column contains any null values and no `false` values,
+    #     the output is null.
+    #
     # @return [Series]
     #
     # @example
@@ -31,11 +38,18 @@ module Polars
     #   #         true
     #   #         null
     #   # ]
-    def all
+    def all(ignore_nulls: true)
       super
     end
 
     # Evaluate whether any boolean value in a list is true.
+    #
+    # @param ignore_nulls [Boolean]
+    #   * If set to `true` (default), null values are ignored. If there
+    #     are no non-null values, the output is `false`.
+    #   * If set to `false`, [Kleene logic](https://en.wikipedia.org/wiki/Three-valued_logic) is used to deal with nulls:
+    #     if the column contains any null values and no `true` values,
+    #     the output is null.
     #
     # @return [Series]
     #
@@ -56,7 +70,7 @@ module Polars
     #   #         false
     #   #         null
     #   # ]
-    def any
+    def any(ignore_nulls: true)
       super
     end
 
