@@ -4614,13 +4614,18 @@ module Polars
       wrap_expr(_rbexpr._hash(k0, k1, k2, k3))
     end
 
-    # Reinterpret the underlying bits as a signed/unsigned integer.
+    # Reinterpret the underlying bits as a signed/unsigned integer or float.
     #
-    # This operation is only allowed for 64bit integers. For lower bits integers,
-    # you can safely use that cast operation.
+    # This operation is only allowed for numeric types of the same size.
+    # For lower bits numbers, you can safely use the cast operation.
+    #
+    # Either `signed` or `dtype` can be specified.
     #
     # @param signed [Boolean]
-    #   If true, reinterpret as `Polars::Int64`. Otherwise, reinterpret as `Polars::UInt64`.
+    #   If true, reinterpret as signed integer. Otherwise, reinterpret
+    #   as unsigned integer.
+    # @param dtype [Object]
+    #   DataType to reinterpret to.
     #
     # @return [Expr]
     #
@@ -4629,7 +4634,7 @@ module Polars
     #   df = Polars::DataFrame.new([s])
     #   df.select(
     #     [
-    #       Polars.col("a").reinterpret(signed: true).alias("reinterpreted"),
+    #       Polars.col("a").reinterpret(dtype: Polars::Int64).alias("reinterpreted"),
     #       Polars.col("a").alias("original")
     #     ]
     #   )
@@ -4645,12 +4650,6 @@ module Polars
     #   # │ 2             ┆ 2        │
     #   # └───────────────┴──────────┘
     def reinterpret(signed: nil, dtype: nil)
-      # TODO remove
-      if signed.nil?
-        warn "The default `signed` for `reinterpret` method will change from `false` to `true` in a future version"
-        signed = false
-      end
-
       if signed.nil? == dtype.nil?
         msg = "reinterpret requires exactly one of `signed` or `dtype` to be specified"
         raise ArgumentError, msg

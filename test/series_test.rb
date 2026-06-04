@@ -742,7 +742,7 @@ class SeriesTest < Minitest::Test
 
   def test_reinterpret
     s = Polars::Series.new("a", [2**64 - 1, 0, 1], dtype: Polars::UInt64)
-    assert_series [-1, 0, 1], s.reinterpret
+    assert_series [-1, 0, 1], s.reinterpret(signed: true)
   end
 
   def test_interpolate

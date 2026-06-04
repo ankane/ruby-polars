@@ -5352,13 +5352,18 @@ module Polars
       super
     end
 
-    # Reinterpret the underlying bits as a signed/unsigned integer.
+    # Reinterpret the underlying bits as a signed/unsigned integer or float.
     #
-    # This operation is only allowed for 64bit integers. For lower bits integers,
-    # you can safely use that cast operation.
+    # This operation is only allowed for numeric types of the same size.
+    # For lower bits numbers, you can safely use the cast operation.
+    #
+    # Either `signed` or `dtype` can be specified.
     #
     # @param signed [Boolean]
-    #   If true, reinterpret as `Polars::Int64`. Otherwise, reinterpret as `Polars::UInt64`.
+    #   If true, reinterpret as signed integer. Otherwise, reinterpret
+    #   as unsigned integer.
+    # @param dtype [Object]
+    #   DataType to reinterpret to.
     #
     # @return [Series]
     #
@@ -5373,7 +5378,18 @@ module Polars
     #   #         18446744073709551614
     #   #         3
     #   # ]
-    def reinterpret(signed: true)
+    #
+    # @example
+    #   s.reinterpret(dtype: Polars::Int64)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         -1152921504606846976
+    #   #         -2
+    #   #         3
+    #   # ]
+    def reinterpret(signed: nil, dtype: nil)
       super
     end
 
