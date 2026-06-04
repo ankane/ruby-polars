@@ -4910,10 +4910,10 @@ module Polars
     #   # │ -2      ┆ 199998 │
     #   # └─────────┴────────┘
     def map_batches(
-      predicate_pushdown: true,
-      projection_pushdown: true,
-      slice_pushdown: true,
-      no_optimizations: false,
+      predicate_pushdown: false,
+      projection_pushdown: false,
+      slice_pushdown: false,
+      no_optimizations: nil,
       schema: nil,
       validate_output_schema: true,
       streamable: false,
