@@ -8,6 +8,7 @@
 Changed defaults
 
 - Changed default `name` for `read_lines` and `scan_lines` methods from `lines` to `line`
+- Changed default `how` for `align_frames` method from `left` to `full`
 - Changed default `min_samples` for `rolling_sum_by` method from `1` to `0`
 - Changed default `with_replacement` for `sample` method from `true` to `false` for `Expr`
 - Changed default `base` for `entropy` method from `2` to `Math::E` for `Expr`
