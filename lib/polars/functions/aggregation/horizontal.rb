@@ -243,11 +243,9 @@ module Polars
       exprs_wrapped = rbexprs.map { |e| Utils.wrap_expr(e) }
 
       Polars.cum_fold(
-        Polars.lit(0).cast(Polars.dtype_of(Polars.sum_horizontal(*exprs))),
+        Polars.lit(0).cast(Polars.dtype_of(Polars.sum_horizontal(exprs))),
         exprs_wrapped
-      ) { |a, b| a + b }.alias(
-        "cum_sum"
-      )
+      ) { |a, b| a + b }.alias("cum_sum")
     end
   end
 end

@@ -34,10 +34,10 @@ class FunctionsTest < Minitest::Test
     df = Polars::DataFrame.new({"a" => [1, 2], "b" => [3, 4], "c" => [5, 6]})
     result = df.select(Polars.cum_sum_horizontal("a", "c"))
     expected = Polars::DataFrame.new({"cum_sum" => [{"a" => 1, "c" => 6}, {"a" => 2, "c" => 8}]})
-    assert_frame result, expected
+    assert_frame expected, result
 
-    q = df.lazy().select(Polars.cum_sum_horizontal("a", "c"))
-    assert q.collect_schema.to_h == q.collect().schema.to_h
+    q = df.lazy.select(Polars.cum_sum_horizontal("a", "c"))
+    assert_equal q.collect_schema.to_h, q.collect.schema.to_h
   end
 
   def test_map_batches
