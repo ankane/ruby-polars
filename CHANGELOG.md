@@ -1,3 +1,7 @@
+## 0.26.1 (unreleased)
+
+- Fixed return dtype for `cum_sum_horizontal` method
+
 ## 0.26.0 (2026-06-04)
 
 - Updated Polars to 0.54.4
