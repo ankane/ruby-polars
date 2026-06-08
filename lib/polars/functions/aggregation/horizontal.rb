@@ -242,8 +242,10 @@ module Polars
       rbexprs = Utils.parse_into_list_of_expressions(*exprs)
       exprs_wrapped = rbexprs.map { |e| Utils.wrap_expr(e) }
 
-      # (Expr): use u32 as that will not cast to float as eagerly
-      Polars.cum_fold(Polars.lit(0).cast(UInt32), exprs_wrapped) { |a, b| a + b }.alias(
+      Polars.cum_fold(
+        Polars.lit(0).cast(Polars.dtype_of(Polars.sum_horizontal(*exprs))),
+        exprs_wrapped
+      ) { |a, b| a + b }.alias(
         "cum_sum"
       )
     end
