@@ -92,6 +92,8 @@ module Polars
               "string"
             when "binary"
               "binary"
+            when "date"
+              "date32"
             else
               raise Todo
             end
