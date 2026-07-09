@@ -91,7 +91,7 @@ module Polars
             when "string"
               "string"
             when "binary"
-              "binary"
+              "large_binary"
             when "date"
               "date32"
             else
