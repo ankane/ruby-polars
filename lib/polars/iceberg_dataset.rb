@@ -88,6 +88,10 @@ module Polars
               "float32"
             when "double"
               "float64"
+            when "string"
+              "string"
+            when "binary"
+              "binary"
             else
               raise Todo
             end
