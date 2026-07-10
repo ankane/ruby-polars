@@ -1,5 +1,6 @@
 ## 0.26.1 (unreleased)
 
+- Added support for more types to `scan_iceberg` method
 - Fixed return dtype for `cum_sum_horizontal` method
 
 ## 0.26.0 (2026-06-04)
