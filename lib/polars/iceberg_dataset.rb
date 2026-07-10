@@ -42,9 +42,9 @@ module Polars
               when "string"
                 String
               when "uuid"
-                raise Todo
+                Binary
               when "fixed"
-                raise Todo
+                Binary
               when "binary"
                 Binary
               when "date"
@@ -119,9 +119,11 @@ module Polars
             when "string"
               "string"
             when "uuid"
-              raise Todo
+              limit = 16
+              "fixed_size_binary"
             when "fixed"
-              raise Todo
+              limit = field[:limit]
+              "fixed_size_binary"
             when "binary"
               "large_binary"
             when "date"
@@ -155,6 +157,7 @@ module Polars
               "PARQUET:field_id" => field[:id].to_s
             }
           }
+          arrow_field[:limit] = limit if limit
           if type == "decimal"
             arrow_field[:precision] = field[:precision]
             arrow_field[:scale] = field[:scale]

@@ -569,6 +569,10 @@ impl TryConvert for Wrap<ArrowSchema> {
                     let scale: usize = f.aref(ruby.to_symbol("scale"))?;
                     ArrowDataType::Decimal(precision, scale)
                 }
+                "fixed_size_binary" => {
+                    let limit: usize = f.aref(ruby.to_symbol("limit"))?;
+                    ArrowDataType::FixedSizeBinary(limit)
+                }
                 _ => todo!(),
             };
             let is_nullable = f.aref(ruby.to_symbol("nullable"))?;
