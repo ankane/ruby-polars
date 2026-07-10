@@ -83,10 +83,10 @@ module Polars
         ]
 
         scan_options = {
-          storage_options: @storage_options,
           cast_options: Polars::ScanCastOptions._default_iceberg,
           missing_columns: "insert",
           extra_columns: "ignore",
+          storage_options: @storage_options,
           _column_mapping: column_mapping,
           _deletion_files: deletion_files
         }
