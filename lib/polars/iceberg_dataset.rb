@@ -50,7 +50,7 @@ module Polars
               when "date"
                 Date
               when "time"
-                Time.new("us")
+                Time
               when "timestamp"
                 Datetime.new("us")
               when "timestamp_ns"
