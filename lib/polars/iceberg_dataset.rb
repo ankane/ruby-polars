@@ -25,16 +25,26 @@ module Polars
           schema.fields.to_h do |field|
             dtype =
               case field[:type]
+              when "boolean"
+                Polars::Boolean
               when "int"
                 Polars::Int32
               when "long"
                 Polars::Int64
+              when "float"
+                Polars::Float32
               when "double"
                 Polars::Float64
               when "string"
                 Polars::String
+              when "binary"
+                Polars::Binary
+              when "date"
+                Polars::Date
               when "timestamp"
-                Polars::Datetime
+                Polars::Datetime.new("us")
+              when "timestamp_ns"
+                Polars::Datetime.new("ns")
               else
                 raise Todo
               end
