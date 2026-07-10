@@ -17,6 +17,12 @@ class IcebergTest < Minitest::Test
     assert_equal Polars.concat([df, df2]), Polars.scan_iceberg(table).collect
   end
 
+  def test_empty_table
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [true, false, true]})
+    table = catalog.create_table("polars_ruby_test.events", schema: df.schema)
+    assert_equal df.dtypes, Polars.scan_iceberg(table).collect.dtypes
+  end
+
   private
 
   def catalog
