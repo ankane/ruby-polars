@@ -50,7 +50,7 @@ module Polars
               when "date"
                 Date
               when "time"
-                Time
+                Time # ns instead of us since does not support time unit
               when "timestamp"
                 Datetime.new("us")
               when "timestamp_ns"
