@@ -25,32 +25,40 @@ module Polars
           schema.fields.to_h do |field|
             dtype =
               case field[:type]
+              when "unknown"
+                Unknown
               when "boolean"
-                Polars::Boolean
+                Boolean
               when "int"
-                Polars::Int32
+                Int32
               when "long"
-                Polars::Int64
+                Int64
               when "float"
-                Polars::Float32
+                Float32
               when "double"
-                Polars::Float64
+                Float64
               when "decimal"
-                Polars::Decimal.new(field[:precision], field[:scale])
+                Decimal.new(field[:precision], field[:scale])
               when "string"
-                Polars::String
+                String
+              when "uuid"
+                raise Todo
+              when "fixed"
+                raise Todo
               when "binary"
-                Polars::Binary
+                Binary
               when "date"
-                Polars::Date
+                Date
+              when "time"
+                Time.new("us")
               when "timestamp"
-                Polars::Datetime.new("us")
+                Datetime.new("us")
               when "timestamp_ns"
-                Polars::Datetime.new("ns")
+                Datetime.new("ns")
               when "timestamptz"
-                Polars::Datetime.new("us", "+00:00")
+                Datetime.new("us", "+00:00")
               when "timestamptz_ns"
-                Polars::Datetime.new("ns", "+00:00")
+                Datetime.new("ns", "+00:00")
               else
                 raise Todo
               end
@@ -94,6 +102,8 @@ module Polars
         schema.fields.map do |field|
           type =
             case field[:type]
+            when "unknown"
+              "unknown"
             when "boolean"
               "boolean"
             when "int"
@@ -108,10 +118,17 @@ module Polars
               "decimal"
             when "string"
               "string"
+            when "uuid"
+              raise Todo
+            when "fixed"
+              raise Todo
             when "binary"
               "large_binary"
             when "date"
               "date32"
+            when "time"
+              time_unit = "us"
+              "time64"
             when "timestamp"
               time_unit = "us"
               "timestamp"

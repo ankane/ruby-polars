@@ -556,6 +556,14 @@ impl TryConvert for Wrap<ArrowSchema> {
                     };
                     ArrowDataType::Timestamp(arrow_time_unit, time_zone.map(|v| v.into()))
                 }
+                "time64" => {
+                    let time_unit: String = f.aref(ruby.to_symbol("time_unit"))?;
+                    let arrow_time_unit = match time_unit.as_str() {
+                        "us" => ArrowTimeUnit::Microsecond,
+                        _ => todo!(),
+                    };
+                    ArrowDataType::Time64(arrow_time_unit)
+                }
                 "decimal" => {
                     let precision: usize = f.aref(ruby.to_symbol("precision"))?;
                     let scale: usize = f.aref(ruby.to_symbol("scale"))?;
