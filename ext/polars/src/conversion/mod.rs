@@ -547,14 +547,14 @@ impl TryConvert for Wrap<ArrowSchema> {
                 "string_view" => ArrowDataType::Utf8View,
                 "unknown" => ArrowDataType::Unknown,
                 "timestamp" => {
-                    // TODO support time zone
                     let time_unit: String = f.aref(ruby.to_symbol("time_unit"))?;
+                    let time_zone: Option<String> = f.aref(ruby.to_symbol("time_zone"))?;
                     let arrow_time_unit = match time_unit.as_str() {
                         "us" => ArrowTimeUnit::Microsecond,
                         "ns" => ArrowTimeUnit::Nanosecond,
                         _ => todo!(),
                     };
-                    ArrowDataType::Timestamp(arrow_time_unit, None)
+                    ArrowDataType::Timestamp(arrow_time_unit, time_zone.map(|v| v.into()))
                 }
                 _ => todo!(),
             };

@@ -45,6 +45,10 @@ module Polars
                 Polars::Datetime.new("us")
               when "timestamp_ns"
                 Polars::Datetime.new("ns")
+              when "timestamptz"
+                Polars::Datetime.new("us", "+00:00")
+              when "timestamptz_ns"
+                Polars::Datetime.new("ns", "+00:00")
               else
                 raise Todo
               end
@@ -110,6 +114,14 @@ module Polars
             when "timestamp_ns"
               time_unit = "ns"
               "timestamp"
+            when "timestamptz"
+              time_unit = "us"
+              time_zone = "+00:00"
+              "timestamp"
+            when "timestamptz_ns"
+              time_unit = "ns"
+              time_zone = "+00:00"
+              "timestamp"
             else
               raise Todo
             end
@@ -123,6 +135,7 @@ module Polars
             }
           }
           arrow_field[:time_unit] = time_unit if time_unit
+          arrow_field[:time_zone] = time_zone if time_zone
           arrow_field
         end
 
