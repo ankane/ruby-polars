@@ -39,6 +39,7 @@ use crate::object::OBJECT_NAME;
 use crate::rb_modules::pl_series;
 use crate::ruby::gvl::GvlExt;
 use crate::ruby::utils::TryIntoValue;
+use crate::series::import_schema_rbcapsule;
 use crate::utils::to_rb_err;
 use crate::{
     RbDataFrame, RbExpr, RbLazyFrame, RbPolarsErr, RbResult, RbSeries, RbTypeError, RbValueError,
@@ -515,7 +516,28 @@ impl TryConvert for Wrap<Schema> {
 impl TryConvert for Wrap<ArrowSchema> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let ruby = Ruby::get_with(ob);
-        // TODO improve
+
+        if let Ok(schema_capsule) = ob.funcall::<_, _, Value>("arrow_c_schema", ()) {
+            let field = import_schema_rbcapsule(schema_capsule)?;
+
+            let ArrowDataType::Struct(fields) = field.dtype else {
+                return Err(RbValueError::new_err(format!(
+                    "arrow_c_schema of object did not return struct dtype: \
+                    object: {:?}, dtype: {:?}",
+                    ob, &field.dtype
+                )));
+            };
+
+            let mut schema = ArrowSchema::from_iter_check_duplicates(fields).unwrap();
+
+            if let Some(md) = field.metadata {
+                *schema.metadata_mut() = Arc::unwrap_or_clone(md);
+            }
+
+            return Ok(Wrap(schema));
+        }
+
+        // TODO remove in 0.27.0
         let ob = RHash::try_convert(ob)?;
         let fields: RArray = ob.aref(ruby.to_symbol("fields"))?;
         let mut arrow_schema = ArrowSchema::with_capacity(fields.len());

@@ -72,7 +72,7 @@ module Polars
 
         column_mapping = [
           "iceberg-column-mapping",
-          arrow_schema(schema)
+          schema.respond_to?(:arrow_c_schema) ? schema : arrow_schema(schema)
         ]
 
         deletion_files = [
@@ -97,6 +97,7 @@ module Polars
 
     private
 
+    # TODO remove in 0.27.0
     def arrow_schema(schema)
       fields =
         schema.fields.map do |field|
