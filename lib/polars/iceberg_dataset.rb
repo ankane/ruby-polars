@@ -35,6 +35,8 @@ module Polars
                 Polars::Float32
               when "double"
                 Polars::Float64
+              when "decimal"
+                Polars::Decimal.new(field[:precision], field[:scale])
               when "string"
                 Polars::String
               when "binary"
@@ -102,6 +104,8 @@ module Polars
               "float32"
             when "double"
               "float64"
+            when "decimal"
+              "decimal"
             when "string"
               "string"
             when "binary"
@@ -134,6 +138,10 @@ module Polars
               "PARQUET:field_id" => field[:id].to_s
             }
           }
+          if type == "decimal"
+            arrow_field[:precision] = field[:precision]
+            arrow_field[:scale] = field[:scale]
+          end
           arrow_field[:time_unit] = time_unit if time_unit
           arrow_field[:time_zone] = time_zone if time_zone
           arrow_field

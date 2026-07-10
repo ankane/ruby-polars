@@ -556,6 +556,11 @@ impl TryConvert for Wrap<ArrowSchema> {
                     };
                     ArrowDataType::Timestamp(arrow_time_unit, time_zone.map(|v| v.into()))
                 }
+                "decimal" => {
+                    let precision: usize = f.aref(ruby.to_symbol("precision"))?;
+                    let scale: usize = f.aref(ruby.to_symbol("scale"))?;
+                    ArrowDataType::Decimal(precision, scale)
+                }
                 _ => todo!(),
             };
             let is_nullable = f.aref(ruby.to_symbol("nullable"))?;
