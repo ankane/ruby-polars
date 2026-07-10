@@ -94,11 +94,17 @@ module Polars
               "large_binary"
             when "date"
               "date32"
+            when "timestamp"
+              time_unit = "us"
+              "timestamp"
+            when "timestamp_ns"
+              time_unit = "ns"
+              "timestamp"
             else
               raise Todo
             end
 
-          {
+          arrow_field = {
             name: field[:name],
             type: type,
             nullable: !field[:required],
@@ -106,6 +112,8 @@ module Polars
               "PARQUET:field_id" => field[:id].to_s
             }
           }
+          arrow_field[:time_unit] = time_unit if time_unit
+          arrow_field
         end
 
       {fields: fields}

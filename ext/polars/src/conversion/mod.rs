@@ -546,6 +546,16 @@ impl TryConvert for Wrap<ArrowSchema> {
                 "binary_view" => ArrowDataType::BinaryView,
                 "string_view" => ArrowDataType::Utf8View,
                 "unknown" => ArrowDataType::Unknown,
+                "timestamp" => {
+                    // TODO support time zone
+                    let time_unit: String = f.aref(ruby.to_symbol("time_unit"))?;
+                    let arrow_time_unit = match time_unit.as_str() {
+                        "us" => ArrowTimeUnit::Microsecond,
+                        "ns" => ArrowTimeUnit::Nanosecond,
+                        _ => todo!(),
+                    };
+                    ArrowDataType::Timestamp(arrow_time_unit, None)
+                }
                 _ => todo!(),
             };
             let is_nullable = f.aref(ruby.to_symbol("nullable"))?;
