@@ -19,56 +19,52 @@ module Polars
       snapshot = scan.snapshot
       schema = snapshot ? table.schema_by_id(snapshot[:schema_id]) : table.current_schema
 
-      if files.empty?
-        if schema.respond_to?(:arrow_c_schema)
-          schema = Schema.new(schema)
-        else
-          # TODO remove in 0.27.0
-          schema =
-            schema.fields.to_h do |field|
-              dtype =
-                case field[:type]
-                when "unknown"
-                  Unknown
-                when "boolean"
-                  Boolean
-                when "int"
-                  Int32
-                when "long"
-                  Int64
-                when "float"
-                  Float32
-                when "double"
-                  Float64
-                when "decimal"
-                  Decimal.new(field[:precision], field[:scale])
-                when "string"
-                  String
-                when "uuid"
-                  Binary
-                when "fixed"
-                  Binary
-                when "binary"
-                  Binary
-                when "date"
-                  Date
-                when "time"
-                  Time # ns instead of us since does not support time unit
-                when "timestamp"
-                  Datetime.new("us")
-                when "timestamp_ns"
-                  Datetime.new("ns")
-                when "timestamptz"
-                  Datetime.new("us", "+00:00")
-                when "timestamptz_ns"
-                  Datetime.new("ns", "+00:00")
-                else
-                  raise Todo
-                end
+      if files.empty? && !schema.respond_to?(:arrow_c_schema)
+        # TODO remove in 0.27.0
+        schema =
+          schema.fields.to_h do |field|
+            dtype =
+              case field[:type]
+              when "unknown"
+                Unknown
+              when "boolean"
+                Boolean
+              when "int"
+                Int32
+              when "long"
+                Int64
+              when "float"
+                Float32
+              when "double"
+                Float64
+              when "decimal"
+                Decimal.new(field[:precision], field[:scale])
+              when "string"
+                String
+              when "uuid"
+                Binary
+              when "fixed"
+                Binary
+              when "binary"
+                Binary
+              when "date"
+                Date
+              when "time"
+                Time # ns instead of us since does not support time unit
+              when "timestamp"
+                Datetime.new("us")
+              when "timestamp_ns"
+                Datetime.new("ns")
+              when "timestamptz"
+                Datetime.new("us", "+00:00")
+              when "timestamptz_ns"
+                Datetime.new("ns", "+00:00")
+              else
+                raise Todo
+              end
 
-              [field[:name], dtype]
-            end
-        end
+            [field[:name], dtype]
+          end
 
         LazyFrame.new(schema: schema)
       else
@@ -87,6 +83,7 @@ module Polars
         ]
 
         scan_options = {
+          schema: schema.respond_to?(:arrow_c_schema) ? Schema.new(schema) : nil,
           cast_options: Polars::ScanCastOptions._default_iceberg,
           missing_columns: "insert",
           extra_columns: "ignore",
