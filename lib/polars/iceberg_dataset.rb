@@ -17,7 +17,7 @@ module Polars
 
       table = scan.table
       snapshot = scan.snapshot
-      schema = snapshot ? table.schema_by_id(snapshot[:schema_id]) : table.current_schema
+      schema = snapshot ? table.schema_by_id(snapshot.is_a?(Hash) ? snapshot[:schema_id] : snapshot.schema_id) : table.current_schema
 
       if files.empty? && !schema.respond_to?(:arrow_c_schema)
         # TODO remove in 0.27.0
@@ -68,7 +68,7 @@ module Polars
 
         LazyFrame.new(schema: schema)
       else
-        sources = files.map { |v| v[:data_file_path] }
+        sources = files.map { |v| v.is_a?(Hash) ? v[:data_file_path] : v.file.file_path }
 
         column_mapping = [
           "iceberg-column-mapping",
@@ -78,8 +78,8 @@ module Polars
         deletion_files = [
           "iceberg-position-delete",
           files.map.with_index
-            .select { |v, i| v[:deletes].any? }
-            .to_h { |v, i| [i, v[:deletes].map { |d| d[:file_path] }] }
+            .select { |v, i| (v.is_a?(Hash) ? v[:deletes] : v.delete_files).any? }
+            .to_h { |v, i| [i, v.is_a?(Hash) ? v[:deletes].map { |d| d[:file_path] } : v.delete_files.map(&:file_path)] }
         ]
 
         scan_options = {
