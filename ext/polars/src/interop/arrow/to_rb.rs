@@ -21,7 +21,7 @@ impl RbCapsule {
     pub fn new<T: 'static + Send>(value: T, name: Option<CString>) -> Self {
         Self {
             value: Box::new(value),
-            name: name,
+            name,
         }
     }
 
