@@ -73,6 +73,8 @@ module Polars
         self._s = Utils.dataframe_to_rbseries(
           original_name, values, dtype: dtype, strict: strict
         )
+      elsif values.respond_to?(:arrow_c_stream)
+        self._s = RbSeries.from_arrow_c_stream(values)
       else
         raise TypeError, "Series constructor called with unsupported type; got #{values.class.name}"
       end

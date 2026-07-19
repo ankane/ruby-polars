@@ -1,6 +1,14 @@
 require_relative "test_helper"
 
 class ArrowTest < Minitest::Test
+  def test_series_from_arrow
+    require "nanoarrow"
+
+    arr = Nanoarrow::Array.new([1, 2, 3], Nanoarrow.int64)
+    s = Polars::Series.new(arr)
+    assert_series [1, 2, 3], s, dtype: Polars::Int64
+  end
+
   def test_series_to_arrow
     s = Polars::Series.new("a", [1, 2, 3])
     arr = s.to_arrow
