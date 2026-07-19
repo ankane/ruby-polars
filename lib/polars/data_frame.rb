@@ -817,6 +817,8 @@ module Polars
     #   df.to_numo.class
     #   # => Numo::RObject
     def to_numo
+      require "numo/narray"
+
       out = _df.to_numo
       if out.nil?
         Numo::NArray.vstack(width.times.map { |i| to_series(i).to_numo }).transpose

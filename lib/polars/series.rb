@@ -3119,6 +3119,8 @@ module Polars
     #   # Numo::Int64#shape=[3]
     #   # [1, 2, 3]
     def to_numo
+      require "numo/narray"
+
       if dtype.temporal?
         Numo::RObject.cast(to_a)
       else
