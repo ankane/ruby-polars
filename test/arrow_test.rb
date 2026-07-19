@@ -2,8 +2,6 @@ require_relative "test_helper"
 
 class ArrowTest < Minitest::Test
   def test_series
-    require "nanoarrow"
-
     s = Polars::Series.new("a", [1, 2, 3])
     arr = s.to_arrow
     assert_kind_of Nanoarrow::Array, arr
@@ -12,8 +10,6 @@ class ArrowTest < Minitest::Test
   end
 
   def test_data_frame
-    require "nanoarrow"
-
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     arr = df.to_arrow
     assert_kind_of Nanoarrow::Array, arr
@@ -22,8 +18,6 @@ class ArrowTest < Minitest::Test
   end
 
   def test_schema
-    require "nanoarrow"
-
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     schema = df.schema.to_arrow
     assert_kind_of Nanoarrow::Schema, schema

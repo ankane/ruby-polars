@@ -775,6 +775,8 @@ module Polars
     #
     # @return [Nanoarrow::Array]
     def to_arrow
+      require "nanoarrow"
+
       Nanoarrow::Array.new(self)
     end
 

@@ -75,6 +75,8 @@ module Polars
     #
     # @return [Nanoarrow::Schema]
     def to_arrow
+      require "nanoarrow"
+
       Nanoarrow::Schema.new(self)
     end
 
