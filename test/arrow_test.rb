@@ -7,6 +7,7 @@ class ArrowTest < Minitest::Test
     s = Polars::Series.new("a", [1, 2, 3])
     arr = s.to_arrow
     assert_kind_of Nanoarrow::Array, arr
+    assert_equal "int64", arr.schema.type
     assert_equal [1, 2, 3], arr.to_a
   end
 
