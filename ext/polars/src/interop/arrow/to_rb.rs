@@ -30,7 +30,7 @@ impl RbCapsule {
     }
 
     pub fn name(&self) -> Option<&str> {
-        self.name.as_ref().map(|v| v.to_str().unwrap())
+        self.name.as_deref().map(|v| v.to_str().unwrap())
     }
 }
 
