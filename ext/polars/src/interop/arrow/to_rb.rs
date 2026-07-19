@@ -13,8 +13,8 @@ use crate::RbResult;
 #[magnus::wrap(class = "Polars::Capsule")]
 pub struct RbCapsule {
     // TODO make generic
-    pub(crate) value: ffi::ArrowArrayStream,
-    pub(crate) name: Option<CString>,
+    value: ffi::ArrowArrayStream,
+    name: Option<CString>,
 }
 
 impl RbCapsule {
