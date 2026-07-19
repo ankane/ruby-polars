@@ -17,12 +17,24 @@ class ArrowTest < Minitest::Test
     assert_equal [1, 2, 3], arr.to_a
   end
 
+  def test_data_frame_from_arrow
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    arr = df.to_arrow
+    assert_frame_equal df, Polars::DataFrame.new(arr)
+  end
+
   def test_data_frame_to_arrow
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     arr = df.to_arrow
     assert_kind_of Nanoarrow::Array, arr
     assert_equal [1, 2, 3], arr.child(0).to_a
     assert_equal ["one", "two", "three"], arr.child(1).to_a
+  end
+
+  def test_schema_from_arrow
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    schema = df.schema.to_arrow
+    assert_equal df.schema.to_h, Polars::Schema.new(schema).to_h
   end
 
   def test_schema_to_arrow
