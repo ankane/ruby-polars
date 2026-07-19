@@ -1,3 +1,4 @@
+pub mod capsule;
 pub mod exceptions;
 pub mod gvl;
 pub mod lazy;
