@@ -37,7 +37,7 @@ use expr::RbExpr;
 use expr::datatype::RbDataTypeExpr;
 use expr::selector::RbSelector;
 use functions::whenthen::{RbChainedThen, RbChainedWhen, RbThen, RbWhen};
-use interop::arrow::to_rb::{RbArrowArrayStream, RbArrowSchema};
+use interop::arrow::to_rb::{RbArrowSchema, RbCapsule};
 use lazyframe::{RbCollectBatches, RbInProcessQuery, RbLazyFrame, RbOptFlags};
 use lazygroupby::RbLazyGroupBy;
 use magnus::{Ruby, function, method, prelude::*};
@@ -1341,9 +1341,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("register", method!(RbSQLContext::register, 2))?;
     class.define_method("unregister", method!(RbSQLContext::unregister, 1))?;
 
-    // arrow array stream
-    let class = module.define_class("ArrowArrayStream", ruby.class_object())?;
-    class.define_method("to_i", method!(RbArrowArrayStream::to_i, 0))?;
+    // capsule
+    let class = module.define_class("Capsule", ruby.class_object())?;
+    class.define_method("to_i", method!(RbCapsule::to_i, 0))?;
+    class.define_method("name", method!(RbCapsule::name, 0))?;
 
     // arrow schema
     let class = module.define_class("ArrowSchema", ruby.class_object())?;

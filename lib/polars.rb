@@ -127,6 +127,10 @@ module Polars
   N_INFER_DEFAULT = 100
 
   # @private
+  # TODO remove in 0.27.0
+  ArrowArrayStream = Capsule
+
+  # @private
   class ArrowArrayStream
     def arrow_c_stream
       self

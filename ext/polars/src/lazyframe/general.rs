@@ -10,6 +10,7 @@ use polars::prelude::*;
 use polars_core::query_result::QueryResult;
 use polars_plan::dsl::ScanSources;
 use polars_plan::plans::{HintIR, Sorted};
+use std::ffi::CString;
 use std::num::NonZeroUsize;
 
 use super::{RbLazyFrame, RbOptFlags};
@@ -27,8 +28,7 @@ use crate::ruby::ruby_function::RubyObject;
 use crate::ruby::utils::TryIntoValue;
 use crate::utils::{EnterPolarsExt, to_rb_err};
 use crate::{
-    RbArrowArrayStream, RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbTypeError,
-    RbValueError,
+    RbCapsule, RbDataFrame, RbExpr, RbLazyGroupBy, RbPolarsErr, RbResult, RbTypeError, RbValueError,
 };
 
 fn rbobject_to_first_path_and_scan_sources(
@@ -1314,7 +1314,8 @@ impl RbCollectBatches {
         let iter = Box::new(ArrowStreamIterator::new(self_.inner.clone(), dtype.clone()));
         let field = ArrowField::new(PlSmallStr::EMPTY, dtype, false);
         let stream = export_iterator(iter, field);
-        Ok(RbArrowArrayStream { stream }.into_value_with(rb))
+        let stream_capsule_name = CString::new("arrow_array_stream").unwrap();
+        Ok(RbCapsule::new(stream, Some(stream_capsule_name)).into_value_with(rb))
     }
 }
 

@@ -6,17 +6,30 @@ use polars::frame::DataFrame;
 use polars::prelude::{ArrayRef, ArrowField, PlSmallStr, PolarsResult, SchemaExt};
 use polars::series::Series;
 use polars_core::utils::arrow;
+use std::ffi::CString;
 
 use crate::RbResult;
 
-#[magnus::wrap(class = "Polars::ArrowArrayStream")]
-pub struct RbArrowArrayStream {
+#[magnus::wrap(class = "Polars::Capsule")]
+pub struct RbCapsule {
     pub(crate) stream: ffi::ArrowArrayStream,
+    pub(crate) name: Option<CString>,
 }
 
-impl RbArrowArrayStream {
+impl RbCapsule {
+    pub fn new(stream: ffi::ArrowArrayStream, name: Option<CString>) -> Self {
+        Self {
+            stream: stream,
+            name: name,
+        }
+    }
+
     pub fn to_i(&self) -> usize {
         (&self.stream as *const _) as usize
+    }
+
+    pub fn name(&self) -> Option<&str> {
+        self.name.as_ref().map(|v| v.to_str().unwrap())
     }
 }
 
@@ -39,14 +52,16 @@ pub(crate) fn series_to_stream(series: &Series, ruby: &Ruby) -> RbResult<Value> 
     ) as _;
 
     let stream = ffi::export_iterator(iter, field);
-    Ok(RbArrowArrayStream { stream }.into_value_with(ruby))
+    let stream_capsule_name = CString::new("arrow_array_stream").unwrap();
+    Ok(RbCapsule::new(stream, Some(stream_capsule_name)).into_value_with(ruby))
 }
 
 pub(crate) fn dataframe_to_stream(df: &DataFrame, ruby: &Ruby) -> RbResult<Value> {
     let iter = Box::new(DataFrameStreamIterator::new(df));
     let field = iter.field();
     let stream = ffi::export_iterator(iter, field);
-    Ok(RbArrowArrayStream { stream }.into_value_with(ruby))
+    let stream_capsule_name = CString::new("arrow_array_stream").unwrap();
+    Ok(RbCapsule::new(stream, Some(stream_capsule_name)).into_value_with(ruby))
 }
 
 pub(crate) fn polars_schema_to_rbcapsule(
