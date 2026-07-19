@@ -25,6 +25,8 @@ module Polars
       storage_options: nil,
       delta_table_options: nil
     )
+      require "deltalake-rb"
+
       df =
         scan_delta(
           source,
@@ -62,6 +64,8 @@ module Polars
       delta_table_options: nil,
       rechunk: nil
     )
+      require "deltalake-rb"
+
       dl_tbl =
         _get_delta_lake_table(
           source,
