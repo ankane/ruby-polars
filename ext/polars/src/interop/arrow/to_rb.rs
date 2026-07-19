@@ -35,6 +35,7 @@ impl RbCapsule {
     }
 }
 
+// TODO switch to RbCapsule in 0.27.0
 #[magnus::wrap(class = "Polars::ArrowSchema")]
 pub struct RbArrowSchema {
     pub(crate) schema: ffi::ArrowSchema,
