@@ -6,28 +6,27 @@ use polars::frame::DataFrame;
 use polars::prelude::{ArrayRef, ArrowField, PlSmallStr, PolarsResult, SchemaExt};
 use polars::series::Series;
 use polars_core::utils::arrow;
+use std::any::Any;
 use std::ffi::CString;
 
 use crate::RbResult;
 
 #[magnus::wrap(class = "Polars::Capsule")]
 pub struct RbCapsule {
-    // TODO make generic
-    value: ffi::ArrowArrayStream,
+    value: Box<dyn Any + Send>,
     name: Option<CString>,
 }
 
 impl RbCapsule {
-    // TODO make generic
-    pub fn new(value: ffi::ArrowArrayStream, name: Option<CString>) -> Self {
+    pub fn new<T: 'static + Send>(value: T, name: Option<CString>) -> Self {
         Self {
-            value: value,
+            value: Box::new(value),
             name: name,
         }
     }
 
     pub fn to_i(&self) -> usize {
-        (&self.value as *const _) as usize
+        (&*self.value as *const dyn Any as *const ()) as usize
     }
 
     pub fn name(&self) -> Option<&str> {
