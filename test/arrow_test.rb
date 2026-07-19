@@ -35,6 +35,11 @@ class ArrowTest < Minitest::Test
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     schema = df.schema.to_arrow
     assert_equal df.schema.to_h, Polars::Schema.new(schema).to_h
+
+    error = assert_raises(ArgumentError) do
+      Polars::Schema.new(Nanoarrow.int64)
+    end
+    assert_match "arrow_c_schema of object passed to Polars::Schema did not return struct dtype", error.message
   end
 
   def test_schema_to_arrow
