@@ -381,6 +381,12 @@ Delta Lake (experimental)
 df.write_delta("./table")
 ```
 
+Arrow array (experimental, requires [nanoarrow](https://github.com/ankane/nanoarrow-ruby), unreleased)
+
+```ruby
+df.to_arrow
+```
+
 Numo array
 
 ```ruby
