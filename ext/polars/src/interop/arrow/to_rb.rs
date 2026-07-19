@@ -17,6 +17,7 @@ pub struct RbCapsule {
 }
 
 impl RbCapsule {
+    // TODO make generic
     pub fn new(stream: ffi::ArrowArrayStream, name: Option<CString>) -> Self {
         Self {
             stream: stream,
