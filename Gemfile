@@ -14,6 +14,7 @@ gem "mysql2", require: false, platform: :ruby
 gem "trilogy", require: false, platform: :ruby
 gem "sqlite3", require: false
 gem "tzinfo", require: false
+gem "nanoarrow", require: false
 
 if ENV["TEST_DELTA"]
   gem "deltalake-rb", ">= 0.1.4"

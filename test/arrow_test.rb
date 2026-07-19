@@ -1,6 +1,34 @@
 require_relative "test_helper"
 
 class ArrowTest < Minitest::Test
+  def test_series
+    require "nanoarrow"
+
+    s = Polars::Series.new("a", [1, 2, 3])
+    arr = s.to_arrow
+    assert_kind_of Nanoarrow::Array, arr
+    assert_equal [1, 2, 3], arr.to_a
+  end
+
+  def test_data_frame
+    require "nanoarrow"
+
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    arr = df.to_arrow
+    assert_kind_of Nanoarrow::Array, arr
+    assert_equal [1, 2, 3], arr.child(0).to_a
+    assert_equal ["one", "two", "three"], arr.child(1).to_a
+  end
+
+  def test_schema
+    require "nanoarrow"
+
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    schema = df.schema.to_arrow
+    assert_kind_of Nanoarrow::Schema, schema
+    assert_equal ["int64", "string_view"], schema.fields.map(&:type)
+  end
+
   def test_c_stream
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
 

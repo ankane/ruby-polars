@@ -496,6 +496,11 @@ module Polars
       end
     end
 
+    # @private
+    def arrow_c_stream
+      _s.arrow_c_stream
+    end
+
     # Return the Series as a scalar, or return the element at the given index.
     #
     # If no index is provided, this is equivalent to `s[0]`, with a check
@@ -3119,6 +3124,13 @@ module Polars
       else
         _s.to_numo
       end
+    end
+
+    # Return the underlying Arrow array.
+    #
+    # @return [Nanoarrow::Array]
+    def to_arrow
+      Nanoarrow::Array.new(self)
     end
 
     # Set masked values.

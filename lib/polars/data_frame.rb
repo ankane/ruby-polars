@@ -771,7 +771,12 @@ module Polars
       s.get_index_signed(row)
     end
 
-    # no to_arrow
+    # Collect the underlying arrow arrays in an Arrow Table.
+    #
+    # @return [Nanoarrow::Array]
+    def to_arrow
+      Nanoarrow::Array.new(self)
+    end
 
     # Convert DataFrame to a hash mapping column name to values.
     #

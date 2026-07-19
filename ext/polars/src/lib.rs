@@ -1135,6 +1135,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("to_s", method!(RbSeries::as_str, 0))?;
     class.define_method("len", method!(RbSeries::len, 0))?;
     class.define_method("to_a", method!(RbSeries::to_a, 0))?;
+    class.define_method("arrow_c_stream", method!(RbSeries::__arrow_c_stream__, 0))?;
     class.define_method("median", method!(RbSeries::median, 0))?;
     class.define_method("quantile", method!(RbSeries::quantile, 2))?;
     class.define_method("_clone", method!(RbSeries::clone, 0))?;

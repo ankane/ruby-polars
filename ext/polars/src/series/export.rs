@@ -1,6 +1,7 @@
 use magnus::{IntoValue, Ruby, Value, value::ReprValue};
 use polars_core::prelude::*;
 
+use crate::interop::arrow::to_rb::series_to_stream;
 use crate::prelude::*;
 use crate::ruby::utils::TryIntoValue;
 use crate::{RbPolarsErr, RbResult, RbSeries};
@@ -177,5 +178,9 @@ impl RbSeries {
         }
 
         to_a_recursive(ruby, series)
+    }
+
+    pub fn __arrow_c_stream__(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
+        series_to_stream(&self_.series.read(), ruby)
     }
 }

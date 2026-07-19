@@ -31,6 +31,17 @@ impl RbArrowSchema {
     }
 }
 
+pub(crate) fn series_to_stream(series: &Series, ruby: &Ruby) -> RbResult<Value> {
+    let field = series.field().to_arrow(CompatLevel::newest());
+    let series = series.clone();
+    let iter = Box::new(
+        (0..series.n_chunks()).map(move |i| Ok(series.to_arrow(i, CompatLevel::newest()))),
+    ) as _;
+
+    let stream = ffi::export_iterator(iter, field);
+    Ok(RbArrowArrayStream { stream }.into_value_with(ruby))
+}
+
 pub(crate) fn dataframe_to_stream(df: &DataFrame, ruby: &Ruby) -> RbResult<Value> {
     let iter = Box::new(DataFrameStreamIterator::new(df));
     let field = iter.field();

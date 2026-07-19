@@ -71,6 +71,13 @@ module Polars
       @schema.values
     end
 
+    # Convert the schema to a nanoarrow schema.
+    #
+    # @return [Nanoarrow::Schema]
+    def to_arrow
+      Nanoarrow::Schema.new(self)
+    end
+
     # Get the number of schema entries.
     #
     # @return [Integer]
