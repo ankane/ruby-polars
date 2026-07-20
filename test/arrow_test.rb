@@ -52,15 +52,16 @@ class ArrowTest < Minitest::Test
   def test_arrow_c_stream
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
 
-    stream = df.arrow_c_stream
-    assert_kind_of Polars::Capsule, stream
-    assert_kind_of Integer, stream.to_i
+    capsule = df.arrow_c_stream
+    assert_kind_of Polars::Capsule, capsule
+    assert_equal "arrow_array_stream", capsule.name
+    assert_kind_of Integer, capsule.to_i
 
-    stream_object = Struct.new(:arrow_c_stream).new(stream)
-    assert_frame df, Polars::DataFrame.new(stream_object)
+    stream = Struct.new(:arrow_c_stream).new(capsule)
+    assert_frame df, Polars::DataFrame.new(stream)
 
     error = assert_raises(ArgumentError) do
-      Polars::DataFrame.new(stream_object)
+      Polars::DataFrame.new(stream)
     end
     assert_equal "the C stream was already released", error.message
   end
@@ -69,11 +70,11 @@ class ArrowTest < Minitest::Test
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
     schema = df.schema
 
-    arrow_schema = schema.arrow_c_schema
-    assert_kind_of Polars::ArrowSchema, arrow_schema
-    assert_kind_of Integer, arrow_schema.to_i
+    capsule = schema.arrow_c_schema
+    assert_kind_of Polars::ArrowSchema, capsule
+    assert_kind_of Integer, capsule.to_i
 
-    schema_object = Struct.new(:arrow_c_schema).new(arrow_schema)
-    assert_equal schema.to_h, Polars::Schema.new(schema_object).to_h
+    arrow_schema = Struct.new(:arrow_c_schema).new(capsule)
+    assert_equal schema.to_h, Polars::Schema.new(arrow_schema).to_h
   end
 end
