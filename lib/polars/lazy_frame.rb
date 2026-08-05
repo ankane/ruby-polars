@@ -4490,7 +4490,7 @@ module Polars
     #       "numbers" => [[1], [2, 3], [4, 5], [6, 7, 8]],
     #     }
     #   ).lazy
-    #   df.explode("numbers").collect
+    #   df.explode("numbers", empty_as_null: false).collect
     #   # =>
     #   # shape: (8, 2)
     #   # ┌─────────┬─────────┐
@@ -4510,9 +4510,16 @@ module Polars
     def explode(
       columns,
       *more_columns,
-      empty_as_null: true,
+      empty_as_null: OMITTED,
       keep_nulls: true
     )
+      if empty_as_null == OMITTED
+        Utils.issue_deprecation_warning(
+          "The default behavior for `empty_as_null` will change to `false`. " +
+          "To keep the current behavior, explicitly set `empty_as_null: true`."
+        )
+        empty_as_null = true
+      end
       subset = Utils.parse_list_into_selector(columns) | Utils.parse_list_into_selector(
         more_columns
       )

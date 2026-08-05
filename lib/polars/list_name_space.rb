@@ -744,7 +744,7 @@ module Polars
     #
     # @example
     #   s = Polars::Series.new("a", [[1, 2, 3], [4, 5, 6]])
-    #   s.list.explode
+    #   s.list.explode(empty_as_null: false)
     #   # =>
     #   # shape: (6,)
     #   # Series: 'a' [i64]

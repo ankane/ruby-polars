@@ -124,6 +124,9 @@ module Polars
   NO_DEFAULT = Object.new
 
   # @private
+  OMITTED = Object.new
+
+  # @private
   N_INFER_DEFAULT = 100
 
   # Return the number of threads in the Polars thread pool.

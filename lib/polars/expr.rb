@@ -1576,7 +1576,7 @@ module Polars
     # @example Get the top 2 rows by column `a` in each group.
     #   df.group_by("c", maintain_order: true)
     #     .agg(Polars.all.top_k_by("a", k: 2))
-    #     .explode(Polars.all.exclude("c"))
+    #     .explode(Polars.all.exclude("c"), empty_as_null: false)
     #   # =>
     #   # shape: (5, 3)
     #   # ┌────────┬─────┬─────┐
@@ -1721,7 +1721,7 @@ module Polars
     # @example Get the bottom 2 rows by column `a` in each group.
     #   df.group_by("c", maintain_order: true)
     #     .agg(Polars.all.bottom_k_by("a", k: 2))
-    #     .explode(Polars.all.exclude("c"))
+    #     .explode(Polars.all.exclude("c"), empty_as_null: false)
     #   # =>
     #   # shape: (5, 3)
     #   # ┌────────┬─────┬─────┐
@@ -3677,7 +3677,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"b" => [[1, 2, 3], [4, 5, 6]]})
-    #   df.select(Polars.col("b").explode)
+    #   df.select(Polars.col("b").explode(empty_as_null: false))
     #   # =>
     #   # shape: (6, 1)
     #   # ┌─────┐
@@ -3692,7 +3692,15 @@ module Polars
     #   # │ 5   │
     #   # │ 6   │
     #   # └─────┘
-    def explode(empty_as_null: true, keep_nulls: true)
+    def explode(empty_as_null: OMITTED, keep_nulls: true)
+      if empty_as_null == OMITTED
+        Utils.issue_deprecation_warning(
+          "The default behavior for `empty_as_null` will change to `false`. " +
+          "To keep the current behavior, explicitly set `empty_as_null: true`."
+        )
+        empty_as_null = true
+      end
+
       wrap_expr(_rbexpr.explode(empty_as_null, keep_nulls))
     end
 

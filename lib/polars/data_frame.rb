@@ -4535,7 +4535,7 @@ module Polars
     #       "numbers" => [[1], [2, 3], [4, 5], [6, 7, 8]]
     #     }
     #   )
-    #   df.explode("numbers")
+    #   df.explode("numbers", empty_as_null: false)
     #   # =>
     #   # shape: (8, 2)
     #   # ┌─────────┬─────────┐
@@ -4555,7 +4555,7 @@ module Polars
     def explode(
       columns,
       *more_columns,
-      empty_as_null: true,
+      empty_as_null: OMITTED,
       keep_nulls: true
     )
       lazy

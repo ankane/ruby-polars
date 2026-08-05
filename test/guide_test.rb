@@ -214,7 +214,7 @@ class GuideTest < Minitest::Test
         Polars.first("fruits").alias("fruits_first"),
         Polars.count("A").alias("count"),
         Polars.col("cars").reverse
-      ]).explode("cars")
+      ]).explode("cars", empty_as_null: true)
 
     output df.group_by("fruits")
       .agg([
@@ -223,7 +223,7 @@ class GuideTest < Minitest::Test
         Polars.first("fruits").alias("fruits_first"),
         Polars.len,
         Polars.col("B").shift.alias("B_shifted")
-      ]).explode("B_shifted")
+      ]).explode("B_shifted", empty_as_null: true)
 
     output df.sort("cars").group_by("fruits")
       .agg([
@@ -232,7 +232,7 @@ class GuideTest < Minitest::Test
         Polars.first("fruits").alias("fruits_first"),
         Polars.count("A").alias("count"),
         Polars.col("cars").reverse
-      ]).explode("cars")
+      ]).explode("cars", empty_as_null: true)
 
     output df.group_by("fruits")
       .agg([

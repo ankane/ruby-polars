@@ -907,7 +907,7 @@ module Polars
     #
     # @example
     #   df = Polars::DataFrame.new({"a" => [[1, 2, 3], [4, 5, 6]]})
-    #   df.select(Polars.col("a").list.explode)
+    #   df.select(Polars.col("a").list.explode(empty_as_null: false))
     #   # =>
     #   # shape: (6, 1)
     #   # ┌─────┐
@@ -922,7 +922,15 @@ module Polars
     #   # │ 5   │
     #   # │ 6   │
     #   # └─────┘
-    def explode(empty_as_null: true, keep_nulls: true)
+    def explode(empty_as_null: OMITTED, keep_nulls: true)
+      if empty_as_null == OMITTED
+        Utils.issue_deprecation_warning(
+          "The default behavior for `empty_as_null` will change to `false`. " +
+          "To keep the current behavior, explicitly set `empty_as_null: true`."
+        )
+        empty_as_null = true
+      end
+
       Utils.wrap_expr(_rbexpr.explode(empty_as_null, keep_nulls))
     end
 
