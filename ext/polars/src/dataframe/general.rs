@@ -310,6 +310,19 @@ impl RbDataFrame {
         rb.enter_polars_series(|| self_.df.read().is_duplicated())
     }
 
+    pub fn is_sorted(
+        rb: &Ruby,
+        self_: &Self,
+        by: Vec<String>,
+        descending: Vec<bool>,
+        nulls_last: Vec<bool>,
+    ) -> RbResult<bool> {
+        rb.enter_polars(|| {
+            let by = strings_to_pl_smallstr(by);
+            self_.df.read().is_sorted(&by, &descending, &nulls_last)
+        })
+    }
+
     pub fn equals(
         rb: &Ruby,
         self_: &Self,

@@ -137,6 +137,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("tail", method!(RbDataFrame::tail, 1))?;
     class.define_method("is_unique", method!(RbDataFrame::is_unique, 0))?;
     class.define_method("is_duplicated", method!(RbDataFrame::is_duplicated, 0))?;
+    class.define_method("is_sorted", method!(RbDataFrame::is_sorted, 3))?;
     class.define_method("equals", method!(RbDataFrame::equals, 2))?;
     class.define_method("with_row_index", method!(RbDataFrame::with_row_index, 2))?;
     class.define_method(

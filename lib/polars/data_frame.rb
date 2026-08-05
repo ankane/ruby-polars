@@ -4970,6 +4970,51 @@ module Polars
       lazy.shift(n, fill_value: fill_value).collect(optimizations: QueryOptFlags._eager)
     end
 
+    # Check whether the DataFrame is sorted by the given columns.
+    #
+    # @param by [Object]
+    #   Column name(s) to check.
+    # @param more_by [Array]
+    #   Additional column names.
+    # @param descending [Boolean]
+    #   Sort in descending order. When sorting by multiple columns, can be
+    #   specified per column by passing a sequence of booleans.
+    # @param nulls_last [Boolean]
+    #   Place null values last. When sorting by multiple columns, can be
+    #   specified per column by passing a sequence of booleans.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [5, 4, 3]})
+    #   df.is_sorted("a")
+    #   # => true
+    #
+    # @example
+    #   df.is_sorted("b", descending: true)
+    #   # => true
+    #
+    # @example
+    #   df.is_sorted("a", "b")
+    #   # => true
+    def is_sorted(
+      by,
+      *more_by,
+      descending: false,
+      nulls_last: false
+    )
+      by = Array(by)
+      by.concat(more_by)
+      n = by.length
+      if Utils.bool?(descending)
+        descending = [descending] * n
+      end
+      if Utils.bool?(nulls_last)
+        nulls_last = [nulls_last] * n
+      end
+      _df.is_sorted(by, descending, nulls_last)
+    end
+
     # Get a mask of all duplicated rows in this DataFrame.
     #
     # @return [Series]
