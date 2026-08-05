@@ -37,7 +37,6 @@ use expr::RbExpr;
 use expr::datatype::RbDataTypeExpr;
 use expr::selector::RbSelector;
 use functions::whenthen::{RbChainedThen, RbChainedWhen, RbThen, RbWhen};
-use interop::arrow::to_rb::RbArrowSchema;
 use lazyframe::{RbCollectBatches, RbInProcessQuery, RbLazyFrame, RbOptFlags};
 use lazygroupby::RbLazyGroupBy;
 use magnus::{Ruby, function, method, prelude::*};
@@ -1346,10 +1345,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     let class = module.define_class("Capsule", ruby.class_object())?;
     class.define_method("to_i", method!(RbCapsule::to_i, 0))?;
     class.define_method("name", method!(RbCapsule::name, 0))?;
-
-    // arrow schema
-    let class = module.define_class("ArrowSchema", ruby.class_object())?;
-    class.define_method("to_i", method!(RbArrowSchema::to_i, 0))?;
 
     // catalog
     let class = module.define_class("RbCatalogClient", ruby.class_object())?;

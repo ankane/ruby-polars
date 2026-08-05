@@ -11,18 +11,6 @@ use std::ffi::CString;
 use crate::RbResult;
 use crate::ruby::capsule::RbCapsule;
 
-// TODO switch to RbCapsule in 0.27.0
-#[magnus::wrap(class = "Polars::ArrowSchema")]
-pub struct RbArrowSchema {
-    pub(crate) schema: ffi::ArrowSchema,
-}
-
-impl RbArrowSchema {
-    pub fn to_i(&self) -> usize {
-        (&self.schema as *const _) as usize
-    }
-}
-
 pub(crate) fn series_to_stream(series: &Series, ruby: &Ruby) -> RbResult<Value> {
     let field = series.field().to_arrow(CompatLevel::newest());
     let series = series.clone();
@@ -59,7 +47,7 @@ pub(crate) fn polars_schema_to_rbcapsule(
         false,
     ));
 
-    Ok(RbArrowSchema { schema }.into_value_with(ruby))
+    Ok(RbCapsule::new(schema, Some(c"arrow_schema".into())).into_value_with(ruby))
 }
 
 pub struct DataFrameStreamIterator {

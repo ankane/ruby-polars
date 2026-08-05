@@ -74,7 +74,8 @@ class ArrowTest < Minitest::Test
     schema = df.schema
 
     capsule = schema.arrow_c_schema
-    assert_kind_of Polars::ArrowSchema, capsule
+    assert_kind_of Polars::Capsule, capsule
+    assert_equal "arrow_schema", capsule.name
     assert_kind_of Integer, capsule.to_i
 
     arrow_schema = Struct.new(:arrow_c_schema).new(capsule)
