@@ -3,7 +3,6 @@ mod categorical;
 mod chunked_array;
 mod datetime;
 
-use std::collections::BTreeMap;
 use std::fmt::{Debug, Display, Formatter};
 use std::fs::File;
 use std::hash::{Hash, Hasher};
@@ -514,103 +513,25 @@ impl TryConvert for Wrap<Schema> {
 
 impl TryConvert for Wrap<ArrowSchema> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let ruby = Ruby::get_with(ob);
+        let schema_capsule: Value = ob.funcall("arrow_c_schema", ())?;
 
-        if let Ok(schema_capsule) = ob.funcall::<_, _, Value>("arrow_c_schema", ()) {
-            let field = import_schema_rbcapsule(schema_capsule)?;
+        let field = import_schema_rbcapsule(schema_capsule)?;
 
-            let ArrowDataType::Struct(fields) = field.dtype else {
-                return Err(RbValueError::new_err(format!(
-                    "arrow_c_schema of object did not return struct dtype: \
-                    object: {:?}, dtype: {:?}",
-                    ob, &field.dtype
-                )));
-            };
+        let ArrowDataType::Struct(fields) = field.dtype else {
+            return Err(RbValueError::new_err(format!(
+                "arrow_c_schema of object did not return struct dtype: \
+                object: {:?}, dtype: {:?}",
+                ob, &field.dtype
+            )));
+        };
 
-            let mut schema = ArrowSchema::from_iter_check_duplicates(fields).unwrap();
+        let mut schema = ArrowSchema::from_iter_check_duplicates(fields).unwrap();
 
-            if let Some(md) = field.metadata {
-                *schema.metadata_mut() = Arc::unwrap_or_clone(md);
-            }
-
-            return Ok(Wrap(schema));
+        if let Some(md) = field.metadata {
+            *schema.metadata_mut() = Arc::unwrap_or_clone(md);
         }
 
-        // TODO remove in 0.27.0
-        let ob = RHash::try_convert(ob)?;
-        let fields: RArray = ob.aref(ruby.to_symbol("fields"))?;
-        let mut arrow_schema = ArrowSchema::with_capacity(fields.len());
-        for f in fields {
-            let f = RHash::try_convert(f)?;
-            let name: String = f.aref(ruby.to_symbol("name"))?;
-            let rb_dtype: String = f.aref(ruby.to_symbol("type"))?;
-            let dtype = match rb_dtype.as_str() {
-                "null" => ArrowDataType::Null,
-                "boolean" => ArrowDataType::Boolean,
-                "int8" => ArrowDataType::Int8,
-                "int16" => ArrowDataType::Int16,
-                "int32" => ArrowDataType::Int32,
-                "int64" => ArrowDataType::Int64,
-                "uint8" => ArrowDataType::UInt8,
-                "uint16" => ArrowDataType::UInt16,
-                "uint32" => ArrowDataType::UInt32,
-                "uint64" => ArrowDataType::UInt64,
-                "float16" => ArrowDataType::Float16,
-                "float32" => ArrowDataType::Float32,
-                "float64" => ArrowDataType::Float64,
-                "date32" => ArrowDataType::Date32,
-                "date64" => ArrowDataType::Date64,
-                "binary" => ArrowDataType::Binary,
-                "large_binary" => ArrowDataType::LargeBinary,
-                "string" => ArrowDataType::Utf8,
-                "large_string" => ArrowDataType::LargeUtf8,
-                "binary_view" => ArrowDataType::BinaryView,
-                "string_view" => ArrowDataType::Utf8View,
-                "unknown" => ArrowDataType::Unknown,
-                "timestamp" => {
-                    let time_unit: String = f.aref(ruby.to_symbol("time_unit"))?;
-                    let time_zone: Option<String> = f.aref(ruby.to_symbol("time_zone"))?;
-                    let arrow_time_unit = match time_unit.as_str() {
-                        "us" => ArrowTimeUnit::Microsecond,
-                        "ns" => ArrowTimeUnit::Nanosecond,
-                        _ => todo!(),
-                    };
-                    ArrowDataType::Timestamp(arrow_time_unit, time_zone.map(|v| v.into()))
-                }
-                "time64" => {
-                    let time_unit: String = f.aref(ruby.to_symbol("time_unit"))?;
-                    let arrow_time_unit = match time_unit.as_str() {
-                        "us" => ArrowTimeUnit::Microsecond,
-                        _ => todo!(),
-                    };
-                    ArrowDataType::Time64(arrow_time_unit)
-                }
-                "decimal" => {
-                    let precision: usize = f.aref(ruby.to_symbol("precision"))?;
-                    let scale: usize = f.aref(ruby.to_symbol("scale"))?;
-                    ArrowDataType::Decimal(precision, scale)
-                }
-                "fixed_size_binary" => {
-                    let limit: usize = f.aref(ruby.to_symbol("limit"))?;
-                    ArrowDataType::FixedSizeBinary(limit)
-                }
-                _ => todo!(),
-            };
-            let is_nullable = f.aref(ruby.to_symbol("nullable"))?;
-            let rb_metadata: RHash = f.aref(ruby.to_symbol("metadata"))?;
-            let mut metadata = BTreeMap::new();
-            rb_metadata.foreach(|k: String, v: String| {
-                metadata.insert(k.into(), v.into());
-                Ok(ForEach::Continue)
-            })?;
-            arrow_schema
-                .try_insert(
-                    name.clone().into(),
-                    ArrowField::new(name.into(), dtype, is_nullable).with_metadata(metadata),
-                )
-                .map_err(to_rb_err)?;
-        }
-        Ok(Wrap(arrow_schema))
+        return Ok(Wrap(schema));
     }
 }
 

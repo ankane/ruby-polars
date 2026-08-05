@@ -21,7 +21,7 @@ if ENV["TEST_DELTA"]
 end
 
 if ENV["TEST_ICEBERG"]
-  gem "iceberg", ">= 0.10.3"
+  gem "iceberg", ">= 0.12"
 end
 
 # https://github.com/lsegal/yard/issues/1321

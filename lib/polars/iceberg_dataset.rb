@@ -17,159 +17,33 @@ module Polars
 
       table = scan.table
       snapshot = scan.snapshot
-      schema = snapshot ? table.schema_by_id(snapshot.is_a?(Hash) ? snapshot[:schema_id] : snapshot.schema_id) : table.current_schema
+      schema = snapshot ? table.schema_by_id(snapshot.schema_id) : table.current_schema
 
-      if files.empty? && !schema.respond_to?(:arrow_c_schema)
-        # TODO remove in 0.27.0
-        schema =
-          schema.fields.to_h do |field|
-            dtype =
-              case field[:type]
-              when "unknown"
-                Unknown
-              when "boolean"
-                Boolean
-              when "int"
-                Int32
-              when "long"
-                Int64
-              when "float"
-                Float32
-              when "double"
-                Float64
-              when "decimal"
-                Decimal.new(field[:precision], field[:scale])
-              when "string"
-                String
-              when "uuid"
-                Binary
-              when "fixed"
-                Binary
-              when "binary"
-                Binary
-              when "date"
-                Date
-              when "time"
-                Time # ns instead of us since does not support time unit
-              when "timestamp"
-                Datetime.new("us")
-              when "timestamp_ns"
-                Datetime.new("ns")
-              when "timestamptz"
-                Datetime.new("us", "+00:00")
-              when "timestamptz_ns"
-                Datetime.new("ns", "+00:00")
-              else
-                raise Todo
-              end
+      sources = files.map { |v| v.file.file_path }
 
-            [field[:name], dtype]
-          end
+      column_mapping = [
+        "iceberg-column-mapping",
+        schema
+      ]
 
-        LazyFrame.new(schema: schema)
-      else
-        sources = files.map { |v| v.is_a?(Hash) ? v[:data_file_path] : v.file.file_path }
+      deletion_files = [
+        "iceberg-position-delete",
+        files.map.with_index
+          .select { |v, i| v.delete_files.any? }
+          .to_h { |v, i| [i, v.delete_files.map(&:file_path)] }
+      ]
 
-        column_mapping = [
-          "iceberg-column-mapping",
-          schema.respond_to?(:arrow_c_schema) ? schema : arrow_schema(schema)
-        ]
+      scan_options = {
+        schema: Schema.new(schema),
+        cast_options: Polars::ScanCastOptions._default_iceberg,
+        missing_columns: "insert",
+        extra_columns: "ignore",
+        storage_options: @storage_options,
+        _column_mapping: column_mapping,
+        _deletion_files: deletion_files
+      }
 
-        deletion_files = [
-          "iceberg-position-delete",
-          files.map.with_index
-            .select { |v, i| (v.is_a?(Hash) ? v[:deletes] : v.delete_files).any? }
-            .to_h { |v, i| [i, v.is_a?(Hash) ? v[:deletes].map { |d| d[:file_path] } : v.delete_files.map(&:file_path)] }
-        ]
-
-        scan_options = {
-          schema: schema.respond_to?(:arrow_c_schema) ? Schema.new(schema) : nil,
-          cast_options: Polars::ScanCastOptions._default_iceberg,
-          missing_columns: "insert",
-          extra_columns: "ignore",
-          storage_options: @storage_options,
-          _column_mapping: column_mapping,
-          _deletion_files: deletion_files
-        }
-
-        Polars.scan_parquet(sources, **scan_options)
-      end
-    end
-
-    private
-
-    # TODO remove in 0.27.0
-    def arrow_schema(schema)
-      fields =
-        schema.fields.map do |field|
-          type =
-            case field[:type]
-            when "unknown"
-              "unknown"
-            when "boolean"
-              "boolean"
-            when "int"
-              "int32"
-            when "long"
-              "int64"
-            when "float"
-              "float32"
-            when "double"
-              "float64"
-            when "decimal"
-              "decimal"
-            when "string"
-              "string"
-            when "uuid"
-              limit = 16
-              "fixed_size_binary"
-            when "fixed"
-              limit = field[:limit]
-              "fixed_size_binary"
-            when "binary"
-              "large_binary"
-            when "date"
-              "date32"
-            when "time"
-              time_unit = "us"
-              "time64"
-            when "timestamp"
-              time_unit = "us"
-              "timestamp"
-            when "timestamp_ns"
-              time_unit = "ns"
-              "timestamp"
-            when "timestamptz"
-              time_unit = "us"
-              time_zone = "+00:00"
-              "timestamp"
-            when "timestamptz_ns"
-              time_unit = "ns"
-              time_zone = "+00:00"
-              "timestamp"
-            else
-              raise Todo
-            end
-
-          arrow_field = {
-            name: field[:name],
-            type: type,
-            nullable: !field[:required],
-            metadata: {
-              "PARQUET:field_id" => field[:id].to_s
-            }
-          }
-          arrow_field[:limit] = limit if limit
-          if type == "decimal"
-            arrow_field[:precision] = field[:precision]
-            arrow_field[:scale] = field[:scale]
-          end
-          arrow_field[:time_unit] = time_unit if time_unit
-          arrow_field[:time_zone] = time_zone if time_zone
-          arrow_field
-        end
-
-      {fields: fields}
+      Polars.scan_parquet(sources, **scan_options)
     end
   end
 end
