@@ -1,5 +1,9 @@
 use std::any::Any;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
+
+use magnus::{IntoValue, Ruby, Value};
+
+use crate::RbResult;
 
 #[magnus::wrap(class = "Polars::Capsule")]
 pub struct RbCapsule {
@@ -8,6 +12,14 @@ pub struct RbCapsule {
 }
 
 impl RbCapsule {
+    pub fn new_with_value<T: 'static + Send>(
+        ruby: &Ruby,
+        value: T,
+        name: &CStr,
+    ) -> RbResult<Value> {
+        Ok(Self::new(value, Some(name.into())).into_value_with(ruby))
+    }
+
     pub fn new<T: 'static + Send>(value: T, name: Option<CString>) -> Self {
         Self {
             value: Box::new(value),
