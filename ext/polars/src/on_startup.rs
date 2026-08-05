@@ -12,7 +12,7 @@ use polars_core::chunked_array::object::registry;
 use polars_core::chunked_array::object::registry::AnonymousObjectBuilder;
 use polars_core::prelude::AnyValue;
 use polars_error::PolarsWarning;
-use polars_error::signals::register_polars_keyboard_interrupt_hook;
+use polars_error::abort::register_polars_abort_mechanism;
 
 use crate::Wrap;
 use crate::dataframe::RbDataFrame;
@@ -209,7 +209,7 @@ pub unsafe fn register_startup_deps(catch_keyboard_interrupt: bool) {
         polars_error::set_warning_function(warning_function);
 
         if catch_keyboard_interrupt {
-            register_polars_keyboard_interrupt_hook();
+            register_polars_abort_mechanism();
         }
     });
 }

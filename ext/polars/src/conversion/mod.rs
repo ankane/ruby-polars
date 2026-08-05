@@ -19,9 +19,7 @@ use polars::datatypes::AnyValue;
 use polars::frame::PivotColumnNaming;
 use polars::frame::row::Row;
 use polars::io::avro::AvroCompression;
-use polars::prelude::default_values::{
-    DefaultFieldValues, IcebergIdentityTransformedPartitionFields,
-};
+use polars::prelude::default_values::DefaultFieldValues;
 use polars::prelude::deletion::DeletionFilesList;
 use polars::prelude::*;
 use polars::series::ops::NullBehavior;
@@ -31,6 +29,7 @@ use polars_core::schema::iceberg::IcebergSchema;
 use polars_core::utils::arrow::array::Array;
 use polars_core::utils::materialize_dyn_int;
 use polars_plan::dsl::ScanSources;
+use polars_plan::dsl::default_values::IcebergDefaultFieldValues;
 use polars_utils::compression::{BrotliLevel, GzipLevel, ZstdLevel};
 use polars_utils::total_ord::{TotalEq, TotalHash};
 
@@ -1330,6 +1329,9 @@ impl TryConvert for Wrap<CastColumnsPolicy> {
         })?;
 
         let mut datetime_nanoseconds_downcast = false;
+        let mut datetime_microseconds_downcast = false;
+        let mut datetime_milliseconds_upcast = false;
+        let mut datetime_microseconds_upcast = false;
         let mut datetime_convert_timezone = false;
 
         let datetime_cast_object: Value = ob.funcall("datetime_cast", ())?;
@@ -1338,6 +1340,9 @@ impl TryConvert for Wrap<CastColumnsPolicy> {
             match v {
                 "forbid" => {}
                 "nanosecond-downcast" => datetime_nanoseconds_downcast = true,
+                "microsecond-downcast" => datetime_microseconds_downcast = true,
+                "millisecond-upcast" => datetime_milliseconds_upcast = true,
+                "microsecond-upcast" => datetime_microseconds_upcast = true,
                 "convert-timezone" => datetime_convert_timezone = true,
                 v => {
                     return Err(RbValueError::new_err(format!(
@@ -1387,7 +1392,9 @@ impl TryConvert for Wrap<CastColumnsPolicy> {
             float_upcast,
             float_downcast,
             datetime_nanoseconds_downcast,
-            datetime_microseconds_downcast: false,
+            datetime_microseconds_downcast,
+            datetime_milliseconds_upcast,
+            datetime_microseconds_upcast,
             datetime_convert_timezone,
             null_upcast: true,
             categorical_to_string,
@@ -1685,11 +1692,13 @@ impl TryConvert for Wrap<DefaultFieldValues> {
 
         Ok(Wrap(match &*default_values_type {
             "iceberg" => {
-                let dict = RHash::try_convert(ob)?;
+                let (identity_transformed_partition_values, initial_defaults) =
+                    <(RHash, RHash)>::try_convert(ob)?;
 
-                let mut out = PlIndexMap::new();
+                let mut converted_identity_transformed_partition_values = PlIndexMap::new();
+                let mut converted_initial_defaults = PlIndexMap::new();
 
-                dict.foreach(|k: u32, v: Value| {
+                identity_transformed_partition_values.foreach(|k: u32, v: Value| {
                     let v: Result<Column, String> = if let Ok(s) = get_series(v) {
                         Ok(s.into_column())
                     } else {
@@ -1697,14 +1706,28 @@ impl TryConvert for Wrap<DefaultFieldValues> {
                         Err(err_msg)
                     };
 
-                    out.insert(k, v);
+                    converted_identity_transformed_partition_values.insert(k, v);
 
                     Ok(ForEach::Continue)
                 })?;
 
-                DefaultFieldValues::Iceberg(Arc::new(IcebergIdentityTransformedPartitionFields(
-                    out,
-                )))
+                initial_defaults.foreach(|k: u32, v: Value| {
+                    let v = get_series(v)?;
+                    let v = Scalar::new(
+                        v.dtype().clone(),
+                        v.get(0).map_err(to_rb_err)?.into_static(),
+                    );
+                    converted_initial_defaults.insert(k, v);
+
+                    Ok(ForEach::Continue)
+                })?;
+
+                DefaultFieldValues::Iceberg(Arc::new(IcebergDefaultFieldValues {
+                    identity_transformed_partition_fields: PlIndexMapHashable(
+                        converted_identity_transformed_partition_values,
+                    ),
+                    initial_defaults: PlIndexMapHashable(converted_initial_defaults),
+                }))
             }
 
             v => {

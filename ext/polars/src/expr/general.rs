@@ -815,7 +815,7 @@ impl RbExpr {
         &self,
         n: &Self,
         with_replacement: bool,
-        shuffle: bool,
+        shuffle: Option<bool>,
         seed: Option<u64>,
     ) -> Self {
         self.inner
@@ -828,7 +828,7 @@ impl RbExpr {
         &self,
         frac: &Self,
         with_replacement: bool,
-        shuffle: bool,
+        shuffle: Option<bool>,
         seed: Option<u64>,
     ) -> Self {
         self.inner

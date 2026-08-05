@@ -6,9 +6,8 @@ use std::path::PathBuf;
 use magnus::{Error, RString, Ruby, Value, prelude::*, value::Opaque};
 use polars::io::mmap::MmapBytesReader;
 use polars::prelude::PlRefPath;
-use polars::prelude::file::{Writeable, WriteableTrait};
+use polars::prelude::file::{Writable, WritableTrait};
 use polars_buffer::Buffer;
-use polars_utils::create_file;
 
 use crate::error::RbPolarsErr;
 use crate::prelude::resolve_homedir;
@@ -23,7 +22,7 @@ pub struct RbFileLikeObject {
     has_flush: bool,
 }
 
-impl WriteableTrait for RbFileLikeObject {
+impl WritableTrait for RbFileLikeObject {
     fn close(&mut self) -> io::Result<()> {
         Ok(())
     }
@@ -217,10 +216,10 @@ impl EitherRustRubyFile {
         }
     }
 
-    pub(crate) fn into_writeable(self) -> Writeable {
+    pub(crate) fn into_writable(self) -> Writable {
         match self {
-            Self::Rb(f) => Writeable::Dyn(Box::new(f)),
-            Self::Rust(f) => Writeable::Local(f),
+            Self::Rb(f) => Writable::Dyn(Box::new(f)),
+            Self::Rust(f) => Writable::Local(f),
         }
     }
 }
@@ -272,9 +271,9 @@ pub fn get_either_buffer_or_path(
             let file_path = std::path::Path::new(&s);
             let file_path = resolve_homedir(&file_path);
             let f = if write {
-                create_file(&file_path).map_err(RbPolarsErr::from)?
+                polars_utils::io::create_file(&file_path).map_err(RbPolarsErr::from)?
             } else {
-                polars_utils::open_file(&file_path).map_err(RbPolarsErr::from)?
+                polars_utils::io::open_file(&file_path).map_err(RbPolarsErr::from)?
             };
             Ok((EitherRustRubyFile::Rust(f), Some(file_path.into_owned())))
         } else {

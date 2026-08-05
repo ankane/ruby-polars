@@ -5149,7 +5149,8 @@ module Polars
     #   # │ elise  ┆ 44  │
     #   # └────────┴─────┘
     def merge_sorted(other, key, maintain_order: false)
-      _from_rbldf(_ldf.merge_sorted(other._ldf, key, maintain_order))
+      keys = Array(key)
+      _from_rbldf(_ldf.merge_sorted(other._ldf, keys, maintain_order))
     end
 
     # Flag a column as sorted.

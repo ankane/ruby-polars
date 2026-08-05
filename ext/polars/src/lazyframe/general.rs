@@ -1224,7 +1224,12 @@ impl RbLazyFrame {
         ldf.count().into()
     }
 
-    pub fn merge_sorted(&self, other: &Self, key: String, maintain_order: bool) -> RbResult<Self> {
+    pub fn merge_sorted(
+        &self,
+        other: &Self,
+        key: Vec<String>,
+        maintain_order: bool,
+    ) -> RbResult<Self> {
         let out = self
             .ldf
             .read()

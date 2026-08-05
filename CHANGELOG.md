@@ -1,3 +1,7 @@
+## 0.27.0 (unreleased)
+
+- Updated Polars to 0.55.1
+
 ## 0.26.1 (2026-07-22)
 
 - Added support for more types to `scan_iceberg` method

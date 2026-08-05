@@ -84,7 +84,7 @@ impl RbDataFrame {
         self_: &Self,
         n: &RbSeries,
         with_replacement: bool,
-        shuffle: bool,
+        shuffle: Option<bool>,
         seed: Option<u64>,
     ) -> RbResult<Self> {
         rb.enter_polars_df(|| {
@@ -100,7 +100,7 @@ impl RbDataFrame {
         self_: &Self,
         frac: &RbSeries,
         with_replacement: bool,
-        shuffle: bool,
+        shuffle: Option<bool>,
         seed: Option<u64>,
     ) -> RbResult<Self> {
         rb.enter_polars_df(|| {

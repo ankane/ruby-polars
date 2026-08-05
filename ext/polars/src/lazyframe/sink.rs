@@ -18,7 +18,7 @@ impl TryConvert for Wrap<polars_plan::dsl::SinkTarget> {
                 RbResult::Ok(
                     crate::file::try_get_rbfile(rb, rb_f, true)?
                         .0
-                        .into_writeable(),
+                        .into_writable(),
                 )
             })?;
 

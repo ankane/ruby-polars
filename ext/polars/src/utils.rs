@@ -4,7 +4,7 @@ use magnus::Ruby;
 use polars::frame::DataFrame;
 use polars::series::IntoSeries;
 use polars_error::PolarsResult;
-use polars_error::signals::{KeyboardInterrupt, catch_keyboard_interrupt};
+use polars_error::abort::{QueryAborted, catch_polars_abort};
 
 use crate::ruby::exceptions::RbKeyboardInterrupt;
 use crate::ruby::gvl::GvlExt;
@@ -114,12 +114,16 @@ impl EnterPolarsExt for &Ruby {
         E: Send + Into<RbPolarsErr>,
     {
         let timeout = schedule_polars_timeout();
-        let ret = self.detach(|| catch_keyboard_interrupt(AssertUnwindSafe(f)));
+        let ret = self.detach(|| catch_polars_abort(AssertUnwindSafe(f)));
         cancel_polars_timeout(timeout);
         match ret {
             Ok(Ok(ret)) => Ok(ret),
             Ok(Err(err)) => Err(RbErr::from(err.into())),
-            Err(KeyboardInterrupt) => Err(RbKeyboardInterrupt::new_err("")),
+            Err(QueryAborted::KeyboardInterrupt) => Err(RbKeyboardInterrupt::new_err("")),
+            Err(QueryAborted::OocOutOfDisk) => Err(RbPolarsErr::Other(
+                "query aborted, raise POLARS_OOC_DISK_BUDGET_MB".to_string(),
+            )
+            .into()),
         }
     }
 }

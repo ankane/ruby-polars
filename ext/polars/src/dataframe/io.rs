@@ -163,14 +163,16 @@ impl RbDataFrame {
         let (mmap_bytes_r, mmap_path) = get_mmap_bytes_reader_and_path(&rb_f)?;
 
         let mmap_path = if memory_map { mmap_path } else { None };
-        let df = IpcReader::new(mmap_bytes_r)
-            .with_projection(projection)
-            .with_columns(columns)
-            .with_n_rows(n_rows)
-            .with_row_index(row_index)
-            .memory_mapped(mmap_path)
-            .finish()
-            .map_err(RbPolarsErr::from)?;
+        let df = unsafe {
+            IpcReader::new(mmap_bytes_r)
+                .with_projection(projection)
+                .with_columns(columns)
+                .with_n_rows(n_rows)
+                .with_row_index(row_index)
+                .memory_mapped(mmap_path)
+                .finish()
+        }
+        .map_err(RbPolarsErr::from)?;
         Ok(RbDataFrame::new(df))
     }
 

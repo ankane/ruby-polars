@@ -6118,7 +6118,7 @@ module Polars
     #   # shape: (3,)
     #   # Series: 'a' [f64]
     #   # [
-    #   #         0.0
+    #   #         null
     #   #         0.707107
     #   #         0.963624
     #   # ]
@@ -6146,7 +6146,7 @@ module Polars
     #   # shape: (3,)
     #   # Series: 'a' [f64]
     #   # [
-    #   #         0.0
+    #   #         null
     #   #         0.5
     #   #         0.928571
     #   # ]

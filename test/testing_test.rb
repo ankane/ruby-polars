@@ -12,7 +12,7 @@ class TestingTest < Minitest::Test
     error = assert_raises(Polars::AssertionError) do
       assert_frame_equal df, df2
     end
-    assert_match "DataFrames are different (dtypes do not match)", error.message
+    assert_match "DataFrames are different (dtypes do not match", error.message
     assert_frame_equal df, df2, check_dtype: false
   end
 
