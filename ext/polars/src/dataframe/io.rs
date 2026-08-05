@@ -11,7 +11,7 @@ use crate::file::{
     get_file_like, get_mmap_bytes_reader, get_mmap_bytes_reader_and_path, read_if_bytesio,
 };
 use crate::utils::EnterPolarsExt;
-use crate::{RbPolarsErr, RbResult};
+use crate::RbResult;
 
 impl RbDataFrame {
     pub fn read_csv(rb: &Ruby, arguments: &[Value]) -> RbResult<Self> {
@@ -223,44 +223,45 @@ impl RbDataFrame {
         })
     }
 
-    pub fn write_json(&self, rb_f: Value) -> RbResult<()> {
+    pub fn write_json(rb: &Ruby, self_: &Self, rb_f: Value) -> RbResult<()> {
         let file = BufWriter::new(get_file_like(rb_f, true)?);
-
-        JsonWriter::new(file)
-            .with_json_format(JsonFormat::Json)
-            .finish(&mut self.df.write())
-            .map_err(RbPolarsErr::from)?;
-        Ok(())
+        rb.enter_polars(|| {
+            JsonWriter::new(file)
+                .with_json_format(JsonFormat::Json)
+                .finish(&mut self_.df.write())
+        })
     }
 
     pub fn write_ipc_stream(
-        &self,
+        rb: &Ruby,
+        self_: &Self,
         rb_f: Value,
         compression: Wrap<Option<IpcCompression>>,
         compat_level: RbCompatLevel,
     ) -> RbResult<()> {
         let mut buf = get_file_like(rb_f, true)?;
-        IpcStreamWriter::new(&mut buf)
-            .with_compression(compression.0)
-            .with_compat_level(compat_level.0)
-            .finish(&mut self.df.write())
-            .map_err(RbPolarsErr::from)?;
-        Ok(())
+        rb.enter_polars(|| {
+            IpcStreamWriter::new(&mut buf)
+                .with_compression(compression.0)
+                .with_compat_level(compat_level.0)
+                .finish(&mut self_.df.write())
+        })
     }
 
     pub fn write_avro(
-        &self,
+        rb: &Ruby,
+        self_: &Self,
         rb_f: Value,
         compression: Wrap<Option<AvroCompression>>,
         name: String,
     ) -> RbResult<()> {
         use polars::io::avro::AvroWriter;
         let mut buf = get_file_like(rb_f, true)?;
-        AvroWriter::new(&mut buf)
-            .with_compression(compression.0)
-            .with_name(name)
-            .finish(&mut self.df.write())
-            .map_err(RbPolarsErr::from)?;
-        Ok(())
+        rb.enter_polars(|| {
+            AvroWriter::new(&mut buf)
+                .with_compression(compression.0)
+                .with_name(name)
+                .finish(&mut self_.df.write())
+        })
     }
 }
