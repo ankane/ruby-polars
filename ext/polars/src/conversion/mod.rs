@@ -531,7 +531,7 @@ impl TryConvert for Wrap<ArrowSchema> {
             *schema.metadata_mut() = Arc::unwrap_or_clone(md);
         }
 
-        return Ok(Wrap(schema));
+        Ok(Wrap(schema))
     }
 }
 
