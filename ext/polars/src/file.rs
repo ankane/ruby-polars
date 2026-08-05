@@ -191,7 +191,7 @@ impl Seek for RbFileLikeObject {
     }
 }
 
-pub trait FileLike: Read + Write + Seek {}
+pub trait FileLike: Read + Write + Seek + Sync + Send {}
 
 impl FileLike for File {}
 impl FileLike for RbFileLikeObject {}

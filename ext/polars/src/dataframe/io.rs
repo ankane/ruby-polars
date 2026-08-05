@@ -205,6 +205,7 @@ impl RbDataFrame {
     }
 
     pub fn read_avro(
+        rb: &Ruby,
         rb_f: Value,
         columns: Option<Vec<String>>,
         projection: Option<Vec<usize>>,
@@ -213,13 +214,13 @@ impl RbDataFrame {
         use polars::io::avro::AvroReader;
 
         let file = get_file_like(rb_f, false)?;
-        let df = AvroReader::new(file)
-            .with_projection(projection)
-            .with_columns(columns)
-            .with_n_rows(n_rows)
-            .finish()
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbDataFrame::new(df))
+        rb.enter_polars_df(move || {
+            AvroReader::new(file)
+                .with_projection(projection)
+                .with_columns(columns)
+                .with_n_rows(n_rows)
+                .finish()
+        })
     }
 
     pub fn write_json(&self, rb_f: Value) -> RbResult<()> {
