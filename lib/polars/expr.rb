@@ -4612,6 +4612,66 @@ module Polars
       wrap_expr(_rbexpr.is_close(other, abs_tol, rel_tol, nans_equal))
     end
 
+    # Checks if an expression is sorted.
+    #
+    # If `descending` and/or `nulls_last` are nil, it will check `true` and `false`
+    # for the unspecified option(s), and return `true` if the expression is sorted
+    # under any combination of those settings.
+    #
+    # @param descending [Boolean]
+    #   Checks if the expression is sorted in descending order.
+    #   Defaults to false.
+    # @param nulls_last [Boolean]
+    #   Consider null values as being ordered last when checking sortedness.
+    #   Defaults to false.
+    #
+    # @return [Expr]
+    #
+    # @example Check if a column is sorted in ascending order.
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3, 4]})
+    #   df.select(Polars.col("a").is_sorted)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ bool │
+    #   # ╞══════╡
+    #   # │ true │
+    #   # └──────┘
+    #
+    # @example Check if a column is sorted in descending order.
+    #   df = Polars::DataFrame.new({"a" => [4, 3, 2, 1]})
+    #   df.select(Polars.col("a").is_sorted(descending: true))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ bool │
+    #   # ╞══════╡
+    #   # │ true │
+    #   # └──────┘
+    #
+    # @example Check if a column is sorted in either direction.
+    #   df = Polars::DataFrame.new({"a" => [4, 3, 2, 1]})
+    #   df.select(Polars.col("a").is_sorted(descending: nil))
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ bool │
+    #   # ╞══════╡
+    #   # │ true │
+    #   # └──────┘
+    def is_sorted(
+      descending: false,
+      nulls_last: false
+    )
+      wrap_expr(_rbexpr.is_sorted(descending, nulls_last))
+    end
+
     # Hash the elements in the selection.
     #
     # The hash value is of type `UInt64`.

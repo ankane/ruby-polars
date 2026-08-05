@@ -6,12 +6,12 @@ use std::io::BufWriter;
 use std::num::NonZeroUsize;
 
 use super::*;
+use crate::RbResult;
 use crate::conversion::*;
 use crate::file::{
     get_file_like, get_mmap_bytes_reader, get_mmap_bytes_reader_and_path, read_if_bytesio,
 };
 use crate::utils::EnterPolarsExt;
-use crate::RbResult;
 
 impl RbDataFrame {
     pub fn read_csv(rb: &Ruby, arguments: &[Value]) -> RbResult<Self> {

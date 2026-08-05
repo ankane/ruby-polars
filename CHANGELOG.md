@@ -1,6 +1,7 @@
 ## 0.27.0 (unreleased)
 
 - Updated Polars to 0.55.1
+- Added `is_sorted` method to `Expr`
 
 ## 0.26.1 (2026-07-22)
 
