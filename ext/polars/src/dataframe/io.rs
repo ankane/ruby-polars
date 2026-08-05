@@ -1,4 +1,4 @@
-use magnus::{Value, prelude::*};
+use magnus::{Ruby, Value, prelude::*};
 use polars::io::RowIndex;
 use polars::io::avro::AvroCompression;
 use polars::prelude::*;
@@ -10,6 +10,7 @@ use crate::conversion::*;
 use crate::file::{
     get_file_like, get_mmap_bytes_reader, get_mmap_bytes_reader_and_path, read_if_bytesio,
 };
+use crate::utils::EnterPolarsExt;
 use crate::{RbPolarsErr, RbResult};
 
 impl RbDataFrame {
@@ -148,6 +149,7 @@ impl RbDataFrame {
     }
 
     pub fn read_ipc(
+        rb: &Ruby,
         rb_f: Value,
         columns: Option<Vec<String>>,
         projection: Option<Vec<usize>>,
@@ -163,7 +165,7 @@ impl RbDataFrame {
         let (mmap_bytes_r, mmap_path) = get_mmap_bytes_reader_and_path(&rb_f)?;
 
         let mmap_path = if memory_map { mmap_path } else { None };
-        let df = unsafe {
+        rb.enter_polars_df(move || unsafe {
             IpcReader::new(mmap_bytes_r)
                 .with_projection(projection)
                 .with_columns(columns)
@@ -171,12 +173,11 @@ impl RbDataFrame {
                 .with_row_index(row_index)
                 .memory_mapped(mmap_path)
                 .finish()
-        }
-        .map_err(RbPolarsErr::from)?;
-        Ok(RbDataFrame::new(df))
+        })
     }
 
     pub fn read_ipc_stream(
+        rb: &Ruby,
         rb_f: Value,
         columns: Option<Vec<String>>,
         projection: Option<Vec<usize>>,
@@ -190,15 +191,15 @@ impl RbDataFrame {
         });
         let rb_f = read_if_bytesio(rb_f);
         let mmap_bytes_r = get_mmap_bytes_reader(&rb_f)?;
-        let df = IpcStreamReader::new(mmap_bytes_r)
-            .with_projection(projection)
-            .with_columns(columns)
-            .with_n_rows(n_rows)
-            .with_row_index(row_index)
-            .set_rechunk(rechunk)
-            .finish()
-            .map_err(RbPolarsErr::from)?;
-        Ok(RbDataFrame::new(df))
+        rb.enter_polars_df(move || {
+            IpcStreamReader::new(mmap_bytes_r)
+                .with_projection(projection)
+                .with_columns(columns)
+                .with_n_rows(n_rows)
+                .with_row_index(row_index)
+                .set_rechunk(rechunk)
+                .finish()
+        })
     }
 
     pub fn read_avro(
