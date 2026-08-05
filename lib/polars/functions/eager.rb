@@ -95,7 +95,7 @@ module Polars
     #   # │ 2   ┆ 4    ┆ 5    ┆ null │
     #   # │ 3   ┆ null ┆ 6    ┆ 8    │
     #   # └─────┴──────┴──────┴──────┘
-    def concat(items, rechunk: false, how: "vertical", parallel: true, strict: false)
+    def concat(items, rechunk: false, how: "vertical", parallel: true, strict: nil)
       elems = items.to_a
 
       if elems.empty?
@@ -303,7 +303,7 @@ module Polars
     def union(
       items,
       how: "vertical",
-      strict: false
+      strict: nil
     )
       elems = items.to_a
 

@@ -756,7 +756,7 @@ module Polars
     #   #         5
     #   #         6
     #   # ]
-    def explode(empty_as_null: true, keep_nulls: true)
+    def explode(empty_as_null: nil, keep_nulls: true)
       super
     end
 
