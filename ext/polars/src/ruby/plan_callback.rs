@@ -12,14 +12,14 @@ pub trait PlanCallbackArgs {
 }
 
 pub trait PlanCallbackOut: Sized {
-    fn from_rbany(rbany: Opaque<Value>, rb: &Ruby) -> RbResult<Self>;
+    fn from_rbany(rbany: Value, rb: &Ruby) -> RbResult<Self>;
 }
 
 mod _ruby {
     use std::sync::Arc;
 
     use crate::RbResult;
-    use magnus::{IntoValue, RArray, Ruby, TryConvert, Value, value::Opaque, value::ReprValue};
+    use magnus::{IntoValue, RArray, Ruby, TryConvert, Value, value::ReprValue};
     use polars_utils::pl_str::PlSmallStr;
 
     macro_rules! impl_rbcb_type {
@@ -32,8 +32,8 @@ mod _ruby {
             }
 
             impl super::PlanCallbackOut for $type {
-                fn from_rbany(rbany: Opaque<Value>, rb: &Ruby) -> RbResult<Self> {
-                    Self::try_convert(rb.get_inner(rbany))
+                fn from_rbany(rbany: Value, _rb: &Ruby) -> RbResult<Self> {
+                    Self::try_convert(rbany)
                 }
             }
             )+
@@ -50,8 +50,8 @@ mod _ruby {
             }
 
             impl super::PlanCallbackOut for $type {
-                fn from_rbany(rbany: Opaque<Value>, rb: &Ruby) -> RbResult<Self> {
-                    <$transformed>::try_convert(rb.get_inner(rbany)).map(Into::into)
+                fn from_rbany(rbany: Value, _rb: &Ruby) -> RbResult<Self> {
+                    <$transformed>::try_convert(rbany).map(Into::into)
                 }
             }
             )+
@@ -69,10 +69,10 @@ mod _ruby {
             }
 
             impl super::PlanCallbackOut for $type {
-                fn from_rbany(rbany: Opaque<Value>, _rb: &Ruby) -> RbResult<Self> {
+                fn from_rbany(rbany: Value, _rb: &Ruby) -> RbResult<Self> {
                     let registry = crate::ruby::ruby_convert_registry::get_ruby_convert_registry();
                     // TODO remove into
-                    let obj = (registry.from_rb.$from)(rbany)?;
+                    let obj = (registry.from_rb.$from)(rbany.into())?;
                     let obj = obj.downcast().unwrap();
                     Ok(*obj)
                 }
@@ -91,8 +91,8 @@ mod _ruby {
     }
 
     impl<T: super::PlanCallbackOut> super::PlanCallbackOut for Option<T> {
-        fn from_rbany(rbany: Opaque<Value>, rb: &Ruby) -> RbResult<Self> {
-            if rb.get_inner(rbany).is_nil() {
+        fn from_rbany(rbany: Value, rb: &Ruby) -> RbResult<Self> {
+            if rbany.is_nil() {
                 Ok(None)
             } else {
                 T::from_rbany(rbany, rb).map(Some)
@@ -117,11 +117,11 @@ mod _ruby {
         T: super::PlanCallbackOut,
         U: super::PlanCallbackOut,
     {
-        fn from_rbany(rbany: Opaque<Value>, rb: &Ruby) -> RbResult<Self> {
-            let tuple = RArray::try_convert(rb.get_inner(rbany))?;
+        fn from_rbany(rbany: Value, rb: &Ruby) -> RbResult<Self> {
+            let tuple = RArray::try_convert(rbany)?;
             Ok((
-                T::from_rbany(tuple.entry::<Value>(0)?.into(), rb)?,
-                U::from_rbany(tuple.entry::<Value>(1)?.into(), rb)?,
+                T::from_rbany(tuple.entry(0)?, rb)?,
+                U::from_rbany(tuple.entry(1)?, rb)?,
             ))
         }
     }
@@ -155,7 +155,7 @@ mod _ruby {
     }
 
     impl<T: super::PlanCallbackOut> super::PlanCallbackOut for Arc<T> {
-        fn from_rbany(rbany: Opaque<Value>, rb: &Ruby) -> RbResult<Self> {
+        fn from_rbany(rbany: Value, rb: &Ruby) -> RbResult<Self> {
             T::from_rbany(rbany, rb).map(Arc::from)
         }
     }
@@ -173,9 +173,8 @@ impl<Args: PlanCallbackArgs + Send + 'static, Out: PlanCallbackOut + Send + 'sta
             Ruby::attach(|rb| {
                 let out = Out::from_rbany(
                     rb.get_inner(lambda)
-                        .funcall::<_, _, Value>("call", (args.into_rbany(rb).map_err(to_pl_err)?,))
-                        .map_err(to_pl_err)?
-                        .into(),
+                        .funcall("call", (args.into_rbany(rb).map_err(to_pl_err)?,))
+                        .map_err(to_pl_err)?,
                     rb,
                 )
                 .map_err(to_pl_err)?;
