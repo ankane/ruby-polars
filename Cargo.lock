@@ -2345,7 +2345,7 @@ dependencies = [
 
 [[package]]
 name = "polars-ruby"
-version = "0.27.0"
+version = "0.27.1"
 dependencies = [
  "ahash",
  "bytes",
