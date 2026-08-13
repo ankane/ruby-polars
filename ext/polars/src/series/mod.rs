@@ -17,7 +17,7 @@ use polars::prelude::*;
 use crate::{ObjectValue, RbResult};
 
 #[derive(TypedData)]
-#[magnus(class = "Polars::RbSeries", mark)]
+#[magnus(class = "Polars::RbSeries", mark, size)]
 pub struct RbSeries {
     pub series: RwLock<Series>,
 }
@@ -87,5 +87,13 @@ impl DataTypeFunctions for RbSeries {
         } else {
             eprintln!("[polars] Could not borrow!");
         }
+    }
+
+    fn size(&self) -> usize {
+        let mut size = std::mem::size_of_val(self);
+        if let Some(s) = &self.series.try_read() {
+            size += s.estimated_size();
+        };
+        size
     }
 }

@@ -12,7 +12,7 @@ use polars::prelude::*;
 use crate::series::mark_series;
 
 #[derive(TypedData)]
-#[magnus(class = "Polars::RbDataFrame", mark)]
+#[magnus(class = "Polars::RbDataFrame", mark, size)]
 pub struct RbDataFrame {
     pub df: RwLock<DataFrame>,
 }
@@ -55,5 +55,13 @@ impl DataTypeFunctions for RbDataFrame {
                 }
             }
         }
+    }
+
+    fn size(&self) -> usize {
+        let mut size = std::mem::size_of_val(self);
+        if let Some(df) = self.df.try_read() {
+            size += df.estimated_size();
+        }
+        size
     }
 }

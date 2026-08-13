@@ -860,4 +860,11 @@ class SeriesTest < Minitest::Test
   def test_approx_n_unique
     assert_equal 3, Polars::Series.new([1, 1, 2, 2, 3]).approx_n_unique
   end
+
+  def test_memsize
+    require "objspace"
+
+    s = Polars::Series.new([1, 2, 3])
+    assert_equal 88, ObjectSpace.memsize_of(s._s)
+  end
 end

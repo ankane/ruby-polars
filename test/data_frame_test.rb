@@ -621,4 +621,11 @@ class DataFrameTest < Minitest::Test
     df = Polars::DataFrame.new({a: [1, 2, 3, 4]})
     assert_equal 2, df.sample(fraction: 0.5).height
   end
+
+  def test_memsize
+    require "objspace"
+
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+    assert_equal 131, ObjectSpace.memsize_of(df._df)
+  end
 end
