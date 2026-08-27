@@ -247,8 +247,7 @@ pub(crate) fn rb_object_to_any_value<'s>(
             ))
         })?;
         if sign < 0 {
-            // TODO better error
-            v = v.checked_neg().unwrap();
+            v = -v; // Won't overflow since -i128::MAX > i128::MIN
         }
         Ok(AnyValue::Decimal(v, DEC128_MAX_PREC, scale))
     }
