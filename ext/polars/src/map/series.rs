@@ -160,7 +160,6 @@ impl ApplyLambdaGeneric for ArrayChunked {
 
 impl ApplyLambdaGeneric for ObjectChunked<ObjectValue> {
     fn apply_generic(&self, rb: &Ruby, lambda: Value, skip_nulls: bool) -> RbResult<Series> {
-        // TODO improve iter
         let avs = call_and_collect_anyvalues(
             rb,
             lambda,
@@ -178,7 +177,6 @@ impl ApplyLambdaGeneric for ObjectChunked<ObjectValue> {
         datatype: &DataType,
         skip_nulls: bool,
     ) -> RbResult<Series> {
-        // TODO improve iter
         let avs = call_and_collect_anyvalues(
             rb,
             lambda,
