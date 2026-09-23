@@ -69,7 +69,7 @@ impl From<RbPolarsErr> for Error {
                 }
             },
             RbPolarsErr::Ruby(err) => err,
-            err => RbRuntimeError::new_err(format!("{:?}", &err)),
+            err => RbRuntimeError::new_err(format!("{:?}", err)),
         }
     }
 }

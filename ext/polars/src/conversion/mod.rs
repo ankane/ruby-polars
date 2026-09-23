@@ -521,7 +521,7 @@ impl TryConvert for Wrap<ArrowSchema> {
             return Err(RbValueError::new_err(format!(
                 "arrow_c_schema of object did not return struct dtype: \
                 object: {:?}, dtype: {:?}",
-                ob, &field.dtype
+                ob, field.dtype
             )));
         };
 

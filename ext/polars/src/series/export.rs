@@ -1,5 +1,4 @@
 use magnus::{IntoValue, Ruby, Value, value::ReprValue};
-use polars_core::prelude::*;
 
 use crate::interop::arrow::to_rb::series_to_stream;
 use crate::prelude::*;

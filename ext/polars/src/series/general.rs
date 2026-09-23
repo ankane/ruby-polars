@@ -1,10 +1,8 @@
 use magnus::{IntoValue, RArray, Ruby, Value, value::ReprValue};
-use polars::prelude::*;
 use polars::series::IsSorted;
 use polars_core::chunked_array::cast::CastOptions;
 use polars_core::utils::flatten::flatten_series;
 
-use crate::conversion::*;
 use crate::prelude::*;
 use crate::ruby::exceptions::{RbIndexError, RbRuntimeError, RbValueError};
 use crate::ruby::gvl::GvlExt;

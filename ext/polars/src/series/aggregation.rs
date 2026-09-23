@@ -1,6 +1,5 @@
 use DataType::*;
 use magnus::{IntoValue, Ruby, Value};
-use polars::prelude::*;
 
 use crate::prelude::*;
 use crate::ruby::utils::TryIntoValue;
