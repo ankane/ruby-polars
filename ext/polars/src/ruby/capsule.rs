@@ -31,9 +31,7 @@ impl RbCapsule {
         (&*self.value as *const dyn Any as *const ()) as usize
     }
 
-    // TODO use &CStr when Magnus supports it
-    // https://github.com/matsadler/magnus/pull/182
-    pub fn name(&self) -> Option<&str> {
-        self.name.as_deref().map(|v| v.to_str().unwrap())
+    pub fn name(&self) -> Option<&CStr> {
+        self.name.as_deref()
     }
 }

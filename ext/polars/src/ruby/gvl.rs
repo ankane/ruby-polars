@@ -16,37 +16,29 @@ pub trait GvlExt {
         T: Send;
 }
 
-unsafe extern "C" {
-    fn ruby_thread_has_gvl_p() -> std::ffi::c_int;
-}
-
 impl GvlExt for Ruby {
     fn attach<T, F>(func: F) -> T
     where
         F: FnOnce(&Ruby) -> T,
     {
-        // recheck GVL state since cached value can be incorrect
-        // https://github.com/matsadler/magnus/pull/161
-        if let Ok(rb) = Ruby::get()
-            && unsafe { ruby_thread_has_gvl_p() } != 0
-        {
-            func(&rb)
-        } else if !matches!(Ruby::get(), Err(RubyUnavailableError::NonRubyThread)) {
-            let mut data = CallbackData {
-                func: Some(func),
-                result: None,
-            };
+        match Ruby::get() {
+            Ok(rb) => func(&rb),
+            Err(RubyUnavailableError::GvlUnlocked) => {
+                let mut data = CallbackData {
+                    func: Some(func),
+                    result: None,
+                };
 
-            unsafe {
-                rb_thread_call_with_gvl(
-                    Some(call_with_gvl::<F, T>),
-                    &mut data as *mut _ as *mut c_void,
-                );
+                unsafe {
+                    rb_thread_call_with_gvl(
+                        Some(call_with_gvl::<F, T>),
+                        &mut data as *mut _ as *mut c_void,
+                    );
+                }
+
+                data.result.unwrap()
             }
-
-            data.result.unwrap()
-        } else {
-            panic!("Non-Ruby thread");
+            Err(RubyUnavailableError::NonRubyThread) => panic!("Non-Ruby thread"),
         }
     }
 

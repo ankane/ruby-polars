@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use magnus::{Error, IntoValue, Ruby, Value, gc, value::Opaque};
+use magnus::{Error, IntoValue, Ruby, Value, value::Opaque};
 use polars::error::PolarsError;
 
 use crate::RbResult;
@@ -16,15 +16,14 @@ pub struct ArcValue(pub Arc<Opaque<Value>>);
 impl ArcValue {
     pub fn new(value: Opaque<Value>) -> Self {
         let ob = Arc::new(value);
-        gc::register_address(&*ob);
+        Ruby::get().unwrap().gc_register_address(&*ob);
         Self(ob)
     }
 }
 
 impl Drop for ArcValue {
     fn drop(&mut self) {
-        // TODO use rb.gc_register_address
-        Ruby::attach(|_| gc::unregister_address(&*self.0));
+        Ruby::attach(|rb| rb.gc_unregister_address(&*self.0));
     }
 }
 

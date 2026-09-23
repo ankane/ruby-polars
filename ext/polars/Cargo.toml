@@ -18,7 +18,7 @@ bytes = "1"
 chrono = "0.4"
 chrono-tz = "0.10"
 either = "1.8"
-magnus = { version = "0.8", features = ["chrono"] }
+magnus = { version = "0.9", features = ["chrono"] }
 num-traits = "0.2"
 parking_lot = "0.12"
 polars-buffer = "=0.55.2"
