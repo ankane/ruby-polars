@@ -1,4 +1,4 @@
-use magnus::{Ruby, Value, prelude::*};
+use magnus::{RArray, Ruby, Value};
 
 use super::*;
 use crate::RbResult;
@@ -9,7 +9,7 @@ use crate::ruby::utils::TryIntoValue;
 use crate::utils::EnterPolarsExt;
 
 impl RbDataFrame {
-    pub fn row_tuple(ruby: &Ruby, self_: &Self, idx: i64) -> RbResult<Value> {
+    pub fn row_tuple(ruby: &Ruby, self_: &Self, idx: i64) -> RbResult<RArray> {
         let df = self_.df.read();
         let idx = if idx < 0 {
             (df.height() as i64 + idx) as usize
@@ -27,10 +27,9 @@ impl RbDataFrame {
             }
             _ => Wrap(s.get(idx).unwrap()).try_into_value_with(ruby),
         }))
-        .map(|v| v.as_value())
     }
 
-    pub fn row_tuples(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
+    pub fn row_tuples(ruby: &Ruby, self_: &Self) -> RbResult<RArray> {
         let df = self_.df.read();
         let mut rechunked;
         let df = if df.max_n_chunks() > 16 {
@@ -50,7 +49,6 @@ impl RbDataFrame {
                 _ => Wrap(s.get(idx).unwrap()).try_into_value_with(ruby),
             }))
         }))
-        .map(|v| v.as_value())
     }
 
     pub fn __arrow_c_stream__(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
