@@ -232,5 +232,35 @@ module Polars
     def slice(offset, length = nil)
       Utils.wrap_expr(_rbexpr.cat_slice(offset, length))
     end
+
+    # Convert to a categorical or enum `dtype`.
+    #
+    # The input must be of the physical type of the categorical or enum dtype.
+    #
+    # @param dtype [Object]
+    #   The target categorical or enum dtype.
+    # @param strict [Boolean]
+    #   Whether to panic when encountering an illegal category.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   This functionality is currently considered **unstable**. It may be
+    #   changed at any point without it being considered a breaking change.
+    def to(dtype, strict: true)
+      rb_dtype = Utils.parse_into_datatype_expr(dtype)._rbdatatype_expr
+      Utils.wrap_expr(_rbexpr.cat_to(rb_dtype, strict))
+    end
+
+    # Get the physical values of a categorical or enum data type.
+    #
+    # @return [Expr]
+    #
+    # @note
+    #   This functionality is currently considered **unstable**. It may be
+    #   changed at any point without it being considered a breaking change.
+    def physical
+      Utils.wrap_expr(_rbexpr.cat_physical)
+    end
   end
 end

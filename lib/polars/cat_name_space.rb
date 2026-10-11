@@ -131,5 +131,34 @@ module Polars
     def slice(offset, length = nil)
       super
     end
+
+    # Create a Series with a categorical or enum `dtype`.
+    #
+    # The input series must be the physical type of the categorical or enum dtype.
+    #
+    # @param dtype [Object]
+    #   The target categorical or enum dtype.
+    # @param strict [Boolean]
+    #   Whether to panic when encountering an illegal category.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   This functionality is currently considered **unstable**. It may be
+    #   changed at any point without it being considered a breaking change.
+    def to(dtype, strict: true)
+      super
+    end
+
+    # Get the physical values of a Series with a categorical or enum data type.
+    #
+    # @return [Series]
+    #
+    # @note
+    #   This functionality is currently considered **unstable**. It may be
+    #   changed at any point without it being considered a breaking change.
+    def physical
+      super
+    end
   end
 end
