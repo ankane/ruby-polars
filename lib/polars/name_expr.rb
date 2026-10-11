@@ -111,6 +111,39 @@ module Polars
       Utils.wrap_expr(_rbexpr.name_prefix(prefix))
     end
 
+    # Remove a prefix from the root column name of the expression.
+    #
+    # The prefix is removed exactly once if present. Names that do not start with
+    # the prefix are unchanged.
+    #
+    # @param prefix [String]
+    #   Prefix to remove from the root column name.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "prefix_a" => [1, 2, 3],
+    #       "b" => ["x", "y", "z"]
+    #     }
+    #   )
+    #   df.select(Polars.all.name.strip_prefix("prefix_"))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ str │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ x   │
+    #   # │ 2   ┆ y   │
+    #   # │ 3   ┆ z   │
+    #   # └─────┴─────┘
+    def strip_prefix(prefix)
+      map { |name| name.delete_prefix(prefix) }
+    end
+
     # Add a suffix to the root column name of the expression.
     #
     # @param suffix [Object]
@@ -139,6 +172,39 @@ module Polars
     #   # └─────┴─────┴───────────┴───────────┘
     def suffix(suffix)
       Utils.wrap_expr(_rbexpr.name_suffix(suffix))
+    end
+
+    # Remove a suffix from the root column name of the expression.
+    #
+    # The suffix is removed exactly once if present. Names that do not end with
+    # the suffix are unchanged.
+    #
+    # @param suffix [String]
+    #   Suffix to remove from the root column name.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a_suffix" => [1, 2, 3],
+    #       "b" => ["x", "y", "z"]
+    #     }
+    #   )
+    #   df.select(Polars.all.name.strip_suffix("_suffix"))
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌─────┬─────┐
+    #   # │ a   ┆ b   │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ str │
+    #   # ╞═════╪═════╡
+    #   # │ 1   ┆ x   │
+    #   # │ 2   ┆ y   │
+    #   # │ 3   ┆ z   │
+    #   # └─────┴─────┘
+    def strip_suffix(suffix)
+      map { |name| name.delete_suffix(suffix) }
     end
 
     # Make the root column name lowercase.

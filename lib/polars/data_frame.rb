@@ -1052,8 +1052,7 @@ module Polars
       null_value: nil,
       quote_style: nil,
       storage_options: nil,
-      credential_provider: "auto",
-      retries: nil
+      credential_provider: "auto"
     )
       Utils._check_arg_is_1byte("separator", separator, false)
       Utils._check_arg_is_1byte("quote_char", quote_char, true)
@@ -1090,7 +1089,6 @@ module Polars
         quote_style: quote_style,
         storage_options: storage_options,
         credential_provider: credential_provider,
-        retries: retries,
         optimizations: QueryOptFlags._eager,
         engine: engine
       )
@@ -1159,8 +1157,6 @@ module Polars
     #   Provide a function that can be called to provide cloud storage
     #   credentials. The function is expected to return a hash of
     #   credential keys along with an optional credential expiry time.
-    # @param retries [Integer]
-    #   Number of retries if accessing a cloud instance fails.
     #
     # @return [nil]
     def write_ipc(
@@ -1169,8 +1165,7 @@ module Polars
       compat_level: nil,
       record_batch_size: nil,
       storage_options: nil,
-      credential_provider: "auto",
-      retries: nil
+      credential_provider: "auto"
     )
       return_bytes = file.nil?
       if file.nil?
@@ -1187,7 +1182,6 @@ module Polars
         record_batch_size: record_batch_size,
         storage_options: storage_options,
         credential_provider: credential_provider,
-        retries: retries,
         optimizations: QueryOptFlags._eager,
         engine: "streaming"
       )
@@ -1278,7 +1272,6 @@ module Polars
       partition_chunk_size_bytes: 4_294_967_296,
       storage_options: nil,
       credential_provider: "auto",
-      retries: nil,
       metadata: nil,
       arrow_schema: nil,
       mkdir: false
@@ -1305,7 +1298,6 @@ module Polars
         data_page_size: data_page_size,
         storage_options: storage_options,
         credential_provider: credential_provider,
-        retries: retries,
         metadata: metadata,
         arrow_schema: arrow_schema,
         engine: engine,
@@ -3704,7 +3696,8 @@ module Polars
       validate: "m:m",
       nulls_equal: false,
       coalesce: nil,
-      maintain_order: nil
+      maintain_order: nil,
+      build_side: "auto"
     )
       lazy
         .join(
@@ -3717,7 +3710,8 @@ module Polars
           validate: validate,
           nulls_equal: nulls_equal,
           coalesce: coalesce,
-          maintain_order: maintain_order
+          maintain_order: maintain_order,
+          build_side: build_side
         )
         .collect(optimizations: QueryOptFlags._eager)
     end
@@ -3804,6 +3798,7 @@ module Polars
     def join_where(
       other,
       *predicates,
+      how: "inner",
       suffix: "_right"
     )
       Utils.require_same_type(self, other)
@@ -3812,6 +3807,7 @@ module Polars
       .join_where(
         other.lazy,
         *predicates,
+        how: how,
         suffix: suffix
       )
       .collect(optimizations: QueryOptFlags._eager)
@@ -4555,7 +4551,7 @@ module Polars
     def explode(
       columns,
       *more_columns,
-      empty_as_null: OMITTED,
+      empty_as_null: false,
       keep_nulls: true
     )
       lazy
@@ -5950,7 +5946,7 @@ module Polars
       n: nil,
       fraction: nil,
       with_replacement: false,
-      shuffle: false,
+      shuffle: nil,
       seed: nil
     )
       if !n.nil? && !fraction.nil?
@@ -6454,12 +6450,6 @@ module Polars
     #
     # @param seed [Integer]
     #   Random seed parameter. Defaults to 0.
-    # @param seed_1 [Integer]
-    #   Random seed parameter. Defaults to `seed` if not set.
-    # @param seed_2 [Integer]
-    #   Random seed parameter. Defaults to `seed` if not set.
-    # @param seed_3 [Integer]
-    #   Random seed parameter. Defaults to `seed` if not set.
     #
     # @return [Series]
     #
@@ -6480,12 +6470,8 @@ module Polars
     #   #         4702262519505526977
     #   #         18144177983981041107
     #   # ]
-    def hash_rows(seed: 0, seed_1: nil, seed_2: nil, seed_3: nil)
-      k0 = seed
-      k1 = seed_1.nil? ? seed : seed_1
-      k2 = seed_2.nil? ? seed : seed_2
-      k3 = seed_3.nil? ? seed : seed_3
-      Utils.wrap_s(_df.hash_rows(k0, k1, k2, k3))
+    def hash_rows(seed: 0)
+      Utils.wrap_s(_df.hash_rows(seed))
     end
 
     # Interpolate intermediate values. The interpolation method is linear.

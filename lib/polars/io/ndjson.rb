@@ -25,8 +25,6 @@ module Polars
     #   Stop reading from JSON file after reading `n_rows`.
     # @param low_memory [Boolean]
     #   Reduce memory pressure at the expense of performance.
-    # @param rechunk [Boolean]
-    #   Reallocate to contiguous memory when all chunks/ files are parsed.
     # @param row_index_name [String]
     #   If not nil, this will insert a row count column with give name into the
     #   DataFrame.
@@ -52,12 +50,6 @@ module Polars
     #   Provide a function that can be called to provide cloud storage
     #   credentials. The function is expected to return a hash of
     #   credential keys along with an optional credential expiry time.
-    # @param retries [Integer]
-    #   Number of retries if accessing a cloud instance fails.
-    # @param file_cache_ttl [Integer]
-    #   Amount of time to keep downloaded cloud files since their last access time,
-    #   in seconds. Uses the `POLARS_FILE_CACHE_TTL` environment variable
-    #   (which defaults to 1 hour) if not given.
     # @param include_file_paths [String]
     #   Include the path of the source file(s) as a column with this name.
     #
@@ -70,14 +62,11 @@ module Polars
       batch_size: 1024,
       n_rows: nil,
       low_memory: false,
-      rechunk: false,
       row_index_name: nil,
       row_index_offset: 0,
       ignore_errors: false,
       storage_options: nil,
       credential_provider: "auto",
-      retries: nil,
-      file_cache_ttl: nil,
       include_file_paths: nil
     )
       credential_provider_builder = _init_credential_provider_builder(
@@ -92,15 +81,12 @@ module Polars
         batch_size: batch_size,
         n_rows: n_rows,
         low_memory: low_memory,
-        rechunk: rechunk,
         row_index_name: row_index_name,
         row_index_offset: row_index_offset,
         ignore_errors: ignore_errors,
         include_file_paths: include_file_paths,
-        retries: retries,
         storage_options: storage_options,
-        credential_provider: credential_provider_builder,
-        file_cache_ttl: file_cache_ttl,
+        credential_provider: credential_provider_builder
       ).collect
     end
 
@@ -132,8 +118,6 @@ module Polars
     #   Stop reading from JSON file after reading `n_rows`.
     # @param low_memory [Boolean]
     #   Reduce memory pressure at the expense of performance.
-    # @param rechunk [Boolean]
-    #   Reallocate to contiguous memory when all chunks/ files are parsed.
     # @param row_index_name [String]
     #   If not nil, this will insert a row count column with give name into the
     #   DataFrame.
@@ -159,12 +143,6 @@ module Polars
     #   Provide a function that can be called to provide cloud storage
     #   credentials. The function is expected to return a hash of
     #   credential keys along with an optional credential expiry time.
-    # @param retries [Integer]
-    #   Number of retries if accessing a cloud instance fails.
-    # @param file_cache_ttl [Integer]
-    #   Amount of time to keep downloaded cloud files since their last access time,
-    #   in seconds. Uses the `POLARS_FILE_CACHE_TTL` environment variable
-    #   (which defaults to 1 hour) if not given.
     # @param include_file_paths [String]
     #   Include the path of the source file(s) as a column with this name.
     #
@@ -177,14 +155,11 @@ module Polars
       batch_size: 1024,
       n_rows: nil,
       low_memory: false,
-      rechunk: false,
       row_index_name: nil,
       row_index_offset: 0,
       ignore_errors: false,
       storage_options: nil,
       credential_provider: "auto",
-      retries: nil,
-      file_cache_ttl: nil,
       include_file_paths: nil
     )
       sources = []
@@ -203,20 +178,6 @@ module Polars
       if infer_schema_length == 0
         msg = "'infer_schema_length' should be positive"
         raise ArgumentError, msg
-      end
-
-      if !retries.nil?
-        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
-        Utils.issue_deprecation_warning(msg)
-        storage_options = storage_options || {}
-        storage_options["max_retries"] = retries
-      end
-
-      if !file_cache_ttl.nil?
-        msg = "the `file_cache_ttl` parameter was deprecated in 0.25.0; specify 'file_cache_ttl' in `storage_options` instead."
-        Utils.issue_deprecation_warning(msg)
-        storage_options = storage_options || {}
-        storage_options["file_cache_ttl"] = file_cache_ttl
       end
 
       credential_provider_builder = _init_credential_provider_builder(

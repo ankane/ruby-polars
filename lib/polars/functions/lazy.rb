@@ -702,10 +702,6 @@ module Polars
     #   Column name or Expression.
     # @param method ["pearson", "spearman"]
     #   Correlation method.
-    # @param ddof [Integer]
-    #   "Delta Degrees of Freedom": the divisor used in the calculation is N - ddof,
-    #   where N represents the number of elements.
-    #   By default ddof is 1.
     # @param propagate_nans [Boolean]
     #   If `true` any `NaN` encountered will lead to `NaN` in the output.
     #   Defaults to `false` where `NaN` are regarded as larger than any finite number
@@ -778,16 +774,9 @@ module Polars
       a,
       b,
       method: "pearson",
-      ddof: nil,
       propagate_nans: false,
       eager: false
     )
-      if !ddof.nil?
-        Utils.issue_deprecation_warning(
-          "The `ddof` parameter has no effect. Do not use it."
-        )
-      end
-
       if eager
         if !(a.is_a?(Series) || b.is_a?(Series))
           msg = "expected at least one Series in 'corr' inputs if 'eager: true'"
@@ -1412,13 +1401,6 @@ module Polars
       col("*").exclude(columns, *more_columns)
     end
 
-    # Syntactic sugar for `Polars.col("foo").agg_groups`.
-    #
-    # @return [Object]
-    def groups(column)
-      col(column).agg_groups
-    end
-
     # Syntactic sugar for `Polars.col("foo").quantile(...)`.
     #
     # @param column [String]
@@ -1843,17 +1825,13 @@ module Polars
     # @param min_samples [Integer]
     #   The number of values in the window that should be non-null before computing
     #   a result. If nil, it will be set equal to window size.
-    # @param ddof [Integer]
-    #   Delta degrees of freedom. The divisor used in calculations
-    #   is `N - ddof`, where `N` represents the number of elements.
     #
     # @return [Expr]
     def rolling_corr(
       a,
       b,
       window_size:,
-      min_samples: nil,
-      ddof: 1
+      min_samples: nil
     )
       if min_samples.nil?
         min_samples = window_size

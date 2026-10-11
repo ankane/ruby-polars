@@ -1,3 +1,9 @@
+## 0.28.0 (unreleased)
+
+See the [upgrade guide](https://docs.pola.rs/releases/upgrade/2/)
+
+- Updated Polars to 0.56.0
+
 ## 0.27.1 (2026-08-12)
 
 - Updated Polars to 0.55.2

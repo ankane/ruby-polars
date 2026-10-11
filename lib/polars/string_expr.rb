@@ -929,8 +929,6 @@ module Polars
     #
     # @param dtype [Object]
     #   The dtype to cast the extracted value to.
-    # @param infer_schema_length [Integer]
-    #   Deprecated and ignored.
     #
     # @return [Expr]
     #
@@ -951,7 +949,7 @@ module Polars
     #   # │ null                ┆ null      │
     #   # │ {"a":2, "b": false} ┆ {2,false} │
     #   # └─────────────────────┴───────────┘
-    def json_decode(dtype, infer_schema_length: nil)
+    def json_decode(dtype)
       if dtype.nil?
         msg = "`Expr.str.json_decode` needs an explicitly given `dtype` otherwise Polars is not able to determine the output type. If you want to eagerly infer datatype you can use `Series.str.json_decode`."
         raise TypeError, msg

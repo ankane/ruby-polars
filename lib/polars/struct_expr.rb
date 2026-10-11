@@ -143,6 +143,39 @@ module Polars
       Utils.wrap_expr(_rbexpr.struct_rename_fields(names))
     end
 
+    # Drop one or more fields from the struct.
+    #
+    # @param names [Array]
+    #   Names of the fields to drop.
+    # @param strict [Boolean]
+    #   If true, raise an error if any of the specified fields do not exist in the
+    #   struct.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "aaa": [1, 2],
+    #       "bbb": ["ab", "cd"],
+    #       "ccc": [true, nil]
+    #     }
+    #   ).select(Polars.struct("aaa", "bbb", "ccc").alias("struct_col"))
+    #   df.select(Polars.col("struct_col").struct.drop(["aaa"]))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────────────┐
+    #   # │ struct_col  │
+    #   # │ ---         │
+    #   # │ struct[2]   │
+    #   # ╞═════════════╡
+    #   # │ {"ab",true} │
+    #   # │ {"cd",null} │
+    #   # └─────────────┘
+    def drop(names, strict: true)
+      Utils.wrap_expr(_rbexpr.struct_drop(names, strict))
+    end
+
     # Convert this struct to a string column with json values.
     #
     # @return [Expr]
@@ -214,6 +247,68 @@ module Polars
       )
 
       Utils.wrap_expr(_rbexpr.struct_with_fields(rbexprs))
+    end
+
+    # Select fields of this struct, dropping the fields that are not selected.
+    #
+    # This is similar to `select` on `DataFrame`. Use
+    # `~ExprStructNameSpace.with_fields` to retain the fields that are not
+    # selected.
+    #
+    # The expressions must be length-preserving; they are evaluated against the
+    # fields of the struct, which are addressed with :func:`polars.field`.
+    #
+    # @param exprs [Array]
+    #   Field(s) to select, specified as positional arguments.
+    #   Accepts expression input. Strings are parsed as column names, other
+    #   non-expression inputs are parsed as literals.
+    # @param named_exprs [Hash]
+    #   Additional fields to select, specified as keyword arguments.
+    #   The fields will be renamed to the keyword used.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "coords" => [{"x" => 1, "y" => 4}, {"x" => 4, "y" => 9}, {"x" => 9, "y" => 16}],
+    #       "multiply" => [10, 2, 3]
+    #     }
+    #   )
+    #   df.with_columns(
+    #     Polars.col("coords").struct.eval(
+    #       Polars.field("x").sqrt,
+    #       y_mul: Polars.field("y") * Polars.col("multiply")
+    #     )
+    #   )
+    #   # =>
+    #   # shape: (3, 2)
+    #   # ┌───────────┬──────────┐
+    #   # │ coords    ┆ multiply │
+    #   # │ ---       ┆ ---      │
+    #   # │ struct[2] ┆ i64      │
+    #   # ╞═══════════╪══════════╡
+    #   # │ {1.0,40}  ┆ 10       │
+    #   # │ {2.0,18}  ┆ 2        │
+    #   # │ {3.0,48}  ┆ 3        │
+    #   # └───────────┴──────────┘
+    #
+    # @example Fields that are not selected are dropped:
+    #   df.select(Polars.col("coords").struct.eval(Polars.field("y")))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌───────────┐
+    #   # │ coords    │
+    #   # │ ---       │
+    #   # │ struct[1] │
+    #   # ╞═══════════╡
+    #   # │ {4}       │
+    #   # │ {9}       │
+    #   # │ {16}      │
+    #   # └───────────┘
+    def eval(*exprs, **named_exprs)
+      rbexprs = Utils.parse_into_list_of_expressions(*exprs, **named_exprs)
+      Utils.wrap_expr(_rbexpr.struct_eval(rbexprs))
     end
   end
 end

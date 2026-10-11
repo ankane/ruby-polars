@@ -34,9 +34,6 @@ module Polars
     #   If set to `nil` (default), the schema of the Hive partitions is inferred.
     # @param try_parse_hive_dates [Boolean]
     #   Whether to try parsing hive values as date/datetime types.
-    # @param rechunk [Boolean]
-    #   In case of reading multiple files via a glob pattern rechunk the final DataFrame
-    #   into contiguous memory chunks.
     # @param low_memory [Boolean]
     #   Reduce memory pressure at the expense of performance.
     # @param storage_options [Hash]
@@ -45,8 +42,6 @@ module Polars
     #   Provide a function that can be called to provide cloud storage
     #   credentials. The function is expected to return a hash of
     #   credential keys along with an optional credential expiry time.
-    # @param retries [Integer]
-    #   Number of retries if accessing a cloud instance fails.
     # @param include_file_paths [String]
     #   Include the path of the source file(s) as a column with this name.
     # @param missing_columns ['insert', 'raise']
@@ -55,12 +50,6 @@ module Polars
     #
     #   * `insert`: Inserts the missing columns using NULLs as the row values.
     #   * `raise`: Raises an error.
-    # @param allow_missing_columns [Boolean]
-    #   When reading a list of parquet files, if a column existing in the first
-    #   file cannot be found in subsequent files, the default behavior is to
-    #   raise an error. However, if `allow_missing_columns` is set to
-    #   `true`, a full-NULL column is returned instead of erroring for the files
-    #   that do not contain the column.
     #
     # @return [DataFrame]
     def read_parquet(
@@ -76,14 +65,11 @@ module Polars
       schema: nil,
       hive_schema: nil,
       try_parse_hive_dates: true,
-      rechunk: false,
       low_memory: false,
       storage_options: nil,
       credential_provider: "auto",
-      retries: nil,
       include_file_paths: nil,
-      missing_columns: "raise",
-      allow_missing_columns: nil
+      missing_columns: "raise"
     )
       lf =
         scan_parquet(
@@ -97,16 +83,13 @@ module Polars
           schema: schema,
           hive_schema: hive_schema,
           try_parse_hive_dates: try_parse_hive_dates,
-          rechunk: rechunk,
           low_memory: low_memory,
           cache: false,
           storage_options: storage_options,
           credential_provider: credential_provider,
-          retries: retries,
           glob: glob,
           include_file_paths: include_file_paths,
-          missing_columns: missing_columns,
-          allow_missing_columns: allow_missing_columns
+          missing_columns: missing_columns
         )
 
       if !columns.nil?
@@ -148,25 +131,15 @@ module Polars
     #   Provide a function that can be called to provide cloud storage
     #   credentials. The function is expected to return a hash of
     #   credential keys along with an optional credential expiry time.
-    # @param retries [Integer]
-    #   Number of retries if accessing a cloud instance fails.
     #
     # @return [Hash]
     def read_parquet_metadata(
       source,
       storage_options: nil,
-      credential_provider: "auto",
-      retries: nil
+      credential_provider: "auto"
     )
       if Utils.pathlike?(source)
         source = Utils.normalize_filepath(source, check_not_directory: false)
-      end
-
-      if !retries.nil?
-        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
-        Utils.issue_deprecation_warning(msg)
-        storage_options = storage_options || {}
-        storage_options["max_retries"] = retries
       end
 
       credential_provider_builder = _init_credential_provider_builder(
@@ -216,9 +189,6 @@ module Polars
     #   If set to `nil` (default), the schema of the Hive partitions is inferred.
     # @param try_parse_hive_dates [Boolean]
     #   Whether to try parsing hive values as date/datetime types.
-    # @param rechunk [Boolean]
-    #   In case of reading multiple files via a glob pattern rechunk the final DataFrame
-    #   into contiguous memory chunks.
     # @param low_memory [Boolean]
     #   Reduce memory pressure at the expense of performance.
     # @param cache [Boolean]
@@ -229,8 +199,6 @@ module Polars
     #   Provide a function that can be called to provide cloud storage
     #   credentials. The function is expected to return a hash of
     #   credential keys along with an optional credential expiry time.
-    # @param retries [Integer]
-    #   Number of retries if accessing a cloud instance fails.
     # @param include_file_paths [String]
     #   Include the path of the source file(s) as a column with this name.
     # @param missing_columns ['insert', 'raise']
@@ -239,12 +207,6 @@ module Polars
     #
     #   * `insert`: Inserts the missing columns using NULLs as the row values.
     #   * `raise`: Raises an error.
-    # @param allow_missing_columns [Boolean]
-    #   When reading a list of parquet files, if a column existing in the first
-    #   file cannot be found in subsequent files, the default behavior is to
-    #   raise an error. However, if `allow_missing_columns` is set to
-    #   `true`, a full-NULL column is returned instead of erroring for the files
-    #   that do not contain the column.
     # @param extra_columns ['ignore', 'raise']
     #   Configuration for behavior when extra columns outside of the
     #   defined schema are encountered in the data:
@@ -268,15 +230,12 @@ module Polars
       schema: nil,
       hive_schema: nil,
       try_parse_hive_dates: true,
-      rechunk: false,
       low_memory: false,
       cache: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: nil,
       include_file_paths: nil,
       missing_columns: "raise",
-      allow_missing_columns: nil,
       extra_columns: "raise",
       cast_options: nil,
       _column_mapping: nil,
@@ -303,23 +262,6 @@ module Polars
       if !hidden_file_prefix.nil?
         msg = "The `hidden_file_prefix` parameter of `scan_parquet` is considered unstable."
         Utils.issue_unstable_warning(msg)
-      end
-
-      if !allow_missing_columns.nil?
-        Utils.issue_deprecation_warning(
-          "the parameter `allow_missing_columns` for `scan_parquet` is deprecated. " +
-          "Use the parameter `missing_columns` instead and pass one of " +
-          "`('insert', 'raise')`."
-        )
-
-        missing_columns = allow_missing_columns ? "insert" : "raise"
-      end
-
-      if !retries.nil?
-        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
-        Utils.issue_deprecation_warning(msg)
-        storage_options = storage_options || {}
-        storage_options["max_retries"] = retries
       end
 
       sources = get_sources(source)

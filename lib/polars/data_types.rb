@@ -463,6 +463,30 @@ module Polars
     end
   end
 
+  # Key-value mapping type.
+  class Map < NestedType
+    attr_reader :key, :value
+
+    def initialize(key, value)
+      @key = Utils.parse_into_dtype(key)
+      @value = Utils.parse_into_dtype(value)
+    end
+
+    def ==(other)
+      if other.eql?(Map)
+        true
+      elsif other.is_a?(Map)
+        key == other.key && value == other.value
+      else
+        false
+      end
+    end
+
+    def to_s
+      "#{self.class.name}(#{key.inspect}, #{value.inspect})"
+    end
+  end
+
   # Nested list/array type.
   class Array < NestedType
     attr_reader :inner, :size, :shape

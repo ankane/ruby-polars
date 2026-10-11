@@ -616,7 +616,7 @@ module Polars
       raw_output: false,
       figsize: [16.0, 12.0],
       engine: "auto",
-      plan_stage: "ir",
+      plan_stage: "physical",
       optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
       engine = _select_engine(engine)
@@ -909,70 +909,6 @@ module Polars
       _from_rbldf(_ldf.bottom_k(k, by, reverse))
     end
 
-    # Profile a LazyFrame.
-    #
-    # This will run the query and return a tuple
-    # containing the materialized DataFrame and a DataFrame that
-    # contains profiling information of each node that is executed.
-    #
-    # The units of the timings are microseconds.
-    #
-    # @param engine [String]
-    #     Select the engine used to process the query, optional.
-    #     At the moment, if set to `"auto"` (default), the query
-    #     is run using the polars in-memory engine. Polars will also
-    #     attempt to use the engine set by the `POLARS_ENGINE_AFFINITY`
-    #     environment variable. If it cannot run the query using the
-    #     selected engine, the query is run using the polars in-memory
-    #     engine.
-    # @param optimizations [Object]
-    #     The optimization passes done during query optimization.
-    #
-    # @return [Array]
-    #
-    # @example
-    #   lf = Polars::LazyFrame.new(
-    #     {
-    #       "a" => ["a", "b", "a", "b", "b", "c"],
-    #       "b" => [1, 2, 3, 4, 5, 6],
-    #       "c" => [6, 5, 4, 3, 2, 1]
-    #     }
-    #   )
-    #   lf.group_by("a", maintain_order: true).agg(Polars.all.sum).sort(
-    #     "a"
-    #   ).profile
-    #   # =>
-    #   # [shape: (3, 3)
-    #   # ┌─────┬─────┬─────┐
-    #   # │ a   ┆ b   ┆ c   │
-    #   # │ --- ┆ --- ┆ --- │
-    #   # │ str ┆ i64 ┆ i64 │
-    #   # ╞═════╪═════╪═════╡
-    #   # │ a   ┆ 4   ┆ 10  │
-    #   # │ b   ┆ 11  ┆ 10  │
-    #   # │ c   ┆ 6   ┆ 1   │
-    #   # └─────┴─────┴─────┘,
-    #   # shape: (3, 3)
-    #   # ┌──────────────┬───────┬─────┐
-    #   # │ node         ┆ start ┆ end │
-    #   # │ ---          ┆ ---   ┆ --- │
-    #   # │ str          ┆ u64   ┆ u64 │
-    #   # ╞══════════════╪═══════╪═════╡
-    #   # │ optimization ┆ 0     ┆ 67  │
-    #   # │ sort(a)      ┆ 67    ┆ 79  │
-    #   # └──────────────┴───────┴─────┘]
-    def profile(
-      engine: "auto",
-      optimizations: DEFAULT_QUERY_OPT_FLAGS
-    )
-      engine = _select_engine(engine)
-
-      ldf = _ldf.with_optimizations(optimizations._rboptflags)
-
-      df_rb, timings_rb = ldf.profile
-      [Utils.wrap_df(df_rb), Utils.wrap_df(timings_rb)]
-    end
-
     # Materialize this LazyFrame into a DataFrame.
     #
     # By default, all query optimizations are enabled. Individual optimizations may
@@ -1115,8 +1051,6 @@ module Polars
     #
     #   If `storage_options` is not provided, Polars will try to infer the
     #   information from environment variables.
-    # @param retries [Integer]
-    #   Number of retries if accessing a cloud instance fails.
     # @param sync_on_close ['data', 'all']
     #   Sync to disk when before closing a file.
     #
@@ -1155,7 +1089,6 @@ module Polars
       maintain_order: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: nil,
       sync_on_close: nil,
       metadata: nil,
       mkdir: false,
@@ -1163,7 +1096,7 @@ module Polars
       arrow_schema: nil,
       engine: "auto",
       optimizations: DEFAULT_QUERY_OPT_FLAGS,
-      _sinked_paths_callback: nil
+      sinked_paths_callback: nil
     )
       engine = _select_engine(engine)
 
@@ -1187,13 +1120,6 @@ module Polars
 
       _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
 
-      if !retries.nil?
-        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
-        Utils.issue_deprecation_warning(msg)
-        storage_options = storage_options || {}
-        storage_options["max_retries"] = retries
-      end
-
       credential_provider_builder = _init_credential_provider_builder.(
         credential_provider, path, storage_options, "sink_parquet"
       )
@@ -1206,7 +1132,7 @@ module Polars
         sync_on_close: sync_on_close,
         storage_options: storage_options,
         credential_provider: credential_provider_builder,
-        sinked_paths_callback: _sinked_paths_callback
+        sinked_paths_callback: sinked_paths_callback
       )
 
       ldf_rb = _ldf.sink_parquet(
@@ -1382,8 +1308,6 @@ module Polars
     #
     #   If `storage_options` is not provided, Polars will try to infer the
     #   information from environment variables.
-    # @param retries [Integer]
-    #   Number of retries if accessing a cloud instance fails.
     # @param sync_on_close ['data', 'all']
     #     Sync to disk when before closing a file.
     #
@@ -1406,6 +1330,8 @@ module Polars
     #   The optimization passes done during query optimization.
     #
     #   This has no effect if `lazy` is set to `true`.
+    # @param sinked_paths_callback [Object]
+    #   Callable that will be called with information on sinked paths.
     #
     # @return [DataFrame]
     #
@@ -1420,24 +1346,17 @@ module Polars
       maintain_order: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: nil,
       sync_on_close: nil,
       mkdir: false,
       lazy: false,
       engine: "auto",
       optimizations: DEFAULT_QUERY_OPT_FLAGS,
-      _record_batch_statistics: false
+      _record_batch_statistics: false,
+      sinked_paths_callback: nil
     )
       engine = _select_engine(engine)
 
       _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
-
-      if !retries.nil?
-        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
-        Utils.issue_deprecation_warning(msg)
-        storage_options = storage_options || {}
-        storage_options["max_retries"] = retries
-      end
 
       credential_provider_builder = _init_credential_provider_builder.(
         credential_provider, path, storage_options, "sink_ipc"
@@ -1461,7 +1380,8 @@ module Polars
         maintain_order: maintain_order,
         sync_on_close: sync_on_close,
         storage_options: storage_options,
-        credential_provider: credential_provider_builder
+        credential_provider: credential_provider_builder,
+        sinked_paths_callback: sinked_paths_callback
       )
 
       ldf_rb = _ldf.sink_ipc(
@@ -1547,8 +1467,6 @@ module Polars
     #   Setting this to `false` will  be slightly faster.
     # @param storage_options [Object]
     #   Options that indicate how to connect to a cloud provider.
-    # @param retries [Integer]
-    #   Number of retries if accessing a cloud instance fails.
     # @param sync_on_close ['data', 'all']
     #   Sync to disk when before closing a file.
     #
@@ -1599,7 +1517,6 @@ module Polars
       maintain_order: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: nil,
       sync_on_close: nil,
       mkdir: false,
       lazy: false,
@@ -1617,13 +1534,6 @@ module Polars
       )
 
       target = _to_sink_target(path)
-
-      if !retries.nil?
-        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
-        Utils.issue_deprecation_warning(msg)
-        storage_options = storage_options || {}
-        storage_options["max_retries"] = retries
-      end
 
       sink_options = SinkOptions.new(
         mkdir: mkdir,
@@ -1686,8 +1596,6 @@ module Polars
     #
     #   If `storage_options` is not provided, Polars will try to infer the
     #   information from environment variables.
-    # @param retries [Integer]
-    #   Number of retries if accessing a cloud instance fails.
     # @param sync_on_close ['data', 'all']
     #   Sync to disk when before closing a file.
     #
@@ -1724,7 +1632,6 @@ module Polars
       maintain_order: true,
       storage_options: nil,
       credential_provider: "auto",
-      retries: nil,
       sync_on_close: nil,
       mkdir: false,
       lazy: false,
@@ -1732,13 +1639,6 @@ module Polars
       optimizations: DEFAULT_QUERY_OPT_FLAGS
     )
       engine = _select_engine(engine)
-
-      if !retries.nil?
-        msg = "the `retries` parameter was deprecated in 0.25.0; specify 'max_retries' in `storage_options` instead."
-        Utils.issue_deprecation_warning(msg)
-        storage_options = storage_options || {}
-        storage_options["max_retries"] = retries
-      end
 
       _init_credential_provider_builder = Polars.method(:_init_credential_provider_builder)
 
@@ -3316,17 +3216,18 @@ module Polars
     #   # └─────┴─────┴─────┘
     def join(
       other,
-      left_on: nil,
-      right_on: nil,
       on: nil,
       how: "inner",
+      left_on: nil,
+      right_on: nil,
       suffix: "_right",
       validate: "m:m",
       nulls_equal: false,
-      allow_parallel: true,
-      force_parallel: false,
       coalesce: nil,
-      maintain_order: nil
+      maintain_order: nil,
+      build_side: "auto",
+      allow_parallel: true,
+      force_parallel: false
     )
       if !other.is_a?(LazyFrame)
         raise ArgumentError, "Expected a `LazyFrame` as join table, got #{other.class.name}"
@@ -3466,6 +3367,7 @@ module Polars
     def join_where(
       other,
       *predicates,
+      how: "inner",
       suffix: "_right"
     )
       Utils.require_same_type(self, other)
@@ -3476,6 +3378,7 @@ module Polars
         _ldf.join_where(
           other._ldf,
           rbexprs,
+          how,
           suffix
         )
       )
@@ -4510,16 +4413,9 @@ module Polars
     def explode(
       columns,
       *more_columns,
-      empty_as_null: OMITTED,
+      empty_as_null: false,
       keep_nulls: true
     )
-      if empty_as_null == OMITTED
-        Utils.issue_deprecation_warning(
-          "The default behavior for `empty_as_null` will change to `false`. " +
-          "To keep the current behavior, explicitly set `empty_as_null: true`."
-        )
-        empty_as_null = true
-      end
       subset = Utils.parse_list_into_selector(columns) | Utils.parse_list_into_selector(
         more_columns
       )
@@ -4865,10 +4761,6 @@ module Polars
     #   Name to give to the `variable` column. Defaults to "variable"
     # @param value_name [String]
     #   Name to give to the `value` column. Defaults to "value"
-    # @param streamable [Boolean]
-    #   Allow this node to run in the streaming engine.
-    #   If this runs in streaming, the output of the unpivot operation
-    #   will not have a stable ordering.
     #
     # @return [LazyFrame]
     #
@@ -4899,13 +4791,8 @@ module Polars
       on = nil,
       index: nil,
       variable_name: nil,
-      value_name: nil,
-      streamable: true
+      value_name: nil
     )
-      if !streamable
-        warn "The `streamable` parameter for `LazyFrame.unpivot` is deprecated"
-      end
-
       selector_on = on.nil? ? nil : Utils.parse_list_into_selector(on)._rbselector
       selector_index = index.nil? ? Selectors.empty : Utils.parse_list_into_selector(index)
 
@@ -4929,8 +4816,6 @@ module Polars
     #   Allow projection pushdown optimization to pass this node.
     # @param slice_pushdown [Boolean]
     #   Allow slice pushdown optimization to pass this node.
-    # @param no_optimizations [Boolean]
-    #   Turn off all optimizations past this point.
     # @param schema [Object]
     #   Output schema of the function, if set to `nil` we assume that the schema
     #   will remain unchanged by the applied function.
@@ -4994,19 +4879,12 @@ module Polars
       predicate_pushdown: false,
       projection_pushdown: false,
       slice_pushdown: false,
-      no_optimizations: nil,
       schema: nil,
       validate_output_schema: true,
       streamable: false,
       &function
     )
       raise Todo if !schema.nil?
-
-      if no_optimizations
-        predicate_pushdown = false
-        projection_pushdown = false
-        slice_pushdown = false
-      end
 
       _from_rbldf(
         _ldf.map_batches(

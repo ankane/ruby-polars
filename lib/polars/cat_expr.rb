@@ -9,30 +9,6 @@ module Polars
       self._rbexpr = expr._rbexpr
     end
 
-    # Get the categories stored in this data type.
-    #
-    # @return [Expr]
-    #
-    # @example
-    #   df = Polars::Series.new(
-    #     "cats", ["foo", "bar", "foo", "foo", "ham"], dtype: Polars::Categorical
-    #   ).to_frame
-    #   df.select(Polars.col("cats").cat.get_categories)
-    #   # =>
-    #   # shape: (3, 1)
-    #   # ┌──────┐
-    #   # │ cats │
-    #   # │ ---  │
-    #   # │ str  │
-    #   # ╞══════╡
-    #   # │ foo  │
-    #   # │ bar  │
-    #   # │ ham  │
-    #   # └──────┘
-    def get_categories
-      Utils.wrap_expr(_rbexpr.cat_get_categories)
-    end
-
     # Return the byte-length of the string representation of each value.
     #
     # @return [Expr]

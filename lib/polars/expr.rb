@@ -398,6 +398,54 @@ module Polars
       wrap_expr(_rbexpr.exp)
     end
 
+    # Compute the error function, element-wise.
+    #
+    # See [Wikipedia](https://en.wikipedia.org/wiki/Error_function).
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [-1, 0, 1]})
+    #   df.select(Polars.col("a").erf)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌───────────┐
+    #   # │ a         │
+    #   # │ ---       │
+    #   # │ f64       │
+    #   # ╞═══════════╡
+    #   # │ -0.842701 │
+    #   # │ 0.0       │
+    #   # │ 0.842701  │
+    #   # └───────────┘
+    def erf
+      wrap_expr(_rbexpr.erf)
+    end
+
+    # Compute the complementary error function, element-wise.
+    #
+    # See [Wikipedia](https://en.wikipedia.org/wiki/Error_function).
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [-1, 0, 1]})
+    #   df.select(Polars.col("a").erfc)
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────────┐
+    #   # │ a        │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 1.842701 │
+    #   # │ 1.0      │
+    #   # │ 0.157299 │
+    #   # └──────────┘
+    def erfc
+      wrap_expr(_rbexpr.erfc)
+    end
+
     # Rename the output of an expression.
     #
     # @param name [String]
@@ -736,41 +784,6 @@ module Polars
       wrap_expr(_rbexpr.is_not_nan)
     end
 
-    # Get the group indexes of the group by operation.
-    #
-    # Should be used in aggregation context only.
-    #
-    # @return [Expr]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "group" => [
-    #         "one",
-    #         "one",
-    #         "one",
-    #         "two",
-    #         "two",
-    #         "two"
-    #       ],
-    #       "value" => [94, 95, 96, 97, 97, 99]
-    #     }
-    #   )
-    #   df.group_by("group", maintain_order: true).agg(Polars.col("value").agg_groups)
-    #   # =>
-    #   # shape: (2, 2)
-    #   # ┌───────┬───────────┐
-    #   # │ group ┆ value     │
-    #   # │ ---   ┆ ---       │
-    #   # │ str   ┆ list[u32] │
-    #   # ╞═══════╪═══════════╡
-    #   # │ one   ┆ [0, 1, 2] │
-    #   # │ two   ┆ [3, 4, 5] │
-    #   # └───────┴───────────┘
-    def agg_groups
-      wrap_expr(_rbexpr.agg_groups)
-    end
-
     # Count the number of values in this expression.
     #
     # @return [Expr]
@@ -882,31 +895,6 @@ module Polars
     def append(other, upcast: true)
       other = Utils.parse_into_expression(other)
       wrap_expr(_rbexpr.append(other, upcast))
-    end
-
-    # Create a single chunk of memory for this Series.
-    #
-    # @return [Expr]
-    #
-    # @example Create a Series with 3 nulls, append column a then rechunk
-    #   df = Polars::DataFrame.new({"a" => [1, 1, 2]})
-    #   df.select(Polars.repeat(nil, 3).append(Polars.col("a")).rechunk)
-    #   # =>
-    #   # shape: (6, 1)
-    #   # ┌────────┐
-    #   # │ repeat │
-    #   # │ ---    │
-    #   # │ i64    │
-    #   # ╞════════╡
-    #   # │ null   │
-    #   # │ null   │
-    #   # │ null   │
-    #   # │ 1      │
-    #   # │ 1      │
-    #   # │ 2      │
-    #   # └────────┘
-    def rechunk
-      wrap_expr(_rbexpr.rechunk)
     end
 
     # Drop null values.
@@ -3254,6 +3242,11 @@ module Polars
 
     # Bin continuous values into discrete categories.
     #
+    # @deprecated
+    #   Use `bin_intervals` instead. It requires `labels` (pass
+    #   `labels: false` for the integer bin index), and takes
+    #   `right_closed: true` to keep `cut`'s right-closed bins.
+    #
     # @param breaks [Array]
     #   List of unique cut points.
     # @param labels [Array]
@@ -3309,6 +3302,13 @@ module Polars
     end
 
     # Bin continuous values into discrete categories based on their quantiles.
+    #
+    # @deprecated
+    #   Use `bin_quantiles`, which places the breakpoints at the
+    #   quantile values, or `bin_ranks`, which splits on position in
+    #   sorted order to give near-equal-sized bins. Both require `labels`
+    #   (pass `labels: false` for the integer bin index); `bin_quantiles`
+    #   also takes `right_closed: true` to keep `qcut`'s right-closed bins.
     #
     # @param quantiles [Array]
     #   Either a list of quantile probabilities between 0 and 1 or a positive
@@ -3608,7 +3608,6 @@ module Polars
       skip_nulls: true,
       pass_name: false,
       strategy: "thread_local",
-      returns_scalar: false,
       &function
     )
       if pass_name
@@ -3635,40 +3634,6 @@ module Polars
       end
     end
 
-    # Explode a list or utf8 Series. This means that every item is expanded to a new
-    # row.
-    #
-    # Alias for {#explode}.
-    #
-    # @return [Expr]
-    #
-    # @deprecated
-    #  `Expr#flatten` is deprecated and will be removed in a future version.
-    #   Use `Expr.list.explode(keep_nulls: false, empty_as_null: false)` instead,
-    #   which provides the behavior you likely expect.
-    #
-    # @example
-    #  df = Polars::DataFrame.new(
-    #    {
-    #      "group" => ["a", "b", "b"],
-    #      "values" => [[1, 2], [2, 3], [4]]
-    #    }
-    #  )
-    #  df.group_by("group").agg(Polars.col("values").flatten)
-    #  # =>
-    #  # shape: (2, 2)
-    #  # ┌───────┬───────────┐
-    #  # │ group ┆ values    │
-    #  # │ ---   ┆ ---       │
-    #  # │ str   ┆ list[i64] │
-    #  # ╞═══════╪═══════════╡
-    #  # │ a     ┆ [1, 2]    │
-    #  # │ b     ┆ [2, 3, 4] │
-    #  # └───────┴───────────┘
-    def flatten
-      explode(empty_as_null: true, keep_nulls: true)
-    end
-
     # Explode a list or utf8 Series.
     #
     # This means that every item is expanded to a new row.
@@ -3692,15 +3657,7 @@ module Polars
     #   # │ 5   │
     #   # │ 6   │
     #   # └─────┘
-    def explode(empty_as_null: OMITTED, keep_nulls: true)
-      if empty_as_null == OMITTED
-        Utils.issue_deprecation_warning(
-          "The default behavior for `empty_as_null` will change to `false`. " +
-          "To keep the current behavior, explicitly set `empty_as_null: true`."
-        )
-        empty_as_null = true
-      end
-
+    def explode(empty_as_null: false, keep_nulls: true)
       wrap_expr(_rbexpr.explode(empty_as_null, keep_nulls))
     end
 
@@ -7515,7 +7472,7 @@ module Polars
     def sample(
       fraction: nil,
       with_replacement: false,
-      shuffle: false,
+      shuffle: nil,
       seed: nil,
       n: nil
     )
@@ -8094,13 +8051,6 @@ module Polars
     #   Accepts expression input. Arrays are parsed as Series,
     #   other non-expression inputs are parsed as literals.
     #   Length must match the length of `old` or have length 1.
-    # @param default [Object]
-    #   Set values that were not replaced to this value.
-    #   Defaults to keeping the original value.
-    #   Accepts expression input. Non-expression inputs are parsed as literals.
-    # @param return_dtype [Object]
-    #   The data type of the resulting expression. If set to `nil` (default),
-    #   the data type is determined automatically based on the other inputs.
     #
     # @return [Expr]
     #
@@ -8218,7 +8168,7 @@ module Polars
     #   # │ 2   ┆ 5.0 ┆ 5.0      │
     #   # │ 3   ┆ 1.0 ┆ 10.0     │
     #   # └─────┴─────┴──────────┘
-    def replace(old, new = NO_DEFAULT, default: NO_DEFAULT, return_dtype: nil)
+    def replace(old, new = NO_DEFAULT)
       if !default.eql?(NO_DEFAULT)
         return replace_strict(old, new, default: default, return_dtype: return_dtype)
       end
@@ -8606,6 +8556,13 @@ module Polars
     # @return [StructExpr]
     def struct
       StructExpr.new(self)
+    end
+
+    # Create an object namespace of all map related expressions.
+    #
+    # @return [MapExpr]
+    def map
+      MapExpr.new(self)
     end
 
     # Create an object namespace of all extension type related expressions.

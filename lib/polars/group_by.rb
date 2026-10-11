@@ -583,35 +583,6 @@ module Polars
       agg(Polars.all.max)
     end
 
-    # Count the number of values in each group.
-    #
-    # @return [DataFrame]
-    #
-    # @example
-    #   df = Polars::DataFrame.new(
-    #     {
-    #       "a" => [1, 2, 2, 3, 4, 5],
-    #       "b" => [0.5, 0.5, 4, 10, 13, 14],
-    #       "c" => [true, true, true, false, false, true],
-    #       "d" => ["Apple", "Orange", "Apple", "Apple", "Banana", "Banana"]
-    #     }
-    #   )
-    #   df.group_by("d", maintain_order: true).count
-    #   # =>
-    #   # shape: (3, 2)
-    #   # ┌────────┬───────┐
-    #   # │ d      ┆ count │
-    #   # │ ---    ┆ ---   │
-    #   # │ str    ┆ u32   │
-    #   # ╞════════╪═══════╡
-    #   # │ Apple  ┆ 3     │
-    #   # │ Orange ┆ 1     │
-    #   # │ Banana ┆ 2     │
-    #   # └────────┴───────┘
-    def count
-      agg(Polars.len.alias("count"))
-    end
-
     # Reduce the groups to the mean values.
     #
     # @return [DataFrame]

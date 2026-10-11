@@ -376,6 +376,54 @@ module Polars
       Utils.wrap_expr(Plr.concat_list(exprs))
     end
 
+    # Collect columns into a list column, treating each expression's value as one element.
+    #
+    # Unlike `concat_list`, list-typed inputs are not extended - each input's value
+    # becomes a single element of the output list. This means `List(T)` inputs produce
+    # `List(List(T))` output.
+    #
+    # @param exprs [Object]
+    #   Columns to collect into a list. Accepts expression input. Strings are parsed
+    #   as column names, other non-expression inputs are parsed as literals.
+    # @param more_exprs [Array]
+    #   Additional columns, specified as positional arguments.
+    #
+    # @return [Expr]
+    #
+    # @example Wrap scalar columns into a list (same as `concat_list` for scalars):
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
+    #   df.with_columns(a_b: Polars.list("a", "b"))
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌─────┬─────┬───────────┐
+    #   # │ a   ┆ b   ┆ a_b       │
+    #   # │ --- ┆ --- ┆ ---       │
+    #   # │ i64 ┆ i64 ┆ list[i64] │
+    #   # ╞═════╪═════╪═══════════╡
+    #   # │ 1   ┆ 4   ┆ [1, 4]    │
+    #   # │ 2   ┆ 5   ┆ [2, 5]    │
+    #   # │ 3   ┆ 6   ┆ [3, 6]    │
+    #   # └─────┴─────┴───────────┘
+    #
+    # @example Collect list columns into a list-of-lists (unlike `concat_list`, which extends):
+    #   df = Polars::DataFrame.new({"a" => [[1, 2], [3], [4, 5]], "b" => [[6], [7, 8], [9]]})
+    #   df.with_columns(a_b: Polars.list("a", "b"))
+    #   # =>
+    #   # shape: (3, 3)
+    #   # ┌───────────┬───────────┬─────────────────┐
+    #   # │ a         ┆ b         ┆ a_b             │
+    #   # │ ---       ┆ ---       ┆ ---             │
+    #   # │ list[i64] ┆ list[i64] ┆ list[list[i64]] │
+    #   # ╞═══════════╪═══════════╪═════════════════╡
+    #   # │ [1, 2]    ┆ [6]       ┆ [[1, 2], [6]]   │
+    #   # │ [3]       ┆ [7, 8]    ┆ [[3], [7, 8]]   │
+    #   # │ [4, 5]    ┆ [9]       ┆ [[4, 5], [9]]   │
+    #   # └───────────┴───────────┴─────────────────┘
+    def list(exprs, *more_exprs)
+      exprs = Utils.parse_into_list_of_expressions(exprs, *more_exprs)
+      Utils.wrap_expr(Plr.list(exprs))
+    end
+
     # Horizontally concatenate columns into a single array column.
     #
     # Non-array columns are reshaped to a unit-width array. All columns must have

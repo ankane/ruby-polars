@@ -256,6 +256,84 @@ module Polars
       Utils.wrap_expr(_rbexpr.arr_sum)
     end
 
+    # Compute row-wise dot product with another Array expression.
+    #
+    # Both inputs must contain equal-width arrays. Their inner data types are cast
+    # to a common supertype, which must be an integer, `Float32`, or `Float64`.
+    # An input with one row is broadcast against the other input.
+    # If either input Array is null for a row, the result for that row is null.
+    #
+    # @param other [Object]
+    #   Array expression or query vector to compute dot product with.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "a" => [[1.0, 2.0], [3.0, 4.0]],
+    #       "b" => [[5.0, 6.0], [7.0, 8.0]]
+    #     },
+    #     schema: {
+    #       "a" => Polars::Array.new(Polars::Float64, 2),
+    #       "b" => Polars::Array.new(Polars::Float64, 2)
+    #     }
+    #   )
+    #   df.select(Polars.col("a").arr.dot("b"))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ f64  │
+    #   # ╞══════╡
+    #   # │ 17.0 │
+    #   # │ 53.0 │
+    #   # └──────┘
+    #
+    # @example A Ruby array can be used as a broadcast query.
+    #   query = [2.0, 3.0]
+    #   df.select(Polars.col("a").arr.dot(query))
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ f64  │
+    #   # ╞══════╡
+    #   # │ 8.0  │
+    #   # │ 18.0 │
+    #   # └──────┘
+    #
+    # @example Integer multiplication can wrap before accumulator promotion.
+    #   a = Polars::Series.new("a", [[100, 100]], dtype: Polars::Array.new(Polars::Int8, 2))
+    #   b = Polars::Series.new("b", [[2, 2]], dtype: Polars::Array.new(Polars::Int8, 2))
+    #   a.arr.dot(b)
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         -112
+    #   # ]
+    #
+    # @example Cast both inputs before `dot` to perform multiplication and accumulation in a type that can represent the result.
+    #   wide = Polars::Array.new(Polars::Int64, 2)
+    #   a.cast(wide).arr.dot(b.cast(wide))
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: 'a' [i64]
+    #   # [
+    #   #         400
+    #   # ]
+    def dot(other)
+      if other.is_a?(::Array)
+        other = F.lit(other).list.to_array(other.length)
+      end
+
+      other_rbexpr = Utils.parse_into_expression(other)
+      Utils.wrap_expr(_rbexpr.arr_dot(other_rbexpr))
+    end
+
     # Compute the std of the values of the sub-arrays.
     #
     # @return [Expr]
@@ -791,15 +869,7 @@ module Polars
     #   # │ 5   │
     #   # │ 6   │
     #   # └─────┘
-    def explode(empty_as_null: OMITTED, keep_nulls: true)
-      if empty_as_null == OMITTED
-        Utils.issue_deprecation_warning(
-          "The default behavior for `empty_as_null` will change to `false`. " +
-          "To keep the current behavior, explicitly set `empty_as_null: true`."
-        )
-        empty_as_null = true
-      end
-
+    def explode(empty_as_null: false, keep_nulls: true)
       Utils.wrap_expr(_rbexpr.arr_explode(empty_as_null, keep_nulls))
     end
 

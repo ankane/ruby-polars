@@ -8,9 +8,6 @@ module Polars
     #   Numerical version or timestamp version of the Delta lake table.
     # @param columns [Array]
     #   Columns to select. Accepts a list of column names.
-    # @param rechunk [Boolean]
-    #   Make sure that all columns are contiguous in memory by
-    #   aggregating the chunks into a single array.
     # @param storage_options [Hash]
     #   Extra options for the storage backends supported by `deltalake-rb`.
     # @param delta_table_options [Hash]
@@ -21,7 +18,6 @@ module Polars
       source,
       version: nil,
       columns: nil,
-      rechunk: nil,
       storage_options: nil,
       delta_table_options: nil
     )
@@ -32,8 +28,7 @@ module Polars
           source,
           version: version,
           storage_options: storage_options,
-          delta_table_options: delta_table_options,
-          rechunk: rechunk
+          delta_table_options: delta_table_options
         )
 
       if !columns.nil?
@@ -52,17 +47,13 @@ module Polars
     #   Extra options for the storage backends supported by `deltalake-rb`.
     # @param delta_table_options [Hash]
     #   Additional keyword arguments while reading a Delta lake Table.
-    # @param rechunk [Boolean]
-    #   Make sure that all columns are contiguous in memory by
-    #   aggregating the chunks into a single array.
     #
     # @return [LazyFrame]
     def scan_delta(
       source,
       version: nil,
       storage_options: nil,
-      delta_table_options: nil,
-      rechunk: nil
+      delta_table_options: nil
     )
       require "deltalake-rb"
 
@@ -74,7 +65,7 @@ module Polars
           delta_table_options: delta_table_options
         )
 
-      dl_tbl.to_polars(eager: false, rechunk: rechunk || false)
+      dl_tbl.to_polars(eager: false)
     end
 
     private

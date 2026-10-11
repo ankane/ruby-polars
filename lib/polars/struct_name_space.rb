@@ -80,6 +80,30 @@ module Polars
       super
     end
 
+    # Drop one or more fields from the struct.
+    #
+    # @param names [Array]
+    #   Names of the fields to drop.
+    # @param strict [Boolean]
+    #   If true, raise an error if any of the specified fields do not exist in the
+    #   struct.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [{"a" => 1, "b" => 2}, {"a" => 3, "b" => 4}])
+    #   s.struct.drop(["a"])
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [struct[1]]
+    #   # [
+    #   #         {2}
+    #   #         {4}
+    #   # ]
+    def drop(names, strict: true)
+      super
+    end
+
     # Get the struct definition as a name/dtype schema hash.
     #
     # @return [Object]
@@ -115,6 +139,37 @@ module Polars
     #   # └─────┴─────┘
     def unnest
       Utils.wrap_df(_s.struct_unnest)
+    end
+
+    # Select fields of this struct, dropping the fields that are not selected.
+    #
+    # This is similar to `select` on `DataFrame`.
+    #
+    # The expressions must be length-preserving; they are evaluated against the
+    # fields of the struct, which are addressed with :func:`polars.field`.
+    #
+    # @param exprs [Array]
+    #   Field(s) to select, specified as positional arguments.
+    #   Accepts expression input. Strings are parsed as column names, other
+    #   non-expression inputs are parsed as literals.
+    # @param named_exprs [Hash]
+    #   Additional fields to select, specified as keyword arguments.
+    #   The fields will be renamed to the keyword used.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [{"x" => 1, "y" => 4}, {"x" => 4, "y" => 9}])
+    #   s.struct.eval(Polars.field("y"), x_sq: Polars.field("x") ** 2)
+    #   # =>
+    #   # shape: (2,)
+    #   # Series: 'a' [struct[2]]
+    #   # [
+    #   #         {4,1}
+    #   #         {9,16}
+    #   # ]
+    def eval(*exprs, **named_exprs)
+      super
     end
 
     # Convert this struct to a string column with json values.

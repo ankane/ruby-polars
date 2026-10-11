@@ -754,6 +754,48 @@ module Polars
       super
     end
 
+    # Compute the error function, element-wise.
+    #
+    # See [Wikipedia](https://en.wikipedia.org/wiki/Error_function).
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([-1, 0, 1])
+    #   s.erf
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         -0.842701
+    #   #         0.0
+    #   #         0.842701
+    #   # ]
+    def erf
+      super
+    end
+
+    # Compute the complementary error function, element-wise.
+    #
+    # See [Wikipedia](https://en.wikipedia.org/wiki/Error_function).
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([-1, 0, 1])
+    #   s.erfc
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         1.842701
+    #   #         1.0
+    #   #         0.157299
+    #   # ]
+    def erfc
+      super
+    end
+
     # Create a new Series that copies data from this Series without null values.
     #
     # @return [Series]
@@ -1172,6 +1214,11 @@ module Polars
 
     # Bin continuous values into discrete categories.
     #
+    # @deprecated
+    #   Use `bin_intervals` instead. It requires `labels` (pass
+    #   `labels: false` for the integer bin index), and takes
+    #   `right_closed: true` to keep `cut`'s right-closed bins.
+    #
     # @param breaks [Array]
     #   List of unique cut points.
     # @param labels [Array]
@@ -1238,6 +1285,13 @@ module Polars
     end
 
     # Bin continuous values into discrete categories based on their quantiles.
+    #
+    # @deprecated
+    #   Use `bin_quantiles`, which places the breakpoints at the
+    #   quantile values, or `bin_ranks`, which splits on position in
+    #   sorted order to give near-equal-sized bins. Both require `labels`
+    #   (pass `labels: false` for the integer bin index); `bin_quantiles`
+    #   also takes `right_closed: true` to keep `qcut`'s right-closed bins.
     #
     # @param quantiles [Object]
     #   Either an array of quantile probabilities between 0 and 1 or a positive
@@ -3863,7 +3917,6 @@ module Polars
       end
       Utils.wrap_s(_s.map_elements(function, pl_return_dtype, skip_nulls))
     end
-    alias_method :map, :map_elements
 
     # Shift the values by a given period.
     #
@@ -5263,7 +5316,7 @@ module Polars
       n: nil,
       fraction: nil,
       with_replacement: false,
-      shuffle: false,
+      shuffle: nil,
       seed: nil
     )
       super
@@ -5778,13 +5831,6 @@ module Polars
     # @param new [Object]
     #   Value or array of values to replace by.
     #   Length must match the length of `old` or have length 1.
-    # @param default [Object]
-    #   Set values that were not replaced to this value.
-    #   Defaults to keeping the original value.
-    #   Accepts expression input. Non-expression inputs are parsed as literals.
-    # @param return_dtype [Object]
-    #   The data type of the resulting Series. If set to `nil` (default),
-    #   the data type is determined automatically based on the other inputs.
     #
     # @return [Series]
     #
@@ -5838,7 +5884,7 @@ module Polars
     #   #         "2"
     #   #         "3"
     #   # ]
-    def replace(old, new = NO_DEFAULT, default: NO_DEFAULT, return_dtype: nil)
+    def replace(old, new = NO_DEFAULT)
       super
     end
 
@@ -5953,6 +5999,56 @@ module Polars
       default: NO_DEFAULT,
       return_dtype: nil
     )
+      super
+    end
+
+    # Convert from radians to degrees.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", (-4..5).map { |x| x * Math::PI })
+    #   s.degrees
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         -720.0
+    #   #         -540.0
+    #   #         -360.0
+    #   #         -180.0
+    #   #         0.0
+    #   #         180.0
+    #   #         360.0
+    #   #         540.0
+    #   #         720.0
+    #   # ]
+    def degrees
+      super
+    end
+
+    # Convert from degrees to radians.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("a", [-720, -540, -360, -180, 0, 180, 360, 540, 720])
+    #   s.radians
+    #   # =>
+    #   # shape: (9,)
+    #   # Series: 'a' [f64]
+    #   # [
+    #   #         -12.566371
+    #   #         -9.424778
+    #   #         -6.283185
+    #   #         -3.141593
+    #   #         0.0
+    #   #         3.141593
+    #   #         6.283185
+    #   #         9.424778
+    #   #         12.566371
+    #   # ]
+    def radians
       super
     end
 
@@ -6446,6 +6542,13 @@ module Polars
     # @return [StructNameSpace]
     def struct
       StructNameSpace.new(self)
+    end
+
+    # Create an object namespace of all map related methods.
+    #
+    # @return [MapNameSpace]
+    def map
+      MapNameSpace.new(self)
     end
 
     # Create an object namespace of all extension type related methods.

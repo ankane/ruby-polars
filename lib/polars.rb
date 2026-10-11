@@ -78,6 +78,8 @@ require_relative "polars/lazy_frame"
 require_relative "polars/lazy_group_by"
 require_relative "polars/list_expr"
 require_relative "polars/list_name_space"
+require_relative "polars/map_expr"
+require_relative "polars/map_name_space"
 require_relative "polars/meta_expr"
 require_relative "polars/name_expr"
 require_relative "polars/query_opt_flags"
@@ -128,6 +130,9 @@ module Polars
 
   # @private
   N_INFER_DEFAULT = 100
+
+  # @private
+  N_INFER_FILES_DEFAULT = 10
 
   # Return the number of threads in the Polars thread pool.
   #

@@ -152,7 +152,7 @@ module Polars
     #   # │ [1, 2, 3] ┆ 2   ┆ [2, 3]    │
     #   # │ [4, 5]    ┆ 1   ┆ [5]       │
     #   # └───────────┴─────┴───────────┘
-    def sample(n: nil, fraction: nil, with_replacement: false, shuffle: false, seed: nil)
+    def sample(n: nil, fraction: nil, with_replacement: false, shuffle: nil, seed: nil)
       if !n.nil? && !fraction.nil?
         msg = "cannot specify both `n` and `fraction`"
         raise ArgumentError, msg
@@ -922,15 +922,7 @@ module Polars
     #   # │ 5   │
     #   # │ 6   │
     #   # └─────┘
-    def explode(empty_as_null: OMITTED, keep_nulls: true)
-      if empty_as_null == OMITTED
-        Utils.issue_deprecation_warning(
-          "The default behavior for `empty_as_null` will change to `false`. " +
-          "To keep the current behavior, explicitly set `empty_as_null: true`."
-        )
-        empty_as_null = true
-      end
-
+    def explode(empty_as_null: false, keep_nulls: true)
       Utils.wrap_expr(_rbexpr.explode(empty_as_null, keep_nulls))
     end
 
@@ -990,23 +982,11 @@ module Polars
 
     # Convert the series of type `List` to a series of type `Struct`.
     #
-    # @param n_field_strategy ["first_non_null", "max_width"]
-    #   Deprecated and ignored.
-    # @param fields pArray
+    # @param fields Array
     #   If the name and number of the desired fields is known in advance
     #   a list of field names can be given, which will be assigned by index.
     #   Otherwise, to dynamically assign field names, a custom function can be
     #   used; if neither are set, fields will be `field_0, field_1 .. field_n`.
-    # @param upper_bound [Object]
-    #   A polars `LazyFrame` needs to know the schema at all times, so the
-    #   caller must provide an upper bound of the number of struct fields that
-    #   will be created; if set incorrectly, subsequent operations may fail.
-    #   (For example, an `all.sum` expression will look in the current
-    #   schema to determine which columns to select).
-    #
-    #   When operating on a `DataFrame`, the schema does not need to be
-    #   tracked or pre-determined, as the result will be eagerly evaluated,
-    #   so you can leave this parameter unset.
     #
     # @return [Expr]
     #
@@ -1023,7 +1003,7 @@ module Polars
     #   # │ [0, 1]    ┆ {0,1}     │
     #   # │ [0, 1, 2] ┆ {0,1}     │
     #   # └───────────┴───────────┘
-    def to_struct(n_field_strategy: nil, fields: nil, upper_bound: nil)
+    def to_struct(fields)
       if !fields.is_a?(::Array)
         if fields.nil?
           fields = upper_bound.times.map { |i| "field_#{i}" }
@@ -1033,6 +1013,32 @@ module Polars
       end
 
       Utils.wrap_expr(_rbexpr.list_to_struct(fields))
+    end
+
+    # Convert the `List` of `Struct` entries to a `Map`.
+    #
+    # The input must be a `List` of `Struct` with exactly two fields named `key`
+    # and `value`. Keys must not be null; duplicate keys within a row are resolved
+    # by keeping the first position and the last value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {"m" => [[{"key" => "a", "value" => 1}, {"key" => "b", "value" => 2}]]}
+    #   )
+    #   df.select(Polars.col("m").list.to_map)
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────────────────┐
+    #   # │ m                │
+    #   # │ ---              │
+    #   # │ map[str, i64]    │
+    #   # ╞══════════════════╡
+    #   # │ {"a": 1, "b": 2} │
+    #   # └──────────────────┘
+    def to_map
+      Utils.wrap_expr(_rbexpr.list_to_map)
     end
 
     # Run any polars expression against the lists' elements.

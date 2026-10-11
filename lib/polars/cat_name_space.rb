@@ -10,59 +10,6 @@ module Polars
       self._s = series._s
     end
 
-    # Get the categories stored in this data type.
-    #
-    # @return [Series]
-    #
-    # @example
-    #   s = Polars::Series.new(["foo", "bar", "foo", "foo", "ham"], dtype: Polars::Categorical)
-    #   s.cat.get_categories
-    #   # =>
-    #   # shape: (3,)
-    #   # Series: '' [str]
-    #   # [
-    #   #         "foo"
-    #   #         "bar"
-    #   #         "ham"
-    #   # ]
-    def get_categories
-      super
-    end
-
-    # Return whether or not the column is a local categorical.
-    #
-    # Always returns false.
-    #
-    # @deprecated
-    #   `cat.is_local` is deprecated; Categoricals no longer have a local scope.
-    #
-    # @return [Boolean]
-    def is_local
-      _s.cat_is_local
-    end
-
-    # Simply returns the column as-is, local representations are deprecated.
-    #
-    # @return [Series]
-    def to_local
-      Utils.wrap_s(_s.cat_to_local)
-    end
-
-    # Indicate whether the Series uses lexical ordering.
-    #
-    # @deprecated
-    #   `cat.uses_lexical_ordering` is deprecated; Categoricals are now always ordered lexically.
-    #
-    # @return [Boolean]
-    #
-    # @example
-    #   s = Polars::Series.new(["b", "a", "b"]).cast(Polars::Categorical)
-    #   s.cat.uses_lexical_ordering
-    #   # => true
-    def uses_lexical_ordering
-      _s.cat_uses_lexical_ordering
-    end
-
     # Return the byte-length of the string representation of each value.
     #
     # @return [Series]

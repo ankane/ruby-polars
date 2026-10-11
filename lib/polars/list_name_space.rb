@@ -140,7 +140,7 @@ module Polars
     #   #         [2, 3]
     #   #         [5]
     #   # ]
-    def sample(n: nil, fraction: nil, with_replacement: false, shuffle: false, seed: nil)
+    def sample(n: nil, fraction: nil, with_replacement: false, shuffle: nil, seed: nil)
       super
     end
 
@@ -805,10 +805,29 @@ module Polars
       super
     end
 
+    # Convert the `List` of `Struct` entries to a `Map`.
+    #
+    # The input must be a `List` of `Struct` with exactly two fields named `key`
+    # and `value`. Keys must not be null; duplicate keys within a row are resolved
+    # by keeping the first position and the last value.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([[{"key" => "a", "value" => 1}, {"key" => "b", "value" => 2}]])
+    #   s.list.to_map
+    #   # =>
+    #   # shape: (1,)
+    #   # Series: '' [map[str, i64]]
+    #   # [
+    #   #         {"a": 1, "b": 2}
+    #   # ]
+    def to_map
+      super
+    end
+
     # Convert the series of type `List` to a series of type `Struct`.
     #
-    # @param n_field_strategy ["first_non_null", "max_width"]
-    #   Strategy to determine the number of fields of the struct.
     # @param fields [Object]
     #   If the name and number of the desired fields is known in advance
     #   a list of field names can be given, which will be assigned by index.
@@ -840,7 +859,7 @@ module Polars
     #   # │ 0   ┆ 1   ┆ 2     │
     #   # │ 0   ┆ 1   ┆ null  │
     #   # └─────┴─────┴───────┘
-    def to_struct(n_field_strategy: "first_non_null", fields: nil)
+    def to_struct(fields)
       if fields.is_a?(::Array)
         s = Utils.wrap_s(_s)
         return (

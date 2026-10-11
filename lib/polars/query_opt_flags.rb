@@ -16,10 +16,12 @@ module Polars
       comm_subplan_elim: nil,
       comm_subexpr_elim: nil,
       cluster_with_columns: nil,
-      collapse_joins: nil,
       check_order_observe: nil,
       fast_projection: nil,
-      sort_collapse: nil
+      sort_collapse: nil,
+      pre_partition_hive: nil,
+      join_order: nil,
+      row_estimate: nil
     )
       self._rboptflags = RbOptFlags.default
       update(
@@ -30,10 +32,12 @@ module Polars
         comm_subplan_elim: comm_subplan_elim,
         comm_subexpr_elim: comm_subexpr_elim,
         cluster_with_columns: cluster_with_columns,
-        collapse_joins: collapse_joins,
         check_order_observe: check_order_observe,
         fast_projection: fast_projection,
-        sort_collapse: sort_collapse
+        sort_collapse: sort_collapse,
+        pre_partition_hive: pre_partition_hive,
+        join_order: join_order,
+        row_estimate: row_estimate
       )
     end
 
@@ -46,10 +50,12 @@ module Polars
       comm_subplan_elim: nil,
       comm_subexpr_elim: nil,
       cluster_with_columns: nil,
-      collapse_joins: nil,
       check_order_observe: nil,
       fast_projection: nil,
-      sort_collapse: nil
+      sort_collapse: nil,
+      pre_partition_hive: nil,
+      join_order: nil,
+      row_estimate: nil
     )
       optflags = QueryOptFlags.new
       optflags.no_optimizations
@@ -61,10 +67,12 @@ module Polars
         comm_subplan_elim: comm_subplan_elim,
         comm_subexpr_elim: comm_subexpr_elim,
         cluster_with_columns: cluster_with_columns,
-        collapse_joins: collapse_joins,
         check_order_observe: check_order_observe,
         fast_projection: fast_projection,
-        sort_collapse: sort_collapse
+        sort_collapse: sort_collapse,
+        pre_partition_hive: pre_partition_hive,
+        join_order: join_order,
+        row_estimate: row_estimate
       )
     end
 
@@ -76,10 +84,12 @@ module Polars
       comm_subplan_elim: nil,
       comm_subexpr_elim: nil,
       cluster_with_columns: nil,
-      collapse_joins: nil,
       check_order_observe: nil,
       fast_projection: nil,
-      sort_collapse: nil
+      sort_collapse: nil,
+      pre_partition_hive: nil,
+      join_order: nil,
+      row_estimate: nil
     )
       if !predicate_pushdown.nil?
         self.predicate_pushdown = predicate_pushdown
@@ -102,15 +112,6 @@ module Polars
       if !cluster_with_columns.nil?
         self.cluster_with_columns = cluster_with_columns
       end
-      if !collapse_joins.nil?
-        Utils.issue_deprecation_warning(
-          "the `collapse_joins` parameter for `QueryOptFlags` is deprecated. " +
-          "Use `predicate_pushdown` instead."
-        )
-        if !collapse_joins
-          self.predicate_pushdown = false
-        end
-      end
       if !check_order_observe.nil?
         self.check_order_observe = check_order_observe
       end
@@ -119,6 +120,15 @@ module Polars
       end
       if !sort_collapse.nil?
         self.sort_collapse = sort_collapse
+      end
+      if !pre_partition_hive.nil?
+        self.pre_partition_hive = pre_partition_hive
+      end
+      if !join_order.nil?
+        self.join_order = join_order
+      end
+      if !row_estimate.nil?
+        self.row_estimate = row_estimate
       end
 
       self
@@ -228,6 +238,33 @@ module Polars
       _rboptflags.sort_collapse = value
     end
 
+    # Prepartition hive-partitioned joins on their partition key (requires `predicate_pushdown`).
+    def pre_partition_hive
+      _rboptflags.pre_partition_hive
+    end
+
+    def pre_partition_hive=(value)
+      _rboptflags.pre_partition_hive = value
+    end
+
+    # Reorder runs of inner equi-joins by estimated cardinality.
+    def join_order
+      _rboptflags.join_order
+    end
+
+    def join_order=(value)
+      _rboptflags.join_order = value
+    end
+
+    # Use row estimates to pick join build sides and keep useful caches.
+    def row_estimate
+      _rboptflags.row_estimate
+    end
+
+    def row_estimate=(value)
+      _rboptflags.row_estimate = value
+    end
+
     def to_s
       <<~STR
         QueryOptFlags {
@@ -243,6 +280,10 @@ module Polars
             cluster_with_columns: #{cluster_with_columns}
             check_order_observe: #{check_order_observe}
             fast_projection: #{fast_projection}
+            sort_collapse: #{sort_collapse}
+            pre_partition_hive: #{pre_partition_hive}
+            join_order: #{join_order}
+            row_estimate: #{row_estimate}
 
             eager: #{_rboptflags.eager}
             streaming: #{_rboptflags.streaming}
