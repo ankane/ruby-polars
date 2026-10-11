@@ -109,6 +109,14 @@ class DocsTest < Minitest::Test
     assert_docs Polars::ListNameSpace
   end
 
+  def test_map_expr
+    assert_docs Polars::MapExpr
+  end
+
+  def test_map_name_space
+    assert_docs Polars::MapNameSpace
+  end
+
   def test_meta_expr
     assert_docs Polars::MetaExpr
   end

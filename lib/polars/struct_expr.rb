@@ -156,9 +156,9 @@ module Polars
     # @example
     #   df = Polars::DataFrame.new(
     #     {
-    #       "aaa": [1, 2],
-    #       "bbb": ["ab", "cd"],
-    #       "ccc": [true, nil]
+    #       "aaa" => [1, 2],
+    #       "bbb" => ["ab", "cd"],
+    #       "ccc" => [true, nil]
     #     }
     #   ).select(Polars.struct("aaa", "bbb", "ccc").alias("struct_col"))
     #   df.select(Polars.col("struct_col").struct.drop(["aaa"]))
