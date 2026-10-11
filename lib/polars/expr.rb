@@ -7814,6 +7814,40 @@ module Polars
       wrap_expr(_rbexpr.ewm_mean(alpha, adjust, min_samples, ignore_nulls))
     end
 
+    # Compute exponentially-weighted moving sum.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"a" => [1, 2, 3]})
+    #   df.select(Polars.col("a").ewm_sum(alpha: 0.5))
+    #   # =>
+    #   # shape: (3, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ f64  │
+    #   # ╞══════╡
+    #   # │ 1.0  │
+    #   # │ 2.5  │
+    #   # │ 4.25 │
+    #   # └──────┘
+    def ewm_sum(
+      com: nil,
+      span: nil,
+      half_life: nil,
+      alpha: nil,
+      min_samples: 1,
+      ignore_nulls: false
+    )
+      alpha = _prepare_alpha(com, span, half_life, alpha)
+      wrap_expr(_rbexpr.ewm_sum(alpha, min_samples, ignore_nulls))
+    end
+
     # Compute time-based exponentially weighted moving average.
     #
     # @param by [Object]
@@ -7881,6 +7915,51 @@ module Polars
       by = Utils.parse_into_expression(by)
       half_life = Utils.parse_as_duration_string(half_life)
       wrap_expr(_rbexpr.ewm_mean_by(by, half_life))
+    end
+
+    # Compute time-based exponentially-weighted moving sum.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param by [Object]
+    #   Column to use as reference for the time decay.
+    # @param half_life [Object]
+    #   Half-life of the exponential decay.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "values" => [1, 2, 3, 4, 5],
+    #       "times" => [0, 1, 2, 5, 6]
+    #     }
+    #   )
+    #   df.select(
+    #     Polars.col("values").ewm_sum_by("times", half_life: "1i"),
+    #   )
+    #   # =>
+    #   # shape: (5, 1)
+    #   # ┌──────────┐
+    #   # │ values   │
+    #   # │ ---      │
+    #   # │ f64      │
+    #   # ╞══════════╡
+    #   # │ 1.0      │
+    #   # │ 2.5      │
+    #   # │ 4.25     │
+    #   # │ 4.53125  │
+    #   # │ 7.265625 │
+    #   # └──────────┘
+    def ewm_sum_by(
+      by,
+      half_life:
+    )
+      by_rbexpr = Utils.parse_into_expression(by)
+      half_life = Utils.parse_as_duration_string(half_life)
+      wrap_expr(_rbexpr.ewm_sum_by(by_rbexpr, half_life))
     end
 
     # Exponentially-weighted moving standard deviation.

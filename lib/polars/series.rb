@@ -6269,6 +6269,36 @@ module Polars
       super
     end
 
+    # Compute exponentially-weighted moving sum.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new([1, 2, 3])
+    #   s.ewm_sum(alpha: 0.5)
+    #   # =>
+    #   # shape: (3,)
+    #   # Series: '' [f64]
+    #   # [
+    #   #         1.0
+    #   #         2.5
+    #   #         4.25
+    #   # ]
+    def ewm_sum(
+      com: nil,
+      span: nil,
+      half_life: nil,
+      alpha: nil,
+      min_samples: 1,
+      ignore_nulls: false
+    )
+      super
+    end
+
     # Compute time-based exponentially weighted moving average.
     #
     # @param by [Object]
@@ -6325,6 +6355,45 @@ module Polars
     #   #         3.254508
     #   # ]
     def ewm_mean_by(
+      by,
+      half_life:
+    )
+      super
+    end
+
+    # Compute time-based exponentially weighted moving sum.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @param by [Object]
+    #   Times to calculate the sum by. Should be `DateTime`, `Date`, `UInt64`,
+    #   `UInt32`, `Int64`, or `Int32` data type.
+    # @param half_life [Object]
+    #   Unit over which observation decays to half its value.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "values" => [1, 2, 3, 4, 5],
+    #       "times" => [0, 1, 2, 5, 6]
+    #     }
+    #   )
+    #   df["values"].ewm_sum_by(df["times"], half_life: "1i")
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'values' [f64]
+    #   # [
+    #   #         1.0
+    #   #         2.5
+    #   #         4.25
+    #   #         4.53125
+    #   #         7.265625
+    #   # ]
+    def ewm_sum_by(
       by,
       half_life:
     )
