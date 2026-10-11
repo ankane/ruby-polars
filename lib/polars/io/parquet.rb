@@ -69,7 +69,8 @@ module Polars
       storage_options: nil,
       credential_provider: "auto",
       include_file_paths: nil,
-      missing_columns: "raise"
+      missing_columns: "raise",
+      _expand_paths: true
     )
       lf =
         scan_parquet(
@@ -89,7 +90,8 @@ module Polars
           credential_provider: credential_provider,
           glob: glob,
           include_file_paths: include_file_paths,
-          missing_columns: missing_columns
+          missing_columns: missing_columns,
+          _expand_paths: _expand_paths
         )
 
       if !columns.nil?
@@ -238,11 +240,14 @@ module Polars
       missing_columns: "raise",
       extra_columns: "raise",
       cast_options: nil,
+      _expand_paths: true,
       _column_mapping: nil,
       _default_values: nil,
       _deletion_files: nil,
       _table_statistics: nil,
-      _row_count: nil
+      _row_count: nil,
+      _source_sizes: nil,
+      _resolve_heavy_sources: nil
     )
       if !schema.nil?
         msg = "the `schema` parameter of `scan_parquet` is considered unstable."
@@ -286,6 +291,7 @@ module Polars
             missing_columns: missing_columns,
             include_file_paths: include_file_paths,
             glob: glob,
+            expand_paths: _expand_paths,
             hidden_file_prefix: hidden_file_prefix.is_a?(::String) ? [hidden_file_prefix] : hidden_file_prefix,
             hive_partitioning: hive_partitioning,
             hive_schema: hive_schema,
@@ -298,7 +304,9 @@ module Polars
             default_values: _default_values,
             deletion_files: _deletion_files,
             table_statistics: _table_statistics,
-            row_count: _row_count
+            row_count: _row_count,
+            source_sizes: _source_sizes,
+            resolve_heavy_sources: _resolve_heavy_sources
           ),
           parallel,
           low_memory,
