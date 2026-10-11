@@ -3505,6 +3505,189 @@ module Polars
       wrap_expr(rbexpr)
     end
 
+    # Bin values into discrete intervals delimited by breakpoints.
+    #
+    # @note
+    #   This functionality is considered **experimental**. It may be removed or
+    #   changed at any point without it being considered a breaking change.
+    #
+    # @param intervals [Object]
+    #   Strictly ascending breakpoints, or a positive integer giving the number of
+    #   equal-width bins over `[min, max]`. Explicit breakpoints may have any
+    #   orderable (non-nested) data type; an integer requires numeric input.
+    # @param labels [Object]
+    #   One label per bin, or `false` to return the integer bin index.
+    # @param include_intervals [Boolean]
+    #   Return a struct with fields `bin`, `left`, and `right`. The first bin's left
+    #   and last bin's right boundary are null.
+    # @param right_closed [Boolean]
+    #   Use right-closed `(left, right]` rather than left-closed `[left, right)`
+    #   bins.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"foo" => [-2, -1, 0, 1, 2]})
+    #   df.with_columns(
+    #     Polars.col("foo")
+    #     .bin_intervals([-1, 1], labels: ["a", "b", "c"])
+    #     .alias("bin")
+    #   )
+    #   # =>
+    #   # shape: (5, 2)
+    #   # ┌─────┬──────┐
+    #   # │ foo ┆ bin  │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ enum │
+    #   # ╞═════╪══════╡
+    #   # │ -2  ┆ a    │
+    #   # │ -1  ┆ b    │
+    #   # │ 0   ┆ b    │
+    #   # │ 1   ┆ c    │
+    #   # │ 2   ┆ c    │
+    #   # └─────┴──────┘
+    def bin_intervals(
+      intervals,
+      labels:,
+      include_intervals: false,
+      right_closed: false
+    )
+      labels_arg = labels == false ? nil : labels.to_a
+      if intervals.is_a?(Integer)
+        rbexpr = _rbexpr.bin_intervals_uniform(
+          intervals, labels_arg, include_intervals, right_closed
+        )
+      else
+        breaks =
+          if intervals.is_a?(Series)
+            intervals
+          else
+            Series.new("breaks", intervals)
+          end
+        rbexpr = _rbexpr.bin_intervals(
+          breaks._s, labels_arg, include_intervals, right_closed
+        )
+      end
+      wrap_expr(rbexpr)
+    end
+
+    # Bin values into discrete intervals delimited by quantiles of the data.
+    #
+    # @note
+    #   This functionality is considered **experimental**. It may be removed or
+    #   changed at any point without it being considered a breaking change.
+    #
+    # @param quantiles [Object]
+    #   Non-decreasing quantiles in `[0, 1]`, or a positive integer giving the
+    #   number of bins. Two equal quantiles delimit an empty bin. Input must be
+    #   numeric. For quantile `q`, the value of the breakpoint is the sorted value
+    #   at `floor(q * (len - 1))`.
+    # @param labels [Object]
+    #   One label per bin, or `false` to return the integer bin index.
+    # @param include_intervals [Boolean]
+    #   Return a struct with fields `bin`, `left`, and `right`. The first bin's left
+    #   and last bin's right boundary are null.
+    # @param right_closed [Boolean]
+    #   Use right-closed `(left, right]` rather than left-closed `[left, right)`
+    #   bins.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => [1, 1, 2, 2]})
+    #   df.with_columns(
+    #     Polars.col("x")
+    #     .bin_quantiles([0.1, 0.25, 0.75], labels: ["a", "b", "c", "d"])
+    #     .alias("bin")
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬──────┐
+    #   # │ x   ┆ bin  │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ enum │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ c    │
+    #   # │ 1   ┆ c    │
+    #   # │ 2   ┆ d    │
+    #   # │ 2   ┆ d    │
+    #   # └─────┴──────┘
+    def bin_quantiles(
+      quantiles,
+      labels:,
+      include_intervals: false,
+      right_closed: false
+    )
+      labels_arg = labels == false ? nil : labels.to_a
+      if quantiles.is_a?(Integer)
+        rbexpr = _rbexpr.bin_quantiles_uniform(
+          quantiles, labels_arg, include_intervals, right_closed
+        )
+      else
+        rbexpr = _rbexpr.bin_quantiles(
+         quantiles.to_a, labels_arg, include_intervals, right_closed
+        )
+      end
+      wrap_expr(rbexpr)
+    end
+
+    # Bin values by their position in sorted order.
+    #
+    # Input must have an orderable data type; nested types (List, Array, and Struct)
+    # are not supported.
+    #
+    # @note
+    #   This functionality is considered **experimental**. It may be removed or
+    #   changed at any point without it being considered a breaking change.
+    #
+    # @param ranks [Object]
+    #   Non-decreasing cumulative fractions in `[0, 1]`, or a positive integer
+    #   giving the number of near-equal-sized bins. Two equal fractions delimit an
+    #   empty bin. For an integer, earlier bins receive any remainder.
+    # @param labels [Object]
+    #   One label per bin, or `false` to return the integer bin index.
+    # @param include_intervals [Boolean]
+    #   Return a struct with fields `bin`, `left`, and `right`. Boundaries are input
+    #   values, not ranks; the first bin's left and last bin's right boundary are
+    #   null.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => [1, 1, 2, 2]})
+    #   df.with_columns(
+    #     Polars.col("x")
+    #     .bin_ranks([0.25, 0.75], labels: ["low", "mid", "high"])
+    #     .alias("bin")
+    #   )
+    #   # =>
+    #   # shape: (4, 2)
+    #   # ┌─────┬──────┐
+    #   # │ x   ┆ bin  │
+    #   # │ --- ┆ ---  │
+    #   # │ i64 ┆ enum │
+    #   # ╞═════╪══════╡
+    #   # │ 1   ┆ low  │
+    #   # │ 1   ┆ mid  │
+    #   # │ 2   ┆ mid  │
+    #   # │ 2   ┆ high │
+    #   # └─────┴──────┘
+    def bin_ranks(
+      ranks,
+      labels:,
+      include_intervals: false
+    )
+      labels_arg = labels == false ? nil : labels.to_a
+      if ranks.is_a?(Integer)
+        rbexpr = _rbexpr.bin_ranks_uniform(
+          ranks, labels_arg, include_intervals
+        )
+      else
+        rbexpr = _rbexpr.bin_ranks(ranks.to_a, labels_arg, include_intervals)
+      end
+      wrap_expr(rbexpr)
+    end
+
     # Get the lengths of runs of identical values.
     #
     # @return [Expr]
