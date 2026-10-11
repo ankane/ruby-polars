@@ -6548,6 +6548,7 @@ module Polars
     #
     # @return [MapNameSpace]
     def map
+      raise "Use map_elements instead" if block_given?
       MapNameSpace.new(self)
     end
 
