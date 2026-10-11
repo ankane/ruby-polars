@@ -1377,6 +1377,134 @@ module Polars
       result
     end
 
+    # Bin values into discrete intervals delimited by breakpoints.
+    #
+    # @note
+    #   This functionality is considered **experimental**. It may be removed or
+    #   changed at any point without it being considered a breaking change.
+    #
+    # @param intervals [Object]
+    #   Strictly ascending breakpoints, or a positive integer giving the number of
+    #   equal-width bins over `[min, max]`. Explicit breakpoints may have any
+    #   orderable (non-nested) data type; an integer requires numeric input.
+    # @param labels [Object]
+    #   One label per bin, or `false` to return the integer bin index.
+    # @param include_intervals [Boolean]
+    #   Return a struct with fields `bin`, `left`, and `right`. The first bin's left
+    #   and last bin's right boundary are null.
+    # @param right_closed [Boolean]
+    #   Use right-closed `(left, right]` rather than left-closed `[left, right)`
+    #   bins.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("foo", [-2, -1, 0, 1, 2])
+    #   s.bin_intervals([-1, 1], labels: ["a", "b", "c"])
+    #   # =>
+    #   # shape: (5,)
+    #   # Series: 'foo' [enum]
+    #   # [
+    #   #         "a"
+    #   #         "b"
+    #   #         "b"
+    #   #         "c"
+    #   #         "c"
+    #   # ]
+    def bin_intervals(
+      intervals,
+      labels:,
+      include_intervals: false,
+      right_closed: false
+    )
+      super
+    end
+
+    # Bin values into discrete intervals delimited by quantiles of the data.
+    #
+    # @note
+    #   This functionality is considered **experimental**. It may be removed or
+    #   changed at any point without it being considered a breaking change.
+    #
+    # @param quantiles [Object]
+    #   Non-decreasing quantiles in `[0, 1]`, or a positive integer giving the
+    #   number of bins. Two equal quantiles delimit an empty bin. Input must be
+    #   numeric. For quantile `q`, the value of the breakpoint is the sorted value
+    #   at `floor(q * (len - 1))`.
+    # @param labels [Object]
+    #   One label per bin, or `false` to return the integer bin index.
+    # @param include_intervals [Boolean]
+    #   Return a struct with fields `bin`, `left`, and `right`. The first bin's left
+    #   and last bin's right boundary are null.
+    # @param right_closed [Boolean]
+    #   Use right-closed `(left, right]` rather than left-closed `[left, right)`
+    #   bins.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("x", [1, 1, 2, 2])
+    #   s.bin_quantiles([0.1, 0.25, 0.75], labels: ["a", "b", "c", "d"])
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'x' [enum]
+    #   # [
+    #   #         "c"
+    #   #         "c"
+    #   #         "d"
+    #   #         "d"
+    #   # ]
+    def bin_quantiles(
+      quantiles,
+      labels:,
+      include_intervals: false,
+      right_closed: false
+    )
+      super
+    end
+
+    # Bin values by their position in sorted order.
+    #
+    # Input must have an orderable data type; nested types (List, Array, and Struct)
+    # are not supported.
+    #
+    # @note
+    #   This functionality is considered **experimental**. It may be removed or
+    #   changed at any point without it being considered a breaking change.
+    #
+    # @param ranks [Object]
+    #   Non-decreasing cumulative fractions in `[0, 1]`, or a positive integer
+    #   giving the number of near-equal-sized bins. Two equal fractions delimit an
+    #   empty bin. For an integer, earlier bins receive any remainder.
+    # @param labels [Object]
+    #   One label per bin, or `false` to return the integer bin index.
+    # @param include_intervals [Boolean]
+    #   Return a struct with fields `bin`, `left`, and `right`. Boundaries are input
+    #   values, not ranks; the first bin's left and last bin's right boundary are
+    #   null.
+    #
+    # @return [Series]
+    #
+    # @example
+    #   s = Polars::Series.new("x", [1, 1, 2, 2])
+    #   s.bin_ranks([0.25, 0.75], labels: ["low", "mid", "high"])
+    #   # =>
+    #   # shape: (4,)
+    #   # Series: 'x' [enum]
+    #   # [
+    #   #         "low"
+    #   #         "mid"
+    #   #         "mid"
+    #   #         "high"
+    #   # ]
+    def bin_ranks(
+      ranks,
+      labels:,
+      include_intervals: false
+    )
+      super
+    end
+
     # Get the lengths of runs of identical values.
     #
     # @return [Series]
