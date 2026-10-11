@@ -4705,11 +4705,8 @@ module Polars
         elsif aggregate_function == "len"
           agg = agg.len
         elsif aggregate_function == "count"
-          Utils.issue_deprecation_warning(
-            "`aggregate_function='count'` input for `pivot` is deprecated." +
-            " Please use `aggregate_function='len'`."
-          )
-          agg = agg.len
+          msg = "use of `aggregate_function: 'count'` should be replaced with `aggregate_function: 'len'`."
+          raise ArgumentError, msg
         else
           msg = "invalid input for `aggregate_function` argument: #{aggregate_function.inspect}"
           raise ArgumentError, msg
