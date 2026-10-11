@@ -1021,6 +1021,73 @@ module Polars
       )
     end
 
+    # Replace `exprs`, at plan time, with the expression returned by `callback`.
+    #
+    # `function` is not executed immediately but only during the plan stage, once
+    # the dtypes of `exprs` are known. This allows choosing a different expression
+    # depending on the dtypes of the inputs, including the metadata of extension
+    # types. This also means that any exceptions raised by `function` will only be
+    # emitted during the plan stage.
+    #
+    # If any of `exprs` expands to multiple columns (e.g. a selector), `function` is
+    # called once for every column, as with other functions taking multiple
+    # expressions. It may also be called more than once for the same inputs, for
+    # example when the schema is resolved separately. It should not have side
+    # effects.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed at any
+    #   point without it being considered a breaking change.
+    #
+    # @param exprs [Object]
+    #   Expression(s) whose dtypes are passed to `function`. Strings are parsed as
+    #   column names.
+    # @param function [Object]
+    #   Callable; will receive a list with an `(expression, dtype)` pair for every
+    #   input, in the same order as `exprs`. The returned expression takes the
+    #   place of the inputs, including its output name.
+    #
+    # @return [Expr]
+    #
+    # @example Sum the inputs, unless one of them is a string, in which case they are concatenated instead.
+    #   sum_or_concat = lambda do |inputs|
+    #     exprs = inputs.map { |expr, _| expr }
+    #     if inputs.any? { |_, dtype| dtype == Polars::String }
+    #       Polars.concat_str(exprs)
+    #     else
+    #       Polars.sum_horizontal(exprs)
+    #     end
+    #   end
+    #   df = Polars::DataFrame.new({"a" => [1, 2], "b" => [3, 4], "c" => ["x", "y"]})
+    #   df.select(
+    #     ab: Polars.pipe_with_dtype(["a", "b"], sum_or_concat),
+    #     ac: Polars.pipe_with_dtype(["a", "c"], sum_or_concat)
+    #   )
+    #   # =>
+    #   # shape: (2, 2)
+    #   # ┌─────┬─────┐
+    #   # │ ab  ┆ ac  │
+    #   # │ --- ┆ --- │
+    #   # │ i64 ┆ str │
+    #   # ╞═════╪═════╡
+    #   # │ 4   ┆ 1x  │
+    #   # │ 6   ┆ 2y  │
+    #   # └─────┴─────┘
+    def pipe_with_dtype(
+      exprs,
+      function
+    )
+      rbexprs = Utils.parse_into_list_of_expressions(exprs)
+
+      wrapper = lambda do |exprs_and_dtypes|
+        rbexprs, dtypes = exprs_and_dtypes
+        inputs = rbexprs.zip(dtypes).map { |rbexpr, dtype| [Utils.wrap_expr(rbexpr), dtype] }
+        Utils.parse_into_expression(function.(inputs))
+      end
+
+      Utils.wrap_expr(Plr.pipe_with_dtype(rbexprs, wrapper))
+    end
+
     # Accumulate over multiple columns horizontally/row wise with a left fold.
     #
     # @return [Expr]

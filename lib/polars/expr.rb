@@ -567,6 +567,55 @@ module Polars
       function.(self, *args, **kwargs)
     end
 
+    # Converts to another expression by calling `function`.
+    #
+    # Runs during the plan stage (unlike `pipe_with_schema`),
+    # which means that the dytype of this expression is known.
+    # This allows choosing a different expression depending on the dtype of the input,
+    # including the metadata of extension types. This also means that any
+    # exceptions raised by `function` will only be emitted during the plan stage.
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed at any
+    #   point without it being considered a breaking change.
+    #
+    # @param function [Object]
+    #   Callable; will receive the expression as the first parameter and its
+    #   resolved dtype as the second parameter. The returned expression takes the
+    #   place of this expression, including its output name.
+    #
+    # @example Cast integer and string columns to float, but leave the other columns as-is.
+    #   to_float_if_possible = lambda do |expr, dtype|
+    #     if dtype.is_integer || dtype == Polars::String
+    #       expr.cast(Polars::Float64)
+    #     else
+    #       expr
+    #     end
+    #   end
+    #   df = Polars::DataFrame.new(
+    #     {"a" => [1, 2], "b" => ["1.0", "2.5"], "c" => [2.0, 3.0], "d" => [[1], [2, 3]]},
+    #     schema: {
+    #       "a" => Polars::Int64,
+    #       "b" => Polars::String,
+    #       "c" => Polars::Float32,
+    #       "d" => Polars::List.new(Polars::Int64)
+    #     }
+    #   )
+    #   df.select(Polars.all.pipe_with_dtype(to_float_if_possible))
+    #   # =>
+    #   # shape: (2, 4)
+    #   # ┌─────┬─────┬─────┬───────────┐
+    #   # │ a   ┆ b   ┆ c   ┆ d         │
+    #   # │ --- ┆ --- ┆ --- ┆ ---       │
+    #   # │ f64 ┆ f64 ┆ f32 ┆ list[i64] │
+    #   # ╞═════╪═════╪═════╪═══════════╡
+    #   # │ 1.0 ┆ 1.0 ┆ 2.0 ┆ [1]       │
+    #   # │ 2.0 ┆ 2.5 ┆ 3.0 ┆ [2, 3]    │
+    #   # └─────┴─────┴─────┴───────────┘
+    def pipe_with_dtype(function)
+      F.pipe_with_dtype([self], ->(inputs) { function.(*inputs[0]) })
+    end
+
     # Negate a boolean expression.
     #
     # @return [Expr]
