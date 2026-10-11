@@ -6547,8 +6547,8 @@ module Polars
     # Create an object namespace of all map related methods.
     #
     # @return [MapNameSpace]
-    def map
-      raise "Use map_elements instead" if block_given?
+    def map(**kwargs)
+      raise "Use map_elements instead" if block_given? || kwargs.any?
       MapNameSpace.new(self)
     end
 
