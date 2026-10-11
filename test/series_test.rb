@@ -825,8 +825,8 @@ class SeriesTest < Minitest::Test
   def test_map_elements
     s = Polars::Series.new([1, 2, 3])
     assert_series [1, 4, 9], s.map_elements(return_dtype: Polars::Int64) { |v| v**2 }, dtype: Polars::Int64
-    assert_series [1, 2, 3], s.map(return_dtype: Polars::Float64, &:to_f), dtype: Polars::Float64
-    assert_series [false, true, false], s.map(return_dtype: Polars::Boolean, &:even?), dtype: Polars::Boolean
+    assert_series [1, 2, 3], s.map_elements(return_dtype: Polars::Float64, &:to_f), dtype: Polars::Float64
+    assert_series [false, true, false], s.map_elements(return_dtype: Polars::Boolean, &:even?), dtype: Polars::Boolean
   end
 
   def test_ewm_mean
