@@ -839,6 +839,51 @@ module Polars
       Selector._from_rbselector(RbSelector.struct_)
     end
 
+    # Select all map columns.
+    #
+    # @return [Selector]
+    #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
+    # @example Select all map columns:
+    #   df = Polars::DataFrame.new(
+    #     {
+    #       "foo" => Polars::Series.new(
+    #         [{"a" => 1}, {"b" => 2}], dtype: Polars::Map.new(Polars::String, Polars::Int64)
+    #       ),
+    #       "bar" => [123, 456]
+    #     }
+    #   )
+    #   df.select(Polars.cs.map)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌───────────────┐
+    #   # │ foo           │
+    #   # │ ---           │
+    #   # │ map[str, i64] │
+    #   # ╞═══════════════╡
+    #   # │ {"a": 1}      │
+    #   # │ {"b": 2}      │
+    #   # └───────────────┘
+    #
+    # @example Select all columns *except* for those that are maps:
+    #   df.select(~Polars.cs.map)
+    #   # =>
+    #   # shape: (2, 1)
+    #   # ┌─────┐
+    #   # │ bar │
+    #   # │ --- │
+    #   # │ i64 │
+    #   # ╞═════╡
+    #   # │ 123 │
+    #   # │ 456 │
+    #   # └─────┘
+    def self.map
+      Selector._from_rbselector(RbSelector.map)
+    end
+
     # Select all nested columns.
     #
     # A nested column is a list, array or struct.
