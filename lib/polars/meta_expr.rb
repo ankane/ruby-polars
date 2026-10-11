@@ -161,6 +161,104 @@ module Polars
       _rbexpr.meta_is_literal(allow_aliasing)
     end
 
+    # Whether or not this expressions produces a scalar.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   e = Polars.col("foo").sum
+    #   e.meta.is_scalar
+    #   # => true
+    #
+    # @example
+    #   e = Polars.col("foo").unique
+    #   e.meta.is_scalar
+    #   # => false
+    def is_scalar
+      _rbexpr.meta_is_scalar
+    end
+
+    # Whether or not this expression produces an output is length preserving.
+    #
+    # By length preserving we mean the same length as it's input.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   e = Polars.col("foo").sum
+    #   e.meta.is_length_preserving
+    #   # => false
+    #
+    # @example
+    #   e = Polars.col("foo").unique
+    #   e.meta.is_length_preserving
+    #   # => false
+    #
+    # @example
+    #   e = Polars.col("foo") * Polars.col("bar")
+    #   e.meta.is_length_preserving
+    #   # => true
+    def is_length_preserving
+      _rbexpr.meta_is_length_preserving
+    end
+
+    # Whether or not we can define output length.
+    #
+    # Output length we consider known:
+    #  - column length
+    #  - scalar
+    #  - ranges
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   e = Polars.col("foo").sum
+    #   e.meta.is_known_length
+    #   # => true
+    #
+    # @example
+    #   e = Polars.col("foo").unique
+    #   e.meta.is_known_length
+    #   # => false
+    #
+    # @example
+    #   e = Polars.col("foo") * Polars.col("bar")
+    #   e.meta.is_known_length
+    #   # => true
+    def is_known_length
+      _rbexpr.meta_is_known_length
+    end
+
+    # Whether or not we split the expression by rows during execution.
+    #
+    # Row separable expressions will produce a correct output
+    # if ran in batches.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   e = Polars.col("foo").sum
+    #   e.meta.is_row_separable
+    #   # => false
+    #
+    # @example
+    #   e = Polars.col("foo").unique
+    #   e.meta.is_row_separable
+    #   # => false
+    #
+    # @example
+    #   e = Polars.col("foo") * Polars.col("bar")
+    #   e.meta.is_row_separable
+    #   # => true
+    #
+    # @example
+    #   e = Polars.col("foo").explode
+    #   e.meta.is_row_separable
+    #   # => true
+    def is_row_separable
+      _rbexpr.meta_is_row_separable
+    end
+
     # Get the column name that this expression would produce.
     #
     # @return [String]
