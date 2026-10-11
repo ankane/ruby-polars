@@ -2584,6 +2584,112 @@ module Polars
       wrap_expr(_rbexpr.approx_n_unique)
     end
 
+    # Compute approximate quantile(s) of an expression.
+    #
+    # @param quantile [Object]
+    #   A single quantile, a list of quantiles, or an expression that
+    #   resolves to a list of quantiles. The dtype of the expression must
+    #   be a floating point value.
+    # @param method [String]
+    #   Specifies which approximate-quantile algorithm is to be used.
+    #   When set to 'auto', polars will use KLL if the quantiles are all
+    #   in `[0.05, 0.95]` or one of the REQ variants if any of the quantiles
+    #   falls outside of the middle range.
+    #
+    #   When set to `'kll'`, Polars will use the KLL method. This is generally
+    #   the most efficient algorithm. In this case, the `error` will specify
+    #   the absolute maximum error of the *rank* of the quantile value that is
+    #   returned. This will break down at the edges of the domain (e.g., when
+    #   the quantile is 95% or greater).
+    #
+    #   In the cases that you need to retain the accuracy at the edges of the
+    #   domain, use `'req_lo'` (for quantiles close to `0`), `'req_hi'` (for
+    #   quantiles close to `1`), or `'req_both'` which computes a REQ sketch for
+    #   both variants.
+    #
+    #   If the method is `'auto'`, and the `quantile` is a non-literal expression,
+    #   Polars will select `'req_both'`.
+    # @param error [Float]
+    #   The allowed rank error as a factor of the number of rows in the expression.
+    #   For example: if `error=0.01`, and the approximate quantile is computed
+    #   over 1000 rows, the rank of the returned quantile value is (with probability
+    #   >99.7%) guaranteed to be at most 10 rows apart from the actual quantile.
+    # @param error_tightness [Float]
+    #   The accuracy of the approximate-quantile algorithms is calibrated on
+    #   shuffled inputs. However, the error bound is not mathematically sound for
+    #   all possible inputs (e.g., if any of them has an adversarially "bad" order).
+    #   Set this value to `'formal'` to use a (looser) mathematically-sound error
+    #   bound, in return for slower performance.
+    #
+    # @return [Expr]
+    #
+    # @example Get the approximate median
+    #   lf = Polars.select(a: Polars.arange(10_000)).lazy
+    #   lf.select(Polars.col("a").approx_quantile(0.5)).collect
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ i64  │
+    #   # ╞══════╡
+    #   # │ 5000 │
+    #   # └──────┘
+    #
+    # @example Allow for a large error (10% of the rank)
+    #   lf.select(
+    #     Polars.col("a").approx_quantile(0.5, error: 0.1)
+    #   ).collect
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ i64  │
+    #   # ╞══════╡
+    #   # │ 4997 │
+    #   # └──────┘
+    #
+    # @example Explicitly use an algorithm that is accurate at the high tail
+    #   lf.select(
+    #     Polars.col("a").approx_quantile(0.999, method: "req_hi", error: 0.1)
+    #   ).collect
+    #   # =>
+    #   # shape: (1, 1)
+    #   # ┌──────┐
+    #   # │ a    │
+    #   # │ ---  │
+    #   # │ i64  │
+    #   # ╞══════╡
+    #   # │ 9989 │
+    #   # └──────┘
+    def approx_quantile(
+      quantile,
+      method: "auto",
+      error: 0.001,
+      error_tightness: "empirical"
+    )
+      if !["auto", "kll", "req_lo", "req_hi", "req_both"].include?(method)
+        msg = "`method` must be one of {{'auto', 'kll', 'req_lo', 'req_hi', 'req_both'}}, got #{method.inspect}"
+        raise ArgumentError, msg
+      end
+
+      if !["empirical", "formal"].include?(error_tightness)
+        msg = "`error_tightness` must be one of {{'empirical', 'formal'}}, got #{error_tightness.inspect}"
+        raise ArgumentError, msg
+      end
+
+      q = quantile.is_a?(Expr) ? quantile._rbexpr : quantile
+      wrap_expr(
+        _rbexpr.approx_quantile(
+          q,
+          method,
+          error,
+          use_formal_bound=error_tightness == "formal"
+        )
+      )
+    end
+
     # Count null values.
     #
     # @return [Expr]
