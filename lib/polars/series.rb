@@ -6834,10 +6834,6 @@ module Polars
 
     # Create a plot namespace.
     #
-    # @note
-    #   This functionality is currently considered **unstable**. It may be
-    #   changed at any point without it being considered a breaking change.
-    #
     # @return [SeriesPlot]
     #
     # @example Histogram:

@@ -1325,9 +1325,6 @@ module Polars
     #   * 'fail' will fail if table already exists.
     #
     # @return [Integer]
-    #
-    # @note
-    #   This functionality is experimental. It may be changed at any point without it being considered a breaking change.
     def write_database(table_name, connection = nil, if_table_exists: "fail")
       if !defined?(ActiveRecord)
         raise Error, "Active Record not available"
@@ -4701,10 +4698,6 @@ module Polars
     # Unstack a long table to a wide form without doing an aggregation.
     #
     # This can be much faster than a pivot, because it can skip the grouping phase.
-    #
-    # @note
-    #   This functionality is experimental and may be subject to changes
-    #   without it being considered a breaking change.
     #
     # @param step Integer
     #   Number of rows in the unstacked frame.

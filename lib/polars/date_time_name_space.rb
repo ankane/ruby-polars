@@ -1418,10 +1418,6 @@ module Polars
     #
     # @return [Series]
     #
-    # @note
-    #   This functionality is currently experimental and may
-    #   change without it being considered a breaking change.
-    #
     # @example
     #   start = Time.utc(2001, 1, 1)
     #   stop = Time.utc(2001, 1, 2)

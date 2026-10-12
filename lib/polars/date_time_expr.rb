@@ -245,10 +245,6 @@ module Polars
     #
     #   eg: 3d12h4m25s  # 3 days, 12 hours, 4 minutes, and 25 seconds
     #
-    # @note
-    #   This functionality is currently experimental and may
-    #   change without it being considered a breaking change.
-    #
     # @example
     #   df = (
     #     Polars.datetime_range(

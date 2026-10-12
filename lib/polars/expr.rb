@@ -6240,10 +6240,6 @@ module Polars
     #   Set the labels at the center of the window
     #
     # @note
-    #   This functionality is experimental and may change without it being considered a
-    #   breaking change.
-    #
-    # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
     #   window, consider using `rolling` this method can cache the window size
     #   computation.
@@ -6316,10 +6312,6 @@ module Polars
     #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
-    #
-    # @note
-    #   This functionality is experimental and may change without it being considered a
-    #   breaking change.
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
@@ -6396,10 +6388,6 @@ module Polars
     #   Set the labels at the center of the window
     #
     # @note
-    #   This functionality is experimental and may change without it being considered a
-    #   breaking change.
-    #
-    # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
     #   window, consider using `rolling` this method can cache the window size
     #   computation.
@@ -6472,10 +6460,6 @@ module Polars
     #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
-    #
-    # @note
-    #   This functionality is experimental and may change without it being considered a
-    #   breaking change.
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
@@ -6552,10 +6536,6 @@ module Polars
     #   Set the labels at the center of the window
     # @param ddof [Integer]
     #   "Delta Degrees of Freedom": The divisor for a length N window is N - ddof
-    #
-    # @note
-    #   This functionality is experimental and may change without it being considered a
-    #   breaking change.
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
@@ -6635,10 +6615,6 @@ module Polars
     #   "Delta Degrees of Freedom": The divisor for a length N window is N - ddof
     #
     # @note
-    #   This functionality is experimental and may change without it being considered a
-    #   breaking change.
-    #
-    # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
     #   window, consider using `rolling` this method can cache the window size
     #   computation.
@@ -6708,10 +6684,6 @@ module Polars
     #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
-    #
-    # @note
-    #   This functionality is experimental and may change without it being considered a
-    #   breaking change.
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
@@ -6786,10 +6758,6 @@ module Polars
     #   a result. If nil, it will be set equal to window size.
     # @param center [Boolean]
     #   Set the labels at the center of the window
-    #
-    # @note
-    #   This functionality is experimental and may change without it being considered a
-    #   breaking change.
     #
     # @note
     #   If you want to compute multiple aggregation statistics over the same dynamic
