@@ -63,7 +63,7 @@ module Polars
         end
       end
 
-      register_io_source(io_source, schema: reader.schema)
+      Plugins.register_io_source(io_source, schema: reader.schema)
     end
   end
 end
