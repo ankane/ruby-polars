@@ -11,16 +11,16 @@ module Polars
     #
     # @param io_source [Object]
     #   Function that accepts the following arguments:
-    #   - **with_columns**
+    #   - `with_columns`
     #       Columns that are projected. The reader must
     #       project these columns if applied.
-    #   - **predicate**
+    #   - `predicate`
     #       Polars expression. The reader must filter
     #       their rows accordingly.
-    #   - **n_rows**
+    #   - `n_rows`
     #       Materialize only n rows from the source.
     #       The reader can stop when `n_rows` are read.
-    #   - **batch_size**
+    #   - `batch_size`
     #       A hint of the ideal batch size the reader's
     #       generator must produce.
     #
