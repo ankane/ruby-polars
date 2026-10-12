@@ -13,11 +13,17 @@ module Polars
     def scan_iceberg(
       source,
       snapshot_id: nil,
+      from_snapshot_id_exclusive: nil,
+      to_snapshot_id_inclusive: nil,
       storage_options: nil
     )
       require "iceberg"
 
       unless source.is_a?(Iceberg::Table)
+        raise Todo
+      end
+
+      if from_snapshot_id_exclusive || to_snapshot_id_inclusive
         raise Todo
       end
 
