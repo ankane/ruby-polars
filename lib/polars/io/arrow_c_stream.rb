@@ -43,7 +43,7 @@ module Polars
         raise TypeError, msg
       end
 
-      reader = Plr.RbArrowCStreamReader(source)
+      reader = RbArrowCStreamReader.new(source)
 
       io_source = lambda do |with_columns, predicate, n_rows, batch_size|
         remaining = n_rows
