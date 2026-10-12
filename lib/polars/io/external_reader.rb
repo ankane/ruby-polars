@@ -23,7 +23,7 @@ module Polars
           sources,
           reader_builder,
           schema,
-          ScanOptions(expand_paths: expand_paths)
+          ScanOptions.new(expand_paths: expand_paths)
         )
       )
     end
