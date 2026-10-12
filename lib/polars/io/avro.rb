@@ -2,6 +2,10 @@ module Polars
   module IO
     # Read into a DataFrame from Apache Avro format.
     #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
     # @param source [Object]
     #   Path to a file or a file-like object.
     # @param columns [Object]

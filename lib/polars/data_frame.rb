@@ -1109,6 +1109,10 @@ module Polars
 
     # Write to Apache Avro file.
     #
+    # @note
+    #   This functionality is considered **unstable**. It may be changed
+    #   at any point without it being considered a breaking change.
+    #
     # @param file [String]
     #   File path to which the file should be written.
     # @param compression ["uncompressed", "snappy", "deflate"]
