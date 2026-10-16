@@ -1497,9 +1497,9 @@ dependencies = [
 
 [[package]]
 name = "magnus"
-version = "0.9.0"
+version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "379d50b6eea4ca84074ccd3e551eb9b07f7865194d5b3198325317e9ef78e5e9"
+checksum = "40ef424404d166cbb71c8b8d19c9c589c748c4547c1afa1928c5504299f6c713"
 dependencies = [
  "chrono",
  "magnus-macros",
@@ -1510,9 +1510,9 @@ dependencies = [
 
 [[package]]
 name = "magnus-macros"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ca70566af98184bb92d4d9853daaf533c1a3418b9570d0547ea44970035f3fe"
+checksum = "9dafde2eeb66f090e0f326112323eb8324b12cb32b5d1210e541d3df6b0ce77e"
 dependencies = [
  "proc-macro2",
  "quote",
