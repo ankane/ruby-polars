@@ -1278,6 +1278,7 @@ module Polars
       credential_provider: "auto",
       metadata: nil,
       arrow_schema: nil,
+      encryption: nil,
       mkdir: false
     )
       if compression.nil?
@@ -1304,6 +1305,7 @@ module Polars
         credential_provider: credential_provider,
         metadata: metadata,
         arrow_schema: arrow_schema,
+        encryption: encryption,
         engine: engine,
         mkdir: mkdir,
         optimizations: QueryOptFlags._eager

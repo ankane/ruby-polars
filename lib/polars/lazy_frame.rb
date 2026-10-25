@@ -1091,6 +1091,7 @@ module Polars
       credential_provider: "auto",
       sync_on_close: nil,
       metadata: nil,
+      encryption: nil,
       mkdir: false,
       lazy: false,
       arrow_schema: nil,
@@ -1144,7 +1145,8 @@ module Polars
         row_group_size,
         data_page_size,
         metadata,
-        arrow_schema
+        arrow_schema,
+        encryption
       )
 
       if !lazy

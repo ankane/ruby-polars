@@ -70,6 +70,7 @@ module Polars
       credential_provider: "auto",
       include_file_paths: nil,
       missing_columns: "raise",
+      decryption: nil,
       _expand_paths: true
     )
       lf =
@@ -91,6 +92,7 @@ module Polars
           glob: glob,
           include_file_paths: include_file_paths,
           missing_columns: missing_columns,
+          decryption: decryption,
           _expand_paths: _expand_paths
         )
 
@@ -240,6 +242,7 @@ module Polars
       missing_columns: "raise",
       extra_columns: "raise",
       cast_options: nil,
+      decryption: nil,
       _expand_paths: true,
       _column_mapping: nil,
       _default_values: nil,
@@ -267,6 +270,16 @@ module Polars
       if !hidden_file_prefix.nil?
         msg = "The `hidden_file_prefix` parameter of `scan_parquet` is considered unstable."
         Utils.issue_unstable_warning(msg)
+      end
+
+      if !decryption.nil?
+        msg = "The `decryption` parameter of `scan_parquet` is considered unstable."
+        Utils.issue_unstable_warning(msg)
+
+        if !decryption.is_a?(ParquetDecryptionProperties)
+          msg = "`decryption` must be a `ParquetDecryptionProperties`, got #{decryption.class.name.inspect}"
+          raise TypeError, msg
+        end
       end
 
       sources = get_sources(source)
@@ -310,7 +323,8 @@ module Polars
           ),
           parallel,
           low_memory,
-          use_statistics
+          use_statistics,
+          !decryption.nil? ? decryption._rbdecryptionproperties : nil
         )
       Utils.wrap_ldf(rblf)
     end
