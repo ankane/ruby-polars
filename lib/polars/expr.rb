@@ -4533,6 +4533,39 @@ module Polars
       wrap_expr(_rbexpr.floordiv(_to_rbexpr(other)))
     end
 
+    # Divide, rounding the quotient toward zero.
+    #
+    # Unlike `floordiv`, which rounds down, this rounds a negative quotient up,
+    # as integer division does in C and Rust. The result has the same data type
+    # as `floordiv`'s.
+    #
+    # @param other [Object]
+    #   Numeric literal or expression value.
+    #
+    # @return [Expr]
+    #
+    # @example
+    #   df = Polars::DataFrame.new({"x" => [-5, -4, 4, 5]})
+    #   df.with_columns(
+    #     Polars.col("x").floordiv(2).alias("x//2"),
+    #     Polars.col("x").truncdiv(2).alias("truncdiv(x, 2)")
+    #   )
+    #   # =>
+    #   # shape: (4, 3)
+    #   # ┌─────┬──────┬────────────────┐
+    #   # │ x   ┆ x//2 ┆ truncdiv(x, 2) │
+    #   # │ --- ┆ ---  ┆ ---            │
+    #   # │ i64 ┆ i64  ┆ i64            │
+    #   # ╞═════╪══════╪════════════════╡
+    #   # │ -5  ┆ -3   ┆ -2             │
+    #   # │ -4  ┆ -2   ┆ -2             │
+    #   # │ 4   ┆ 2    ┆ 2              │
+    #   # │ 5   ┆ 2    ┆ 2              │
+    #   # └─────┴──────┴────────────────┘
+    def truncdiv(other)
+      wrap_expr(_rbexpr.trunc_div(Utils.parse_into_expression(other)))
+    end
+
     # Method equivalent of modulus operator `expr % other`.
     #
     # @param other [Object]
