@@ -125,6 +125,14 @@ class DocsTest < Minitest::Test
     assert_docs Polars::NameExpr
   end
 
+  def test_parquet_decryption_properties
+    assert_docs Polars::ParquetDecryptionProperties
+  end
+
+  def test_parquet_encryption_properties
+    assert_docs Polars::ParquetEncryptionProperties
+  end
+
   def test_rolling_group_by
     assert_docs Polars::RollingGroupBy
   end
