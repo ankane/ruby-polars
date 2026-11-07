@@ -9,16 +9,19 @@ use crate::prelude::ObjectValue;
 use crate::ruby::gvl::GvlExt;
 use crate::{RbResult, RbSeries, RbTypeError, RbValueError};
 
-pub fn series_from_objects(rb: &Ruby, name: PlSmallStr, objects: Vec<ObjectValue>) -> Series {
+pub fn series_from_objects(_rb: &Ruby, name: PlSmallStr, objects: RArray) -> Series {
     let mut validity = BitmapBuilder::with_capacity(objects.len());
-    for v in &objects {
-        let is_valid = !rb.get_inner(v.inner).is_nil();
+    for v in objects {
+        let is_valid = !v.is_nil();
         // SAFETY: we can ensure that validity has correct capacity.
         unsafe { validity.push_unchecked(is_valid) };
     }
     ObjectChunked::<ObjectValue>::new_from_vec_and_validity(
         name,
-        objects,
+        objects
+            .into_iter()
+            .map(|v| ObjectValue { inner: v.into() })
+            .collect(),
         validity.into_opt_validity(),
     )
     .into_series()

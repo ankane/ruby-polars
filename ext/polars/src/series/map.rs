@@ -1,4 +1,4 @@
-use magnus::{IntoValue, Ruby, Value, value::Opaque, value::ReprValue};
+use magnus::{IntoValue, Ruby, Value, value::ReprValue};
 
 use super::RbSeries;
 use crate::map::series::ApplyLambdaGeneric;
@@ -82,22 +82,18 @@ where
     T: TryIntoValue,
     I: Iterator<Item = Option<T>>,
 {
-    let mut objects = Vec::with_capacity(len);
+    let objects = rb.ary_new_capa(len);
     for opt_val in iter {
         let arg = match opt_val {
             None if skip_nulls => {
-                objects.push(ObjectValue {
-                    inner: Opaque::from(rb.qnil().into_value_with(rb)),
-                });
+                objects.push(rb.qnil())?;
                 continue;
             }
             None => rb.qnil().into_value_with(rb),
             Some(val) => val.try_into_value_with(rb)?,
         };
         let out: Value = lambda.funcall("call", (arg,))?;
-        objects.push(ObjectValue {
-            inner: Opaque::from(out),
-        });
+        objects.push(out)?;
     }
     Ok(series_from_objects(rb, name, objects))
 }

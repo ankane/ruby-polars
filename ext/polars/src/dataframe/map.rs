@@ -1,4 +1,4 @@
-use magnus::{IntoValue, RArray, Ruby, TryConvert, Value, value::Opaque, value::ReprValue};
+use magnus::{IntoValue, RArray, Ruby, TryConvert, Value, value::ReprValue};
 use polars::frame::row::{Row, rows_to_schema_first_non_null};
 use polars_core::utils::CustomIterTools;
 
@@ -39,13 +39,7 @@ impl RbDataFrame {
         if let Some(output_type) = &output_type {
             // If the output type is Object we should not go through AnyValue.
             if let DataType::Object(_) = output_type.0 {
-                let objects = lambda_result_iter
-                    .map(|res| {
-                        Ok(ObjectValue {
-                            inner: Opaque::from(res?),
-                        })
-                    })
-                    .collect::<RbResult<Vec<_>>>()?;
+                let objects = rb.ary_try_from_iter(lambda_result_iter)?;
                 let s = series_from_objects(rb, PlSmallStr::from_static("map"), objects);
                 return Ok((RbSeries::from(s).into_value_with(rb), false));
             }

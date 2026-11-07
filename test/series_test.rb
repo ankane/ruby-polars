@@ -829,6 +829,13 @@ class SeriesTest < Minitest::Test
     assert_series [false, true, false], s.map(return_dtype: Polars::Boolean, &:even?), dtype: Polars::Boolean
   end
 
+  def test_map_elements_object
+    s = Polars::Series.new([1, 2, 3])
+    with_stress do
+      assert s.map_elements(return_dtype: Polars::Object) { Object.new }.inspect
+    end
+  end
+
   def test_ewm_mean
     s = Polars::Series.new([1, 4, nil, 3])
     s.ewm_mean(alpha: 0.9, ignore_nulls: false)
