@@ -3,6 +3,7 @@ use polars::frame::row::{Row, rows_to_schema_supertypes, rows_to_supertypes};
 use polars::prelude::*;
 
 use super::*;
+use crate::any_value::rb_object_to_any_value;
 use crate::conversion::*;
 use crate::{RbPolarsErr, RbResult};
 
@@ -34,9 +35,17 @@ impl RbDataFrame {
     ) -> RbResult<Self> {
         let schema = schema.map(|wrap| wrap.0);
         let schema_overrides = schema_overrides.map(|wrap| wrap.0);
+        let dtype_hint = |name: &str| {
+            schema_overrides
+                .as_ref()
+                .and_then(|s| s.get(name))
+                .or_else(|| schema.as_ref().and_then(|s| s.get(name)))
+                .cloned()
+        };
 
         let names = get_schema_names(&data, schema.as_ref(), infer_schema_length)?;
-        let rows = dicts_to_rows(&data, &names, strict)?;
+        let hints: Vec<Option<DataType>> = names.iter().map(|name| dtype_hint(name)).collect();
+        let rows = dicts_to_rows(&data, &names, &hints, strict)?;
 
         let schema = schema.or_else(|| {
             Some(columns_names_to_empty_schema(
@@ -111,7 +120,12 @@ where
     Schema::from_iter(fields)
 }
 
-fn dicts_to_rows<'a>(data: &Value, names: &'a [String], _strict: bool) -> RbResult<Vec<Row<'a>>> {
+fn dicts_to_rows<'a>(
+    data: &Value,
+    names: &'a [String],
+    dtypes: &'a [Option<DataType>],
+    _strict: bool,
+) -> RbResult<Vec<Row<'a>>> {
     let ruby = Ruby::get_with(*data);
     let (data, len) = get_rbseq(*data)?;
     let mut rows = Vec::with_capacity(len);
@@ -119,11 +133,11 @@ fn dicts_to_rows<'a>(data: &Value, names: &'a [String], _strict: bool) -> RbResu
         let d = RHash::try_convert(d)?;
 
         let mut row = Vec::with_capacity(names.len());
-        for k in names.iter() {
+        for (i, k) in names.iter().enumerate() {
             // TODO improve performance (must work with GC)
             let val = match d.get(k.clone()).or_else(|| d.get(ruby.to_symbol(k))) {
                 None => AnyValue::Null,
-                Some(val) => Wrap::<AnyValue>::try_convert(val)?.0,
+                Some(val) => rb_object_to_any_value(val, true, true, dtypes[i].as_ref())?,
             };
             row.push(val)
         }

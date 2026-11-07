@@ -426,7 +426,7 @@ pub fn lit(rb: &Ruby, value: Value, allow_object: bool, is_scalar: bool) -> RbRe
             ))
         };
 
-        let av = rb_object_to_any_value(value, true, allow_object).map_err(|_| raise())?;
+        let av = rb_object_to_any_value(value, true, allow_object, None).map_err(|_| raise())?;
         match av {
             AnyValue::ObjectOwned(_) => {
                 // Check again for object allowance as for cached addresses this is not checked.

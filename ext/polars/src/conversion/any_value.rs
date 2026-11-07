@@ -25,7 +25,7 @@ impl TryIntoValue for Wrap<AnyValue<'_>> {
 
 impl TryConvert for Wrap<AnyValue<'_>> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        rb_object_to_any_value(ob, true, true).map(Wrap)
+        rb_object_to_any_value(ob, true, true, None).map(Wrap)
     }
 }
 
@@ -92,6 +92,7 @@ pub(crate) fn rb_object_to_any_value<'s>(
     ob: Value,
     strict: bool,
     allow_object: bool,
+    dtype: Option<&DataType>,
 ) -> RbResult<AnyValue<'s>> {
     // Conversion functions.
     fn get_null(_ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
@@ -126,11 +127,18 @@ pub(crate) fn rb_object_to_any_value<'s>(
         Ok(AnyValue::Float64(f64::try_convert(ob)?))
     }
 
-    fn get_str(ob: Value, _strict: bool) -> RbResult<AnyValue<'static>> {
+    fn get_str(ob: Value, dtype: Option<&DataType>, _strict: bool) -> RbResult<AnyValue<'static>> {
         let ruby = Ruby::get_with(ob);
         let v = RString::try_convert(ob)?;
-        if v.enc_get() == ruby.utf8_encindex() {
-            Ok(AnyValue::StringOwned(v.to_string()?.into()))
+        let string = match dtype {
+            Some(DataType::String) => true,
+            Some(DataType::Binary) => false,
+            _ => v.enc_get() == ruby.utf8_encindex(),
+        };
+        if string {
+            Ok(AnyValue::StringOwned(PlSmallStr::from(unsafe {
+                v.as_str()?
+            })))
         } else {
             Ok(AnyValue::BinaryOwned(unsafe { v.as_slice() }.to_vec()))
         }
@@ -262,7 +270,7 @@ pub(crate) fn rb_object_to_any_value<'s>(
     } else if ob.is_kind_of(ruby.class_float()) {
         get_float(ob, strict)
     } else if ob.is_kind_of(ruby.class_string()) {
-        get_str(ob, strict)
+        get_str(ob, dtype, strict)
     } else if ob.is_kind_of(ruby.class_array()) {
         get_list(ob, strict)
     } else if ob.is_kind_of(ruby.class_hash()) {

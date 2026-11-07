@@ -54,6 +54,11 @@ class TypesTest < Minitest::Test
     assert_equal "Decimal without precision/scale set is not a valid Polars datatype", error.message
   end
 
+  def test_data_frame_dtype_string_binary
+    assert_frame ({"a" => ["one"]}), Polars::DataFrame.new({"a" => ["one".b]}, schema: {"a" => Polars::String})
+    assert_frame ({"a" => ["one"]}), Polars::DataFrame.new([{"a" => "one".b}], schema: {"a" => Polars::String})
+  end
+
   def test_series_dtype_int
     [Polars::Int8, Polars::Int16, Polars::Int32, Polars::Int64, Polars::Int128].each do |dtype|
       s = Polars::Series.new([1, nil, 3], dtype: dtype)

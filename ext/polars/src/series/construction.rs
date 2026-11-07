@@ -115,10 +115,11 @@ fn convert_to_avs(
     values: RArray,
     strict: bool,
     allow_object: bool,
+    dtype: Option<&DataType>,
 ) -> RbResult<Vec<AnyValue<'static>>> {
     values
         .into_iter()
-        .map(|v| rb_object_to_any_value(v, strict, allow_object))
+        .map(|v| rb_object_to_any_value(v, strict, allow_object, dtype))
         .collect()
 }
 
@@ -126,7 +127,7 @@ impl RbSeries {
     pub fn new_from_any_values(name: String, values: RArray, strict: bool) -> RbResult<Self> {
         let any_values_result = values
             .into_iter()
-            .map(|v| rb_object_to_any_value(v, strict, true))
+            .map(|v| rb_object_to_any_value(v, strict, true, None))
             .collect::<RbResult<Vec<AnyValue>>>();
 
         let result = any_values_result.and_then(|avs| {
@@ -152,7 +153,7 @@ impl RbSeries {
         dtype: Wrap<DataType>,
         strict: bool,
     ) -> RbResult<Self> {
-        let avs = convert_to_avs(values, strict, false)?;
+        let avs = convert_to_avs(values, strict, false, Some(&dtype.0))?;
         let s = Series::from_any_values_and_dtype(name.into(), avs.as_slice(), &dtype.0, strict)
             .map_err(|e| {
                 RbTypeError::new_err(format!(
