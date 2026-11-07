@@ -6625,7 +6625,7 @@ module Polars
       Float32 => "f32",
       Float64 => "f64",
       Boolean => "bool",
-      Utf8 => "str",
+      String => "str",
       List => "list",
       Date => "date",
       Datetime => "datetime",

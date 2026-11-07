@@ -10,7 +10,7 @@ module Polars
       self._s = series._s
     end
 
-    # Convert a Utf8 column into a Date column.
+    # Convert a String column into a Date column.
     #
     # @param format [String]
     #   Format to use for conversion. Refer to the
@@ -42,7 +42,7 @@ module Polars
       super
     end
 
-    # Convert a Utf8 column into a Datetime column.
+    # Convert a String column into a Datetime column.
     #
     # @param format [String]
     #   Format to use for conversion. Refer to the
@@ -95,7 +95,7 @@ module Polars
       super
     end
 
-    # Convert a Utf8 column into a Time column.
+    # Convert a String column into a Time column.
     #
     # @param format [String]
     #   Format to use for conversion. Refer to the
@@ -124,7 +124,7 @@ module Polars
       super
     end
 
-    # Parse a Series of dtype Utf8 to a Date/Datetime Series.
+    # Parse a Series of dtype String to a Date/Datetime Series.
     #
     # @param dtype [Symbol]
     #   `:date`, `:datetime`, or `:time`.
@@ -494,10 +494,10 @@ module Polars
       Utils.wrap_s(_s.str_json_decode(infer_schema_length))
     end
 
-    # Extract the first match of json string with provided JSONPath expression.
+    # Extract the first match of JSON string with provided JSONPath expression.
     #
-    # Throw errors if encounter invalid json strings.
-    # All return value will be casted to Utf8 regardless of the original value.
+    # Throw errors if encounter invalid JSON strings.
+    # All return values will be cast to String regardless of the original value.
     #
     # Documentation on JSONPath standard can be found
     # [here](https://goessner.net/articles/JsonPath/).
@@ -1055,7 +1055,7 @@ module Polars
       super
     end
 
-    # Create subslices of the string values of a Utf8 Series.
+    # Extract a substring from each string value.
     #
     # @param offset [Integer]
     #   Start index. Negative indexing is supported.

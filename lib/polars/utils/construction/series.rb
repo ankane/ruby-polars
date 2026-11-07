@@ -285,7 +285,7 @@ module Polars
       Duration => RbSeries.method(:new_from_any_values),
       Time => RbSeries.method(:new_from_any_values),
       Boolean => RbSeries.method(:new_opt_bool),
-      Utf8 => RbSeries.method(:new_str),
+      String => RbSeries.method(:new_str),
       Object => RbSeries.method(:new_object),
       Categorical => RbSeries.method(:new_str),
       Enum => RbSeries.method(:new_str),

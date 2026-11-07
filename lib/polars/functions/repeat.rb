@@ -124,7 +124,7 @@ module Polars
         value.to_f
       elsif dtype == Boolean
         value != 0
-      elsif dtype == Utf8
+      elsif dtype == String
         value.to_s
       elsif dtype == Decimal
         Decimal(value.to_s)

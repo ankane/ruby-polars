@@ -478,7 +478,7 @@ module Polars
 
     # Join all string items in a sublist and place a separator between them.
     #
-    # This errors if inner type of list `!= Utf8`.
+    # This errors if inner type of list `!= String`.
     #
     # @param separator [String]
     #   string to separate the items with

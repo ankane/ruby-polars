@@ -9,7 +9,7 @@ module Polars
       self._rbexpr = expr._rbexpr
     end
 
-    # Convert a Utf8 column into a Date column.
+    # Convert a String column into a Date column.
     #
     # @param format [String]
     #   Format to use for conversion. Refer to the
@@ -42,7 +42,7 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_to_date(format, strict, exact, cache))
     end
 
-    # Convert a Utf8 column into a Datetime column.
+    # Convert a String column into a Datetime column.
     #
     # @param format [String]
     #   Format to use for conversion. Refer to the
@@ -109,7 +109,7 @@ module Polars
       )
     end
 
-    # Convert a Utf8 column into a Time column.
+    # Convert a String column into a Time column.
     #
     # @param format [String]
     #   Format to use for conversion. Refer to the
@@ -139,7 +139,7 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_to_time(format, strict, cache))
     end
 
-    # Parse a Utf8 expression to a Date/Datetime/Time type.
+    # Parse a String expression to a Date/Datetime/Time type.
     #
     # @param dtype [Object]
     #   The data type to convert into. Can be either Date, Datetime, or Time.
@@ -961,10 +961,10 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_json_decode(dtype_expr))
     end
 
-    # Extract the first match of json string with provided JSONPath expression.
+    # Extract the first match from a JSON string using the provided JSONPath.
     #
-    # Throw errors if encounter invalid json strings.
-    # All return value will be casted to Utf8 regardless of the original value.
+    # Throws errors if invalid JSON strings are encountered. All return values
+    # are cast to `String`, regardless of the original value.
     #
     # Documentation on JSONPath standard can be found
     # [here](https://goessner.net/articles/JsonPath/).
@@ -1424,7 +1424,7 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_reverse)
     end
 
-    # Create subslices of the string values of a Utf8 Series.
+    # Extract a substring from each string value.
     #
     # @param offset [Integer]
     #   Start index. Negative indexing is supported.
@@ -1581,7 +1581,7 @@ module Polars
       Utils.wrap_expr(_rbexpr.str_tail(n))
     end
 
-    # Convert an Utf8 column into an Int64 column with base radix.
+    # Convert a String column into an Int64 column with base radix.
     #
     # @param base [Integer]
     #   Positive integer which is the base of the string we are parsing.

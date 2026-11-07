@@ -496,10 +496,14 @@ module Polars
       end
     end
 
-    # Horizontally concat Utf8 Series in linear time. Non-Utf8 columns are cast to Utf8.
+    # Horizontally concatenate columns into a single string column.
+    #
+    # Operates in linear time.
     #
     # @param exprs [Object]
-    #   Columns to concat into a Utf8 Series.
+    #   Columns to concatenate into a single string column. Accepts expression input.
+    #   Strings are parsed as column names, other non-expression inputs are parsed as
+    #   literals. Non-`String` columns are cast to `String`.
     # @param more_exprs [Array]
     #   Additional columns to concatenate into a single string column, specified as
     #   positional arguments.
