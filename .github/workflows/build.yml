@@ -40,8 +40,11 @@ jobs:
         env:
           ADAPTER: postgresql
 
-      # - uses: ankane/setup-mysql@v1
-      #   with:
-      #     database: polars_ruby_test
-      # - run: ADAPTER=mysql ruby test/database_test.rb
-      # - run: ADAPTER=trilogy ruby test/database_test.rb
+      - if: ${{ runner.os != 'Windows' }}
+        uses: ankane/setup-mysql@v1
+        with:
+          database: polars_ruby_test
+      - if: ${{ runner.os != 'Windows' }}
+        run: ADAPTER=mysql ruby test/database_test.rb
+      - if: ${{ runner.os != 'Windows' }}
+        run: ADAPTER=trilogy ruby test/database_test.rb
