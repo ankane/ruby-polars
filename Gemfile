@@ -16,6 +16,7 @@ gem "sqlite3", require: false
 gem "tzinfo", require: false
 gem "nanoarrow", require: false
 gem "json", "< 3"
+gem "tzinfo-data", platform: :windows
 
 if ENV["TEST_DELTA"]
   gem "deltalake-rb", ">= 0.1.4"
