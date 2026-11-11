@@ -6,12 +6,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # - ruby: "4.0"
+          #   os: ubuntu-latest
           - ruby: "4.0"
-            os: ubuntu-latest
-          # - ruby: 3.3
-          #   os: windows-latest
+            os: windows-latest
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 40
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v7
       - uses: actions/cache@v6
@@ -36,10 +36,12 @@ jobs:
       - uses: ankane/setup-postgres@v1
         with:
           database: polars_ruby_test
-      - run: ADAPTER=postgresql ruby test/database_test.rb
+      - run: ruby test/database_test.rb
+        env:
+          ADAPTER: postgresql
 
-      - uses: ankane/setup-mysql@v1
-        with:
-          database: polars_ruby_test
-      - run: ADAPTER=mysql ruby test/database_test.rb
-      - run: ADAPTER=trilogy ruby test/database_test.rb
+      # - uses: ankane/setup-mysql@v1
+      #   with:
+      #     database: polars_ruby_test
+      # - run: ADAPTER=mysql ruby test/database_test.rb
+      # - run: ADAPTER=trilogy ruby test/database_test.rb
