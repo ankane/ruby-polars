@@ -45,6 +45,10 @@ jobs:
         with:
           database: polars_ruby_test
       - if: ${{ runner.os != 'Windows' }}
-        run: ADAPTER=mysql ruby test/database_test.rb
+        run: ruby test/database_test.rb
+        env:
+          ADAPTER: mysql
       - if: ${{ runner.os != 'Windows' }}
-        run: ADAPTER=trilogy ruby test/database_test.rb
+        run: ruby test/database_test.rb
+        env:
+          ADAPTER: trilogy
