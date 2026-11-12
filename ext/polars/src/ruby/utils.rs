@@ -15,9 +15,9 @@ pub struct ArcValue(pub Arc<Opaque<Value>>);
 
 impl ArcValue {
     pub fn new(value: Value) -> Self {
-        Ruby::get_with(value).gc_register_address(&value);
-        let ob = Arc::new(Opaque::from(value));
-        Self(ob)
+        let arc = Arc::new(Opaque::from(value));
+        Ruby::get_with(value).gc_register_address(&*arc);
+        Self(arc)
     }
 }
 
