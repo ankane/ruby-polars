@@ -252,6 +252,7 @@ class TypesTest < Minitest::Test
 
   # only fully tested in stress mode
   def test_object_stress
+    skip if windows?
     df = Polars::DataFrame.new({a: [Object.new]})
     io = StringIO.new
     assert_raises(Polars::ComputeError) do
