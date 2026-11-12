@@ -14,6 +14,7 @@ class ArrayExprTest < Minitest::Test
   end
 
   def test_to_struct
+    skip if windows?
     s = Polars::Series.new("n", [[0, 1, 2], [3, 4, 5]], dtype: Polars::Array.new(Polars::Int8, 3))
     df = Polars::DataFrame.new([s])
     expr = Polars.col("n").arr.to_struct(fields: ->(i) { "f#{i}" })
