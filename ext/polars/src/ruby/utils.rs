@@ -4,7 +4,9 @@ use magnus::{Error, IntoValue, Ruby, Value, value::Opaque};
 use polars::error::PolarsError;
 
 use crate::RbResult;
-// use crate::ruby::gvl::GvlExt;
+use crate::ruby::gvl::GvlExt;
+use crate::ruby::thread::is_non_ruby_thread;
+// use crate::ruby::thread::run_in_ruby_thread;
 
 pub(crate) fn to_pl_err(e: Error) -> PolarsError {
     PolarsError::ComputeError(e.to_string().into())
@@ -23,7 +25,11 @@ impl ArcValue {
 
 impl Drop for ArcValue {
     fn drop(&mut self) {
-        // Ruby::attach(|rb| rb.gc_unregister_address(&*self.0));
+        if is_non_ruby_thread() {
+            println!("need to queue address!");
+            return;
+        }
+        Ruby::attach(|rb| rb.gc_unregister_address(&*self.0));
     }
 }
 
