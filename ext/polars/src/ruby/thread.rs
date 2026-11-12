@@ -19,8 +19,7 @@ pub(crate) fn start_background_ruby_thread(rb: &Ruby) {
     BACKGROUND_THREAD_MAILBOX.get_or_init(|| {
         let (sender, receiver) = sync_channel::<BackgroundMessage>(0);
 
-        // TODO save reference to thread?
-        rb.thread_create_from_fn(move |rb2| {
+        let thread = rb.thread_create_from_fn(move |rb2| {
             rb2.detach(move || {
                 loop {
                     match receiver.recv_timeout(std::time::Duration::from_millis(10)) {
@@ -40,6 +39,7 @@ pub(crate) fn start_background_ruby_thread(rb: &Ruby) {
                 ()
             });
         });
+        rb.gc_register_address(&thread);
 
         sender
     });
