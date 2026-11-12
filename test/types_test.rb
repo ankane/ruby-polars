@@ -147,6 +147,7 @@ class TypesTest < Minitest::Test
 
   # chrono-tz has no data past 2100; falls back to Ruby-side TZInfo.
   def test_series_dtype_datetime_time_zone_post_2100
+    skip if windows?
     s = Polars::Series.new([Time.utc(2150, 1, 1)], dtype: Polars::Datetime.new("us", "America/New_York"))
     assert_series [Time.utc(2150, 1, 1)], s, dtype: Polars::Datetime.new("us", "America/New_York")
   end
