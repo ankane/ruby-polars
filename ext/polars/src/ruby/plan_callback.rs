@@ -183,7 +183,7 @@ impl<Args: PlanCallbackArgs + Send + 'static, Out: PlanCallbackOut + Send + 'sta
         };
 
         // handle non-Ruby threads
-        start_background_ruby_thread(&Ruby::get().unwrap());
+        start_background_ruby_thread(&Ruby::get_with(rbfn.0));
         let udf = ArcValue::new(rbfn.0);
         let f = move |args: Args| {
             if is_non_ruby_thread() {
