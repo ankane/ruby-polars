@@ -238,6 +238,7 @@ pub(crate) fn try_get_rbfile(
     RbFileLikeObject::ensure_requirements(rb_f, !write, write, !write)?;
     let expects_str = false;
     let has_flush = rb_f.respond_to("flush", false)?;
+    rb.gc_register_address(&rb_f);
     let f = RbFileLikeObject::new(rb_f, expects_str, has_flush);
 
     // TODO move
