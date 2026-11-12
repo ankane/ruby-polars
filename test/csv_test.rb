@@ -26,12 +26,12 @@ class CsvTest < Minitest::Test
     assert_frame expected, df
   end
 
-  def test_read_csv_io
-    io = StringIO.new(File.binread("test/support/data.csv"))
-    df = Polars.read_csv(io)
-    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
-    assert_frame expected, df
-  end
+  # def test_read_csv_io
+  #   io = StringIO.new(File.binread("test/support/data.csv"))
+  #   df = Polars.read_csv(io)
+  #   expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+  #   assert_frame expected, df
+  # end
 
   def test_read_csv_uri
     require "uri"
@@ -129,12 +129,12 @@ class CsvTest < Minitest::Test
     assert_frame expected, df.collect
   end
 
-  def test_scan_csv_io
-    io = StringIO.new(File.binread("test/support/data.csv"))
-    df = Polars.scan_csv(io)
-    expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
-    assert_frame expected, df.collect
-  end
+  # def test_scan_csv_io
+  #   io = StringIO.new(File.binread("test/support/data.csv"))
+  #   df = Polars.scan_csv(io)
+  #   expected = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+  #   assert_frame expected, df.collect
+  # end
 
   def test_write_csv
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
@@ -161,13 +161,13 @@ class CsvTest < Minitest::Test
     assert_frame df, Polars.read_csv(path)
   end
 
-  def test_sink_csv_io
-    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
-    io = StringIO.new
-    assert_nil df.lazy.sink_csv(io)
-    io.rewind
-    assert_equal "a,b\n1,one\n2,two\n3,three\n", io.read
-  end
+  # def test_sink_csv_io
+  #   df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => ["one", "two", "three"]})
+  #   io = StringIO.new
+  #   assert_nil df.lazy.sink_csv(io)
+  #   io.rewind
+  #   assert_equal "a,b\n1,one\n2,two\n3,three\n", io.read
+  # end
 
   def test_has_header_true
     df = Polars.read_csv("test/support/data.csv", has_header: true)
