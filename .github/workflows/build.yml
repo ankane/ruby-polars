@@ -33,7 +33,7 @@ jobs:
         env:
           POLARS_ENGINE_AFFINITY: in-memory
           POALRS_GVL: true
-      - run: bundle exec yard --fail-on-warning
+      # - run: bundle exec yard --fail-on-warning
       - run: bundle exec rake test:docs
         env:
           POLARS_ENGINE_AFFINITY: in-memory

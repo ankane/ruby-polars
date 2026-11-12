@@ -39,7 +39,7 @@ impl RubyUdfExpression {
     ) -> Self {
         let output_type = output_type.map(Into::into);
         Self {
-            ruby_function: ArcValue::new(Opaque::from(lambda)),
+            ruby_function: ArcValue::new(lambda),
             output_type,
             materialized_field: OnceLock::new(),
             is_elementwise,
@@ -87,7 +87,6 @@ impl AnonymousColumnsUdf for RubyUdfExpression {
                 ArcValue::new(
                     rb.get_inner(*self.ruby_function.0)
                         .funcall::<_, _, Value>("dup", ())
-                        .map(Opaque::from)
                         .unwrap(),
                 )
             }),

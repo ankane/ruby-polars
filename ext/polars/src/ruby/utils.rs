@@ -14,9 +14,9 @@ pub(crate) fn to_pl_err(e: Error) -> PolarsError {
 pub struct ArcValue(pub Arc<Opaque<Value>>);
 
 impl ArcValue {
-    pub fn new(value: Opaque<Value>) -> Self {
-        let ob = Arc::new(value);
-        Ruby::get().unwrap().gc_register_address(&*ob);
+    pub fn new(value: Value) -> Self {
+        Ruby::get_with(value).gc_register_address(&value);
+        let ob = Arc::new(Opaque::from(value));
         Self(ob)
     }
 }
