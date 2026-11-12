@@ -129,6 +129,11 @@ module Polars
   # @private
   N_INFER_DEFAULT = 100
 
+  class << self
+    # @private
+    attr_accessor :background_thread
+  end
+
   # Return the number of threads in the Polars thread pool.
   #
   # @return [Integer]
