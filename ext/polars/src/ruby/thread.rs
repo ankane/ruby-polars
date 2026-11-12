@@ -3,9 +3,11 @@ use std::sync::OnceLock;
 use std::sync::mpsc::{RecvTimeoutError, SyncSender, sync_channel};
 
 use magnus::Ruby;
+use magnus::value::ReprValue;
 use magnus::error::RubyUnavailableError;
 
 use crate::ruby::gvl::GvlExt;
+use crate::ruby::utils::ArcValue;
 
 type BackgroundMessage = (
     Box<dyn FnOnce() -> Box<dyn Any + Send> + Send>,
@@ -13,6 +15,8 @@ type BackgroundMessage = (
 );
 
 static BACKGROUND_THREAD_MAILBOX: OnceLock<SyncSender<BackgroundMessage>> = OnceLock::new();
+
+static BACKGROUND_THREAD: OnceLock<ArcValue> = OnceLock::new();
 
 // TODO figure out better approach
 pub(crate) fn start_background_ruby_thread(rb: &Ruby) {
@@ -42,7 +46,7 @@ pub(crate) fn start_background_ruby_thread(rb: &Ruby) {
                 ()
             });
         });
-        rb.gc_register_address(&thread);
+        let _ = BACKGROUND_THREAD.set(ArcValue::new(thread.as_value()));
 
         sender
     });
