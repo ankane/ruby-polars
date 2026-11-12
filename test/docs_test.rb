@@ -181,6 +181,8 @@ class DocsTest < Minitest::Test
           raise "Missing docs (#{method.name})"
         end
 
+        puts method.name
+
         assert_params(method)
         assert_return(method)
         assert_examples(method, cls)
