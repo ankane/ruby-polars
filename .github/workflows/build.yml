@@ -29,11 +29,11 @@ jobs:
       - if: ${{ runner.os == 'Windows' }}
         run: echo "RUST_TARGET=x86_64-pc-windows-gnu" >> "$env:GITHUB_ENV"
       - run: bundle exec rake compile
-      # - if: ${{ runner.os == 'Windows' }}
-      #   run: echo "POLARS_GVL=1" >> "$env:GITHUB_ENV"
-      # - run: bundle exec rake test
-      # - run: bundle exec yard --fail-on-warning
-      # - run: bundle exec rake test:docs
+      - if: ${{ runner.os == 'Windows' }}
+        run: echo "POLARS_GVL=1" >> "$env:GITHUB_ENV"
+      - run: bundle exec rake test
+      - run: bundle exec yard --fail-on-warning
+      - run: bundle exec rake test:docs
 
       # - uses: ankane/setup-postgres@v1
       #   with:

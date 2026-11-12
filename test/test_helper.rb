@@ -6,6 +6,7 @@ class Minitest::Test
   include Polars::Testing
 
   def setup
+    puts "#{self.class.name}##{name}"
     if stress?
       puts "#{self.class.name}##{name}"
       GC.stress = true
