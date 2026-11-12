@@ -19,11 +19,14 @@ pub(crate) fn start_background_ruby_thread(rb: &Ruby) {
     BACKGROUND_THREAD_MAILBOX.get_or_init(|| {
         let (sender, receiver) = sync_channel::<BackgroundMessage>(0);
 
+        println!("thread started");
+
         let thread = rb.thread_create_from_fn(move |rb2| {
             rb2.detach(move || {
                 loop {
                     match receiver.recv_timeout(std::time::Duration::from_millis(10)) {
                         Ok((f, sender2)) => {
+                            println!("message received");
                             sender2.send(f()).unwrap();
                         }
                         Err(RecvTimeoutError::Timeout) => {
