@@ -2,7 +2,7 @@ require_relative "test_helper"
 
 class CsvTest < Minitest::Test
   def setup
-    skip if windows?
+    # skip if windows?
     super
   end
 

@@ -3,7 +3,7 @@ use std::io;
 use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
 
-use magnus::{Error, RString, Ruby, Value, prelude::*, value::Opaque};
+use magnus::{Error, RString, Ruby, Value, prelude::*};
 use polars::io::mmap::MmapBytesReader;
 use polars::prelude::PlRefPath;
 use polars::prelude::file::{Writable, WritableTrait};
@@ -12,12 +12,13 @@ use polars_buffer::Buffer;
 use crate::error::RbPolarsErr;
 use crate::prelude::resolve_homedir;
 use crate::ruby::gvl::GvlExt;
+use crate::ruby::utils::ArcValue;
 use crate::ruby::thread::{is_non_ruby_thread, run_in_ruby_thread, start_background_ruby_thread};
 use crate::utils::to_rb_err;
 use crate::{RbErr, RbResult};
 
 pub struct RbFileLikeObject {
-    inner: Opaque<Value>,
+    inner: ArcValue,
     expects_str: bool,
     has_flush: bool,
 }
@@ -40,7 +41,7 @@ impl Clone for RbFileLikeObject {
     fn clone(&self) -> Self {
         // Skip attach
         Self {
-            inner: self.inner,
+            inner: self.inner.clone(),
             expects_str: self.expects_str,
             has_flush: self.has_flush,
         }
@@ -54,7 +55,7 @@ impl RbFileLikeObject {
     /// instantiate it with `RbFileLikeObject::require`
     pub fn new(object: Value, expects_str: bool, has_flush: bool) -> Self {
         RbFileLikeObject {
-            inner: object.into(),
+            inner: ArcValue::new(object),
             expects_str,
             has_flush,
         }
@@ -63,7 +64,7 @@ impl RbFileLikeObject {
     pub(crate) fn to_buffer(&self) -> Buffer<u8> {
         Ruby::attach(|rb| {
             let bytes = rb
-                .get_inner(self.inner)
+                .get_inner(*self.inner.0)
                 .funcall::<_, _, RString>("read", ())
                 .expect("no read method found");
 
@@ -110,7 +111,7 @@ impl RbFileLikeObject {
             }
 
             Ruby::attach(|rb| {
-                rb.get_inner(self.inner)
+                rb.get_inner(*self.inner.0)
                     .funcall::<_, _, Value>("flush", ())
                     .map_err(rberr_to_io_err)
             })?;
@@ -129,7 +130,7 @@ impl Read for RbFileLikeObject {
     fn read(&mut self, mut buf: &mut [u8]) -> Result<usize, io::Error> {
         Ruby::attach(|rb| {
             let bytes = rb
-                .get_inner(self.inner)
+                .get_inner(*self.inner.0)
                 .funcall::<_, _, RString>("read", (buf.len(),))
                 .map_err(rberr_to_io_err)?;
 
@@ -158,7 +159,7 @@ impl Write for RbFileLikeObject {
             let rbbytes = rb.str_from_slice(buf);
 
             let number_bytes_written = rb
-                .get_inner(self.inner)
+                .get_inner(*self.inner.0)
                 .funcall::<_, _, usize>("write", (rbbytes,))
                 .map_err(rberr_to_io_err)?;
 
@@ -180,7 +181,7 @@ impl Seek for RbFileLikeObject {
                 SeekFrom::End(i) => (2, i),
             };
 
-            let inner = rb.get_inner(self.inner);
+            let inner = rb.get_inner(*self.inner.0);
 
             inner
                 .funcall::<_, _, Value>("seek", (offset, whence))

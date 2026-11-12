@@ -4,7 +4,7 @@ use magnus::{Error, IntoValue, Ruby, Value, value::Opaque};
 use polars::error::PolarsError;
 
 use crate::RbResult;
-use crate::ruby::gvl::GvlExt;
+// use crate::ruby::gvl::GvlExt;
 
 pub(crate) fn to_pl_err(e: Error) -> PolarsError {
     PolarsError::ComputeError(e.to_string().into())
@@ -23,7 +23,7 @@ impl ArcValue {
 
 impl Drop for ArcValue {
     fn drop(&mut self) {
-        Ruby::attach(|rb| rb.gc_unregister_address(&*self.0));
+        // Ruby::attach(|rb| rb.gc_unregister_address(&*self.0));
     }
 }
 
