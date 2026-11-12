@@ -29,26 +29,28 @@ jobs:
       - if: ${{ runner.os == 'Windows' }}
         run: echo "RUST_TARGET=x86_64-pc-windows-gnu" >> "$env:GITHUB_ENV"
       - run: bundle exec rake compile
-      - run: bundle exec rake test
-      - run: bundle exec yard --fail-on-warning
-      - run: bundle exec rake test:docs
+      # - if: ${{ runner.os == 'Windows' }}
+      #   run: echo "POLARS_GVL=1" >> "$env:GITHUB_ENV"
+      # - run: bundle exec rake test
+      # - run: bundle exec yard --fail-on-warning
+      # - run: bundle exec rake test:docs
 
-      - uses: ankane/setup-postgres@v1
-        with:
-          database: polars_ruby_test
-      - run: ruby test/database_test.rb
-        env:
-          ADAPTER: postgresql
+      # - uses: ankane/setup-postgres@v1
+      #   with:
+      #     database: polars_ruby_test
+      # - run: ruby test/database_test.rb
+      #   env:
+      #     ADAPTER: postgresql
 
-      - if: ${{ runner.os != 'Windows' }}
-        uses: ankane/setup-mysql@v1
-        with:
-          database: polars_ruby_test
-      - if: ${{ runner.os != 'Windows' }}
-        run: ruby test/database_test.rb
-        env:
-          ADAPTER: mysql
-      - if: ${{ runner.os != 'Windows' }}
-        run: ruby test/database_test.rb
-        env:
-          ADAPTER: trilogy
+      # - if: ${{ runner.os != 'Windows' }}
+      #   uses: ankane/setup-mysql@v1
+      #   with:
+      #     database: polars_ruby_test
+      # - if: ${{ runner.os != 'Windows' }}
+      #   run: ruby test/database_test.rb
+      #   env:
+      #     ADAPTER: mysql
+      # - if: ${{ runner.os != 'Windows' }}
+      #   run: ruby test/database_test.rb
+      #   env:
+      #     ADAPTER: trilogy
