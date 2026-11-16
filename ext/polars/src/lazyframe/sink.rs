@@ -13,18 +13,19 @@ impl TryConvert for Wrap<polars_plan::dsl::SinkTarget> {
         if let Ok(v) = String::try_convert(ob) {
             Ok(Wrap(polars::prelude::SinkTarget::Path(PlRefPath::new(&v))))
         } else {
-            let writer = Ruby::attach(|rb| {
-                let rb_f = ob;
-                RbResult::Ok(
-                    crate::file::try_get_rbfile(rb, rb_f, true)?
-                        .0
-                        .into_writable(),
-                )
-            })?;
+            Err(RbValueError::new_err("todo"))
+            // let writer = Ruby::attach(|rb| {
+            //     let rb_f = ob;
+            //     RbResult::Ok(
+            //         crate::file::try_get_rbfile(rb, rb_f, true)?
+            //             .0
+            //             .into_writable(),
+            //     )
+            // })?;
 
-            Ok(Wrap(polars_plan::prelude::SinkTarget::Dyn(SpecialEq::new(
-                Arc::new(Mutex::new(Some(writer))),
-            ))))
+            // Ok(Wrap(polars_plan::prelude::SinkTarget::Dyn(SpecialEq::new(
+            //     Arc::new(Mutex::new(Some(writer))),
+            // ))))
         }
     }
 }
